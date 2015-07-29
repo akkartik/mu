@@ -5319,7 +5319,7 @@ schedule: read-move
 9999 mem: storing 1113 in location 1002
  101 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 1003
- 101 run: from-file:number, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
+ 101 run: from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
 9999 mem: location 1002 is 1113
 9999 mem: location 1003 is 1009
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -5329,7 +5329,7 @@ schedule: read-move
 9999 mem: storing 1113 in location 101002
  102 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 101003
- 102 run: c:character, stdin:address:channel <- read stdin:address:channel
+ 102 run: c:character, stdin <- read stdin
 9999 mem: location 101002 is 1113
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -5609,46 +5609,46 @@ schedule: read/read-file/read-move
 9999 run: result 1 is 1113
 9999 mem: storing 97 in location 101004
 9999 mem: storing 1113 in location 101002
- 102 run: q-pressed?:boolean <- equal c:character, 81/Q
+ 102 run: q-pressed?:boolean <- equal c, 81/Q
 9999 mem: location 101004 is 97
 9999 mem: storing 0 in location 101005
- 102 run: break-unless q-pressed?:boolean, 
+ 102 run: break-unless q-pressed?, 
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 8
- 102 run: q-pressed?:boolean <- equal c:character, 113/q
+ 102 run: q-pressed? <- equal c, 113/q
 9999 mem: location 101004 is 97
 9999 mem: storing 0 in location 101005
- 102 run: break-unless q-pressed?:boolean, 
+ 102 run: break-unless q-pressed?, 
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 13
- 102 run: empty-fake-keyboard?:boolean <- equal c:character, 0/eof
+ 102 run: empty-fake-keyboard?:boolean <- equal c, 0/eof
 9999 mem: location 101004 is 97
 9999 mem: storing 0 in location 101006
- 102 run: break-unless empty-fake-keyboard?:boolean, 
+ 102 run: break-unless empty-fake-keyboard?, 
 9999 mem: location 101006 is 0
 9999 run: jumping to instruction 18
- 102 run: newline?:boolean <- equal c:character, 10/newline
+ 102 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 101004 is 97
 9999 mem: storing 0 in location 101007
- 102 run: break-unless newline?:boolean, 
+ 102 run: break-unless newline?, 
 9999 mem: location 101007 is 0
 9999 run: jumping to instruction 25
- 102 run: file:number <- subtract c:character, 97/a
+ 102 run: file:number <- subtract c, 97/a
 9999 mem: location 101004 is 97
 9999 mem: storing 0 in location 101009
- 102 run: above-min:boolean <- greater-or-equal file:number, 0
+ 102 run: above-min:boolean <- greater-or-equal file, 0
 9999 mem: location 101009 is 0
 9999 mem: storing 1 in location 101010
- 102 run: break-if above-min:boolean, 
+ 102 run: break-if above-min, 
 9999 mem: location 101010 is 1
 9999 run: jumping to instruction 35
- 102 run: below-max:boolean <- lesser-than file:number, 8
+ 102 run: below-max:boolean <- lesser-than file, 8
 9999 mem: location 101009 is 0
 9999 mem: storing 1 in location 101011
- 102 run: break-if below-max:boolean, 
+ 102 run: break-if below-max, 
 9999 mem: location 101011 is 1
 9999 run: jumping to instruction 43
- 102 run: reply file:number, 0/quit, 0/error
+ 102 run: reply file, 0/quit, 0/error
 9999 mem: location 101009 is 0
 9999 run: result 0 is 0
 9999 run: result 1 is 0
@@ -5656,16 +5656,16 @@ schedule: read/read-file/read-move
 9999 mem: storing 0 in location 1004
 9999 mem: storing 0 in location 1005
 9999 mem: storing 0 in location 1006
- 101 run: jump-unless quit?:boolean, 1:offset
+ 101 run: jump-unless quit?, 1:offset
 9999 mem: location 1005 is 0
 9999 run: jumping to instruction 6
- 101 run: jump-unless error?:boolean, 1:offset
+ 101 run: jump-unless error?, 1:offset
 9999 mem: location 1006 is 0
 9999 run: jumping to instruction 8
  101 run: result:address:move <- new move:type
 9999 mem: new alloc: 101028
 9999 mem: storing 101028 in location 1007
- 101 run: x:address:number <- get-address result:address:move/lookup, from-file:offset
+ 101 run: x:address:number <- get-address *result, from-file:offset
 9999 mem: location 1007 is 101028
 9999 mem: location 101028 is 0
 9999 mem: location 101029 is 0
@@ -5674,11 +5674,11 @@ schedule: read/read-file/read-move
 9999 mem: location 1007 is 101028
 9999 run: address to copy is 101028
 9999 mem: storing 101028 in location 1008
- 101 run: x:address:number/lookup <- copy from-file:number
+ 101 run: *x <- copy from-file
 9999 mem: location 1004 is 0
 9999 mem: location 1008 is 101028
 9999 mem: storing 0 in location 101028
- 101 run: x:address:number <- get-address result:address:move/lookup, from-rank:offset
+ 101 run: x <- get-address *result, from-rank:offset
 9999 mem: location 1007 is 101028
 9999 mem: location 101028 is 0
 9999 mem: location 101029 is 0
@@ -5687,7 +5687,7 @@ schedule: read/read-file/read-move
 9999 mem: location 1007 is 101028
 9999 run: address to copy is 101029
 9999 mem: storing 101029 in location 1008
- 101 run: x:address:number/lookup, quit?:boolean, error?:boolean <- read-rank stdin:address:channel, screen:address
+ 101 run: *x, quit?, error? <- read-rank stdin, screen
 9999 mem: location 1002 is 1113
 9999 mem: location 1003 is 1009
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -5696,7 +5696,7 @@ schedule: read/read-file/read-move
 9999 mem: storing 1113 in location 1097
  102 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 1098
- 102 run: c:character, stdin:address:channel <- read stdin:address:channel
+ 102 run: c:character, stdin <- read stdin
 9999 mem: location 1097 is 1113
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -5973,40 +5973,40 @@ schedule: read/read-rank/read-move
 9999 run: result 1 is 1113
 9999 mem: storing 50 in location 1099
 9999 mem: storing 1113 in location 1097
- 102 run: q-pressed?:boolean <- equal c:character, 8/Q
+ 102 run: q-pressed?:boolean <- equal c, 8/Q
 9999 mem: location 1099 is 50
 9999 mem: storing 0 in location 1100
- 102 run: break-unless q-pressed?:boolean, 
+ 102 run: break-unless q-pressed?, 
 9999 mem: location 1100 is 0
 9999 run: jumping to instruction 8
- 102 run: q-pressed?:boolean <- equal c:character, 113/q
+ 102 run: q-pressed? <- equal c, 113/q
 9999 mem: location 1099 is 50
 9999 mem: storing 0 in location 1100
- 102 run: break-unless q-pressed?:boolean, 
+ 102 run: break-unless q-pressed?, 
 9999 mem: location 1100 is 0
 9999 run: jumping to instruction 13
- 102 run: newline?:boolean <- equal c:character, 10
+ 102 run: newline?:boolean <- equal c, 10
 9999 mem: location 1099 is 50
 9999 mem: storing 0 in location 1101
- 102 run: break-unless newline?:boolean, 
+ 102 run: break-unless newline?, 
 9999 mem: location 1101 is 0
 9999 run: jumping to instruction 20
- 102 run: rank:number <- subtract c:character, 49/'1'
+ 102 run: rank:number <- subtract c, 49/'1'
 9999 mem: location 1099 is 50
 9999 mem: storing 1 in location 1103
- 102 run: above-min:boolean <- greater-or-equal rank:number, 0
+ 102 run: above-min:boolean <- greater-or-equal rank, 0
 9999 mem: location 1103 is 1
 9999 mem: storing 1 in location 1104
- 102 run: break-if above-min:boolean, 
+ 102 run: break-if above-min, 
 9999 mem: location 1104 is 1
 9999 run: jumping to instruction 29
- 102 run: below-max:boolean <- lesser-or-equal rank:number, 7
+ 102 run: below-max:boolean <- lesser-or-equal rank, 7
 9999 mem: location 1103 is 1
 9999 mem: storing 1 in location 1105
- 102 run: break-if below-max:boolean, 
+ 102 run: break-if below-max, 
 9999 mem: location 1105 is 1
 9999 run: jumping to instruction 37
- 102 run: reply rank:number, 0/quit, 0/error
+ 102 run: reply rank, 0/quit, 0/error
 9999 mem: location 1103 is 1
 9999 run: result 0 is 1
 9999 run: result 1 is 0
@@ -6015,13 +6015,13 @@ schedule: read/read-rank/read-move
 9999 mem: storing 1 in location 101029
 9999 mem: storing 0 in location 1005
 9999 mem: storing 0 in location 1006
- 101 run: jump-unless quit?:boolean, 1:offset
+ 101 run: jump-unless quit?, 1:offset
 9999 mem: location 1005 is 0
 9999 run: jumping to instruction 15
- 101 run: jump-unless error?:boolean, 1:offset
+ 101 run: jump-unless error?, 1:offset
 9999 mem: location 1006 is 0
 9999 run: jumping to instruction 17
- 101 run: error?:boolean <- expect-from-channel stdin:address:channel, 45/dash, screen:address
+ 101 run: error? <- expect-from-channel stdin, 45/dash, screen
 9999 mem: location 1002 is 1113
 9999 mem: location 1003 is 1009
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -6033,7 +6033,7 @@ schedule: read/read-rank/read-move
 9999 mem: storing 45 in location 101035
  102 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 101036
- 102 run: c:character, stdin:address:channel <- read stdin:address:channel
+ 102 run: c:character, stdin <- read stdin
 9999 mem: location 101034 is 1113
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -6317,24 +6317,24 @@ schedule: read/expect-from-channel/read-move
 9999 run: result 1 is 1113
 9999 mem: storing 45 in location 101037
 9999 mem: storing 1113 in location 101034
- 102 run: match?:boolean <- equal c:character, expected:character
+ 102 run: match?:boolean <- equal c, expected
 9999 mem: location 101037 is 45
 9999 mem: location 101035 is 45
 9999 mem: storing 1 in location 101038
- 102 run: break-if match?:boolean, 
+ 102 run: break-if match?, 
 9999 mem: location 101038 is 1
 9999 run: jumping to instruction 10
- 102 run: result:boolean <- not match?:boolean
+ 102 run: result:boolean <- not match?
 9999 mem: location 101038 is 1
 9999 mem: storing 0 in location 101040
- 102 run: reply result:boolean
+ 102 run: reply result
 9999 mem: location 101040 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1006
- 101 run: jump-unless error?:boolean, 1:offset
+ 101 run: jump-unless error?, 1:offset
 9999 mem: location 1006 is 0
 9999 run: jumping to instruction 20
- 101 run: x:address:number <- get-address result:address:move/lookup, to-file:offset
+ 101 run: x <- get-address *result, to-file:offset
 9999 mem: location 1007 is 101028
 9999 mem: location 101028 is 0
 9999 mem: location 101029 is 1
@@ -6343,7 +6343,7 @@ schedule: read/expect-from-channel/read-move
 9999 mem: location 1007 is 101028
 9999 run: address to copy is 101030
 9999 mem: storing 101030 in location 1008
- 101 run: x:address:number/lookup, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
+ 101 run: *x, quit?, error? <- read-file stdin, screen
 9999 mem: location 1002 is 1113
 9999 mem: location 1003 is 1009
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -6352,7 +6352,7 @@ schedule: read/expect-from-channel/read-move
 9999 mem: storing 1113 in location 101002
  102 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 101003
- 102 run: c:character, stdin:address:channel <- read stdin:address:channel
+ 102 run: c:character, stdin <- read stdin
 9999 mem: location 101002 is 1113
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -6628,46 +6628,46 @@ schedule: read/read-file/read-move
 9999 run: result 1 is 1113
 9999 mem: storing 97 in location 101004
 9999 mem: storing 1113 in location 101002
- 102 run: q-pressed?:boolean <- equal c:character, 81/Q
+ 102 run: q-pressed?:boolean <- equal c, 81/Q
 9999 mem: location 101004 is 97
 9999 mem: storing 0 in location 101005
- 102 run: break-unless q-pressed?:boolean, 
+ 102 run: break-unless q-pressed?, 
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 8
- 102 run: q-pressed?:boolean <- equal c:character, 113/q
+ 102 run: q-pressed? <- equal c, 113/q
 9999 mem: location 101004 is 97
 9999 mem: storing 0 in location 101005
- 102 run: break-unless q-pressed?:boolean, 
+ 102 run: break-unless q-pressed?, 
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 13
- 102 run: empty-fake-keyboard?:boolean <- equal c:character, 0/eof
+ 102 run: empty-fake-keyboard?:boolean <- equal c, 0/eof
 9999 mem: location 101004 is 97
 9999 mem: storing 0 in location 101006
- 102 run: break-unless empty-fake-keyboard?:boolean, 
+ 102 run: break-unless empty-fake-keyboard?, 
 9999 mem: location 101006 is 0
 9999 run: jumping to instruction 18
- 102 run: newline?:boolean <- equal c:character, 10/newline
+ 102 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 101004 is 97
 9999 mem: storing 0 in location 101007
- 102 run: break-unless newline?:boolean, 
+ 102 run: break-unless newline?, 
 9999 mem: location 101007 is 0
 9999 run: jumping to instruction 25
- 102 run: file:number <- subtract c:character, 97/a
+ 102 run: file:number <- subtract c, 97/a
 9999 mem: location 101004 is 97
 9999 mem: storing 0 in location 101009
- 102 run: above-min:boolean <- greater-or-equal file:number, 0
+ 102 run: above-min:boolean <- greater-or-equal file, 0
 9999 mem: location 101009 is 0
 9999 mem: storing 1 in location 101010
- 102 run: break-if above-min:boolean, 
+ 102 run: break-if above-min, 
 9999 mem: location 101010 is 1
 9999 run: jumping to instruction 35
- 102 run: below-max:boolean <- lesser-than file:number, 8
+ 102 run: below-max:boolean <- lesser-than file, 8
 9999 mem: location 101009 is 0
 9999 mem: storing 1 in location 101011
- 102 run: break-if below-max:boolean, 
+ 102 run: break-if below-max, 
 9999 mem: location 101011 is 1
 9999 run: jumping to instruction 43
- 102 run: reply file:number, 0/quit, 0/error
+ 102 run: reply file, 0/quit, 0/error
 9999 mem: location 101009 is 0
 9999 run: result 0 is 0
 9999 run: result 1 is 0
@@ -6682,7 +6682,7 @@ schedule: read/read-file/read-move
  101 run: jump-unless error?:boolean, 1:offset
 9999 mem: location 1006 is 0
 9999 run: jumping to instruction 26
- 101 run: x:address:number <- get-address result:address:move/lookup, to-rank:offset
+ 101 run: x:address:number <- get-address *result, to-rank:offset
 9999 mem: location 1007 is 101028
 9999 mem: location 101028 is 0
 9999 mem: location 101029 is 1
@@ -6691,7 +6691,7 @@ schedule: read/read-file/read-move
 9999 mem: location 1007 is 101028
 9999 run: address to copy is 101031
 9999 mem: storing 101031 in location 1008
- 101 run: x:address:number/lookup, quit?:boolean, error?:boolean <- read-rank stdin:address:channel, screen:address
+ 101 run: *x, quit?, error? <- read-rank stdin, screen
 9999 mem: location 1002 is 1113
 9999 mem: location 1003 is 1009
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -6700,7 +6700,7 @@ schedule: read/read-file/read-move
 9999 mem: storing 1113 in location 1097
  102 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 1098
- 102 run: c:character, stdin:address:channel <- read stdin:address:channel
+ 102 run: c:character, stdin <- read stdin
 9999 mem: location 1097 is 1113
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -6976,40 +6976,40 @@ schedule: read/read-rank/read-move
 9999 run: result 1 is 1113
 9999 mem: storing 52 in location 1099
 9999 mem: storing 1113 in location 1097
- 102 run: q-pressed?:boolean <- equal c:character, 8/Q
+ 102 run: q-pressed?:boolean <- equal c, 8/Q
 9999 mem: location 1099 is 52
 9999 mem: storing 0 in location 1100
- 102 run: break-unless q-pressed?:boolean, 
+ 102 run: break-unless q-pressed?, 
 9999 mem: location 1100 is 0
 9999 run: jumping to instruction 8
- 102 run: q-pressed?:boolean <- equal c:character, 113/q
+ 102 run: q-pressed? <- equal c, 113/q
 9999 mem: location 1099 is 52
 9999 mem: storing 0 in location 1100
- 102 run: break-unless q-pressed?:boolean, 
+ 102 run: break-unless q-pressed?, 
 9999 mem: location 1100 is 0
 9999 run: jumping to instruction 13
- 102 run: newline?:boolean <- equal c:character, 10
+ 102 run: newline?:boolean <- equal c, 10
 9999 mem: location 1099 is 52
 9999 mem: storing 0 in location 1101
- 102 run: break-unless newline?:boolean, 
+ 102 run: break-unless newline?, 
 9999 mem: location 1101 is 0
 9999 run: jumping to instruction 20
- 102 run: rank:number <- subtract c:character, 49/'1'
+ 102 run: rank:number <- subtract c, 49/'1'
 9999 mem: location 1099 is 52
 9999 mem: storing 3 in location 1103
- 102 run: above-min:boolean <- greater-or-equal rank:number, 0
+ 102 run: above-min:boolean <- greater-or-equal rank, 0
 9999 mem: location 1103 is 3
 9999 mem: storing 1 in location 1104
- 102 run: break-if above-min:boolean, 
+ 102 run: break-if above-min, 
 9999 mem: location 1104 is 1
 9999 run: jumping to instruction 29
- 102 run: below-max:boolean <- lesser-or-equal rank:number, 7
+ 102 run: below-max:boolean <- lesser-or-equal rank, 7
 9999 mem: location 1103 is 3
 9999 mem: storing 1 in location 1105
- 102 run: break-if below-max:boolean, 
+ 102 run: break-if below-max, 
 9999 mem: location 1105 is 1
 9999 run: jumping to instruction 37
- 102 run: reply rank:number, 0/quit, 0/error
+ 102 run: reply rank, 0/quit, 0/error
 9999 mem: location 1103 is 3
 9999 run: result 0 is 3
 9999 run: result 1 is 0
@@ -7018,13 +7018,13 @@ schedule: read/read-rank/read-move
 9999 mem: storing 3 in location 101031
 9999 mem: storing 0 in location 1005
 9999 mem: storing 0 in location 1006
- 101 run: jump-unless quit?:boolean, 1:offset
+ 101 run: jump-unless quit?, 1:offset
 9999 mem: location 1005 is 0
 9999 run: jumping to instruction 30
- 101 run: jump-unless error?:boolean, 1:offset
+ 101 run: jump-unless error?, 1:offset
 9999 mem: location 1006 is 0
 9999 run: jumping to instruction 32
- 101 run: error?:boolean <- expect-from-channel stdin:address:channel, 10/newline, screen:address
+ 101 run: error? <- expect-from-channel stdin, 10/newline, screen
 9999 mem: location 1002 is 1113
 9999 mem: location 1003 is 1009
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -7035,7 +7035,7 @@ schedule: read/read-rank/read-move
 9999 mem: storing 10 in location 101035
  102 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 101036
- 102 run: c:character, stdin:address:channel <- read stdin:address:channel
+ 102 run: c:character, stdin <- read stdin
 9999 mem: location 101034 is 1113
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -7319,24 +7319,24 @@ schedule: read/expect-from-channel/read-move
 9999 run: result 1 is 1113
 9999 mem: storing 10 in location 101037
 9999 mem: storing 1113 in location 101034
- 102 run: match?:boolean <- equal c:character, expected:character
+ 102 run: match?:boolean <- equal c, expected
 9999 mem: location 101037 is 10
 9999 mem: location 101035 is 10
 9999 mem: storing 1 in location 101038
- 102 run: break-if match?:boolean, 
+ 102 run: break-if match?, 
 9999 mem: location 101038 is 1
 9999 run: jumping to instruction 10
- 102 run: result:boolean <- not match?:boolean
+ 102 run: result:boolean <- not match?
 9999 mem: location 101038 is 1
 9999 mem: storing 0 in location 101040
- 102 run: reply result:boolean
+ 102 run: reply result
 9999 mem: location 101040 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1006
- 101 run: jump-unless error?:boolean, 1:offset
+ 101 run: jump-unless error?, 1:offset
 9999 mem: location 1006 is 0
 9999 run: jumping to instruction 35
- 101 run: reply result:address:move, quit?:boolean, error?:boolean
+ 101 run: reply result, quit?, error?
 9999 mem: location 1007 is 101028
 9999 mem: location 1005 is 0
 9999 mem: location 1006 is 0

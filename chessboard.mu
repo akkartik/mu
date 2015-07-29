@@ -38,7 +38,7 @@ scenario print-board-and-read-move [
 #?     $browse-trace #? 1
 #?     $close-trace #? 1
     # icon for the cursor
-    screen:address <- print-character screen:address, 9251/␣
+    screen <- print-character screen, 9251/␣
   ]
   screen-should-contain [
   #            1         2         3         4         5         6         7         8         9         10        11
@@ -74,39 +74,39 @@ recipe chessboard [
   local-scope
   screen:address <- next-ingredient
   console:address <- next-ingredient
-#?   $print [screen: ], screen:address, [, console: ], console:address, 10/newline
+#?   $print [screen: ], screen, [, console: ], console, 10/newline
   board:address:array:address:array:character <- initial-position
   # hook up stdin
   stdin:address:channel <- new-channel 10/capacity
-  start-running send-keys-to-channel:recipe, console:address, stdin:address:channel, screen:address
+  start-running send-keys-to-channel:recipe, console, stdin, screen
   # buffer lines in stdin
   buffered-stdin:address:channel <- new-channel 10/capacity
-  start-running buffer-lines:recipe, stdin:address:channel, buffered-stdin:address:channel
+  start-running buffer-lines:recipe, stdin, buffered-stdin
   {
     msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
 ]
-    print-string screen:address, msg:address:array:character
-    cursor-to-next-line screen:address
-    print-board screen:address, board:address:array:address:array:character
-    cursor-to-next-line screen:address
-    msg:address:array:character <- new [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
+    print-string screen, msg
+    cursor-to-next-line screen
+    print-board screen, board
+    cursor-to-next-line screen
+    msg <- new [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
 ]
-    print-string screen:address, msg:address:array:character
-    cursor-to-next-line screen:address
-    msg:address:array:character <- new [Hit 'q' to exit.
+    print-string screen, msg
+    cursor-to-next-line screen
+    msg <- new [Hit 'q' to exit.
 ]
-    print-string screen:address, msg:address:array:character
+    print-string screen, msg
     {
-      cursor-to-next-line screen:address
-      msg:address:array:character <- new [move: ]
-      print-string screen:address, msg:address:array:character
-      m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin:address:channel, screen:address
-      break-if quit:boolean, +quit:offset
-      buffered-stdin:address:channel <- clear-channel buffered-stdin:address:channel  # cleanup after error. todo: test this?
-      loop-if error:boolean
+      cursor-to-next-line screen
+      msg <- new [move: ]
+      print-string screen, msg
+      m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin, screen
+      break-if quit, +quit:label
+      buffered-stdin <- clear-channel buffered-stdin  # cleanup after error. todo: test this?
+      loop-if error
     }
-    board:address:array:address:array:character <- make-move board:address:array:address:array:character, m:address:move
-    clear-screen screen:address
+    board <- make-move board, m
+    clear-screen screen
     loop
   }
   +quit
@@ -118,40 +118,40 @@ recipe new-board [
   local-scope
   initial-position:address:array:number <- next-ingredient
   # assert(length(initial-position) == 64)
-  len:number <- length initial-position:address:array:number/lookup
-  correct-length?:boolean <- equal len:number, 64
-  assert correct-length?:boolean, [chessboard had incorrect size]
+  len:number <- length *initial-position
+  correct-length?:boolean <- equal len, 64
+  assert correct-length?, [chessboard had incorrect size]
   # board is an array of pointers to files; file is an array of characters
   board:address:array:address:array:character <- new location:type, 8
   col:number <- copy 0
   {
-    done?:boolean <- equal col:number, 8
-    break-if done?:boolean
-    file:address:address:array:character <- index-address board:address:array:address:array:character/lookup, col:number
-    file:address:address:array:character/lookup <- new-file initial-position:address:array:number, col:number
-    col:number <- add col:number, 1
+    done?:boolean <- equal col, 8
+    break-if done?
+    file:address:address:array:character <- index-address *board, col
+    *file <- new-file initial-position, col
+    col <- add col, 1
     loop
   }
-  reply board:address:array:address:array:character
+  reply board
 ]
 
 recipe new-file [
   local-scope
   position:address:array:number <- next-ingredient
   index:number <- next-ingredient
-  index:number <- multiply index:number, 8
+  index <- multiply index, 8
   result:address:array:character <- new character:type, 8
   row:number <- copy 0
   {
-    done?:boolean <- equal row:number, 8
-    break-if done?:boolean
-    dest:address:character <- index-address result:address:array:character/lookup, row:number
-    dest:address:character/lookup <- index position:address:array:number/lookup, index:number
-    row:number <- add row:number, 1
-    index:number <- add index:number, 1
+    done?:boolean <- equal row, 8
+    break-if done?
+    dest:address:character <- index-address *result, row
+    *dest <- index *position, index
+    row <- add row, 1
+    index <- add index, 1
     loop
   }
-  reply result:address:array:character
+  reply result
 ]
 
 recipe print-board [
@@ -160,42 +160,42 @@ recipe print-board [
   board:address:array:address:array:character <- next-ingredient
   row:number <- copy 7  # start printing from the top of the board
   # print each row
-#?   $print [printing board to screen ], screen:address, 10/newline
+#?   $print [printing board to screen ], screen, 10/newline
   {
-    done?:boolean <- lesser-than row:number, 0
-    break-if done?:boolean
-#?     $print [printing rank ], row:number, 10/newline
+    done?:boolean <- lesser-than row, 0
+    break-if done?
+#?     $print [printing rank ], row, 10/newline
     # print rank number as a legend
-    rank:number <- add row:number, 1
-    print-integer screen:address, rank:number
+    rank:number <- add row, 1
+    print-integer screen, rank
     s:address:array:character <- new [ | ]
-    print-string screen:address, s:address:array:character
+    print-string screen, s
     # print each square in the row
     col:number <- copy 0
     {
       done?:boolean <- equal col:number, 8
       break-if done?:boolean
-      f:address:array:character <- index board:address:array:address:array:character/lookup, col:number
-      c:character <- index f:address:array:character/lookup, row:number
-      print-character screen:address, c:character
-      print-character screen:address, 32/space
-      col:number <- add col:number, 1
+      f:address:array:character <- index *board, col
+      c:character <- index *f, row
+      print-character screen, c
+      print-character screen, 32/space
+      col <- add col, 1
       loop
     }
-    row:number <- subtract row:number, 1
-    cursor-to-next-line screen:address
+    row <- subtract row, 1
+    cursor-to-next-line screen
     loop
   }
   # print file letters as legend
 #?   $print [printing legend
 #? ] #? 1
-  s:address:array:character <- new [  +----------------]
-  print-string screen:address, s:address:array:character
-  screen:address <- cursor-to-next-line screen:address
-#?   screen:address <- print-character screen:address, 97 #? 1
-  s:address:array:character <- new [    a b c d e f g h]
-  screen:address <- print-string screen:address, s:address:array:character
-  screen:address <- cursor-to-next-line screen:address
+  s <- new [  +----------------]
+  print-string screen, s
+  screen <- cursor-to-next-line screen
+#?   screen <- print-character screen, 97 #? 1
+  s <- new [    a b c d e f g h]
+  screen <- print-string screen, s
+  screen <- cursor-to-next-line screen
 #?   $print [done printing board
 #? ] #? 1
 ]
@@ -221,8 +221,8 @@ recipe initial-position [
 #?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b,
 #?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,
 #?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r
-  board:address:array:address:array:character <- new-board initial-position:address:array:number
-  reply board:address:array:address:array:character
+  board:address:array:address:array:character <- new-board initial-position
+  reply board
 ]
 
 scenario printing-the-board [
@@ -266,32 +266,32 @@ recipe read-move [
   stdin:address:channel <- next-ingredient
   screen:address <- next-ingredient
 #?   $print screen:address #? 1
-  from-file:number, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
-  reply-if quit?:boolean, 0/dummy, quit?:boolean, error?:boolean
-  reply-if error?:boolean, 0/dummy, quit?:boolean, error?:boolean
+  from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
+  reply-if quit?, 0/dummy, quit?, error?
+  reply-if error?, 0/dummy, quit?, error?
 #?   close-console #? 1
   # construct the move object
   result:address:move <- new move:type
-  x:address:number <- get-address result:address:move/lookup, from-file:offset
-  x:address:number/lookup <- copy from-file:number
-  x:address:number <- get-address result:address:move/lookup, from-rank:offset
-  x:address:number/lookup, quit?:boolean, error?:boolean <- read-rank stdin:address:channel, screen:address
+  x:address:number <- get-address *result, from-file:offset
+  *x <- copy from-file
+  x <- get-address *result, from-rank:offset
+  *x, quit?, error? <- read-rank stdin, screen
+  reply-if quit?, 0/dummy, quit?, error?
+  reply-if error?, 0/dummy, quit?, error?
+  error? <- expect-from-channel stdin, 45/dash, screen
+  reply-if error?, 0/dummy, 0/quit, error?
+  x <- get-address *result, to-file:offset
+  *x, quit?, error? <- read-file stdin, screen
   reply-if quit?:boolean, 0/dummy, quit?:boolean, error?:boolean
   reply-if error?:boolean, 0/dummy, quit?:boolean, error?:boolean
-  error?:boolean <- expect-from-channel stdin:address:channel, 45/dash, screen:address
-  reply-if error?:boolean, 0/dummy, 0/quit, error?:boolean
-  x:address:number <- get-address result:address:move/lookup, to-file:offset
-  x:address:number/lookup, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
-  reply-if quit?:boolean, 0/dummy, quit?:boolean, error?:boolean
-  reply-if error?:boolean, 0/dummy, quit?:boolean, error?:boolean
-  x:address:number <- get-address result:address:move/lookup, to-rank:offset
-  x:address:number/lookup, quit?:boolean, error?:boolean <- read-rank stdin:address:channel, screen:address
-  reply-if quit?:boolean, 0/dummy, quit?:boolean, error?:boolean
-  reply-if error?:boolean, 0/dummy, quit?:boolean, error?:boolean
+  x:address:number <- get-address *result, to-rank:offset
+  *x, quit?, error? <- read-rank stdin, screen
+  reply-if quit?, 0/dummy, quit?, error?
+  reply-if error?, 0/dummy, quit?, error?
 #?   $exit #? 1
-  error?:boolean <- expect-from-channel stdin:address:channel, 10/newline, screen:address
-  reply-if error?:boolean, 0/dummy, 0/quit, error?:boolean
-  reply result:address:move, quit?:boolean, error?:boolean
+  error? <- expect-from-channel stdin, 10/newline, screen
+  reply-if error?, 0/dummy, 0/quit, error?
+  reply result, quit?, error?
 ]
 
 # file:number, quit:boolean, error:boolean <- read-file stdin:address:channel, screen:address
@@ -300,50 +300,50 @@ recipe read-file [
   local-scope
   stdin:address:channel <- next-ingredient
   screen:address <- next-ingredient
-  c:character, stdin:address:channel <- read stdin:address:channel
+  c:character, stdin <- read stdin
   {
-    q-pressed?:boolean <- equal c:character, 81/Q
-    break-unless q-pressed?:boolean
+    q-pressed?:boolean <- equal c, 81/Q
+    break-unless q-pressed?
     reply 0/dummy, 1/quit, 0/error
   }
   {
-    q-pressed?:boolean <- equal c:character, 113/q
-    break-unless q-pressed?:boolean
+    q-pressed? <- equal c, 113/q
+    break-unless q-pressed?
     reply 0/dummy, 1/quit, 0/error
   }
   {
-    empty-fake-keyboard?:boolean <- equal c:character, 0/eof
-    break-unless empty-fake-keyboard?:boolean
+    empty-fake-keyboard?:boolean <- equal c, 0/eof
+    break-unless empty-fake-keyboard?
     reply 0/dummy, 1/quit, 0/error
   }
   {
-    newline?:boolean <- equal c:character, 10/newline
-    break-unless newline?:boolean
+    newline?:boolean <- equal c, 10/newline
+    break-unless newline?
     error-message:address:array:character <- new [that's not enough]
-    print-string screen:address, error-message:address:array:character
+    print-string screen, error-message
     reply 0/dummy, 0/quit, 1/error
   }
-  file:number <- subtract c:character, 97/a
-#?   $print file:number, 10/newline
+  file:number <- subtract c, 97/a
+#?   $print file, 10/newline
   # 'a' <= file <= 'h'
   {
-    above-min:boolean <- greater-or-equal file:number, 0
-    break-if above-min:boolean
+    above-min:boolean <- greater-or-equal file, 0
+    break-if above-min
     error-message:address:array:character <- new [file too low: ]
-    print-string screen:address, error-message:address:array:character
-    print-character screen:address, c:character
-    cursor-to-next-line screen:address
+    print-string screen, error-message
+    print-character screen, c
+    cursor-to-next-line screen
     reply 0/dummy, 0/quit, 1/error
   }
   {
-    below-max:boolean <- lesser-than file:number, 8
-    break-if below-max:boolean
-    error-message:address:array:character <- new [file too high: ]
-    print-string screen:address, error-message:address:array:character
-    print-character screen:address, c:character
+    below-max:boolean <- lesser-than file, 8
+    break-if below-max
+    error-message <- new [file too high: ]
+    print-string screen, error-message
+    print-character screen, c
     reply 0/dummy, 0/quit, 1/error
   }
-  reply file:number, 0/quit, 0/error
+  reply file, 0/quit, 0/error
 ]
 
 # rank:number <- read-rank stdin:address:channel, screen:address
@@ -352,44 +352,44 @@ recipe read-rank [
   local-scope
   stdin:address:channel <- next-ingredient
   screen:address <- next-ingredient
-  c:character, stdin:address:channel <- read stdin:address:channel
+  c:character, stdin <- read stdin
   {
-    q-pressed?:boolean <- equal c:character, 8/Q
-    break-unless q-pressed?:boolean
+    q-pressed?:boolean <- equal c, 8/Q
+    break-unless q-pressed?
     reply 0/dummy, 1/quit, 0/error
   }
   {
-    q-pressed?:boolean <- equal c:character, 113/q
-    break-unless q-pressed?:boolean
+    q-pressed? <- equal c, 113/q
+    break-unless q-pressed?
     reply 0/dummy, 1/quit, 0/error
   }
   {
-    newline?:boolean <- equal c:character, 10  # newline
-    break-unless newline?:boolean
+    newline?:boolean <- equal c, 10  # newline
+    break-unless newline?
     error-message:address:array:character <- new [that's not enough]
-    print-string screen:address, error-message:address:array:character
+    print-string screen, error-message
     reply 0/dummy, 0/quit, 1/error
   }
-  rank:number <- subtract c:character, 49/'1'
-#?   $print rank:number, 10/newline
+  rank:number <- subtract c, 49/'1'
+#?   $print rank, 10/newline
   # assert'1' <= rank <= '8'
   {
-    above-min:boolean <- greater-or-equal rank:number, 0
-    break-if above-min:boolean
-    error-message:address:array:character <- new [rank too low: ]
-    print-string screen:address, error-message:address:array:character
-    print-character screen:address, c:character
+    above-min:boolean <- greater-or-equal rank, 0
+    break-if above-min
+    error-message <- new [rank too low: ]
+    print-string screen, error-message
+    print-character screen, c
     reply 0/dummy, 0/quit, 1/error
   }
   {
-    below-max:boolean <- lesser-or-equal rank:number, 7
-    break-if below-max:boolean
-    error-message:address:array:character <- new [rank too high: ]
-    print-string screen:address, error-message:address:array:character
-    print-character screen:address, c:character
+    below-max:boolean <- lesser-or-equal rank, 7
+    break-if below-max
+    error-message <- new [rank too high: ]
+    print-string screen, error-message
+    print-character screen, c
     reply 0/dummy, 0/quit, 1/error
   }
-  reply rank:number, 0/quit, 0/error
+  reply rank, 0/quit, 0/error
 ]
 
 # read a character from the given channel and check that it's what we expect
@@ -399,15 +399,15 @@ recipe expect-from-channel [
   stdin:address:channel <- next-ingredient
   expected:character <- next-ingredient
   screen:address <- next-ingredient
-  c:character, stdin:address:channel <- read stdin:address:channel
-  match?:boolean <- equal c:character, expected:character
+  c:character, stdin <- read stdin
   {
-    break-if match?:boolean
+    match?:boolean <- equal c, expected
+    break-if match?
     s:address:array:character <- new [expected character not found]
-    print-string screen:address, s:address:array:character
+    print-string screen, s
   }
-  result:boolean <- not match?:boolean
-  reply result:boolean
+  result:boolean <- not match?
+  reply result
 ]
 
 scenario read-move-blocking [
@@ -590,22 +590,22 @@ recipe make-move [
   local-scope
   b:address:array:address:array:character <- next-ingredient
   m:address:move <- next-ingredient
-  from-file:number <- get m:address:move/lookup, from-file:offset
-#?   $print from-file:number, 10/newline
-  from-rank:number <- get m:address:move/lookup, from-rank:offset
-#?   $print from-rank:number, 10/newline
-  to-file:number <- get m:address:move/lookup, to-file:offset
-#?   $print to-file:number, 10/newline
-  to-rank:number <- get m:address:move/lookup, to-rank:offset
-#?   $print to-rank:number, 10/newline
-  f:address:array:character <- index b:address:array:address:array:character/lookup, from-file:number
-  src:address:character/square <- index-address f:address:array:character/lookup, from-rank:number
-  f:address:array:character <- index b:address:array:address:array:character/lookup, to-file:number
-  dest:address:character/square <- index-address f:address:array:character/lookup, to-rank:number
-#?   $print src:address:character/lookup, 10/newline
-  dest:address:character/lookup/square <- copy src:address:character/lookup/square
-  src:address:character/lookup/square <- copy 32/space
-  reply b:address:array:address:array:character/same-as-ingredient:0
+  from-file:number <- get *m, from-file:offset
+#?   $print from-file, 10/newline
+  from-rank:number <- get *m, from-rank:offset
+#?   $print from-rank, 10/newline
+  to-file:number <- get *m, to-file:offset
+#?   $print to-file, 10/newline
+  to-rank:number <- get *m, to-rank:offset
+#?   $print to-rank, 10/newline
+  f:address:array:character <- index *b, from-file
+  src:address:character/square <- index-address *f, from-rank
+  f <- index *b, to-file
+  dest:address:character/square <- index-address *f, to-rank
+#?   $print *src, 10/newline
+  *dest <- copy *src
+  *src <- copy 32/space
+  reply b/same-as-ingredient:0
 ]
 
 scenario making-a-move [
@@ -613,14 +613,14 @@ scenario making-a-move [
   run [
     2:address:array:address:array:character/board <- initial-position
     3:address:move <- new move:type
-    4:address:number <- get-address 3:address:move/lookup, from-file:offset
-    4:address:number/lookup <- copy 6/g
-    5:address:number <- get-address 3:address:move/lookup, from-rank:offset
-    5:address:number/lookup <- copy 1/'2'
-    6:address:number <- get-address 3:address:move/lookup, to-file:offset
-    6:address:number/lookup <- copy 6/g
-    7:address:number <- get-address 3:address:move/lookup, to-rank:offset
-    7:address:number/lookup <- copy 3/'4'
+    4:address:number <- get-address *3:address:move, from-file:offset
+    *4:address:number <- copy 6/g
+    5:address:number <- get-address *3:address:move, from-rank:offset
+    *5:address:number <- copy 1/'2'
+    6:address:number <- get-address *3:address:move, to-file:offset
+    *6:address:number <- copy 6/g
+    7:address:number <- get-address *3:address:move, to-rank:offset
+    *7:address:number <- copy 3/'4'
     2:address:array:address:array:character/board <- make-move 2:address:array:address:array:character/board, 3:address:move
     screen:address <- print-board screen:address, 2:address:array:address:array:character/board
   ]

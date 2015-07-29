@@ -2,7 +2,7 @@ parse: instruction: assume-screen
 parse:   ingredient: {name: "5", properties: ["5": "literal", "width": ]}
 parse:   ingredient: {name: "5", properties: ["5": "literal", "height": ]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character <- new []\n    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right\n    3:number <- get 2:address:editor-data/lookup, cursor-row:offset\n    4:number <- get 2:address:editor-data/lookup, cursor-column:offset\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character <- new []\n    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right\n    3:number <- get *2:address:editor-data, cursor-row:offset\n    4:number <- get *2:address:editor-data, cursor-column:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "\n    .     .\n    .     .\n    .     .\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
@@ -2441,8 +2441,8 @@ schedule: scenario-editor-initializes-empty-text
  101 run: run [
     1:address:array:character <- new []
     2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
 parse: instruction: new
 parse:   ingredient: {name: "", properties: [_: "literal-string"]}
@@ -2454,11 +2454,11 @@ parse:   ingredient: {name: "0", properties: ["0": "literal", "left": ]}
 parse:   ingredient: {name: "5", properties: ["5": "literal", "right": ]}
 parse:   product: {name: "2", properties: ["2": "address":"editor-data"]}
 parse: instruction: get
-parse:   ingredient: {name: "2", properties: ["2": "address":"editor-data", "lookup": ]}
+parse:   ingredient: {name: "2", properties: ["*2": "address":"editor-data", "lookup": ]}
 parse:   ingredient: {name: "cursor-row", properties: ["cursor-row": "offset"]}
 parse:   product: {name: "3", properties: ["3": "number"]}
 parse: instruction: get
-parse:   ingredient: {name: "2", properties: ["2": "address":"editor-data", "lookup": ]}
+parse:   ingredient: {name: "2", properties: ["*2": "address":"editor-data", "lookup": ]}
 parse:   ingredient: {name: "cursor-column", properties: ["cursor-column": "offset"]}
 parse:   product: {name: "4", properties: ["4": "number"]}
 name: element cursor-row of type editor-data is at offset 4
@@ -2484,13 +2484,13 @@ after-brace: get ...
 9999 mem: storing 0 in location 1081
  102 run: right:number <- next-ingredient 
 9999 mem: storing 5 in location 1082
- 102 run: right:number <- subtract right:number, 1
+ 102 run: right <- subtract right, 1
 9999 mem: location 1082 is 5
 9999 mem: storing 4 in location 1082
  102 run: result:address:editor-data <- new editor-data:type
 9999 mem: new alloc: 1092
 9999 mem: storing 1092 in location 1083
- 102 run: x:address:number <- get-address result:address:editor-data/lookup, left:offset
+ 102 run: x:address:number <- get-address *result, left:offset
 9999 mem: location 1083 is 1092
 9999 mem: location 1092 is 0
 9999 mem: location 1093 is 0
@@ -2501,11 +2501,11 @@ after-brace: get ...
 9999 mem: location 1083 is 1092
 9999 run: address to copy is 1094
 9999 mem: storing 1094 in location 1084
- 102 run: x:address:number/lookup <- copy left:number
+ 102 run: *x <- copy left
 9999 mem: location 1081 is 0
 9999 mem: location 1084 is 1094
 9999 mem: storing 0 in location 1094
- 102 run: x:address:number <- get-address result:address:editor-data/lookup, right:offset
+ 102 run: x <- get-address *result, right:offset
 9999 mem: location 1083 is 1092
 9999 mem: location 1092 is 0
 9999 mem: location 1093 is 0
@@ -2516,11 +2516,11 @@ after-brace: get ...
 9999 mem: location 1083 is 1092
 9999 run: address to copy is 1095
 9999 mem: storing 1095 in location 1084
- 102 run: x:address:number/lookup <- copy right:number
+ 102 run: *x <- copy right
 9999 mem: location 1082 is 4
 9999 mem: location 1084 is 1095
 9999 mem: storing 4 in location 1095
- 102 run: x:address:number <- get-address result:address:editor-data/lookup, cursor-row:offset
+ 102 run: x <- get-address *result, cursor-row:offset
 9999 mem: location 1083 is 1092
 9999 mem: location 1092 is 0
 9999 mem: location 1093 is 0
@@ -2531,10 +2531,10 @@ after-brace: get ...
 9999 mem: location 1083 is 1092
 9999 run: address to copy is 1096
 9999 mem: storing 1096 in location 1084
- 102 run: x:address:number/lookup <- copy 1/top
+ 102 run: *x <- copy 1/top
 9999 mem: location 1084 is 1096
 9999 mem: storing 1 in location 1096
- 102 run: x:address:number <- get-address result:address:editor-data/lookup, cursor-column:offset
+ 102 run: x <- get-address *result, cursor-column:offset
 9999 mem: location 1083 is 1092
 9999 mem: location 1092 is 0
 9999 mem: location 1093 is 0
@@ -2545,11 +2545,11 @@ after-brace: get ...
 9999 mem: location 1083 is 1092
 9999 run: address to copy is 1097
 9999 mem: storing 1097 in location 1084
- 102 run: x:address:number/lookup <- copy left:number
+ 102 run: *x <- copy left
 9999 mem: location 1081 is 0
 9999 mem: location 1084 is 1097
 9999 mem: storing 0 in location 1097
- 102 run: init:address:address:duplex-list <- get-address result:address:editor-data/lookup, data:offset
+ 102 run: init:address:address:duplex-list <- get-address *result, data:offset
 9999 mem: location 1083 is 1092
 9999 mem: location 1092 is 0
 9999 mem: location 1093 is 0
@@ -2560,7 +2560,7 @@ after-brace: get ...
 9999 mem: location 1083 is 1092
 9999 run: address to copy is 1092
 9999 mem: storing 1092 in location 1085
- 102 run: init:address:address:duplex-list/lookup <- push-duplex 167/§, 0/tail
+ 102 run: *init <- push-duplex 167/§, 0/tail
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1098
@@ -2603,7 +2603,7 @@ after-brace: get ...
 9999 run: result 0 is 1106
 9999 mem: location 1085 is 1092
 9999 mem: storing 1106 in location 1092
- 102 run: y:address:address:duplex-list <- get-address result:address:editor-data/lookup, before-cursor:offset
+ 102 run: y:address:address:duplex-list <- get-address *result, before-cursor:offset
 9999 mem: location 1083 is 1092
 9999 mem: location 1092 is 1106
 9999 mem: location 1093 is 0
@@ -2614,27 +2614,27 @@ after-brace: get ...
 9999 mem: location 1083 is 1092
 9999 run: address to copy is 1093
 9999 mem: storing 1093 in location 1086
- 102 run: y:address:address:duplex-list/lookup <- copy init:address:address:duplex-list/lookup
+ 102 run: *y <- copy *init
 9999 mem: location 1085 is 1092
 9999 mem: location 1092 is 1106
 9999 mem: location 1086 is 1093
 9999 mem: storing 1106 in location 1093
- 102 run: jump-if s:address:array:character, 1:offset
+ 102 run: jump-if s, 1:offset
 9999 mem: location 1079 is 1076
 9999 run: jumping to instruction 21
- 102 run: len:number <- length s:address:array:character/lookup
+ 102 run: len:number <- length *s
 9999 mem: location 1079 is 1076
 9999 mem: location 1076 is 0
 9999 mem: location 1079 is 1076
 9999 mem: storing 0 in location 1087
- 102 run: jump-if len:number, 1:offset
+ 102 run: jump-if len, 1:offset
 9999 mem: location 1087 is 0
 9999 run: jump-if fell through
- 102 run: reply result:address:editor-data
+ 102 run: reply result
 9999 mem: location 1083 is 1092
 9999 run: result 0 is 1092
 9999 mem: storing 1092 in location 2
- 101 run: 3:number <- get 2:address:editor-data/lookup, cursor-row:offset
+ 101 run: 3:number <- get *2:address:editor-data, cursor-row:offset
 9999 mem: location 2 is 1092
 9999 mem: location 1092 is 1106
 9999 mem: location 1093 is 1106
@@ -2647,7 +2647,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1096 is 1
 9999 mem: storing 1 in location 3
- 101 run: 4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+ 101 run: 4:number <- get *2:address:editor-data, cursor-column:offset
 9999 mem: location 2 is 1092
 9999 mem: location 1092 is 1106
 9999 mem: location 1093 is 1106

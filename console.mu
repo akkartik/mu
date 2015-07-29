@@ -6,7 +6,7 @@ recipe main [
   open-console
   {
     _, found?:boolean <- check-for-interaction
-    break-if found?:boolean
+    break-if found?
     print-character-to-display 97, 7/white
     loop
   }

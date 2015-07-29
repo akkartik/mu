@@ -5118,7 +5118,7 @@ schedule: read-move
 9999 mem: storing 1113 in location 1002
  101 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 1003
- 101 run: from-file:number, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
+ 101 run: from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
 9999 mem: location 1002 is 1113
 9999 mem: location 1003 is 1009
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -5128,7 +5128,7 @@ schedule: read-move
 9999 mem: storing 1113 in location 101002
  102 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 101003
- 102 run: c:character, stdin:address:channel <- read stdin:address:channel
+ 102 run: c:character, stdin <- read stdin
 9999 mem: location 101002 is 1113
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -5408,42 +5408,42 @@ schedule: read/read-file/read-move
 9999 run: result 1 is 1113
 9999 mem: storing 50 in location 101004
 9999 mem: storing 1113 in location 101002
- 102 run: q-pressed?:boolean <- equal c:character, 81/Q
+ 102 run: q-pressed?:boolean <- equal c, 81/Q
 9999 mem: location 101004 is 50
 9999 mem: storing 0 in location 101005
- 102 run: break-unless q-pressed?:boolean, 
+ 102 run: break-unless q-pressed?, 
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 8
- 102 run: q-pressed?:boolean <- equal c:character, 113/q
+ 102 run: q-pressed? <- equal c, 113/q
 9999 mem: location 101004 is 50
 9999 mem: storing 0 in location 101005
- 102 run: break-unless q-pressed?:boolean, 
+ 102 run: break-unless q-pressed?, 
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 13
- 102 run: empty-fake-keyboard?:boolean <- equal c:character, 0/eof
+ 102 run: empty-fake-keyboard?:boolean <- equal c, 0/eof
 9999 mem: location 101004 is 50
 9999 mem: storing 0 in location 101006
- 102 run: break-unless empty-fake-keyboard?:boolean, 
+ 102 run: break-unless empty-fake-keyboard?, 
 9999 mem: location 101006 is 0
 9999 run: jumping to instruction 18
- 102 run: newline?:boolean <- equal c:character, 10/newline
+ 102 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 101004 is 50
 9999 mem: storing 0 in location 101007
- 102 run: break-unless newline?:boolean, 
+ 102 run: break-unless newline?, 
 9999 mem: location 101007 is 0
 9999 run: jumping to instruction 25
- 102 run: file:number <- subtract c:character, 97/a
+ 102 run: file:number <- subtract c, 97/a
 9999 mem: location 101004 is 50
 9999 mem: storing -47 in location 101009
- 102 run: above-min:boolean <- greater-or-equal file:number, 0
+ 102 run: above-min:boolean <- greater-or-equal file, 0
 9999 mem: location 101009 is -47
 9999 mem: storing 0 in location 101010
- 102 run: break-if above-min:boolean, 
+ 102 run: break-if above-min, 
 9999 mem: location 101010 is 0
 9999 run: jump-if fell through
  102 run: error-message:address:array:character <- new [file too low: ]
 9999 mem: storing 101028 in location 101008
- 102 run: print-string screen:address, error-message:address:array:character
+ 102 run: print-string screen, error-message
 9999 mem: location 101003 is 1009
 9999 mem: location 101008 is 101028
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -10849,7 +10849,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 run: jumping to instruction 22
  103 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101045 is 1009
- 102 run: print-character screen:address, c:character
+ 102 run: print-character screen, c
 9999 mem: location 101003 is 1009
 9999 mem: location 101004 is 50
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -11197,7 +11197,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: storing 15 in location 1012
  103 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101057 is 1009
- 102 run: cursor-to-next-line screen:address
+ 102 run: cursor-to-next-line screen
 9999 mem: location 101003 is 1009
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 2
@@ -11366,13 +11366,13 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: storing 0 in location 1004
 9999 mem: storing 0 in location 1005
 9999 mem: storing 1 in location 1006
- 101 run: jump-unless quit?:boolean, 1:offset
+ 101 run: jump-unless quit?, 1:offset
 9999 mem: location 1005 is 0
 9999 run: jumping to instruction 6
- 101 run: jump-unless error?:boolean, 1:offset
+ 101 run: jump-unless error?, 1:offset
 9999 mem: location 1006 is 1
 9999 run: jump-unless fell through
- 101 run: reply 0/dummy, quit?:boolean, error?:boolean
+ 101 run: reply 0/dummy, quit?, error?
 9999 mem: location 1005 is 0
 9999 mem: location 1006 is 1
 schedule: waking up routine 1

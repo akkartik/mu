@@ -13,7 +13,7 @@ parse:   product: {name: "2", properties: ["2": "address":"editor-data"]}
 parse: instruction: assume-console
 parse:   ingredient: {name: "\n    left-click 1, 7  # interior line, to the right of text\n  ", properties: [_: "literal-string"]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    editor-event-loop screen:address, console:address, 2:address:editor-data\n    3:number <- get 2:address:editor-data/lookup, cursor-row:offset\n    4:number <- get 2:address:editor-data/lookup, cursor-column:offset\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    editor-event-loop screen:address, console:address, 2:address:editor-data\n    3:number <- get *2:address:editor-data, cursor-row:offset\n    4:number <- get *2:address:editor-data, cursor-column:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3 <- 1  # cursor row\n    4 <- 3  # cursor column\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-editor-handles-mouse-clicks-outside-text-2
@@ -7241,13 +7241,13 @@ def]
 9999 mem: storing 0 in location 1138
  102 run: right:number <- next-ingredient 
 9999 mem: storing 10 in location 1139
- 102 run: right:number <- subtract right:number, 1
+ 102 run: right <- subtract right, 1
 9999 mem: location 1139 is 10
 9999 mem: storing 9 in location 1139
  102 run: result:address:editor-data <- new editor-data:type
 9999 mem: new alloc: 1149
 9999 mem: storing 1149 in location 1140
- 102 run: x:address:number <- get-address result:address:editor-data/lookup, left:offset
+ 102 run: x:address:number <- get-address *result, left:offset
 9999 mem: location 1140 is 1149
 9999 mem: location 1149 is 0
 9999 mem: location 1150 is 0
@@ -7258,11 +7258,11 @@ def]
 9999 mem: location 1140 is 1149
 9999 run: address to copy is 1151
 9999 mem: storing 1151 in location 1141
- 102 run: x:address:number/lookup <- copy left:number
+ 102 run: *x <- copy left
 9999 mem: location 1138 is 0
 9999 mem: location 1141 is 1151
 9999 mem: storing 0 in location 1151
- 102 run: x:address:number <- get-address result:address:editor-data/lookup, right:offset
+ 102 run: x <- get-address *result, right:offset
 9999 mem: location 1140 is 1149
 9999 mem: location 1149 is 0
 9999 mem: location 1150 is 0
@@ -7273,11 +7273,11 @@ def]
 9999 mem: location 1140 is 1149
 9999 run: address to copy is 1152
 9999 mem: storing 1152 in location 1141
- 102 run: x:address:number/lookup <- copy right:number
+ 102 run: *x <- copy right
 9999 mem: location 1139 is 9
 9999 mem: location 1141 is 1152
 9999 mem: storing 9 in location 1152
- 102 run: x:address:number <- get-address result:address:editor-data/lookup, cursor-row:offset
+ 102 run: x <- get-address *result, cursor-row:offset
 9999 mem: location 1140 is 1149
 9999 mem: location 1149 is 0
 9999 mem: location 1150 is 0
@@ -7288,10 +7288,10 @@ def]
 9999 mem: location 1140 is 1149
 9999 run: address to copy is 1153
 9999 mem: storing 1153 in location 1141
- 102 run: x:address:number/lookup <- copy 1/top
+ 102 run: *x <- copy 1/top
 9999 mem: location 1141 is 1153
 9999 mem: storing 1 in location 1153
- 102 run: x:address:number <- get-address result:address:editor-data/lookup, cursor-column:offset
+ 102 run: x <- get-address *result, cursor-column:offset
 9999 mem: location 1140 is 1149
 9999 mem: location 1149 is 0
 9999 mem: location 1150 is 0
@@ -7302,11 +7302,11 @@ def]
 9999 mem: location 1140 is 1149
 9999 run: address to copy is 1154
 9999 mem: storing 1154 in location 1141
- 102 run: x:address:number/lookup <- copy left:number
+ 102 run: *x <- copy left
 9999 mem: location 1138 is 0
 9999 mem: location 1141 is 1154
 9999 mem: storing 0 in location 1154
- 102 run: init:address:address:duplex-list <- get-address result:address:editor-data/lookup, data:offset
+ 102 run: init:address:address:duplex-list <- get-address *result, data:offset
 9999 mem: location 1140 is 1149
 9999 mem: location 1149 is 0
 9999 mem: location 1150 is 0
@@ -7318,7 +7318,7 @@ def]
 9999 run: address to copy is 1149
 9999 mem: storing 1149 in location 1142
 schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
- 102 run: init:address:address:duplex-list/lookup <- push-duplex 167/§, 0/tail
+ 102 run: *init <- push-duplex 167/§, 0/tail
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1155
@@ -7361,7 +7361,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: result 0 is 1163
 9999 mem: location 1142 is 1149
 9999 mem: storing 1163 in location 1149
- 102 run: y:address:address:duplex-list <- get-address result:address:editor-data/lookup, before-cursor:offset
+ 102 run: y:address:address:duplex-list <- get-address *result, before-cursor:offset
 9999 mem: location 1140 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 0
@@ -7372,15 +7372,15 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1140 is 1149
 9999 run: address to copy is 1150
 9999 mem: storing 1150 in location 1143
- 102 run: y:address:address:duplex-list/lookup <- copy init:address:address:duplex-list/lookup
+ 102 run: *y <- copy *init
 9999 mem: location 1142 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1143 is 1150
 9999 mem: storing 1163 in location 1150
- 102 run: jump-if s:address:array:character, 1:offset
+ 102 run: jump-if s, 1:offset
 9999 mem: location 1136 is 1126
 9999 run: jumping to instruction 21
- 102 run: len:number <- length s:address:array:character/lookup
+ 102 run: len:number <- length *s
 9999 mem: location 1136 is 1126
 9999 mem: location 1126 is 7
 9999 mem: location 1127 is 97
@@ -7392,23 +7392,23 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1133 is 102
 9999 mem: location 1136 is 1126
 9999 mem: storing 7 in location 1144
- 102 run: jump-if len:number, 1:offset
+ 102 run: jump-if len, 1:offset
 9999 mem: location 1144 is 7
 9999 run: jumping to instruction 24
  102 run: idx:number <- copy 0
 9999 mem: storing 0 in location 1145
- 102 run: curr:address:duplex-list <- copy init:address:address:duplex-list/lookup
+ 102 run: curr:address:duplex-list <- copy *init
 9999 mem: location 1142 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: storing 1163 in location 1146
- 102 run: done?:boolean <- greater-or-equal idx:number, len:number
+ 102 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1145 is 0
 9999 mem: location 1144 is 7
 9999 mem: storing 0 in location 1147
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1147 is 0
 9999 run: jump-if fell through
- 102 run: c:character <- index s:address:array:character/lookup, idx:number
+ 102 run: c:character <- index *s, idx
 9999 mem: location 1136 is 1126
 9999 mem: location 1126 is 7
 9999 mem: location 1127 is 97
@@ -7425,7 +7425,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is character
 9999 mem: location 1127 is 97
 9999 mem: storing 97 in location 1148
- 102 run: insert-duplex c:character, curr:address:duplex-list
+ 102 run: insert-duplex c, curr
 9999 mem: location 1148 is 97
 9999 mem: location 1146 is 1163
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -7500,7 +7500,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: jump-if fell through
  103 run: reply new-node:address:duplex-list
 9999 mem: location 1159 is 1166
- 102 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 102 run: curr <- next-duplex curr
 9999 mem: location 1146 is 1163
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -7524,19 +7524,19 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1166
 9999 run: result 0 is 1166
 9999 mem: storing 1166 in location 1146
- 102 run: idx:number <- add idx:number, 1
+ 102 run: idx <- add idx, 1
 9999 mem: location 1145 is 0
 9999 mem: storing 1 in location 1145
  102 run: loop 
 9999 run: jumping to instruction 27
- 102 run: done?:boolean <- greater-or-equal idx:number, len:number
+ 102 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1145 is 1
 9999 mem: location 1144 is 7
 9999 mem: storing 0 in location 1147
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1147 is 0
 9999 run: jump-if fell through
- 102 run: c:character <- index s:address:array:character/lookup, idx:number
+ 102 run: c:character <- index *s, idx
 9999 mem: location 1136 is 1126
 9999 mem: location 1126 is 7
 9999 mem: location 1127 is 97
@@ -7553,7 +7553,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is character
 9999 mem: location 1128 is 98
 9999 mem: storing 98 in location 1148
- 102 run: insert-duplex c:character, curr:address:duplex-list
+ 102 run: insert-duplex c, curr
 9999 mem: location 1148 is 98
 9999 mem: location 1146 is 1166
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -7628,7 +7628,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: jump-if fell through
  103 run: reply new-node:address:duplex-list
 9999 mem: location 1159 is 1173
- 102 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 102 run: curr <- next-duplex curr
 9999 mem: location 1146 is 1166
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -7651,19 +7651,19 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1173
 9999 run: result 0 is 1173
 9999 mem: storing 1173 in location 1146
- 102 run: idx:number <- add idx:number, 1
+ 102 run: idx <- add idx, 1
 9999 mem: location 1145 is 1
 9999 mem: storing 2 in location 1145
  102 run: loop 
 9999 run: jumping to instruction 27
- 102 run: done?:boolean <- greater-or-equal idx:number, len:number
+ 102 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1145 is 2
 9999 mem: location 1144 is 7
 9999 mem: storing 0 in location 1147
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1147 is 0
 9999 run: jump-if fell through
- 102 run: c:character <- index s:address:array:character/lookup, idx:number
+ 102 run: c:character <- index *s, idx
 9999 mem: location 1136 is 1126
 9999 mem: location 1126 is 7
 9999 mem: location 1127 is 97
@@ -7680,7 +7680,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is character
 9999 mem: location 1129 is 99
 9999 mem: storing 99 in location 1148
- 102 run: insert-duplex c:character, curr:address:duplex-list
+ 102 run: insert-duplex c, curr
 9999 mem: location 1148 is 99
 9999 mem: location 1146 is 1173
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -7755,7 +7755,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: jump-if fell through
  103 run: reply new-node:address:duplex-list
 9999 mem: location 1159 is 1176
- 102 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 102 run: curr <- next-duplex curr
 9999 mem: location 1146 is 1173
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -7778,19 +7778,19 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1176
 9999 run: result 0 is 1176
 9999 mem: storing 1176 in location 1146
- 102 run: idx:number <- add idx:number, 1
+ 102 run: idx <- add idx, 1
 9999 mem: location 1145 is 2
 9999 mem: storing 3 in location 1145
  102 run: loop 
 9999 run: jumping to instruction 27
- 102 run: done?:boolean <- greater-or-equal idx:number, len:number
+ 102 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1145 is 3
 9999 mem: location 1144 is 7
 9999 mem: storing 0 in location 1147
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1147 is 0
 9999 run: jump-if fell through
- 102 run: c:character <- index s:address:array:character/lookup, idx:number
+ 102 run: c:character <- index *s, idx
 9999 mem: location 1136 is 1126
 9999 mem: location 1126 is 7
 9999 mem: location 1127 is 97
@@ -7807,7 +7807,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is character
 9999 mem: location 1130 is 10
 9999 mem: storing 10 in location 1148
- 102 run: insert-duplex c:character, curr:address:duplex-list
+ 102 run: insert-duplex c, curr
 9999 mem: location 1148 is 10
 9999 mem: location 1146 is 1176
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -7882,7 +7882,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: jump-if fell through
  103 run: reply new-node:address:duplex-list
 9999 mem: location 1159 is 1179
- 102 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 102 run: curr <- next-duplex curr
 9999 mem: location 1146 is 1176
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -7905,19 +7905,19 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1179
 9999 run: result 0 is 1179
 9999 mem: storing 1179 in location 1146
- 102 run: idx:number <- add idx:number, 1
+ 102 run: idx <- add idx, 1
 9999 mem: location 1145 is 3
 9999 mem: storing 4 in location 1145
  102 run: loop 
 9999 run: jumping to instruction 27
- 102 run: done?:boolean <- greater-or-equal idx:number, len:number
+ 102 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1145 is 4
 9999 mem: location 1144 is 7
 9999 mem: storing 0 in location 1147
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1147 is 0
 9999 run: jump-if fell through
- 102 run: c:character <- index s:address:array:character/lookup, idx:number
+ 102 run: c:character <- index *s, idx
 9999 mem: location 1136 is 1126
 9999 mem: location 1126 is 7
 9999 mem: location 1127 is 97
@@ -7934,7 +7934,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is character
 9999 mem: location 1131 is 100
 9999 mem: storing 100 in location 1148
- 102 run: insert-duplex c:character, curr:address:duplex-list
+ 102 run: insert-duplex c, curr
 9999 mem: location 1148 is 100
 9999 mem: location 1146 is 1179
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -8009,7 +8009,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: jump-if fell through
  103 run: reply new-node:address:duplex-list
 9999 mem: location 1159 is 1182
- 102 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 102 run: curr <- next-duplex curr
 9999 mem: location 1146 is 1179
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -8032,19 +8032,19 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1182
 9999 run: result 0 is 1182
 9999 mem: storing 1182 in location 1146
- 102 run: idx:number <- add idx:number, 1
+ 102 run: idx <- add idx, 1
 9999 mem: location 1145 is 4
 9999 mem: storing 5 in location 1145
  102 run: loop 
 9999 run: jumping to instruction 27
- 102 run: done?:boolean <- greater-or-equal idx:number, len:number
+ 102 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1145 is 5
 9999 mem: location 1144 is 7
 9999 mem: storing 0 in location 1147
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1147 is 0
 9999 run: jump-if fell through
- 102 run: c:character <- index s:address:array:character/lookup, idx:number
+ 102 run: c:character <- index *s, idx
 9999 mem: location 1136 is 1126
 9999 mem: location 1126 is 7
 9999 mem: location 1127 is 97
@@ -8061,7 +8061,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is character
 9999 mem: location 1132 is 101
 9999 mem: storing 101 in location 1148
- 102 run: insert-duplex c:character, curr:address:duplex-list
+ 102 run: insert-duplex c, curr
 9999 mem: location 1148 is 101
 9999 mem: location 1146 is 1182
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -8136,7 +8136,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: jump-if fell through
  103 run: reply new-node:address:duplex-list
 9999 mem: location 1159 is 1185
- 102 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 102 run: curr <- next-duplex curr
 9999 mem: location 1146 is 1182
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -8159,19 +8159,19 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1185
 9999 run: result 0 is 1185
 9999 mem: storing 1185 in location 1146
- 102 run: idx:number <- add idx:number, 1
+ 102 run: idx <- add idx, 1
 9999 mem: location 1145 is 5
 9999 mem: storing 6 in location 1145
  102 run: loop 
 9999 run: jumping to instruction 27
- 102 run: done?:boolean <- greater-or-equal idx:number, len:number
+ 102 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1145 is 6
 9999 mem: location 1144 is 7
 9999 mem: storing 0 in location 1147
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1147 is 0
 9999 run: jump-if fell through
- 102 run: c:character <- index s:address:array:character/lookup, idx:number
+ 102 run: c:character <- index *s, idx
 9999 mem: location 1136 is 1126
 9999 mem: location 1126 is 7
 9999 mem: location 1127 is 97
@@ -8188,7 +8188,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is character
 9999 mem: location 1133 is 102
 9999 mem: storing 102 in location 1148
- 102 run: insert-duplex c:character, curr:address:duplex-list
+ 102 run: insert-duplex c, curr
 9999 mem: location 1148 is 102
 9999 mem: location 1146 is 1185
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -8263,7 +8263,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: jump-if fell through
  103 run: reply new-node:address:duplex-list
 9999 mem: location 1159 is 1188
- 102 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 102 run: curr <- next-duplex curr
 9999 mem: location 1146 is 1185
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -8286,19 +8286,19 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1188
 9999 run: result 0 is 1188
 9999 mem: storing 1188 in location 1146
- 102 run: idx:number <- add idx:number, 1
+ 102 run: idx <- add idx, 1
 9999 mem: location 1145 is 6
 9999 mem: storing 7 in location 1145
  102 run: loop 
 9999 run: jumping to instruction 27
- 102 run: done?:boolean <- greater-or-equal idx:number, len:number
+ 102 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1145 is 7
 9999 mem: location 1144 is 7
 9999 mem: storing 1 in location 1147
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1147 is 1
 9999 run: jumping to instruction 34
- 102 run: y:address:address:duplex-list <- get-address result:address:editor-data/lookup, before-cursor:offset
+ 102 run: y <- get-address *result, before-cursor:offset
 9999 mem: location 1140 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -8309,12 +8309,12 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1140 is 1149
 9999 run: address to copy is 1150
 9999 mem: storing 1150 in location 1143
- 102 run: y:address:address:duplex-list/lookup <- copy init:address:address:duplex-list/lookup
+ 102 run: *y <- copy *init
 9999 mem: location 1142 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1143 is 1150
 9999 mem: storing 1163 in location 1150
- 102 run: _, screen:address <- render screen:address, result:address:editor-data
+ 102 run: _, screen <- render screen, result
 9999 mem: location 1137 is 1009
 9999 mem: location 1140 is 1149
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -8324,10 +8324,10 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: storing 1009 in location 1193
  103 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1149 in location 1194
- 103 run: jump-if editor:address:editor-data, 1:offset
+ 103 run: jump-if editor, 1:offset
 9999 mem: location 1194 is 1149
 9999 run: jumping to instruction 5
- 103 run: left:number <- get editor:address:editor-data/lookup, left:offset
+ 103 run: left:number <- get *editor, left:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -8340,7 +8340,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is number
 9999 mem: location 1151 is 0
 9999 mem: storing 0 in location 1195
- 103 run: screen-height:number <- screen-height screen:address
+ 103 run: screen-height:number <- screen-height screen
 9999 mem: location 1193 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -8365,7 +8365,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 5
 9999 run: result 0 is 5
 9999 mem: storing 5 in location 1196
- 103 run: right:number <- get editor:address:editor-data/lookup, right:offset
+ 103 run: right:number <- get *editor, right:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -8378,7 +8378,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is number
 9999 mem: location 1152 is 9
 9999 mem: storing 9 in location 1197
- 103 run: hide-screen screen:address
+ 103 run: hide-screen screen
 9999 mem: location 1193 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 2
@@ -8394,7 +8394,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: storing 7 in location 1198
  103 run: highlighting-state:number <- copy 0/normal
 9999 mem: storing 0 in location 1199
- 103 run: curr:address:duplex-list <- get editor:address:editor-data/lookup, data:offset
+ 103 run: curr:address:duplex-list <- get *editor, data:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -8407,10 +8407,10 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is address
 9999 mem: location 1149 is 1163
 9999 mem: storing 1163 in location 1200
- 103 run: prev:address:duplex-list <- copy curr:address:duplex-list
+ 103 run: prev:address:duplex-list <- copy curr
 9999 mem: location 1200 is 1163
 9999 mem: storing 1163 in location 1201
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1163
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -8435,10 +8435,10 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: storing 1166 in location 1200
  103 run: row:number <- copy 1/top
 9999 mem: storing 1 in location 1202
- 103 run: column:number <- copy left:number
+ 103 run: column:number <- copy left
 9999 mem: location 1195 is 0
 9999 mem: storing 0 in location 1203
- 103 run: cursor-row:address:number <- get-address editor:address:editor-data/lookup, cursor-row:offset
+ 103 run: cursor-row:address:number <- get-address *editor, cursor-row:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -8449,7 +8449,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1194 is 1149
 9999 run: address to copy is 1153
 9999 mem: storing 1153 in location 1204
- 103 run: cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
+ 103 run: cursor-column:address:number <- get-address *editor, cursor-column:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -8460,7 +8460,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1194 is 1149
 9999 run: address to copy is 1154
 9999 mem: storing 1154 in location 1205
- 103 run: before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/lookup, before-cursor:offset
+ 103 run: before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -8471,7 +8471,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1194 is 1149
 9999 run: address to copy is 1150
 9999 mem: storing 1150 in location 1206
- 103 run: move-cursor screen:address, row:number, column:number
+ 103 run: move-cursor screen, row, column
 9999 mem: location 1193 is 1009
 9999 mem: location 1202 is 1
 9999 mem: location 1203 is 0
@@ -8517,33 +8517,33 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: storing 0 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1225 is 1009
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1166
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 1
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 1
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 1
 9999 run: jump-unless fell through
- 103 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/lookup
+ 103 run: at-cursor?:boolean <- equal column, *cursor-column
 9999 mem: location 1203 is 0
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 0
 9999 mem: storing 1 in location 1209
- 103 run: break-unless at-cursor?:boolean, 
+ 103 run: break-unless at-cursor?, 
 9999 mem: location 1209 is 1
 9999 run: jump-unless fell through
- 103 run: before-cursor:address:address:duplex-list/lookup <- prev-duplex curr:address:duplex-list
+ 103 run: *before-cursor <- prev-duplex curr
 9999 mem: location 1200 is 1166
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -8567,7 +8567,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: result 0 is 1163
 9999 mem: location 1206 is 1150
 9999 mem: storing 1163 in location 1150
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1166
 9999 mem: location 1166 is 97
 9999 mem: location 1167 is 1173
@@ -8577,7 +8577,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is number
 9999 mem: location 1166 is 97
 9999 mem: storing 97 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 97
@@ -8590,60 +8590,60 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 97 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 97
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 97
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 97
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 0
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 97
 9999 mem: location 1198 is 7
@@ -9031,7 +9031,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: storing 1 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1166
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -9054,7 +9054,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1173
 9999 run: result 0 is 1173
 9999 mem: storing 1173 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1163
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -9077,38 +9077,38 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1166
 9999 run: result 0 is 1166
 9999 mem: storing 1166 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 0
 9999 mem: storing 1 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1173
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 1
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 1
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 1
 9999 run: jump-unless fell through
- 103 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/lookup
+ 103 run: at-cursor?:boolean <- equal column, *cursor-column
 9999 mem: location 1203 is 1
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 0
 9999 mem: storing 0 in location 1209
- 103 run: break-unless at-cursor?:boolean, 
+ 103 run: break-unless at-cursor?, 
 9999 mem: location 1209 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1173
 9999 mem: location 1173 is 98
 9999 mem: location 1174 is 1176
@@ -9118,7 +9118,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is number
 9999 mem: location 1173 is 98
 9999 mem: storing 98 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 98
@@ -9130,60 +9130,60 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 98 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 98
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 98
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 98
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 1
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 98
 9999 mem: location 1198 is 7
@@ -9570,7 +9570,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: storing 2 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1173
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -9593,7 +9593,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1176
 9999 run: result 0 is 1176
 9999 mem: storing 1176 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1166
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -9616,38 +9616,38 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 mem: location 1172 is 1173
 9999 run: result 0 is 1173
 9999 mem: storing 1173 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 1
 9999 mem: storing 2 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1176
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 1
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 1
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 1
 9999 run: jump-unless fell through
- 103 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/lookup
+ 103 run: at-cursor?:boolean <- equal column, *cursor-column
 9999 mem: location 1203 is 2
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 0
 9999 mem: storing 0 in location 1209
- 103 run: break-unless at-cursor?:boolean, 
+ 103 run: break-unless at-cursor?, 
 9999 mem: location 1209 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1176
 9999 mem: location 1176 is 99
 9999 mem: location 1177 is 1179
@@ -9657,7 +9657,7 @@ schedule: new-editor/scenario-editor-handles-mouse-clicks-outside-text-2
 9999 run: its type is number
 9999 mem: location 1176 is 99
 9999 mem: storing 99 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 99
@@ -9670,60 +9670,60 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 99 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 99
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 99
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 99
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 2
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 99
 9999 mem: location 1198 is 7
@@ -10110,7 +10110,7 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: storing 3 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1176
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -10133,7 +10133,7 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: location 1172 is 1179
 9999 run: result 0 is 1179
 9999 mem: storing 1179 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1173
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -10156,38 +10156,38 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: location 1172 is 1176
 9999 run: result 0 is 1176
 9999 mem: storing 1176 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 2
 9999 mem: storing 3 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1179
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 1
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 1
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 1
 9999 run: jump-unless fell through
- 103 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/lookup
+ 103 run: at-cursor?:boolean <- equal column, *cursor-column
 9999 mem: location 1203 is 3
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 0
 9999 mem: storing 0 in location 1209
- 103 run: break-unless at-cursor?:boolean, 
+ 103 run: break-unless at-cursor?, 
 9999 mem: location 1209 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1179
 9999 mem: location 1179 is 10
 9999 mem: location 1180 is 1182
@@ -10197,7 +10197,7 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 run: its type is number
 9999 mem: location 1179 is 10
 9999 mem: storing 10 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 10
@@ -10209,69 +10209,69 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 10 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 10
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 10
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 10
 9999 mem: storing 1 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 1
 9999 run: jump-unless fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row? <- equal row, *cursor-row
 9999 mem: location 1202 is 1
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 1
 9999 run: jump-unless fell through
- 103 run: left-of-cursor?:boolean <- lesser-than column:number, cursor-column:address:number/lookup
+ 103 run: left-of-cursor?:boolean <- lesser-than column, *cursor-column
 9999 mem: location 1203 is 3
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 0
 9999 mem: storing 0 in location 1212
- 103 run: break-unless left-of-cursor?:boolean, 
+ 103 run: break-unless left-of-cursor?, 
 9999 mem: location 1212 is 0
 9999 run: jumping to instruction 44
- 103 run: clear-line-delimited screen:address, column:number, right:number
+ 103 run: clear-line-delimited screen, column, right
 9999 mem: location 1193 is 1009
 9999 mem: location 1203 is 3
 9999 mem: location 1197 is 9
@@ -10283,17 +10283,17 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: storing 3 in location 1226
  104 run: right:number <- next-ingredient 
 9999 mem: storing 9 in location 1227
- 104 run: column:number <- copy left:number
+ 104 run: column:number <- copy left
 9999 mem: location 1226 is 3
 9999 mem: storing 3 in location 1228
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 3
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -10680,19 +10680,19 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: storing 4 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 3
 9999 mem: storing 4 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 4
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -11079,19 +11079,19 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: storing 5 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 4
 9999 mem: storing 5 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 5
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -11478,19 +11478,19 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: storing 6 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 5
 9999 mem: storing 6 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 6
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -11877,19 +11877,19 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: storing 7 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 6
 9999 mem: storing 7 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 7
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -12276,19 +12276,19 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: storing 8 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 7
 9999 mem: storing 8 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 8
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -12675,19 +12675,19 @@ schedule: get-color/render/new-editor/scenario-editor-handles-mouse-clicks-outsi
 9999 mem: storing 9 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 8
 9999 mem: storing 9 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 9
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -13070,25 +13070,25 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 run: jumping to instruction 73
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 9
 9999 mem: storing 10 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 10
 9999 mem: location 1227 is 9
 9999 mem: storing 1 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 1
 9999 run: jumping to instruction 11
- 103 run: row:number <- add row:number, 1
+ 103 run: row <- add row, 1
 9999 mem: location 1202 is 1
 9999 mem: storing 2 in location 1202
- 103 run: column:number <- copy left:number
+ 103 run: column <- copy left
 9999 mem: location 1195 is 0
 9999 mem: storing 0 in location 1203
- 103 run: move-cursor screen:address, row:number, column:number
+ 103 run: move-cursor screen, row, column
 9999 mem: location 1193 is 1009
 9999 mem: location 1202 is 2
 9999 mem: location 1203 is 0
@@ -13133,7 +13133,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 0 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1225 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1179
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -13156,7 +13156,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: location 1172 is 1182
 9999 run: result 0 is 1182
 9999 mem: storing 1182 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1176
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -13181,25 +13181,25 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 1179 in location 1201
  103 run: loop +next-character:label
 9999 run: jumping to instruction 22
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1182
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 2
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 2
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 0 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1182
 9999 mem: location 1182 is 100
 9999 mem: location 1183 is 1185
@@ -13209,7 +13209,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 run: its type is number
 9999 mem: location 1182 is 100
 9999 mem: storing 100 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 100
@@ -13221,60 +13221,60 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 100 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 100
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 100
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 100
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 0
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 100
 9999 mem: location 1198 is 7
@@ -13661,7 +13661,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 1 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1182
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -13684,7 +13684,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: location 1172 is 1185
 9999 run: result 0 is 1185
 9999 mem: storing 1185 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1179
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -13707,30 +13707,30 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: location 1172 is 1182
 9999 run: result 0 is 1182
 9999 mem: storing 1182 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 0
 9999 mem: storing 1 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1185
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 2
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 2
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 0 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1185
 9999 mem: location 1185 is 101
 9999 mem: location 1186 is 1188
@@ -13740,7 +13740,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 run: its type is number
 9999 mem: location 1185 is 101
 9999 mem: storing 101 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 101
@@ -13752,60 +13752,60 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 101 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 101
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 101
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 101
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 1
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 101
 9999 mem: location 1198 is 7
@@ -14192,7 +14192,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 2 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1185
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -14215,7 +14215,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: location 1172 is 1188
 9999 run: result 0 is 1188
 9999 mem: storing 1188 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1182
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -14238,30 +14238,30 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: location 1172 is 1185
 9999 run: result 0 is 1185
 9999 mem: storing 1185 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 1
 9999 mem: storing 2 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1188
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 2
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 2
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 0 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1188
 9999 mem: location 1188 is 102
 9999 mem: location 1189 is 0
@@ -14271,7 +14271,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 run: its type is number
 9999 mem: location 1188 is 102
 9999 mem: storing 102 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 102
@@ -14283,60 +14283,60 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 102 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 102
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 102
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 102
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 2
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 102
 9999 mem: location 1198 is 7
@@ -14723,7 +14723,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 3 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1188
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -14746,7 +14746,7 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: location 1172 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1185
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -14769,41 +14769,41 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: location 1172 is 1188
 9999 run: result 0 is 1188
 9999 mem: storing 1188 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 2
 9999 mem: storing 3 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 0
 9999 run: jumping to instruction 67
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row? <- equal row, *cursor-row
 9999 mem: location 1202 is 2
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 0 in location 1208
- 103 run: cursor-outside-line?:boolean <- lesser-or-equal column:number, cursor-column:address:number/lookup
+ 103 run: cursor-outside-line?:boolean <- lesser-or-equal column, *cursor-column
 9999 mem: location 1203 is 3
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 0
 9999 mem: storing 0 in location 1214
- 103 run: before-cursor-on-same-line?:boolean <- and at-cursor-row?:boolean, cursor-outside-line?:boolean
+ 103 run: before-cursor-on-same-line?:boolean <- and at-cursor-row?, cursor-outside-line?
 9999 mem: location 1208 is 0
 9999 mem: location 1214 is 0
 9999 mem: storing 0 in location 1215
- 103 run: above-cursor-row?:boolean <- lesser-than row:number, cursor-row:address:number/lookup
+ 103 run: above-cursor-row?:boolean <- lesser-than row, *cursor-row
 9999 mem: location 1202 is 2
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 0 in location 1216
- 103 run: before-cursor?:boolean <- or before-cursor-on-same-line?:boolean, above-cursor-row?:boolean
+ 103 run: before-cursor?:boolean <- or before-cursor-on-same-line?, above-cursor-row?
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
 9999 mem: storing 0 in location 1217
- 103 run: break-unless before-cursor?:boolean, 
+ 103 run: break-unless before-cursor?, 
 9999 mem: location 1217 is 0
 9999 run: jumping to instruction 86
- 103 run: clear-line-delimited screen:address, column:number, right:number
+ 103 run: clear-line-delimited screen, column, right
 9999 mem: location 1193 is 1009
 9999 mem: location 1203 is 3
 9999 mem: location 1197 is 9
@@ -14815,17 +14815,17 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 3 in location 1226
  104 run: right:number <- next-ingredient 
 9999 mem: storing 9 in location 1227
- 104 run: column:number <- copy left:number
+ 104 run: column:number <- copy left
 9999 mem: location 1226 is 3
 9999 mem: storing 3 in location 1228
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 3
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -15212,19 +15212,19 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 4 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 3
 9999 mem: storing 4 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 4
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -15612,19 +15612,19 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 5 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 4
 9999 mem: storing 5 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 5
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -16011,19 +16011,19 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 6 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 5
 9999 mem: storing 6 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 6
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -16410,19 +16410,19 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 7 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 6
 9999 mem: storing 7 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 7
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -16809,19 +16809,19 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 8 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 7
 9999 mem: storing 8 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 8
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -17208,19 +17208,19 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 mem: storing 9 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 8
 9999 mem: storing 9 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 9
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -17602,25 +17602,25 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 run: jumping to instruction 73
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 9
 9999 mem: storing 10 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 10
 9999 mem: location 1227 is 9
 9999 mem: storing 1 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 1
 9999 run: jumping to instruction 11
- 103 run: reply row:number, screen:address/same-as-ingredient:0
+ 103 run: reply row, screen/same-as-ingredient:0
 9999 mem: location 1202 is 2
 9999 mem: location 1193 is 1009
 9999 run: result 0 is 2
 9999 run: result 1 is 1009
 9999 mem: storing 1009 in location 1137
- 102 run: reply result:address:editor-data
+ 102 run: reply result
 9999 mem: location 1140 is 1149
 9999 run: result 0 is 1149
 9999 mem: storing 1149 in location 2
@@ -17632,19 +17632,19 @@ parse:   ingredient: {name: "1", properties: ["1": "literal"]}
 parse:   ingredient: {name: "7", properties: ["7": "literal"]}
  101 run: run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
 parse: instruction: editor-event-loop
 parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
 parse:   ingredient: {name: "console", properties: ["console": "address"]}
 parse:   ingredient: {name: "2", properties: ["2": "address":"editor-data"]}
 parse: instruction: get
-parse:   ingredient: {name: "2", properties: ["2": "address":"editor-data", "lookup": ]}
+parse:   ingredient: {name: "2", properties: ["*2": "address":"editor-data", "lookup": ]}
 parse:   ingredient: {name: "cursor-row", properties: ["cursor-row": "offset"]}
 parse:   product: {name: "3", properties: ["3": "number"]}
 parse: instruction: get
-parse:   ingredient: {name: "2", properties: ["2": "address":"editor-data", "lookup": ]}
+parse:   ingredient: {name: "2", properties: ["*2": "address":"editor-data", "lookup": ]}
 parse:   ingredient: {name: "cursor-column", properties: ["cursor-column": "offset"]}
 parse:   product: {name: "4", properties: ["4": "number"]}
 name: element cursor-row of type editor-data is at offset 4
@@ -17665,7 +17665,7 @@ after-brace: get ...
 9999 mem: storing 1273 in location 1137
  102 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1149 in location 1138
- 102 run: e:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
+ 102 run: e:event, console:address, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1137 is 1273
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
@@ -17752,10 +17752,10 @@ after-brace: get ...
 9999 mem: storing 1273 in location 1137
 9999 mem: storing 1 in location 1143
 9999 mem: storing 0 in location 1144
- 102 run: loop-unless found?:boolean, 
+ 102 run: loop-unless found?, 
 9999 mem: location 1143 is 1
 9999 run: jump-unless fell through
- 102 run: break-if quit?:boolean, 
+ 102 run: break-if quit?, 
 9999 mem: location 1144 is 0
 9999 run: jump-if fell through
  102 run: trace [app], [next-event]
@@ -17766,10 +17766,10 @@ after-brace: get ...
 9999 mem: location 1141 is 1
 9999 mem: location 1142 is 7
 9999 mem: storing 1140 in location 1145
- 102 run: break-unless t:address:touch-event, 
+ 102 run: break-unless t, 
 9999 mem: location 1145 is 1140
 9999 run: jump-unless fell through
- 102 run: move-cursor-in-editor screen:address, editor:address:editor-data, t:address:touch-event/lookup
+ 102 run: move-cursor-in-editor screen, editor, *t
 9999 mem: location 1136 is 1009
 9999 mem: location 1138 is 1149
 9999 mem: location 1145 is 1140
@@ -17787,10 +17787,10 @@ after-brace: get ...
 9999 mem: storing 65513 in location 1292
 9999 mem: storing 1 in location 1293
 9999 mem: storing 7 in location 1294
- 103 run: jump-if editor:address:editor-data, 1:offset
+ 103 run: jump-if editor, 1:offset
 9999 mem: location 1291 is 1149
 9999 run: jumping to instruction 6
- 103 run: click-column:number <- get t:touch-event, column:offset
+ 103 run: click-column:number <- get t, column:offset
 9999 mem: location 1292 is 65513
 9999 mem: location 1293 is 1
 9999 mem: location 1294 is 7
@@ -17798,7 +17798,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1294 is 7
 9999 mem: storing 7 in location 1295
- 103 run: left:number <- get editor:address:editor-data/lookup, left:offset
+ 103 run: left:number <- get *editor, left:offset
 9999 mem: location 1291 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -17811,14 +17811,14 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1151 is 0
 9999 mem: storing 0 in location 1296
- 103 run: too-far-left?:boolean <- lesser-than click-column:number, left:number
+ 103 run: too-far-left?:boolean <- lesser-than click-column, left
 9999 mem: location 1295 is 7
 9999 mem: location 1296 is 0
 9999 mem: storing 0 in location 1297
- 103 run: jump-unless too-far-left?:boolean, 1:offset
+ 103 run: jump-unless too-far-left?, 1:offset
 9999 mem: location 1297 is 0
 9999 run: jumping to instruction 11
- 103 run: right:number <- get editor:address:editor-data/lookup, right:offset
+ 103 run: right:number <- get *editor, right:offset
 9999 mem: location 1291 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -17831,14 +17831,14 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1152 is 9
 9999 mem: storing 9 in location 1298
- 103 run: too-far-right?:boolean <- greater-than click-column:number, right:number
+ 103 run: too-far-right?:boolean <- greater-than click-column, right
 9999 mem: location 1295 is 7
 9999 mem: location 1298 is 9
 9999 mem: storing 0 in location 1299
- 103 run: jump-unless too-far-right?:boolean, 1:offset
+ 103 run: jump-unless too-far-right?, 1:offset
 9999 mem: location 1299 is 0
 9999 run: jumping to instruction 15
- 103 run: cursor-row:address:number <- get-address editor:address:editor-data/lookup, cursor-row:offset
+ 103 run: cursor-row:address:number <- get-address *editor, cursor-row:offset
 9999 mem: location 1291 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -17849,7 +17849,7 @@ after-brace: get ...
 9999 mem: location 1291 is 1149
 9999 run: address to copy is 1153
 9999 mem: storing 1153 in location 1300
- 103 run: cursor-row:address:number/lookup <- get t:touch-event, row:offset
+ 103 run: *cursor-row <- get t, row:offset
 9999 mem: location 1292 is 65513
 9999 mem: location 1293 is 1
 9999 mem: location 1294 is 7
@@ -17858,7 +17858,7 @@ after-brace: get ...
 9999 mem: location 1293 is 1
 9999 mem: location 1300 is 1153
 9999 mem: storing 1 in location 1153
- 103 run: cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
+ 103 run: cursor-column:address:number <- get-address *editor, cursor-column:offset
 9999 mem: location 1291 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -17869,7 +17869,7 @@ after-brace: get ...
 9999 mem: location 1291 is 1149
 9999 run: address to copy is 1154
 9999 mem: storing 1154 in location 1301
- 103 run: cursor-column:address:number/lookup <- get t:touch-event, column:offset
+ 103 run: *cursor-column <- get t, column:offset
 9999 mem: location 1292 is 65513
 9999 mem: location 1293 is 1
 9999 mem: location 1294 is 7
@@ -17881,7 +17881,7 @@ after-brace: get ...
  103 run: reply 1/true
  102 run: jump +continue:label
 9999 run: jumping to instruction 18
- 102 run: row:number, screen:address <- render screen:address, editor:address:editor-data
+ 102 run: row:number, screen <- render screen, editor
 9999 mem: location 1136 is 1009
 9999 mem: location 1138 is 1149
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -17890,10 +17890,10 @@ after-brace: get ...
 9999 mem: storing 1009 in location 1193
  103 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1149 in location 1194
- 103 run: jump-if editor:address:editor-data, 1:offset
+ 103 run: jump-if editor, 1:offset
 9999 mem: location 1194 is 1149
 9999 run: jumping to instruction 5
- 103 run: left:number <- get editor:address:editor-data/lookup, left:offset
+ 103 run: left:number <- get *editor, left:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -17906,7 +17906,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1151 is 0
 9999 mem: storing 0 in location 1195
- 103 run: screen-height:number <- screen-height screen:address
+ 103 run: screen-height:number <- screen-height screen
 9999 mem: location 1193 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -17931,7 +17931,7 @@ after-brace: get ...
 9999 mem: location 1172 is 5
 9999 run: result 0 is 5
 9999 mem: storing 5 in location 1196
- 103 run: right:number <- get editor:address:editor-data/lookup, right:offset
+ 103 run: right:number <- get *editor, right:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -17944,7 +17944,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1152 is 9
 9999 mem: storing 9 in location 1197
- 103 run: hide-screen screen:address
+ 103 run: hide-screen screen
 9999 mem: location 1193 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 2
@@ -17959,7 +17959,7 @@ after-brace: get ...
 9999 mem: storing 7 in location 1198
  103 run: highlighting-state:number <- copy 0/normal
 9999 mem: storing 0 in location 1199
- 103 run: curr:address:duplex-list <- get editor:address:editor-data/lookup, data:offset
+ 103 run: curr:address:duplex-list <- get *editor, data:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -17972,10 +17972,10 @@ after-brace: get ...
 9999 run: its type is address
 9999 mem: location 1149 is 1163
 9999 mem: storing 1163 in location 1200
- 103 run: prev:address:duplex-list <- copy curr:address:duplex-list
+ 103 run: prev:address:duplex-list <- copy curr
 9999 mem: location 1200 is 1163
 9999 mem: storing 1163 in location 1201
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1163
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -18000,10 +18000,10 @@ after-brace: get ...
 9999 mem: storing 1166 in location 1200
  103 run: row:number <- copy 1/top
 9999 mem: storing 1 in location 1202
- 103 run: column:number <- copy left:number
+ 103 run: column:number <- copy left
 9999 mem: location 1195 is 0
 9999 mem: storing 0 in location 1203
- 103 run: cursor-row:address:number <- get-address editor:address:editor-data/lookup, cursor-row:offset
+ 103 run: cursor-row:address:number <- get-address *editor, cursor-row:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -18014,7 +18014,7 @@ after-brace: get ...
 9999 mem: location 1194 is 1149
 9999 run: address to copy is 1153
 9999 mem: storing 1153 in location 1204
- 103 run: cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
+ 103 run: cursor-column:address:number <- get-address *editor, cursor-column:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -18025,7 +18025,7 @@ after-brace: get ...
 9999 mem: location 1194 is 1149
 9999 run: address to copy is 1154
 9999 mem: storing 1154 in location 1205
- 103 run: before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/lookup, before-cursor:offset
+ 103 run: before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
 9999 mem: location 1194 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1163
@@ -18036,7 +18036,7 @@ after-brace: get ...
 9999 mem: location 1194 is 1149
 9999 run: address to copy is 1150
 9999 mem: storing 1150 in location 1206
- 103 run: move-cursor screen:address, row:number, column:number
+ 103 run: move-cursor screen, row, column
 9999 mem: location 1193 is 1009
 9999 mem: location 1202 is 1
 9999 mem: location 1203 is 0
@@ -18081,33 +18081,33 @@ after-brace: get ...
 9999 mem: storing 0 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1225 is 1009
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1166
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 1
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 1
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 1
 9999 run: jump-unless fell through
- 103 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/lookup
+ 103 run: at-cursor?:boolean <- equal column, *cursor-column
 9999 mem: location 1203 is 0
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 7
 9999 mem: storing 0 in location 1209
- 103 run: break-unless at-cursor?:boolean, 
+ 103 run: break-unless at-cursor?, 
 9999 mem: location 1209 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1166
 9999 mem: location 1166 is 97
 9999 mem: location 1167 is 1173
@@ -18117,7 +18117,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1166 is 97
 9999 mem: storing 97 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 97
@@ -18129,60 +18129,60 @@ after-brace: get ...
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 97 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 97
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 97
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 97
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 0
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 97
 9999 mem: location 1198 is 7
@@ -18570,7 +18570,7 @@ after-brace: get ...
 schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handles-mouse-clicks-outside-text-2
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1166
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -18593,7 +18593,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: location 1172 is 1173
 9999 run: result 0 is 1173
 9999 mem: storing 1173 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1163
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -18616,38 +18616,38 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: location 1172 is 1166
 9999 run: result 0 is 1166
 9999 mem: storing 1166 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 0
 9999 mem: storing 1 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1173
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 1
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 1
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 1
 9999 run: jump-unless fell through
- 103 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/lookup
+ 103 run: at-cursor?:boolean <- equal column, *cursor-column
 9999 mem: location 1203 is 1
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 7
 9999 mem: storing 0 in location 1209
- 103 run: break-unless at-cursor?:boolean, 
+ 103 run: break-unless at-cursor?, 
 9999 mem: location 1209 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1173
 9999 mem: location 1173 is 98
 9999 mem: location 1174 is 1176
@@ -18657,7 +18657,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 run: its type is number
 9999 mem: location 1173 is 98
 9999 mem: storing 98 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 98
@@ -18669,60 +18669,60 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 98 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 98
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 98
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 98
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 1
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 98
 9999 mem: location 1198 is 7
@@ -19109,7 +19109,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 2 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1173
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -19132,7 +19132,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: location 1172 is 1176
 9999 run: result 0 is 1176
 9999 mem: storing 1176 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1166
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -19155,38 +19155,38 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: location 1172 is 1173
 9999 run: result 0 is 1173
 9999 mem: storing 1173 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 1
 9999 mem: storing 2 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1176
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 1
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 1
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 1
 9999 run: jump-unless fell through
- 103 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/lookup
+ 103 run: at-cursor?:boolean <- equal column, *cursor-column
 9999 mem: location 1203 is 2
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 7
 9999 mem: storing 0 in location 1209
- 103 run: break-unless at-cursor?:boolean, 
+ 103 run: break-unless at-cursor?, 
 9999 mem: location 1209 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1176
 9999 mem: location 1176 is 99
 9999 mem: location 1177 is 1179
@@ -19196,7 +19196,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 run: its type is number
 9999 mem: location 1176 is 99
 9999 mem: storing 99 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 99
@@ -19208,60 +19208,60 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 99 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 99
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 99
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 99
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 2
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 99
 9999 mem: location 1198 is 7
@@ -19648,7 +19648,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 3 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1176
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -19671,7 +19671,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: location 1172 is 1179
 9999 run: result 0 is 1179
 9999 mem: storing 1179 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1173
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -19694,38 +19694,38 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: location 1172 is 1176
 9999 run: result 0 is 1176
 9999 mem: storing 1176 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 2
 9999 mem: storing 3 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1179
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 1
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 1
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 1
 9999 run: jump-unless fell through
- 103 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/lookup
+ 103 run: at-cursor?:boolean <- equal column, *cursor-column
 9999 mem: location 1203 is 3
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 7
 9999 mem: storing 0 in location 1209
- 103 run: break-unless at-cursor?:boolean, 
+ 103 run: break-unless at-cursor?, 
 9999 mem: location 1209 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1179
 9999 mem: location 1179 is 10
 9999 mem: location 1180 is 1182
@@ -19735,7 +19735,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 run: its type is number
 9999 mem: location 1179 is 10
 9999 mem: storing 10 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 10
@@ -19747,73 +19747,73 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 10 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 10
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 10
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 10
 9999 mem: storing 1 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 1
 9999 run: jump-unless fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row? <- equal row, *cursor-row
 9999 mem: location 1202 is 1
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 1
 9999 run: jump-unless fell through
- 103 run: left-of-cursor?:boolean <- lesser-than column:number, cursor-column:address:number/lookup
+ 103 run: left-of-cursor?:boolean <- lesser-than column, *cursor-column
 9999 mem: location 1203 is 3
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 7
 9999 mem: storing 1 in location 1212
- 103 run: break-unless left-of-cursor?:boolean, 
+ 103 run: break-unless left-of-cursor?, 
 9999 mem: location 1212 is 1
 9999 run: jump-unless fell through
- 103 run: cursor-column:address:number/lookup <- copy column:number
+ 103 run: *cursor-column <- copy column
 9999 mem: location 1203 is 3
 9999 mem: location 1205 is 1154
 9999 mem: storing 3 in location 1154
- 103 run: before-cursor:address:address:duplex-list/lookup <- prev-duplex curr:address:duplex-list
+ 103 run: *before-cursor <- prev-duplex curr
 9999 mem: location 1200 is 1179
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -19837,7 +19837,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 run: result 0 is 1176
 9999 mem: location 1206 is 1150
 9999 mem: storing 1176 in location 1150
- 103 run: clear-line-delimited screen:address, column:number, right:number
+ 103 run: clear-line-delimited screen, column, right
 9999 mem: location 1193 is 1009
 9999 mem: location 1203 is 3
 9999 mem: location 1197 is 9
@@ -19849,17 +19849,17 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 3 in location 1226
  104 run: right:number <- next-ingredient 
 9999 mem: storing 9 in location 1227
- 104 run: column:number <- copy left:number
+ 104 run: column:number <- copy left
 9999 mem: location 1226 is 3
 9999 mem: storing 3 in location 1228
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 3
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -20246,19 +20246,19 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 4 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 3
 9999 mem: storing 4 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 4
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -20645,19 +20645,19 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 5 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 4
 9999 mem: storing 5 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 5
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -21044,19 +21044,19 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 6 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 5
 9999 mem: storing 6 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 6
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -21444,19 +21444,19 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: storing 7 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 6
 9999 mem: storing 7 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 7
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -21843,19 +21843,19 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: storing 8 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 7
 9999 mem: storing 8 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 8
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -22242,19 +22242,19 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: storing 9 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 8
 9999 mem: storing 9 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 9
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -22636,25 +22636,25 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 run: jumping to instruction 73
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 9
 9999 mem: storing 10 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 10
 9999 mem: location 1227 is 9
 9999 mem: storing 1 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 1
 9999 run: jumping to instruction 11
- 103 run: row:number <- add row:number, 1
+ 103 run: row <- add row, 1
 9999 mem: location 1202 is 1
 9999 mem: storing 2 in location 1202
- 103 run: column:number <- copy left:number
+ 103 run: column <- copy left
 9999 mem: location 1195 is 0
 9999 mem: storing 0 in location 1203
- 103 run: move-cursor screen:address, row:number, column:number
+ 103 run: move-cursor screen, row, column
 9999 mem: location 1193 is 1009
 9999 mem: location 1202 is 2
 9999 mem: location 1203 is 0
@@ -22699,7 +22699,7 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: storing 0 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1225 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1179
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -22722,7 +22722,7 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: location 1172 is 1182
 9999 run: result 0 is 1182
 9999 mem: storing 1182 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1176
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -22747,25 +22747,25 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: storing 1179 in location 1201
  103 run: loop +next-character:label
 9999 run: jumping to instruction 22
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1182
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 2
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 2
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 0 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1182
 9999 mem: location 1182 is 100
 9999 mem: location 1183 is 1185
@@ -22775,7 +22775,7 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 run: its type is number
 9999 mem: location 1182 is 100
 9999 mem: storing 100 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 100
@@ -22787,60 +22787,60 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 100 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 100
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 100
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 100
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 0
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 100
 9999 mem: location 1198 is 7
@@ -23227,7 +23227,7 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: storing 1 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1182
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -23250,7 +23250,7 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: location 1172 is 1185
 9999 run: result 0 is 1185
 9999 mem: storing 1185 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1179
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -23273,30 +23273,30 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: location 1172 is 1182
 9999 run: result 0 is 1182
 9999 mem: storing 1182 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 0
 9999 mem: storing 1 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1185
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 2
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 2
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 0 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1185
 9999 mem: location 1185 is 101
 9999 mem: location 1186 is 1188
@@ -23306,7 +23306,7 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 run: its type is number
 9999 mem: location 1185 is 101
 9999 mem: storing 101 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 101
@@ -23318,60 +23318,60 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 101 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 101
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 101
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 101
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 1
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 101
 9999 mem: location 1198 is 7
@@ -23758,7 +23758,7 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: storing 2 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1185
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -23781,7 +23781,7 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: location 1172 is 1188
 9999 run: result 0 is 1188
 9999 mem: storing 1188 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1182
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -23804,30 +23804,30 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: location 1172 is 1185
 9999 run: result 0 is 1185
 9999 mem: storing 1185 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 1
 9999 mem: storing 2 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 1188
 9999 run: jump-unless fell through
- 103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
+ 103 run: off-screen?:boolean <- greater-or-equal row, screen-height
 9999 mem: location 1202 is 2
 9999 mem: location 1196 is 5
 9999 mem: storing 0 in location 1207
- 103 run: break-if off-screen?:boolean, 
+ 103 run: break-if off-screen?, 
 9999 mem: location 1207 is 0
 9999 run: jump-if fell through
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1202 is 2
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 0 in location 1208
- 103 run: break-unless at-cursor-row?:boolean, 
+ 103 run: break-unless at-cursor-row?, 
 9999 mem: location 1208 is 0
 9999 run: jumping to instruction 31
- 103 run: c:character <- get curr:address:duplex-list/lookup, value:offset
+ 103 run: c:character <- get *curr, value:offset
 9999 mem: location 1200 is 1188
 9999 mem: location 1188 is 102
 9999 mem: location 1189 is 0
@@ -23837,7 +23837,7 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 run: its type is number
 9999 mem: location 1188 is 102
 9999 mem: storing 102 in location 1210
- 103 run: color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+ 103 run: color, highlighting-state <- get-color color, highlighting-state, c
 9999 mem: location 1198 is 7
 9999 mem: location 1199 is 0
 9999 mem: location 1210 is 102
@@ -23849,60 +23849,60 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: storing 0 in location 1233
  104 run: c:character <- next-ingredient 
 9999 mem: storing 102 in location 1234
- 104 run: color-is-white?:boolean <- equal color:number, 7/white
+ 104 run: color-is-white?:boolean <- equal color, 7/white
 9999 mem: location 1232 is 7
 9999 mem: storing 1 in location 1235
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-comment?:boolean <- equal c:character, 35/#
+ 104 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1234 is 102
 9999 mem: storing 0 in location 1236
- 104 run: break-unless starting-comment?:boolean, 
+ 104 run: break-unless starting-comment?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 11
- 104 run: color-is-blue?:boolean <- equal color:number, 12/lightblue
+ 104 run: color-is-blue?:boolean <- equal color, 12/lightblue
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1237
- 104 run: break-unless color-is-blue?:boolean, 
+ 104 run: break-unless color-is-blue?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 19
- 104 run: break-unless color-is-white?:boolean, 
+ 104 run: break-unless color-is-white?, 
 9999 mem: location 1235 is 1
 9999 run: jump-unless fell through
- 104 run: starting-assignment?:boolean <- equal c:character, 60/<
+ 104 run: starting-assignment?:boolean <- equal c, 60/<
 9999 mem: location 1234 is 102
 9999 mem: storing 0 in location 1239
- 104 run: break-unless starting-assignment?:boolean, 
+ 104 run: break-unless starting-assignment?, 
 9999 mem: location 1239 is 0
 9999 run: jumping to instruction 26
- 104 run: color-is-red?:boolean <- equal color:number, 1/red
+ 104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1232 is 7
 9999 mem: storing 0 in location 1240
- 104 run: break-unless color-is-red?:boolean, 
+ 104 run: break-unless color-is-red?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 34
- 104 run: reply color:number, highlighting-state:number
+ 104 run: reply color, highlighting-state
 9999 mem: location 1232 is 7
 9999 mem: location 1233 is 0
 9999 run: result 0 is 7
 9999 run: result 1 is 0
 9999 mem: storing 7 in location 1198
 9999 mem: storing 0 in location 1199
- 103 run: newline?:boolean <- equal c:character, 10/newline
+ 103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1210 is 102
 9999 mem: storing 0 in location 1211
- 103 run: break-unless newline?:boolean, 
+ 103 run: break-unless newline?, 
 9999 mem: location 1211 is 0
 9999 run: jumping to instruction 52
- 103 run: at-right?:boolean <- equal column:number, right:number
+ 103 run: at-right?:boolean <- equal column, right
 9999 mem: location 1203 is 2
 9999 mem: location 1197 is 9
 9999 mem: storing 0 in location 1213
- 103 run: break-unless at-right?:boolean, 
+ 103 run: break-unless at-right?, 
 9999 mem: location 1213 is 0
 9999 run: jumping to instruction 61
- 103 run: print-character screen:address, c:character, color:number
+ 103 run: print-character screen, c, color
 9999 mem: location 1193 is 1009
 9999 mem: location 1210 is 102
 9999 mem: location 1198 is 7
@@ -24290,7 +24290,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 3 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: curr:address:duplex-list <- next-duplex curr:address:duplex-list
+ 103 run: curr <- next-duplex curr
 9999 mem: location 1200 is 1188
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -24313,7 +24313,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: location 1172 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1200
- 103 run: prev:address:duplex-list <- next-duplex prev:address:duplex-list
+ 103 run: prev <- next-duplex prev
 9999 mem: location 1201 is 1185
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -24336,41 +24336,41 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: location 1172 is 1188
 9999 run: result 0 is 1188
 9999 mem: storing 1188 in location 1201
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1203 is 2
 9999 mem: storing 3 in location 1203
  103 run: loop 
 9999 run: jumping to instruction 21
- 103 run: break-unless curr:address:duplex-list, 
+ 103 run: break-unless curr, 
 9999 mem: location 1200 is 0
 9999 run: jumping to instruction 67
- 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
+ 103 run: at-cursor-row? <- equal row, *cursor-row
 9999 mem: location 1202 is 2
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 0 in location 1208
- 103 run: cursor-outside-line?:boolean <- lesser-or-equal column:number, cursor-column:address:number/lookup
+ 103 run: cursor-outside-line?:boolean <- lesser-or-equal column, *cursor-column
 9999 mem: location 1203 is 3
 9999 mem: location 1205 is 1154
 9999 mem: location 1154 is 3
 9999 mem: storing 1 in location 1214
- 103 run: before-cursor-on-same-line?:boolean <- and at-cursor-row?:boolean, cursor-outside-line?:boolean
+ 103 run: before-cursor-on-same-line?:boolean <- and at-cursor-row?, cursor-outside-line?
 9999 mem: location 1208 is 0
 9999 mem: location 1214 is 1
 9999 mem: storing 0 in location 1215
- 103 run: above-cursor-row?:boolean <- lesser-than row:number, cursor-row:address:number/lookup
+ 103 run: above-cursor-row?:boolean <- lesser-than row, *cursor-row
 9999 mem: location 1202 is 2
 9999 mem: location 1204 is 1153
 9999 mem: location 1153 is 1
 9999 mem: storing 0 in location 1216
- 103 run: before-cursor?:boolean <- or before-cursor-on-same-line?:boolean, above-cursor-row?:boolean
+ 103 run: before-cursor?:boolean <- or before-cursor-on-same-line?, above-cursor-row?
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
 9999 mem: storing 0 in location 1217
- 103 run: break-unless before-cursor?:boolean, 
+ 103 run: break-unless before-cursor?, 
 9999 mem: location 1217 is 0
 9999 run: jumping to instruction 86
- 103 run: clear-line-delimited screen:address, column:number, right:number
+ 103 run: clear-line-delimited screen, column, right
 9999 mem: location 1193 is 1009
 9999 mem: location 1203 is 3
 9999 mem: location 1197 is 9
@@ -24382,17 +24382,17 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 3 in location 1226
  104 run: right:number <- next-ingredient 
 9999 mem: storing 9 in location 1227
- 104 run: column:number <- copy left:number
+ 104 run: column:number <- copy left
 9999 mem: location 1226 is 3
 9999 mem: storing 3 in location 1228
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 3
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -24779,19 +24779,19 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 4 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 3
 9999 mem: storing 4 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 4
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -25178,19 +25178,19 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 5 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 4
 9999 mem: storing 5 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 5
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -25577,19 +25577,19 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 6 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 5
 9999 mem: storing 6 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 6
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -25976,19 +25976,19 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 7 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 6
 9999 mem: storing 7 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 7
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -26375,19 +26375,19 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 8 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 7
 9999 mem: storing 8 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 8
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -26774,19 +26774,19 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 9 in location 1012
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 8
 9999 mem: storing 9 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 9
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 104 run: print-character screen:address, 32/space
+ 104 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -27168,26 +27168,26 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 run: jumping to instruction 73
  105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 104 run: column:number <- add column:number, 1
+ 104 run: column <- add column, 1
 9999 mem: location 1228 is 9
 9999 mem: storing 10 in location 1228
  104 run: loop 
 9999 run: jumping to instruction 6
- 104 run: done?:boolean <- greater-than column:number, right:number
+ 104 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 10
 9999 mem: location 1227 is 9
 9999 mem: storing 1 in location 1229
- 104 run: break-if done?:boolean, 
+ 104 run: break-if done?, 
 9999 mem: location 1229 is 1
 9999 run: jumping to instruction 11
- 103 run: reply row:number, screen:address/same-as-ingredient:0
+ 103 run: reply row, screen/same-as-ingredient:0
 9999 mem: location 1202 is 2
 9999 mem: location 1193 is 1009
 9999 run: result 0 is 2
 9999 run: result 1 is 1009
 9999 mem: storing 2 in location 1146
 9999 mem: storing 1009 in location 1136
- 102 run: left:number <- get editor:address:editor-data/lookup, left:offset
+ 102 run: left:number <- get *editor, left:offset
 9999 mem: location 1138 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1176
@@ -27200,7 +27200,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 run: its type is number
 9999 mem: location 1151 is 0
 9999 mem: storing 0 in location 1147
- 102 run: right:number <- get editor:address:editor-data/lookup, right:offset
+ 102 run: right:number <- get *editor, right:offset
 9999 mem: location 1138 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1176
@@ -27213,10 +27213,10 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 run: its type is number
 9999 mem: location 1152 is 9
 9999 mem: storing 9 in location 1148
- 102 run: row:number <- add row:number, 1
+ 102 run: row <- add row, 1
 9999 mem: location 1146 is 2
 9999 mem: storing 3 in location 1146
- 102 run: move-cursor screen:address, row:number, left:number
+ 102 run: move-cursor screen, row, left
 9999 mem: location 1136 is 1009
 9999 mem: location 1146 is 3
 9999 mem: location 1147 is 0
@@ -27261,7 +27261,7 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 0 in location 1012
  103 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1225 is 1009
- 102 run: clear-line-delimited screen:address, left:number, right:number
+ 102 run: clear-line-delimited screen, left, right
 9999 mem: location 1136 is 1009
 9999 mem: location 1147 is 0
 9999 mem: location 1148 is 9
@@ -27273,17 +27273,17 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-handl
 9999 mem: storing 0 in location 1226
  103 run: right:number <- next-ingredient 
 9999 mem: storing 9 in location 1227
- 103 run: column:number <- copy left:number
+ 103 run: column:number <- copy left
 9999 mem: location 1226 is 0
 9999 mem: storing 0 in location 1228
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 0
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 103 run: print-character screen:address, 32/space
+ 103 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -27671,19 +27671,19 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: storing 1 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1228 is 0
 9999 mem: storing 1 in location 1228
  103 run: loop 
 9999 run: jumping to instruction 6
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 1
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 103 run: print-character screen:address, 32/space
+ 103 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -28070,19 +28070,19 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: storing 2 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1228 is 1
 9999 mem: storing 2 in location 1228
  103 run: loop 
 9999 run: jumping to instruction 6
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 2
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 103 run: print-character screen:address, 32/space
+ 103 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -28469,19 +28469,19 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: storing 3 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1228 is 2
 9999 mem: storing 3 in location 1228
  103 run: loop 
 9999 run: jumping to instruction 6
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 3
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 103 run: print-character screen:address, 32/space
+ 103 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -28868,19 +28868,19 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: storing 4 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1228 is 3
 9999 mem: storing 4 in location 1228
  103 run: loop 
 9999 run: jumping to instruction 6
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 4
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 103 run: print-character screen:address, 32/space
+ 103 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -29267,19 +29267,19 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: storing 5 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1228 is 4
 9999 mem: storing 5 in location 1228
  103 run: loop 
 9999 run: jumping to instruction 6
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 5
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 103 run: print-character screen:address, 32/space
+ 103 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -29666,19 +29666,19 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: storing 6 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1228 is 5
 9999 mem: storing 6 in location 1228
  103 run: loop 
 9999 run: jumping to instruction 6
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 6
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 103 run: print-character screen:address, 32/space
+ 103 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -30065,19 +30065,19 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: storing 7 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1228 is 6
 9999 mem: storing 7 in location 1228
  103 run: loop 
 9999 run: jumping to instruction 6
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 7
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 103 run: print-character screen:address, 32/space
+ 103 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -30464,19 +30464,19 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: storing 8 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1228 is 7
 9999 mem: storing 8 in location 1228
  103 run: loop 
 9999 run: jumping to instruction 6
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 8
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 103 run: print-character screen:address, 32/space
+ 103 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -30863,19 +30863,19 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: storing 9 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1228 is 8
 9999 mem: storing 9 in location 1228
  103 run: loop 
 9999 run: jumping to instruction 6
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 9
 9999 mem: location 1227 is 9
 9999 mem: storing 0 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 0
 9999 run: jump-if fell through
- 103 run: print-character screen:address, 32/space
+ 103 run: print-character screen, 32/space
 9999 mem: location 1225 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -31258,21 +31258,21 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 run: jumping to instruction 73
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1244 is 1009
- 103 run: column:number <- add column:number, 1
+ 103 run: column <- add column, 1
 9999 mem: location 1228 is 9
 9999 mem: storing 10 in location 1228
  103 run: loop 
 9999 run: jumping to instruction 6
- 103 run: done?:boolean <- greater-than column:number, right:number
+ 103 run: done?:boolean <- greater-than column, right
 9999 mem: location 1228 is 10
 9999 mem: location 1227 is 9
 9999 mem: storing 1 in location 1229
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1229 is 1
 9999 run: jumping to instruction 11
  102 run: loop 
 9999 run: jumping to instruction 5
- 102 run: e:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
+ 102 run: e:event, console:address, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1137 is 1273
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
@@ -31334,13 +31334,13 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: storing 1273 in location 1137
 9999 mem: storing 1 in location 1143
 9999 mem: storing 1 in location 1144
- 102 run: loop-unless found?:boolean, 
+ 102 run: loop-unless found?, 
 9999 mem: location 1143 is 1
 9999 run: jump-unless fell through
- 102 run: break-if quit?:boolean, 
+ 102 run: break-if quit?, 
 9999 mem: location 1144 is 1
 9999 run: jumping to instruction 25
- 101 run: 3:number <- get 2:address:editor-data/lookup, cursor-row:offset
+ 101 run: 3:number <- get *2:address:editor-data, cursor-row:offset
 9999 mem: location 2 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1176
@@ -31353,7 +31353,7 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 run: its type is number
 9999 mem: location 1153 is 1
 9999 mem: storing 1 in location 3
- 101 run: 4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+ 101 run: 4:number <- get *2:address:editor-data, cursor-column:offset
 9999 mem: location 2 is 1149
 9999 mem: location 1149 is 1163
 9999 mem: location 1150 is 1176
