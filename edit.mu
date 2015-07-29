@@ -203,7 +203,7 @@ recipe render [
       break-unless newline?
       # adjust cursor if necessary
       {
-        at-cursor-row? <- equal row, *cursor-row
+        at-cursor-row?:boolean <- equal row, *cursor-row
         break-unless at-cursor-row?
         left-of-cursor?:boolean <- lesser-than column, *cursor-column
         break-unless left-of-cursor?
@@ -241,7 +241,7 @@ recipe render [
   }
   # is cursor to the right of the last line? move to end
   {
-    at-cursor-row? <- equal row, *cursor-row
+    at-cursor-row?:boolean <- equal row, *cursor-row
     cursor-outside-line?:boolean <- lesser-or-equal column, *cursor-column
     before-cursor-on-same-line?:boolean <- and at-cursor-row?, cursor-outside-line?
     above-cursor-row?:boolean <- lesser-than row, *cursor-row
@@ -309,7 +309,7 @@ recipe render-string [
       break-unless newline?
       # clear rest of line in this window
       {
-        done? <- greater-than column, right
+        done?:boolean <- greater-than column, right
         break-if done?
         print-character screen, 32/space
         column <- add column, 1
@@ -1080,21 +1080,16 @@ recipe line-indent [
   start:address:duplex-list <- next-ingredient
   result:number <- copy 0
   reply-unless curr, result
-#?   $print [a0], 10/newline #? 1
   at-start?:boolean <- equal curr, start
   reply-if at-start?, result
-#?   $print [a1], 10/newline #? 1
   {
     curr <- prev-duplex curr
     break-unless curr
-#?   $print [a2], 10/newline #? 1
     at-start?:boolean <- equal curr, start
     break-if at-start?
-#?   $print [a3], 10/newline #? 1
     c:character <- get *curr, value:offset
     at-newline?:boolean <- equal c, 10/newline
     break-if at-newline?
-#?   $print [a4], 10/newline #? 1
     # if c is a space, increment result
     is-space?:boolean <- equal c, 32/space
     {
@@ -2926,7 +2921,6 @@ recipe render-sandboxes [
   screen-height:number <- screen-height screen
   at-bottom?:boolean <- greater-or-equal row, screen-height
   reply-if at-bottom?:boolean, row/same-as-ingredient:4, screen/same-as-ingredient:0
-#?   $print [rendering sandbox ], sandbox, 10/newline
   # render sandbox menu
   row <- add row, 1
   move-cursor screen, row, left
@@ -2977,7 +2971,6 @@ recipe restore-sandboxes [
   {
     contents:address:array:character <- restore filename
     break-unless contents  # stop at first error; assuming file didn't exist
-#?     $print contents, 10/newline
     # create new sandbox for file
     *curr <- new sandbox-data:type
     data:address:address:array:character <- get-address **curr, data:offset
@@ -2998,36 +2991,23 @@ recipe delete-sandbox [
   click-column:number <- get t, column:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   right:number <- get *current-sandbox, right:offset
-#?   $print [comparing column ], click-column, [ vs ], right, 10/newline
   at-right?:boolean <- equal click-column, right
   reply-unless at-right?, 0/false
-#?   $print [trying to delete
-#? ] #? 1
   click-row:number <- get t, row:offset
   prev:address:address:sandbox-data <- get-address *env, sandbox:offset
-#?   $print [prev: ], prev, [ -> ], *prev, 10/newline
   curr:address:sandbox-data <- get *env, sandbox:offset
   {
-#?     $print [next sandbox
-#? ] #? 1
     break-unless curr
     # more sandboxes to check
     {
-#?       $print [checking
-#? ] #? 1
       target-row:number <- get *curr, starting-row-on-screen:offset
-#?       $print [comparing row ], target-row, [ vs ], click-row, 10/newline
       delete-curr?:boolean <- equal target-row, click-row
       break-unless delete-curr?
-#?       $print [found!
-#? ] #? 1
       # delete this sandbox, rerender and stop
       *prev <- get *curr, next-sandbox:offset
-#?       $print [setting prev: ], prev, [ -> ], *prev, 10/newline
       reply 1/true
     }
     prev <- get-address *curr, next-sandbox:offset
-#?     $print [prev: ], prev, [ -> ], *prev, 10/newline
     curr <- get *curr, next-sandbox:offset
     loop
   }
@@ -3596,9 +3576,6 @@ recipe print-string-with-gradient-background [
   len:number <- length *s
   color-range:number <- subtract bg-color2, bg-color1
   color-quantum:number <- divide color-range, len
-#?   close-console #? 2
-#?   $print len, [, ], color-range, [, ], color-quantum, 10/newline
-#? #?   $exit #? 3
   bg-color:number <- copy bg-color1
   i:number <- copy 0
   {
@@ -3608,9 +3585,7 @@ recipe print-string-with-gradient-background [
     print-character screen, c, color, bg-color
     i <- add i, 1
     bg-color <- add bg-color, color-quantum
-#?     $print [=> ], bg-color, 10/newline
     loop
   }
-#?   $exit #? 1
   reply screen/same-as-ingredient:0
 ]

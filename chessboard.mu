@@ -35,8 +35,6 @@ scenario print-board-and-read-move [
   ]
   run [
     screen:address, console:address <- chessboard screen:address, console:address
-#?     $browse-trace #? 1
-#?     $close-trace #? 1
     # icon for the cursor
     screen <- print-character screen, 9251/␣
   ]
@@ -69,12 +67,9 @@ scenario print-board-and-read-move [
 ## Here's how 'chessboard' is implemented.
 
 recipe chessboard [
-#?   $start-tracing [schedule] #? 2
-#?   $start-tracing #? 1
   local-scope
   screen:address <- next-ingredient
   console:address <- next-ingredient
-#?   $print [screen: ], screen, [, console: ], console, 10/newline
   board:address:array:address:array:character <- initial-position
   # hook up stdin
   stdin:address:channel <- new-channel 10/capacity
@@ -265,11 +260,9 @@ recipe read-move [
   local-scope
   stdin:address:channel <- next-ingredient
   screen:address <- next-ingredient
-#?   $print screen:address #? 1
   from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
   reply-if quit?, 0/dummy, quit?, error?
   reply-if error?, 0/dummy, quit?, error?
-#?   close-console #? 1
   # construct the move object
   result:address:move <- new move:type
   x:address:number <- get-address *result, from-file:offset
@@ -288,7 +281,6 @@ recipe read-move [
   *x, quit?, error? <- read-rank stdin, screen
   reply-if quit?, 0/dummy, quit?, error?
   reply-if error?, 0/dummy, quit?, error?
-#?   $exit #? 1
   error? <- expect-from-channel stdin, 10/newline, screen
   reply-if error?, 0/dummy, 0/quit, error?
   reply result, quit?, error?
@@ -324,7 +316,6 @@ recipe read-file [
     reply 0/dummy, 0/quit, 1/error
   }
   file:number <- subtract c, 97/a
-#?   $print file, 10/newline
   # 'a' <= file <= 'h'
   {
     above-min:boolean <- greater-or-equal file, 0
@@ -371,7 +362,6 @@ recipe read-rank [
     reply 0/dummy, 0/quit, 1/error
   }
   rank:number <- subtract c, 49/'1'
-#?   $print rank, 10/newline
   # assert'1' <= rank <= '8'
   {
     above-min:boolean <- greater-or-equal rank, 0
@@ -413,27 +403,20 @@ recipe expect-from-channel [
 scenario read-move-blocking [
   assume-screen 20/width, 2/height
   run [
-#?     $start-tracing #? 1
     1:address:channel <- new-channel 2
-#?     $print [aaa channel address: ], 1:address:channel, 10/newline
     2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:number
-#?     $print [bbb channel address: ], 1:address:channel, 10/newline
     3:number <- routine-state 2:number/id
-#?     $print [I: routine ], 2:number, [ state ], 3:number 10/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
     # press 'a'
-#?     $print [ccc channel address: ], 1:address:channel, 10/newline
-#?     $exit #? 1
     1:address:channel <- write 1:address:channel, 97/a
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-#?     $print [II: routine ], 2:number, [ state ], 3:number 10/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after rank 'a']
@@ -443,7 +426,6 @@ F read-move-blocking: routine failed to pause after rank 'a']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-#?     $print [III: routine ], 2:number, [ state ], 3:number 10/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after file 'a2']
@@ -453,7 +435,6 @@ F read-move-blocking: routine failed to pause after file 'a2']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [IV: routine ], 2:number, [ state ], 3:number 10/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
     assert 4:boolean/waiting?/routine-state, [
 F read-move-blocking: routine failed to pause after hyphen 'a2-']
@@ -463,7 +444,6 @@ F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [V: routine ], 2:number, [ state ], 3:number 10/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
     assert 4:boolean/waiting?/routine-state, [
 F read-move-blocking: routine failed to pause after rank 'a2-a']
@@ -473,7 +453,6 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [VI: routine ], 2:number, [ state ], 3:number 10/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after file 'a2-a4']
@@ -483,7 +462,6 @@ F read-move-blocking: routine failed to pause after file 'a2-a4']
     # 'read-move' now completes
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [VII: routine ], 2:number, [ state ], 3:number 10/newline
     4:boolean/completed? <- equal 3:number/routine-state, 1/completed
     assert 4:boolean/completed?, [
 F read-move-blocking: routine failed to terminate on newline]
@@ -591,18 +569,13 @@ recipe make-move [
   b:address:array:address:array:character <- next-ingredient
   m:address:move <- next-ingredient
   from-file:number <- get *m, from-file:offset
-#?   $print from-file, 10/newline
   from-rank:number <- get *m, from-rank:offset
-#?   $print from-rank, 10/newline
   to-file:number <- get *m, to-file:offset
-#?   $print to-file, 10/newline
   to-rank:number <- get *m, to-rank:offset
-#?   $print to-rank, 10/newline
   f:address:array:character <- index *b, from-file
   src:address:character/square <- index-address *f, from-rank
   f <- index *b, to-file
   dest:address:character/square <- index-address *f, to-rank
-#?   $print *src, 10/newline
   *dest <- copy *src
   *src <- copy 32/space
   reply b/same-as-ingredient:0
