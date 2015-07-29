@@ -13,17 +13,16 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.SalientComment { color: #00ffff; }
 .Constant { color: #00a0a0; }
-.CommentedCode { color: #6c6c6c; }
-.PreProc { color: #c000c0; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
-.traceContains { color: #008000; }
+.PreProc { color: #c000c0; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -42,37 +41,37 @@ recipe main [
   f
 ]
 recipe f [
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">2</span>:literal<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 4 in location 3</span>
 
 <span class="Delimiter">:(scenario return_on_fallthrough)</span>
 recipe main [
   f
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 recipe f [
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+run: f</span>
 <span class="Comment"># running f</span>
-<span class="traceContains">+run: 4:number &lt;- copy 0:literal</span>
-<span class="traceContains">+run: 5:number &lt;- copy 0:literal</span>
+<span class="traceContains">+run: 4:number &lt;- copy 0</span>
+<span class="traceContains">+run: 5:number &lt;- copy 0</span>
 <span class="Comment"># back out to main</span>
-<span class="traceContains">+run: 1:number &lt;- copy 0:literal</span>
-<span class="traceContains">+run: 2:number &lt;- copy 0:literal</span>
-<span class="traceContains">+run: 3:number &lt;- copy 0:literal</span>
+<span class="traceContains">+run: 1:number &lt;- copy 0</span>
+<span class="traceContains">+run: 2:number &lt;- copy 0</span>
+<span class="traceContains">+run: 3:number &lt;- copy 0</span>
 
 <span class="Delimiter">:(before &quot;struct routine {&quot;)</span>
 <span class="Comment">// Everytime a recipe runs another, we interrupt it and start running the new</span>
 <span class="Comment">// recipe. When that finishes, we continue this one where we left off.</span>
 <span class="Comment">// This requires maintaining a 'stack' of interrupted recipes or 'calls'.</span>
-<span class="Normal">struct</span> call <span class="Delimiter">{</span>
+struct call <span class="Delimiter">{</span>
   recipe_ordinal running_recipe<span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> running_step_index<span class="Delimiter">;</span>
+  long long int running_step_index<span class="Delimiter">;</span>
   <span class="Comment">// End call Fields</span>
   call<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     running_recipe = r<span class="Delimiter">;</span>
@@ -80,15 +79,15 @@ recipe f [
     <span class="Comment">// End call Constructor</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">};</span>
-<span class="Normal">typedef</span> list&lt;call&gt; call_stack<span class="Delimiter">;</span>
+typedef list&lt;call&gt; call_stack<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(replace{} &quot;struct routine&quot;)</span>
-<span class="Normal">struct</span> routine <span class="Delimiter">{</span>
+struct routine <span class="Delimiter">{</span>
   call_stack calls<span class="Delimiter">;</span>
   <span class="Comment">// End routine Fields</span>
   routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">);</span>
-  <span class="Normal">bool</span> completed<span class="Delimiter">()</span> <span class="Normal">const</span><span class="Delimiter">;</span>
-  <span class="Normal">const</span> vector&lt;instruction&gt;&amp; steps<span class="Delimiter">()</span> <span class="Normal">const</span><span class="Delimiter">;</span>
+  bool completed<span class="Delimiter">()</span> const<span class="Delimiter">;</span>
+  const vector&lt;instruction&gt;&amp; steps<span class="Delimiter">()</span> const<span class="Delimiter">;</span>
 <span class="Delimiter">};</span>
 <span class="Delimiter">:(code)</span>
 routine::routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -99,30 +98,30 @@ routine::routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Del
 <span class="SalientComment">//:: now update routine's helpers</span>
 
 <span class="Delimiter">:(replace{} &quot;inline long long int&amp; current_step_index()&quot;)</span>
-<span class="Normal">inline</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&amp; current_step_index<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+inline long long int&amp; current_step_index<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_step_index<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(replace{} &quot;inline const string&amp; current_recipe_name()&quot;)</span>
-<span class="Normal">inline</span> <span class="Normal">const</span> string&amp; current_recipe_name<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+inline const string&amp; current_recipe_name<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Identifier">return</span> Recipe[Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(replace{} &quot;inline const instruction&amp; current_instruction()&quot;)</span>
-<span class="Normal">inline</span> <span class="Normal">const</span> instruction&amp; current_instruction<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+inline const instruction&amp; current_instruction<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Identifier">return</span> Recipe[Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_step_index<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(replace{} &quot;default:&quot; following &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">default</span>: <span class="Delimiter">{</span>
+default: <span class="Delimiter">{</span>
   <span class="Comment">// not a primitive; try to look up the book of recipes</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> == Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> == Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;undefined operation &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>operation &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">));</span>
-  <span class="Normal">call_housekeeping</span>:
+  call_housekeeping:
   ++Callstack_depth<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>Callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
   <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not done with caller; don't increment current_step_index()</span>
@@ -131,11 +130,11 @@ routine::routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Del
 <span class="SalientComment">//:: finally, we need to fix the termination conditions for the run loop</span>
 
 <span class="Delimiter">:(replace{} &quot;inline bool routine::completed() const&quot;)</span>
-<span class="Normal">inline</span> <span class="Normal">bool</span> routine::completed<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
+inline bool routine::completed<span class="Delimiter">()</span> const <span class="Delimiter">{</span>
   <span class="Identifier">return</span> calls<span class="Delimiter">.</span>empty<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">inline</span> <span class="Normal">const</span> vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
+inline const vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter">()</span> const <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Identifier">return</span> Recipe[calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe]<span class="Delimiter">.</span>steps<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -143,12 +142,12 @@ routine::routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Del
 <span class="Delimiter">:(before &quot;Running One Instruction&quot;)</span>
 <span class="Comment">// when we reach the end of one call, we may reach the end of the one below</span>
 <span class="Comment">// it, and the one below that, and so on</span>
-<span class="Normal">while</span> <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &gt;= SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
+while <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &gt;= SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
   <span class="Comment">// Falling Through End Of Recipe</span>
   --Callstack_depth<span class="Delimiter">;</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;reply &quot; &lt;&lt; SIZE(Current_routine-&gt;calls) &lt;&lt; '\n'; //? 2</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Comment">// Complete Call Fallthrough</span>
   <span class="Comment">// todo: no products returned warning</span>
   ++current_step_index<span class="Delimiter">();</span>
@@ -156,7 +155,7 @@ routine::routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Del
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#include </span><span class="Constant">&lt;stack&gt;</span>
-<span class="Normal">using</span> std::stack<span class="Delimiter">;</span>
+using std::stack<span class="Delimiter">;</span>
 </pre>
 </body>
 </html>

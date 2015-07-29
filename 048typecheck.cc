@@ -1,5 +1,10 @@
 //: Some simple sanity checks for types, and also attempts to guess them where
 //: they aren't provided.
+//:
+//: You still have to provide the full type the first time you mention a
+//: variable in a recipe. You have to explicitly name :offset and :variant
+//: every single time. You can't use the same name with multiple types in a
+//: single recipe.
 
 :(scenario transform_types_warns_on_reusing_name_with_different_type)
 % Hide_warnings = true;

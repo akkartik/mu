@@ -13,11 +13,11 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -33,34 +33,34 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># (spaces)</span>
 
 <span class="muRecipe">recipe</span> new-counter [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30</span>
   n:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="muControl">reply</span> <span class="Constant">default-space</span>:address:array:location
+  <span class="muControl">reply</span> <span class="Constant">default-space</span>
 ]
 
 <span class="muRecipe">recipe</span> increment-counter [
   <span class="Constant">local-scope</span>
-  0:address:array:location/names:new-counter<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>  <span class="Comment"># setup outer space; it *must* come from 'new-counter'</span>
+  <span class="Constant">0</span>:address:array:location/names:new-counter<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>  <span class="Comment"># setup outer space; it *must* come from 'new-counter'</span>
   x:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  n:number/space:1<span class="Special"> &lt;- </span>add n:number/space:1, x:number
-  <span class="muControl">reply</span> n:number/space:1
+  n:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>add n:number/space:<span class="Constant">1</span>, x
+  <span class="muControl">reply</span> n:number/space:<span class="Constant">1</span>
 ]
 
 <span class="muRecipe">recipe</span> main [
   <span class="Constant">local-scope</span>
   <span class="Comment"># counter A</span>
-  a:address:array:location<span class="Special"> &lt;- </span>new-counter <span class="Constant">34:literal</span>
+  a:address:array:location<span class="Special"> &lt;- </span>new-counter <span class="Constant">34</span>
   <span class="Comment"># counter B</span>
-  b:address:array:location<span class="Special"> &lt;- </span>new-counter <span class="Constant">23:literal</span>
+  b:address:array:location<span class="Special"> &lt;- </span>new-counter <span class="Constant">23</span>
   <span class="Comment"># increment both by 2 but in different ways</span>
-  increment-counter a:address:array:location, <span class="Constant">1:literal</span>
-  b-value:number<span class="Special"> &lt;- </span>increment-counter b:address:array:location, <span class="Constant">2:literal</span>
-  a-value:number<span class="Special"> &lt;- </span>increment-counter a:address:array:location, <span class="Constant">1:literal</span>
+  increment-counter a, <span class="Constant">1</span>
+  b-value:number<span class="Special"> &lt;- </span>increment-counter b, <span class="Constant">2</span>
+  a-value:number<span class="Special"> &lt;- </span>increment-counter a, <span class="Constant">1</span>
   <span class="Comment"># check results</span>
   $print <span class="Constant">[Contents of counters</span>
 <span class="Constant">]</span>
   <span class="Comment"># trailing space in next line is to help with syntax highlighting</span>
-  $print <span class="Constant">[a: ]</span>, a-value:number, <span class="Constant">[ b: ]</span>, b-value:number, <span class="Constant">[ </span>
+  $print <span class="Constant">[a: ]</span>, a-value, <span class="Constant">[ b: ]</span>, b-value, <span class="Constant">[ </span>
 <span class="Constant">]</span>
 ]
 </pre>

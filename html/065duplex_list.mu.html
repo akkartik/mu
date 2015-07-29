@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muScenario { color: #00af00; }
+.muRecipe { color: #ff8700; }
 .Delimiter { color: #a04060; }
-.CommentedCode { color: #6c6c6c; }
+.muScenario { color: #00af00; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
+.CommentedCode { color: #6c6c6c; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -46,83 +46,83 @@ container duplex-list [
   x:location<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   result:address:duplex-list<span class="Special"> &lt;- </span>new duplex-list:type
-  val:address:location<span class="Special"> &lt;- </span>get-address result:address:duplex-list/deref, value:offset
-  val:address:location/deref<span class="Special"> &lt;- </span>copy x:location
-  next:address:address:duplex-list<span class="Special"> &lt;- </span>get-address result:address:duplex-list/deref, next:offset
-  next:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy in:address:duplex-list
-  <span class="muControl">reply-unless</span> in:address:duplex-list, result:address:duplex-list
-  prev:address:address:duplex-list<span class="Special"> &lt;- </span>get-address in:address:duplex-list/deref, prev:offset
-  prev:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy result:address:duplex-list
-  <span class="muControl">reply</span> result:address:duplex-list
+  val:address:location<span class="Special"> &lt;- </span>get-address *result, value:offset
+  *val<span class="Special"> &lt;- </span>copy x
+  next:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *result, next:offset
+  *next<span class="Special"> &lt;- </span>copy in
+  <span class="muControl">reply-unless</span> in, result
+  prev:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *in, prev:offset
+  *prev<span class="Special"> &lt;- </span>copy result
+  <span class="muControl">reply</span> result
 ]
 
 <span class="Comment"># result:location &lt;- first-duplex in:address:duplex-list</span>
 <span class="muRecipe">recipe</span> first-duplex [
   <span class="Constant">local-scope</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="muControl">reply-unless</span> in:address:duplex-list, <span class="Constant">0:literal</span>
-  result:location<span class="Special"> &lt;- </span>get in:address:duplex-list/deref, value:offset
-  <span class="muControl">reply</span> result:location
+  <span class="muControl">reply-unless</span> in, <span class="Constant">0</span>
+  result:location<span class="Special"> &lt;- </span>get *in, value:offset
+  <span class="muControl">reply</span> result
 ]
 
 <span class="Comment"># result:address:duplex-list &lt;- next-duplex in:address:duplex-list</span>
 <span class="muRecipe">recipe</span> next-duplex [
   <span class="Constant">local-scope</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="muControl">reply-unless</span> in:address:duplex-list, <span class="Constant">0:literal</span>
-  result:address:duplex-list<span class="Special"> &lt;- </span>get in:address:duplex-list/deref, next:offset
-  <span class="muControl">reply</span> result:address:duplex-list
+  <span class="muControl">reply-unless</span> in, <span class="Constant">0</span>
+  result:address:duplex-list<span class="Special"> &lt;- </span>get *in, next:offset
+  <span class="muControl">reply</span> result
 ]
 
 <span class="Comment"># result:address:duplex-list &lt;- prev-duplex in:address:duplex-list</span>
 <span class="muRecipe">recipe</span> prev-duplex [
   <span class="Constant">local-scope</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="muControl">reply-unless</span> in:address:duplex-list, <span class="Constant">0:literal</span>
-  result:address:duplex-list<span class="Special"> &lt;- </span>get in:address:duplex-list/deref, prev:offset
-  <span class="muControl">reply</span> result:address:duplex-list
+  <span class="muControl">reply-unless</span> in, <span class="Constant">0</span>
+  result:address:duplex-list<span class="Special"> &lt;- </span>get *in, prev:offset
+  <span class="muControl">reply</span> result
 ]
 
 <span class="muScenario">scenario</span> duplex-list-handling [
   run [
     <span class="Comment"># reserve locations 0, 1 and 2 to check for missing null check</span>
-    1:number<span class="Special"> &lt;- </span>copy <span class="Constant">34:literal</span>
-    2:number<span class="Special"> &lt;- </span>copy <span class="Constant">35:literal</span>
-    3:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-    3:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3:literal</span>, 3:address:duplex-list
-    3:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4:literal</span>, 3:address:duplex-list
-    3:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5:literal</span>, 3:address:duplex-list
-    4:address:duplex-list<span class="Special"> &lt;- </span>copy 3:address:duplex-list
-    5:number<span class="Special"> &lt;- </span>first 4:address:duplex-list
-    4:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 4:address:duplex-list
-    6:number<span class="Special"> &lt;- </span>first 4:address:duplex-list
-    4:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 4:address:duplex-list
-    7:number<span class="Special"> &lt;- </span>first 4:address:duplex-list
-    8:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 4:address:duplex-list
-    9:number<span class="Special"> &lt;- </span>first 8:address:duplex-list
-    10:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 8:address:duplex-list
-    11:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 8:address:duplex-list
-    4:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 4:address:duplex-list
-    12:number<span class="Special"> &lt;- </span>first 4:address:duplex-list
-    4:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 4:address:duplex-list
-    13:number<span class="Special"> &lt;- </span>first 4:address:duplex-list
-    14:boolean<span class="Special"> &lt;- </span>equal 3:address:duplex-list, 4:address:duplex-list
+    <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+    <span class="Constant">3</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+    <span class="Constant">3</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3</span>, <span class="Constant">3</span>:address:duplex-list
+    <span class="Constant">3</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4</span>, <span class="Constant">3</span>:address:duplex-list
+    <span class="Constant">3</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5</span>, <span class="Constant">3</span>:address:duplex-list
+    <span class="Constant">4</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:duplex-list
+    <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">4</span>:address:duplex-list
+    <span class="Constant">4</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">4</span>:address:duplex-list
+    <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">4</span>:address:duplex-list
+    <span class="Constant">4</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">4</span>:address:duplex-list
+    <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">4</span>:address:duplex-list
+    <span class="Constant">8</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">4</span>:address:duplex-list
+    <span class="Constant">9</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">8</span>:address:duplex-list
+    <span class="Constant">10</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">8</span>:address:duplex-list
+    <span class="Constant">11</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">8</span>:address:duplex-list
+    <span class="Constant">4</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">4</span>:address:duplex-list
+    <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">4</span>:address:duplex-list
+    <span class="Constant">4</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">4</span>:address:duplex-list
+    <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">4</span>:address:duplex-list
+    <span class="Constant">14</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:address:duplex-list, <span class="Constant">4</span>:address:duplex-list
 <span class="CommentedCode">#?     $dump-trace #? 1</span>
   ]
   memory-should-contain [
-    0<span class="Special"> &lt;- </span>0  <span class="Comment"># no modifications to null pointers</span>
-    1<span class="Special"> &lt;- </span>34
-    2<span class="Special"> &lt;- </span>35
-    5<span class="Special"> &lt;- </span>5  <span class="Comment"># scanning next</span>
-    6<span class="Special"> &lt;- </span>4
-    7<span class="Special"> &lt;- </span>3
-    8<span class="Special"> &lt;- </span>0  <span class="Comment"># null</span>
-    9<span class="Special"> &lt;- </span>0  <span class="Comment"># first of null</span>
-    10<span class="Special"> &lt;- </span>0  <span class="Comment"># next of null</span>
-    11<span class="Special"> &lt;- </span>0  <span class="Comment"># prev of null</span>
-    12<span class="Special"> &lt;- </span>4  <span class="Comment"># then start scanning prev</span>
-    13<span class="Special"> &lt;- </span>5
-    14<span class="Special"> &lt;- </span>1  <span class="Comment"># list back at start</span>
+    <span class="Constant">0</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># no modifications to null pointers</span>
+    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">34</span>
+    <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">35</span>
+    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next</span>
+    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
+    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+    <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># null</span>
+    <span class="Constant">9</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># first of null</span>
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># next of null</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># prev of null</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># then start scanning prev</span>
+    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">5</span>
+    <span class="Constant">14</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># list back at start</span>
   ]
 ]
 
@@ -133,134 +133,134 @@ container duplex-list [
   x:location<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   new-node:address:duplex-list<span class="Special"> &lt;- </span>new duplex-list:type
-  val:address:location<span class="Special"> &lt;- </span>get-address new-node:address:duplex-list/deref, value:offset
-  val:address:location/deref<span class="Special"> &lt;- </span>copy x:location
-  next-node:address:duplex-list<span class="Special"> &lt;- </span>get in:address:duplex-list/deref, next:offset
+  val:address:location<span class="Special"> &lt;- </span>get-address *new-node, value:offset
+  *val<span class="Special"> &lt;- </span>copy x
+  next-node:address:duplex-list<span class="Special"> &lt;- </span>get *in, next:offset
   <span class="Comment"># in.next = new-node</span>
-  y:address:address:duplex-list<span class="Special"> &lt;- </span>get-address in:address:duplex-list/deref, next:offset
-  y:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy new-node:address:duplex-list
+  y:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *in, next:offset
+  *y<span class="Special"> &lt;- </span>copy new-node
   <span class="Comment"># new-node.prev = in</span>
-  y:address:address:duplex-list<span class="Special"> &lt;- </span>get-address new-node:address:duplex-list/deref, prev:offset
-  y:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy in:address:duplex-list
+  y<span class="Special"> &lt;- </span>get-address *new-node, prev:offset
+  *y<span class="Special"> &lt;- </span>copy in
   <span class="Comment"># new-node.next = next-node</span>
-  y:address:address:duplex-list<span class="Special"> &lt;- </span>get-address new-node:address:duplex-list/deref, next:offset
-  y:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy next-node:address:duplex-list
+  y<span class="Special"> &lt;- </span>get-address *new-node, next:offset
+  *y<span class="Special"> &lt;- </span>copy next-node
   <span class="Comment"># if next-node is not null</span>
-  <span class="muControl">reply-unless</span> next-node:address:duplex-list, new-node:address:duplex-list
+  <span class="muControl">reply-unless</span> next-node, new-node
   <span class="Comment"># next-node.prev = new-node</span>
-  y:address:address:duplex-list<span class="Special"> &lt;- </span>get-address next-node:address:duplex-list/deref, prev:offset
-  y:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy new-node:address:duplex-list
-  <span class="muControl">reply</span> new-node:address:duplex-list  <span class="Comment"># just signalling something changed; don't rely on the result</span>
+  y<span class="Special"> &lt;- </span>get-address *next-node, prev:offset
+  *y<span class="Special"> &lt;- </span>copy new-node
+  <span class="muControl">reply</span> new-node  <span class="Comment"># just signalling something changed; don't rely on the result</span>
 ]
 
 <span class="muScenario">scenario</span> inserting-into-duplex-list [
   run [
-    1:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>  <span class="Comment"># 1 points to head of list</span>
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5:literal</span>, 1:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 1:address:duplex-list  <span class="Comment"># 2 points inside list</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>insert-duplex <span class="Constant">6:literal</span>, 2:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># 1 points to head of list</span>
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">1</span>:address:duplex-list  <span class="Comment"># 2 points inside list</span>
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>insert-duplex <span class="Constant">6</span>, <span class="Constant">2</span>:address:duplex-list
     <span class="Comment"># check structure like before</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>copy 1:address:duplex-list
-    3:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    4:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    5:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    6:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    7:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    8:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    9:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    10:boolean<span class="Special"> &lt;- </span>equal 1:address:duplex-list, 2:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">8</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">9</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">10</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:duplex-list, <span class="Constant">2</span>:address:duplex-list
   ]
   memory-should-contain [
-    3<span class="Special"> &lt;- </span>5  <span class="Comment"># scanning next</span>
-    4<span class="Special"> &lt;- </span>4
-    5<span class="Special"> &lt;- </span>6  <span class="Comment"># inserted element</span>
-    6<span class="Special"> &lt;- </span>3
-    7<span class="Special"> &lt;- </span>6  <span class="Comment"># then prev</span>
-    8<span class="Special"> &lt;- </span>4
-    9<span class="Special"> &lt;- </span>5
-    10<span class="Special"> &lt;- </span>1  <span class="Comment"># list back at start</span>
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
+    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">6</span>  <span class="Comment"># inserted element</span>
+    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">6</span>  <span class="Comment"># then prev</span>
+    <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
+    <span class="Constant">9</span><span class="Special"> &lt;- </span><span class="Constant">5</span>
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># list back at start</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> inserting-at-end-of-duplex-list [
   run [
-    1:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>  <span class="Comment"># 1 points to head of list</span>
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5:literal</span>, 1:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 1:address:duplex-list  <span class="Comment"># 2 points inside list</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list  <span class="Comment"># now at end of list</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>insert-duplex <span class="Constant">6:literal</span>, 2:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># 1 points to head of list</span>
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">1</span>:address:duplex-list  <span class="Comment"># 2 points inside list</span>
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list  <span class="Comment"># now at end of list</span>
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>insert-duplex <span class="Constant">6</span>, <span class="Constant">2</span>:address:duplex-list
     <span class="Comment"># check structure like before</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>copy 1:address:duplex-list
-    3:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    4:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    5:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    6:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    7:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    8:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    9:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    10:boolean<span class="Special"> &lt;- </span>equal 1:address:duplex-list, 2:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">8</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">9</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">10</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:duplex-list, <span class="Constant">2</span>:address:duplex-list
   ]
   memory-should-contain [
-    3<span class="Special"> &lt;- </span>5  <span class="Comment"># scanning next</span>
-    4<span class="Special"> &lt;- </span>4
-    5<span class="Special"> &lt;- </span>3
-    6<span class="Special"> &lt;- </span>6  <span class="Comment"># inserted element</span>
-    7<span class="Special"> &lt;- </span>3  <span class="Comment"># then prev</span>
-    8<span class="Special"> &lt;- </span>4
-    9<span class="Special"> &lt;- </span>5
-    10<span class="Special"> &lt;- </span>1  <span class="Comment"># list back at start</span>
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
+    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">6</span>  <span class="Comment"># inserted element</span>
+    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">3</span>  <span class="Comment"># then prev</span>
+    <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
+    <span class="Constant">9</span><span class="Special"> &lt;- </span><span class="Constant">5</span>
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># list back at start</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> inserting-after-start-of-duplex-list [
   run [
-    1:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>  <span class="Comment"># 1 points to head of list</span>
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5:literal</span>, 1:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>insert-duplex <span class="Constant">6:literal</span>, 1:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># 1 points to head of list</span>
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>insert-duplex <span class="Constant">6</span>, <span class="Constant">1</span>:address:duplex-list
     <span class="Comment"># check structure like before</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>copy 1:address:duplex-list
-    3:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    4:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    5:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    6:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    7:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    8:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    9:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    10:boolean<span class="Special"> &lt;- </span>equal 1:address:duplex-list, 2:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">8</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">9</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">10</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:duplex-list, <span class="Constant">2</span>:address:duplex-list
   ]
   memory-should-contain [
-    3<span class="Special"> &lt;- </span>5  <span class="Comment"># scanning next</span>
-    4<span class="Special"> &lt;- </span>6  <span class="Comment"># inserted element</span>
-    5<span class="Special"> &lt;- </span>4
-    6<span class="Special"> &lt;- </span>3
-    7<span class="Special"> &lt;- </span>4  <span class="Comment"># then prev</span>
-    8<span class="Special"> &lt;- </span>6
-    9<span class="Special"> &lt;- </span>5
-    10<span class="Special"> &lt;- </span>1  <span class="Comment"># list back at start</span>
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">6</span>  <span class="Comment"># inserted element</span>
+    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
+    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># then prev</span>
+    <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">6</span>
+    <span class="Constant">9</span><span class="Special"> &lt;- </span><span class="Constant">5</span>
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># list back at start</span>
   ]
 ]
 
@@ -274,131 +274,131 @@ container duplex-list [
   <span class="Constant">local-scope</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if 'in' is null, return</span>
-  <span class="muControl">reply-unless</span> in:address:duplex-list, in:address:duplex-list
-  next-node:address:duplex-list<span class="Special"> &lt;- </span>get in:address:duplex-list/deref, next:offset
-  prev-node:address:duplex-list<span class="Special"> &lt;- </span>get in:address:duplex-list/deref, prev:offset
+  <span class="muControl">reply-unless</span> in, in
+  next-node:address:duplex-list<span class="Special"> &lt;- </span>get *in, next:offset
+  prev-node:address:duplex-list<span class="Special"> &lt;- </span>get *in, prev:offset
   <span class="Comment"># null in's pointers</span>
-  x:address:address:duplex-list<span class="Special"> &lt;- </span>get-address in:address:duplex-list/deref, next:offset
-  x:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-  x:address:address:duplex-list<span class="Special"> &lt;- </span>get-address in:address:duplex-list/deref, prev:offset
-  x:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  x:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *in, next:offset
+  *x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  x<span class="Special"> &lt;- </span>get-address *in, prev:offset
+  *x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if next-node is not null</span>
-    <span class="muControl">break-unless</span> next-node:address:duplex-list
+    <span class="muControl">break-unless</span> next-node
     <span class="Comment"># next-node.prev = prev-node</span>
-    x:address:address:duplex-list<span class="Special"> &lt;- </span>get-address next-node:address:duplex-list/deref, prev:offset
-    x:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy prev-node:address:duplex-list
+    x<span class="Special"> &lt;- </span>get-address *next-node, prev:offset
+    *x<span class="Special"> &lt;- </span>copy prev-node
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if prev-node is not null</span>
-    <span class="muControl">break-unless</span> prev-node:address:duplex-list
+    <span class="muControl">break-unless</span> prev-node
     <span class="Comment"># prev-node.next = next-node</span>
-    x:address:address:duplex-list<span class="Special"> &lt;- </span>get-address prev-node:address:duplex-list/deref, next:offset
-    x:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy next-node:address:duplex-list
-    <span class="muControl">reply</span> prev-node:address:duplex-list
+    x<span class="Special"> &lt;- </span>get-address *prev-node, next:offset
+    *x<span class="Special"> &lt;- </span>copy next-node
+    <span class="muControl">reply</span> prev-node
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> next-node:address:duplex-list
+  <span class="muControl">reply</span> next-node
 ]
 
 <span class="muScenario">scenario</span> removing-from-duplex-list [
   run [
-    1:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>  <span class="Comment"># 1 points to head of list</span>
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5:literal</span>, 1:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 1:address:duplex-list  <span class="Comment"># 2 points at second element</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>remove-duplex 2:address:duplex-list
-    3:boolean<span class="Special"> &lt;- </span>equal 2:address:duplex-list, <span class="Constant">0:literal</span>
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># 1 points to head of list</span>
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">1</span>:address:duplex-list  <span class="Comment"># 2 points at second element</span>
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>remove-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:address:duplex-list, <span class="Constant">0</span>
     <span class="Comment"># check structure like before</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>copy 1:address:duplex-list
-    4:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    5:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    6:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    7:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    8:boolean<span class="Special"> &lt;- </span>equal 1:address:duplex-list, 2:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">6</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">8</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:duplex-list, <span class="Constant">2</span>:address:duplex-list
   ]
   memory-should-contain [
-    3<span class="Special"> &lt;- </span>0  <span class="Comment"># remove returned non-null</span>
-    4<span class="Special"> &lt;- </span>5  <span class="Comment"># scanning next, skipping deleted element</span>
-    5<span class="Special"> &lt;- </span>3
-    6<span class="Special"> &lt;- </span>0  <span class="Comment"># no more elements</span>
-    7<span class="Special"> &lt;- </span>5  <span class="Comment"># prev of final element</span>
-    8<span class="Special"> &lt;- </span>1  <span class="Comment"># list back at start</span>
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># remove returned non-null</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next, skipping deleted element</span>
+    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># no more elements</span>
+    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># prev of final element</span>
+    <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># list back at start</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> removing-from-start-of-duplex-list [
   run [
-    1:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>  <span class="Comment"># 1 points to head of list</span>
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5:literal</span>, 1:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># 1 points to head of list</span>
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5</span>, <span class="Constant">1</span>:address:duplex-list
     <span class="Comment"># removing from head? return value matters.</span>
-    1:address:duplex-list<span class="Special"> &lt;- </span>remove-duplex 1:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>remove-duplex <span class="Constant">1</span>:address:duplex-list
     <span class="Comment"># check structure like before</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>copy 1:address:duplex-list
-    3:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    4:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    5:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    6:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    7:boolean<span class="Special"> &lt;- </span>equal 1:address:duplex-list, 2:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">5</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:duplex-list, <span class="Constant">2</span>:address:duplex-list
   ]
   memory-should-contain [
-    3<span class="Special"> &lt;- </span>4  <span class="Comment"># scanning next, skipping deleted element</span>
-    4<span class="Special"> &lt;- </span>3
-    5<span class="Special"> &lt;- </span>0  <span class="Comment"># no more elements</span>
-    6<span class="Special"> &lt;- </span>4  <span class="Comment"># prev of final element</span>
-    7<span class="Special"> &lt;- </span>1  <span class="Comment"># list back at start</span>
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># scanning next, skipping deleted element</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># no more elements</span>
+    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># prev of final element</span>
+    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># list back at start</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> removing-from-end-of-duplex-list [
   run [
-    1:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>  <span class="Comment"># 1 points to head of list</span>
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4:literal</span>, 1:address:duplex-list
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5:literal</span>, 1:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># 1 points to head of list</span>
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">4</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">5</span>, <span class="Constant">1</span>:address:duplex-list
     <span class="Comment"># delete last element</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 1:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>remove-duplex 2:address:duplex-list
-    3:boolean<span class="Special"> &lt;- </span>equal 2:address:duplex-list, <span class="Constant">0:literal</span>
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>remove-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:address:duplex-list, <span class="Constant">0</span>
     <span class="Comment"># check structure like before</span>
-    2:address:duplex-list<span class="Special"> &lt;- </span>copy 1:address:duplex-list
-    4:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    5:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    6:address:duplex-list<span class="Special"> &lt;- </span>next-duplex 2:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex 2:address:duplex-list
-    7:number<span class="Special"> &lt;- </span>first 2:address:duplex-list
-    8:boolean<span class="Special"> &lt;- </span>equal 1:address:duplex-list, 2:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">6</span>:address:duplex-list<span class="Special"> &lt;- </span>next-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">2</span>:address:duplex-list
+    <span class="Constant">8</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:duplex-list, <span class="Constant">2</span>:address:duplex-list
   ]
   memory-should-contain [
-    3<span class="Special"> &lt;- </span>0  <span class="Comment"># remove returned non-null</span>
-    4<span class="Special"> &lt;- </span>5  <span class="Comment"># scanning next, skipping deleted element</span>
-    5<span class="Special"> &lt;- </span>4
-    6<span class="Special"> &lt;- </span>0  <span class="Comment"># no more elements</span>
-    7<span class="Special"> &lt;- </span>5  <span class="Comment"># prev of final element</span>
-    8<span class="Special"> &lt;- </span>1  <span class="Comment"># list back at start</span>
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># remove returned non-null</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next, skipping deleted element</span>
+    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
+    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># no more elements</span>
+    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># prev of final element</span>
+    <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># list back at start</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> removing-from-singleton-list [
   run [
-    1:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>  <span class="Comment"># 1 points to singleton list</span>
-    1:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3:literal</span>, 1:address:duplex-list
-    2:address:duplex-list<span class="Special"> &lt;- </span>remove-duplex 1:address:duplex-list
-    3:address:duplex-list<span class="Special"> &lt;- </span>get 1:address:duplex-list/deref, next:offset
-    4:address:duplex-list<span class="Special"> &lt;- </span>get 1:address:duplex-list/deref, prev:offset
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># 1 points to singleton list</span>
+    <span class="Constant">1</span>:address:duplex-list<span class="Special"> &lt;- </span>push-duplex <span class="Constant">3</span>, <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">2</span>:address:duplex-list<span class="Special"> &lt;- </span>remove-duplex <span class="Constant">1</span>:address:duplex-list
+    <span class="Constant">3</span>:address:duplex-list<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:duplex-list, next:offset
+    <span class="Constant">4</span>:address:duplex-list<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:duplex-list, prev:offset
   ]
   memory-should-contain [
-    2<span class="Special"> &lt;- </span>0  <span class="Comment"># remove returned null</span>
-    3<span class="Special"> &lt;- </span>0  <span class="Comment"># removed node is also detached</span>
-    4<span class="Special"> &lt;- </span>0
+    <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># remove returned null</span>
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># removed node is also detached</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
   ]
 ]
 </pre>

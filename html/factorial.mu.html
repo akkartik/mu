@@ -13,13 +13,13 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muScenario { color: #00af00; }
+.muRecipe { color: #ff8700; }
 .Delimiter { color: #a04060; }
+.muScenario { color: #00af00; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -35,8 +35,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> main [
   <span class="Constant">local-scope</span>
-  x:number<span class="Special"> &lt;- </span>factorial <span class="Constant">5:literal</span>
-  $print <span class="Constant">[result: ]</span>, x:number, <span class="Constant">[ </span>
+  x:number<span class="Special"> &lt;- </span>factorial <span class="Constant">5</span>
+  $print <span class="Constant">[result: ]</span>, x, <span class="Constant">[ </span>
 <span class="Constant">]</span>
 ]
 
@@ -45,24 +45,24 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   n:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if n=0 return 1</span>
-    zero?:boolean<span class="Special"> &lt;- </span>equal n:number, <span class="Constant">0:literal</span>
-    <span class="muControl">break-unless</span> zero?:boolean
-    <span class="muControl">reply</span> <span class="Constant">1:literal</span>
+    zero?:boolean<span class="Special"> &lt;- </span>equal n, <span class="Constant">0</span>
+    <span class="muControl">break-unless</span> zero?
+    <span class="muControl">reply</span> <span class="Constant">1</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># return n * factorial(n-1)</span>
-  x:number<span class="Special"> &lt;- </span>subtract n:number, <span class="Constant">1:literal</span>
-  subresult:number<span class="Special"> &lt;- </span>factorial x:number
-  result:number<span class="Special"> &lt;- </span>multiply subresult:number, n:number
-  <span class="muControl">reply</span> result:number
+  x:number<span class="Special"> &lt;- </span>subtract n, <span class="Constant">1</span>
+  subresult:number<span class="Special"> &lt;- </span>factorial x
+  result:number<span class="Special"> &lt;- </span>multiply subresult, n
+  <span class="muControl">reply</span> result
 ]
 
 <span class="Comment"># unit test</span>
 <span class="muScenario">scenario</span> factorial-test [
   run [
-    1:number<span class="Special"> &lt;- </span>factorial <span class="Constant">5:literal</span>
+    <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>factorial <span class="Constant">5</span>
   ]
   memory-should-contain [
-    1<span class="Special"> &lt;- </span>120
+    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">120</span>
   ]
 ]
 </pre>

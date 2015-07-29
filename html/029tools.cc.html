@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 029tools.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1.05em; }
+.traceContains { color: #008000; }
+.cSpecial { color: #008000; }
+.Constant { color: #00a0a0; }
+.SalientComment { color: #00ffff; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+.Identifier { color: #804000; }
+.CommentedCode { color: #6c6c6c; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Allow mu programs to log facts just like we've been doing in C++ so far.</span>
+
+<span class="Delimiter">:(scenario trace)</span>
+recipe main [
+  trace [foo]<span class="Delimiter">,</span> [this is a trace in mu]
+]
+<span class="traceContains">+foo: this is a trace in mu</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+TRACE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;trace&quot;</span>] = TRACE<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case TRACE: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'trace' takes exactly two ingredients rather than '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
+  string label = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
+  string message = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">,</span> label<span class="Delimiter">)</span> &lt;&lt; message &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+HIDE_WARNINGS<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;hide-warnings&quot;</span>] = HIDE_WARNINGS<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case HIDE_WARNINGS: <span class="Delimiter">{</span>
+  Hide_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+SHOW_WARNINGS<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;show-warnings&quot;</span>] = SHOW_WARNINGS<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case SHOW_WARNINGS: <span class="Delimiter">{</span>
+  Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_START_TRACING<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$start-tracing&quot;</span>] = _START_TRACING<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _START_TRACING: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+    Trace_stream<span class="Delimiter">-&gt;</span>dump_layer = <span class="Constant">&quot;all&quot;</span><span class="Delimiter">;</span>
+  else
+    Trace_stream<span class="Delimiter">-&gt;</span>dump_layer = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+<span class="CommentedCode">//?   cout &lt;&lt; Trace_stream &lt;&lt; &quot;: &quot; &lt;&lt; Trace_stream-&gt;dump_layer &lt;&lt; '\n'; //? 1</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_STOP_TRACING<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$stop-tracing&quot;</span>] = _STOP_TRACING<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _STOP_TRACING: <span class="Delimiter">{</span>
+  Trace_stream<span class="Delimiter">-&gt;</span>dump_layer = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_CLOSE_TRACE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$close-trace&quot;</span>] = _CLOSE_TRACE<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _CLOSE_TRACE: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    delete Trace_stream<span class="Delimiter">;</span>
+    Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_DUMP_TRACE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$dump-trace&quot;</span>] = _DUMP_TRACE<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _DUMP_TRACE: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    DUMP<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  else <span class="Delimiter">{</span>
+    DUMP<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_CLEAR_TRACE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$clear-trace&quot;</span>] = _CLEAR_TRACE<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _CLEAR_TRACE: <span class="Delimiter">{</span>
+  CLEAR_TRACE<span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: assert: perform sanity checks at runtime</span>
+
+<span class="Delimiter">:(scenario assert)</span>
+<span class="Special">% Hide_warnings = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.</span>
+recipe main [
+  assert <span class="Constant">0</span><span class="Delimiter">,</span> [this is an assert in mu]
+]
+<span class="traceContains">+warn: this is an assert in mu</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+ASSERT<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;assert&quot;</span>] = ASSERT<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case ASSERT: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'assert' takes exactly two ingredients rather than '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'assert' requires a boolean for its first ingredient, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'assert' requires a literal string for its second ingredient, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>!ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="SalientComment">//:: 'cheating' by using the host system</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_PRINT<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$print&quot;</span>] = _PRINT<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _PRINT: <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+      trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;$print: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
+      if <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;newline&quot;</span><span class="Delimiter">))</span>
+        cout &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+      else
+        cout &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    else <span class="Delimiter">{</span>
+      for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;$print: &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+        if <span class="Delimiter">(</span>j &gt; <span class="Constant">0</span><span class="Delimiter">)</span> cout &lt;&lt; <span class="Constant">&quot; &quot;</span><span class="Delimiter">;</span>
+        cout &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
+      <span class="Delimiter">}</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_EXIT<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$exit&quot;</span>] = _EXIT<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _EXIT: <span class="Delimiter">{</span>
+  exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_SYSTEM<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$system&quot;</span>] = _SYSTEM<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _SYSTEM: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: '$system' requires exactly one ingredient, but got none</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  int status = system<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">.</span>c_str<span class="Delimiter">());</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>status<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="SalientComment">//:: helpers for debugging</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_DUMP_MEMORY<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$dump-memory&quot;</span>] = _DUMP_MEMORY<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _DUMP_MEMORY: <span class="Delimiter">{</span>
+  dump_memory<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
