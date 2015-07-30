@@ -373,6 +373,24 @@ into reproducible tests by flagging inputs entering the log and outputs
 leaving it. The former will have to be faked in, and the latter will want to
 be asserted on, to turn a trace into a test.
 
+d) Try out the programming environment:
+
+```shell
+  $ ./mu test edit.mu  # takes about 30s; shouldn't show any failures
+  $ ./mu edit.mu
+```
+
+Screenshot:
+
+![programming environment](html/edit.png)
+
+You write recipes on the left and try them out in *sandboxes* on the right.
+Hit F4 to rerun all sandboxes with the latest version of the code. More (maybe
+dated) details: http://akkartik.name/post/mu. Beware, it won't save your edits
+by default. But if you create a sub-directory called `lesson/` under `mu/` it
+will. If you turn that directory into a git repo with `git init`, it will also
+back up each version you try out.
+
 **Credits**
 
 Mu builds on many ideas that have come before, especially:
