@@ -1034,18 +1034,40 @@ recipe delete-before-cursor [
   local-scope
   editor:address:editor-data <- next-ingredient
   before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  d:address:duplex-list <- get *editor, data:offset
-  # unless already at start
-  at-start?:boolean <- equal *before-cursor, d
-  reply-if at-start?
-  # delete character
+  # if at start of text (before-cursor at § sentinel), return
   prev:address:duplex-list <- prev-duplex *before-cursor
+  reply-unless prev
+  # save previous character, then delete it
+  previous-character:character <- get **before-cursor, value:offset
   remove-duplex *before-cursor
-  # update cursor
   *before-cursor <- copy prev
+  # update cursor coordinates
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
-  *cursor-column <- subtract *cursor-column, 1
-#?   $print [delete-before-cursor: ], *cursor-column, 10/newline
+  # 1. if not at left margin, move one character left
+  {
+    at-left-margin?:boolean <- equal *cursor-column, 0
+    break-if at-left-margin?
+    *cursor-column <- subtract *cursor-column, 1
+    reply
+  }
+  # 2. if at left margin, we must move to previous row:
+  assert *cursor-row, [unimplemented: moving cursor above top of screen]
+  *cursor-row <- subtract *cursor-row, 1
+  {
+    # 2a. if previous character was newline, figure out how long the previous line is
+    previous-character-is-newline?:boolean <- equal previous-character, 10/newline
+    break-unless previous-character-is-newline?
+    # compute length of previous line
+    d:address:duplex-list <- get *editor, data:offset
+    end-of-line:number <- previous-line-length *before-cursor, d
+    # fudge factor: we're already at the last character, so we didn't count it
+    *cursor-column <- add end-of-line, 1
+    reply
+  }
+  # 2b. if previous-character was not newline, we're just at a wrapped line
+  right:number <- get *editor, right:offset
+  *cursor-column <- subtract right, 1  # leave room for wrap icon
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -1760,7 +1782,7 @@ scenario editor-clears-last-line-on-backspace [
   # just one character in final line
   1:address:array:character <- new [ab
 cd]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 2, 0  # cursor at only character in final line
     type [«]
@@ -1769,11 +1791,17 @@ cd]
   replace-in-console 171/«, 3:event/backspace
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number <- get *2:address:editor-data, cursor-row:offset
+    5:number <- get *2:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .          .
     .abcd      .
     .          .
+  ]
+  memory-should-contain [
+    4 <- 1
+    5 <- 2
   ]
 ]
 
