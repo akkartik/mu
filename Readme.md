@@ -256,17 +256,17 @@ inserting code at them.
 
   after +base-case [
     # if n=0 return 1
-    zero?:boolean <- equal n:number, 0
-    break-unless zero?:boolean
+    zero?:boolean <- equal n, 0
+    break-unless zero?
     reply 1
   ]
 
   after +recursive-case [
     # return n * factorial(n-1)
-    x:number <- subtract n:number, 1
-    subresult:number <- factorial x:number
-    result:number <- multiply subresult:number, n:number
-    reply result:number
+    x:number <- subtract n, 1
+    subresult:number <- factorial x
+    result:number <- multiply subresult, n
+    reply result
   ]
 ```
 
