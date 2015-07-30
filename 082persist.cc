@@ -8,13 +8,15 @@ RESTORE,
 Recipe_ordinal["restore"] = RESTORE;
 :(before "End Primitive Recipe Implementations")
 case RESTORE: {
+  products.resize(1);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'restore' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
   }
-  if (!scalar(ingredients.at(0)))
+  if (!scalar(ingredients.at(0))) {
     raise << current_recipe_name() << ": first ingredient of 'restore' should be a literal string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
-  products.resize(1);
+    break;
+  }
   if (Current_scenario) break;  // do nothing in tests
   string filename = current_instruction().ingredients.at(0).name;
   if (!is_literal(current_instruction().ingredients.at(0)))

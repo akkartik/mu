@@ -6,6 +6,7 @@ EQUAL,
 Recipe_ordinal["equal"] = EQUAL;
 :(before "End Primitive Recipe Implementations")
 case EQUAL: {
+  products.resize(1);
   if (SIZE(ingredients) <= 1) {
     raise << current_recipe_name() << ": 'equal' needs at least two ingredients to compare in '" << current_instruction().to_string() << "'\n" << end();
     break;
@@ -18,7 +19,6 @@ case EQUAL: {
       break;
     }
   }
-  products.resize(1);
   products.at(0).push_back(result);
   break;
 }
@@ -61,6 +61,7 @@ GREATER_THAN,
 Recipe_ordinal["greater-than"] = GREATER_THAN;
 :(before "End Primitive Recipe Implementations")
 case GREATER_THAN: {
+  products.resize(1);
   bool result = true;
   if (SIZE(ingredients) <= 1) {
     raise << current_recipe_name() << ": 'greater-than' needs at least two ingredients to compare in '" << current_instruction().to_string() << "'\n" << end();
@@ -78,7 +79,6 @@ case GREATER_THAN: {
     }
   }
   finish_greater_than:
-  products.resize(1);
   products.at(0).push_back(result);
   break;
 }
@@ -117,6 +117,7 @@ LESSER_THAN,
 Recipe_ordinal["lesser-than"] = LESSER_THAN;
 :(before "End Primitive Recipe Implementations")
 case LESSER_THAN: {
+  products.resize(1);
   bool result = true;
   if (SIZE(ingredients) <= 1) {
     raise << current_recipe_name() << ": 'lesser-than' needs at least two ingredients to compare in '" << current_instruction().to_string() << "'\n" << end();
@@ -134,7 +135,6 @@ case LESSER_THAN: {
     }
   }
   finish_lesser_than:
-  products.resize(1);
   products.at(0).push_back(result);
   break;
 }
@@ -173,6 +173,7 @@ GREATER_OR_EQUAL,
 Recipe_ordinal["greater-or-equal"] = GREATER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case GREATER_OR_EQUAL: {
+  products.resize(1);
   bool result = true;
   if (SIZE(ingredients) <= 1) {
     raise << current_recipe_name() << ": 'greater-or-equal' needs at least two ingredients to compare in '" << current_instruction().to_string() << "'\n" << end();
@@ -190,7 +191,6 @@ case GREATER_OR_EQUAL: {
     }
   }
   finish_greater_or_equal:
-  products.resize(1);
   products.at(0).push_back(result);
   break;
 }
@@ -237,6 +237,7 @@ LESSER_OR_EQUAL,
 Recipe_ordinal["lesser-or-equal"] = LESSER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case LESSER_OR_EQUAL: {
+  products.resize(1);
   bool result = true;
   if (SIZE(ingredients) <= 1) {
     raise << current_recipe_name() << ": 'lesser-or-equal' needs at least two ingredients to compare in '" << current_instruction().to_string() << "'\n" << end();
@@ -254,7 +255,6 @@ case LESSER_OR_EQUAL: {
     }
   }
   finish_lesser_or_equal:
-  products.resize(1);
   products.at(0).push_back(result);
   break;
 }

@@ -182,11 +182,11 @@ _SYSTEM,
 Recipe_ordinal["$system"] = _SYSTEM;
 :(before "End Primitive Recipe Implementations")
 case _SYSTEM: {
+  products.resize(1);
   if (current_instruction().ingredients.empty()) {
     raise << current_recipe_name() << ": '$system' requires exactly one ingredient, but got none\n" << end();
     break;
   }
-  products.resize(1);
   int status = system(current_instruction().ingredients.at(0).name.c_str());
   products.at(0).push_back(status);
   break;
