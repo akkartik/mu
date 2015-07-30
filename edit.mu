@@ -1033,19 +1033,19 @@ recipe insert-at-cursor [
 recipe delete-before-cursor [
   local-scope
   editor:address:editor-data <- next-ingredient
-  before-cursor:address:address:duplex-list <- get-address *editor:address:editor-data, before-cursor:offset
-  d:address:duplex-list <- get *editor:address:editor-data, data:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  d:address:duplex-list <- get *editor, data:offset
   # unless already at start
-  at-start?:boolean <- equal *before-cursor:address:address:duplex-list, d:address:duplex-list
-  reply-if at-start?:boolean
+  at-start?:boolean <- equal *before-cursor, d
+  reply-if at-start?
   # delete character
-  prev:address:duplex-list <- prev-duplex *before-cursor:address:address:duplex-list
-  remove-duplex *before-cursor:address:address:duplex-list
+  prev:address:duplex-list <- prev-duplex *before-cursor
+  remove-duplex *before-cursor
   # update cursor
-  *before-cursor:address:address:duplex-list <- copy prev:address:duplex-list
-  cursor-column:address:number <- get-address *editor:address:editor-data, cursor-column:offset
-  *cursor-column:address:number <- subtract *cursor-column:address:number, 1
-#?   $print [delete-before-cursor: ], *cursor-column:address:number, 10/newline
+  *before-cursor <- copy prev
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  *cursor-column <- subtract *cursor-column, 1
+#?   $print [delete-before-cursor: ], *cursor-column, 10/newline
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
