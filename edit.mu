@@ -21,37 +21,6 @@ container programming-environment-data [
   sandbox-in-focus?:boolean  # false => focus in recipes; true => focus in current-sandbox
 ]
 
-recipe new-programming-environment [
-  local-scope
-  screen:address <- next-ingredient
-  initial-recipe-contents:address:array:character <- next-ingredient
-  initial-sandbox-contents:address:array:character <- next-ingredient
-  width:number <- screen-width screen
-  height:number <- screen-height screen
-  # top menu
-  result:address:programming-environment-data <- new programming-environment-data:type
-  draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
-  button-start:number <- subtract width, 20
-  button-on-screen?:boolean <- greater-or-equal button-start, 0
-  assert button-on-screen?, [screen too narrow for menu]
-  move-cursor screen, 0/row, button-start
-  run-button:address:array:character <- new [ run (F4) ]
-  print-string screen, run-button, 255/white, 161/reddish
-  # dotted line down the middle
-  divider:number, _ <- divide-with-remainder width, 2
-  draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
-  # recipe editor on the left
-  recipes:address:address:editor-data <- get-address *result, recipes:offset
-  *recipes <- new-editor initial-recipe-contents, screen, 0/left, divider/right
-  # sandbox editor on the right
-  new-left:number <- add divider, 1
-  new-right:number <- add new-left, 5
-  current-sandbox:address:address:editor-data <- get-address *result, current-sandbox:offset
-  *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
-  screen <- render-all screen, result
-  reply result
-]
-
 scenario editor-initially-prints-string-to-screen [
   assume-screen 10/width, 5/height
   run [
@@ -335,75 +304,6 @@ recipe render-string [
   reply row/same-as-ingredient:5, screen/same-as-ingredient:0
 ]
 
-# row:number, screen:address <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
-# print the fake sandbox screen to 'screen' with appropriate delimiters
-# leave cursor at start of next line
-recipe render-screen [
-  local-scope
-  screen:address <- next-ingredient
-  s:address:screen <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
-  row:number <- next-ingredient
-  row <- add row, 1
-  reply-unless s, row/same-as-ingredient:4, screen/same-as-ingredient:0
-  # print 'screen:'
-  header:address:array:character <- new [screen:]
-  row <- subtract row, 1  # compensate for render-string below
-  row <- render-string screen, header, left, right, 245/grey, row
-  # newline
-  row <- add row, 1
-  move-cursor screen, row, left
-  # start printing s
-  column:number <- copy left
-  s-width:number <- screen-width s
-  s-height:number <- screen-height s
-  buf:address:array:screen-cell <- get *s, data:offset
-  stop-printing:number <- add left, s-width, 3
-  max-column:number <- min stop-printing, right
-  i:number <- copy 0
-  len:number <- length *buf
-  screen-height:number <- screen-height screen
-  {
-    done?:boolean <- greater-or-equal i, len
-    break-if done?
-    done? <- greater-or-equal row, screen-height
-    break-if done?
-    column <- copy left
-    move-cursor screen, row, column
-    # initial leader for each row: two spaces and a '.'
-    print-character screen, 32/space, 245/grey
-    print-character screen, 32/space, 245/grey
-    print-character screen, 46/full-stop, 245/grey
-    column <- add left, 3
-    {
-      # print row
-      row-done?:boolean <- greater-or-equal column, max-column
-      break-if row-done?
-      curr:screen-cell <- index *buf, i
-      c:character <- get curr, contents:offset
-      print-character screen, c, 245/grey
-      column <- add column, 1
-      i <- add i, 1
-      loop
-    }
-    # print final '.'
-    print-character screen, 46/full-stop, 245/grey
-    column <- add column, 1
-    {
-      # clear rest of current line
-      line-done?:boolean <- greater-than column, right
-      break-if line-done?
-      print-character screen, 32/space
-      column <- add column, 1
-      loop
-    }
-    row <- add row, 1
-    loop
-  }
-  reply row/same-as-ingredient:4, screen/same-as-ingredient:0
-]
-
 recipe clear-line-delimited [
   local-scope
   screen:address <- next-ingredient
@@ -523,7 +423,7 @@ scenario editor-initializes-empty-text [
   ]
 ]
 
-## highlighting mu code
+# just a little color for mu code
 
 scenario render-colors-comments [
   assume-screen 5/width, 5/height
@@ -631,91 +531,6 @@ f]
 
 ## handling events from the keyboard, mouse, touch screen, ...
 
-recipe event-loop [
-  local-scope
-  screen:address <- next-ingredient
-  console:address <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
-  recipes:address:editor-data <- get *env, recipes:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
-  sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
-  {
-    # looping over each (keyboard or touch) event as it occurs
-    +next-event
-    e:event, console, found?:boolean, quit?:boolean <- read-event console
-    loop-unless found?
-    break-if quit?  # only in tests
-    trace [app], [next-event]
-    # check for global events that will trigger regardless of which editor has focus
-    {
-      k:address:number <- maybe-convert e:event, keycode:variant
-      break-unless k
-      +global-keypress
-    }
-    {
-      c:address:character <- maybe-convert e:event, text:variant
-      break-unless c
-      +global-type
-      # ctrl-n? - switch focus
-      {
-        ctrl-n?:boolean <- equal *c, 14/ctrl-n
-        break-unless ctrl-n?
-        *sandbox-in-focus? <- not *sandbox-in-focus?
-        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
-        show-screen screen
-        loop +next-event:label
-      }
-    }
-    # 'touch' event
-    {
-      t:address:touch-event <- maybe-convert e:event, touch:variant
-      break-unless t
-      # ignore all but 'left-click' events for now
-      # todo: test this
-      touch-type:number <- get *t, type:offset
-      is-left-click?:boolean <- equal touch-type, 65513/mouse-left
-      loop-unless is-left-click?, +next-event:label
-      # on a sandbox delete icon? process delete
-      {
-        was-delete?:boolean <- delete-sandbox *t, env
-        break-unless was-delete?
-#?         trace [app], [delete clicked] #? 1
-        screen <- render-sandbox-side screen, env, 1/clear
-        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
-        show-screen screen
-        loop +next-event:label
-      }
-      # if not, send to both editors
-      _ <- move-cursor-in-editor screen, recipes, *t
-      *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
-      jump +continue:label
-    }
-    # if it's not global, send to appropriate editor
-    {
-      {
-        break-if *sandbox-in-focus?
-        handle-event screen, console, recipes, e:event
-      }
-      {
-        break-unless *sandbox-in-focus?
-        handle-event screen, console, current-sandbox, e:event
-      }
-    }
-    +continue
-    # if no more events currently left to process, render.
-    # we rely on 'render' to update 'before-cursor' on pointer events, but
-    # they won't usually come fast enough to trigger this.
-    # todo: test this
-    {
-      more-events?:boolean <- has-more-events? console
-      break-if more-events?
-      render-minimal screen, env
-    }
-    loop
-  }
-]
-
-# helper for testing a single editor
 recipe editor-event-loop [
   local-scope
   screen:address <- next-ingredient
@@ -1198,108 +1013,6 @@ recipe delete-to-end-of-line [
     end-prev:address:address:duplex-list <- get-address *end, prev:offset
     *end-prev <- copy start
   }
-]
-
-recipe render-all [
-  local-scope
-  screen:address <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
-  screen <- render-recipes screen, env, 1/clear-below
-  screen <- render-sandbox-side screen, env, 1/clear-below
-  recipes:address:editor-data <- get *env, recipes:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
-  sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
-  update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
-  show-screen screen
-  reply screen/same-as-ingredient:0
-]
-
-recipe render-minimal [
-  local-scope
-  screen:address <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
-  recipes:address:editor-data <- get *env, recipes:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
-  sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
-  {
-    break-if sandbox-in-focus?
-    screen <- render-recipes screen, env
-    cursor-row:number <- get *recipes, cursor-row:offset
-    cursor-column:number <- get *recipes, cursor-column:offset
-  }
-  {
-    break-unless sandbox-in-focus?
-    screen <- render-sandbox-side screen, env
-    cursor-row:number <- get *current-sandbox, cursor-row:offset
-    cursor-column:number <- get *current-sandbox, cursor-column:offset
-  }
-  move-cursor screen, cursor-row, cursor-column
-  show-screen screen
-  reply screen/same-as-ingredient:0
-]
-
-recipe render-recipes [
-  local-scope
-  screen:address <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
-  clear:boolean <- next-ingredient
-  recipes:address:editor-data <- get *env, recipes:offset
-  # render recipes
-  left:number <- get *recipes, left:offset
-  right:number <- get *recipes, right:offset
-  row:number, screen <- render screen, recipes
-  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
-  {
-    # print any warnings
-    break-unless recipe-warnings
-    row, screen <- render-string screen, recipe-warnings, left, right, 1/red, row
-  }
-  {
-    # no warnings? move to next line
-    break-if recipe-warnings
-    row <- add row, 1
-  }
-  # draw dotted line after recipes
-  draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-  # clear next line, in case we just processed a backspace
-  row <- add row, 1
-  move-cursor screen, row, left
-  clear-line-delimited screen, left, right
-  # clear rest of screen in this column, if requested
-  reply-unless clear, screen/same-as-ingredient:0
-  screen-height:number <- screen-height screen
-  {
-    at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
-    break-if at-bottom-of-screen?
-    move-cursor screen, row, left
-    clear-line-delimited screen, left, right
-    row <- add row, 1
-    loop
-  }
-  reply screen/same-as-ingredient:0
-]
-
-recipe update-cursor [
-  local-scope
-  screen:address <- next-ingredient
-  recipes:address:editor-data <- next-ingredient
-  current-sandbox:address:editor-data <- next-ingredient
-  sandbox-in-focus?:boolean <- next-ingredient
-  {
-    break-if sandbox-in-focus?
-#?     $print [recipes in focus
-#? ] #? 1
-    cursor-row:number <- get *recipes, cursor-row:offset
-    cursor-column:number <- get *recipes, cursor-column:offset
-  }
-  {
-    break-unless sandbox-in-focus?
-#?     $print [sandboxes in focus
-#? ] #? 1
-    cursor-row:number <- get *current-sandbox, cursor-row:offset
-    cursor-column:number <- get *current-sandbox, cursor-column:offset
-  }
-  move-cursor screen, cursor-row, cursor-column
 ]
 
 scenario editor-handles-empty-event-queue [
@@ -2612,6 +2325,40 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
   ]
 ]
 
+## the environment consists of one editor on the left for recipes and one on
+## the right for the sandbox
+
+recipe new-programming-environment [
+  local-scope
+  screen:address <- next-ingredient
+  initial-recipe-contents:address:array:character <- next-ingredient
+  initial-sandbox-contents:address:array:character <- next-ingredient
+  width:number <- screen-width screen
+  height:number <- screen-height screen
+  # top menu
+  result:address:programming-environment-data <- new programming-environment-data:type
+  draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
+  button-start:number <- subtract width, 20
+  button-on-screen?:boolean <- greater-or-equal button-start, 0
+  assert button-on-screen?, [screen too narrow for menu]
+  move-cursor screen, 0/row, button-start
+  run-button:address:array:character <- new [ run (F4) ]
+  print-string screen, run-button, 255/white, 161/reddish
+  # dotted line down the middle
+  divider:number, _ <- divide-with-remainder width, 2
+  draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
+  # recipe editor on the left
+  recipes:address:address:editor-data <- get-address *result, recipes:offset
+  *recipes <- new-editor initial-recipe-contents, screen, 0/left, divider/right
+  # sandbox editor on the right
+  new-left:number <- add divider, 1
+  new-right:number <- add new-left, 5
+  current-sandbox:address:address:editor-data <- get-address *result, current-sandbox:offset
+  *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
+  screen <- render-all screen, result
+  reply result
+]
+
 scenario point-at-multiple-editors [
   $close-trace
   assume-screen 30/width, 5/height
@@ -2734,6 +2481,194 @@ scenario editor-in-focus-keeps-cursor [
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
   ]
+]
+
+recipe render-all [
+  local-scope
+  screen:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  screen <- render-recipes screen, env, 1/clear-below
+  screen <- render-sandbox-side screen, env, 1/clear-below
+  recipes:address:editor-data <- get *env, recipes:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
+  update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
+  show-screen screen
+  reply screen/same-as-ingredient:0
+]
+
+recipe render-minimal [
+  local-scope
+  screen:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  recipes:address:editor-data <- get *env, recipes:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
+  {
+    break-if sandbox-in-focus?
+    screen <- render-recipes screen, env
+    cursor-row:number <- get *recipes, cursor-row:offset
+    cursor-column:number <- get *recipes, cursor-column:offset
+  }
+  {
+    break-unless sandbox-in-focus?
+    screen <- render-sandbox-side screen, env
+    cursor-row:number <- get *current-sandbox, cursor-row:offset
+    cursor-column:number <- get *current-sandbox, cursor-column:offset
+  }
+  move-cursor screen, cursor-row, cursor-column
+  show-screen screen
+  reply screen/same-as-ingredient:0
+]
+
+recipe render-recipes [
+  local-scope
+  screen:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  clear:boolean <- next-ingredient
+  recipes:address:editor-data <- get *env, recipes:offset
+  # render recipes
+  left:number <- get *recipes, left:offset
+  right:number <- get *recipes, right:offset
+  row:number, screen <- render screen, recipes
+  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+  {
+    # print any warnings
+    break-unless recipe-warnings
+    row, screen <- render-string screen, recipe-warnings, left, right, 1/red, row
+  }
+  {
+    # no warnings? move to next line
+    break-if recipe-warnings
+    row <- add row, 1
+  }
+  # draw dotted line after recipes
+  draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+  # clear next line, in case we just processed a backspace
+  row <- add row, 1
+  move-cursor screen, row, left
+  clear-line-delimited screen, left, right
+  # clear rest of screen in this column, if requested
+  reply-unless clear, screen/same-as-ingredient:0
+  screen-height:number <- screen-height screen
+  {
+    at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
+    break-if at-bottom-of-screen?
+    move-cursor screen, row, left
+    clear-line-delimited screen, left, right
+    row <- add row, 1
+    loop
+  }
+  reply screen/same-as-ingredient:0
+]
+
+recipe event-loop [
+  local-scope
+  screen:address <- next-ingredient
+  console:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  recipes:address:editor-data <- get *env, recipes:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
+  {
+    # looping over each (keyboard or touch) event as it occurs
+    +next-event
+    e:event, console, found?:boolean, quit?:boolean <- read-event console
+    loop-unless found?
+    break-if quit?  # only in tests
+    trace [app], [next-event]
+    # check for global events that will trigger regardless of which editor has focus
+    {
+      k:address:number <- maybe-convert e:event, keycode:variant
+      break-unless k
+      +global-keypress
+    }
+    {
+      c:address:character <- maybe-convert e:event, text:variant
+      break-unless c
+      +global-type
+      # ctrl-n? - switch focus
+      {
+        ctrl-n?:boolean <- equal *c, 14/ctrl-n
+        break-unless ctrl-n?
+        *sandbox-in-focus? <- not *sandbox-in-focus?
+        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+        show-screen screen
+        loop +next-event:label
+      }
+    }
+    # 'touch' event
+    {
+      t:address:touch-event <- maybe-convert e:event, touch:variant
+      break-unless t
+      # ignore all but 'left-click' events for now
+      # todo: test this
+      touch-type:number <- get *t, type:offset
+      is-left-click?:boolean <- equal touch-type, 65513/mouse-left
+      loop-unless is-left-click?, +next-event:label
+      # on a sandbox delete icon? process delete
+      {
+        was-delete?:boolean <- delete-sandbox *t, env
+        break-unless was-delete?
+#?         trace [app], [delete clicked] #? 1
+        screen <- render-sandbox-side screen, env, 1/clear
+        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+        show-screen screen
+        loop +next-event:label
+      }
+      # if not, send to both editors
+      _ <- move-cursor-in-editor screen, recipes, *t
+      *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
+      jump +continue:label
+    }
+    # if it's not global, send to appropriate editor
+    {
+      {
+        break-if *sandbox-in-focus?
+        handle-event screen, console, recipes, e:event
+      }
+      {
+        break-unless *sandbox-in-focus?
+        handle-event screen, console, current-sandbox, e:event
+      }
+    }
+    +continue
+    # if no more events currently left to process, render.
+    # we rely on 'render' to update 'before-cursor' on pointer events, but
+    # they won't usually come fast enough to trigger this.
+    # todo: test this
+    {
+      more-events?:boolean <- has-more-events? console
+      break-if more-events?
+      render-minimal screen, env
+    }
+    loop
+  }
+]
+
+# helper for testing a single editor
+
+recipe update-cursor [
+  local-scope
+  screen:address <- next-ingredient
+  recipes:address:editor-data <- next-ingredient
+  current-sandbox:address:editor-data <- next-ingredient
+  sandbox-in-focus?:boolean <- next-ingredient
+  {
+    break-if sandbox-in-focus?
+#?     $print [recipes in focus
+#? ] #? 1
+    cursor-row:number <- get *recipes, cursor-row:offset
+    cursor-column:number <- get *recipes, cursor-column:offset
+  }
+  {
+    break-unless sandbox-in-focus?
+#?     $print [sandboxes in focus
+#? ] #? 1
+    cursor-row:number <- get *current-sandbox, cursor-row:offset
+    cursor-column:number <- get *current-sandbox, cursor-column:offset
+  }
+  move-cursor screen, cursor-row, cursor-column
 ]
 
 ## Running code from the editors
@@ -2997,6 +2932,75 @@ recipe restore-sandboxes [
     loop
   }
   reply env/same-as-ingredient:0
+]
+
+# row:number, screen:address <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
+# print the fake sandbox screen to 'screen' with appropriate delimiters
+# leave cursor at start of next line
+recipe render-screen [
+  local-scope
+  screen:address <- next-ingredient
+  s:address:screen <- next-ingredient
+  left:number <- next-ingredient
+  right:number <- next-ingredient
+  row:number <- next-ingredient
+  row <- add row, 1
+  reply-unless s, row/same-as-ingredient:4, screen/same-as-ingredient:0
+  # print 'screen:'
+  header:address:array:character <- new [screen:]
+  row <- subtract row, 1  # compensate for render-string below
+  row <- render-string screen, header, left, right, 245/grey, row
+  # newline
+  row <- add row, 1
+  move-cursor screen, row, left
+  # start printing s
+  column:number <- copy left
+  s-width:number <- screen-width s
+  s-height:number <- screen-height s
+  buf:address:array:screen-cell <- get *s, data:offset
+  stop-printing:number <- add left, s-width, 3
+  max-column:number <- min stop-printing, right
+  i:number <- copy 0
+  len:number <- length *buf
+  screen-height:number <- screen-height screen
+  {
+    done?:boolean <- greater-or-equal i, len
+    break-if done?
+    done? <- greater-or-equal row, screen-height
+    break-if done?
+    column <- copy left
+    move-cursor screen, row, column
+    # initial leader for each row: two spaces and a '.'
+    print-character screen, 32/space, 245/grey
+    print-character screen, 32/space, 245/grey
+    print-character screen, 46/full-stop, 245/grey
+    column <- add left, 3
+    {
+      # print row
+      row-done?:boolean <- greater-or-equal column, max-column
+      break-if row-done?
+      curr:screen-cell <- index *buf, i
+      c:character <- get curr, contents:offset
+      print-character screen, c, 245/grey
+      column <- add column, 1
+      i <- add i, 1
+      loop
+    }
+    # print final '.'
+    print-character screen, 46/full-stop, 245/grey
+    column <- add column, 1
+    {
+      # clear rest of current line
+      line-done?:boolean <- greater-than column, right
+      break-if line-done?
+      print-character screen, 32/space
+      column <- add column, 1
+      loop
+    }
+    row <- add row, 1
+    loop
+  }
+  reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
 # was-deleted?:boolean <- delete-sandbox t:touch-event, env:address:programming-environment-data
