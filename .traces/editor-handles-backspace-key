@@ -21746,18 +21746,42 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
  104 run: jump-if prev, 1:offset
 9999 mem: location 1267 is 1159
 9999 run: jumping to instruction 6
- 104 run: previous-character:character <- get **before-cursor, value:offset
-9999 mem: location 1266 is 1146
+ 104 run: cursor-row:address:number <- get-address *editor, cursor-row:offset
+9999 mem: location 1265 is 1145
+9999 mem: location 1145 is 1159
 9999 mem: location 1146 is 1162
-9999 mem: location 1162 is 97
-9999 mem: location 1163 is 1169
-9999 mem: location 1164 is 1159
-9999 mem: location 1266 is 1146
+9999 mem: location 1147 is 0
+9999 mem: location 1148 is 9
+9999 mem: location 1149 is 1
+9999 mem: location 1150 is 1
+9999 mem: location 1265 is 1145
+9999 run: address to copy is 1149
+9999 mem: storing 1149 in location 1268
+ 104 run: cursor-column:address:number <- get-address *editor, cursor-column:offset
+9999 mem: location 1265 is 1145
+9999 mem: location 1145 is 1159
 9999 mem: location 1146 is 1162
-9999 run: address to copy is 1162
-9999 run: its type is number
-9999 mem: location 1162 is 97
-9999 mem: storing 97 in location 1268
+9999 mem: location 1147 is 0
+9999 mem: location 1148 is 9
+9999 mem: location 1149 is 1
+9999 mem: location 1150 is 1
+9999 mem: location 1265 is 1145
+9999 run: address to copy is 1150
+9999 mem: storing 1150 in location 1269
+ 104 run: at-left-margin?:boolean <- equal *cursor-column, 0
+9999 mem: location 1269 is 1150
+9999 mem: location 1150 is 1
+9999 mem: storing 0 in location 1270
+ 104 run: break-if at-left-margin?, 
+9999 mem: location 1270 is 0
+9999 run: jump-if fell through
+ 104 run: *cursor-column <- subtract *cursor-column, 1
+9999 mem: location 1269 is 1150
+9999 mem: location 1150 is 1
+9999 mem: location 1269 is 1150
+9999 mem: storing 0 in location 1150
+ 104 run: jump +delete:label
+9999 run: jumping to instruction 28
  104 run: remove-duplex *before-cursor
 9999 mem: location 1266 is 1146
 9999 mem: location 1146 is 1162
@@ -21847,41 +21871,6 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: location 1267 is 1159
 9999 mem: location 1266 is 1146
 9999 mem: storing 1159 in location 1146
- 104 run: cursor-row:address:number <- get-address *editor, cursor-row:offset
-9999 mem: location 1265 is 1145
-9999 mem: location 1145 is 1159
-9999 mem: location 1146 is 1159
-9999 mem: location 1147 is 0
-9999 mem: location 1148 is 9
-9999 mem: location 1149 is 1
-9999 mem: location 1150 is 1
-9999 mem: location 1265 is 1145
-9999 run: address to copy is 1149
-9999 mem: storing 1149 in location 1269
- 104 run: cursor-column:address:number <- get-address *editor, cursor-column:offset
-9999 mem: location 1265 is 1145
-9999 mem: location 1145 is 1159
-9999 mem: location 1146 is 1159
-9999 mem: location 1147 is 0
-9999 mem: location 1148 is 9
-9999 mem: location 1149 is 1
-9999 mem: location 1150 is 1
-9999 mem: location 1265 is 1145
-9999 run: address to copy is 1150
-9999 mem: storing 1150 in location 1270
- 104 run: at-left-margin?:boolean <- equal *cursor-column, 0
-9999 mem: location 1270 is 1150
-9999 mem: location 1150 is 1
-9999 mem: storing 0 in location 1271
- 104 run: break-if at-left-margin?, 
-9999 mem: location 1271 is 0
-9999 run: jump-if fell through
- 104 run: *cursor-column <- subtract *cursor-column, 1
-9999 mem: location 1270 is 1150
-9999 mem: location 1150 is 1
-9999 mem: location 1270 is 1150
-9999 mem: storing 0 in location 1150
- 104 run: reply 
  103 run: reply 
  102 run: row:number, screen <- render screen, editor
 9999 mem: location 1132 is 1009
@@ -22182,10 +22171,10 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
  104 run: break-unless starting-assignment?, 
 9999 mem: location 1223 is 0
 9999 run: jumping to instruction 26
-schedule: get-color/render/editor-event-loop/run1001/scenario-editor-handles-backspace-key
  104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1216 is 7
 9999 mem: storing 0 in location 1224
+schedule: get-color/render/editor-event-loop/run1001/scenario-editor-handles-backspace-key
  104 run: break-unless color-is-red?, 
 9999 mem: location 1224 is 0
 9999 run: jumping to instruction 34
@@ -25254,9 +25243,9 @@ schedule: get-color/render/editor-event-loop/run1001/scenario-editor-handles-bac
  105 run: break-if bg-color-found?, 
 9999 mem: location 1233 is 0
 9999 run: jump-if fell through
-schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/scenario-editor-handles-backspace-key
  105 run: bg-color <- copy 0/black
 9999 mem: storing 0 in location 1232
+schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/scenario-editor-handles-backspace-key
  105 run: break-unless sc, 
 9999 mem: location 1228 is 1009
 9999 run: jump-unless fell through

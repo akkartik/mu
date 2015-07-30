@@ -1037,37 +1037,37 @@ recipe delete-before-cursor [
   # if at start of text (before-cursor at § sentinel), return
   prev:address:duplex-list <- prev-duplex *before-cursor
   reply-unless prev
-  # save previous character, then delete it
-  previous-character:character <- get **before-cursor, value:offset
-  remove-duplex *before-cursor
-  *before-cursor <- copy prev
-  # update cursor coordinates
+  # 1. update cursor coordinates
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
-  # 1. if not at left margin, move one character left
+  # 1.1. if not at left margin, move one character left
   {
     at-left-margin?:boolean <- equal *cursor-column, 0
     break-if at-left-margin?
     *cursor-column <- subtract *cursor-column, 1
-    reply
+    jump +delete:label
   }
-  # 2. if at left margin, we must move to previous row:
+  # 1.2. if at left margin, we must move to previous row:
   assert *cursor-row, [unimplemented: moving cursor above top of screen]
   *cursor-row <- subtract *cursor-row, 1
   {
-    # 2a. if previous character was newline, figure out how long the previous line is
+    # 1.2.1. if previous character was newline, figure out how long the previous line is
+    previous-character:character <- get **before-cursor, value:offset
     previous-character-is-newline?:boolean <- equal previous-character, 10/newline
     break-unless previous-character-is-newline?
     # compute length of previous line
     d:address:duplex-list <- get *editor, data:offset
     end-of-line:number <- previous-line-length *before-cursor, d
-    # fudge factor: we're already at the last character, so we didn't count it
-    *cursor-column <- add end-of-line, 1
-    reply
+    *cursor-column <- copy end-of-line
+    jump +delete:label
   }
-  # 2b. if previous-character was not newline, we're just at a wrapped line
+  # 1.2.2. if previous-character was not newline, we're just at a wrapped line
   right:number <- get *editor, right:offset
   *cursor-column <- subtract right, 1  # leave room for wrap icon
+  # 2. delete previous character
+  +delete
+  remove-duplex *before-cursor
+  *before-cursor <- copy prev
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
