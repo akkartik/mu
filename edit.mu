@@ -880,32 +880,7 @@ recipe handle-event [
     # if not at start of text (before-cursor at § sentinel)
     prev:address:duplex-list <- prev-duplex *before-cursor
     break-unless prev
-    # if cursor not at left margin, move one character left
-    {
-      at-left-margin?:boolean <- equal *cursor-column, 0
-      break-if at-left-margin?
-#?       trace [app], [decrementing] #? 1
-      *cursor-column <- subtract *cursor-column, 1
-      reply
-    }
-    # if at left margin, there's guaranteed to be a previous line, since we're
-    # not at start of text
-    {
-      # if before-cursor is at newline, figure out how long the previous line is
-      prevc:character <- get **before-cursor, value:offset
-      previous-character-is-newline?:boolean <- equal prevc, 10/newline
-      break-unless previous-character-is-newline?
-#?       trace [app], [previous line] #? 1
-      # compute length of previous line
-      end-of-line:number <- previous-line-length *before-cursor, d
-      *cursor-row <- subtract *cursor-row, 1
-      *cursor-column <- copy end-of-line
-      reply
-    }
-    # if before-cursor is not at newline, we're just at a wrapped line
-    assert *cursor-row, [unimplemented: moving cursor above top of screen]
-    *cursor-row <- subtract *cursor-row, 1
-    *cursor-column <- subtract right, 1  # leave room for wrap icon
+    editor <- move-cursor-coordinates-left editor
   }
   # down arrow
   {
@@ -1037,37 +1012,45 @@ recipe delete-before-cursor [
   # if at start of text (before-cursor at § sentinel), return
   prev:address:duplex-list <- prev-duplex *before-cursor
   reply-unless prev
-  # 1. update cursor coordinates
+  editor <- move-cursor-coordinates-left editor
+  remove-duplex *before-cursor
+  *before-cursor <- copy prev
+]
+
+recipe move-cursor-coordinates-left [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  before-cursor:address:duplex-list <- get *editor, before-cursor:offset
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
-  # 1.1. if not at left margin, move one character left
+  # if not at left margin, move one character left
   {
     at-left-margin?:boolean <- equal *cursor-column, 0
     break-if at-left-margin?
+#?     trace [app], [decrementing cursor column] #? 1
     *cursor-column <- subtract *cursor-column, 1
-    jump +delete:label
+    reply editor/same-as-ingredient:0
   }
-  # 1.2. if at left margin, we must move to previous row:
+  # if at left margin, we must move to previous row:
   assert *cursor-row, [unimplemented: moving cursor above top of screen]
   *cursor-row <- subtract *cursor-row, 1
   {
-    # 1.2.1. if previous character was newline, figure out how long the previous line is
-    previous-character:character <- get **before-cursor, value:offset
+    # case 1: if previous character was newline, figure out how long the previous line is
+    previous-character:character <- get *before-cursor, value:offset
     previous-character-is-newline?:boolean <- equal previous-character, 10/newline
     break-unless previous-character-is-newline?
     # compute length of previous line
+#?     trace [app], [switching to previous line] #? 1
     d:address:duplex-list <- get *editor, data:offset
-    end-of-line:number <- previous-line-length *before-cursor, d
+    end-of-line:number <- previous-line-length before-cursor, d
     *cursor-column <- copy end-of-line
-    jump +delete:label
+    reply editor/same-as-ingredient:0
   }
-  # 1.2.2. if previous-character was not newline, we're just at a wrapped line
+  # case 2: if previous-character was not newline, we're just at a wrapped line
+#?   trace [app], [wrapping to previous line] #? 1
   right:number <- get *editor, right:offset
   *cursor-column <- subtract right, 1  # leave room for wrap icon
-  # 2. delete previous character
-  +delete
-  remove-duplex *before-cursor
-  *before-cursor <- copy prev
+  reply editor/same-as-ingredient:0
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
