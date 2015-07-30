@@ -2597,7 +2597,7 @@ recipe event-loop [
         loop +next-event:label
       }
     }
-    # 'touch' event
+    # 'touch' event - send to both sides, see what picks it up
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t
@@ -2606,22 +2606,14 @@ recipe event-loop [
       touch-type:number <- get *t, type:offset
       is-left-click?:boolean <- equal touch-type, 65513/mouse-left
       loop-unless is-left-click?, +next-event:label
-      # on a sandbox delete icon? process delete
-      {
-        was-delete?:boolean <- delete-sandbox *t, env
-        break-unless was-delete?
-#?         trace [app], [delete clicked] #? 1
-        screen <- render-sandbox-side screen, env, 1/clear
-        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
-        show-screen screen
-        loop +next-event:label
-      }
-      # if not, send to both editors
+      # later exceptions for non-editor touches will go here
+      +global-touch
+      # send to both editors
       _ <- move-cursor-in-editor screen, recipes, *t
       *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
       jump +continue:label
     }
-    # if it's not global, send to appropriate editor
+    # if it's not global and not a touch event, send to appropriate editor
     {
       {
         break-if *sandbox-in-focus?
@@ -2758,6 +2750,8 @@ scenario run-and-show-results [
   ]
 ]
 
+# hook into event-loop recipe: read non-unicode keypress from k, process it if
+# necessary, then go to next level
 after +global-keypress [
   # F4? load all code and run all sandboxes.
   {
@@ -3001,6 +2995,19 @@ recipe render-screen [
     loop
   }
   reply row/same-as-ingredient:4, screen/same-as-ingredient:0
+]
+
+after +global-touch [
+  # on a sandbox delete icon? process delete
+  {
+    was-delete?:boolean <- delete-sandbox *t, env
+    break-unless was-delete?
+#?     trace [app], [delete clicked] #? 1
+    screen <- render-sandbox-side screen, env, 1/clear
+    update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    show-screen screen
+    loop +next-event:label
+  }
 ]
 
 # was-deleted?:boolean <- delete-sandbox t:touch-event, env:address:programming-environment-data
