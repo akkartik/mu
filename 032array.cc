@@ -81,12 +81,14 @@ Recipe_ordinal["index"] = INDEX;
 case INDEX: {
   if (SIZE(ingredients) != 2) {
     raise << current_recipe_name() << ": 'index' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    products.resize(1);
     break;
   }
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
   if (base.types.at(0) != Type_ordinal["array"]) {
     raise << current_recipe_name () << ": 'index' on a non-array " << base.original_string << '\n' << end();
+    products.resize(1);
     break;
   }
   reagent offset = canonize(current_instruction().ingredients.at(1));
@@ -171,6 +173,7 @@ INDEX_ADDRESS,
 Recipe_ordinal["index-address"] = INDEX_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
+  products.resize(1);
   if (SIZE(ingredients) != 2) {
     raise << current_recipe_name() << ": 'index-address' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
@@ -186,11 +189,9 @@ case INDEX_ADDRESS: {
   vector<type_ordinal> element_type = array_element(base.types);
   if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
     raise << current_recipe_name() << ": invalid index " << offset_val.at(0) << '\n' << end();
-    products.resize(1);
     break;
   }
   long long int result = base_address + 1 + offset_val.at(0)*size_of(element_type);
-  products.resize(1);
   products.at(0).push_back(result);
   break;
 }
@@ -243,6 +244,7 @@ LENGTH,
 Recipe_ordinal["length"] = LENGTH;
 :(before "End Primitive Recipe Implementations")
 case LENGTH: {
+  products.resize(1);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'length' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
@@ -252,7 +254,6 @@ case LENGTH: {
     raise << "tried to calculate length of non-array " << x.original_string << '\n' << end();
     break;
   }
-  products.resize(1);
   products.at(0).push_back(Memory[x.value]);
   break;
 }

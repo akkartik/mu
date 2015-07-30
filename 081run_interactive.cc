@@ -26,6 +26,7 @@ Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
 //? cerr << "run-interactive: " << RUN_INTERACTIVE << '\n'; //? 1
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
+  products.resize(3);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'run-interactive' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
@@ -34,7 +35,6 @@ case RUN_INTERACTIVE: {
     raise << current_recipe_name() << ": first ingredient of 'run-interactive' should be a literal string, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
-  products.resize(3);
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
   if (!new_code_pushed_to_stack) {
     products.at(0).push_back(0);
@@ -269,6 +269,7 @@ RELOAD,
 Recipe_ordinal["reload"] = RELOAD;
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
+  products.resize(1);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'reload' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
@@ -289,7 +290,6 @@ case RELOAD: {
   Trace_stream->newline();  // flush trace
   Disable_redefine_warnings = false;
   Hide_warnings = false;
-  products.resize(1);
   products.at(0).push_back(warnings_from_trace());
   if (Trace_stream->collect_layer == "warn") {
     delete Trace_stream;

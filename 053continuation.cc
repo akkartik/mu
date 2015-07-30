@@ -193,6 +193,7 @@ REPLY_DELIMITED_CONTINUATION,
 Recipe_ordinal["reply-delimited-continuation"] = REPLY_DELIMITED_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
 case REPLY_DELIMITED_CONTINUATION: {
+  products.resize(1);
   // first clear any existing ingredients, to isolate the creation of the
   // continuation from its calls
   Current_routine->calls.front().ingredient_atoms.clear();
@@ -210,7 +211,6 @@ case REPLY_DELIMITED_CONTINUATION: {
     Current_routine->calls.pop_front();
   }
   // return it as the result of the 'reset' call
-  products.resize(1);
   products.at(0).push_back(Next_delimited_continuation_id);
   ++Next_delimited_continuation_id;
   break;  // continue to process rest of 'reset' call

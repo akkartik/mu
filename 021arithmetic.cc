@@ -43,6 +43,7 @@ SUBTRACT,
 Recipe_ordinal["subtract"] = SUBTRACT;
 :(before "End Primitive Recipe Implementations")
 case SUBTRACT: {
+  products.resize(1);
   if (ingredients.empty()) {
     raise << current_recipe_name() << ": 'subtract' has no ingredients\n" << end();
     break;
@@ -53,7 +54,6 @@ case SUBTRACT: {
     assert(scalar(ingredients.at(i)));
     result -= ingredients.at(i).at(0);
   }
-  products.resize(1);
   products.at(0).push_back(result);
   break;
 }
@@ -120,6 +120,7 @@ DIVIDE,
 Recipe_ordinal["divide"] = DIVIDE;
 :(before "End Primitive Recipe Implementations")
 case DIVIDE: {
+  products.resize(1);
   if (ingredients.empty()) {
     raise << current_recipe_name() << ": 'divide' has no ingredients\n" << end();
     break;
@@ -130,7 +131,6 @@ case DIVIDE: {
     assert(scalar(ingredients.at(i)));
     result /= ingredients.at(i).at(0);
   }
-  products.resize(1);
   products.at(0).push_back(result);
   break;
 }
@@ -163,13 +163,13 @@ DIVIDE_WITH_REMAINDER,
 Recipe_ordinal["divide-with-remainder"] = DIVIDE_WITH_REMAINDER;
 :(before "End Primitive Recipe Implementations")
 case DIVIDE_WITH_REMAINDER: {
+  products.resize(2);
   if (SIZE(ingredients) != 2) {
     raise << current_recipe_name() << ": 'divide-with-remainder' requires exactly two ingredients, but got " << current_instruction().to_string() << '\n' << end();
     break;
   }
   long long int quotient = ingredients.at(0).at(0) / ingredients.at(1).at(0);
   long long int remainder = static_cast<long long int>(ingredients.at(0).at(0)) % static_cast<long long int>(ingredients.at(1).at(0));
-  products.resize(2);
   // very large integers will lose precision
   products.at(0).push_back(quotient);
   products.at(1).push_back(remainder);
