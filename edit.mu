@@ -650,21 +650,12 @@ recipe event-loop [
     {
       k:address:number <- maybe-convert e:event, keycode:variant
       break-unless k
-      # F4? load all code and run all sandboxes.
-      {
-        do-run?:boolean <- equal *k, 65532/F4
-        break-unless do-run?
-        run-sandboxes env
-        # F4 might update warnings and results on both sides
-        screen <- render-all screen, env
-        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
-        show-screen screen
-        loop +next-event:label
-      }
+      +global-keypress
     }
     {
       c:address:character <- maybe-convert e:event, text:variant
       break-unless c
+      +global-type
       # ctrl-n? - switch focus
       {
         ctrl-n?:boolean <- equal *c, 14/ctrl-n
@@ -2830,6 +2821,20 @@ scenario run-and-show-results [
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
+]
+
+after +global-keypress [
+  # F4? load all code and run all sandboxes.
+  {
+    do-run?:boolean <- equal *k, 65532/F4
+    break-unless do-run?
+    run-sandboxes env
+    # F4 might update warnings and results on both sides
+    screen <- render-all screen, env
+    update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    show-screen screen
+    loop +next-event:label
+  }
 ]
 
 recipe run-sandboxes [
