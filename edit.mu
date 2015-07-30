@@ -2853,7 +2853,7 @@ recipe run-sandboxes [
   }
   # save all sandboxes before running, just in case we die when running
   # first clear previous versions, in case we deleted some sandbox
-  $system [rm lesson/[0-9]*]
+  $system [rm lesson/[0-9]* >&/dev/null]
   curr:address:sandbox-data <- get *env, sandbox:offset
   filename:number <- copy 0
   {
