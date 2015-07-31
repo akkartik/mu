@@ -547,13 +547,13 @@ recipe editor-event-loop [
     trace [app], [next-event]
     # 'touch' event - send to both editors
     {
-      t:address:touch-event <- maybe-convert e:event, touch:variant
+      t:address:touch-event <- maybe-convert e, touch:variant
       break-unless t
       move-cursor-in-editor screen, editor, *t
       jump +continue:label
     }
     # other events - send to appropriate editor
-    handle-event screen, console, editor, e:event
+    handle-event screen, console, editor, e
     +continue
     row:number, screen <- render screen, editor
     # clear next line, in case we just processed a backspace
@@ -575,7 +575,7 @@ recipe handle-event [
   reply-unless editor
   # character
   {
-    c:address:character <- maybe-convert e:event, text:variant
+    c:address:character <- maybe-convert e, text:variant
     break-unless c
     ## check for special characters
     # backspace - delete character before cursor
@@ -616,7 +616,7 @@ recipe handle-event [
     # tab - insert two spaces
     {
       tab?:boolean <- equal *c, 9/tab
-      break-unless tab?:boolean
+      break-unless tab?
       insert-at-cursor editor, 32/space, screen
       insert-at-cursor editor, 32/space, screen
       reply
@@ -3233,16 +3233,16 @@ after +global-touch [
     sandbox-left-margin:number <- get *current-sandbox, left:offset
     click-column:number <- get *t, column:offset
     on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
-    break-unless on-sandbox-side?:boolean
+    break-unless on-sandbox-side?
     first-sandbox:address:sandbox-data <- get *env, sandbox:offset
     first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
     click-row:number <- get *t, row:offset
-    below-sandbox-editor?:boolean <- greater-or-equal click-row:number, first-sandbox-begins:number
-    break-unless below-sandbox-editor?:boolean
-    empty-sandbox-editor?:boolean <- empty-editor? current-sandbox:address:editor-data
-    break-unless empty-sandbox-editor?:boolean  # make the user hit F4 before editing a new sandbox
+    below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
+    break-unless below-sandbox-editor?
+    empty-sandbox-editor?:boolean <- empty-editor? current-sandbox
+    break-unless empty-sandbox-editor?  # make the user hit F4 before editing a new sandbox
     # identify the sandbox to edit and remove it from the sandbox list
-    sandbox:address:sandbox-data <- extract-sandbox env, click-row:number
+    sandbox:address:sandbox-data <- extract-sandbox env, click-row
     text:address:array:character <- get *sandbox, data:offset
     current-sandbox <- insert-text current-sandbox, text
     screen <- render-sandbox-side screen, env, 1/clear
@@ -3276,7 +3276,7 @@ recipe extract-sandbox [
     # if click-row < sandbox.next-sandbox.starting-row-on-screen, break
     next-start:number <- get *next-sandbox, starting-row-on-screen:offset
     found?:boolean <- lesser-than click-row, next-start
-    break-if found?:boolean
+    break-if found?
     sandbox <- get-address **sandbox, next-sandbox:offset
     loop
   }
@@ -3607,7 +3607,7 @@ recipe draw-horizontal [
   }
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
-    break-if bg-color-found?:boolean
+    break-if bg-color-found?
     bg-color <- copy 0/black
   }
   move-cursor screen, row, x
