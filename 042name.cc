@@ -199,7 +199,7 @@ recipe main [
 if (inst.operation == Recipe_ordinal["get"]
     || inst.operation == Recipe_ordinal["get-address"]) {
   if (SIZE(inst.ingredients) != 2) {
-    raise << Recipe[r].name << ": exactly 2 ingredients expected in '" << current_instruction().to_string() << "'\n" << end();
+    raise << Recipe[r].name << ": exactly 2 ingredients expected in '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1)))
