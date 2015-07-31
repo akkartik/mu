@@ -72,7 +72,8 @@ case SAVE: {
   fout.close();
   if (!exists("lesson/.git")) break;
   // bug in git: git diff -q messes up --exit-code
-  int status = system("cd lesson; git add .; git diff HEAD --exit-code >/dev/null || git commit -a -m . >/dev/null");
+  // explicitly say '--all' for git 1.9
+  int status = system("cd lesson; git add --all .; git diff HEAD --exit-code >/dev/null || git commit -a -m . >/dev/null");
   if (status != 0)
     raise << "error in commit: contents " << contents << '\n' << end();
   break;
