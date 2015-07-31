@@ -3145,6 +3145,44 @@ scenario run-instruction-and-print-warnings-only-once [
   ]
 ]
 
+recipe editor-contents [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  buf:address:buffer <- new-buffer 80
+  curr:address:duplex-list <- get *editor, data:offset
+  # skip § sentinel
+  assert curr, [editor without data is illegal; must have at least a sentinel]
+  curr <- next-duplex curr
+  reply-unless curr, 0
+  {
+    break-unless curr
+    c:character <- get *curr, value:offset
+    buffer-append buf, c
+    curr <- next-duplex curr
+    loop
+  }
+  result:address:array:character <- buffer-to-array buf
+  reply result
+]
+
+scenario editor-provides-edited-contents [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  assume-console [
+    left-click 1, 2
+    type [def]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:address:array:character <- editor-contents 2:address:editor-data
+    4:array:character <- copy *3:address:array:character
+  ]
+  memory-should-contain [
+    4:string <- [abdefc]
+  ]
+]
+
 ## editing sandboxes after they've been created
 
 scenario clicking-on-a-sandbox-moves-it-to-editor [
@@ -3395,44 +3433,6 @@ scenario run-instruction-manages-screen-per-sandbox [
     .                                                  ┊  .                              .               .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
-  ]
-]
-
-recipe editor-contents [
-  local-scope
-  editor:address:editor-data <- next-ingredient
-  buf:address:buffer <- new-buffer 80
-  curr:address:duplex-list <- get *editor, data:offset
-  # skip § sentinel
-  assert curr, [editor without data is illegal; must have at least a sentinel]
-  curr <- next-duplex curr
-  reply-unless curr, 0
-  {
-    break-unless curr
-    c:character <- get *curr, value:offset
-    buffer-append buf, c
-    curr <- next-duplex curr
-    loop
-  }
-  result:address:array:character <- buffer-to-array buf
-  reply result
-]
-
-scenario editor-provides-edited-contents [
-  assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
-  assume-console [
-    left-click 1, 2
-    type [def]
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:address:array:character <- editor-contents 2:address:editor-data
-    4:array:character <- copy *3:address:array:character
-  ]
-  memory-should-contain [
-    4:string <- [abdefc]
   ]
 ]
 
