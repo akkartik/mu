@@ -63,7 +63,7 @@ void run_current_routine()
     trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string() << end();
     if (Memory[0] != 0) {
       raise << "something wrote to location 0; this should never happen\n" << end();
-      break;
+      Memory[0] = 0;
     }
     // Read all ingredients from memory.
     // Each ingredient loads a vector of values rather than a single value; mu
