@@ -80,5 +80,3 @@ recipe main [
   x:number <- copy 2
 ]
 +warn: missing type in 'x <- copy 1'
-+warn: x <- copy 1: reagent not initialized: x
-+warn: main: size mismatch in storing to x at 'x <- copy 1'

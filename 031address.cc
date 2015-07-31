@@ -24,6 +24,20 @@ recipe main [
 
 :(before "long long int base = x.value" following "void write_memory(reagent x, vector<double> data)")
 x = canonize(x);
+if (x.value == 0) {
+  raise << "can't write to location 0\n" << end();
+  return;
+}
+
+//: writes to address 0 always loudly fail
+:(scenario store_to_0_warns)
+% Hide_warnings = true;
+recipe main [
+  1:address:number <- copy 0
+  1:address:number/lookup <- copy 34
+]
+-mem: storing 34 in location 0
++warn: can't write to location 0
 
 :(code)
 reagent canonize(reagent x) {

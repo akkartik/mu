@@ -141,10 +141,12 @@ recipe main [
 
 //: an escape hatch to suppress name conversion that we'll use later
 :(scenario transform_names_passes_raw)
+% Hide_warnings = true;
 recipe main [
   x:number/raw <- copy 0
 ]
 -name: assign x 1
++warn: can't write to location 0
 
 :(scenario transform_names_warns_when_mixing_names_and_numeric_locations)
 % Hide_warnings = true;
