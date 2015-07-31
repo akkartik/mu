@@ -38,7 +38,7 @@ container editor-data [
   before-cursor:address:duplex-list
 
   # raw bounds of display area on screen
-  # always displays from row 1 and at most until bottom of screen
+  # always displays from row 1 (leaving row 0 for a menu) and at most until bottom of screen
   left:number
   right:number
   # raw screen coordinates of cursor
@@ -73,29 +73,37 @@ recipe new-editor [
   *init <- push-duplex 167/§, 0/tail
   y:address:address:duplex-list <- get-address *result, before-cursor:offset
   *y <- copy *init
-  # early exit if s is empty
-  reply-unless s, result
-  len:number <- length *s
-  reply-unless len, result
-  idx:number <- copy 0
-  # now we can start appending the rest, character by character
-  curr:address:duplex-list <- copy *init
-  {
-    done?:boolean <- greater-or-equal idx, len
-    break-if done?
-    c:character <- index *s, idx
-    insert-duplex c, curr
-    # next iter
-    curr <- next-duplex curr
-    idx <- add idx, 1
-    loop
-  }
+  result <- insert-text result, s
   # initialize cursor to top of screen
   y <- get-address *result, before-cursor:offset
   *y <- copy *init
   # initial render to screen, just for some old tests
   _, screen <- render screen, result
   reply result
+]
+
+recipe insert-text [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  text:address:array:character <- next-ingredient
+  # early exit if text is empty
+  reply-unless text, editor/same-as-ingredient:0
+  len:number <- length *text
+  reply-unless len, editor/same-as-ingredient:0
+  idx:number <- copy 0
+  # now we can start appending the rest, character by character
+  curr:address:duplex-list <- get *editor, data:offset
+  {
+    done?:boolean <- greater-or-equal idx, len
+    break-if done?
+    c:character <- index *text, idx
+    insert-duplex c, curr
+    # next iter
+    curr <- next-duplex curr
+    idx <- add idx, 1
+    loop
+  }
+  reply editor/same-as-ingredient:0
 ]
 
 scenario editor-initializes-without-data [
@@ -3135,6 +3143,113 @@ scenario run-instruction-and-print-warnings-only-once [
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
+]
+
+## editing sandboxes after they've been created
+
+scenario clicking-on-a-sandbox-moves-it-to-editor [
+  $close-trace
+  assume-screen 40/width, 10/height
+  # basic recipe
+  1:address:array:character <- new [ 
+recipe foo [
+  add 2, 2
+]]
+  # run it
+  2:address:array:character <- new [foo]
+  assume-console [
+    press 65532  # F4
+  ]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  event-loop screen:address, console:address, 3:address:programming-environment-data
+  screen-should-contain [
+    .                     run (F4)           .
+    .                    ┊                   .
+    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
+    .  add 2, 2          ┊                  x.
+    .]                   ┊foo                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
+    .                    ┊━━━━━━━━━━━━━━━━━━━.
+    .                    ┊                   .
+  ]
+  # click somewhere on the sandbox
+  assume-console [
+    left-click 4, 30
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # it pops back into editor
+  screen-should-contain [
+    .                     run (F4)           .
+    .                    ┊foo                .
+    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
+    .  add 2, 2          ┊                   .
+    .]                   ┊                   .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                   .
+    .                    ┊                   .
+    .                    ┊                   .
+  ]
+]
+
+after +global-touch [
+  # right side of screen and below sandbox editor? pop appropriate sandbox
+  # contents back into sandbox editor provided it's empty
+  {
+    sandbox-left-margin:number <- get *current-sandbox, left:offset
+    click-column:number <- get *t, column:offset
+    on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
+    break-unless on-sandbox-side?:boolean
+    first-sandbox:address:sandbox-data <- get *env, sandbox:offset
+    first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
+    click-row:number <- get *t, row:offset
+    below-sandbox-editor?:boolean <- greater-or-equal click-row:number, first-sandbox-begins:number
+    break-unless below-sandbox-editor?:boolean
+    empty-sandbox-editor?:boolean <- empty-editor? current-sandbox:address:editor-data
+    break-unless empty-sandbox-editor?:boolean  # make the user hit F4 before editing a new sandbox
+    # identify the sandbox to edit and remove it from the sandbox list
+    sandbox:address:sandbox-data <- extract-sandbox env, click-row:number
+    text:address:array:character <- get *sandbox, data:offset
+    current-sandbox <- insert-text current-sandbox, text
+    screen <- render-sandbox-side screen, env, 1/clear
+    update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    show-screen screen
+    loop +next-event:label
+  }
+]
+
+recipe empty-editor? [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  head:address:duplex-list <- get *editor, data:offset
+  first:address:duplex-list <- next-duplex head
+  result:boolean <- not first
+  reply result
+]
+
+recipe extract-sandbox [
+  local-scope
+  env:address:programming-environment-data <- next-ingredient
+  click-row:number <- next-ingredient
+  # assert click-row >= sandbox.starting-row-on-screen
+  sandbox:address:address:sandbox-data <- get-address *env, sandbox:offset
+  start:number <- get **sandbox, starting-row-on-screen:offset
+  clicked-on-sandboxes?:boolean <- greater-or-equal click-row, start
+  assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
+  {
+    next-sandbox:address:sandbox-data <- get **sandbox, next-sandbox:offset
+    break-unless next-sandbox
+    # if click-row < sandbox.next-sandbox.starting-row-on-screen, break
+    next-start:number <- get *next-sandbox, starting-row-on-screen:offset
+    found?:boolean <- lesser-than click-row, next-start
+    break-if found?:boolean
+    sandbox <- get-address **sandbox, next-sandbox:offset
+    loop
+  }
+  # snip sandbox out of its list
+  result:address:sandbox-data <- copy *sandbox
+  *sandbox <- copy next-sandbox
+  reply result
 ]
 
 ## deleting sandboxes
