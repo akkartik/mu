@@ -1,4 +1,7 @@
-# Environment for learning programming using mu.
+# Environment for learning programming using mu: http://akkartik.name/post/mu
+#
+# Consists of one editor on the left for recipes and one on the right for the
+# sandbox.
 
 recipe main [
   local-scope
@@ -13,13 +16,7 @@ recipe main [
   # never gets here
 ]
 
-container programming-environment-data [
-  recipes:address:editor-data
-  recipe-warnings:address:array:character
-  current-sandbox:address:editor-data
-  sandbox:address:sandbox-data
-  sandbox-in-focus?:boolean  # false => focus in recipes; true => focus in current-sandbox
-]
+## the basic editor data structure, and how it displays text to the screen
 
 scenario editor-initially-prints-string-to-screen [
   assume-screen 10/width, 5/height
@@ -33,9 +30,6 @@ scenario editor-initially-prints-string-to-screen [
     .          .
   ]
 ]
-
-## In which we introduce the editor data structure, and show how it displays
-## text to the screen.
 
 container editor-data [
   # editable text: doubly linked list of characters (head contains a special sentinel)
@@ -2325,8 +2319,15 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
   ]
 ]
 
-## the environment consists of one editor on the left for recipes and one on
-## the right for the sandbox
+## putting the environment together out of editors
+
+container programming-environment-data [
+  recipes:address:editor-data
+  recipe-warnings:address:array:character
+  current-sandbox:address:editor-data
+  sandbox:address:sandbox-data
+  sandbox-in-focus?:boolean  # false => focus in recipes; true => focus in current-sandbox
+]
 
 recipe new-programming-environment [
   local-scope
@@ -2663,7 +2664,7 @@ recipe update-cursor [
   move-cursor screen, cursor-row, cursor-column
 ]
 
-## Running code from the editors
+## running code from the editor and creating sandboxes
 
 container sandbox-data [
   data:address:array:character
@@ -2997,50 +2998,6 @@ recipe render-screen [
   reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
-after +global-touch [
-  # on a sandbox delete icon? process delete
-  {
-    was-delete?:boolean <- delete-sandbox *t, env
-    break-unless was-delete?
-#?     trace [app], [delete clicked] #? 1
-    screen <- render-sandbox-side screen, env, 1/clear
-    update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
-    show-screen screen
-    loop +next-event:label
-  }
-]
-
-# was-deleted?:boolean <- delete-sandbox t:touch-event, env:address:programming-environment-data
-recipe delete-sandbox [
-  local-scope
-  t:touch-event <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
-  click-column:number <- get t, column:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
-  right:number <- get *current-sandbox, right:offset
-  at-right?:boolean <- equal click-column, right
-  reply-unless at-right?, 0/false
-  click-row:number <- get t, row:offset
-  prev:address:address:sandbox-data <- get-address *env, sandbox:offset
-  curr:address:sandbox-data <- get *env, sandbox:offset
-  {
-    break-unless curr
-    # more sandboxes to check
-    {
-      target-row:number <- get *curr, starting-row-on-screen:offset
-      delete-curr?:boolean <- equal target-row, click-row
-      break-unless delete-curr?
-      # delete this sandbox, rerender and stop
-      *prev <- get *curr, next-sandbox:offset
-      reply 1/true
-    }
-    prev <- get-address *curr, next-sandbox:offset
-    curr <- get *curr, next-sandbox:offset
-    loop
-  }
-  reply 0/false
-]
-
 scenario run-updates-results [
   $close-trace  # trace too long for github
   assume-screen 100/width, 12/height
@@ -3180,6 +3137,8 @@ scenario run-instruction-and-print-warnings-only-once [
   ]
 ]
 
+## deleting sandboxes
+
 scenario deleting-sandboxes [
   $close-trace  # trace too long for github
   assume-screen 100/width, 15/height
@@ -3244,6 +3203,50 @@ scenario deleting-sandboxes [
     .                                                  ┊                                                 .
     .                                                  ┊                                                 .
   ]
+]
+
+after +global-touch [
+  # on a sandbox delete icon? process delete
+  {
+    was-delete?:boolean <- delete-sandbox *t, env
+    break-unless was-delete?
+#?     trace [app], [delete clicked] #? 1
+    screen <- render-sandbox-side screen, env, 1/clear
+    update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    show-screen screen
+    loop +next-event:label
+  }
+]
+
+# was-deleted?:boolean <- delete-sandbox t:touch-event, env:address:programming-environment-data
+recipe delete-sandbox [
+  local-scope
+  t:touch-event <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  click-column:number <- get t, column:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  right:number <- get *current-sandbox, right:offset
+  at-right?:boolean <- equal click-column, right
+  reply-unless at-right?, 0/false
+  click-row:number <- get t, row:offset
+  prev:address:address:sandbox-data <- get-address *env, sandbox:offset
+  curr:address:sandbox-data <- get *env, sandbox:offset
+  {
+    break-unless curr
+    # more sandboxes to check
+    {
+      target-row:number <- get *curr, starting-row-on-screen:offset
+      delete-curr?:boolean <- equal target-row, click-row
+      break-unless delete-curr?
+      # delete this sandbox, rerender and stop
+      *prev <- get *curr, next-sandbox:offset
+      reply 1/true
+    }
+    prev <- get-address *curr, next-sandbox:offset
+    curr <- get *curr, next-sandbox:offset
+    loop
+  }
+  reply 0/false
 ]
 
 scenario run-instruction-manages-screen-per-sandbox [
