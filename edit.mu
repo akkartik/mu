@@ -2620,7 +2620,8 @@ recipe event-loop [
       # send to both editors
       _ <- move-cursor-in-editor screen, recipes, *t
       *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
-      jump +continue:label
+      render-minimal screen, env
+      loop +next-event:label
     }
     # if it's not global and not a touch event, send to appropriate editor
     {
@@ -2632,13 +2633,8 @@ recipe event-loop [
         break-unless *sandbox-in-focus?
         handle-event screen, console, current-sandbox, e:event
       }
-    }
-    +continue
-    # if no more events currently left to process, render.
-    # we rely on 'render' to update 'before-cursor' on pointer events, but
-    # they won't usually come fast enough to trigger this.
-    # todo: test this
-    {
+      # optimization: refresh screen only if no more events
+      # todo: test this
       more-events?:boolean <- has-more-events? console
       break-if more-events?
       render-minimal screen, env
