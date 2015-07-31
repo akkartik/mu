@@ -125,6 +125,11 @@ case GET: {
     products.resize(1);
     break;
   }
+  if (base_address == 0) {
+    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    products.resize(1);
+    break;
+  }
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
   long long int src = base_address;
