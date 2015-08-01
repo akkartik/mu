@@ -2610,7 +2610,6 @@ recipe event-loop [
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t
-#?       $print [touch 0], 10/newline #? 1
       # ignore all but 'left-click' events for now
       # todo: test this
       touch-type:number <- get *t, type:offset
@@ -2619,7 +2618,6 @@ recipe event-loop [
       # later exceptions for non-editor touches will go here
       +global-touch
       # send to both editors
-#?       $print [sending touch to editors], 10/newline #? 1
       _ <- move-cursor-in-editor screen, recipes, *t
       *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
       render-minimal screen, env
@@ -2676,8 +2674,6 @@ container sandbox-data [
   data:address:array:character
   response:address:array:character
   warnings:address:array:character
-#?   foo:number
-#?   expected-response:address:array:character
   # coordinates to track clicks
   starting-row-on-screen:number
   response-starting-row-on-screen:number
@@ -3235,7 +3231,6 @@ recipe foo [
 after +global-touch [
   # right side of screen and below sandbox editor? pop appropriate sandbox
   # contents back into sandbox editor provided it's empty
-#?   $print [touch 1], 10/newline #? 1
   {
     sandbox-left-margin:number <- get *current-sandbox, left:offset
     click-column:number <- get *t, column:offset
@@ -3244,15 +3239,11 @@ after +global-touch [
     first-sandbox:address:sandbox-data <- get *env, sandbox:offset
     break-unless first-sandbox
     first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
-#?     $print first-sandbox-begins, 10/newline #? 1
     click-row:number <- get *t, row:offset
-#?     $print [click row ], click-row, 10/newline #? 1
     below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
     break-unless below-sandbox-editor?
-#?     $print [below sandbox editor], 10/newline #? 1
     empty-sandbox-editor?:boolean <- empty-editor? current-sandbox
     break-unless empty-sandbox-editor?  # make the user hit F4 before editing a new sandbox
-#?     $print [on sandbox], 10/newline #? 1
     # identify the sandbox to edit and remove it from the sandbox list
     sandbox:address:sandbox-data <- extract-sandbox env, click-row
     text:address:array:character <- get *sandbox, data:offset

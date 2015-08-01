@@ -90,6 +90,10 @@ case MAYBE_CONVERT: {
   }
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
+  if (base_address == 0) {
+    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != exclusive_container) {
     raise << current_recipe_name () << ": first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();

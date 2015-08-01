@@ -9,6 +9,7 @@ recipe main [
 +name: assign x 1
 +mem: storing 0 in location 1
 
+:(scenarios transform)
 :(scenario transform_names_warns)
 % Hide_warnings = true;
 recipe main [
@@ -140,6 +141,7 @@ recipe main [
 -name: assign _ 1
 
 //: an escape hatch to suppress name conversion that we'll use later
+:(scenarios run)
 :(scenario transform_names_passes_raw)
 % Hide_warnings = true;
 recipe main [
@@ -148,6 +150,7 @@ recipe main [
 -name: assign x 1
 +warn: can't write to location 0
 
+:(scenarios transform)
 :(scenario transform_names_warns_when_mixing_names_and_numeric_locations)
 % Hide_warnings = true;
 recipe main [
