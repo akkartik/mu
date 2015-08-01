@@ -2496,8 +2496,8 @@ recipe render-all [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-  screen <- render-recipes screen, env, 1/clear-below
-  screen <- render-sandbox-side screen, env, 1/clear-below
+  screen <- render-recipes screen, env
+  screen <- render-sandbox-side screen, env
   recipes:address:editor-data <- get *env, recipes:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
@@ -2534,7 +2534,6 @@ recipe render-recipes [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-  clear:boolean <- next-ingredient
   recipes:address:editor-data <- get *env, recipes:offset
   # render recipes
   left:number <- get *recipes, left:offset
@@ -2553,12 +2552,9 @@ recipe render-recipes [
   }
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-  # clear next line, in case we just processed a backspace
+  # clear rest of screen
   row <- add row, 1
   move-cursor screen, row, left
-  clear-line-delimited screen, left, right
-  # clear rest of screen in this column, if requested
-  reply-unless clear, screen/same-as-ingredient:0
   screen-height:number <- screen-height screen
   {
     at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
@@ -2835,7 +2831,6 @@ recipe render-sandbox-side [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-  clear:boolean <- next-ingredient
 #?   trace [app], [render sandbox side] #? 1
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
@@ -2845,11 +2840,9 @@ recipe render-sandbox-side [
   draw-horizontal screen, row, left, right, 9473/horizontal-double
   sandbox:address:sandbox-data <- get *env, sandbox:offset
   row, screen <- render-sandboxes screen, sandbox, left, right, row
-  # clear next line, in case we just processed a backspace
+  # clear rest of screen
   row <- add row, 1
   move-cursor screen, row, left
-  clear-line-delimited screen, left, right
-  reply-unless clear, screen/same-as-ingredient:0
   screen-height:number <- screen-height screen
   {
     at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
@@ -3248,7 +3241,7 @@ after +global-touch [
     sandbox:address:sandbox-data <- extract-sandbox env, click-row
     text:address:array:character <- get *sandbox, data:offset
     current-sandbox <- insert-text current-sandbox, text
-    screen <- render-sandbox-side screen, env, 1/clear
+    screen <- render-sandbox-side screen, env
     update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     show-screen screen
     loop +next-event:label
@@ -3363,7 +3356,7 @@ after +global-touch [
     was-delete?:boolean <- delete-sandbox *t, env
     break-unless was-delete?
 #?     trace [app], [delete clicked] #? 1
-    screen <- render-sandbox-side screen, env, 1/clear
+    screen <- render-sandbox-side screen, env
     update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     show-screen screen
     loop +next-event:label
