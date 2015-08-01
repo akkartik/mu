@@ -107,27 +107,24 @@ GET,
 Recipe_ordinal["get"] = GET;
 :(before "End Primitive Recipe Implementations")
 case GET: {
+  products.resize(1);
   if (SIZE(ingredients) != 2) {
     raise << current_recipe_name() << ": 'get' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
-    products.resize(1);
     break;
   }
   reagent base = current_instruction().ingredients.at(0);
   long long int base_address = base.value;
+  if (base_address == 0) {
+    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != container) {
     raise << current_recipe_name () << ": first ingredient of 'get' should be a container, but got " << base.original_string << '\n' << end();
-    products.resize(1);
     break;
   }
   if (!is_literal(current_instruction().ingredients.at(1))) {
     raise << current_recipe_name() << ": second ingredient of 'get' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
-    products.resize(1);
-    break;
-  }
-  if (base_address == 0) {
-    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
-    products.resize(1);
     break;
   }
   assert(scalar(ingredients.at(1)));
@@ -139,7 +136,6 @@ case GET: {
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src << end();
   if (offset < 0 || offset >= SIZE(Type[base_type].elements)) {
     raise << current_recipe_name() << ": invalid offset " << offset << " for " << Type[base_type].name << '\n' << end();
-    products.resize(1);
     break;
   }
   type_ordinal src_type = Type[base_type].elements.at(offset).at(0);
@@ -147,7 +143,7 @@ case GET: {
   reagent tmp;
   tmp.set_value(src);
   tmp.types.push_back(src_type);
-  products.push_back(read_memory(tmp));
+  products.at(0) = read_memory(tmp);
   break;
 }
 
@@ -199,6 +195,10 @@ case GET_ADDRESS: {
   products.resize(1);
   reagent base = current_instruction().ingredients.at(0);
   long long int base_address = base.value;
+  if (base_address == 0) {
+    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != container) {
     raise << current_recipe_name () << ": first ingredient of 'get-address' should be a container, but got " << base.original_string << '\n' << end();
