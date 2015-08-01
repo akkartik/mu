@@ -81,8 +81,10 @@ inline const instruction& current_instruction() {
 default: {
   // not a primitive; try to look up the book of recipes
   if (Recipe.find(current_instruction().operation) == Recipe.end()) {
-    raise << "undefined operation " << current_instruction().operation << ": " << current_instruction().to_string() << '\n' << end();
-    break;
+    raise << current_recipe_name() << ": undefined operation in '" << current_instruction().to_string() << "'\n" << end();
+    // stop running this instruction immediately
+    ++current_step_index();
+    continue;
   }
   Current_routine->calls.push_front(call(current_instruction().operation));
   call_housekeeping:
@@ -90,6 +92,20 @@ default: {
   assert(Callstack_depth < 9000);  // 9998-101 plus cushion
   continue;  // not done with caller; don't increment current_step_index()
 }
+
+:(scenario calling_undefined_recipe_warns)
+% Hide_warnings = true;
+recipe main [
+  foo
+]
++warn: main: undefined operation in 'foo '
+
+:(scenario calling_undefined_recipe_handles_missing_result)
+% Hide_warnings = true;
+recipe main [
+  x:number <- foo
+]
++warn: main: undefined operation in 'x:number <- foo '
 
 //:: finally, we need to fix the termination conditions for the run loop
 
