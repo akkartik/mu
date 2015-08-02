@@ -2932,17 +2932,27 @@ recipe restore-sandboxes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
   # read all scenarios, pushing them to end of a list of scenarios
-  filename:number <- copy 0
+  suffix:address:array:character <- new [.out]
+  idx:number <- copy 0
   curr:address:address:sandbox-data <- get-address *env, sandbox:offset
   {
+    filename:address:array:character <- integer-to-decimal-string idx
     contents:address:array:character <- restore filename
     break-unless contents  # stop at first error; assuming file didn't exist
     # create new sandbox for file
     *curr <- new sandbox-data:type
     data:address:address:array:character <- get-address **curr, data:offset
     *data <- copy contents
+    # restore expected output for sandbox if it exists
+    {
+      filename <- string-append filename, suffix
+      contents <- restore filename
+      break-unless contents
+      expected-response:address:address:array:character <- get-address **curr, expected-response:offset
+      *expected-response <- copy contents
+    }
     # increment loop variables
-    filename <- add filename, 1
+    idx <- add idx, 1
     curr <- get-address **curr, next-sandbox:offset
     loop
   }
@@ -3594,6 +3604,7 @@ recipe toggle-expected-response [
 # when rendering a sandbox, color it in red/green if expected response exists
 after +render-sandbox-response [
   {
+    break-unless sandbox-response
     expected-response:address:array:character <- get *sandbox, expected-response:offset
     break-unless expected-response  # fall-through to print in grey
     response-is-expected?:boolean <- string-equal expected-response, sandbox-response

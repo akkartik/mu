@@ -13,14 +13,18 @@ case RESTORE: {
     raise << current_recipe_name() << ": 'restore' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
   }
-  if (!scalar(ingredients.at(0))) {
-    raise << current_recipe_name() << ": first ingredient of 'restore' should be a literal string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
+  string filename;
+  if (is_literal_string(current_instruction().ingredients.at(0))) {
+    filename = current_instruction().ingredients.at(0).name;
+  }
+  else if (is_mu_string(current_instruction().ingredients.at(0))) {
+    filename = read_mu_string(ingredients.at(0).at(0));
+  }
+  else {
+    raise << current_recipe_name() << ": first ingredient of 'restore' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
     break;
   }
   if (Current_scenario) break;  // do nothing in tests
-  string filename = current_instruction().ingredients.at(0).name;
-  if (!is_literal(current_instruction().ingredients.at(0)))
-    filename = to_string(ingredients.at(0).at(0));
   string contents = slurp("lesson/"+filename);
   if (contents.empty())
     products.at(0).push_back(0);
