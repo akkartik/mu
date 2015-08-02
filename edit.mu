@@ -137,14 +137,13 @@ recipe render [
   screen-height:number <- screen-height screen
   right:number <- get *editor, right:offset
   hide-screen screen
-  # highlight mu code with color
-  color:number <- copy 7/white
-  highlighting-state:number <- copy 0/normal
   # traversing editor
   curr:address:duplex-list <- get *editor, data:offset
   prev:address:duplex-list <- copy curr
   curr <- next-duplex curr
   # traversing screen
+  +render-loop-initialization
+  color:number <- copy 7/white
   row:number <- copy 1/top
   column:number <- copy left
   cursor-row:address:number <- get-address *editor, cursor-row:offset
@@ -167,7 +166,7 @@ recipe render [
       *before-cursor <- prev-duplex curr
     }
     c:character <- get *curr, value:offset
-    color, highlighting-state <- get-color color, highlighting-state, c
+    +character-c-recived
     {
       # newline? move to left rather than 0
       newline?:boolean <- equal c, 10/newline
@@ -456,6 +455,14 @@ f]
     .f    .
     .     .
   ]
+]
+
+after +render-loop-initialization [
+  highlighting-state:number <- copy 0/normal
+]
+
+after +character-c-recived [
+  color, highlighting-state <- get-color color, highlighting-state, c
 ]
 
 # color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
