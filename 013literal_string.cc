@@ -132,11 +132,14 @@ if (s.at(0) == '[') {
 //:   b) Escape newlines in the string to make it more friendly to trace().
 
 :(after "string reagent::to_string()")
-  if (!properties.at(0).second.empty() && properties.at(0).second.at(0) == "literal-string") {
+  if (is_literal_string(*this))
     return emit_literal_string(name);
-  }
 
 :(code)
+bool is_literal_string(const reagent& x) {
+  return !x.properties.at(0).second.empty() && x.properties.at(0).second.at(0) == "literal-string";
+}
+
 string emit_literal_string(string name) {
   size_t pos = 0;
   while (pos != string::npos)

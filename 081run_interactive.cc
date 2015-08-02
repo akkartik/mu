@@ -149,7 +149,7 @@ void record_products(const instruction& instruction, const vector<vector<double>
   for (long long int i = 0; i < SIZE(products); ++i) {
     // string
     if (i < SIZE(instruction.products)) {
-      if (is_string(instruction.products.at(i))) {
+      if (is_mu_string(instruction.products.at(i))) {
         assert(scalar(products.at(i)));
         out << read_mu_string(products.at(i).at(0)) << '\n';
         continue;
@@ -241,7 +241,7 @@ long long int stringified_value_of_location(long long int address) {
   return new_mu_string(out.str());
 }
 
-bool is_string(const reagent& x) {
+bool is_mu_string(const reagent& x) {
   return SIZE(x.types) == 3
       && x.types.at(0) == Type_ordinal["address"]
       && x.types.at(1) == Type_ordinal["array"]

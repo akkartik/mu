@@ -2804,12 +2804,20 @@ recipe run-sandboxes [
   # first clear previous versions, in case we deleted some sandbox
   $system [rm lesson/[0-9]* >/dev/null 2>/dev/null]  # some shells can't handle '>&'
   curr:address:sandbox-data <- get *env, sandbox:offset
-  filename:number <- copy 0
+  suffix:address:array:character <- new [.out]
+  idx:number <- copy 0
   {
     break-unless curr
-    data:address:address:array:character <- get-address *curr, data:offset
+    data <- get-address *curr, data:offset
+    filename:address:array:character <- integer-to-decimal-string idx
     save filename, *data
-    filename <- add filename, 1
+    {
+      expected-response:address:array:character <- get *curr, expected-response:offset
+      break-unless expected-response
+      filename <- string-append filename, suffix
+      save filename, expected-response
+    }
+    idx <- add idx, 1
     curr <- get *curr, next-sandbox:offset
     loop
   }
