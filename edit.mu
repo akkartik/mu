@@ -2774,7 +2774,6 @@ recipe run-sandboxes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
   recipes:address:editor-data <- get *env, recipes:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   # copy code from recipe editor, persist, load into mu, save any warnings
   in:address:array:character <- editor-contents recipes
   save [recipes.mu], in
@@ -2783,6 +2782,7 @@ recipe run-sandboxes [
   # if recipe editor has errors, stop
   reply-if *recipe-warnings
   # check contents of right editor (sandbox)
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   {
     sandbox-contents:address:array:character <- editor-contents current-sandbox
     break-unless sandbox-contents
@@ -2801,28 +2801,9 @@ recipe run-sandboxes [
     *init <- push-duplex 167/§, 0/tail
   }
   # save all sandboxes before running, just in case we die when running
-  # first clear previous versions, in case we deleted some sandbox
-  $system [rm lesson/[0-9]* >/dev/null 2>/dev/null]  # some shells can't handle '>&'
-  curr:address:sandbox-data <- get *env, sandbox:offset
-  suffix:address:array:character <- new [.out]
-  idx:number <- copy 0
-  {
-    break-unless curr
-    data <- get-address *curr, data:offset
-    filename:address:array:character <- integer-to-decimal-string idx
-    save filename, *data
-    {
-      expected-response:address:array:character <- get *curr, expected-response:offset
-      break-unless expected-response
-      filename <- string-append filename, suffix
-      save filename, expected-response
-    }
-    idx <- add idx, 1
-    curr <- get *curr, next-sandbox:offset
-    loop
-  }
+  save-sandboxes env
   # run all sandboxes
-  curr <- get *env, sandbox:offset
+  curr:address:sandbox-data <- get *env, sandbox:offset
   {
     break-unless curr
     data <- get-address *curr, data:offset
@@ -2831,6 +2812,32 @@ recipe run-sandboxes [
     fake-screen:address:address:screen <- get-address *curr, screen:offset
     *response, *warnings, *fake-screen <- run-interactive *data
 #?     $print *warnings, [ ], **warnings, 10/newline
+    curr <- get *curr, next-sandbox:offset
+    loop
+  }
+]
+
+recipe save-sandboxes [
+  local-scope
+  env:address:programming-environment-data <- next-ingredient
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  # first clear previous versions, in case we deleted some sandbox
+  $system [rm lesson/[0-9]* >/dev/null 2>/dev/null]  # some shells can't handle '>&'
+  curr:address:sandbox-data <- get *env, sandbox:offset
+  suffix:address:array:character <- new [.out]
+  idx:number <- copy 0
+  {
+    break-unless curr
+    data:address:array:character <- get *curr, data:offset
+    filename:address:array:character <- integer-to-decimal-string idx
+    save filename, data
+    {
+      expected-response:address:array:character <- get *curr, expected-response:offset
+      break-unless expected-response
+      filename <- string-append filename, suffix
+      save filename, expected-response
+    }
+    idx <- add idx, 1
     curr <- get *curr, next-sandbox:offset
     loop
   }
@@ -3529,8 +3536,9 @@ after +global-touch [
     # identify the sandbox whose output is being clicked on
     sandbox:address:sandbox-data <- find-click-in-sandbox-output env, click-row
     break-unless sandbox
-    # toggle its expected-response
+    # toggle its expected-response, and save session
     sandbox <- toggle-expected-response sandbox
+    save-sandboxes env
     screen <- render-sandbox-side screen, env, 1/clear
     # no change in cursor
     show-screen screen
