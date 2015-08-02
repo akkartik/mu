@@ -38,7 +38,7 @@ case RUN_INTERACTIVE: {
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
   if (!new_code_pushed_to_stack) {
     products.at(0).push_back(0);
-    products.at(1).push_back(warnings_from_trace());
+    products.at(1).push_back(trace_contents("warn"));
     products.at(2).push_back(0);
     clean_up_interactive();
     break;  // done with this instruction
@@ -172,7 +172,7 @@ if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction()
   write_memory(current_instruction().products.at(0), result);
   if (SIZE(current_instruction().products) >= 2) {
     vector<double> warnings;
-    warnings.push_back(warnings_from_trace());
+    warnings.push_back(trace_contents("warn"));
     write_memory(current_instruction().products.at(1), warnings);
   }
   if (SIZE(current_instruction().products) >= 3) {
@@ -248,12 +248,12 @@ bool is_mu_string(const reagent& x) {
       && x.types.at(2) == Type_ordinal["character"];
 }
 
-long long int warnings_from_trace() {
+long long int trace_contents(const string& layer) {
   if (!Trace_stream) return 0;
-  if (trace_count("warn") <= 0) return 0;
+  if (trace_count(layer) <= 0) return 0;
   ostringstream out;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (p->label != "warn") continue;
+    if (p->label != layer) continue;
     out << p->contents;
     if (*--p->contents.end() != '\n') out << '\n';
   }
@@ -290,7 +290,7 @@ case RELOAD: {
   Trace_stream->newline();  // flush trace
   Disable_redefine_warnings = false;
   Hide_warnings = false;
-  products.at(0).push_back(warnings_from_trace());
+  products.at(0).push_back(trace_contents("warn"));
   if (Trace_stream->collect_layer == "warn") {
     delete Trace_stream;
     Trace_stream = NULL;
