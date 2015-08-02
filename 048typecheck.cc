@@ -57,7 +57,8 @@ void deduce_missing_type(map<string, vector<type_ordinal> >& metadata, reagent& 
   if (metadata.find(x.name) == metadata.end()) return;
   copy(metadata[x.name].begin(), metadata[x.name].end(), inserter(x.types, x.types.begin()));
   assert(x.properties.at(0).second.empty());
-  x.properties.at(0).second.push_back("as-before");
+  x.properties.at(0).second.resize(metadata[x.name].size());
+  x.properties.push_back(pair<string, vector<string> >("as-before", vector<string>()));
 }
 
 :(scenario transform_types_fills_in_missing_types_in_product)
@@ -80,3 +81,11 @@ recipe main [
   x:number <- copy 2
 ]
 +warn: missing type in 'x <- copy 1'
+
+:(scenario typo_in_address_type_warns)
+% Hide_warnings = true;
+recipe main [
+  y:address:charcter <- new character:type
+  *y <- copy 67
+]
++warn: unknown type: charcter
