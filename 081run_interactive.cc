@@ -19,6 +19,7 @@ recipe main [
 //:   stringified output in case we want to print it to screen
 //:   any warnings encountered
 //:   simulated screen any prints went to
+//:   any 'app' layer traces generated
 :(before "End Primitive Recipe Declarations")
 RUN_INTERACTIVE,
 :(before "End Primitive Recipe Numbers")
@@ -26,7 +27,7 @@ Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
 //? cerr << "run-interactive: " << RUN_INTERACTIVE << '\n'; //? 1
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
-  products.resize(3);
+  products.resize(4);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'run-interactive' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
@@ -40,6 +41,7 @@ case RUN_INTERACTIVE: {
     products.at(0).push_back(0);
     products.at(1).push_back(trace_contents("warn"));
     products.at(2).push_back(0);
+    products.at(3).push_back(trace_contents("app"));
     clean_up_interactive();
     break;  // done with this instruction
   }
@@ -81,7 +83,8 @@ bool run_interactive(long long int address) {
   if (!Trace_stream) {
     Trace_file = "";  // if there wasn't already a stream we don't want to save it
     Trace_stream = new trace_stream;
-    Trace_stream->collect_layer = "warn";
+    Trace_stream->collect_layers.insert("warn");
+    Trace_stream->collect_layers.insert("app");
   }
   // call run(string) but without the scheduling
   // we won't create a local scope so that we can get to the new screen after
@@ -164,7 +167,7 @@ void record_products(const instruction& instruction, const vector<vector<double>
 }
 :(before "Complete Call Fallthrough")
 if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction().products.empty()) {
-  assert(SIZE(current_instruction().products) <= 3);
+  assert(SIZE(current_instruction().products) <= 4);
   // Send the results of the most recently executed instruction, regardless of
   // call depth, to be converted to string and potentially printed to string.
   vector<double> result;
@@ -179,6 +182,12 @@ if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction()
     vector<double> screen;
     screen.push_back(Memory[SCREEN]);
     write_memory(current_instruction().products.at(2), screen);
+  }
+  if (SIZE(current_instruction().products) >= 4) {
+//?     cerr << "emitting trace\n"; //? 1
+    vector<double> trace;
+    trace.push_back(trace_contents("app"));
+    write_memory(current_instruction().products.at(3), trace);
   }
 }
 
@@ -197,8 +206,8 @@ void clean_up_interactive() {
   Trace_stream->newline();  // flush trace
   Hide_warnings = false;
   Running_interactive = false;
-  // hack: assume collect_layer isn't set anywhere else
-  if (Trace_stream->collect_layer == "warn") {
+  // hack: assume collect_layers isn't set anywhere else
+  if (Trace_stream->is_narrowly_collecting("warn")) {
     delete Trace_stream;
     Trace_stream = NULL;
   }
@@ -250,7 +259,9 @@ bool is_mu_string(const reagent& x) {
 
 long long int trace_contents(const string& layer) {
   if (!Trace_stream) return 0;
+//?   cerr << "trace stream exists\n"; //? 1
   if (trace_count(layer) <= 0) return 0;
+//?   cerr << layer << " has something\n"; //? 1
   ostringstream out;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (p->label != layer) continue;
@@ -258,6 +269,7 @@ long long int trace_contents(const string& layer) {
     if (*--p->contents.end() != '\n') out << '\n';
   }
   assert(!out.str().empty());
+//?   cerr << layer << ":\n" << out.str() << "\n--\n"; //? 1
   return new_mu_string(out.str());
 }
 
@@ -281,7 +293,7 @@ case RELOAD: {
   if (!Trace_stream) {
     Trace_file = "";  // if there wasn't already a stream we don't want to save it
     Trace_stream = new trace_stream;
-    Trace_stream->collect_layer = "warn";
+    Trace_stream->collect_layers.insert("warn");
   }
   Hide_warnings = true;
   Disable_redefine_warnings = true;
@@ -291,7 +303,8 @@ case RELOAD: {
   Disable_redefine_warnings = false;
   Hide_warnings = false;
   products.at(0).push_back(trace_contents("warn"));
-  if (Trace_stream->collect_layer == "warn") {
+  // hack: assume collect_layers isn't set anywhere else
+  if (Trace_stream->is_narrowly_collecting("warn")) {
     delete Trace_stream;
     Trace_stream = NULL;
   }

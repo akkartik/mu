@@ -133,7 +133,7 @@ if (!Run_tests) {
   setup();
 //?   Trace_file = "interactive"; //? 2
 //?   START_TRACING_UNTIL_END_OF_SCOPE; //? 2
-//?   Trace_stream->collect_layer = "app"; //? 1
+//?   Trace_stream->collect_layer.insert("app"); //? 1
   transform_all();
   recipe_ordinal r = Recipe_ordinal[string("main")];
   if (r) run(r);
