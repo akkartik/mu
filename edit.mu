@@ -2371,6 +2371,78 @@ recipe new-programming-environment [
   reply result
 ]
 
+recipe event-loop [
+  local-scope
+  screen:address <- next-ingredient
+  console:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  recipes:address:editor-data <- get *env, recipes:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
+  {
+    # looping over each (keyboard or touch) event as it occurs
+    +next-event
+    e:event, console, found?:boolean, quit?:boolean <- read-event console
+    loop-unless found?
+    break-if quit?  # only in tests
+    trace [app], [next-event]
+    # check for global events that will trigger regardless of which editor has focus
+    {
+      k:address:number <- maybe-convert e:event, keycode:variant
+      break-unless k
+      +global-keypress
+    }
+    {
+      c:address:character <- maybe-convert e:event, text:variant
+      break-unless c
+      +global-type
+      # ctrl-n? - switch focus
+      {
+        ctrl-n?:boolean <- equal *c, 14/ctrl-n
+        break-unless ctrl-n?
+        *sandbox-in-focus? <- not *sandbox-in-focus?
+        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+        show-screen screen
+        loop +next-event:label
+      }
+    }
+    # 'touch' event - send to both sides, see what picks it up
+    {
+      t:address:touch-event <- maybe-convert e:event, touch:variant
+      break-unless t
+      # ignore all but 'left-click' events for now
+      # todo: test this
+      touch-type:number <- get *t, type:offset
+      is-left-click?:boolean <- equal touch-type, 65513/mouse-left
+      loop-unless is-left-click?, +next-event:label
+      # later exceptions for non-editor touches will go here
+      +global-touch
+      # send to both editors
+      _ <- move-cursor-in-editor screen, recipes, *t
+      *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
+      render-minimal screen, env
+      loop +next-event:label
+    }
+    # if it's not global and not a touch event, send to appropriate editor
+    {
+      {
+        break-if *sandbox-in-focus?
+        handle-event screen, console, recipes, e:event
+      }
+      {
+        break-unless *sandbox-in-focus?
+        handle-event screen, console, current-sandbox, e:event
+      }
+      # optimization: refresh screen only if no more events
+      # todo: test this
+      more-events?:boolean <- has-more-events? console
+      break-if more-events?
+      render-minimal screen, env
+    }
+    loop
+  }
+]
+
 scenario point-at-multiple-editors [
   $close-trace
   assume-screen 30/width, 5/height
@@ -2568,78 +2640,6 @@ recipe render-recipes [
     loop
   }
   reply screen/same-as-ingredient:0
-]
-
-recipe event-loop [
-  local-scope
-  screen:address <- next-ingredient
-  console:address <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
-  recipes:address:editor-data <- get *env, recipes:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
-  sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
-  {
-    # looping over each (keyboard or touch) event as it occurs
-    +next-event
-    e:event, console, found?:boolean, quit?:boolean <- read-event console
-    loop-unless found?
-    break-if quit?  # only in tests
-    trace [app], [next-event]
-    # check for global events that will trigger regardless of which editor has focus
-    {
-      k:address:number <- maybe-convert e:event, keycode:variant
-      break-unless k
-      +global-keypress
-    }
-    {
-      c:address:character <- maybe-convert e:event, text:variant
-      break-unless c
-      +global-type
-      # ctrl-n? - switch focus
-      {
-        ctrl-n?:boolean <- equal *c, 14/ctrl-n
-        break-unless ctrl-n?
-        *sandbox-in-focus? <- not *sandbox-in-focus?
-        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
-        show-screen screen
-        loop +next-event:label
-      }
-    }
-    # 'touch' event - send to both sides, see what picks it up
-    {
-      t:address:touch-event <- maybe-convert e:event, touch:variant
-      break-unless t
-      # ignore all but 'left-click' events for now
-      # todo: test this
-      touch-type:number <- get *t, type:offset
-      is-left-click?:boolean <- equal touch-type, 65513/mouse-left
-      loop-unless is-left-click?, +next-event:label
-      # later exceptions for non-editor touches will go here
-      +global-touch
-      # send to both editors
-      _ <- move-cursor-in-editor screen, recipes, *t
-      *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
-      render-minimal screen, env
-      loop +next-event:label
-    }
-    # if it's not global and not a touch event, send to appropriate editor
-    {
-      {
-        break-if *sandbox-in-focus?
-        handle-event screen, console, recipes, e:event
-      }
-      {
-        break-unless *sandbox-in-focus?
-        handle-event screen, console, current-sandbox, e:event
-      }
-      # optimization: refresh screen only if no more events
-      # todo: test this
-      more-events?:boolean <- has-more-events? console
-      break-if more-events?
-      render-minimal screen, env
-    }
-    loop
-  }
 ]
 
 # helper for testing a single editor
