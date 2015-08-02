@@ -457,19 +457,15 @@ f]
   ]
 ]
 
-after +render-loop-initialization [
-  highlighting-state:number <- copy 0/normal
-]
-
 after +character-c-recived [
-  color, highlighting-state <- get-color color, highlighting-state, c
+  color <- get-color color, c
 ]
 
-# color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+# color:number <- get-color color:number, c:character
+# so far the previous color is all the information we need; that may change
 recipe get-color [
   local-scope
   color:number <- next-ingredient
-  highlighting-state:number <- next-ingredient
   c:character <- next-ingredient
   color-is-white?:boolean <- equal color, 7/white
 #?   $print [character: ], c, 10/newline #? 1
@@ -511,7 +507,7 @@ recipe get-color [
   }
   # otherwise no change
   +exit
-  reply color, highlighting-state
+  reply color
 ]
 
 scenario render-colors-assignment [
