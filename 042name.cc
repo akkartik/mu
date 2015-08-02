@@ -148,7 +148,7 @@ recipe main [
   x:number/raw <- copy 0
 ]
 -name: assign x 1
-+warn: can't write to location 0
++warn: can't write to location 0 in 'x:number/raw <- copy 0'
 
 :(scenarios transform)
 :(scenario transform_names_warns_when_mixing_names_and_numeric_locations)

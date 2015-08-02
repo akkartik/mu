@@ -103,7 +103,7 @@ struct trace_stream {
   string curr_layer;
   int curr_depth;
   string dump_layer;
-  string collect_layer;  // if set, ignore all other layers
+  set<string> collect_layers;  // if not empty, ignore all absent layers
   ofstream null_stream;  // never opens a file, so writes silently fail
   trace_stream() :curr_stream(NULL), curr_depth(0) {}
   ~trace_stream() { if (curr_stream) delete curr_stream; }
@@ -113,11 +113,19 @@ struct trace_stream {
   }
 
   ostream& stream(int depth, string layer) {
-    if (!collect_layer.empty() && layer != collect_layer) return null_stream;
+    if (!is_collecting(layer)) return null_stream;
     curr_stream = new ostringstream;
     curr_layer = layer;
     curr_depth = depth;
     return *curr_stream;
+  }
+
+  bool is_collecting(const string& layer) {
+    return collect_layers.empty() || collect_layers.find(layer) != collect_layers.end();
+  }
+
+  bool is_narrowly_collecting(const string& layer) {
+    return collect_layers.find(layer) != collect_layers.end();
   }
 
   // be sure to call this before messing with curr_stream or curr_layer

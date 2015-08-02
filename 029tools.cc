@@ -12,15 +12,22 @@ TRACE,
 Recipe_ordinal["trace"] = TRACE;
 :(before "End Primitive Recipe Implementations")
 case TRACE: {
-  if (SIZE(ingredients) != 2) {
-    raise << current_recipe_name() << ": 'trace' takes exactly two ingredients rather than '" << current_instruction().to_string() << "'\n" << end();
-    break;
+  if (SIZE(ingredients) == 2) {
+    assert(is_literal(current_instruction().ingredients.at(0)));
+    string label = current_instruction().ingredients.at(0).name;
+    assert(is_literal(current_instruction().ingredients.at(1)));
+    string message = current_instruction().ingredients.at(1).name;
+    trace(1, label) << message << end();
   }
-  assert(is_literal(current_instruction().ingredients.at(0)));
-  string label = current_instruction().ingredients.at(0).name;
-  assert(is_literal(current_instruction().ingredients.at(1)));
-  string message = current_instruction().ingredients.at(1).name;
-  trace(1, label) << message << end();
+  else if (SIZE(ingredients) == 1) {
+    assert(is_literal(current_instruction().ingredients.at(0)));
+    string message = current_instruction().ingredients.at(0).name;
+    cerr << "tracing " << message << '\n';
+    trace(1, "app") << message << end();
+  }
+  else {
+    raise << current_recipe_name() << ": 'trace' takes one or two ingredients rather than '" << current_instruction().to_string() << "'\n" << end();
+  }
   break;
 }
 
