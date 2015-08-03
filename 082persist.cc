@@ -8,7 +8,6 @@ RESTORE,
 Recipe_ordinal["restore"] = RESTORE;
 :(before "End Primitive Recipe Implementations")
 case RESTORE: {
-  products.resize(1);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'restore' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
@@ -26,6 +25,7 @@ case RESTORE: {
   }
   if (Current_scenario) break;  // do nothing in tests
   string contents = slurp("lesson/"+filename);
+  products.resize(1);
   if (contents.empty())
     products.at(0).push_back(0);
   else

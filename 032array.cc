@@ -79,7 +79,6 @@ INDEX,
 Recipe_ordinal["index"] = INDEX;
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
-  products.resize(1);
   if (SIZE(ingredients) != 2) {
     raise << current_recipe_name() << ": 'index' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
@@ -107,7 +106,7 @@ case INDEX: {
   reagent tmp;
   tmp.set_value(src);
   copy(element_type.begin(), element_type.end(), inserter(tmp.types, tmp.types.begin()));
-  products.at(0) = read_memory(tmp);
+  products.push_back(read_memory(tmp));
   break;
 }
 
@@ -175,7 +174,6 @@ INDEX_ADDRESS,
 Recipe_ordinal["index-address"] = INDEX_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
-  products.resize(1);
   if (SIZE(ingredients) != 2) {
     raise << current_recipe_name() << ": 'index-address' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
@@ -198,6 +196,7 @@ case INDEX_ADDRESS: {
     break;
   }
   long long int result = base_address + 1 + offset_val.at(0)*size_of(element_type);
+  products.resize(1);
   products.at(0).push_back(result);
   break;
 }
@@ -250,7 +249,6 @@ LENGTH,
 Recipe_ordinal["length"] = LENGTH;
 :(before "End Primitive Recipe Implementations")
 case LENGTH: {
-  products.resize(1);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'length' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
@@ -264,6 +262,7 @@ case LENGTH: {
     raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
+  products.resize(1);
   products.at(0).push_back(Memory[x.value]);
   break;
 }

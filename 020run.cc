@@ -88,10 +88,13 @@ void run_current_routine()
         cout << "not a primitive op: " << current_instruction().operation << '\n';
       }
     }
-    if (SIZE(products) < SIZE(current_instruction().products))
+    if (SIZE(products) < SIZE(current_instruction().products)) {
       raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << current_instruction().to_string() << end();
-    for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
-      write_memory(current_instruction().products.at(i), products.at(i));
+    }
+    else {
+      for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
+        write_memory(current_instruction().products.at(i), products.at(i));
+      }
     }
     // End of Instruction
     ++current_step_index();

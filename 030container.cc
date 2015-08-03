@@ -107,7 +107,6 @@ GET,
 Recipe_ordinal["get"] = GET;
 :(before "End Primitive Recipe Implementations")
 case GET: {
-  products.resize(1);
   if (SIZE(ingredients) != 2) {
     raise << current_recipe_name() << ": 'get' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
@@ -143,7 +142,7 @@ case GET: {
   reagent tmp;
   tmp.set_value(src);
   tmp.types.push_back(src_type);
-  products.at(0) = read_memory(tmp);
+  products.push_back(read_memory(tmp));
   break;
 }
 
@@ -192,7 +191,6 @@ GET_ADDRESS,
 Recipe_ordinal["get-address"] = GET_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case GET_ADDRESS: {
-  products.resize(1);
   reagent base = current_instruction().ingredients.at(0);
   long long int base_address = base.value;
   if (base_address == 0) {
@@ -219,6 +217,7 @@ case GET_ADDRESS: {
     result += size_of(Type[base_type].elements.at(i));
   }
   trace(Primitive_recipe_depth, "run") << "address to copy is " << result << end();
+  products.resize(1);
   products.at(0).push_back(result);
   break;
 }

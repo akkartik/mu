@@ -39,7 +39,6 @@ Recipe_ordinal["next-ingredient"] = NEXT_INGREDIENT;
 case NEXT_INGREDIENT: {
   if (!ingredients.empty()) {
     raise << current_recipe_name() << ": 'next-ingredient' didn't expect any ingredients in '" << current_instruction().to_string() << "'\n" << end();
-    products.resize(2);
     break;
   }
   assert(!Current_routine->calls.empty());
@@ -102,12 +101,10 @@ Recipe_ordinal["ingredient"] = INGREDIENT;
 case INGREDIENT: {
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'ingredient' expects exactly one ingredient, but got '" << current_instruction().to_string() << "'\n" << end();
-    products.resize(2);
     break;
   }
   if (!is_literal(current_instruction().ingredients.at(0))) {
     raise << current_recipe_name() << ": 'ingredient' expects a literal ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    products.resize(2);
     break;
   }
   assert(scalar(ingredients.at(0)));

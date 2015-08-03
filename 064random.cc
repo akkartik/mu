@@ -27,7 +27,6 @@ ROUND,
 Recipe_ordinal["round"] = ROUND;
 :(before "End Primitive Recipe Implementations")
 case ROUND: {
-  products.resize(1);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'round' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
@@ -36,6 +35,7 @@ case ROUND: {
     raise << current_recipe_name() << ": first ingredient of 'round' should be a number, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
+  products.resize(1);
   products.at(0).push_back(rint(ingredients.at(0).at(0)));
   break;
 }
