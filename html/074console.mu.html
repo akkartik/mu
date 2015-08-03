@@ -13,12 +13,12 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.Delimiter { color: #a04060; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
 -->
 </style>
 
@@ -53,10 +53,10 @@ container console [
 
 <span class="muRecipe">recipe</span> new-fake-console [
   <span class="Constant">local-scope</span>
-  result:address:console<span class="Special"> &lt;- </span>new console:type
-  buf:address:address:array:character<span class="Special"> &lt;- </span>get-address *result, data:offset
+  result:address:console<span class="Special"> &lt;- </span>new <span class="Constant">console:type</span>
+  buf:address:address:array:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
   *buf<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  idx:address:number<span class="Special"> &lt;- </span>get-address *result, index:offset
+  idx:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">index:offset</span>
   *idx<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="muControl">reply</span> result
 ]
@@ -66,13 +66,13 @@ container console [
   x:address:console<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> x
-    idx:address:number<span class="Special"> &lt;- </span>get-address *x, index:offset
-    buf:address:array:event<span class="Special"> &lt;- </span>get *x, data:offset
+    idx:address:number<span class="Special"> &lt;- </span>get-address *x, <span class="Constant">index:offset</span>
+    buf:address:array:event<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
     <span class="Delimiter">{</span>
       max:number<span class="Special"> &lt;- </span>length *buf
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal *idx, max
       <span class="muControl">break-unless</span> done?
-      dummy:address:event<span class="Special"> &lt;- </span>new event:type
+      dummy:address:event<span class="Special"> &lt;- </span>new <span class="Constant">event:type</span>
       <span class="muControl">reply</span> *dummy, x/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">1/quit</span>
     <span class="Delimiter">}</span>
     result:event<span class="Special"> &lt;- </span>index *buf, *idx
@@ -94,7 +94,7 @@ container console [
   x:event, console, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-event console
   <span class="muControl">reply-if</span> quit?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
   <span class="muControl">reply-unless</span> found?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
-  c:address:character<span class="Special"> &lt;- </span>maybe-convert x, text:variant
+  c:address:character<span class="Special"> &lt;- </span>maybe-convert x, <span class="Constant">text:variant</span>
   <span class="muControl">reply-unless</span> c, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">0/found</span>, <span class="Constant">0/quit</span>
   <span class="muControl">reply</span> *c, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
 ]

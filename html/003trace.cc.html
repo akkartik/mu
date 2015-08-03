@@ -136,7 +136,7 @@ struct trace_stream <span class="Delimiter">{</span>
   string curr_layer<span class="Delimiter">;</span>
   int curr_depth<span class="Delimiter">;</span>
   string dump_layer<span class="Delimiter">;</span>
-  string collect_layer<span class="Delimiter">;</span>  <span class="Comment">// if set, ignore all other layers</span>
+  set&lt;string&gt; collect_layers<span class="Delimiter">;</span>  <span class="Comment">// if not empty, ignore all absent layers</span>
   ofstream null_stream<span class="Delimiter">;</span>  <span class="Comment">// never opens a file, so writes silently fail</span>
   trace_stream<span class="Delimiter">()</span> :curr_stream<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> curr_depth<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
   ~trace_stream<span class="Delimiter">()</span> <span class="Delimiter">{</span> if <span class="Delimiter">(</span>curr_stream<span class="Delimiter">)</span> delete curr_stream<span class="Delimiter">;</span> <span class="Delimiter">}</span>
@@ -146,11 +146,19 @@ struct trace_stream <span class="Delimiter">{</span>
   <span class="Delimiter">}</span>
 
   ostream&amp; stream<span class="Delimiter">(</span>int depth<span class="Delimiter">,</span> string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!collect_layer<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; layer != collect_layer<span class="Delimiter">)</span> <span class="Identifier">return</span> null_stream<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>!is_collecting<span class="Delimiter">(</span>layer<span class="Delimiter">))</span> <span class="Identifier">return</span> null_stream<span class="Delimiter">;</span>
     curr_stream = new ostringstream<span class="Delimiter">;</span>
     curr_layer = layer<span class="Delimiter">;</span>
     curr_depth = depth<span class="Delimiter">;</span>
     <span class="Identifier">return</span> *curr_stream<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+
+  bool is_collecting<span class="Delimiter">(</span>const string&amp; layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Identifier">return</span> collect_layers<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || collect_layers<span class="Delimiter">.</span>find<span class="Delimiter">(</span>layer<span class="Delimiter">)</span> != collect_layers<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+
+  bool is_narrowly_collecting<span class="Delimiter">(</span>const string&amp; layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Identifier">return</span> collect_layers<span class="Delimiter">.</span>find<span class="Delimiter">(</span>layer<span class="Delimiter">)</span> != collect_layers<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
 
   <span class="Comment">// be sure to call this before messing with curr_stream or curr_layer</span>

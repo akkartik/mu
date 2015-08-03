@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muScenario { color: #00af00; }
-.Delimiter { color: #a04060; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
+.muScenario { color: #00af00; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
 -->
 </style>
 
@@ -69,18 +69,18 @@ container channel [
 <span class="muRecipe">recipe</span> new-channel [
   <span class="Constant">local-scope</span>
   <span class="Comment"># result = new channel</span>
-  result:address:channel<span class="Special"> &lt;- </span>new channel:type
+  result:address:channel<span class="Special"> &lt;- </span>new <span class="Constant">channel:type</span>
   <span class="Comment"># result.first-full = 0</span>
-  full:address:number<span class="Special"> &lt;- </span>get-address *result, first-full:offset
+  full:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">first-full:offset</span>
   *full<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Comment"># result.first-free = 0</span>
-  free:address:number<span class="Special"> &lt;- </span>get-address *result, first-free:offset
+  free:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">first-free:offset</span>
   *free<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Comment"># result.data = new location[ingredient+1]</span>
   capacity:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   capacity<span class="Special"> &lt;- </span>add capacity, <span class="Constant">1</span>  <span class="Comment"># unused slot for 'full?' below</span>
-  dest:address:address:array:location<span class="Special"> &lt;- </span>get-address *result, data:offset
-  *dest<span class="Special"> &lt;- </span>new location:type, capacity
+  dest:address:address:array:location<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
+  *dest<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, capacity
   <span class="muControl">reply</span> result
 ]
 
@@ -93,12 +93,12 @@ container channel [
     <span class="Comment"># block if chan is full</span>
     full:boolean<span class="Special"> &lt;- </span>channel-full? chan
     <span class="muControl">break-unless</span> full
-    full-address:address:number<span class="Special"> &lt;- </span>get-address *chan, first-full:offset
+    full-address:address:number<span class="Special"> &lt;- </span>get-address *chan, <span class="Constant">first-full:offset</span>
     wait-for-location *full-address
   <span class="Delimiter">}</span>
   <span class="Comment"># store val</span>
-  circular-buffer:address:array:location<span class="Special"> &lt;- </span>get *chan, data:offset
-  free:address:number<span class="Special"> &lt;- </span>get-address *chan, first-free:offset
+  circular-buffer:address:array:location<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
+  free:address:number<span class="Special"> &lt;- </span>get-address *chan, <span class="Constant">first-free:offset</span>
   dest:address:location<span class="Special"> &lt;- </span>index-address *circular-buffer, *free
   *dest<span class="Special"> &lt;- </span>copy val
   <span class="Comment"># mark its slot as filled</span>
@@ -121,12 +121,12 @@ container channel [
     <span class="Comment"># block if chan is empty</span>
     empty?:boolean<span class="Special"> &lt;- </span>channel-empty? chan
     <span class="muControl">break-unless</span> empty?
-    free-address:address:number<span class="Special"> &lt;- </span>get-address *chan, first-free:offset
+    free-address:address:number<span class="Special"> &lt;- </span>get-address *chan, <span class="Constant">first-free:offset</span>
     wait-for-location *free-address
   <span class="Delimiter">}</span>
   <span class="Comment"># read result</span>
-  full:address:number<span class="Special"> &lt;- </span>get-address *chan, first-full:offset
-  circular-buffer:address:array:location<span class="Special"> &lt;- </span>get *chan, data:offset
+  full:address:number<span class="Special"> &lt;- </span>get-address *chan, <span class="Constant">first-full:offset</span>
+  circular-buffer:address:array:location<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
   result:location<span class="Special"> &lt;- </span>index *circular-buffer, *full
   <span class="Comment"># increment full</span>
   *full<span class="Special"> &lt;- </span>add *full, <span class="Constant">1</span>
@@ -154,8 +154,8 @@ container channel [
 <span class="muScenario">scenario</span> channel-initialization [
   run [
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, first-full:offset
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, first-free:offset
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, <span class="Constant">first-full:offset</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, <span class="Constant">first-free:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># first-full</span>
@@ -167,8 +167,8 @@ container channel [
   run [
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">34</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, first-full:offset
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, first-free:offset
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, <span class="Constant">first-full:offset</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, <span class="Constant">first-free:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># first-full</span>
@@ -181,8 +181,8 @@ container channel [
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">34</span>
     _, <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:channel
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, first-full:offset
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, first-free:offset
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, <span class="Constant">first-full:offset</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, <span class="Constant">first-free:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># first-full</span>
@@ -198,14 +198,14 @@ container channel [
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">34</span>
     _, <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:channel
     <span class="Comment"># first-free will now be 1</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, first-free:offset
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, first-free:offset
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, <span class="Constant">first-free:offset</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, <span class="Constant">first-free:offset</span>
     <span class="Comment"># write second value, verify that first-free wraps</span>
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">34</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, first-free:offset
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, <span class="Constant">first-free:offset</span>
     <span class="Comment"># read second value, verify that first-full wraps</span>
     _, <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:channel
-    <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, first-full:offset
+    <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:channel, <span class="Constant">first-full:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># first-free after first write</span>
@@ -222,8 +222,8 @@ container channel [
   <span class="Constant">local-scope</span>
   chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># return chan.first-full == chan.first-free</span>
-  full:number<span class="Special"> &lt;- </span>get *chan, first-full:offset
-  free:number<span class="Special"> &lt;- </span>get *chan, first-free:offset
+  full:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
+  free:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
   result:boolean<span class="Special"> &lt;- </span>equal full, free
   <span class="muControl">reply</span> result
 ]
@@ -234,7 +234,7 @@ container channel [
   <span class="Constant">local-scope</span>
   chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># tmp = chan.first-free + 1</span>
-  tmp:number<span class="Special"> &lt;- </span>get *chan, first-free:offset
+  tmp:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
   tmp<span class="Special"> &lt;- </span>add tmp, <span class="Constant">1</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if tmp == chan.capacity, tmp = 0</span>
@@ -244,7 +244,7 @@ container channel [
     tmp<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># return chan.first-full == tmp</span>
-  full:number<span class="Special"> &lt;- </span>get *chan, first-full:offset
+  full:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
   result:boolean<span class="Special"> &lt;- </span>equal full, tmp
   <span class="muControl">reply</span> result
 ]
@@ -253,7 +253,7 @@ container channel [
 <span class="muRecipe">recipe</span> channel-capacity [
   <span class="Constant">local-scope</span>
   chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  q:address:array:location<span class="Special"> &lt;- </span>get *chan, data:offset
+  q:address:array:location<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
   result:number<span class="Special"> &lt;- </span>length *q
   <span class="muControl">reply</span> result
 ]
@@ -330,7 +330,7 @@ container channel [
         <span class="muControl">break-unless</span> backspace?
         <span class="Comment"># drop previous character</span>
         <span class="Delimiter">{</span>
-          buffer-length:address:number<span class="Special"> &lt;- </span>get-address *line, length:offset
+          buffer-length:address:number<span class="Special"> &lt;- </span>get-address *line, <span class="Constant">length:offset</span>
           buffer-empty?:boolean<span class="Special"> &lt;- </span>equal *buffer-length, <span class="Constant">0</span>
           <span class="muControl">break-if</span> buffer-empty?
           *buffer-length<span class="Special"> &lt;- </span>subtract *buffer-length, <span class="Constant">1</span>
@@ -349,8 +349,8 @@ container channel [
     <span class="Delimiter">}</span>
     <span class="Comment"># copy line into 'out'</span>
     i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    line-contents:address:array:character<span class="Special"> &lt;- </span>get *line, data:offset
-    max:number<span class="Special"> &lt;- </span>get *line, length:offset
+    line-contents:address:array:character<span class="Special"> &lt;- </span>get *line, <span class="Constant">data:offset</span>
+    max:number<span class="Special"> &lt;- </span>get *line, <span class="Constant">length:offset</span>
     <span class="Delimiter">{</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, max
       <span class="muControl">break-if</span> done?
@@ -372,7 +372,7 @@ container channel [
     assert <span class="Constant">3</span>:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty <span class="muRecipe">after</span> init]
     <span class="Comment"># buffer stdin into buffered-stdin, try to read from buffered-stdin</span>
-    <span class="Constant">4</span>:number/buffer-routine<span class="Special"> &lt;- </span>start-running buffer-lines:<span class="muRecipe">recipe</span>, <span class="Constant">1</span>:address:channel/stdin, <span class="Constant">2</span>:address:channel/buffered-stdin
+    <span class="Constant">4</span>:number/buffer-routine<span class="Special"> &lt;- </span>start-running <span class="Constant">buffer-lines:recipe</span>, <span class="Constant">1</span>:address:channel/stdin, <span class="Constant">2</span>:address:channel/buffered-stdin
     wait-for-routine <span class="Constant">4</span>:number/buffer-routine
     <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>channel-empty? <span class="Constant">2</span>:address:channel/buffered-stdin
     assert <span class="Constant">5</span>:boolean, [

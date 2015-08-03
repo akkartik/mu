@@ -13,15 +13,15 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.Delimiter { color: #a04060; }
 .muScenario { color: #00af00; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .CommentedCode { color: #6c6c6c; }
-.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
 -->
 </style>
 
@@ -108,10 +108,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   board:address:array:address:array:character<span class="Special"> &lt;- </span>initial-position
   <span class="Comment"># hook up stdin</span>
   stdin:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">10/capacity</span>
-  start-running send-keys-to-channel:<span class="muRecipe">recipe</span>, console, stdin, screen
+  start-running <span class="Constant">send-keys-to-channel:recipe</span>, console, stdin, screen
   <span class="Comment"># buffer lines in stdin</span>
   buffered-stdin:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">10/capacity</span>
-  start-running buffer-lines:<span class="muRecipe">recipe</span>, stdin, buffered-stdin
+  start-running <span class="Constant">buffer-lines:recipe</span>, stdin, buffered-stdin
   <span class="Delimiter">{</span>
     msg:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.</span>
 <span class="Constant">]</span>
@@ -152,7 +152,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   correct-length?:boolean<span class="Special"> &lt;- </span>equal len, <span class="Constant">64</span>
   assert correct-length?, <span class="Constant">[chessboard had incorrect size]</span>
   <span class="Comment"># board is an array of pointers to files; file is an array of characters</span>
-  board:address:array:address:array:character<span class="Special"> &lt;- </span>new location:type, <span class="Constant">8</span>
+  board:address:array:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">8</span>
   col:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>equal col, <span class="Constant">8</span>
@@ -170,7 +170,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   position:address:array:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   index:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   index<span class="Special"> &lt;- </span>multiply index, <span class="Constant">8</span>
-  result:address:array:character<span class="Special"> &lt;- </span>new character:type, <span class="Constant">8</span>
+  result:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, <span class="Constant">8</span>
   row:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>equal row, <span class="Constant">8</span>
@@ -299,20 +299,20 @@ container move [
   <span class="muControl">reply-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
   <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
   <span class="Comment"># construct the move object</span>
-  result:address:move<span class="Special"> &lt;- </span>new move:type
-  x:address:number<span class="Special"> &lt;- </span>get-address *result, from-file:offset
+  result:address:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
+  x:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">from-file:offset</span>
   *x<span class="Special"> &lt;- </span>copy from-file
-  x<span class="Special"> &lt;- </span>get-address *result, from-rank:offset
+  x<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">from-rank:offset</span>
   *x, quit?, error?<span class="Special"> &lt;- </span>read-rank stdin, screen
   <span class="muControl">reply-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
   <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
   error?<span class="Special"> &lt;- </span>expect-from-channel stdin, <span class="Constant">45/dash</span>, screen
   <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, error?
-  x<span class="Special"> &lt;- </span>get-address *result, to-file:offset
+  x<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">to-file:offset</span>
   *x, quit?, error?<span class="Special"> &lt;- </span>read-file stdin, screen
   <span class="muControl">reply-if</span> quit?:boolean, <span class="Constant">0/dummy</span>, quit?:boolean, error?:boolean
   <span class="muControl">reply-if</span> error?:boolean, <span class="Constant">0/dummy</span>, quit?:boolean, error?:boolean
-  x:address:number<span class="Special"> &lt;- </span>get-address *result, to-rank:offset
+  x:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">to-rank:offset</span>
   *x, quit?, error?<span class="Special"> &lt;- </span>read-rank stdin, screen
   <span class="muControl">reply-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
   <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
@@ -439,7 +439,7 @@ container move [
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
   run [
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2</span>
-    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
+    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running <span class="Constant">read-move:recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine <span class="Constant">2</span>:number
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
@@ -511,7 +511,7 @@ F read-move-blocking: routine failed to terminate on newline]
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
   run [
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2</span>
-    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
+    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running <span class="Constant">read-move:recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine <span class="Constant">2</span>:number
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
@@ -538,7 +538,7 @@ F read-move-quit: routine failed to terminate on 'q']
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
   run [
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2</span>
-    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
+    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running <span class="Constant">read-move:recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine <span class="Constant">2</span>:number
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
@@ -559,7 +559,7 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
   run [
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2</span>
-    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
+    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running <span class="Constant">read-move:recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine <span class="Constant">2</span>:number
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
@@ -581,7 +581,7 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
   run [
     <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2</span>
-    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
+    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running <span class="Constant">read-move:recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine <span class="Constant">2</span>:number
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
@@ -603,10 +603,10 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
   <span class="Constant">local-scope</span>
   b:address:array:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   m:address:move<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  from-file:number<span class="Special"> &lt;- </span>get *m, from-file:offset
-  from-rank:number<span class="Special"> &lt;- </span>get *m, from-rank:offset
-  to-file:number<span class="Special"> &lt;- </span>get *m, to-file:offset
-  to-rank:number<span class="Special"> &lt;- </span>get *m, to-rank:offset
+  from-file:number<span class="Special"> &lt;- </span>get *m, <span class="Constant">from-file:offset</span>
+  from-rank:number<span class="Special"> &lt;- </span>get *m, <span class="Constant">from-rank:offset</span>
+  to-file:number<span class="Special"> &lt;- </span>get *m, <span class="Constant">to-file:offset</span>
+  to-rank:number<span class="Special"> &lt;- </span>get *m, <span class="Constant">to-rank:offset</span>
   f:address:array:character<span class="Special"> &lt;- </span>index *b, from-file
   src:address:character/square<span class="Special"> &lt;- </span>index-address *f, from-rank
   f<span class="Special"> &lt;- </span>index *b, to-file
@@ -620,14 +620,14 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
   run [
     <span class="Constant">2</span>:address:array:address:array:character/board<span class="Special"> &lt;- </span>initial-position
-    <span class="Constant">3</span>:address:move<span class="Special"> &lt;- </span>new move:type
-    <span class="Constant">4</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, from-file:offset
+    <span class="Constant">3</span>:address:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
+    <span class="Constant">4</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, <span class="Constant">from-file:offset</span>
     *<span class="Constant">4</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">6/g</span>
-    <span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, from-rank:offset
+    <span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, <span class="Constant">from-rank:offset</span>
     *<span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1/'2'</span>
-    <span class="Constant">6</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, to-file:offset
+    <span class="Constant">6</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, <span class="Constant">to-file:offset</span>
     *<span class="Constant">6</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">6/g</span>
-    <span class="Constant">7</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, to-rank:offset
+    <span class="Constant">7</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, <span class="Constant">to-rank:offset</span>
     *<span class="Constant">7</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">3/'4'</span>
     <span class="Constant">2</span>:address:array:address:array:character/board<span class="Special"> &lt;- </span>make-move <span class="Constant">2</span>:address:array:address:array:character/board, <span class="Constant">3</span>:address:move
     screen:address<span class="Special"> &lt;- </span>print-board screen:address, <span class="Constant">2</span>:address:array:address:array:character/board

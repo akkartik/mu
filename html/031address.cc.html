@@ -13,9 +13,10 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.traceAbsent { color: #c00000; }
 .traceContains { color: #008000; }
-.cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
@@ -59,6 +60,20 @@ recipe main [
 
 <span class="Delimiter">:(before &quot;long long int base = x.value&quot; following &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
 x = canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  raise &lt;&lt; <span class="Constant">&quot;can't write to location 0 in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: writes to address 0 always loudly fail</span>
+<span class="Delimiter">:(scenario store_to_0_warns)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">1</span>:address:number/lookup<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+<span class="traceAbsent">-mem: storing 34 in location 0</span>
+<span class="traceContains">+warn: can't write to location 0 in '1:address:number/lookup &lt;- copy 34'</span>
 
 <span class="Delimiter">:(code)</span>
 reagent canonize<span class="Delimiter">(</span>reagent x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
