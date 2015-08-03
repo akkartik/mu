@@ -621,7 +621,7 @@ recipe trim [
   # result = new character[end+1 - start]
   new-len:number <- subtract end, start, -1
   result:address:array:character <- new character:type, new-len
-  # i = start, j = 0
+  # copy the untrimmed parts between start and end
   i:number <- copy start
   j:number <- copy 0
   {

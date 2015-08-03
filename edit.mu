@@ -2994,7 +2994,7 @@ recipe restore-sandboxes [
       expected-response:address:address:array:character <- get-address **curr, expected-response:offset
       *expected-response <- copy contents
     }
-    # increment loop variables
+    +continue
     idx <- add idx, 1
     curr <- get-address **curr, next-sandbox:offset
     loop
