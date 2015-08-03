@@ -13,11 +13,11 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
-.cSpecial { color: #008000; }
-.Constant { color: #00a0a0; }
-.SalientComment { color: #00ffff; }
 .traceAbsent { color: #c00000; }
+.traceContains { color: #008000; }
+.Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -149,6 +149,10 @@ case GET: <span class="Delimiter">{</span>
   <span class="Delimiter">}</span>
   reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   long long int base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>base_address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: tried to access location 0 in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   type_ordinal base_type = base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>kind != container<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name <span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'get' should be a container, but got &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -167,7 +171,6 @@ case GET: <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy is &quot;</span> &lt;&lt; src &lt;&lt; end<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>offset &lt; <span class="Constant">0</span> || offset &gt;= SIZE<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: invalid offset &quot;</span> &lt;&lt; offset &lt;&lt; <span class="Constant">&quot; for &quot;</span> &lt;&lt; Type[base_type]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-    products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   type_ordinal src_type = Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
@@ -226,6 +229,10 @@ Recipe_ordinal[<span class="Constant">&quot;get-address&quot;</span>] = GET_ADDR
 case GET_ADDRESS: <span class="Delimiter">{</span>
   reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   long long int base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>base_address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: tried to access location 0 in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   type_ordinal base_type = base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>kind != container<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name <span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'get-address' should be a container, but got &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -239,7 +246,6 @@ case GET_ADDRESS: <span class="Delimiter">{</span>
   long long int offset = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>offset &lt; <span class="Constant">0</span> || offset &gt;= SIZE<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;invalid offset &quot;</span> &lt;&lt; offset &lt;&lt; <span class="Constant">&quot; for &quot;</span> &lt;&lt; Type[base_type]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-    products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   long long int result = base_address<span class="Delimiter">;</span>

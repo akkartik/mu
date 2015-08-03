@@ -14,8 +14,8 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceContains { color: #008000; }
-.cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
@@ -117,8 +117,10 @@ inline const instruction&amp; current_instruction<span class="Delimiter">()</spa
 default: <span class="Delimiter">{</span>
   <span class="Comment">// not a primitive; try to look up the book of recipes</span>
   if <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> == Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; <span class="Constant">&quot;undefined operation &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>operation &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: undefined operation in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Comment">// stop running this instruction immediately</span>
+    ++current_step_index<span class="Delimiter">();</span>
+    <span class="Identifier">continue</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">));</span>
   call_housekeeping:
@@ -126,6 +128,20 @@ default: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>Callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
   <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not done with caller; don't increment current_step_index()</span>
 <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario calling_undefined_recipe_warns)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  foo
+]
+<span class="traceContains">+warn: main: undefined operation in 'foo '</span>
+
+<span class="Delimiter">:(scenario calling_undefined_recipe_handles_missing_result)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  x:number<span class="Special"> &lt;- </span>foo
+]
+<span class="traceContains">+warn: main: undefined operation in 'x:number &lt;- foo '</span>
 
 <span class="SalientComment">//:: finally, we need to fix the termination conditions for the run loop</span>
 

@@ -13,11 +13,11 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
-.cSpecial { color: #008000; }
-.Constant { color: #00a0a0; }
-.SalientComment { color: #00ffff; }
 .traceAbsent { color: #c00000; }
+.traceContains { color: #008000; }
+.Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -45,6 +45,7 @@ recipe main [
 <span class="traceContains">+name: assign x 1</span>
 <span class="traceContains">+mem: storing 0 in location 1</span>
 
+<span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario transform_names_warns)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
@@ -176,12 +177,16 @@ recipe main [
 <span class="traceAbsent">-name: assign _ 1</span>
 
 <span class="Comment">//: an escape hatch to suppress name conversion that we'll use later</span>
+<span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario transform_names_passes_raw)</span>
+<span class="Special">% Hide_warnings = true;</span>
 recipe main [
   x:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceAbsent">-name: assign x 1</span>
+<span class="traceContains">+warn: can't write to location 0 in 'x:number/raw &lt;- copy 0'</span>
 
+<span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario transform_names_warns_when_mixing_names_and_numeric_locations)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
@@ -233,7 +238,7 @@ recipe main [
 if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;get&quot;</span>]
     || inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;get-address&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: exactly 2 ingredients expected in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: exactly 2 ingredients expected in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span>

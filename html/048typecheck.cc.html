@@ -14,8 +14,8 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceContains { color: #008000; }
-.cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -90,7 +90,8 @@ void deduce_missing_type<span class="Delimiter">(</span>map&lt;string<span class
   if <span class="Delimiter">(</span>metadata<span class="Delimiter">.</span>find<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == metadata<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   copy<span class="Delimiter">(</span>metadata[x<span class="Delimiter">.</span>name]<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> metadata[x<span class="Delimiter">.</span>name]<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">,</span> x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
   assert<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;as-before&quot;</span><span class="Delimiter">);</span>
+  x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>resize<span class="Delimiter">(</span>metadata[x<span class="Delimiter">.</span>name]<span class="Delimiter">.</span>size<span class="Delimiter">());</span>
+  x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> vector&lt;string&gt; &gt;<span class="Delimiter">(</span><span class="Constant">&quot;as-before&quot;</span><span class="Delimiter">,</span> vector&lt;string&gt;<span class="Delimiter">()));</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario transform_types_fills_in_missing_types_in_product)</span>
@@ -113,8 +114,14 @@ recipe main [
   x:number<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>
 ]
 <span class="traceContains">+warn: missing type in 'x &lt;- copy 1'</span>
-<span class="traceContains">+warn: x &lt;- copy 1: reagent not initialized: x</span>
-<span class="traceContains">+warn: main: size mismatch in storing to x at 'x &lt;- copy 1'</span>
+
+<span class="Delimiter">:(scenario typo_in_address_type_warns)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  y:address:charcter<span class="Special"> &lt;- </span>new character:type
+  *y<span class="Special"> &lt;- </span>copy <span class="Constant">67</span>
+]
+<span class="traceContains">+warn: unknown type: charcter</span>
 </pre>
 </body>
 </html>

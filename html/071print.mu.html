@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.Delimiter { color: #a04060; }
 .muScenario { color: #00af00; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .CommentedCode { color: #6c6c6c; }
-.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
 -->
 </style>
 
@@ -50,18 +50,18 @@ container screen-cell [
 
 <span class="muRecipe">recipe</span> new-fake-screen [
   <span class="Constant">local-scope</span>
-  result:address:screen<span class="Special"> &lt;- </span>new screen:type
-  width:address:number<span class="Special"> &lt;- </span>get-address *result, num-columns:offset
+  result:address:screen<span class="Special"> &lt;- </span>new <span class="Constant">screen:type</span>
+  width:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">num-columns:offset</span>
   *width<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  height:address:number<span class="Special"> &lt;- </span>get-address *result, num-rows:offset
+  height:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">num-rows:offset</span>
   *height<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  row:address:number<span class="Special"> &lt;- </span>get-address *result, cursor-row:offset
+  row:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">cursor-row:offset</span>
   *row<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  column:address:number<span class="Special"> &lt;- </span>get-address *result, cursor-column:offset
+  column:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">cursor-column:offset</span>
   *column<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   bufsize:number<span class="Special"> &lt;- </span>multiply *width, *height
-  buf:address:address:array:screen-cell<span class="Special"> &lt;- </span>get-address *result, data:offset
-  *buf<span class="Special"> &lt;- </span>new screen-cell:type, bufsize
+  buf:address:address:array:screen-cell<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
+  *buf<span class="Special"> &lt;- </span>new <span class="Constant">screen-cell:type</span>, bufsize
   clear-screen result
   <span class="muControl">reply</span> result
 ]
@@ -73,24 +73,24 @@ container screen-cell [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sc
     <span class="Comment"># clear fake screen</span>
-    buf:address:array:screen-cell<span class="Special"> &lt;- </span>get *sc, data:offset
+    buf:address:array:screen-cell<span class="Special"> &lt;- </span>get *sc, <span class="Constant">data:offset</span>
     max:number<span class="Special"> &lt;- </span>length *buf
     i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     <span class="Delimiter">{</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, max
       <span class="muControl">break-if</span> done?
       curr:address:screen-cell<span class="Special"> &lt;- </span>index-address *buf, i
-      curr-content:address:character<span class="Special"> &lt;- </span>get-address *curr, contents:offset
+      curr-content:address:character<span class="Special"> &lt;- </span>get-address *curr, <span class="Constant">contents:offset</span>
       *curr-content<span class="Special"> &lt;- </span>copy <span class="Constant">[ ]</span>
-      curr-color:address:character<span class="Special"> &lt;- </span>get-address *curr, color:offset
+      curr-color:address:character<span class="Special"> &lt;- </span>get-address *curr, <span class="Constant">color:offset</span>
       *curr-color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
       i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># reset cursor</span>
-    x:address:number<span class="Special"> &lt;- </span>get-address *sc, cursor-row:offset
+    x:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-row:offset</span>
     *x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    x<span class="Special"> &lt;- </span>get-address *sc, cursor-column:offset
+    x<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-column:offset</span>
     *x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     <span class="muControl">reply</span> sc/same-as-ingredient:<span class="Constant">0</span>
   <span class="Delimiter">}</span>
@@ -103,14 +103,14 @@ container screen-cell [
   <span class="Constant">local-scope</span>
   sc:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="muControl">reply-unless</span> sc, <span class="Constant">1/true</span>
-  buf:address:array:screen-cell<span class="Special"> &lt;- </span>get *sc, data:offset
+  buf:address:array:screen-cell<span class="Special"> &lt;- </span>get *sc, <span class="Constant">data:offset</span>
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   len:number<span class="Special"> &lt;- </span>length *buf
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
     <span class="muControl">break-if</span> done?
     curr:screen-cell<span class="Special"> &lt;- </span>index *buf, i
-    curr-contents:character<span class="Special"> &lt;- </span>get curr, contents:offset
+    curr-contents:character<span class="Special"> &lt;- </span>get curr, <span class="Constant">contents:offset</span>
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
     <span class="muControl">loop-unless</span> curr-contents
     <span class="Comment"># not 0</span>
@@ -140,15 +140,15 @@ container screen-cell [
     <span class="Comment"># if x exists</span>
     <span class="Comment"># (handle special cases exactly like in the real screen)</span>
     <span class="muControl">break-unless</span> sc
-    width:number<span class="Special"> &lt;- </span>get *sc, num-columns:offset
-    height:number<span class="Special"> &lt;- </span>get *sc, num-rows:offset
+    width:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">num-columns:offset</span>
+    height:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">num-rows:offset</span>
     <span class="Comment"># if cursor is out of bounds, silently exit</span>
-    row:address:number<span class="Special"> &lt;- </span>get-address *sc, cursor-row:offset
+    row:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-row:offset</span>
     legal?:boolean<span class="Special"> &lt;- </span>greater-or-equal *row, <span class="Constant">0</span>
     <span class="muControl">reply-unless</span> legal?, sc
     legal?<span class="Special"> &lt;- </span>lesser-than *row, height
     <span class="muControl">reply-unless</span> legal?, sc
-    column:address:number<span class="Special"> &lt;- </span>get-address *sc, cursor-column:offset
+    column:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-column:offset</span>
     legal?<span class="Special"> &lt;- </span>greater-or-equal *column, <span class="Constant">0</span>
     <span class="muControl">reply-unless</span> legal?, sc
     legal?<span class="Special"> &lt;- </span>lesser-than *column, width
@@ -172,7 +172,7 @@ container screen-cell [
     <span class="Comment"># save character in fake screen</span>
     index:number<span class="Special"> &lt;- </span>multiply *row, width
     index<span class="Special"> &lt;- </span>add index, *column
-    buf:address:array:screen-cell<span class="Special"> &lt;- </span>get *sc, data:offset
+    buf:address:array:screen-cell<span class="Special"> &lt;- </span>get *sc, <span class="Constant">data:offset</span>
     len:number<span class="Special"> &lt;- </span>length *buf
     <span class="Comment"># special-case: backspace</span>
     <span class="Delimiter">{</span>
@@ -186,18 +186,18 @@ container screen-cell [
         *column<span class="Special"> &lt;- </span>subtract *column, <span class="Constant">1</span>
         index<span class="Special"> &lt;- </span>subtract index, <span class="Constant">1</span>
         cursor:address:screen-cell<span class="Special"> &lt;- </span>index-address *buf, index
-        cursor-contents:address:character<span class="Special"> &lt;- </span>get-address *cursor, contents:offset
+        cursor-contents:address:character<span class="Special"> &lt;- </span>get-address *cursor, <span class="Constant">contents:offset</span>
         *cursor-contents<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
-        cursor-color:address:number<span class="Special"> &lt;- </span>get-address *cursor, color:offset
+        cursor-color:address:number<span class="Special"> &lt;- </span>get-address *cursor, <span class="Constant">color:offset</span>
         *cursor-color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
       <span class="Delimiter">}</span>
       <span class="muControl">reply</span> sc/same-as-ingredient:<span class="Constant">0</span>
     <span class="Delimiter">}</span>
 <span class="CommentedCode">#?     $print [saving character ], c, [ to fake screen ], cursor, 10/newline</span>
     cursor:address:screen-cell<span class="Special"> &lt;- </span>index-address *buf, index
-    cursor-contents:address:character<span class="Special"> &lt;- </span>get-address *cursor, contents:offset
+    cursor-contents:address:character<span class="Special"> &lt;- </span>get-address *cursor, <span class="Constant">contents:offset</span>
     *cursor-contents<span class="Special"> &lt;- </span>copy c
-    cursor-color:address:number<span class="Special"> &lt;- </span>get-address *cursor, color:offset
+    cursor-color:address:number<span class="Special"> &lt;- </span>get-address *cursor, <span class="Constant">color:offset</span>
     *cursor-color<span class="Special"> &lt;- </span>copy color
     <span class="Comment"># increment column unless it's already all the way to the right</span>
     <span class="Delimiter">{</span>
@@ -218,7 +218,7 @@ container screen-cell [
 <span class="CommentedCode">#?     $start-tracing #? 3</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
-    <span class="Constant">2</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, data:offset
+    <span class="Constant">2</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">data:offset</span>
     <span class="Constant">3</span>:array:screen-cell<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:screen-cell
   ]
   memory-should-contain [
@@ -233,7 +233,7 @@ container screen-cell [
   run [
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">97/a</span>, <span class="Constant">1/red</span>
-    <span class="Constant">2</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, data:offset
+    <span class="Constant">2</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">data:offset</span>
     <span class="Constant">3</span>:array:screen-cell<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:screen-cell
   ]
   memory-should-contain [
@@ -250,8 +250,8 @@ container screen-cell [
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">8</span>  <span class="Comment"># backspace</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, cursor-column:offset
-    <span class="Constant">3</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, data:offset
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">cursor-column:offset</span>
+    <span class="Constant">3</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">data:offset</span>
     <span class="Constant">4</span>:array:screen-cell<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:array:screen-cell
   ]
   memory-should-contain [
@@ -269,8 +269,8 @@ container screen-cell [
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">8</span>  <span class="Comment"># backspace</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">8</span>  <span class="Comment"># backspace</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, cursor-column:offset
-    <span class="Constant">3</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, data:offset
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">cursor-column:offset</span>
+    <span class="Constant">3</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">data:offset</span>
     <span class="Constant">4</span>:array:screen-cell<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:array:screen-cell
   ]
   memory-should-contain [
@@ -288,8 +288,8 @@ container screen-cell [
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">98</span>  <span class="Comment"># 'b'</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">99</span>  <span class="Comment"># 'c'</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, cursor-column:offset
-    <span class="Constant">3</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, data:offset
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">cursor-column:offset</span>
+    <span class="Constant">3</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">data:offset</span>
     <span class="Constant">4</span>:array:screen-cell<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:array:screen-cell
   ]
   memory-should-contain [
@@ -309,9 +309,9 @@ container screen-cell [
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">10/newline</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, cursor-row:offset
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, cursor-column:offset
-    <span class="Constant">4</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, data:offset
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">cursor-column:offset</span>
+    <span class="Constant">4</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">data:offset</span>
     <span class="Constant">5</span>:array:screen-cell<span class="Special"> &lt;- </span>copy *<span class="Constant">4</span>:address:array:screen-cell
   ]
   memory-should-contain [
@@ -330,8 +330,8 @@ container screen-cell [
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">10/newline</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">10/newline</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">10/newline</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, cursor-row:offset
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, cursor-column:offset
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># cursor row</span>
@@ -348,9 +348,9 @@ container screen-cell [
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">99</span>  <span class="Comment"># 'c'</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">10/newline</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-character <span class="Constant">1</span>:address:screen, <span class="Constant">100</span>  <span class="Comment"># 'd'</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, cursor-row:offset
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, cursor-column:offset
-    <span class="Constant">4</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, data:offset
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">cursor-column:offset</span>
+    <span class="Constant">4</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">data:offset</span>
     <span class="Constant">5</span>:array:screen-cell<span class="Special"> &lt;- </span>copy *<span class="Constant">4</span>:address:array:screen-cell
   ]
   memory-should-contain [
@@ -375,8 +375,8 @@ container screen-cell [
   <span class="Comment"># if x exists, clear line in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sc
-    width:number<span class="Special"> &lt;- </span>get *sc, num-columns:offset
-    column:address:number<span class="Special"> &lt;- </span>get-address *sc, cursor-column:offset
+    width:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">num-columns:offset</span>
+    column:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-column:offset</span>
     original-column:number<span class="Special"> &lt;- </span>copy *column
     <span class="Comment"># space over the entire line</span>
 <span class="CommentedCode">#?     $start-tracing #? 1</span>
@@ -403,8 +403,8 @@ container screen-cell [
   <span class="Comment"># if x exists, lookup cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sc
-    row:number<span class="Special"> &lt;- </span>get *sc, cursor-row:offset
-    column:number<span class="Special"> &lt;- </span>get *sc, cursor-column:offset
+    row:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">cursor-row:offset</span>
+    column:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">cursor-column:offset</span>
     <span class="muControl">reply</span> row, column, sc/same-as-ingredient:<span class="Constant">0</span>
   <span class="Delimiter">}</span>
   row, column<span class="Special"> &lt;- </span>cursor-position-on-display
@@ -419,9 +419,9 @@ container screen-cell [
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sc
-    row:address:number<span class="Special"> &lt;- </span>get-address *sc, cursor-row:offset
+    row:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-row:offset</span>
     *row<span class="Special"> &lt;- </span>copy new-row
-    column:address:number<span class="Special"> &lt;- </span>get-address *sc, cursor-column:offset
+    column:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-column:offset</span>
     *column<span class="Special"> &lt;- </span>copy new-column
     <span class="muControl">reply</span> sc/same-as-ingredient:<span class="Constant">0</span>
   <span class="Delimiter">}</span>
@@ -440,7 +440,7 @@ container screen-cell [
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>move-cursor <span class="Constant">1</span>:address:screen, <span class="Constant">0/row</span>, <span class="Constant">0/column</span>
     <span class="Comment"># clear line</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>clear-line <span class="Constant">1</span>:address:screen
-    <span class="Constant">2</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, data:offset
+    <span class="Constant">2</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">data:offset</span>
     <span class="Constant">3</span>:array:screen-cell<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:screen-cell
   ]
   <span class="Comment"># screen should be blank</span>
@@ -469,8 +469,8 @@ container screen-cell [
     <span class="muControl">break-unless</span> sc
     <span class="Delimiter">{</span>
       <span class="Comment"># if row &lt; height-1</span>
-      height:number<span class="Special"> &lt;- </span>get *sc, num-rows:offset
-      row:address:number<span class="Special"> &lt;- </span>get-address *sc, cursor-row:offset
+      height:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">num-rows:offset</span>
+      row:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-row:offset</span>
       max:number<span class="Special"> &lt;- </span>subtract height, <span class="Constant">1</span>
       at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal *row, max
       <span class="muControl">break-if</span> at-bottom?
@@ -492,7 +492,7 @@ container screen-cell [
     <span class="muControl">break-unless</span> sc
     <span class="Delimiter">{</span>
       <span class="Comment"># if row &gt; 0</span>
-      row:address:number<span class="Special"> &lt;- </span>get-address *sc, cursor-row:offset
+      row:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-row:offset</span>
       at-top?:boolean<span class="Special"> &lt;- </span>lesser-or-equal *row, <span class="Constant">0</span>
       <span class="muControl">break-if</span> at-top?
       <span class="Comment"># row = row-1</span>
@@ -513,8 +513,8 @@ container screen-cell [
     <span class="muControl">break-unless</span> sc
     <span class="Delimiter">{</span>
       <span class="Comment"># if column &lt; width-1</span>
-      width:number<span class="Special"> &lt;- </span>get *sc, num-columns:offset
-      column:address:number<span class="Special"> &lt;- </span>get-address *sc, cursor-column:offset
+      width:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">num-columns:offset</span>
+      column:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-column:offset</span>
       max:number<span class="Special"> &lt;- </span>subtract width, <span class="Constant">1</span>
       at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal *column, max
       <span class="muControl">break-if</span> at-bottom?
@@ -536,7 +536,7 @@ container screen-cell [
     <span class="muControl">break-unless</span> sc
     <span class="Delimiter">{</span>
       <span class="Comment"># if column &gt; 0</span>
-      column:address:number<span class="Special"> &lt;- </span>get-address *sc, cursor-column:offset
+      column:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-column:offset</span>
       at-top?:boolean<span class="Special"> &lt;- </span>lesser-or-equal *column, <span class="Constant">0</span>
       <span class="muControl">break-if</span> at-top?
       <span class="Comment"># column = column-1</span>
@@ -572,7 +572,7 @@ container screen-cell [
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sc
-    width:number<span class="Special"> &lt;- </span>get *sc, num-columns:offset
+    width:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">num-columns:offset</span>
     <span class="muControl">reply</span> width
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
@@ -586,7 +586,7 @@ container screen-cell [
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sc
-    height:number<span class="Special"> &lt;- </span>get *sc, num-rows:offset
+    height:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">num-rows:offset</span>
     <span class="muControl">reply</span> height
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
@@ -680,7 +680,7 @@ container screen-cell [
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
     <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
     <span class="Constant">1</span>:address:screen<span class="Special"> &lt;- </span>print-string <span class="Constant">1</span>:address:screen, <span class="Constant">2</span>:address:array:character
-    <span class="Constant">3</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, data:offset
+    <span class="Constant">3</span>:address:array:screen-cell<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:screen, <span class="Constant">data:offset</span>
     <span class="Constant">4</span>:array:screen-cell<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:array:screen-cell
   ]
   memory-should-contain [

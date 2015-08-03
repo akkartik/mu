@@ -14,8 +14,8 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceContains { color: #008000; }
-.cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -53,6 +53,7 @@ recipe main [
 <span class="Comment">//:   stringified output in case we want to print it to screen</span>
 <span class="Comment">//:   any warnings encountered</span>
 <span class="Comment">//:   simulated screen any prints went to</span>
+<span class="Comment">//:   any 'app' layer traces generated</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 RUN_INTERACTIVE<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
@@ -68,12 +69,13 @@ case RUN_INTERACTIVE: <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'run-interactive' should be a literal string, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">);</span>
   bool new_code_pushed_to_stack = run_interactive<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   if <span class="Delimiter">(</span>!new_code_pushed_to_stack<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">);</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>warnings_from_trace<span class="Delimiter">());</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">));</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;app&quot;</span><span class="Delimiter">));</span>
     clean_up_interactive<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// done with this instruction</span>
   <span class="Delimiter">}</span>
@@ -115,7 +117,8 @@ bool run_interactive<span class="Delimiter">(</span>long long int address<span c
   if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Trace_file = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// if there wasn't already a stream we don't want to save it</span>
     Trace_stream = new trace_stream<span class="Delimiter">;</span>
-    Trace_stream<span class="Delimiter">-&gt;</span>collect_layer = <span class="Constant">&quot;warn&quot;</span><span class="Delimiter">;</span>
+    Trace_stream<span class="Delimiter">-&gt;</span>collect_layers<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">);</span>
+    Trace_stream<span class="Delimiter">-&gt;</span>collect_layers<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;app&quot;</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// call run(string) but without the scheduling</span>
   <span class="Comment">// we won't create a local scope so that we can get to the new screen after</span>
@@ -183,7 +186,15 @@ void record_products<span class="Delimiter">(</span>const instruction&amp; instr
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// string</span>
     if <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      if <span class="Delimiter">(</span>is_string<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+      if <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+        if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+          tb_shutdown<span class="Delimiter">();</span>
+          cerr &lt;&lt; read_mu_string<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+          cerr &lt;&lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span><span class="Delimiter">;</span>
+          for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
+            cerr &lt;&lt; products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
+          cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+        <span class="Delimiter">}</span>
         assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
         out &lt;&lt; read_mu_string<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
         <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -198,7 +209,7 @@ void record_products<span class="Delimiter">(</span>const instruction&amp; instr
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;Complete Call Fallthrough&quot;)</span>
 if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation == RUN_INTERACTIVE &amp;&amp; !current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &lt;= <span class="Constant">3</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &lt;= <span class="Constant">4</span><span class="Delimiter">);</span>
   <span class="Comment">// Send the results of the most recently executed instruction, regardless of</span>
   <span class="Comment">// call depth, to be converted to string and potentially printed to string.</span>
   vector&lt;double&gt; result<span class="Delimiter">;</span>
@@ -206,13 +217,19 @@ if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">()
   write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> result<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &gt;= <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     vector&lt;double&gt; warnings<span class="Delimiter">;</span>
-    warnings<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>warnings_from_trace<span class="Delimiter">());</span>
+    warnings<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">));</span>
     write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">),</span> warnings<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &gt;= <span class="Constant">3</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     vector&lt;double&gt; screen<span class="Delimiter">;</span>
     screen<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Memory[SCREEN]<span class="Delimiter">);</span>
     write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">),</span> screen<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &gt;= <span class="Constant">4</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;emitting trace\n&quot;; //? 1</span>
+    vector&lt;double&gt; trace<span class="Delimiter">;</span>
+    trace<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;app&quot;</span><span class="Delimiter">));</span>
+    write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">),</span> trace<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
@@ -231,8 +248,8 @@ void clean_up_interactive<span class="Delimiter">()</span> <span class="Delimite
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>  <span class="Comment">// flush trace</span>
   Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
   Running_interactive = <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Comment">// hack: assume collect_layer isn't set anywhere else</span>
-  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>collect_layer == <span class="Constant">&quot;warn&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// hack: assume collect_layers isn't set anywhere else</span>
+  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>is_narrowly_collecting<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
     delete Trace_stream<span class="Delimiter">;</span>
     Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -275,23 +292,26 @@ long long int stringified_value_of_location<span class="Delimiter">(</span>long 
   <span class="Identifier">return</span> new_mu_string<span class="Delimiter">(</span>out<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
 
-bool is_string<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+bool is_mu_string<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">)</span> == <span class="Constant">3</span>
       &amp;&amp; x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;address&quot;</span>]
       &amp;&amp; x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;array&quot;</span>]
       &amp;&amp; x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;character&quot;</span>]<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-long long int warnings_from_trace<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+long long int trace_contents<span class="Delimiter">(</span>const string&amp; layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">)</span> &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;trace stream exists\n&quot;; //? 1</span>
+  if <span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span>layer<span class="Delimiter">)</span> &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; layer &lt;&lt; &quot; has something\n&quot;; //? 1</span>
   ostringstream out<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>label != <span class="Constant">&quot;warn&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>label != layer<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     out &lt;&lt; p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>*--p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">.</span>end<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> out &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>!out<span class="Delimiter">.</span>str<span class="Delimiter">().</span>empty<span class="Delimiter">());</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; layer &lt;&lt; &quot;:\n&quot; &lt;&lt; out.str() &lt;&lt; &quot;\n--\n&quot;; //? 1</span>
   <span class="Identifier">return</span> new_mu_string<span class="Delimiter">(</span>out<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
 
@@ -314,7 +334,7 @@ case RELOAD: <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Trace_file = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// if there wasn't already a stream we don't want to save it</span>
     Trace_stream = new trace_stream<span class="Delimiter">;</span>
-    Trace_stream<span class="Delimiter">-&gt;</span>collect_layer = <span class="Constant">&quot;warn&quot;</span><span class="Delimiter">;</span>
+    Trace_stream<span class="Delimiter">-&gt;</span>collect_layers<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   Hide_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
   Disable_redefine_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -324,8 +344,9 @@ case RELOAD: <span class="Delimiter">{</span>
   Disable_redefine_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
   Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>warnings_from_trace<span class="Delimiter">());</span>
-  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>collect_layer == <span class="Constant">&quot;warn&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">));</span>
+  <span class="Comment">// hack: assume collect_layers isn't set anywhere else</span>
+  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>is_narrowly_collecting<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
     delete Trace_stream<span class="Delimiter">;</span>
     Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
