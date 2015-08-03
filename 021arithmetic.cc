@@ -43,7 +43,6 @@ SUBTRACT,
 Recipe_ordinal["subtract"] = SUBTRACT;
 :(before "End Primitive Recipe Implementations")
 case SUBTRACT: {
-  products.resize(1);
   if (ingredients.empty()) {
     raise << current_recipe_name() << ": 'subtract' has no ingredients\n" << end();
     break;
@@ -54,6 +53,7 @@ case SUBTRACT: {
     assert(scalar(ingredients.at(i)));
     result -= ingredients.at(i).at(0);
   }
+  products.resize(1);
   products.at(0).push_back(result);
   break;
 }
@@ -120,7 +120,6 @@ DIVIDE,
 Recipe_ordinal["divide"] = DIVIDE;
 :(before "End Primitive Recipe Implementations")
 case DIVIDE: {
-  products.resize(1);
   if (ingredients.empty()) {
     raise << current_recipe_name() << ": 'divide' has no ingredients\n" << end();
     break;
@@ -131,6 +130,7 @@ case DIVIDE: {
     assert(scalar(ingredients.at(i)));
     result /= ingredients.at(i).at(0);
   }
+  products.resize(1);
   products.at(0).push_back(result);
   break;
 }

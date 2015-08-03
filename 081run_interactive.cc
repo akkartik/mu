@@ -27,7 +27,6 @@ Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
 //? cerr << "run-interactive: " << RUN_INTERACTIVE << '\n'; //? 1
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
-  products.resize(4);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'run-interactive' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
@@ -38,6 +37,7 @@ case RUN_INTERACTIVE: {
   }
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
   if (!new_code_pushed_to_stack) {
+    products.resize(4);
     products.at(0).push_back(0);
     products.at(1).push_back(trace_contents("warn"));
     products.at(2).push_back(0);
@@ -153,6 +153,14 @@ void record_products(const instruction& instruction, const vector<vector<double>
     // string
     if (i < SIZE(instruction.products)) {
       if (is_mu_string(instruction.products.at(i))) {
+        if (!scalar(products.at(i))) {
+          tb_shutdown();
+          cerr << read_mu_string(trace_contents("warn")) << '\n';
+          cerr << SIZE(products.at(i)) << ": ";
+          for (long long int j = 0; j < SIZE(products.at(i)); ++j)
+            cerr << products.at(i).at(j) << ' ';
+          cerr << '\n';
+        }
         assert(scalar(products.at(i)));
         out << read_mu_string(products.at(i).at(0)) << '\n';
         continue;
@@ -281,7 +289,6 @@ RELOAD,
 Recipe_ordinal["reload"] = RELOAD;
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
-  products.resize(1);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'reload' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
@@ -302,6 +309,7 @@ case RELOAD: {
   Trace_stream->newline();  // flush trace
   Disable_redefine_warnings = false;
   Hide_warnings = false;
+  products.resize(1);
   products.at(0).push_back(trace_contents("warn"));
   // hack: assume collect_layers isn't set anywhere else
   if (Trace_stream->is_narrowly_collecting("warn")) {

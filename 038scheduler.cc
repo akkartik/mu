@@ -281,7 +281,6 @@ ROUTINE_STATE,
 Recipe_ordinal["routine-state"] = ROUTINE_STATE;
 :(before "End Primitive Recipe Implementations")
 case ROUTINE_STATE: {
-  products.resize(1);
   if (SIZE(ingredients) != 1) {
     raise << current_recipe_name() << ": 'routine-state' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
@@ -298,6 +297,7 @@ case ROUTINE_STATE: {
       break;
     }
   }
+  products.resize(1);
   products.at(0).push_back(result);
   break;
 }

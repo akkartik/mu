@@ -56,7 +56,6 @@ NEW,
 Recipe_ordinal["new"] = NEW;
 :(before "End Primitive Recipe Implementations")
 case NEW: {
-  products.resize(1);
   if (ingredients.empty() || SIZE(ingredients) > 2) {
     raise << current_recipe_name() << ": 'new' requires one or two ingredients, but got " << current_instruction().to_string() << '\n' << end();
     break;
@@ -90,6 +89,7 @@ case NEW: {
   const long long int result = Current_routine->alloc;
   trace(Primitive_recipe_depth, "mem") << "new alloc: " << result << end();
   // save result
+  products.resize(1);
   products.at(0).push_back(result);
   // initialize allocated space
   for (long long int address = result; address < result+size; ++address) {

@@ -83,7 +83,6 @@ MAYBE_CONVERT,
 Recipe_ordinal["maybe-convert"] = MAYBE_CONVERT;
 :(before "End Primitive Recipe Implementations")
 case MAYBE_CONVERT: {
-  products.resize(1);
   if (SIZE(ingredients) != 2) {
     raise << current_recipe_name() << ": 'maybe-convert' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
@@ -111,6 +110,7 @@ case MAYBE_CONVERT: {
   else {
     result = 0;
   }
+  products.resize(1);
   products.at(0).push_back(result);
   break;
 }
