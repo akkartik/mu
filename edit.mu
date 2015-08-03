@@ -731,6 +731,14 @@ recipe handle-event [
     move-to-end-of-line editor
     reply
   }
+  # delete
+  {
+    delete?:boolean <- equal *k, 65522/delete
+    break-unless delete?
+    curr:address:duplex-list <- get **before-cursor, next:offset
+    _ <- remove-duplex curr
+    reply
+  }
 ]
 
 # process click, return if it was on current editor
@@ -1440,6 +1448,34 @@ ef]
   memory-should-contain [
     3 <- 3  # cursor row
     4 <- 2  # cursor column (indented)
+  ]
+]
+
+scenario editor-handles-delete-key [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  assume-console [
+    press 65522  # delete
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .bc        .
+    .          .
+  ]
+  assume-console [
+    press 65522  # delete
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .c         .
+    .          .
   ]
 ]
 
