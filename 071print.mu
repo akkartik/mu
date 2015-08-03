@@ -434,13 +434,12 @@ recipe cursor-down [
   {
     break-unless sc
     {
-      # if row < height-1
+      # increment row unless it's already all the way down
       height:number <- get *sc, num-rows:offset
       row:address:number <- get-address *sc, cursor-row:offset
       max:number <- subtract height, 1
       at-bottom?:boolean <- greater-or-equal *row, max
       break-if at-bottom?
-      # row = row+1
       *row <- add *row, 1
     }
     reply sc/same-as-ingredient:0
@@ -457,11 +456,10 @@ recipe cursor-up [
   {
     break-unless sc
     {
-      # if row > 0
+      # decrement row unless it's already all the way up
       row:address:number <- get-address *sc, cursor-row:offset
       at-top?:boolean <- lesser-or-equal *row, 0
       break-if at-top?
-      # row = row-1
       *row <- subtract *row, 1
     }
     reply sc/same-as-ingredient:0
@@ -478,13 +476,12 @@ recipe cursor-right [
   {
     break-unless sc
     {
-      # if column < width-1
+      # increment column unless it's already all the way to the right
       width:number <- get *sc, num-columns:offset
       column:address:number <- get-address *sc, cursor-column:offset
       max:number <- subtract width, 1
       at-bottom?:boolean <- greater-or-equal *column, max
       break-if at-bottom?
-      # column = column+1
       *column <- add *column, 1
     }
     reply sc/same-as-ingredient:0
@@ -501,11 +498,10 @@ recipe cursor-left [
   {
     break-unless sc
     {
-      # if column > 0
+      # decrement column unless it's already all the way to the left
       column:address:number <- get-address *sc, cursor-column:offset
       at-top?:boolean <- lesser-or-equal *column, 0
       break-if at-top?
-      # column = column-1
       *column <- subtract *column, 1
     }
     reply sc/same-as-ingredient:0

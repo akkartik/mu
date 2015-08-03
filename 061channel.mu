@@ -94,7 +94,7 @@ recipe read [
   full:address:number <- get-address *chan, first-full:offset
   circular-buffer:address:array:location <- get *chan, data:offset
   result:location <- index *circular-buffer, *full
-  # increment full
+  # mark its slot as empty
   *full <- add *full, 1
   {
     # wrap full around to 0 if necessary
