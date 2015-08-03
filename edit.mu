@@ -2918,6 +2918,7 @@ recipe render-sandboxes [
   {
     break-if sandbox-warnings
     break-unless empty-screen?
+#?     $print [display response from ], row, 10/newline #? 1
     *response-starting-row <- add row, 1
     +render-sandbox-response
     row, screen <- render-string screen, sandbox-response, left, right, 245/grey, row
@@ -3699,6 +3700,53 @@ recipe foo [
   ]
 ]
 
+scenario sandbox-shows-app-trace-and-result [
+  $close-trace
+  assume-screen 40/width, 10/height
+  # basic recipe
+  1:address:array:character <- new [ 
+recipe foo [
+  trace [abc]
+  add 2, 2
+]]
+  # run it
+  2:address:array:character <- new [foo]
+  assume-console [
+    press 65532  # F4
+  ]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  event-loop screen:address, console:address, 3:address:programming-environment-data
+  screen-should-contain [
+    .                     run (F4)           .
+    .                    ┊                   .
+    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
+    .  trace [abc]       ┊                  x.
+    .  add 2, 2          ┊foo                .
+    .]                   ┊4                  .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
+    .                    ┊                   .
+  ]
+  # click on the 'foo' line in the sandbox
+  assume-console [
+    left-click 4, 21
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # trace now printed
+  screen-should-contain [
+    .                     run (F4)           .
+    .                    ┊                   .
+    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
+    .  trace [abc]       ┊                  x.
+    .  add 2, 2          ┊foo                .
+    .]                   ┊abc                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
+    .                    ┊━━━━━━━━━━━━━━━━━━━.
+    .                    ┊                   .
+  ]
+]
+
 # clicks on sandbox code toggle its display-trace? flag
 after +global-touch [
   # right side of screen? check if it's inside the code of any sandbox
@@ -3758,15 +3806,16 @@ recipe find-click-in-sandbox-code [
   reply sandbox
 ]
 
-# when rendering a sandbox, dump its trace if display-trace? property is set
+# when rendering a sandbox, dump its trace before response/warning if display-trace? property is set
 after +render-sandbox-results [
   {
     display-trace?:boolean <- get *sandbox, display-trace?:offset
     break-unless display-trace?
     sandbox-trace:address:array:character <- get *sandbox, trace:offset
     break-unless sandbox-trace  # nothing to print; move on
+#?     $print [display trace from ], row, 10/newline #? 1
     row, screen <- render-string, screen, sandbox-trace, left, right, 245/grey, row
-    jump +render-sandbox-end:label
+    row <- subtract row, 1  # trim the trailing newline that's always present
   }
 ]
 
