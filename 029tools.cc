@@ -22,7 +22,7 @@ case TRACE: {
   else if (SIZE(ingredients) == 1) {
     assert(is_literal(current_instruction().ingredients.at(0)));
     string message = current_instruction().ingredients.at(0).name;
-    cerr << "tracing " << message << '\n';
+//?     cerr << "tracing " << message << '\n'; //? 1
     trace(1, "app") << message << end();
   }
   else {
