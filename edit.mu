@@ -683,66 +683,6 @@ recipe insert-at-cursor [
   *cursor-column <- add *cursor-column, 1
 ]
 
-recipe move-cursor-coordinates-left [
-  local-scope
-  editor:address:editor-data <- next-ingredient
-  before-cursor:address:duplex-list <- get *editor, before-cursor:offset
-  cursor-row:address:number <- get-address *editor, cursor-row:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
-  # if not at left margin, move one character left
-  {
-    at-left-margin?:boolean <- equal *cursor-column, 0
-    break-if at-left-margin?
-#?     trace [app], [decrementing cursor column] #? 1
-    *cursor-column <- subtract *cursor-column, 1
-    reply editor/same-as-ingredient:0
-  }
-  # if at left margin, we must move to previous row:
-  assert *cursor-row, [unimplemented: moving cursor above top of screen]
-  *cursor-row <- subtract *cursor-row, 1
-  {
-    # case 1: if previous character was newline, figure out how long the previous line is
-    previous-character:character <- get *before-cursor, value:offset
-    previous-character-is-newline?:boolean <- equal previous-character, 10/newline
-    break-unless previous-character-is-newline?
-    # compute length of previous line
-#?     trace [app], [switching to previous line] #? 1
-    d:address:duplex-list <- get *editor, data:offset
-    end-of-line:number <- previous-line-length before-cursor, d
-    *cursor-column <- copy end-of-line
-    reply editor/same-as-ingredient:0
-  }
-  # case 2: if previous-character was not newline, we're just at a wrapped line
-#?   trace [app], [wrapping to previous line] #? 1
-  right:number <- get *editor, right:offset
-  *cursor-column <- subtract right, 1  # leave room for wrap icon
-  reply editor/same-as-ingredient:0
-]
-
-# takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
-# the length of the previous line before the 'curr' pointer.
-recipe previous-line-length [
-  local-scope
-  curr:address:duplex-list <- next-ingredient
-  start:address:duplex-list <- next-ingredient
-  result:number <- copy 0
-  reply-unless curr, result
-  at-start?:boolean <- equal curr, start
-  reply-if at-start?, result
-  {
-    curr <- prev-duplex curr
-    break-unless curr
-    at-start?:boolean <- equal curr, start
-    break-if at-start?
-    c:character <- get *curr, value:offset
-    at-newline?:boolean <- equal c, 10/newline
-    break-if at-newline?
-    result <- add result, 1
-    loop
-  }
-  reply result
-]
-
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
 # the number of spaces at the start of the line containing 'curr'.
 recipe line-indent [
@@ -1284,6 +1224,66 @@ recipe delete-before-cursor [
   editor <- move-cursor-coordinates-left editor
   remove-duplex *before-cursor
   *before-cursor <- copy prev
+]
+
+recipe move-cursor-coordinates-left [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  before-cursor:address:duplex-list <- get *editor, before-cursor:offset
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  # if not at left margin, move one character left
+  {
+    at-left-margin?:boolean <- equal *cursor-column, 0
+    break-if at-left-margin?
+#?     trace [app], [decrementing cursor column] #? 1
+    *cursor-column <- subtract *cursor-column, 1
+    reply editor/same-as-ingredient:0
+  }
+  # if at left margin, we must move to previous row:
+  assert *cursor-row, [unimplemented: moving cursor above top of screen]
+  *cursor-row <- subtract *cursor-row, 1
+  {
+    # case 1: if previous character was newline, figure out how long the previous line is
+    previous-character:character <- get *before-cursor, value:offset
+    previous-character-is-newline?:boolean <- equal previous-character, 10/newline
+    break-unless previous-character-is-newline?
+    # compute length of previous line
+#?     trace [app], [switching to previous line] #? 1
+    d:address:duplex-list <- get *editor, data:offset
+    end-of-line:number <- previous-line-length before-cursor, d
+    *cursor-column <- copy end-of-line
+    reply editor/same-as-ingredient:0
+  }
+  # case 2: if previous-character was not newline, we're just at a wrapped line
+#?   trace [app], [wrapping to previous line] #? 1
+  right:number <- get *editor, right:offset
+  *cursor-column <- subtract right, 1  # leave room for wrap icon
+  reply editor/same-as-ingredient:0
+]
+
+# takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
+# the length of the previous line before the 'curr' pointer.
+recipe previous-line-length [
+  local-scope
+  curr:address:duplex-list <- next-ingredient
+  start:address:duplex-list <- next-ingredient
+  result:number <- copy 0
+  reply-unless curr, result
+  at-start?:boolean <- equal curr, start
+  reply-if at-start?, result
+  {
+    curr <- prev-duplex curr
+    break-unless curr
+    at-start?:boolean <- equal curr, start
+    break-if at-start?
+    c:character <- get *curr, value:offset
+    at-newline?:boolean <- equal c, 10/newline
+    break-if at-newline?
+    result <- add result, 1
+    loop
+  }
+  reply result
 ]
 
 scenario editor-clears-last-line-on-backspace [
