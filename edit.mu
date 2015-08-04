@@ -556,7 +556,7 @@ recipe editor-event-loop [
       jump +continue:label
     }
     # other events - send to appropriate editor
-    handle-event screen, console, editor, e
+    handle-keyboard-event screen, console, editor, e
     +continue
     row:number, screen <- render screen, editor
     # clear next line, in case we just processed a backspace
@@ -569,7 +569,7 @@ recipe editor-event-loop [
   }
 ]
 
-recipe handle-event [
+recipe handle-keyboard-event [
   local-scope
   screen:address <- next-ingredient
   console:address <- next-ingredient
@@ -580,55 +580,13 @@ recipe handle-event [
   {
     c:address:character <- maybe-convert e, text:variant
     break-unless c
-    ## check for special characters
-    # backspace - delete character before cursor
-    {
-      backspace?:boolean <- equal *c, 8/backspace
-      break-unless backspace?
-      delete-before-cursor editor
-      reply
-    }
-    # ctrl-a - move cursor to start of line
-    {
-      ctrl-a?:boolean <- equal *c, 1/ctrl-a
-      break-unless ctrl-a?
-      move-to-start-of-line editor
-      reply
-    }
-    # ctrl-e - move cursor to end of line
-    {
-      ctrl-e?:boolean <- equal *c, 5/ctrl-e
-      break-unless ctrl-e?
-      move-to-end-of-line editor
-      reply
-    }
-    # ctrl-u - delete until start of line (excluding cursor)
-    {
-      ctrl-u?:boolean <- equal *c, 21/ctrl-u
-      break-unless ctrl-u?
-      delete-to-start-of-line editor
-      reply
-    }
-    # ctrl-k - delete until end of line (including cursor)
-    {
-      ctrl-k?:boolean <- equal *c, 11/ctrl-k
-      break-unless ctrl-k?
-      delete-to-end-of-line editor
-      reply
-    }
-    # tab - insert two spaces
-    {
-      tab?:boolean <- equal *c, 9/tab
-      break-unless tab?
-      insert-at-cursor editor, 32/space, screen
-      insert-at-cursor editor, 32/space, screen
-      reply
-    }
+    # exceptions for special characters go here
+    +handle-special-character
     # otherwise type it in
     insert-at-cursor editor, *c, screen
     reply
   }
-  # otherwise it's a special key
+  # special key
   k:address:number <- maybe-convert e:event, keycode:variant
   assert k, [event was of unknown type; neither keyboard nor mouse]
   d:address:duplex-list <- get *editor, data:offset
@@ -638,107 +596,8 @@ recipe handle-event [
   screen-height:number <- screen-height screen
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
-  # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'.
-  # right arrow
-  {
-    move-to-next-character?:boolean <- equal *k, 65514/right-arrow
-    break-unless move-to-next-character?
-    # if not at end of text
-    old-cursor:address:duplex-list <- next-duplex *before-cursor
-    break-unless old-cursor
-    # scan to next character
-    *before-cursor <- copy old-cursor
-    # if crossed a newline, move cursor to start of next row
-    {
-      old-cursor-character:character <- get **before-cursor, value:offset
-      was-at-newline?:boolean <- equal old-cursor-character, 10/newline
-      break-unless was-at-newline?
-      *cursor-row <- add *cursor-row, 1
-      *cursor-column <- copy left
-      # todo: what happens when cursor is too far down?
-      screen-height <- screen-height screen
-      above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
-      assert above-screen-bottom?, [unimplemented: moving past bottom of screen]
-      reply
-    }
-    # if the line wraps, move cursor to start of next row
-    {
-      # if we're at the column just before the wrap indicator
-      wrap-column:number <- subtract right, 1
-      at-wrap?:boolean <- equal *cursor-column, wrap-column
-      break-unless at-wrap?
-      # and if next character isn't newline
-      new-cursor:address:duplex-list <- next-duplex old-cursor
-      break-unless new-cursor
-      next-character:character <- get *new-cursor, value:offset
-      newline?:boolean <- equal next-character, 10/newline
-      break-if newline?
-      *cursor-row <- add *cursor-row, 1
-      *cursor-column <- copy left
-      # todo: what happens when cursor is too far down?
-      above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
-      assert above-screen-bottom?, [unimplemented: moving past bottom of screen]
-      reply
-    }
-    # otherwise move cursor one character right
-    *cursor-column <- add *cursor-column, 1
-  }
-  # left arrow
-  {
-    move-to-previous-character?:boolean <- equal *k, 65515/left-arrow
-    break-unless move-to-previous-character?
-#?     trace [app], [left arrow] #? 1
-    # if not at start of text (before-cursor at § sentinel)
-    prev:address:duplex-list <- prev-duplex *before-cursor
-    break-unless prev
-    editor <- move-cursor-coordinates-left editor
-  }
-  # down arrow
-  {
-    move-to-next-line?:boolean <- equal *k, 65516/down-arrow
-    break-unless move-to-next-line?
-    # todo: support scrolling
-    already-at-bottom?:boolean <- greater-or-equal *cursor-row, screen-height
-    break-if already-at-bottom?
-#?     $print [moving down
-#? ] #? 1
-    *cursor-row <- add *cursor-row, 1
-    # that's it; render will adjust cursor-column as necessary
-  }
-  # up arrow
-  {
-    move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
-    break-unless move-to-previous-line?
-    # todo: support scrolling
-    already-at-top?:boolean <- lesser-or-equal *cursor-row, 1/top
-    break-if already-at-top?
-#?     $print [moving up
-#? ] #? 1
-    *cursor-row <- subtract *cursor-row, 1
-    # that's it; render will adjust cursor-column as necessary
-  }
-  # home
-  {
-    home?:boolean <- equal *k, 65521/home
-    break-unless home?
-    move-to-start-of-line editor
-    reply
-  }
-  # end
-  {
-    end?:boolean <- equal *k, 65520/end
-    break-unless end?
-    move-to-end-of-line editor
-    reply
-  }
-  # delete
-  {
-    delete?:boolean <- equal *k, 65522/delete
-    break-unless delete?
-    curr:address:duplex-list <- get **before-cursor, next:offset
-    _ <- remove-duplex curr
-    reply
-  }
+  # handlers for each special key will go here
+  +handle-special-key
 ]
 
 # process click, return if it was on current editor
@@ -822,18 +681,6 @@ recipe insert-at-cursor [
   }
   # otherwise move cursor right
   *cursor-column <- add *cursor-column, 1
-]
-
-recipe delete-before-cursor [
-  local-scope
-  editor:address:editor-data <- next-ingredient
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  # if at start of text (before-cursor at § sentinel), return
-  prev:address:duplex-list <- prev-duplex *before-cursor
-  reply-unless prev
-  editor <- move-cursor-coordinates-left editor
-  remove-duplex *before-cursor
-  *before-cursor <- copy prev
 ]
 
 recipe move-cursor-coordinates-left [
@@ -928,104 +775,6 @@ recipe line-indent [
     loop
   }
   reply result
-]
-
-recipe move-to-start-of-line [
-  local-scope
-  editor:address:editor-data <- next-ingredient
-  # update cursor column
-  left:number <- get *editor, left:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
-  *cursor-column <- copy left
-  # update before-cursor
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  init:address:duplex-list <- get *editor, data:offset
-  # while not at start of line, move 
-  {
-    at-start-of-text?:boolean <- equal *before-cursor, init
-    break-if at-start-of-text?
-    prev:character <- get **before-cursor, value:offset
-    at-start-of-line?:boolean <- equal prev, 10/newline
-    break-if at-start-of-line?
-    *before-cursor <- prev-duplex *before-cursor
-    assert *before-cursor, [move-to-start-of-line tried to move before start of text]
-    loop
-  }
-]
-
-recipe move-to-end-of-line [
-  local-scope
-  editor:address:editor-data <- next-ingredient
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
-  # while not at start of line, move 
-  {
-    next:address:duplex-list <- next-duplex *before-cursor
-    break-unless next  # end of text
-    nextc:character <- get *next, value:offset
-    at-end-of-line?:boolean <- equal nextc, 10/newline
-    break-if at-end-of-line?
-    *before-cursor <- copy next
-    *cursor-column <- add *cursor-column, 1
-    loop
-  }
-  # move one past final character
-  *cursor-column <- add *cursor-column, 1
-]
-
-recipe delete-to-start-of-line [
-  local-scope
-  editor:address:editor-data <- next-ingredient
-  # compute range to delete
-  init:address:duplex-list <- get *editor, data:offset
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  start:address:duplex-list <- copy *before-cursor
-  end:address:duplex-list <- next-duplex *before-cursor
-  {
-    at-start-of-text?:boolean <- equal start, init
-    break-if at-start-of-text?
-    curr:character <- get *start, value:offset
-    at-start-of-line?:boolean <- equal curr, 10/newline
-    break-if at-start-of-line?
-    start <- prev-duplex start
-    assert start, [delete-to-start-of-line tried to move before start of text]
-    loop
-  }
-  # snip it out
-  start-next:address:address:duplex-list <- get-address *start, next:offset
-  *start-next <- copy end
-  end-prev:address:address:duplex-list <- get-address *end, prev:offset
-  *end-prev <- copy start
-  # adjust cursor
-  *before-cursor <- prev-duplex end
-  left:number <- get *editor, left:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
-  *cursor-column <- copy left
-]
-
-recipe delete-to-end-of-line [
-  local-scope
-  editor:address:editor-data <- next-ingredient
-  # compute range to delete
-  start:address:duplex-list <- get *editor, before-cursor:offset
-  end:address:duplex-list <- next-duplex start
-  {
-    at-end-of-text?:boolean <- equal end, 0/null
-    break-if at-end-of-text?
-    curr:character <- get *end, value:offset
-    at-end-of-line?:boolean <- equal curr, 10/newline
-    break-if at-end-of-line?
-    end <- next-duplex end
-    loop
-  }
-  # snip it out
-  start-next:address:address:duplex-list <- get-address *start, next:offset
-  *start-next <- copy end
-  {
-    break-unless end
-    end-prev:address:address:duplex-list <- get-address *end, prev:offset
-    *end-prev <- copy start
-  }
 ]
 
 scenario editor-handles-empty-event-queue [
@@ -1451,33 +1200,44 @@ ef]
   ]
 ]
 
-scenario editor-handles-delete-key [
+## special shortcuts for manipulating the editor
+# Some keys on the keyboard generate unicode characters, others generate
+# terminfo key codes. We need to modify different places in the two cases.
+
+# tab - insert two spaces
+
+scenario editor-inserts-two-spaces-on-tab [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  # just one character in final line
+  1:address:array:character <- new [ab
+cd]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
-    press 65522  # delete
+    type [»]
   ]
+  3:event/tab <- merge 0/text, 9/tab, 0/dummy, 0/dummy
+  replace-in-console 187/», 3:event/tab
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
-    .bc        .
-    .          .
-  ]
-  assume-console [
-    press 65522  # delete
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .c         .
-    .          .
+    .  ab      .
+    .cd        .
   ]
 ]
+
+after +handle-special-character [
+  {
+    tab?:boolean <- equal *c, 9/tab
+    break-unless tab?
+    insert-at-cursor editor, 32/space, screen
+    insert-at-cursor editor, 32/space, screen
+    reply
+  }
+]
+
+# backspace - delete character before cursor
 
 scenario editor-handles-backspace-key [
   assume-screen 10/width, 5/height
@@ -1503,6 +1263,27 @@ scenario editor-handles-backspace-key [
     4 <- 1
     5 <- 0
   ]
+]
+
+after +handle-special-character [
+  {
+    backspace?:boolean <- equal *c, 8/backspace
+    break-unless backspace?
+    delete-before-cursor editor
+    reply
+  }
+]
+
+recipe delete-before-cursor [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  # if at start of text (before-cursor at § sentinel), return
+  prev:address:duplex-list <- prev-duplex *before-cursor
+  reply-unless prev
+  editor <- move-cursor-coordinates-left editor
+  remove-duplex *before-cursor
+  *before-cursor <- copy prev
 ]
 
 scenario editor-clears-last-line-on-backspace [
@@ -1533,26 +1314,47 @@ cd]
   ]
 ]
 
-scenario editor-inserts-two-spaces-on-tab [
+# delete - delete character at cursor
+
+scenario editor-handles-delete-key [
   assume-screen 10/width, 5/height
-  # just one character in final line
-  1:address:array:character <- new [ab
-cd]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
-    type [»]
+    press 65522  # delete
   ]
-  3:event/tab <- merge 0/text, 9/tab, 0/dummy, 0/dummy
-  replace-in-console 187/», 3:event/tab
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
-    .  ab      .
-    .cd        .
+    .bc        .
+    .          .
+  ]
+  assume-console [
+    press 65522  # delete
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .c         .
+    .          .
   ]
 ]
+
+after +handle-special-key [
+  {
+    delete?:boolean <- equal *k, 65522/delete
+    break-unless delete?
+    curr:address:duplex-list <- get **before-cursor, next:offset
+    _ <- remove-duplex curr
+    reply
+  }
+]
+
+# right arrow
 
 scenario editor-moves-cursor-right-with-key [
   assume-screen 10/width, 5/height
@@ -1570,6 +1372,52 @@ scenario editor-moves-cursor-right-with-key [
     .a0bc      .
     .          .
   ]
+]
+
+after +handle-special-key [
+  {
+    move-to-next-character?:boolean <- equal *k, 65514/right-arrow
+    break-unless move-to-next-character?
+    # if not at end of text
+    old-cursor:address:duplex-list <- next-duplex *before-cursor
+    break-unless old-cursor
+    # scan to next character
+    *before-cursor <- copy old-cursor
+    # if crossed a newline, move cursor to start of next row
+    {
+      old-cursor-character:character <- get **before-cursor, value:offset
+      was-at-newline?:boolean <- equal old-cursor-character, 10/newline
+      break-unless was-at-newline?
+      *cursor-row <- add *cursor-row, 1
+      *cursor-column <- copy left
+      # todo: what happens when cursor is too far down?
+      screen-height <- screen-height screen
+      above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
+      assert above-screen-bottom?, [unimplemented: moving past bottom of screen]
+      reply
+    }
+    # if the line wraps, move cursor to start of next row
+    {
+      # if we're at the column just before the wrap indicator
+      wrap-column:number <- subtract right, 1
+      at-wrap?:boolean <- equal *cursor-column, wrap-column
+      break-unless at-wrap?
+      # and if next character isn't newline
+      new-cursor:address:duplex-list <- next-duplex old-cursor
+      break-unless new-cursor
+      next-character:character <- get *new-cursor, value:offset
+      newline?:boolean <- equal next-character, 10/newline
+      break-if newline?
+      *cursor-row <- add *cursor-row, 1
+      *cursor-column <- copy left
+      # todo: what happens when cursor is too far down?
+      above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
+      assert above-screen-bottom?, [unimplemented: moving past bottom of screen]
+      reply
+    }
+    # otherwise move cursor one character right
+    *cursor-column <- add *cursor-column, 1
+  }
 ]
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow [
@@ -1723,6 +1571,8 @@ d]
   ]
 ]
 
+# left arrow
+
 scenario editor-moves-cursor-left-with-key [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
@@ -1740,6 +1590,18 @@ scenario editor-moves-cursor-left-with-key [
     .a0bc      .
     .          .
   ]
+]
+
+after +handle-special-key [
+  {
+    move-to-previous-character?:boolean <- equal *k, 65515/left-arrow
+    break-unless move-to-previous-character?
+#?     trace [app], [left arrow] #? 1
+    # if not at start of text (before-cursor at § sentinel)
+    prev:address:duplex-list <- prev-duplex *before-cursor
+    break-unless prev
+    editor <- move-cursor-coordinates-left editor
+  }
 ]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
@@ -1866,6 +1728,8 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   ]
 ]
 
+# up arrow
+
 scenario editor-moves-to-previous-line-with-up-arrow [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
@@ -1885,6 +1749,40 @@ def]
     4 <- 1
   ]
 ]
+
+after +handle-special-key [
+  {
+    move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
+    break-unless move-to-previous-line?
+    # todo: support scrolling
+    already-at-top?:boolean <- lesser-or-equal *cursor-row, 1/top
+    break-if already-at-top?
+    *cursor-row <- subtract *cursor-row, 1
+    # that's it; render will adjust cursor-column as necessary
+  }
+]
+
+scenario editor-adjusts-column-at-next-line [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+de]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  assume-console [
+    left-click 1, 3
+    press 65516  # down arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 2
+    4 <- 2
+  ]
+]
+
+# down arrow
 
 scenario editor-moves-to-next-line-with-down-arrow [
   assume-screen 10/width, 5/height
@@ -1907,6 +1805,20 @@ def]
   ]
 ]
 
+after +handle-special-key [
+  {
+    move-to-next-line?:boolean <- equal *k, 65516/down-arrow
+    break-unless move-to-next-line?
+    # todo: support scrolling
+    already-at-bottom?:boolean <- greater-or-equal *cursor-row, screen-height
+    break-if already-at-bottom?
+#?     $print [moving down
+#? ] #? 1
+    *cursor-row <- add *cursor-row, 1
+    # that's it; render will adjust cursor-column as necessary
+  }
+]
+
 scenario editor-adjusts-column-at-previous-line [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [ab
@@ -1927,25 +1839,7 @@ def]
   ]
 ]
 
-scenario editor-adjusts-column-at-next-line [
-  assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
-de]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
-  assume-console [
-    left-click 1, 3
-    press 65516  # down arrow
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
-  ]
-  memory-should-contain [
-    3 <- 2
-    4 <- 2
-  ]
-]
+# ctrl-a/home - move cursor to start of line
 
 scenario editor-moves-to-start-of-line-with-ctrl-a [
   assume-screen 10/width, 5/height
@@ -1969,6 +1863,47 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
     4 <- 2
     5 <- 0
   ]
+]
+
+after +handle-special-character [
+  {
+    ctrl-a?:boolean <- equal *c, 1/ctrl-a
+    break-unless ctrl-a?
+    move-to-start-of-line editor
+    reply
+  }
+]
+
+after +handle-special-key [
+  {
+    home?:boolean <- equal *k, 65521/home
+    break-unless home?
+    move-to-start-of-line editor
+    reply
+  }
+]
+
+recipe move-to-start-of-line [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  # update cursor column
+  left:number <- get *editor, left:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  *cursor-column <- copy left
+  # update before-cursor
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  init:address:duplex-list <- get *editor, data:offset
+  # while not at start of line, move 
+  {
+    at-start-of-text?:boolean <- equal *before-cursor, init
+    break-if at-start-of-text?
+    prev:character <- get **before-cursor, value:offset
+    at-start-of-line?:boolean <- equal prev, 10/newline
+    break-if at-start-of-line?
+    *before-cursor <- prev-duplex *before-cursor
+    assert *before-cursor, [move-to-start-of-line tried to move before start of text]
+    loop
+  }
 ]
 
 scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
@@ -2039,6 +1974,8 @@ scenario editor-moves-to-start-of-line-with-home-2 [
   ]
 ]
 
+# ctrl-e/end - move cursor to end of line
+
 scenario editor-moves-to-start-of-line-with-ctrl-e [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [123
@@ -2080,6 +2017,44 @@ scenario editor-moves-to-start-of-line-with-ctrl-e [
     .456       .
     .          .
   ]
+]
+
+after +handle-special-character [
+  {
+    ctrl-e?:boolean <- equal *c, 5/ctrl-e
+    break-unless ctrl-e?
+    move-to-end-of-line editor
+    reply
+  }
+]
+
+after +handle-special-key [
+  {
+    end?:boolean <- equal *k, 65520/end
+    break-unless end?
+    move-to-end-of-line editor
+    reply
+  }
+]
+
+recipe move-to-end-of-line [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  # while not at start of line, move 
+  {
+    next:address:duplex-list <- next-duplex *before-cursor
+    break-unless next  # end of text
+    nextc:character <- get *next, value:offset
+    at-end-of-line?:boolean <- equal nextc, 10/newline
+    break-if at-end-of-line?
+    *before-cursor <- copy next
+    *cursor-column <- add *cursor-column, 1
+    loop
+  }
+  # move one past final character
+  *cursor-column <- add *cursor-column, 1
 ]
 
 scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
@@ -2150,6 +2125,8 @@ scenario editor-moves-to-end-of-line-with-end-2 [
   ]
 ]
 
+# ctrl-u - delete text from start of line until (but not at) cursor
+
 scenario editor-deletes-to-start-of-line-with-ctrl-u [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [123
@@ -2174,6 +2151,45 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
   ]
 ]
 
+after +handle-special-character [
+  {
+    ctrl-u?:boolean <- equal *c, 21/ctrl-u
+    break-unless ctrl-u?
+    delete-to-start-of-line editor
+    reply
+  }
+]
+
+recipe delete-to-start-of-line [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  # compute range to delete
+  init:address:duplex-list <- get *editor, data:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  start:address:duplex-list <- copy *before-cursor
+  end:address:duplex-list <- next-duplex *before-cursor
+  {
+    at-start-of-text?:boolean <- equal start, init
+    break-if at-start-of-text?
+    curr:character <- get *start, value:offset
+    at-start-of-line?:boolean <- equal curr, 10/newline
+    break-if at-start-of-line?
+    start <- prev-duplex start
+    assert start, [delete-to-start-of-line tried to move before start of text]
+    loop
+  }
+  # snip it out
+  start-next:address:address:duplex-list <- get-address *start, next:offset
+  *start-next <- copy end
+  end-prev:address:address:duplex-list <- get-address *end, prev:offset
+  *end-prev <- copy start
+  # adjust cursor
+  *before-cursor <- prev-duplex end
+  left:number <- get *editor, left:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  *cursor-column <- copy left
+]
+
 scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [123
@@ -2184,8 +2200,8 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
     left-click 1, 2
     type [u]  # ctrl-u
   ]
-  3:event/ctrl-u <- merge 0/text, 21/ctrl-a, 0/dummy, 0/dummy
-  replace-in-console 117/a, 3:event/ctrl-u
+  3:event/ctrl-u <- merge 0/text, 21/ctrl-u, 0/dummy, 0/dummy
+  replace-in-console 117/u, 3:event/ctrl-u
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2208,8 +2224,8 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
     left-click 1, 3
     type [u]  # ctrl-u
   ]
-  3:event/ctrl-u <- merge 0/text, 21/ctrl-a, 0/dummy, 0/dummy
-  replace-in-console 117/a, 3:event/ctrl-u
+  3:event/ctrl-u <- merge 0/text, 21/ctrl-u, 0/dummy, 0/dummy
+  replace-in-console 117/u, 3:event/ctrl-u
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2221,6 +2237,8 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
     .          .
   ]
 ]
+
+# ctrl-k - delete text from cursor to end of line (but not the newline)
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k [
   assume-screen 10/width, 5/height
@@ -2244,6 +2262,40 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
     .456       .
     .          .
   ]
+]
+
+after +handle-special-character [
+  {
+    ctrl-k?:boolean <- equal *c, 11/ctrl-k
+    break-unless ctrl-k?
+    delete-to-end-of-line editor
+    reply
+  }
+]
+
+recipe delete-to-end-of-line [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  # compute range to delete
+  start:address:duplex-list <- get *editor, before-cursor:offset
+  end:address:duplex-list <- next-duplex start
+  {
+    at-end-of-text?:boolean <- equal end, 0/null
+    break-if at-end-of-text?
+    curr:character <- get *end, value:offset
+    at-end-of-line?:boolean <- equal curr, 10/newline
+    break-if at-end-of-line?
+    end <- next-duplex end
+    loop
+  }
+  # snip it out
+  start-next:address:address:duplex-list <- get-address *start, next:offset
+  *start-next <- copy end
+  {
+    break-unless end
+    end-prev:address:address:duplex-list <- get-address *end, prev:offset
+    *end-prev <- copy start
+  }
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
@@ -2463,11 +2515,11 @@ recipe event-loop [
     {
       {
         break-if *sandbox-in-focus?
-        handle-event screen, console, recipes, e:event
+        handle-keyboard-event screen, console, recipes, e:event
       }
       {
         break-unless *sandbox-in-focus?
-        handle-event screen, console, current-sandbox, e:event
+        handle-keyboard-event screen, console, current-sandbox, e:event
       }
       # optimization: refresh screen only if no more events
       # todo: test this
