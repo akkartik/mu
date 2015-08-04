@@ -2181,8 +2181,11 @@ recipe delete-to-start-of-line [
   # snip it out
   start-next:address:address:duplex-list <- get-address *start, next:offset
   *start-next <- copy end
-  end-prev:address:address:duplex-list <- get-address *end, prev:offset
-  *end-prev <- copy start
+  {
+    break-unless end
+    end-prev:address:address:duplex-list <- get-address *end, prev:offset
+    *end-prev <- copy start
+  }
   # adjust cursor
   *before-cursor <- prev-duplex end
   left:number <- get *editor, left:offset
@@ -2234,6 +2237,30 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
     .          .
     .          .
     .456       .
+    .          .
+  ]
+]
+
+scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  # start past end of final line, press ctrl-u
+  assume-console [
+    left-click 2, 3
+    type [u]  # ctrl-u
+  ]
+  3:event/ctrl-u <- merge 0/text, 21/ctrl-u, 0/dummy, 0/dummy
+  replace-in-console 117/u, 3:event/ctrl-u
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor deletes to start of line
+  screen-should-contain [
+    .          .
+    .123       .
+    .          .
     .          .
   ]
 ]
