@@ -549,17 +549,19 @@ recipe editor-event-loop [
     break-if quit?  # only in tests
     trace [app], [next-event]
     # 'touch' event - send to both editors
+    t:address:touch-event <- maybe-convert e, touch:variant
     {
-      t:address:touch-event <- maybe-convert e, touch:variant
       break-unless t
       move-cursor-in-editor screen, editor, *t
-      jump +continue:label
     }
-    # other events - send to appropriate editor
-    handle-keyboard-event screen, console, editor, e
-    +continue
+    # keyboard events
+    {
+      break-if t
+      handle-keyboard-event screen, console, editor, e
+    }
+    # send any changes to screen
     row:number, screen <- render screen, editor
-    # clear next line, in case we just processed a backspace
+    # clear final line, in case we just processed a backspace
     left:number <- get *editor, left:offset
     right:number <- get *editor, right:offset
     row <- add row, 1
@@ -586,10 +588,9 @@ recipe handle-keyboard-event [
     insert-at-cursor editor, *c, screen
     reply
   }
-  # special key
+  # special key to modify the text or move the cursor
   k:address:number <- maybe-convert e:event, keycode:variant
   assert k, [event was of unknown type; neither keyboard nor mouse]
-  d:address:duplex-list <- get *editor, data:offset
   before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
@@ -629,7 +630,6 @@ recipe insert-at-cursor [
   editor:address:editor-data <- next-ingredient
   c:character <- next-ingredient
   screen:address <- next-ingredient
-#?   $print [insert ], c, 10/newline #? 1
   before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
   insert-duplex c, *before-cursor
   *before-cursor <- next-duplex *before-cursor
@@ -637,84 +637,10 @@ recipe insert-at-cursor [
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
-  # update cursor: if newline, move cursor to start of next line
-  # todo: bottom of screen
-  {
-    newline?:boolean <- equal c, 10/newline
-    break-unless newline?
-    *cursor-row <- add *cursor-row, 1
-    *cursor-column <- copy left
-    # indent if necessary
-#?     $print [computing indent], 10/newline #? 1
-    d:address:duplex-list <- get *editor, data:offset
-    end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
-    indent:number <- line-indent end-of-previous-line, d
-#?     $print indent, 10/newline #? 1
-    i:number <- copy 0
-    {
-      indent-done?:boolean <- greater-or-equal i, indent
-      break-if indent-done?
-      insert-at-cursor editor, 32/space, screen
-      i <- add i, 1
-      loop
-    }
-    reply
-  }
-  # if the line wraps at the cursor, move cursor to start of next row
-  {
-    # if we're at the column just before the wrap indicator
-    wrap-column:number <- subtract right, 1
-#?     $print [wrap? ], *cursor-column, [ vs ], wrap-column, 10/newline
-    at-wrap?:boolean <- greater-or-equal *cursor-column, wrap-column
-    break-unless at-wrap?
-#?     $print [wrap!
-#? ] #? 1
-    *cursor-column <- subtract *cursor-column, wrap-column
-    *cursor-row <- add *cursor-row, 1
-    # todo: what happens when cursor is too far down?
-    screen-height:number <- screen-height screen
-    above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
-    assert above-screen-bottom?, [unimplemented: typing past bottom of screen]
-#?     $print [return
-#? ] #? 1
-    reply
-  }
-  # otherwise move cursor right
+  # occasionally we'll need to mess with the cursor
+  +insert-character-special-case
+  # but mostly we'll just move the cursor right
   *cursor-column <- add *cursor-column, 1
-]
-
-# takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
-# the number of spaces at the start of the line containing 'curr'.
-recipe line-indent [
-  local-scope
-  curr:address:duplex-list <- next-ingredient
-  start:address:duplex-list <- next-ingredient
-  result:number <- copy 0
-  reply-unless curr, result
-  at-start?:boolean <- equal curr, start
-  reply-if at-start?, result
-  {
-    curr <- prev-duplex curr
-    break-unless curr
-    at-start?:boolean <- equal curr, start
-    break-if at-start?
-    c:character <- get *curr, value:offset
-    at-newline?:boolean <- equal c, 10/newline
-    break-if at-newline?
-    # if c is a space, increment result
-    is-space?:boolean <- equal c, 32/space
-    {
-      break-unless is-space?
-      result <- add result, 1
-    }
-    # if c is not a space, reset result
-    {
-      break-if is-space?
-      result <- copy 0
-    }
-    loop
-  }
-  reply result
 ]
 
 scenario editor-handles-empty-event-queue [
@@ -948,6 +874,25 @@ d]
   ]
 ]
 
+scenario editor-moves-cursor-after-inserting-characters [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [ab]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  assume-console [
+    type [01]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .01ab      .
+    .          .
+  ]
+]
+
+# if the cursor reaches the right margin, wrap the line
+
 scenario editor-wraps-line-on-insert [
   assume-screen 5/width, 5/height
   1:address:array:character <- new [abc]
@@ -982,21 +927,21 @@ scenario editor-wraps-line-on-insert [
   ]
 ]
 
-scenario editor-moves-cursor-after-inserting-characters [
-  assume-screen 10/width, 5/height
-  1:address:array:character <- new [ab]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
-  assume-console [
-    type [01]
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .01ab      .
-    .          .
-  ]
+after +insert-character-special-case [
+  # if the line wraps at the cursor, move cursor to start of next row
+  {
+    # if we're at the column just before the wrap indicator
+    wrap-column:number <- subtract right, 1
+    at-wrap?:boolean <- greater-or-equal *cursor-column, wrap-column
+    break-unless at-wrap?
+    *cursor-column <- subtract *cursor-column, wrap-column
+    *cursor-row <- add *cursor-row, 1
+    # todo: what happens when cursor is too far down?
+    screen-height:number <- screen-height screen
+    above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
+    assert above-screen-bottom?, [unimplemented: typing past bottom of screen]
+    reply
+  }
 ]
 
 scenario editor-wraps-cursor-after-inserting-characters [
@@ -1049,6 +994,8 @@ scenario editor-wraps-cursor-after-inserting-characters-2 [
   ]
 ]
 
+# if newline, move cursor to start of next line
+
 scenario editor-moves-cursor-down-after-inserting-newline [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
@@ -1066,6 +1013,63 @@ scenario editor-moves-cursor-down-after-inserting-newline [
     .1abc      .
     .          .
   ]
+]
+
+after +insert-character-special-case [
+  # todo: bottom of screen
+  {
+    newline?:boolean <- equal c, 10/newline
+    break-unless newline?
+    *cursor-row <- add *cursor-row, 1
+    *cursor-column <- copy left
+    # indent if necessary
+    d:address:duplex-list <- get *editor, data:offset
+    end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
+    indent:number <- line-indent end-of-previous-line, d
+    i:number <- copy 0
+    {
+      indent-done?:boolean <- greater-or-equal i, indent
+      break-if indent-done?
+      insert-at-cursor editor, 32/space, screen
+      i <- add i, 1
+      loop
+    }
+    reply
+  }
+]
+
+# takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
+# the number of spaces at the start of the line containing 'curr'.
+recipe line-indent [
+  local-scope
+  curr:address:duplex-list <- next-ingredient
+  start:address:duplex-list <- next-ingredient
+  result:number <- copy 0
+  reply-unless curr, result
+  at-start?:boolean <- equal curr, start
+  reply-if at-start?, result
+  {
+    curr <- prev-duplex curr
+    break-unless curr
+    at-start?:boolean <- equal curr, start
+    break-if at-start?
+    c:character <- get *curr, value:offset
+    at-newline?:boolean <- equal c, 10/newline
+    break-if at-newline?
+    # if c is a space, increment result
+    is-space?:boolean <- equal c, 32/space
+    {
+      break-unless is-space?
+      result <- add result, 1
+    }
+    # if c is not a space, reset result
+    {
+      break-if is-space?
+      result <- copy 0
+    }
+    loop
+  }
+  reply result
 ]
 
 scenario editor-moves-cursor-down-after-inserting-newline-2 [
@@ -1391,7 +1395,6 @@ after +handle-special-key [
       *cursor-row <- add *cursor-row, 1
       *cursor-column <- copy left
       # todo: what happens when cursor is too far down?
-      screen-height <- screen-height screen
       above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
       assert above-screen-bottom?, [unimplemented: moving past bottom of screen]
       reply
