@@ -26063,7 +26063,7 @@ after-brace: get ...
 9999 mem: location 1269 is 0
 9999 mem: location 1270 is 0
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 46
+9999 mem: array size is 49
 9999 mem: new alloc: 1290
  103 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 1292
@@ -26230,47 +26230,53 @@ after-brace: get ...
  103 run: break-unless move-to-next-line?, 
 9999 mem: location 1319 is 1
 9999 run: jump-unless fell through
- 103 run: already-at-bottom?:boolean <- greater-or-equal *cursor-row, screen-height
+ 103 run: last-line:number <- subtract screen-height, 1
+9999 mem: location 1312 is 5
+9999 mem: storing 4 in location 1320
+ 103 run: already-at-bottom?:boolean <- greater-or-equal *cursor-row, last-line
 9999 mem: location 1310 is 1006
 9999 mem: location 1006 is 1
-9999 mem: location 1312 is 5
-9999 mem: storing 0 in location 1320
+9999 mem: location 1320 is 4
+9999 mem: storing 0 in location 1321
  103 run: break-if already-at-bottom?, 
-9999 mem: location 1320 is 0
+9999 mem: location 1321 is 0
 9999 run: jump-if fell through
  103 run: *cursor-row <- add *cursor-row, 1
 9999 mem: location 1310 is 1006
 9999 mem: location 1006 is 1
 9999 mem: location 1310 is 1006
 9999 mem: storing 2 in location 1006
+ 103 run: break-unless already-at-bottom?, 
+9999 mem: location 1321 is 0
+9999 run: jumping to instruction 114
  103 run: move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
 9999 mem: location 1308 is 1296
 9999 mem: location 1296 is 65516
-9999 mem: storing 0 in location 1321
+9999 mem: storing 0 in location 1324
  103 run: break-unless move-to-previous-line?, 
-9999 mem: location 1321 is 0
-9999 run: jumping to instruction 109
+9999 mem: location 1324 is 0
+9999 run: jumping to instruction 128
  103 run: move-to-previous-character?:boolean <- equal *k, 65515/left-arrow
 9999 mem: location 1308 is 1296
 9999 mem: location 1296 is 65516
-9999 mem: storing 0 in location 1323
+9999 mem: storing 0 in location 1326
  103 run: break-unless move-to-previous-character?, 
-9999 mem: location 1323 is 0
-9999 run: jumping to instruction 116
+9999 mem: location 1326 is 0
+9999 run: jumping to instruction 135
  103 run: move-to-next-character?:boolean <- equal *k, 65514/right-arrow
 9999 mem: location 1308 is 1296
 9999 mem: location 1296 is 65516
-9999 mem: storing 0 in location 1325
+9999 mem: storing 0 in location 1328
  103 run: break-unless move-to-next-character?, 
-9999 mem: location 1325 is 0
-9999 run: jumping to instruction 149
+9999 mem: location 1328 is 0
+9999 run: jumping to instruction 168
  103 run: delete?:boolean <- equal *k, 65522/delete
 9999 mem: location 1308 is 1296
 9999 mem: location 1296 is 65516
-9999 mem: storing 0 in location 1335
+9999 mem: storing 0 in location 1338
  103 run: break-unless delete?, 
-9999 mem: location 1335 is 0
-9999 run: jumping to instruction 156
+9999 mem: location 1338 is 0
+9999 run: jumping to instruction 175
  102 run: row:number, screen <- render screen, editor
 9999 mem: location 1264 is 1009
 9999 mem: location 1266 is 1000
@@ -28077,6 +28083,7 @@ after-brace: get ...
 9999 mem: location 1191 is 1006
 9999 mem: location 1006 is 2
 9999 mem: storing 0 in location 1195
+schedule: render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  103 run: break-unless at-cursor-row?, 
 9999 mem: location 1195 is 0
 9999 run: jumping to instruction 31
@@ -28095,7 +28102,6 @@ after-brace: get ...
 9999 mem: location 1197 is 10
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
-schedule: get-color/render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  104 run: color:number <- next-ingredient 
 9999 mem: storing 7 in location 1117
  104 run: c:character <- next-ingredient 
@@ -31156,6 +31162,7 @@ schedule: get-color/render/editor-event-loop/run1001/scenario-editor-moves-to-ne
  104 run: break-unless starting-assignment?, 
 9999 mem: location 1123 is 0
 9999 run: jumping to instruction 25
+schedule: get-color/render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  104 run: color-is-red?:boolean <- equal color, 1/red
 9999 mem: location 1117 is 7
 9999 mem: storing 0 in location 1124
@@ -31166,7 +31173,6 @@ schedule: get-color/render/editor-event-loop/run1001/scenario-editor-moves-to-ne
 9999 mem: location 1117 is 7
 9999 run: result 0 is 7
 9999 mem: storing 7 in location 1188
-schedule: render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  103 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1197 is 100
 9999 mem: storing 0 in location 1198
@@ -33969,6 +33975,7 @@ schedule: render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-wi
  105 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1235
 9999 mem: storing 0 in location 1236
+schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  105 run: break-if bg-color-found?, 
 9999 mem: location 1236 is 0
 9999 run: jump-if fell through
@@ -33989,7 +33996,6 @@ schedule: render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-wi
 9999 run: its type is number
 9999 mem: location 1010 is 10
 9999 mem: storing 10 in location 1237
-schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  105 run: height:number <- get *sc, num-rows:offset
 9999 mem: location 1231 is 1009
 9999 mem: location 1009 is 5
@@ -37324,6 +37330,7 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 run: jump-if fell through
  106 run: bg-color <- copy 0/black
 9999 mem: storing 0 in location 1235
+schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  106 run: break-unless sc, 
 9999 mem: location 1231 is 1009
 9999 run: jump-unless fell through
@@ -37361,7 +37368,6 @@ schedule: print-character/clear-line-delimited/render/editor-event-loop/run1001/
 9999 mem: location 1231 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1239
-schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  106 run: legal?:boolean <- greater-or-equal *row, 0
 9999 mem: location 1239 is 1011
 9999 mem: location 1011 is 3
@@ -40807,6 +40813,7 @@ schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/edito
  106 run: break-unless backspace?, 
 9999 mem: location 1248 is 0
 9999 run: jumping to instruction 62
+schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  106 run: cursor:address:screen-cell <- index-address *buf, index
 9999 mem: location 1246 is 1014
 9999 mem: location 1014 is 50
@@ -40936,7 +40943,6 @@ schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/edito
 9999 mem: location 1233 is 7
 9999 mem: location 1252 is 1100
 9999 mem: storing 7 in location 1100
-schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  106 run: right:number <- subtract width, 1
 9999 mem: location 1237 is 10
 9999 mem: storing 9 in location 1253
@@ -44286,6 +44292,7 @@ schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/edito
  104 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1233
 9999 mem: storing 0 in location 1234
+schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  104 run: break-if color-found?, 
 9999 mem: location 1234 is 0
 9999 run: jump-if fell through
@@ -44297,7 +44304,6 @@ schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/edito
  104 run: break-if bg-color-found?, 
 9999 mem: location 1236 is 0
 9999 run: jump-if fell through
-schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  104 run: bg-color <- copy 0/black
 9999 mem: storing 0 in location 1235
  104 run: break-unless sc, 
@@ -47864,6 +47870,7 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 run: jumping to instruction 11
  102 run: loop 
 9999 run: jumping to instruction 5
+schedule: editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  102 run: e:event, console:address, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1265 is 1260
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -47880,7 +47887,6 @@ schedule: print-character/clear-line-delimited/editor-event-loop/run1001/scenari
 9999 mem: location 1279 is 1260
 9999 run: address to copy is 1260
 9999 mem: storing 1260 in location 1280
-schedule: read-event/editor-event-loop/run1001/scenario-editor-moves-to-next-line-with-down-arrow
  103 run: buf:address:array:event <- get *x, data:offset
 9999 mem: location 1279 is 1260
 9999 mem: location 1260 is 1

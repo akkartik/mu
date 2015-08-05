@@ -1774,10 +1774,17 @@ after +handle-special-key [
   {
     move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
     break-unless move-to-previous-line?
-    # todo: support scrolling
     already-at-top?:boolean <- lesser-or-equal *cursor-row, 1/top
-    break-if already-at-top?
-    *cursor-row <- subtract *cursor-row, 1
+    {
+      # if cursor not at top, move it
+      break-if already-at-top?
+      *cursor-row <- subtract *cursor-row, 1
+    }
+    {
+      # if cursor already at top, scroll up
+      break-unless already-at-top?
+      +scroll-up
+    }
     # that's it; render will adjust cursor-column as necessary
   }
 ]
@@ -1829,12 +1836,18 @@ after +handle-special-key [
   {
     move-to-next-line?:boolean <- equal *k, 65516/down-arrow
     break-unless move-to-next-line?
-    # todo: support scrolling
-    already-at-bottom?:boolean <- greater-or-equal *cursor-row, screen-height
-    break-if already-at-bottom?
-#?     $print [moving down
-#? ] #? 1
-    *cursor-row <- add *cursor-row, 1
+    last-line:number <- subtract screen-height, 1
+    already-at-bottom?:boolean <- greater-or-equal *cursor-row, last-line
+    {
+      # if cursor not at top, move it
+      break-if already-at-bottom?
+      *cursor-row <- add *cursor-row, 1
+    }
+    {
+      # if cursor already at top, scroll up
+      break-unless already-at-bottom?
+      +scroll-down
+    }
     # that's it; render will adjust cursor-column as necessary
   }
 ]
@@ -2775,6 +2788,72 @@ h]
     .b         .
     .c         .
   ]
+]
+
+# cursor-down can scroll if necessary
+
+scenario editor-can-scroll-down-using-arrow-keys [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 10/width, 4/height
+  # initialize editor with >3 lines
+  1:address:array:character <- new [a
+b
+c
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+  # position cursor at last line, then try to move further down
+  assume-console [
+    left-click 3, 0
+    press 65516  # down-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen slides by one line
+  screen-should-contain [
+    .          .
+    .b         .
+    .c         .
+    .d         .
+  ]
+]
+
+after +scroll-down [
+  $print [scroll down], 10/newline
+  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
+  width:number <- subtract right, left
+  *top-of-screen <- start-of-next-line *top-of-screen, width
+]
+
+# takes a pointer 'curr' into the doubly-linked list, scans ahead at most
+# width positions until just past the next newline
+recipe start-of-next-line [
+  local-scope
+  original:address:duplex-list <- next-ingredient
+  width:number <- next-ingredient
+  count:number <- copy 0
+  curr:address:duplex-list <- copy original
+  {
+    reply-unless curr, original
+    done?:boolean <- greater-or-equal count, width
+    break-if done?
+    c:character <- get *curr, value:offset
+    at-newline?:boolean <- equal c, 10/newline
+    break-if at-newline?
+    curr <- next-duplex curr
+    count <- add count, 1
+    loop
+  }
+  reply-unless curr, original
+  reply curr
 ]
 
 ## putting the environment together out of editors
