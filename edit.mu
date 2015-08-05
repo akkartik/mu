@@ -2825,7 +2825,7 @@ d]
 ]
 
 after +scroll-down [
-  $print [scroll down], 10/newline
+#?   $print [scroll down], 10/newline #? 1
   top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
@@ -2849,6 +2849,78 @@ recipe start-of-next-line [
     at-newline?:boolean <- equal c, 10/newline
     break-if at-newline?
     curr <- next-duplex curr
+    count <- add count, 1
+    loop
+  }
+  reply-unless curr, original
+  reply curr
+]
+
+# cursor-up can scroll if necessary
+
+scenario editor-can-scroll-up-using-arrow-keys [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 10/width, 4/height
+  # initialize editor with >3 lines
+  1:address:array:character <- new [a
+b
+c
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+  # position cursor at top of second page, then try to move up
+  assume-console [
+    press 65518  # page-down
+    press 65517  # up-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen slides by one line
+  screen-should-contain [
+    .          .
+    .b         .
+    .c         .
+    .d         .
+  ]
+]
+
+after +scroll-up [
+#?   $print [scroll up], 10/newline #? 1
+  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
+  width:number <- subtract right, left
+  *top-of-screen <- start-of-previous-line *top-of-screen, width
+]
+
+# takes a pointer into the doubly-linked list, scans back at most width
+# positions to previous newline. Returns original pointer if falls off edge of
+# list.
+recipe start-of-previous-line [
+  local-scope
+  original:address:duplex-list <- next-ingredient
+  width:number <- next-ingredient
+  count:number <- copy 0
+  curr:address:duplex-list <- copy original
+  reply-unless curr, original
+  # skip newline at original
+  curr <- prev-duplex curr
+  count <- add count, 1
+  # now skip before until previous newline
+  {
+    reply-unless curr, original
+    done?:boolean <- greater-or-equal count, width
+    break-if done?
+    c:character <- get *curr, value:offset
+    at-newline?:boolean <- equal c, 10/newline
+    break-if at-newline?
+    curr <- prev-duplex curr
     count <- add count, 1
     loop
   }
