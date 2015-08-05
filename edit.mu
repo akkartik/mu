@@ -134,6 +134,10 @@ scenario editor-initializes-without-data [
 ]
 
 # bottom:number, screen:address <- render screen:address, editor:address:editor-data
+#
+# Assumes cursor should be at coordinates (cursor-row, cursor-column) and
+# updates before-cursor to match. Might also move coordinates if they're
+# outside text.
 recipe render [
   local-scope
   screen:address <- next-ingredient
