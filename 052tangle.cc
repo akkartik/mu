@@ -50,30 +50,41 @@ else if (command == "after") {
 :(code)
 void insert_fragments(const recipe_ordinal r) {
   // Copy into a new vector because insertions invalidate iterators.
-  // But this way we can't insert into labels created inside before/after.
   vector<instruction> result;
-  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
-    const instruction inst = Recipe[r].steps.at(i);
-    if (!inst.is_label) {
+  set<string /*label*/> fragments_inserted_this_recipe;
+  long long int fragments_originally_inserted = 0;
+  while (true) {  // repeat passes until convergence (inserted fragments might include more labels)
+    for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
+      const instruction inst = Recipe[r].steps.at(i);
+      if (!inst.is_label) {
+        result.push_back(inst);
+        continue;
+      }
+      if (fragments_inserted_this_recipe.find(inst.label) != fragments_inserted_this_recipe.end()) {
+        // already processed in a previous pass; ignore
+        result.push_back(inst);
+        continue;
+      }
+      Fragments_used.insert(inst.label);
+      fragments_inserted_this_recipe.insert(inst.label);
+      if (Before_fragments.find(inst.label) != Before_fragments.end()) {
+//?         cerr << "loading code before " << inst.label << '\n'; //? 1
+        result.insert(result.end(), Before_fragments[inst.label].steps.begin(), Before_fragments[inst.label].steps.end());
+      }
       result.push_back(inst);
-      continue;
+      if (After_fragments.find(inst.label) != After_fragments.end()) {
+//?         cerr << "loading code after " << inst.label << '\n'; //? 1
+        result.insert(result.end(), After_fragments[inst.label].steps.begin(), After_fragments[inst.label].steps.end());
+      }
     }
-    if (Before_fragments.find(inst.label) != Before_fragments.end()) {
-//?       cerr << "loading code before " << inst.label << '\n'; //? 1
-      Fragments_used.insert(inst.label);
-      result.insert(result.end(), Before_fragments[inst.label].steps.begin(), Before_fragments[inst.label].steps.end());
+    Recipe[r].steps.swap(result);
+    if (fragments_originally_inserted == SIZE(fragments_inserted_this_recipe)) {
+      break;  // converged
     }
-    result.push_back(inst);
-    if (After_fragments.find(inst.label) != After_fragments.end()) {
-//?       cerr << "loading code after " << inst.label << '\n'; //? 1
-      Fragments_used.insert(inst.label);
-      result.insert(result.end(), After_fragments[inst.label].steps.begin(), After_fragments[inst.label].steps.end());
-    }
+    // not yet converged; prepare next pass
+    result.clear();
+    fragments_originally_inserted = SIZE(fragments_inserted_this_recipe);
   }
-//?   for (long long int i = 0; i < SIZE(result); ++i) { //? 1
-//?     cout << result.at(i).to_string() << '\n'; //? 1
-//?   } //? 1
-  Recipe[r].steps.swap(result);
 }
 
 //: warn about unapplied fragments
@@ -202,24 +213,32 @@ $mem: 6
 
 :(scenario tangle_tangles_into_all_labels_with_same_name)
 recipe main [
-  1:number <- copy 0
+  1:number <- copy 10
   +label1
+  4:number <- copy 10
+  recipe2
+]
+recipe recipe2 [
+  1:number <- copy 11
   +label1
-  4:number <- copy 0
+  4:number <- copy 11
 ]
 before +label1 [
-  2:number <- copy 0
+  2:number <- copy 12
 ]
 after +label1 [
-  3:number <- copy 0
+  3:number <- copy 12
 ]
-+mem: storing 0 in location 1
-+mem: storing 0 in location 2
++mem: storing 10 in location 1
++mem: storing 12 in location 2
 # label1
-+mem: storing 0 in location 3
-+mem: storing 0 in location 2
++mem: storing 12 in location 3
++mem: storing 10 in location 4
+# recipe2
++mem: storing 11 in location 1
++mem: storing 12 in location 2
 # label1
-+mem: storing 0 in location 3
-+mem: storing 0 in location 4
++mem: storing 12 in location 3
++mem: storing 11 in location 4
 # nothing else
-$mem: 6
+$mem: 8
