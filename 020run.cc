@@ -54,10 +54,8 @@ void run(recipe_ordinal r) {
 
 void run_current_routine()
 {  // curly on a separate line, because later layers will modify header
-//?   cerr << "AAA 6\n"; //? 3
   while (!Current_routine->completed())  // later layers will modify condition
   {
-//?     cerr << "AAA 7: " << current_step_index() << '\n'; //? 1
     // Running One Instruction
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string() << end();
@@ -74,12 +72,9 @@ void run_current_routine()
     }
     // Instructions below will write to 'products'.
     vector<vector<double> > products;
-//?     cerr << "AAA 8: " << current_instruction().operation << " ^" << Recipe[current_instruction().operation].name << "$\n"; //? 1
-//?     cerr << "% " << current_recipe_name() << "/" << current_step_index() << ": " << Memory[1013] << ' ' << Memory[1014] << '\n'; //? 1
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
       case COPY: {
-//?         if (!ingredients.empty()) cerr << current_instruction().ingredients.at(0).to_string() << ' ' << ingredients.at(0).at(0) << '\n'; //? 1
         copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
         break;
       }
@@ -99,7 +94,6 @@ void run_current_routine()
     // End of Instruction
     ++current_step_index();
   }
-//?   cerr << "AAA 9\n"; //? 2
   stop_running_current_routine:;
 }
 
@@ -146,7 +140,7 @@ if (!Run_tests) {
 
 :(code)
 void cleanup_main() {
-  if (!Trace_file.empty()) {
+  if (!Trace_file.empty() && Trace_stream) {
     ofstream fout(Trace_file.c_str());
     fout << Trace_stream->readable_contents("");
     fout.close();
@@ -159,8 +153,6 @@ atexit(cleanup_main);
 void load_permanently(string filename) {
   ifstream fin(filename.c_str());
   fin.peek();
-//?   cerr << "AAA: " << filename << ' ' << static_cast<bool>(fin) << ' ' << fin.fail() << '\n'; //? 1
-//?   return; //? 1
   if (!fin) {
     raise << "no such file " << filename << '\n' << end();
     return;
@@ -181,14 +173,11 @@ load_permanently("core.mu");
 :(code)
 // helper for tests
 void run(string form) {
-//?   cerr << "AAA 2\n"; //? 2
 //?   cerr << form << '\n'; //? 1
   vector<recipe_ordinal> tmp = load(form);
   if (tmp.empty()) return;
   transform_all();
-//?   cerr << "AAA 3\n"; //? 2
   run(tmp.front());
-//?   cerr << "YYY\n"; //? 2
 }
 
 //:: Reading from memory, writing to memory.
