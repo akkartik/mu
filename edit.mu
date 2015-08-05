@@ -4108,7 +4108,7 @@ after +render-sandbox-response [
   }
 ]
 
-## click on the code typed into a sandbox to toggle its trace
+## clicking on the code typed into a sandbox toggles its trace
 
 scenario sandbox-click-on-code-toggles-app-trace [
   $close-trace
