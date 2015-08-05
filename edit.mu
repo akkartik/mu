@@ -3655,6 +3655,40 @@ scenario run-instruction-and-print-warnings-only-once [
   ]
 ]
 
+scenario run-instruction-manages-screen-per-sandbox [
+  $close-trace  # trace too long for github #? 1
+  assume-screen 100/width, 20/height
+  # left editor is empty
+  1:address:array:character <- new []
+  # right editor contains an illegal instruction
+  2:address:array:character <- new [print-integer screen:address, 4]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the code in the editor
+  assume-console [
+    press 65532  # F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # check that it prints a little 5x5 toy screen
+  # hack: screen address is brittle
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
+    .                                                  ┊print-integer screen:address, 4                  .
+    .                                                  ┊screen:                                          .
+    .                                                  ┊  .4                             .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+]
+
 recipe editor-contents [
   local-scope
   editor:address:editor-data <- next-ingredient
@@ -3911,40 +3945,6 @@ recipe delete-sandbox [
     loop
   }
   reply 0/false
-]
-
-scenario run-instruction-manages-screen-per-sandbox [
-  $close-trace  # trace too long for github #? 1
-  assume-screen 100/width, 20/height
-  # left editor is empty
-  1:address:array:character <- new []
-  # right editor contains an illegal instruction
-  2:address:array:character <- new [print-integer screen:address, 4]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-  # run the code in the editor
-  assume-console [
-    press 65532  # F4
-  ]
-  run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  ]
-  # check that it prints a little 5x5 toy screen
-  # hack: screen address is brittle
-  screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                x.
-    .                                                  ┊print-integer screen:address, 4                  .
-    .                                                  ┊screen:                                          .
-    .                                                  ┊  .4                             .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
-  ]
 ]
 
 ## clicking on sandbox results to 'fix' them and turn sandboxes into tests
