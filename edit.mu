@@ -2510,8 +2510,11 @@ after +handle-special-key [
   }
 ]
 
-# cache old pages in a linked-list so page-up later doesn't have to recompute
-# them
+# Cache old pointers to top-of-page in a list as you scroll past them, so that
+# page-up later doesn't have to recompute them.
+# This only works because we can never ever have edits outside the current
+# page. Any edits outside the current page might invalidate pointers to old
+# pages.
 container editor-data [
   previous-page:address:list:address:duplex-list:character
 ]
