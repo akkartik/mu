@@ -2566,6 +2566,69 @@ b]
   ]
 ]
 
+scenario editor-starts-next-page-at-start-of-wrapped-line [
+  # screen has 1 line for menu + 3 lines for text
+  assume-screen 10/width, 4/height
+  # editor contains a long last line
+  1:address:array:character <- new [a
+b
+cdefgh]
+  # editor screen triggers wrap of last line
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
+  # some part of last line is not displayed
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .cde↩      .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows entire wrapped line
+  screen-should-contain [
+    .          .
+    .cde↩      .
+    .fgh       .
+    .          .
+  ]
+]
+
+scenario editor-starts-next-page-at-start-of-wrapped-line-2 [
+  # screen has 1 line for menu + 3 lines for text
+  assume-screen 10/width, 4/height
+  # editor contains a very long line that occupies last two lines of screen
+  # and still has something left over
+  1:address:array:character <- new [a
+bcdefgh]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
+  # some part of last line is not displayed
+  screen-should-contain [
+    .          .
+    .a         .
+    .bcd↩      .
+    .efg↩      .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows entire wrapped line
+  screen-should-contain [
+    .          .
+    .bcd↩      .
+    .efg↩      .
+    .h         .
+  ]
+]
+
 # ctrl-b/page-up - render previous page if it exists
 
 scenario editor-can-scroll-up [
