@@ -22,19 +22,23 @@ $mem: 3
 
 :(before "End Globals")
 map<string /*label*/, recipe> Before_fragments, After_fragments;
+set<string /*label*/> Fragments_used;
 :(before "End Setup")
 Before_fragments.clear();
 After_fragments.clear();
+Fragments_used.clear();
 
 :(before "End Command Handlers")
 else if (command == "before") {
   string label = next_word(in);
   recipe tmp = slurp_recipe(in);
+//?   cerr << "adding before fragment " << label << '\n'; //? 1
   Before_fragments[label].steps.insert(Before_fragments[label].steps.end(), tmp.steps.begin(), tmp.steps.end());
 }
 else if (command == "after") {
   string label = next_word(in);
   recipe tmp = slurp_recipe(in);
+//?   cerr << "adding after fragment " << label << '\n'; //? 1
   After_fragments[label].steps.insert(After_fragments[label].steps.begin(), tmp.steps.begin(), tmp.steps.end());
 }
 
@@ -55,10 +59,14 @@ void insert_fragments(const recipe_ordinal r) {
       continue;
     }
     if (Before_fragments.find(inst.label) != Before_fragments.end()) {
+//?       cerr << "loading code before " << inst.label << '\n'; //? 1
+      Fragments_used.insert(inst.label);
       result.insert(result.end(), Before_fragments[inst.label].steps.begin(), Before_fragments[inst.label].steps.end());
     }
     result.push_back(inst);
     if (After_fragments.find(inst.label) != After_fragments.end()) {
+//?       cerr << "loading code after " << inst.label << '\n'; //? 1
+      Fragments_used.insert(inst.label);
       result.insert(result.end(), After_fragments[inst.label].steps.begin(), After_fragments[inst.label].steps.end());
     }
   }
@@ -66,6 +74,25 @@ void insert_fragments(const recipe_ordinal r) {
 //?     cout << result.at(i).to_string() << '\n'; //? 1
 //?   } //? 1
   Recipe[r].steps.swap(result);
+}
+
+//: warn about unapplied fragments
+:(before "End Globals")
+bool Transform_check_insert_fragments_Ran = false;
+:(before "End One-time Setup")
+Transform.push_back(check_insert_fragments);  // final transform
+:(code)
+void check_insert_fragments(unused recipe_ordinal) {
+  if (Transform_check_insert_fragments_Ran) return;
+  Transform_check_insert_fragments_Ran = true;
+  for (map<string, recipe>::iterator p = Before_fragments.begin(); p != Before_fragments.end(); ++p) {
+    if (Fragments_used.find(p->first) == Fragments_used.end())
+      raise << "could not locate insert before " << p->first << '\n' << end();
+  }
+  for (map<string, recipe>::iterator p = After_fragments.begin(); p != After_fragments.end(); ++p) {
+    if (Fragments_used.find(p->first) == Fragments_used.end())
+      raise << "could not locate insert after " << p->first << '\n' << end();
+  }
 }
 
 :(scenario tangle_before_and_after)
