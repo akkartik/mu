@@ -592,6 +592,7 @@ recipe handle-keyboard-event [
   {
     c:address:character <- maybe-convert e, text:variant
     break-unless c
+#?     trace [app], [handle-keyboard-event: special character] #? 1
     # exceptions for special characters go here
     +handle-special-character
     # otherwise type it in
@@ -1235,6 +1236,7 @@ recipe delete-before-cursor [
   # if at start of text (before-cursor at § sentinel), return
   prev:address:duplex-list <- prev-duplex *before-cursor
   reply-unless prev
+#?   trace [app], [delete-before-cursor] #? 1
   editor <- move-cursor-coordinates-left editor
   remove-duplex *before-cursor
   *before-cursor <- copy prev
@@ -1246,9 +1248,10 @@ recipe move-cursor-coordinates-left [
   before-cursor:address:duplex-list <- get *editor, before-cursor:offset
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
+  left:number <- get *editor, left:offset
   # if not at left margin, move one character left
   {
-    at-left-margin?:boolean <- equal *cursor-column, 0
+    at-left-margin?:boolean <- equal *cursor-column, left
     break-if at-left-margin?
 #?     trace [app], [decrementing cursor column] #? 1
     *cursor-column <- subtract *cursor-column, 1
@@ -1266,7 +1269,7 @@ recipe move-cursor-coordinates-left [
 #?     trace [app], [switching to previous line] #? 1
     d:address:duplex-list <- get *editor, data:offset
     end-of-line:number <- previous-line-length before-cursor, d
-    *cursor-column <- copy end-of-line
+    *cursor-column <- add left, end-of-line
     reply editor/same-as-ingredient:0
   }
   # case 2: if previous-character was not newline, we're just at a wrapped line
@@ -2999,6 +3002,34 @@ scenario editor-in-focus-keeps-cursor [
   screen-should-contain [
     .           run (F4)           .
     .z␣bc           ┊def           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+]
+
+scenario backspace-in-sandbox-editor-joins-lines [
+  $close-trace
+  assume-screen 30/width, 5/height
+  # initialize sandbox side with two lines
+  1:address:array:character <- new []
+  2:address:array:character <- new [abc
+def]
+  # position cursor at start of second line and hit backspace
+  assume-console [
+    left-click 2, 16
+    type [«]
+  ]
+  3:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
+  replace-in-console 171/«, 3:event/backspace
+  run [
+    4:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+    event-loop screen:address, console:address, 4:address:programming-environment-data
+    screen:address <- print-character screen:address, 9251/␣
+  ]
+  # cursor moves to end of old line
+  screen-should-contain [
+    .           run (F4)           .
+    .               ┊abc␣ef        .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
   ]
