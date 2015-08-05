@@ -321,6 +321,25 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   t.size = SIZE(t.elements);
 }
 
+:(scenarios run)
+:(scenario container_define_twice)
+container foo [
+  x:number
+]
+
+container foo [
+  y:number
+]
+
+recipe main [
+  1:number <- copy 34
+  2:number <- copy 35
+  3:number <- get 1:foo, x:offset
+  4:number <- get 1:foo, y:offset
+]
++mem: storing 34 in location 3
++mem: storing 35 in location 4
+
 //: ensure types created in one scenario don't leak outside it.
 :(before "End Globals")
 vector<type_ordinal> recently_added_types;
@@ -359,7 +378,6 @@ Next_type_ordinal = 1000;
 //:: Allow container definitions anywhere in the codebase, but warn if you
 //:: can't find a definition.
 
-:(scenarios run)
 :(scenario run_warns_on_unknown_types)
 % Hide_warnings = true;
 #? % Trace_stream->dump_layer = "run";

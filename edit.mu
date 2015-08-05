@@ -34,6 +34,8 @@ scenario editor-initially-prints-string-to-screen [
 container editor-data [
   # editable text: doubly linked list of characters (head contains a special sentinel)
   data:address:duplex-list
+  top-of-screen:address:duplex-list
+  bottom-of-screen:address:duplex-list
   # location before cursor inside data
   before-cursor:address:duplex-list
 
@@ -71,6 +73,8 @@ recipe new-editor [
   *x <- copy left
   init:address:address:duplex-list <- get-address *result, data:offset
   *init <- push-duplex 167/§, 0/tail
+  top-of-screen:address:address:duplex-list <- get-address *result, top-of-screen:offset
+  *top-of-screen <- copy *init
   y:address:address:duplex-list <- get-address *result, before-cursor:offset
   *y <- copy *init
   result <- insert-text result, s
@@ -114,11 +118,13 @@ scenario editor-initializes-without-data [
   ]
   memory-should-contain [
     # 2 (data) <- just the § sentinel
-    # 3 (before cursor) <- the § sentinel
-    4 <- 2  # left
-    5 <- 4  # right  (inclusive)
-    6 <- 1  # cursor row
-    7 <- 2  # cursor column
+    # 3 (top of screen) <- the § sentinel
+    4 <- 0  # bottom-of-screen; null since text fits on screen
+    # 5 (before cursor) <- the § sentinel
+    6 <- 2  # left
+    7 <- 4  # right  (inclusive)
+    8 <- 1  # cursor row
+    9 <- 2  # cursor column
   ]
   screen-should-contain [
     .     .
@@ -138,7 +144,7 @@ recipe render [
   right:number <- get *editor, right:offset
   hide-screen screen
   # traversing editor
-  curr:address:duplex-list <- get *editor, data:offset
+  curr:address:duplex-list <- get *editor, top-of-screen:offset
   prev:address:duplex-list <- copy curr
   curr <- next-duplex curr
   # traversing screen
@@ -209,6 +215,9 @@ recipe render [
     column <- add column, 1
     loop
   }
+  # save first character off-screen
+  bottom-of-screen:address:address:duplex-list <- get-address *editor, bottom-of-screen:offset
+  *bottom-of-screen <- copy curr
   # is cursor to the right of the last line? move to end
   {
     at-cursor-row?:boolean <- equal row, *cursor-row
@@ -230,8 +239,9 @@ recipe render [
     }
     *before-cursor <- copy prev
   }
-  # clear rest of current line
+  # clear rest of screen
   clear-line-delimited screen, column, right
+  clear-rest-of-screen screen, row, left, right
   reply row, screen/same-as-ingredient:0
 ]
 
@@ -2448,6 +2458,252 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
   ]
 ]
 
+# ctrl-f/page-down - render next page if it exists
+
+scenario editor-can-scroll [
+  assume-screen 10/width, 4/height
+  1:address:array:character <- new [a
+b
+c
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows next page
+  screen-should-contain [
+    .          .
+    .c         .
+    .d         .
+    .          .
+  ]
+]
+
+after +handle-special-character [
+  {
+    ctrl-f?:boolean <- equal *c, 6/ctrl-f
+    break-unless ctrl-f?
+    page-down editor
+    reply
+  }
+]
+
+after +handle-special-key [
+  {
+    page-down?:boolean <- equal *k, 65518/page-down
+    break-unless page-down?
+    page-down editor
+    reply
+  }
+]
+
+# cache old pages in a linked-list so page-up later doesn't have to recompute
+# them
+container editor-data [
+  previous-page:address:list:address:duplex-list:character
+]
+
+recipe page-down [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  # if editor contents don't overflow screen, do nothing
+  bottom-of-screen:address:duplex-list <- get *editor, bottom-of-screen:offset
+  reply-unless bottom-of-screen, editor/same-as-ingredient:0
+  # if not, position cursor at final character
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  *before-cursor <- prev-duplex bottom-of-screen
+  # keep one line in common with previous page
+  {
+    last:character <- get **before-cursor, value:offset
+    newline?:boolean <- equal last, 10/newline
+    break-unless newline?:boolean
+    *before-cursor <- prev-duplex *before-cursor
+  }
+  # save top-of-screen to previous-page list
+  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+  previous-page:address:address:list:address:duplex-list:character <- get-address *editor, previous-page:offset
+  *previous-page <- push *top-of-screen, *previous-page
+  # move cursor and top-of-screen to start of that line
+  move-to-start-of-line editor
+  *top-of-screen <- copy *before-cursor
+  reply editor/same-as-ingredient:0
+]
+
+scenario editor-does-not-scroll-past-end [
+  assume-screen 10/width, 4/height
+  1:address:array:character <- new [a
+b]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .          .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen remains unmodified
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .          .
+  ]
+]
+
+# ctrl-b/page-up - render previous page if it exists
+
+scenario editor-can-scroll-up [
+  assume-screen 10/width, 4/height
+  1:address:array:character <- new [a
+b
+c
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows next page
+  screen-should-contain [
+    .          .
+    .c         .
+    .d         .
+    .          .
+  ]
+  # scroll back up
+  assume-console [
+    press 65519  # page-up
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows original page again
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+]
+
+after +handle-special-character [
+  {
+    ctrl-b?:boolean <- equal *c, 2/ctrl-f
+    break-unless ctrl-b?
+    page-up editor
+    reply
+  }
+]
+
+after +handle-special-key [
+  {
+    page-up?:boolean <- equal *k, 65519/page-up
+    break-unless page-up?
+    page-up editor
+    reply
+  }
+]
+
+recipe page-up [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  previous-page:address:address:list:address:duplex-list:character <- get-address *editor, previous-page:offset
+  reply-unless *previous-page, editor/same-as-ingredient:0
+  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+  *top-of-screen <- first *previous-page
+  *previous-page <- rest *previous-page
+  reply editor/same-as-ingredient:0
+]
+
+scenario editor-can-scroll-up-multiple-pages [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 10/width, 4/height
+  # initialize editor with 8 lines
+  1:address:array:character <- new [a
+b
+c
+d
+e
+f
+g
+h]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+  # scroll down two pages
+  assume-console [
+    press 65518  # page-down
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows third page
+  screen-should-contain [
+    .          .
+    .e         .
+    .f         .
+    .g         .
+  ]
+  # scroll up
+  assume-console [
+    press 65519  # page-up
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows second page
+  screen-should-contain [
+    .          .
+    .c         .
+    .d         .
+    .e         .
+  ]
+  # scroll up again
+  assume-console [
+    press 65519  # page-up
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows original page again
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+]
+
 ## putting the environment together out of editors
 
 container programming-environment-data [
@@ -2745,7 +3001,16 @@ recipe render-recipes [
   }
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-  # clear rest of screen
+  clear-rest-of-screen screen, row, left, right
+  reply screen/same-as-ingredient:0
+]
+
+recipe clear-rest-of-screen [
+  local-scope
+  screen:address <- next-ingredient
+  row:number <- next-ingredient
+  left:number <- next-ingredient
+  right:number <- next-ingredient
   row <- add row, 1
   move-cursor screen, row, left
   screen-height:number <- screen-height screen
@@ -2757,7 +3022,6 @@ recipe render-recipes [
     row <- add row, 1
     loop
   }
-  reply screen/same-as-ingredient:0
 ]
 
 # helper for testing a single editor
@@ -2922,6 +3186,8 @@ recipe run-sandboxes [
     # clear sandbox editor
     init:address:address:duplex-list <- get-address *current-sandbox, data:offset
     *init <- push-duplex 167/§, 0/tail
+    top-of-screen:address:address:duplex-list <- get-address *current-sandbox, top-of-screen:offset
+    *top-of-screen <- copy *init
   }
   # save all sandboxes before running, just in case we die when running
   save-sandboxes env
