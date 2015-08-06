@@ -29410,7 +29410,7 @@ schedule: clear-line-delimited/editor-event-loop/run1001/scenario-editor-wraps-c
 9999 mem: location 1306 is 102
 9999 mem: location 1302 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 19
+9999 mem: array size is 21
 9999 mem: new alloc: 1350
  104 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1000 in location 1352
@@ -29657,13 +29657,14 @@ schedule: clear-line-delimited/editor-event-loop/run1001/scenario-editor-wraps-c
 9999 mem: location 1158 is 5
 9999 run: result 0 is 5
 9999 mem: storing 5 in location 1368
- 104 run: above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
+ 104 run: below-screen?:boolean <- greater-or-equal *cursor-row, screen-height
 9999 mem: location 1356 is 1006
 9999 mem: location 1006 is 2
 9999 mem: location 1368 is 5
-9999 mem: storing 1 in location 1369
- 104 run: assert above-screen-bottom?, [unimplemented: typing past bottom of screen]
-9999 mem: location 1369 is 1
+9999 mem: storing 0 in location 1369
+ 104 run: break-unless below-screen?, 
+9999 mem: location 1369 is 0
+9999 run: jumping to instruction 46
  104 run: reply 
  103 run: reply 
  102 run: row:number, screen <- render screen, editor
@@ -29739,14 +29740,14 @@ schedule: clear-line-delimited/editor-event-loop/run1001/scenario-editor-wraps-c
 9999 mem: location 1173 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 2
-9999 mem: new alloc: 1370
+9999 mem: new alloc: 1372
  104 run: screen:address <- next-ingredient 
-9999 mem: storing 1009 in location 1372
+9999 mem: storing 1009 in location 1374
  104 run: break-unless screen, 
-9999 mem: location 1372 is 1009
+9999 mem: location 1374 is 1009
 9999 run: jump-unless fell through
  104 run: reply screen
-9999 mem: location 1372 is 1009
+9999 mem: location 1374 is 1009
  103 run: curr:address:duplex-list <- get *editor, top-of-screen:offset
 9999 mem: location 1174 is 1000
 9999 mem: location 1000 is 1140
@@ -30366,6 +30367,7 @@ schedule: clear-line-delimited/editor-event-loop/run1001/scenario-editor-wraps-c
  104 run: jump-if in, 1:offset
 9999 mem: location 1157 is 1152
 9999 run: jumping to instruction 4
+schedule: next-duplex/render/editor-event-loop/run1001/scenario-editor-wraps-cursor-after-inserting-characters-2
  104 run: result:address:duplex-list <- get *in, next:offset
 9999 mem: location 1157 is 1152
 9999 mem: location 1152 is 97
@@ -30380,7 +30382,6 @@ schedule: clear-line-delimited/editor-event-loop/run1001/scenario-editor-wraps-c
 9999 mem: location 1158 is 1159
 9999 run: result 0 is 1159
 9999 mem: storing 1159 in location 1178
-schedule: render/editor-event-loop/run1001/scenario-editor-wraps-cursor-after-inserting-characters-2
  103 run: prev <- next-duplex prev
 9999 mem: location 1179 is 1140
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -32644,10 +32645,10 @@ schedule: render/editor-event-loop/run1001/scenario-editor-wraps-cursor-after-in
  104 run: break-if color-found?, 
 9999 mem: location 1226 is 1
 9999 run: jumping to instruction 7
+schedule: print-character/render/editor-event-loop/run1001/scenario-editor-wraps-cursor-after-inserting-characters-2
  104 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1227
 9999 mem: storing 0 in location 1228
-schedule: print-character/render/editor-event-loop/run1001/scenario-editor-wraps-cursor-after-inserting-characters-2
  104 run: break-if bg-color-found?, 
 9999 mem: location 1228 is 0
 9999 run: jump-if fell through
@@ -35661,10 +35662,10 @@ schedule: print-character/render/editor-event-loop/run1001/scenario-editor-wraps
 9999 mem: location 1114 is 7
 9999 mem: location 1238 is 1014
 9999 mem: storing 50 in location 1239
+schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/editor-event-loop/run1001/scenario-editor-wraps-cursor-after-inserting-characters-2
  106 run: backspace?:boolean <- equal c, 8
 9999 mem: location 1224 is 32
 9999 mem: storing 0 in location 1240
-schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/editor-event-loop/run1001/scenario-editor-wraps-cursor-after-inserting-characters-2
  106 run: break-unless backspace?, 
 9999 mem: location 1240 is 0
 9999 run: jumping to instruction 62
@@ -39110,6 +39111,7 @@ schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/edito
  104 run: break-if at-bottom-of-screen?, 
 9999 mem: location 1139 is 1
 9999 run: jumping to instruction 15
+schedule: clear-rest-of-screen/render/editor-event-loop/run1001/scenario-editor-wraps-cursor-after-inserting-characters-2
  103 run: reply row, screen/same-as-ingredient:0
 9999 mem: location 1181 is 2
 9999 mem: location 1173 is 1009
@@ -39133,7 +39135,6 @@ schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/edito
 9999 run: its type is number
 9999 mem: location 1004 is 0
 9999 mem: storing 0 in location 1271
-schedule: editor-event-loop/run1001/scenario-editor-wraps-cursor-after-inserting-characters-2
  102 run: right:number <- get *editor, right:offset
 9999 mem: location 1262 is 1000
 9999 mem: location 1000 is 1140
