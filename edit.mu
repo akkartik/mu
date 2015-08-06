@@ -2536,6 +2536,8 @@ container editor-data [
   previous-page:address:list:address:duplex-list:character
 ]
 
+# page-down skips entire wrapped lines, so it can't scroll past lines
+# taking up the entire screen
 recipe page-down [
   local-scope
   editor:address:editor-data <- next-ingredient
@@ -2889,6 +2891,46 @@ i]
   ]
 ]
 
+scenario editor-scrolls-down-past-wrapped-line-using-arrow-keys-2 [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 10/width, 4/height
+  # editor starts with a long line wrapping twice
+  1:address:array:character <- new [abcdefghij
+k
+l
+m]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  # position cursor at last line, then try to move further down
+  assume-console [
+    left-click 3, 0
+    press 65516  # down-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows partial wrapped line containing a wrap icon
+  screen-should-contain [
+    .          .
+    .efgh↩     .
+    .ij        .
+    .k         .
+  ]
+  # scroll down again
+  assume-console [
+    press 65516  # down-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows partial wrapped line
+  screen-should-contain [
+    .          .
+    .ij        .
+    .k         .
+    .l         .
+  ]
+]
+
 # cursor-up can scroll if necessary
 
 scenario editor-can-scroll-up-using-arrow-keys [
@@ -2929,7 +2971,6 @@ after +scroll-up [
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   max:number <- subtract right, left
-  max <- subtract max, 1  # include wrapped line but without newline
   *top-of-screen <- start-of-previous-line *top-of-screen, max
 ]
 
@@ -2943,6 +2984,13 @@ recipe start-of-previous-line [
   count:number <- copy 0
   curr:address:duplex-list <- copy original
   reply-unless curr, original
+  # if top is at start of line, don't count the previous newline
+  {
+    c:character <- get *curr, value:offset
+    at-newline?:boolean <- equal c, 10/newline
+    break-unless at-newline?
+    max <- subtract max, 1
+  }
   # skip newline at original
   curr <- prev-duplex curr
   count <- add count, 1
@@ -3004,6 +3052,76 @@ i]
     .ef        .
     .g         .
     .h         .
+  ]
+]
+
+scenario editor-scrolls-up-past-wrapped-line-using-arrow-keys-2 [
+  # screen has 1 line for menu + 4 lines
+  assume-screen 10/width, 5/height
+  # editor starts with a long line wrapping twice, occupying 3 of the 4 lines
+  1:address:array:character <- new [abcdefghij
+k
+l
+m]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  # position cursor at top of second page
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .k         .
+    .l         .
+    .m         .
+    .          .
+  ]
+  # move up one line
+  assume-console [
+    press 65517  # up-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows partial wrapped line
+  screen-should-contain [
+    .          .
+    .ij        .
+    .k         .
+    .l         .
+    .m         .
+  ]
+  # move up a second line
+  assume-console [
+    press 65517  # up-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows partial wrapped line
+  screen-should-contain [
+    .          .
+    .efgh↩     .
+    .ij        .
+    .k         .
+    .l         .
+  ]
+  # move up a third line
+  assume-console [
+    press 65517  # up-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows partial wrapped line
+  screen-should-contain [
+    .          .
+    .abcd↩     .
+    .efgh↩     .
+    .ij        .
+    .k         .
   ]
 ]
 
