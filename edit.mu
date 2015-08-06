@@ -951,10 +951,13 @@ after +insert-character-special-case [
     break-unless at-wrap?
     *cursor-column <- subtract *cursor-column, wrap-column
     *cursor-row <- add *cursor-row, 1
-    # todo: what happens when cursor is too far down?
-    screen-height:number <- screen-height screen
-    above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
-    assert above-screen-bottom?, [unimplemented: typing past bottom of screen]
+    # if we're out of the screen, scroll down
+    {
+      screen-height:number <- screen-height screen
+      below-screen?:boolean <- greater-or-equal *cursor-row, screen-height
+      break-unless below-screen?
+      +scroll-down
+    }
     reply
   }
 ]
@@ -2928,6 +2931,37 @@ m]
     .ij        .
     .k         .
     .l         .
+  ]
+]
+
+scenario editor-scrolls-down-when-line-wraps [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 5/width, 4/height
+  # editor contains a long line in the third line
+  1:address:array:character <- new [a
+b
+cdef]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  # position cursor at end, type a character
+  assume-console [
+    left-click 3, 4
+    type [g]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen scrolls
+  screen-should-contain [
+    .     .
+    .b    .
+    .cdef↩.
+    .g    .
+  ]
+  memory-should-contain [
+    3 <- 3
+    4 <- 1
   ]
 ]
 
