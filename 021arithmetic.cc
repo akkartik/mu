@@ -9,7 +9,10 @@ case ADD: {
   double result = 0;
 //?   if (!tb_is_active()) cerr << ingredients.at(1).at(0) << '\n'; //? 1
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'add' requires number ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_instruction;
+    }
     result += ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -47,10 +50,16 @@ case SUBTRACT: {
     raise << current_recipe_name() << ": 'subtract' has no ingredients\n" << end();
     break;
   }
-  assert(scalar(ingredients.at(0)));
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": 'subtract' requires number ingredients, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    goto finish_instruction;
+  }
   double result = ingredients.at(0).at(0);
   for (long long int i = 1; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'subtract' requires number ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_instruction;
+    }
     result -= ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -86,7 +95,10 @@ Recipe_ordinal["multiply"] = MULTIPLY;
 case MULTIPLY: {
   double result = 1;
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'multiply' requires number ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_instruction;
+    }
     result *= ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -124,10 +136,16 @@ case DIVIDE: {
     raise << current_recipe_name() << ": 'divide' has no ingredients\n" << end();
     break;
   }
-  assert(scalar(ingredients.at(0)));
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": 'divide' requires number ingredients, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    goto finish_instruction;
+  }
   double result = ingredients.at(0).at(0);
   for (long long int i = 1; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'divide' requires number ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_instruction;
+    }
     result /= ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -165,8 +183,12 @@ Recipe_ordinal["divide-with-remainder"] = DIVIDE_WITH_REMAINDER;
 case DIVIDE_WITH_REMAINDER: {
   products.resize(2);
   if (SIZE(ingredients) != 2) {
-    raise << current_recipe_name() << ": 'divide-with-remainder' requires exactly two ingredients, but got " << current_instruction().to_string() << '\n' << end();
+    raise << current_recipe_name() << ": 'divide-with-remainder' requires exactly two ingredients, but got '" << current_instruction().to_string() << "'\n" << end();
     break;
+  }
+  if (!scalar(ingredients.at(0)) || !scalar(ingredients.at(1))) {
+    raise << current_recipe_name() << ": 'divide-with-remainder' requires number ingredients, but got '" << current_instruction().to_string() << "'\n" << end();
+    goto finish_instruction;
   }
   long long int quotient = ingredients.at(0).at(0) / ingredients.at(1).at(0);
   long long int remainder = static_cast<long long int>(ingredients.at(0).at(0)) % static_cast<long long int>(ingredients.at(1).at(0));
