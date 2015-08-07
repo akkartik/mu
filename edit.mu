@@ -1271,8 +1271,15 @@ recipe move-cursor-coordinates-left [
     reply editor/same-as-ingredient:0
   }
   # if at left margin, we must move to previous row:
-  assert *cursor-row, [unimplemented: moving cursor above top of screen]
-  *cursor-row <- subtract *cursor-row, 1
+  top-of-screen?:boolean <- equal *cursor-row, 1  # exclude menu bar
+  {
+    break-if top-of-screen?
+    *cursor-row <- subtract *cursor-row, 1
+  }
+  {
+    break-unless top-of-screen?
+    +scroll-up
+  }
   {
     # case 1: if previous character was newline, figure out how long the previous line is
     previous-character:character <- get *before-cursor, value:offset
@@ -3257,6 +3264,51 @@ m]
     .efgh↩     .
     .ij        .
     .k         .
+  ]
+]
+
+scenario editor-scrolls-up-on-left-arrow [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 5/width, 4/height
+  # editor contains >3 lines
+  1:address:array:character <- new [a
+b
+c
+d
+e]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  # position cursor at top of second page
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .     .
+    .c    .
+    .d    .
+    .e    .
+  ]
+  # now try to move left
+  assume-console [
+    press 65515  # left arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen scrolls
+  screen-should-contain [
+    .     .
+    .b    .
+    .c    .
+    .d    .
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 1
   ]
 ]
 
