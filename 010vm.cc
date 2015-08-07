@@ -35,6 +35,7 @@ struct instruction {
   recipe_ordinal operation;  // Recipe_ordinal[name]
   vector<reagent> ingredients;  // only if !is_label
   vector<reagent> products;  // only if !is_label
+  // End instruction Fields
   instruction();
   void clear();
   string to_string() const;
@@ -171,7 +172,9 @@ Next_recipe_ordinal = 1000;  // consistent new numbers for each test
 //:: Helpers
 
 :(code)
-instruction::instruction() :is_label(false), operation(IDLE) {}
+instruction::instruction() :is_label(false), operation(IDLE) {
+  // End instruction Constructor
+}
 void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
 
 // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
