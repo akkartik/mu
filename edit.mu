@@ -1034,12 +1034,18 @@ scenario editor-moves-cursor-down-after-inserting-newline [
 ]
 
 after +insert-character-special-case [
-  # todo: bottom of screen
   {
     newline?:boolean <- equal c, 10/newline
     break-unless newline?
     *cursor-row <- add *cursor-row, 1
     *cursor-column <- copy left
+    {
+      screen-height:number <- screen-height screen
+      below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal, never greater
+      break-unless below-screen?
+      +scroll-down
+      *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
+    }
     # indent if necessary
     d:address:duplex-list <- get *editor, data:offset
     end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
@@ -1414,9 +1420,10 @@ after +handle-special-key [
       break-unless was-at-newline?
       *cursor-row <- add *cursor-row, 1
       *cursor-column <- copy left
-      # todo: what happens when cursor is too far down?
-      above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
-      assert above-screen-bottom?, [unimplemented: moving past bottom of screen]
+      below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
+      reply-unless below-screen?
+      +scroll-down
+      *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
       reply
     }
     # if the line wraps, move cursor to start of next row
@@ -1433,9 +1440,10 @@ after +handle-special-key [
       break-if newline?
       *cursor-row <- add *cursor-row, 1
       *cursor-column <- copy left
-      # todo: what happens when cursor is too far down?
-      above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
-      assert above-screen-bottom?, [unimplemented: moving past bottom of screen]
+      below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
+      reply-unless below-screen?
+      +scroll-down
+      *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
       reply
     }
     # otherwise move cursor one character right
@@ -2962,6 +2970,99 @@ cdef]
   memory-should-contain [
     3 <- 3
     4 <- 1
+  ]
+]
+
+scenario editor-scrolls-down-on-newline [
+  assume-screen 5/width, 4/height
+  # position cursor after last line and type newline
+  1:address:array:character <- new [a
+b
+c]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  assume-console [
+    left-click 3, 4
+    type [
+]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen scrolls
+  screen-should-contain [
+    .     .
+    .b    .
+    .c    .
+    .     .
+  ]
+  memory-should-contain [
+    3 <- 3
+    4 <- 0
+  ]
+]
+
+scenario editor-scrolls-down-on-right-arrow [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 5/width, 4/height
+  # editor contains a wrapped line
+  1:address:array:character <- new [a
+b
+cdefgh]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  # position cursor at end of screen and try to move right
+  assume-console [
+    left-click 3, 3
+    press 65514  # right arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen scrolls
+  screen-should-contain [
+    .     .
+    .b    .
+    .cdef↩.
+    .gh   .
+  ]
+  memory-should-contain [
+    3 <- 3
+    4 <- 0
+  ]
+]
+
+scenario editor-scrolls-down-on-right-arrow-2 [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 5/width, 4/height
+  # editor contains more lines than can fit on screen
+  1:address:array:character <- new [a
+b
+c
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  # position cursor at end of screen and try to move right
+  assume-console [
+    left-click 3, 3
+    press 65514  # right arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen scrolls
+  screen-should-contain [
+    .     .
+    .b    .
+    .c    .
+    .d    .
+  ]
+  memory-should-contain [
+    3 <- 3
+    4 <- 0
   ]
 ]
 
