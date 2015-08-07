@@ -41,14 +41,14 @@ recipe main [
 :(before "End size_mismatch(x) Cases")
 if (x.types.at(0) == Type_ordinal["array"]) return false;
 :(before "End size_of(reagent) Cases")
-  if (r.types.at(0) == Type_ordinal["array"]) {
-    if (SIZE(r.types) == 1) {
-      raise << current_recipe_name() << ": '" << r.original_string << "' is an array of what?\n" << end();
-      return 1;
-    }
-    // skip the 'array' type to get at the element type
-    return 1 + Memory[r.value]*size_of(array_element(r.types));
+if (r.types.at(0) == Type_ordinal["array"]) {
+  if (SIZE(r.types) == 1) {
+    raise << current_recipe_name() << ": '" << r.original_string << "' is an array of what?\n" << end();
+    return 1;
   }
+  // skip the 'array' type to get at the element type
+  return 1 + Memory[r.value]*size_of(array_element(r.types));
+}
 
 //:: To access elements of an array, use 'index'
 
