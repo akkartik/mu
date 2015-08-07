@@ -8,7 +8,10 @@ Recipe_ordinal["and"] = AND;
 case AND: {
   bool result = true;
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'and' requires boolean ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_instruction;
+    }
     result = result && ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -50,7 +53,10 @@ Recipe_ordinal["or"] = OR;
 case OR: {
   bool result = false;
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'or' requires boolean ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_instruction;
+    }
     result = result || ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -92,7 +98,10 @@ Recipe_ordinal["not"] = NOT;
 case NOT: {
   products.resize(SIZE(ingredients));
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'not' requires boolean ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_instruction;
+    }
     products.at(i).push_back(!ingredients.at(i).at(0));
   }
   break;
