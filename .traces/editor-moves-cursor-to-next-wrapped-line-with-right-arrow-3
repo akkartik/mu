@@ -29943,7 +29943,7 @@ schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/edito
 9999 mem: storing 0 in location 1345
  103 run: break-unless was-at-newline?, 
 9999 mem: location 1345 is 0
-9999 run: jumping to instruction 155
+9999 run: jumping to instruction 163
  103 run: wrap-column:number <- subtract right, 1
 9999 mem: location 1328 is 5
 9999 mem: storing 4 in location 1347
@@ -30006,13 +30006,14 @@ schedule: print-character/clear-line-delimited/clear-rest-of-screen/render/edito
 9999 mem: location 1327 is 1
 9999 mem: location 1325 is 1007
 9999 mem: storing 1 in location 1007
- 103 run: above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
+ 103 run: below-screen?:boolean <- greater-or-equal *cursor-row, screen-height
 9999 mem: location 1324 is 1006
 9999 mem: location 1006 is 2
 9999 mem: location 1326 is 5
-9999 mem: storing 1 in location 1346
- 103 run: assert above-screen-bottom?, [unimplemented: moving past bottom of screen]
-9999 mem: location 1346 is 1
+9999 mem: storing 0 in location 1346
+ 103 run: jump-if below-screen?, 1:offset
+9999 mem: location 1346 is 0
+9999 run: jump-if fell through
  103 run: reply 
  102 run: row:number, screen <- render screen, editor
 9999 mem: location 1264 is 1009
