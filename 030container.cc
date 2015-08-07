@@ -334,8 +334,8 @@ container foo [
 recipe main [
   1:number <- copy 34
   2:number <- copy 35
-  3:number <- get 1:foo, x:offset
-  4:number <- get 1:foo, y:offset
+  3:number <- get 1:foo, 0:offset
+  4:number <- get 1:foo, 1:offset
 ]
 +mem: storing 34 in location 3
 +mem: storing 35 in location 4
