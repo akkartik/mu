@@ -15,12 +15,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
+.Delimiter { color: #a04060; }
+.CommentedCode { color: #6c6c6c; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
-.Delimiter { color: #a04060; }
+.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -468,13 +468,12 @@ container screen-cell [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sc
     <span class="Delimiter">{</span>
-      <span class="Comment"># if row &lt; height-1</span>
+      <span class="Comment"># increment row unless it's already all the way down</span>
       height:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">num-rows:offset</span>
       row:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-row:offset</span>
       max:number<span class="Special"> &lt;- </span>subtract height, <span class="Constant">1</span>
       at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal *row, max
       <span class="muControl">break-if</span> at-bottom?
-      <span class="Comment"># row = row+1</span>
       *row<span class="Special"> &lt;- </span>add *row, <span class="Constant">1</span>
     <span class="Delimiter">}</span>
     <span class="muControl">reply</span> sc/same-as-ingredient:<span class="Constant">0</span>
@@ -491,11 +490,10 @@ container screen-cell [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sc
     <span class="Delimiter">{</span>
-      <span class="Comment"># if row &gt; 0</span>
+      <span class="Comment"># decrement row unless it's already all the way up</span>
       row:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-row:offset</span>
       at-top?:boolean<span class="Special"> &lt;- </span>lesser-or-equal *row, <span class="Constant">0</span>
       <span class="muControl">break-if</span> at-top?
-      <span class="Comment"># row = row-1</span>
       *row<span class="Special"> &lt;- </span>subtract *row, <span class="Constant">1</span>
     <span class="Delimiter">}</span>
     <span class="muControl">reply</span> sc/same-as-ingredient:<span class="Constant">0</span>
@@ -512,13 +510,12 @@ container screen-cell [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sc
     <span class="Delimiter">{</span>
-      <span class="Comment"># if column &lt; width-1</span>
+      <span class="Comment"># increment column unless it's already all the way to the right</span>
       width:number<span class="Special"> &lt;- </span>get *sc, <span class="Constant">num-columns:offset</span>
       column:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-column:offset</span>
       max:number<span class="Special"> &lt;- </span>subtract width, <span class="Constant">1</span>
       at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal *column, max
       <span class="muControl">break-if</span> at-bottom?
-      <span class="Comment"># column = column+1</span>
       *column<span class="Special"> &lt;- </span>add *column, <span class="Constant">1</span>
     <span class="Delimiter">}</span>
     <span class="muControl">reply</span> sc/same-as-ingredient:<span class="Constant">0</span>
@@ -535,11 +532,10 @@ container screen-cell [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sc
     <span class="Delimiter">{</span>
-      <span class="Comment"># if column &gt; 0</span>
+      <span class="Comment"># decrement column unless it's already all the way to the left</span>
       column:address:number<span class="Special"> &lt;- </span>get-address *sc, <span class="Constant">cursor-column:offset</span>
       at-top?:boolean<span class="Special"> &lt;- </span>lesser-or-equal *column, <span class="Constant">0</span>
       <span class="muControl">break-if</span> at-top?
-      <span class="Comment"># column = column-1</span>
       *column<span class="Special"> &lt;- </span>subtract *column, <span class="Constant">1</span>
     <span class="Delimiter">}</span>
     <span class="muControl">reply</span> sc/same-as-ingredient:<span class="Constant">0</span>

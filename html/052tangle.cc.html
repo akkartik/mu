@@ -15,11 +15,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceContains { color: #008000; }
 .Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
-.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -55,50 +57,86 @@ $mem: <span class="Constant">3</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 map&lt;string <span class="Comment">/*</span><span class="Comment">label</span><span class="Comment">*/</span><span class="Delimiter">,</span> recipe&gt; Before_fragments<span class="Delimiter">,</span> After_fragments<span class="Delimiter">;</span>
+set&lt;string <span class="Comment">/*</span><span class="Comment">label</span><span class="Comment">*/</span>&gt; Fragments_used<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Before_fragments<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 After_fragments<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+Fragments_used<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 
 <span class="Delimiter">:(before &quot;End Command Handlers&quot;)</span>
-else if <span class="Delimiter">(</span>command == <span class="Constant">&quot;before&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;before&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   string label = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   recipe tmp = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;adding before fragment &quot; &lt;&lt; label &lt;&lt; '\n'; //? 1</span>
   Before_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>Before_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
-else if <span class="Delimiter">(</span>command == <span class="Constant">&quot;after&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;after&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   string label = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   recipe tmp = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;adding after fragment &quot; &lt;&lt; label &lt;&lt; '\n'; //? 1</span>
   After_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>After_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
 
-<span class="Comment">//: after all recipes are loaded, insert fragments at appropriate labels</span>
+<span class="Comment">//: after all recipes are loaded, insert fragments at appropriate labels.</span>
 
 <span class="Delimiter">:(after &quot;int main&quot;)</span>
   Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>insert_fragments<span class="Delimiter">);</span>
 
+<span class="Comment">//; We might need to perform multiple passes, in case inserted fragments</span>
+<span class="Comment">//: include more labels that need further insertions. Track which labels we've</span>
+<span class="Comment">//: already processed using an extra field.</span>
+<span class="Delimiter">:(before &quot;End instruction Fields&quot;)</span>
+<span class="Normal">mutable</span> <span class="Normal">bool</span> tangle_done<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End instruction Constructor&quot;)</span>
+tangle_done = <span class="Constant">false</span><span class="Delimiter">;</span>
+
 <span class="Delimiter">:(code)</span>
-void insert_fragments<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Comment">// Copy into a new vector because insertions invalidate iterators.</span>
-  <span class="Comment">// But this way we can't insert into labels created inside before/after.</span>
-  vector&lt;instruction&gt; result<span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    const instruction inst = Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> insert_fragments<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">bool</span> made_progress = <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>made_progress<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    made_progress = <span class="Constant">false</span><span class="Delimiter">;</span>
+    <span class="Comment">// create a new vector because insertions invalidate iterators</span>
+    vector&lt;instruction&gt; result<span class="Delimiter">;</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">const</span> instruction inst = Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>is_label || inst<span class="Delimiter">.</span>tangle_done<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
+        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+      inst<span class="Delimiter">.</span>tangle_done = <span class="Constant">true</span><span class="Delimiter">;</span>
+      made_progress = <span class="Constant">true</span><span class="Delimiter">;</span>
+      Fragments_used<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label<span class="Delimiter">);</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>Before_fragments<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label<span class="Delimiter">)</span> != Before_fragments<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?         cerr &lt;&lt; &quot;loading code before &quot; &lt;&lt; inst.label &lt;&lt; '\n'; //? 1</span>
+        result<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> Before_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> Before_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+      <span class="Delimiter">}</span>
       result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>After_fragments<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label<span class="Delimiter">)</span> != After_fragments<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?         cerr &lt;&lt; &quot;loading code after &quot; &lt;&lt; inst.label &lt;&lt; '\n'; //? 1</span>
+        result<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> After_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> After_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+      <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>Before_fragments<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label<span class="Delimiter">)</span> != Before_fragments<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-      result<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> Before_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> Before_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
-    <span class="Delimiter">}</span>
-    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>After_fragments<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label<span class="Delimiter">)</span> != After_fragments<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-      result<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> After_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> After_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
-    <span class="Delimiter">}</span>
+    Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-<span class="CommentedCode">//?   for (long long int i = 0; i &lt; SIZE(result); ++i) { //? 1</span>
-<span class="CommentedCode">//?     cout &lt;&lt; result.at(i).to_string() &lt;&lt; '\n'; //? 1</span>
-<span class="CommentedCode">//?   } //? 1</span>
-  Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: warn about unapplied fragments</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Normal">bool</span> Transform_check_insert_fragments_Ran = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_insert_fragments<span class="Delimiter">);</span>  <span class="Comment">// final transform</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> check_insert_fragments<span class="Delimiter">(</span>unused recipe_ordinal<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Transform_check_insert_fragments_Ran<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  Transform_check_insert_fragments_Ran = <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> recipe&gt;::iterator p = Before_fragments<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Before_fragments<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Fragments_used<span class="Delimiter">.</span>find<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">)</span> == Fragments_used<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+      raise &lt;&lt; <span class="Constant">&quot;could not locate insert before &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> recipe&gt;::iterator p = After_fragments<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != After_fragments<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Fragments_used<span class="Delimiter">.</span>find<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">)</span> == Fragments_used<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+      raise &lt;&lt; <span class="Constant">&quot;could not locate insert after &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario tangle_before_and_after)</span>
@@ -208,25 +246,84 @@ $mem: <span class="Constant">6</span>
 
 <span class="Delimiter">:(scenario tangle_tangles_into_all_labels_with_same_name)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
   +label1
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
+  recipe2
+]
+recipe recipe2 [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">11</span>
   +label1
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">11</span>
 ]
 before +label1 [
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
 ]
 after +label1 [
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
 ]
-<span class="traceContains">+mem: storing 0 in location 1</span>
-<span class="traceContains">+mem: storing 0 in location 2</span>
+<span class="traceContains">+mem: storing 10 in location 1</span>
+<span class="traceContains">+mem: storing 12 in location 2</span>
 <span class="Comment"># label1</span>
-<span class="traceContains">+mem: storing 0 in location 3</span>
-<span class="traceContains">+mem: storing 0 in location 2</span>
+<span class="traceContains">+mem: storing 12 in location 3</span>
+<span class="traceContains">+mem: storing 10 in location 4</span>
+<span class="Comment"># recipe2</span>
+<span class="traceContains">+mem: storing 11 in location 1</span>
+<span class="traceContains">+mem: storing 12 in location 2</span>
 <span class="Comment"># label1</span>
-<span class="traceContains">+mem: storing 0 in location 3</span>
-<span class="traceContains">+mem: storing 0 in location 4</span>
+<span class="traceContains">+mem: storing 12 in location 3</span>
+<span class="traceContains">+mem: storing 11 in location 4</span>
+<span class="Comment"># nothing else</span>
+$mem: <span class="Constant">8</span>
+
+<span class="Delimiter">:(scenario tangle_tangles_into_all_labels_with_same_name_2)</span>
+recipe main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
+  +label1
+  +label1
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
+]
+before +label1 [
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
+]
+after +label1 [
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
+]
+<span class="traceContains">+mem: storing 10 in location 1</span>
+<span class="traceContains">+mem: storing 12 in location 2</span>
+<span class="Comment"># label1</span>
+<span class="traceContains">+mem: storing 12 in location 3</span>
+<span class="traceContains">+mem: storing 12 in location 2</span>
+<span class="Comment"># label1</span>
+<span class="traceContains">+mem: storing 12 in location 3</span>
+<span class="traceContains">+mem: storing 10 in location 4</span>
+<span class="Comment"># nothing else</span>
+$mem: <span class="Constant">6</span>
+
+<span class="Delimiter">:(scenario tangle_tangles_into_all_labels_with_same_name_3)</span>
+recipe main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
+  +label1
+  +foo
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
+]
+before +label1 [
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
+]
+after +label1 [
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
+]
+after +foo [
+  +label1
+]
+<span class="traceContains">+mem: storing 10 in location 1</span>
+<span class="traceContains">+mem: storing 12 in location 2</span>
+<span class="Comment"># label1</span>
+<span class="traceContains">+mem: storing 12 in location 3</span>
+<span class="traceContains">+mem: storing 12 in location 2</span>
+<span class="Comment"># +foo/label1</span>
+<span class="traceContains">+mem: storing 12 in location 3</span>
+<span class="traceContains">+mem: storing 10 in location 4</span>
 <span class="Comment"># nothing else</span>
 $mem: <span class="Constant">6</span>
 </pre>

@@ -13,10 +13,11 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceAbsent { color: #c00000; }
 .traceContains { color: #008000; }
+.traceAbsent { color: #c00000; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -43,7 +44,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 scenario screen-in-scenario [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
+    <span class="Normal">screen</span>:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
   ]
   screen-should-contain [
   <span class="Comment">#  01234</span>
@@ -57,8 +58,8 @@ scenario screen-in-scenario [
 scenario screen-in-scenario-unicode-color [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">955</span>/greek-small-lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
-    screen:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>/a
+    <span class="Normal">screen</span>:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">955</span>/greek-small-lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
+    <span class="Normal">screen</span>:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>/a
   ]
   screen-should-contain [
   <span class="Comment">#  01234</span>
@@ -73,8 +74,8 @@ scenario screen-in-scenario-unicode-color [
 scenario screen-in-scenario-color [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">955</span>/greek-small-lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
-    screen:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">7</span>/white
+    <span class="Normal">screen</span>:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">955</span>/greek-small-lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
+    <span class="Normal">screen</span>:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">7</span>/white
   ]
   <span class="Comment"># screen-should-contain shows everything</span>
   screen-should-contain [
@@ -106,7 +107,7 @@ scenario screen-in-scenario-color [
 scenario screen-in-scenario-error [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
+    <span class="Normal">screen</span>:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
   ]
   screen-should-contain [
   <span class="Comment">#  01234</span>
@@ -124,7 +125,7 @@ scenario screen-in-scenario-error [
 scenario screen-in-scenario-color [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>/red
+    <span class="Normal">screen</span>:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>/red
   ]
   screen-should-contain-in-color <span class="Constant">2</span>/green<span class="Delimiter">,</span> [
   <span class="Comment">#  01234</span>
@@ -137,14 +138,14 @@ scenario screen-in-scenario-color [
 
 <span class="Comment">//: allow naming just for 'screen'</span>
 <span class="Delimiter">:(before &quot;End is_special_name Cases&quot;)</span>
-if <span class="Delimiter">(</span>s == <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario convert_names_does_not_warn_when_mixing_special_names_and_numeric_locations)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
-  screen:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
+  <span class="Normal">screen</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
 ]
 <span class="traceAbsent">-warn: mixing variable names and numeric addresses in main</span>
 $warn: <span class="Constant">0</span>
@@ -154,8 +155,8 @@ $warn: <span class="Constant">0</span>
 <span class="Comment">// Scenarios may not define default-space, so they should fit within the</span>
 <span class="Comment">// initial area of memory reserved for tests. We'll put the predefined</span>
 <span class="Comment">// variables available to them at the end of that region.</span>
-const long long int Max_variables_in_scenarios = Reserved_for_tests-<span class="Constant">100</span><span class="Delimiter">;</span>
-long long int Next_predefined_global_for_scenarios = Max_variables_in_scenarios<span class="Delimiter">;</span>
+<span class="Normal">const</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Max_variables_in_scenarios = Reserved_for_tests-<span class="Constant">100</span><span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Next_predefined_global_for_scenarios = Max_variables_in_scenarios<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 assert<span class="Delimiter">(</span>Next_predefined_global_for_scenarios &lt; Reserved_for_tests<span class="Delimiter">);</span>
 <span class="Delimiter">:(after &quot;transform_all()&quot; following &quot;case RUN:&quot;)</span>
@@ -166,7 +167,7 @@ assert<span class="Delimiter">(</span>Name[tmp_recipe<span class="Delimiter">.</
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">// Scenario Globals.</span>
-const long long int SCREEN = Next_predefined_global_for_scenarios++<span class="Delimiter">;</span>
+<span class="Normal">const</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> SCREEN = Next_predefined_global_for_scenarios++<span class="Delimiter">;</span>
 <span class="Comment">// End Scenario Globals.</span>
 <span class="Delimiter">:(before &quot;End Special Scenario Variable Names(r)&quot;)</span>
 Name[r][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="Delimiter">;</span>
@@ -174,7 +175,7 @@ Name[r][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="D
 <span class="Delimiter">:(before &quot;End Rewrite Instruction(curr)&quot;)</span>
 <span class="Comment">// rewrite `assume-screen width, height` to</span>
 <span class="Comment">// `screen:address &lt;- new-fake-screen width, height`</span>
-if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;assume-screen&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;assume-screen&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   curr<span class="Delimiter">.</span>operation = Recipe_ordinal[<span class="Constant">&quot;new-fake-screen&quot;</span>]<span class="Delimiter">;</span>
   curr<span class="Delimiter">.</span>name = <span class="Constant">&quot;new-fake-screen&quot;</span><span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>operation<span class="Delimiter">);</span>
@@ -189,8 +190,8 @@ SCREEN_SHOULD_CONTAIN<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;screen-should-contain&quot;</span>] = SCREEN_SHOULD_CONTAIN<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case SCREEN_SHOULD_CONTAIN: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Normal">case</span> SCREEN_SHOULD_CONTAIN: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   check_screen<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">,</span> -<span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -200,8 +201,8 @@ SCREEN_SHOULD_CONTAIN_IN_COLOR<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;screen-should-contain-in-color&quot;</span>] = SCREEN_SHOULD_CONTAIN_IN_COLOR<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case SCREEN_SHOULD_CONTAIN_IN_COLOR: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Normal">case</span> SCREEN_SHOULD_CONTAIN_IN_COLOR: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   check_screen<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -209,57 +210,57 @@ case SCREEN_SHOULD_CONTAIN_IN_COLOR: <span class="Delimiter">{</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 <span class="Comment">// scan an array of characters in a unicode-aware, bounds-checked manner</span>
-struct raw_string_stream <span class="Delimiter">{</span>
-  long long int index<span class="Delimiter">;</span>
-  const long long int max<span class="Delimiter">;</span>
-  const char* buf<span class="Delimiter">;</span>
+<span class="Normal">struct</span> raw_string_stream <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> index<span class="Delimiter">;</span>
+  <span class="Normal">const</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> max<span class="Delimiter">;</span>
+  <span class="Normal">const</span> <span class="Normal">char</span>* buf<span class="Delimiter">;</span>
 
-  raw_string_stream<span class="Delimiter">(</span>const string&amp;<span class="Delimiter">);</span>
-  uint32_t get<span class="Delimiter">();</span>  <span class="Comment">// unicode codepoint</span>
-  uint32_t peek<span class="Delimiter">();</span>  <span class="Comment">// unicode codepoint</span>
-  bool at_end<span class="Delimiter">()</span> const<span class="Delimiter">;</span>
-  void skip_whitespace_and_comments<span class="Delimiter">();</span>
+  raw_string_stream<span class="Delimiter">(</span><span class="Normal">const</span> string&amp;<span class="Delimiter">);</span>
+  <span class="Normal">uint32_t</span> get<span class="Delimiter">();</span>  <span class="Comment">// unicode codepoint</span>
+  <span class="Normal">uint32_t</span> peek<span class="Delimiter">();</span>  <span class="Comment">// unicode codepoint</span>
+  <span class="Normal">bool</span> at_end<span class="Delimiter">()</span> <span class="Normal">const</span><span class="Delimiter">;</span>
+  <span class="Normal">void</span> skip_whitespace_and_comments<span class="Delimiter">();</span>
 <span class="Delimiter">};</span>
 
 <span class="Delimiter">:(code)</span>
-void check_screen<span class="Delimiter">(</span>const string&amp; expected_contents<span class="Delimiter">,</span> const int color<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> check_screen<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; expected_contents<span class="Delimiter">,</span> <span class="Normal">const</span> <span class="Normal">int</span> color<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>  <span class="Comment">// not supported</span>
-  long long int screen_location = Memory[SCREEN]<span class="Delimiter">;</span>
-  int data_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;data&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_location = Memory[SCREEN]<span class="Delimiter">;</span>
+  <span class="Normal">int</span> data_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;data&quot;</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>data_offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  long long int screen_data_location = screen_location+data_offset<span class="Delimiter">;</span>  <span class="Comment">// type: address:array:character</span>
-  long long int screen_data_start = Memory[screen_data_location]<span class="Delimiter">;</span>  <span class="Comment">// type: array:character</span>
-  int width_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-columns&quot;</span><span class="Delimiter">);</span>
-  long long int screen_width = Memory[screen_location+width_offset]<span class="Delimiter">;</span>
-  int height_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-rows&quot;</span><span class="Delimiter">);</span>
-  long long int screen_height = Memory[screen_location+height_offset]<span class="Delimiter">;</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_data_location = screen_location+data_offset<span class="Delimiter">;</span>  <span class="Comment">// type: address:array:character</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_data_start = Memory[screen_data_location]<span class="Delimiter">;</span>  <span class="Comment">// type: array:character</span>
+  <span class="Normal">int</span> width_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-columns&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_width = Memory[screen_location+width_offset]<span class="Delimiter">;</span>
+  <span class="Normal">int</span> height_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-rows&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_height = Memory[screen_location+height_offset]<span class="Delimiter">;</span>
   raw_string_stream cursor<span class="Delimiter">(</span>expected_contents<span class="Delimiter">);</span>
   <span class="Comment">// todo: too-long expected_contents should fail</span>
-  long long int addr = screen_data_start+<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
-  for <span class="Delimiter">(</span>long long int row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> addr = screen_data_start+<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     cursor<span class="Delimiter">.</span>skip_whitespace_and_comments<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>at_end<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>at_end<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     assert<span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>get<span class="Delimiter">()</span> == <span class="Constant">'.'</span><span class="Delimiter">);</span>
-    for <span class="Delimiter">(</span>long long int column = <span class="Constant">0</span><span class="Delimiter">;</span>  column &lt; screen_width<span class="Delimiter">;</span>  ++column<span class="Delimiter">,</span> addr+= <span class="Comment">/*</span><span class="Comment">size of screen-cell</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      const int cell_color_offset = <span class="Constant">1</span><span class="Delimiter">;</span>
-      uint32_t curr = cursor<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-      if <span class="Delimiter">(</span>Memory[addr] == <span class="Constant">0</span> &amp;&amp; isspace<span class="Delimiter">(</span>curr<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>curr == <span class="Constant">' '</span> &amp;&amp; color != -<span class="Constant">1</span> &amp;&amp; color != Memory[addr+cell_color_offset]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> column = <span class="Constant">0</span><span class="Delimiter">;</span>  column &lt; screen_width<span class="Delimiter">;</span>  ++column<span class="Delimiter">,</span> addr+= <span class="Comment">/*</span><span class="Comment">size of screen-cell</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">const</span> <span class="Normal">int</span> cell_color_offset = <span class="Constant">1</span><span class="Delimiter">;</span>
+      <span class="Normal">uint32_t</span> curr = cursor<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>Memory[addr] == <span class="Constant">0</span> &amp;&amp; isspace<span class="Delimiter">(</span>curr<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>curr == <span class="Constant">' '</span> &amp;&amp; color != -<span class="Constant">1</span> &amp;&amp; color != Memory[addr+cell_color_offset]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         <span class="Comment">// filter out other colors</span>
         <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
-      if <span class="Delimiter">(</span>Memory[addr] != <span class="Constant">0</span> &amp;&amp; Memory[addr] == curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        if <span class="Delimiter">(</span>color == -<span class="Constant">1</span> || color == Memory[addr+cell_color_offset]<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>Memory[addr] != <span class="Constant">0</span> &amp;&amp; Memory[addr] == curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>color == -<span class="Constant">1</span> || color == Memory[addr+cell_color_offset]<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
         <span class="Comment">// contents match but color is off</span>
-        if <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
           <span class="Comment">// genuine test in a mu file</span>
           raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected screen location (&quot;</span> &lt;&lt; row &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; column &lt;&lt; <span class="Constant">&quot;, address &quot;</span> &lt;&lt; addr &lt;&lt; <span class="Constant">&quot;, value &quot;</span> &lt;&lt; Memory[addr] &lt;&lt; <span class="Constant">&quot;) to be in color &quot;</span> &lt;&lt; color &lt;&lt; <span class="Constant">&quot; instead of &quot;</span> &lt;&lt; Memory[addr+cell_color_offset] &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
         <span class="Delimiter">}</span>
-        else <span class="Delimiter">{</span>
+        <span class="Normal">else</span> <span class="Delimiter">{</span>
           <span class="Comment">// just testing check_screen</span>
           raise &lt;&lt; <span class="Constant">&quot;expected screen location (&quot;</span> &lt;&lt; row &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; column &lt;&lt; <span class="Constant">&quot;) to be in color &quot;</span> &lt;&lt; color &lt;&lt; <span class="Constant">&quot; instead of &quot;</span> &lt;&lt; Memory[addr+cell_color_offset] &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
         <span class="Delimiter">}</span>
-        if <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
           Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
           ++Num_failures<span class="Delimiter">;</span>
         <span class="Delimiter">}</span>
@@ -268,27 +269,27 @@ void check_screen<span class="Delimiter">(</span>const string&amp; expected_cont
 
       <span class="Comment">// really a mismatch</span>
       <span class="Comment">// can't print multi-byte unicode characters in warnings just yet. not very useful for debugging anyway.</span>
-      char expected_pretty[<span class="Constant">10</span>] = <span class="Delimiter">{</span><span class="Constant">0</span><span class="Delimiter">};</span>
-      if <span class="Delimiter">(</span>curr &lt; <span class="Constant">256</span> &amp;&amp; !iscntrl<span class="Delimiter">(</span>curr<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      <span class="Normal">char</span> expected_pretty[<span class="Constant">10</span>] = <span class="Delimiter">{</span><span class="Constant">0</span><span class="Delimiter">};</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>curr &lt; <span class="Constant">256</span> &amp;&amp; !iscntrl<span class="Delimiter">(</span>curr<span class="Delimiter">))</span> <span class="Delimiter">{</span>
         <span class="Comment">// &quot; ('&lt;curr&gt;')&quot;</span>
-        expected_pretty[<span class="Constant">0</span>] = <span class="Constant">' '</span><span class="Delimiter">,</span> expected_pretty[<span class="Constant">1</span>] = <span class="Constant">'('</span><span class="Delimiter">,</span> expected_pretty[<span class="Constant">2</span>] = <span class="cSpecial">'\''</span><span class="Delimiter">,</span> expected_pretty[<span class="Constant">3</span>] = static_cast&lt;unsigned char&gt;<span class="Delimiter">(</span>curr<span class="Delimiter">),</span> expected_pretty[<span class="Constant">4</span>] = <span class="cSpecial">'\''</span><span class="Delimiter">,</span> expected_pretty[<span class="Constant">5</span>] = <span class="Constant">')'</span><span class="Delimiter">,</span> expected_pretty[<span class="Constant">6</span>] = <span class="cSpecial">'\0'</span><span class="Delimiter">;</span>
+        expected_pretty[<span class="Constant">0</span>] = <span class="Constant">' '</span><span class="Delimiter">,</span> expected_pretty[<span class="Constant">1</span>] = <span class="Constant">'('</span><span class="Delimiter">,</span> expected_pretty[<span class="Constant">2</span>] = <span class="cSpecial">'\''</span><span class="Delimiter">,</span> expected_pretty[<span class="Constant">3</span>] = <span class="Normal">static_cast</span>&lt;<span class="Normal">unsigned</span> <span class="Normal">char</span>&gt;<span class="Delimiter">(</span>curr<span class="Delimiter">),</span> expected_pretty[<span class="Constant">4</span>] = <span class="cSpecial">'\''</span><span class="Delimiter">,</span> expected_pretty[<span class="Constant">5</span>] = <span class="Constant">')'</span><span class="Delimiter">,</span> expected_pretty[<span class="Constant">6</span>] = <span class="cSpecial">'\0'</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
-      char actual_pretty[<span class="Constant">10</span>] = <span class="Delimiter">{</span><span class="Constant">0</span><span class="Delimiter">};</span>
-      if <span class="Delimiter">(</span>Memory[addr] &lt; <span class="Constant">256</span> &amp;&amp; !iscntrl<span class="Delimiter">(</span>Memory[addr]<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      <span class="Normal">char</span> actual_pretty[<span class="Constant">10</span>] = <span class="Delimiter">{</span><span class="Constant">0</span><span class="Delimiter">};</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>Memory[addr] &lt; <span class="Constant">256</span> &amp;&amp; !iscntrl<span class="Delimiter">(</span>Memory[addr]<span class="Delimiter">))</span> <span class="Delimiter">{</span>
         <span class="Comment">// &quot; ('&lt;curr&gt;')&quot;</span>
-        actual_pretty[<span class="Constant">0</span>] = <span class="Constant">' '</span><span class="Delimiter">,</span> actual_pretty[<span class="Constant">1</span>] = <span class="Constant">'('</span><span class="Delimiter">,</span> actual_pretty[<span class="Constant">2</span>] = <span class="cSpecial">'\''</span><span class="Delimiter">,</span> actual_pretty[<span class="Constant">3</span>] = static_cast&lt;unsigned char&gt;<span class="Delimiter">(</span>Memory[addr]<span class="Delimiter">),</span> actual_pretty[<span class="Constant">4</span>] = <span class="cSpecial">'\''</span><span class="Delimiter">,</span> actual_pretty[<span class="Constant">5</span>] = <span class="Constant">')'</span><span class="Delimiter">,</span> actual_pretty[<span class="Constant">6</span>] = <span class="cSpecial">'\0'</span><span class="Delimiter">;</span>
+        actual_pretty[<span class="Constant">0</span>] = <span class="Constant">' '</span><span class="Delimiter">,</span> actual_pretty[<span class="Constant">1</span>] = <span class="Constant">'('</span><span class="Delimiter">,</span> actual_pretty[<span class="Constant">2</span>] = <span class="cSpecial">'\''</span><span class="Delimiter">,</span> actual_pretty[<span class="Constant">3</span>] = <span class="Normal">static_cast</span>&lt;<span class="Normal">unsigned</span> <span class="Normal">char</span>&gt;<span class="Delimiter">(</span>Memory[addr]<span class="Delimiter">),</span> actual_pretty[<span class="Constant">4</span>] = <span class="cSpecial">'\''</span><span class="Delimiter">,</span> actual_pretty[<span class="Constant">5</span>] = <span class="Constant">')'</span><span class="Delimiter">,</span> actual_pretty[<span class="Constant">6</span>] = <span class="cSpecial">'\0'</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
 
-      if <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         <span class="Comment">// genuine test in a mu file</span>
         raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected screen location (&quot;</span> &lt;&lt; row &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; column &lt;&lt; <span class="Constant">&quot;) to contain &quot;</span> &lt;&lt; curr &lt;&lt; expected_pretty &lt;&lt; <span class="Constant">&quot; instead of &quot;</span> &lt;&lt; Memory[addr] &lt;&lt; actual_pretty &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
         dump_screen<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
-      else <span class="Delimiter">{</span>
+      <span class="Normal">else</span> <span class="Delimiter">{</span>
         <span class="Comment">// just testing check_screen</span>
         raise &lt;&lt; <span class="Constant">&quot;expected screen location (&quot;</span> &lt;&lt; row &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; column &lt;&lt; <span class="Constant">&quot;) to contain &quot;</span> &lt;&lt; curr &lt;&lt; expected_pretty &lt;&lt; <span class="Constant">&quot; instead of &quot;</span> &lt;&lt; Memory[addr] &lt;&lt; actual_pretty &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
-      if <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
         ++Num_failures<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
@@ -300,43 +301,43 @@ void check_screen<span class="Delimiter">(</span>const string&amp; expected_cont
   assert<span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>at_end<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
 
-raw_string_stream::raw_string_stream<span class="Delimiter">(</span>const string&amp; backing<span class="Delimiter">)</span> :index<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> max<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>backing<span class="Delimiter">)),</span> buf<span class="Delimiter">(</span>backing<span class="Delimiter">.</span>c_str<span class="Delimiter">())</span> <span class="Delimiter">{}</span>
+raw_string_stream::raw_string_stream<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; backing<span class="Delimiter">)</span> :index<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> max<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>backing<span class="Delimiter">)),</span> buf<span class="Delimiter">(</span>backing<span class="Delimiter">.</span>c_str<span class="Delimiter">())</span> <span class="Delimiter">{}</span>
 
-bool raw_string_stream::at_end<span class="Delimiter">()</span> const <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>index &gt;= max<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>tb_utf8_char_length<span class="Delimiter">(</span>buf[index]<span class="Delimiter">)</span> &gt; max-index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; <span class="Constant">&quot;unicode string seems corrupted at index &quot;</span>&lt;&lt; index &lt;&lt; <span class="Constant">&quot; character &quot;</span> &lt;&lt; static_cast&lt;int&gt;<span class="Delimiter">(</span>buf[index]<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">bool</span> raw_string_stream::at_end<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>index &gt;= max<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>tb_utf8_char_length<span class="Delimiter">(</span>buf[index]<span class="Delimiter">)</span> &gt; max-index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;unicode string seems corrupted at index &quot;</span>&lt;&lt; index &lt;&lt; <span class="Constant">&quot; character &quot;</span> &lt;&lt; <span class="Normal">static_cast</span>&lt;<span class="Normal">int</span>&gt;<span class="Delimiter">(</span>buf[index]<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-uint32_t raw_string_stream::get<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">uint32_t</span> raw_string_stream::get<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>index &lt; max<span class="Delimiter">);</span>  <span class="Comment">// caller must check bounds before calling 'get'</span>
-  uint32_t result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  int length = tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;result<span class="Delimiter">,</span> &amp;buf[index]<span class="Delimiter">);</span>
+  <span class="Normal">uint32_t</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> length = tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;result<span class="Delimiter">,</span> &amp;buf[index]<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>length != TB_EOF<span class="Delimiter">);</span>
   index += length<span class="Delimiter">;</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-uint32_t raw_string_stream::peek<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">uint32_t</span> raw_string_stream::peek<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>index &lt; max<span class="Delimiter">);</span>  <span class="Comment">// caller must check bounds before calling 'get'</span>
-  uint32_t result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  int length = tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;result<span class="Delimiter">,</span> &amp;buf[index]<span class="Delimiter">);</span>
+  <span class="Normal">uint32_t</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> length = tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;result<span class="Delimiter">,</span> &amp;buf[index]<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>length != TB_EOF<span class="Delimiter">);</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-void raw_string_stream::skip_whitespace_and_comments<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  while <span class="Delimiter">(</span>!at_end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>peek<span class="Delimiter">()))</span> get<span class="Delimiter">();</span>
-    else if <span class="Delimiter">(</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> raw_string_stream::skip_whitespace_and_comments<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>!at_end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>peek<span class="Delimiter">()))</span> get<span class="Delimiter">();</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// skip comment</span>
       get<span class="Delimiter">();</span>
-      while <span class="Delimiter">(</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> get<span class="Delimiter">();</span>  <span class="Comment">// implicitly also handles CRLF</span>
+      <span class="Normal">while</span> <span class="Delimiter">(</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> get<span class="Delimiter">();</span>  <span class="Comment">// implicitly also handles CRLF</span>
     <span class="Delimiter">}</span>
-    else <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">else</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
@@ -345,31 +346,31 @@ _DUMP_SCREEN<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;$dump-screen&quot;</span>] = _DUMP_SCREEN<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _DUMP_SCREEN: <span class="Delimiter">{</span>
+<span class="Normal">case</span> _DUMP_SCREEN: <span class="Delimiter">{</span>
   dump_screen<span class="Delimiter">();</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-void dump_screen<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> dump_screen<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>  <span class="Comment">// not supported</span>
-  long long int screen_location = Memory[SCREEN]<span class="Delimiter">;</span>
-  int width_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-columns&quot;</span><span class="Delimiter">);</span>
-  long long int screen_width = Memory[screen_location+width_offset]<span class="Delimiter">;</span>
-  int height_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-rows&quot;</span><span class="Delimiter">);</span>
-  long long int screen_height = Memory[screen_location+height_offset]<span class="Delimiter">;</span>
-  int data_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;data&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_location = Memory[SCREEN]<span class="Delimiter">;</span>
+  <span class="Normal">int</span> width_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-columns&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_width = Memory[screen_location+width_offset]<span class="Delimiter">;</span>
+  <span class="Normal">int</span> height_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-rows&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_height = Memory[screen_location+height_offset]<span class="Delimiter">;</span>
+  <span class="Normal">int</span> data_offset = find_element_name<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;data&quot;</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>data_offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  long long int screen_data_location = screen_location+data_offset<span class="Delimiter">;</span>  <span class="Comment">// type: address:array:character</span>
-  long long int screen_data_start = Memory[screen_data_location]<span class="Delimiter">;</span>  <span class="Comment">// type: array:character</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_data_location = screen_location+data_offset<span class="Delimiter">;</span>  <span class="Comment">// type: address:array:character</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_data_start = Memory[screen_data_location]<span class="Delimiter">;</span>  <span class="Comment">// type: array:character</span>
   assert<span class="Delimiter">(</span>Memory[screen_data_start] == screen_width*screen_height<span class="Delimiter">);</span>
-  long long int curr = screen_data_start+<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
-  for <span class="Delimiter">(</span>long long int row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> curr = screen_data_start+<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     cerr &lt;&lt; <span class="Constant">'.'</span><span class="Delimiter">;</span>
-    for <span class="Delimiter">(</span>long long int col = <span class="Constant">0</span><span class="Delimiter">;</span> col &lt; screen_width<span class="Delimiter">;</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      if <span class="Delimiter">(</span>Memory[curr]<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> col = <span class="Constant">0</span><span class="Delimiter">;</span> col &lt; screen_width<span class="Delimiter">;</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>Memory[curr]<span class="Delimiter">)</span>
         cerr &lt;&lt; to_unicode<span class="Delimiter">(</span>Memory[curr]<span class="Delimiter">);</span>
-      else
+      <span class="Normal">else</span>
         cerr &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
       curr += <span class="Comment">/*</span><span class="Comment">size of screen-cell</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
