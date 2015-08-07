@@ -26,6 +26,14 @@ recipe main [
 +mem: storing 34 in location 3
 +mem: storing 35 in location 4
 
+//: trying to copy to a differently-sized destination will fail
+:(scenario copy_checks_size)
+% Hide_warnings = true;
+recipe main [
+  2:point <- copy 1:number
+]
++warn: main: size mismatch in storing to 2:point at '2:point <- copy 1:number'
+
 :(before "End Mu Types Initialization")
 // A more complex container, containing another container as one of its
 // elements.
