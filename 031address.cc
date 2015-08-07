@@ -29,6 +29,9 @@ if (x.value == 0) {
   return;
 }
 
+:(after "bool is_mu_array(reagent r)")
+r = canonize(r);
+
 //: writes to address 0 always loudly fail
 :(scenario store_to_0_warns)
 % Hide_warnings = true;
