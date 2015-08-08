@@ -599,6 +599,11 @@ recipe handle-keyboard-event [
 #?     trace [app], [handle-keyboard-event: special character] #? 1
     # exceptions for special characters go here
     +handle-special-character
+    # ignore any other special characters
+    regular-character?:boolean <- greater-or-equal *c, 32/space
+    newline?:boolean <- equal *c, 10/newline
+    regular-character? <- or regular-character?, newline?
+    reply-unless regular-character?
     # otherwise type it in
     insert-at-cursor editor, *c, screen
     reply
