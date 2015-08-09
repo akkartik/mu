@@ -2501,539 +2501,6 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
   ]
 ]
 
-# ctrl-f/page-down - render next page if it exists
-
-scenario editor-can-scroll [
-  assume-screen 10/width, 4/height
-  1:address:array:character <- new [a
-b
-c
-d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .c         .
-  ]
-  # scroll down
-  assume-console [
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen shows next page
-  screen-should-contain [
-    .          .
-    .c         .
-    .d         .
-    .          .
-  ]
-]
-
-after +handle-special-character [
-  {
-    ctrl-f?:boolean <- equal *c, 6/ctrl-f
-    break-unless ctrl-f?
-    page-down editor
-    reply
-  }
-]
-
-after +handle-special-key [
-  {
-    page-down?:boolean <- equal *k, 65518/page-down
-    break-unless page-down?
-    page-down editor
-    reply
-  }
-]
-
-# page-down skips entire wrapped lines, so it can't scroll past lines
-# taking up the entire screen
-recipe page-down [
-  local-scope
-  editor:address:editor-data <- next-ingredient
-  # if editor contents don't overflow screen, do nothing
-  bottom-of-screen:address:duplex-list <- get *editor, bottom-of-screen:offset
-  reply-unless bottom-of-screen, editor/same-as-ingredient:0
-  # if not, position cursor at final character
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  *before-cursor <- prev-duplex bottom-of-screen
-  # keep one line in common with previous page
-  {
-    last:character <- get **before-cursor, value:offset
-    newline?:boolean <- equal last, 10/newline
-    break-unless newline?:boolean
-    *before-cursor <- prev-duplex *before-cursor
-  }
-  # move cursor and top-of-screen to start of that line
-  move-to-start-of-line editor
-  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
-  *top-of-screen <- copy *before-cursor
-  reply editor/same-as-ingredient:0
-]
-
-scenario editor-does-not-scroll-past-end [
-  assume-screen 10/width, 4/height
-  1:address:array:character <- new [a
-b]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .          .
-  ]
-  # scroll down
-  assume-console [
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen remains unmodified
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .          .
-  ]
-]
-
-scenario editor-starts-next-page-at-start-of-wrapped-line [
-  # screen has 1 line for menu + 3 lines for text
-  assume-screen 10/width, 4/height
-  # editor contains a long last line
-  1:address:array:character <- new [a
-b
-cdefgh]
-  # editor screen triggers wrap of last line
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
-  # some part of last line is not displayed
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .cde↩      .
-  ]
-  # scroll down
-  assume-console [
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen shows entire wrapped line
-  screen-should-contain [
-    .          .
-    .cde↩      .
-    .fgh       .
-    .          .
-  ]
-]
-
-scenario editor-starts-next-page-at-start-of-wrapped-line-2 [
-  # screen has 1 line for menu + 3 lines for text
-  assume-screen 10/width, 4/height
-  # editor contains a very long line that occupies last two lines of screen
-  # and still has something left over
-  1:address:array:character <- new [a
-bcdefgh]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
-  # some part of last line is not displayed
-  screen-should-contain [
-    .          .
-    .a         .
-    .bcd↩      .
-    .efg↩      .
-  ]
-  # scroll down
-  assume-console [
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen shows entire wrapped line
-  screen-should-contain [
-    .          .
-    .bcd↩      .
-    .efg↩      .
-    .h         .
-  ]
-]
-
-# ctrl-b/page-up - render previous page if it exists
-
-scenario editor-can-scroll-up [
-  assume-screen 10/width, 4/height
-  1:address:array:character <- new [a
-b
-c
-d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .c         .
-  ]
-  # scroll down
-  assume-console [
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen shows next page
-  screen-should-contain [
-    .          .
-    .c         .
-    .d         .
-    .          .
-  ]
-  # scroll back up
-  assume-console [
-    press 65519  # page-up
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen shows original page again
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .c         .
-  ]
-]
-
-after +handle-special-character [
-  {
-    ctrl-b?:boolean <- equal *c, 2/ctrl-f
-    break-unless ctrl-b?
-    editor <- page-up editor, screen-height
-    reply
-  }
-]
-
-after +handle-special-key [
-  {
-    page-up?:boolean <- equal *k, 65519/page-up
-    break-unless page-up?
-    editor <- page-up editor, screen-height
-    reply
-  }
-]
-
-recipe page-up [
-  local-scope
-  editor:address:editor-data <- next-ingredient
-  screen-height:number <- next-ingredient
-  max:number <- subtract screen-height, 1/menu-bar, 1/overlapping-line
-  count:number <- copy 0
-  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
-  {
-#?     $print [- ], count, [ vs ], max, 10/newline #? 1
-    done?:boolean <- greater-or-equal count, max
-    break-if done?
-    prev:address:duplex-list <- before-previous-line *top-of-screen, editor
-    break-unless prev
-    *top-of-screen <- copy prev
-    count <- add count, 1
-    loop
-  }
-  reply editor/same-as-ingredient:0
-]
-
-scenario editor-can-scroll-up-multiple-pages [
-  # screen has 1 line for menu + 3 lines
-  assume-screen 10/width, 4/height
-  # initialize editor with 8 lines
-  1:address:array:character <- new [a
-b
-c
-d
-e
-f
-g
-h]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .c         .
-  ]
-  # scroll down two pages
-  assume-console [
-    press 65518  # page-down
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen shows third page
-  screen-should-contain [
-    .          .
-    .e         .
-    .f         .
-    .g         .
-  ]
-  # scroll up
-  assume-console [
-    press 65519  # page-up
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen shows second page
-  screen-should-contain [
-    .          .
-    .c         .
-    .d         .
-    .e         .
-  ]
-  # scroll up again
-  assume-console [
-    press 65519  # page-up
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen shows original page again
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .c         .
-  ]
-]
-
-scenario editor-can-scroll-up-wrapped-lines [
-  # screen has 1 line for menu + 5 lines for text
-  assume-screen 10/width, 6/height
-  # editor contains a long line in the first page
-  1:address:array:character <- new [a
-b
-cdefgh
-i
-j
-k
-l
-m
-n
-o]
-  # editor screen triggers wrap of last line
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
-  # some part of last line is not displayed
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .cde↩      .
-    .fgh       .
-    .i         .
-  ]
-  # scroll down a page and a line
-  assume-console [
-    press 65518  # page-down
-    left-click 5, 0
-    press 65516  # down-arrow
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen shows entire wrapped line
-  screen-should-contain [
-    .          .
-    .j         .
-    .k         .
-    .l         .
-    .m         .
-    .n         .
-  ]
-  # now scroll up one page
-  assume-console [
-    press 65519  # page-up
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen resets
-  screen-should-contain [
-    .          .
-    .b         .
-    .cde↩      .
-    .fgh       .
-    .i         .
-    .j         .
-  ]
-]
-
-scenario editor-can-scroll-up-wrapped-lines-2 [
-  # screen has 1 line for menu + 3 lines for text
-  assume-screen 10/width, 4/height
-  # editor contains a very long line that occupies last two lines of screen
-  # and still has something left over
-  1:address:array:character <- new [a
-bcdefgh]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
-  # some part of last line is not displayed
-  screen-should-contain [
-    .          .
-    .a         .
-    .bcd↩      .
-    .efg↩      .
-  ]
-  # scroll down
-  assume-console [
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen shows entire wrapped line
-  screen-should-contain [
-    .          .
-    .bcd↩      .
-    .efg↩      .
-    .h         .
-  ]
-  # scroll back up
-  assume-console [
-    press 65519  # page-up
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # screen resets
-  screen-should-contain [
-    .          .
-    .a         .
-    .bcd↩      .
-    .efg↩      .
-  ]
-]
-
-scenario editor-can-scroll-up-past-nonempty-lines [
-  assume-screen 10/width, 4/height
-  # text with empty line in second screen
-  1:address:array:character <- new [axx
-bxx
-cxx
-dxx
-exx
-fxx
-gxx
-hxx
-]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
-  screen-should-contain [
-    .          .
-    .axx       .
-    .bxx       .
-    .cxx       .
-  ]
-  assume-console [
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .cxx       .
-    .dxx       .
-    .exx       .
-  ]
-  assume-console [
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .exx       .
-    .fxx       .
-    .gxx       .
-  ]
-  # scroll back up past empty line
-  assume-console [
-    press 65519  # page-up
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .cxx       .
-    .dxx       .
-    .exx       .
-  ]
-]
-
-scenario editor-can-scroll-up-past-empty-lines [
-  assume-screen 10/width, 4/height
-  # text with empty line in second screen
-  1:address:array:character <- new [axy
-bxy
-cxy
-
-dxy
-exy
-fxy
-gxy
-]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
-  screen-should-contain [
-    .          .
-    .axy       .
-    .bxy       .
-    .cxy       .
-  ]
-  assume-console [
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .cxy       .
-    .          .
-    .dxy       .
-  ]
-  assume-console [
-    press 65518  # page-down
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .dxy       .
-    .exy       .
-    .fxy       .
-  ]
-  # scroll back up past empty line
-  assume-console [
-    press 65519  # page-up
-  ]
-  run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .cxy       .
-    .          .
-    .dxy       .
-  ]
-]
-
 # cursor-down can scroll if necessary
 
 scenario editor-can-scroll-down-using-arrow-keys [
@@ -3728,6 +3195,539 @@ d]
   ]
 ]
 
+# ctrl-f/page-down - render next page if it exists
+
+scenario editor-can-scroll [
+  assume-screen 10/width, 4/height
+  1:address:array:character <- new [a
+b
+c
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows next page
+  screen-should-contain [
+    .          .
+    .c         .
+    .d         .
+    .          .
+  ]
+]
+
+after +handle-special-character [
+  {
+    ctrl-f?:boolean <- equal *c, 6/ctrl-f
+    break-unless ctrl-f?
+    page-down editor
+    reply
+  }
+]
+
+after +handle-special-key [
+  {
+    page-down?:boolean <- equal *k, 65518/page-down
+    break-unless page-down?
+    page-down editor
+    reply
+  }
+]
+
+# page-down skips entire wrapped lines, so it can't scroll past lines
+# taking up the entire screen
+recipe page-down [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  # if editor contents don't overflow screen, do nothing
+  bottom-of-screen:address:duplex-list <- get *editor, bottom-of-screen:offset
+  reply-unless bottom-of-screen, editor/same-as-ingredient:0
+  # if not, position cursor at final character
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  *before-cursor <- prev-duplex bottom-of-screen
+  # keep one line in common with previous page
+  {
+    last:character <- get **before-cursor, value:offset
+    newline?:boolean <- equal last, 10/newline
+    break-unless newline?:boolean
+    *before-cursor <- prev-duplex *before-cursor
+  }
+  # move cursor and top-of-screen to start of that line
+  move-to-start-of-line editor
+  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+  *top-of-screen <- copy *before-cursor
+  reply editor/same-as-ingredient:0
+]
+
+scenario editor-does-not-scroll-past-end [
+  assume-screen 10/width, 4/height
+  1:address:array:character <- new [a
+b]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .          .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen remains unmodified
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .          .
+  ]
+]
+
+scenario editor-starts-next-page-at-start-of-wrapped-line [
+  # screen has 1 line for menu + 3 lines for text
+  assume-screen 10/width, 4/height
+  # editor contains a long last line
+  1:address:array:character <- new [a
+b
+cdefgh]
+  # editor screen triggers wrap of last line
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
+  # some part of last line is not displayed
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .cde↩      .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows entire wrapped line
+  screen-should-contain [
+    .          .
+    .cde↩      .
+    .fgh       .
+    .          .
+  ]
+]
+
+scenario editor-starts-next-page-at-start-of-wrapped-line-2 [
+  # screen has 1 line for menu + 3 lines for text
+  assume-screen 10/width, 4/height
+  # editor contains a very long line that occupies last two lines of screen
+  # and still has something left over
+  1:address:array:character <- new [a
+bcdefgh]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
+  # some part of last line is not displayed
+  screen-should-contain [
+    .          .
+    .a         .
+    .bcd↩      .
+    .efg↩      .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows entire wrapped line
+  screen-should-contain [
+    .          .
+    .bcd↩      .
+    .efg↩      .
+    .h         .
+  ]
+]
+
+# ctrl-b/page-up - render previous page if it exists
+
+scenario editor-can-scroll-up [
+  assume-screen 10/width, 4/height
+  1:address:array:character <- new [a
+b
+c
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows next page
+  screen-should-contain [
+    .          .
+    .c         .
+    .d         .
+    .          .
+  ]
+  # scroll back up
+  assume-console [
+    press 65519  # page-up
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows original page again
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+]
+
+after +handle-special-character [
+  {
+    ctrl-b?:boolean <- equal *c, 2/ctrl-f
+    break-unless ctrl-b?
+    editor <- page-up editor, screen-height
+    reply
+  }
+]
+
+after +handle-special-key [
+  {
+    page-up?:boolean <- equal *k, 65519/page-up
+    break-unless page-up?
+    editor <- page-up editor, screen-height
+    reply
+  }
+]
+
+recipe page-up [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  screen-height:number <- next-ingredient
+  max:number <- subtract screen-height, 1/menu-bar, 1/overlapping-line
+  count:number <- copy 0
+  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+  {
+#?     $print [- ], count, [ vs ], max, 10/newline #? 1
+    done?:boolean <- greater-or-equal count, max
+    break-if done?
+    prev:address:duplex-list <- before-previous-line *top-of-screen, editor
+    break-unless prev
+    *top-of-screen <- copy prev
+    count <- add count, 1
+    loop
+  }
+  reply editor/same-as-ingredient:0
+]
+
+scenario editor-can-scroll-up-multiple-pages [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 10/width, 4/height
+  # initialize editor with 8 lines
+  1:address:array:character <- new [a
+b
+c
+d
+e
+f
+g
+h]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+  # scroll down two pages
+  assume-console [
+    press 65518  # page-down
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows third page
+  screen-should-contain [
+    .          .
+    .e         .
+    .f         .
+    .g         .
+  ]
+  # scroll up
+  assume-console [
+    press 65519  # page-up
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows second page
+  screen-should-contain [
+    .          .
+    .c         .
+    .d         .
+    .e         .
+  ]
+  # scroll up again
+  assume-console [
+    press 65519  # page-up
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows original page again
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+]
+
+scenario editor-can-scroll-up-wrapped-lines [
+  # screen has 1 line for menu + 5 lines for text
+  assume-screen 10/width, 6/height
+  # editor contains a long line in the first page
+  1:address:array:character <- new [a
+b
+cdefgh
+i
+j
+k
+l
+m
+n
+o]
+  # editor screen triggers wrap of last line
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
+  # some part of last line is not displayed
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .cde↩      .
+    .fgh       .
+    .i         .
+  ]
+  # scroll down a page and a line
+  assume-console [
+    press 65518  # page-down
+    left-click 5, 0
+    press 65516  # down-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows entire wrapped line
+  screen-should-contain [
+    .          .
+    .j         .
+    .k         .
+    .l         .
+    .m         .
+    .n         .
+  ]
+  # now scroll up one page
+  assume-console [
+    press 65519  # page-up
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen resets
+  screen-should-contain [
+    .          .
+    .b         .
+    .cde↩      .
+    .fgh       .
+    .i         .
+    .j         .
+  ]
+]
+
+scenario editor-can-scroll-up-wrapped-lines-2 [
+  # screen has 1 line for menu + 3 lines for text
+  assume-screen 10/width, 4/height
+  # editor contains a very long line that occupies last two lines of screen
+  # and still has something left over
+  1:address:array:character <- new [a
+bcdefgh]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
+  # some part of last line is not displayed
+  screen-should-contain [
+    .          .
+    .a         .
+    .bcd↩      .
+    .efg↩      .
+  ]
+  # scroll down
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen shows entire wrapped line
+  screen-should-contain [
+    .          .
+    .bcd↩      .
+    .efg↩      .
+    .h         .
+  ]
+  # scroll back up
+  assume-console [
+    press 65519  # page-up
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen resets
+  screen-should-contain [
+    .          .
+    .a         .
+    .bcd↩      .
+    .efg↩      .
+  ]
+]
+
+scenario editor-can-scroll-up-past-nonempty-lines [
+  assume-screen 10/width, 4/height
+  # text with empty line in second screen
+  1:address:array:character <- new [axx
+bxx
+cxx
+dxx
+exx
+fxx
+gxx
+hxx
+]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
+  screen-should-contain [
+    .          .
+    .axx       .
+    .bxx       .
+    .cxx       .
+  ]
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .cxx       .
+    .dxx       .
+    .exx       .
+  ]
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .exx       .
+    .fxx       .
+    .gxx       .
+  ]
+  # scroll back up past empty line
+  assume-console [
+    press 65519  # page-up
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .cxx       .
+    .dxx       .
+    .exx       .
+  ]
+]
+
+scenario editor-can-scroll-up-past-empty-lines [
+  assume-screen 10/width, 4/height
+  # text with empty line in second screen
+  1:address:array:character <- new [axy
+bxy
+cxy
+
+dxy
+exy
+fxy
+gxy
+]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 4/right
+  screen-should-contain [
+    .          .
+    .axy       .
+    .bxy       .
+    .cxy       .
+  ]
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .cxy       .
+    .          .
+    .dxy       .
+  ]
+  assume-console [
+    press 65518  # page-down
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .dxy       .
+    .exy       .
+    .fxy       .
+  ]
+  # scroll back up past empty line
+  assume-console [
+    press 65519  # page-up
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .cxy       .
+    .          .
+    .dxy       .
+  ]
+]
+
 ## putting the environment together out of editors
 
 container programming-environment-data [
@@ -3839,6 +3839,29 @@ recipe event-loop [
     }
     loop
   }
+]
+
+recipe update-cursor [
+  local-scope
+  screen:address <- next-ingredient
+  recipes:address:editor-data <- next-ingredient
+  current-sandbox:address:editor-data <- next-ingredient
+  sandbox-in-focus?:boolean <- next-ingredient
+  {
+    break-if sandbox-in-focus?
+#?     $print [recipes in focus
+#? ] #? 1
+    cursor-row:number <- get *recipes, cursor-row:offset
+    cursor-column:number <- get *recipes, cursor-column:offset
+  }
+  {
+    break-unless sandbox-in-focus?
+#?     $print [sandboxes in focus
+#? ] #? 1
+    cursor-row:number <- get *current-sandbox, cursor-row:offset
+    cursor-column:number <- get *current-sandbox, cursor-column:offset
+  }
+  move-cursor screen, cursor-row, cursor-column
 ]
 
 scenario point-at-multiple-editors [
@@ -4074,31 +4097,6 @@ recipe clear-rest-of-screen [
     row <- add row, 1
     loop
   }
-]
-
-# helper for testing a single editor
-
-recipe update-cursor [
-  local-scope
-  screen:address <- next-ingredient
-  recipes:address:editor-data <- next-ingredient
-  current-sandbox:address:editor-data <- next-ingredient
-  sandbox-in-focus?:boolean <- next-ingredient
-  {
-    break-if sandbox-in-focus?
-#?     $print [recipes in focus
-#? ] #? 1
-    cursor-row:number <- get *recipes, cursor-row:offset
-    cursor-column:number <- get *recipes, cursor-column:offset
-  }
-  {
-    break-unless sandbox-in-focus?
-#?     $print [sandboxes in focus
-#? ] #? 1
-    cursor-row:number <- get *current-sandbox, cursor-row:offset
-    cursor-column:number <- get *current-sandbox, cursor-column:offset
-  }
-  move-cursor screen, cursor-row, cursor-column
 ]
 
 ## running code from the editor and creating sandboxes
