@@ -592,6 +592,7 @@ recipe handle-keyboard-event [
   editor:address:editor-data <- next-ingredient
   e:event <- next-ingredient
   reply-unless editor
+  screen-height:number <- screen-height screen
   # character
   {
     c:address:character <- maybe-convert e, text:variant
@@ -614,7 +615,6 @@ recipe handle-keyboard-event [
   before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
-  screen-height:number <- screen-height screen
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   # handlers for each special key will go here
@@ -2714,7 +2714,7 @@ after +handle-special-character [
   {
     ctrl-b?:boolean <- equal *c, 2/ctrl-f
     break-unless ctrl-b?
-    page-up editor
+    editor <- page-up editor, screen-height
     reply
   }
 ]
@@ -2732,10 +2732,11 @@ recipe page-up [
   local-scope
   editor:address:editor-data <- next-ingredient
   screen-height:number <- next-ingredient
+  max:number <- subtract screen-height, 1/menu-bar, 1/overlapping-line
   count:number <- copy 0
   top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
   {
-    done?:boolean <- greater-or-equal count, screen-height
+    done?:boolean <- greater-or-equal count, max
     break-if done?
     prev:address:duplex-list <- before-previous-newline *top-of-screen
     break-unless prev
@@ -2744,6 +2745,28 @@ recipe page-up [
     loop
   }
   reply editor/same-as-ingredient:0
+]
+
+# takes a pointer into the doubly-linked list, scans back to previous newline.
+# beware: never return null pointer.
+recipe before-previous-newline [
+  local-scope
+  curr:address:duplex-list <- next-ingredient
+  # skip newline at original
+  prev:address:duplex-list <- prev-duplex curr
+  reply-unless prev, curr
+  curr <- copy prev
+  # now skip before until previous newline
+  {
+    c:character <- get *curr, value:offset
+    at-newline?:boolean <- equal c, 10/newline
+    break-if at-newline?
+    prev <- prev-duplex curr
+    break-unless prev
+    curr <- copy prev
+    loop
+  }
+  reply curr
 ]
 
 scenario editor-can-scroll-up-multiple-pages [
@@ -3152,13 +3175,14 @@ after +scroll-up [
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   max:number <- subtract right, left
-  *top-of-screen <- before-previous-newline *top-of-screen, max
+  *top-of-screen <- before-previous-line *top-of-screen, max
 ]
 
 # takes a pointer into the doubly-linked list, scans back at most 'max'
 # positions to previous newline.
+# like before-previous-newline above, but aware of wrapping
 # beware: never return null pointer.
-recipe before-previous-newline [
+recipe before-previous-line [
   local-scope
   original:address:duplex-list <- next-ingredient
   max:number <- next-ingredient
