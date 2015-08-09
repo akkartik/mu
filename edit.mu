@@ -2850,22 +2850,30 @@ d]
 ]
 
 after +scroll-down [
-#?   $print [scroll down], 10/newline #? 1
+#?   $print [scroll down], 10/newline #? 2
   top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   max:number <- subtract right, left
-  *top-of-screen <- start-of-next-line *top-of-screen, max
+  *top-of-screen <- before-start-of-next-line *top-of-screen, max
 ]
 
 # takes a pointer into the doubly-linked list, scans ahead at most 'max'
-# positions until just past the next newline
-recipe start-of-next-line [
+# positions until the next newline
+recipe before-start-of-next-line [
   local-scope
   original:address:duplex-list <- next-ingredient
   max:number <- next-ingredient
   count:number <- copy 0
   curr:address:duplex-list <- copy original
+  # skip the initial newline if it exists
+  {
+    c:character <- get *curr, value:offset
+    at-newline?:boolean <- equal c, 10/newline
+    break-unless at-newline?
+    curr <- next-duplex curr
+    count <- add count, 1
+  }
   {
     reply-unless curr, original
     done?:boolean <- greater-or-equal count, max
@@ -3075,6 +3083,36 @@ d]
   memory-should-contain [
     3 <- 3
     4 <- 0
+  ]
+]
+
+scenario editor-combines-page-and-line-scroll [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 10/width, 4/height
+  # initialize editor with a few pages of lines
+  1:address:array:character <- new [a
+b
+c
+d
+e
+f
+g]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  # scroll down one page and one line
+  assume-console [
+    press 65518  # page-down
+    left-click 3, 0
+    press 65516  # down-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen scrolls down 3 lines
+  screen-should-contain [
+    .          .
+    .d         .
+    .e         .
+    .f         .
   ]
 ]
 
