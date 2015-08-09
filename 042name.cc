@@ -158,7 +158,7 @@ recipe main [
 ]
 +warn: mixing variable names and numeric addresses in main
 
-:(scenario transform_names_warns_when_mixing_names_and_numeric_locations2)
+:(scenario transform_names_warns_when_mixing_names_and_numeric_locations_2)
 % Hide_warnings = true;
 recipe main [
   x:number <- copy 1

@@ -124,7 +124,7 @@ recipe test1 [
 ]
 +mem: storing 35 in location 1
 
-:(scenario reply_if2)
+:(scenario reply_if_2)
 recipe main [
   1:number <- test1
 ]

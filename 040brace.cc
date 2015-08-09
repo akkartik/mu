@@ -196,7 +196,7 @@ recipe main [
 +after-brace: jump 0:offset
 +after-brace: jump 0:offset
 
-:(scenario break_cascading2)
+:(scenario break_cascading_2)
 recipe main [
   1:number <- copy 0
   2:number <- copy 0
@@ -261,7 +261,7 @@ recipe main [
 ]
 +after-brace: jump 3:offset
 
-:(scenario break_nested_degenerate2)
+:(scenario break_nested_degenerate_2)
 recipe main [
   1:number <- copy 0
   {
