@@ -41,8 +41,8 @@ highlight link muScreen muString
 
 " mu literals
 syntax match muNumber %[^ ]\+:literal/\?[^ ,]*%
-syntax match muNumber %\<[0-9]\+\>%
-syntax match muNumber %\<[0-9]\+/[^ ,]*%
+syntax match muNumber %\<[0-9-]\?[0-9]\+\>%
+syntax match muNumber %\<[0-9-]\?[0-9]\+/[^ ,]*%
 highlight link muNumber Constant
 syntax match muLabel "^\s\+[^ 0-9a-zA-Z{}\[\]][^ ]*\s*$"
 syntax match muLabel %[^ ]\+:label/\?[^ ,]*%
