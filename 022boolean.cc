@@ -27,7 +27,7 @@ recipe main [
 ]
 +mem: storing 0 in location 3
 
-:(scenario and2)
+:(scenario and_2)
 recipe main [
   1:boolean <- and 1, 1
 ]
@@ -39,7 +39,7 @@ recipe main [
 ]
 +mem: storing 0 in location 1
 
-:(scenario and_multiple2)
+:(scenario and_multiple_2)
 recipe main [
   1:boolean <- and 1, 1, 1
 ]
@@ -72,7 +72,7 @@ recipe main [
 ]
 +mem: storing 1 in location 3
 
-:(scenario or2)
+:(scenario or_2)
 recipe main [
   1:boolean <- or 0, 0
 ]
@@ -84,7 +84,7 @@ recipe main [
 ]
 +mem: storing 0 in location 1
 
-:(scenario or_multiple2)
+:(scenario or_multiple_2)
 recipe main [
   1:boolean <- or 0, 0, 1
 ]

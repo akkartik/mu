@@ -33,7 +33,7 @@ recipe main [
 +mem: location 2 is 33
 +mem: storing 0 in location 3
 
-:(scenario equal2)
+:(scenario equal_2)
 recipe main [
   1:number <- copy 34
   2:number <- copy 34
@@ -49,7 +49,7 @@ recipe main [
 ]
 +mem: storing 1 in location 1
 
-:(scenario equal_multiple2)
+:(scenario equal_multiple_2)
 recipe main [
   1:number <- equal 34, 34, 35
 ]
@@ -91,7 +91,7 @@ recipe main [
 ]
 +mem: storing 1 in location 3
 
-:(scenario greater_than2)
+:(scenario greater_than_2)
 recipe main [
   1:number <- copy 34
   2:number <- copy 34
@@ -105,7 +105,7 @@ recipe main [
 ]
 +mem: storing 1 in location 1
 
-:(scenario greater_than_multiple2)
+:(scenario greater_than_multiple_2)
 recipe main [
   1:boolean <- greater-than 36, 35, 35
 ]
@@ -147,7 +147,7 @@ recipe main [
 ]
 +mem: storing 1 in location 3
 
-:(scenario lesser_than2)
+:(scenario lesser_than_2)
 recipe main [
   1:number <- copy 34
   2:number <- copy 33
@@ -161,7 +161,7 @@ recipe main [
 ]
 +mem: storing 1 in location 1
 
-:(scenario lesser_than_multiple2)
+:(scenario lesser_than_multiple_2)
 recipe main [
   1:boolean <- lesser-than 34, 35, 35
 ]
@@ -203,7 +203,7 @@ recipe main [
 ]
 +mem: storing 1 in location 3
 
-:(scenario greater_or_equal2)
+:(scenario greater_or_equal_2)
 recipe main [
   1:number <- copy 34
   2:number <- copy 34
@@ -211,7 +211,7 @@ recipe main [
 ]
 +mem: storing 1 in location 3
 
-:(scenario greater_or_equal3)
+:(scenario greater_or_equal_3)
 recipe main [
   1:number <- copy 34
   2:number <- copy 35
@@ -225,7 +225,7 @@ recipe main [
 ]
 +mem: storing 1 in location 1
 
-:(scenario greater_or_equal_multiple2)
+:(scenario greater_or_equal_multiple_2)
 recipe main [
   1:boolean <- greater-or-equal 36, 35, 36
 ]
@@ -267,7 +267,7 @@ recipe main [
 ]
 +mem: storing 1 in location 3
 
-:(scenario lesser_or_equal2)
+:(scenario lesser_or_equal_2)
 recipe main [
   1:number <- copy 33
   2:number <- copy 33
@@ -275,7 +275,7 @@ recipe main [
 ]
 +mem: storing 1 in location 3
 
-:(scenario lesser_or_equal3)
+:(scenario lesser_or_equal_3)
 recipe main [
   1:number <- copy 34
   2:number <- copy 33
@@ -289,7 +289,7 @@ recipe main [
 ]
 +mem: storing 1 in location 1
 
-:(scenario lesser_or_equal_multiple2)
+:(scenario lesser_or_equal_multiple_2)
 recipe main [
   1:boolean <- lesser-or-equal 34, 35, 34
 ]

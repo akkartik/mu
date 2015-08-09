@@ -141,7 +141,7 @@ recipe main [
 ]
 +warn: main: invalid index 4
 
-:(scenario index_out_of_bounds2)
+:(scenario index_out_of_bounds_2)
 % Hide_warnings = true;
 recipe main [
   1:number <- copy 3  # 3 points
@@ -216,7 +216,7 @@ recipe main [
 ]
 +warn: main: invalid index 4
 
-:(scenario index_address_out_of_bounds2)
+:(scenario index_address_out_of_bounds_2)
 % Hide_warnings = true;
 recipe main [
   1:number <- copy 3  # 3 points

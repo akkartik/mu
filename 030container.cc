@@ -72,7 +72,7 @@ recipe main [
 ]
 +mem: storing 1 in location 7
 
-:(scenario compare_multiple_locations2)
+:(scenario compare_multiple_locations_2)
 recipe main [
   1:number <- copy 34  # first
   2:number <- copy 35
@@ -183,7 +183,7 @@ recipe main [
 ]
 +warn: main: invalid offset 2 for point-number
 
-:(scenario get_out_of_bounds2)
+:(scenario get_out_of_bounds_2)
 % Hide_warnings = true;
 recipe main [
   12:number <- copy 34
@@ -240,7 +240,7 @@ recipe main [
 ]
 +warn: invalid offset 2 for point-number
 
-:(scenario get_address_out_of_bounds2)
+:(scenario get_address_out_of_bounds_2)
 % Hide_warnings = true;
 recipe main [
   12:number <- copy 34

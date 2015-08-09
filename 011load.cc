@@ -260,7 +260,7 @@ recipe main [
 +parse:   ingredient: {name: "23", properties: ["23": "literal"]}
 +parse:   product: {name: "1", properties: ["1": "number"]}
 
-:(scenario parse_comment_amongst_instruction2)
+:(scenario parse_comment_amongst_instruction_2)
 recipe main [
   # comment
   1:number <- copy 23
@@ -270,7 +270,7 @@ recipe main [
 +parse:   ingredient: {name: "23", properties: ["23": "literal"]}
 +parse:   product: {name: "1", properties: ["1": "number"]}
 
-:(scenario parse_comment_amongst_instruction3)
+:(scenario parse_comment_amongst_instruction_3)
 recipe main [
   1:number <- copy 23
   # comment
