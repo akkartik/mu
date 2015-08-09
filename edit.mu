@@ -2550,15 +2550,6 @@ after +handle-special-key [
   }
 ]
 
-# Cache old pointers to top-of-page in a list as you scroll past them, so that
-# page-up later doesn't have to recompute them.
-# This only works because we can never ever have edits outside the current
-# page. Any edits outside the current page might invalidate pointers to old
-# pages.
-container editor-data [
-  previous-page:address:list:address:duplex-list:character
-]
-
 # page-down skips entire wrapped lines, so it can't scroll past lines
 # taking up the entire screen
 recipe page-down [
@@ -2577,12 +2568,9 @@ recipe page-down [
     break-unless newline?:boolean
     *before-cursor <- prev-duplex *before-cursor
   }
-  # save top-of-screen to previous-page list
-  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
-  previous-page:address:address:list:address:duplex-list:character <- get-address *editor, previous-page:offset
-  *previous-page <- push *top-of-screen, *previous-page
   # move cursor and top-of-screen to start of that line
   move-to-start-of-line editor
+  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
   *top-of-screen <- copy *before-cursor
   reply editor/same-as-ingredient:0
 ]
@@ -2735,7 +2723,7 @@ after +handle-special-key [
   {
     page-up?:boolean <- equal *k, 65519/page-up
     break-unless page-up?
-    page-up editor
+    editor <- page-up editor, screen-height
     reply
   }
 ]
@@ -2743,11 +2731,18 @@ after +handle-special-key [
 recipe page-up [
   local-scope
   editor:address:editor-data <- next-ingredient
-  previous-page:address:address:list:address:duplex-list:character <- get-address *editor, previous-page:offset
-  reply-unless *previous-page, editor/same-as-ingredient:0
+  screen-height:number <- next-ingredient
+  count:number <- copy 0
   top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
-  *top-of-screen <- first *previous-page
-  *previous-page <- rest *previous-page
+  {
+    done?:boolean <- greater-or-equal count, screen-height
+    break-if done?
+    prev:address:duplex-list <- before-previous-newline *top-of-screen
+    break-unless prev
+    *top-of-screen <- copy prev
+    count <- add count, 1
+    loop
+  }
   reply editor/same-as-ingredient:0
 ]
 
@@ -3157,13 +3152,13 @@ after +scroll-up [
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   max:number <- subtract right, left
-  *top-of-screen <- start-of-previous-line *top-of-screen, max
+  *top-of-screen <- before-previous-newline *top-of-screen, max
 ]
 
 # takes a pointer into the doubly-linked list, scans back at most 'max'
 # positions to previous newline.
 # beware: never return null pointer.
-recipe start-of-previous-line [
+recipe before-previous-newline [
   local-scope
   original:address:duplex-list <- next-ingredient
   max:number <- next-ingredient
