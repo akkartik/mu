@@ -2860,6 +2860,7 @@ after +scroll-down [
 
 # takes a pointer into the doubly-linked list, scans ahead at most 'max'
 # positions until the next newline
+# beware: never return null pointer.
 recipe before-start-of-next-line [
   local-scope
   original:address:duplex-list <- next-ingredient
@@ -3160,15 +3161,14 @@ after +scroll-up [
 ]
 
 # takes a pointer into the doubly-linked list, scans back at most 'max'
-# positions to previous newline. Returns original pointer if falls off edge of
-# list.
+# positions to previous newline.
+# beware: never return null pointer.
 recipe start-of-previous-line [
   local-scope
   original:address:duplex-list <- next-ingredient
   max:number <- next-ingredient
   count:number <- copy 0
   curr:address:duplex-list <- copy original
-  reply-unless curr, original
   # if top is at start of line, don't count the previous newline
   {
     c:character <- get *curr, value:offset
@@ -3177,21 +3177,23 @@ recipe start-of-previous-line [
     max <- subtract max, 1
   }
   # skip newline at original
-  curr <- prev-duplex curr
+  prev:address:duplex-list <- prev-duplex curr
+  reply-unless prev, curr
+  curr <- copy prev
   count <- add count, 1
   # now skip before until previous newline
   {
-    reply-unless curr, original
     done?:boolean <- greater-or-equal count, max
     break-if done?
     c:character <- get *curr, value:offset
     at-newline?:boolean <- equal c, 10/newline
     break-if at-newline?
-    curr <- prev-duplex curr
+    prev <- prev-duplex curr
+    break-unless prev
+    curr <- copy prev
     count <- add count, 1
     loop
   }
-  reply-unless curr, original
   reply curr
 ]
 
@@ -3352,6 +3354,54 @@ e]
   memory-should-contain [
     3 <- 1
     4 <- 1
+  ]
+]
+
+scenario editor-can-scroll-up-to-start-of-file [
+  # screen has 1 line for menu + 3 lines
+  assume-screen 10/width, 4/height
+  # initialize editor with >3 lines
+  1:address:array:character <- new [a
+b
+c
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+  # position cursor at top of second page, then try to move up to start of
+  # text
+  assume-console [
+    press 65518  # page-down
+    press 65517  # up-arrow
+    press 65517  # up-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen slides by one line
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+  ]
+  # try to move up again
+  assume-console [
+    press 65517  # up-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # screen remains unchanged
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
   ]
 ]
 
