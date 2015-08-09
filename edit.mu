@@ -1812,14 +1812,14 @@ after +handle-special-key [
   }
 ]
 
-scenario editor-adjusts-column-at-next-line [
+scenario editor-adjusts-column-at-previous-line [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
-de]
+  1:address:array:character <- new [ab
+def]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
-    left-click 1, 3
-    press 65516  # down arrow
+    left-click 2, 3
+    press 65517  # up arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1827,7 +1827,7 @@ de]
     4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
-    3 <- 2
+    3 <- 1
     4 <- 2
   ]
 ]
@@ -1875,14 +1875,14 @@ after +handle-special-key [
   }
 ]
 
-scenario editor-adjusts-column-at-previous-line [
+scenario editor-adjusts-column-at-next-line [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [ab
-def]
+  1:address:array:character <- new [abc
+de]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
-    left-click 2, 3
-    press 65517  # up arrow
+    left-click 1, 3
+    press 65516  # down arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1890,7 +1890,7 @@ def]
     4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
-    3 <- 1
+    3 <- 2
     4 <- 2
   ]
 ]
