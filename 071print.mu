@@ -586,6 +586,7 @@ recipe hide-screen [
   local-scope
   screen:address <- next-ingredient
   # if x exists (not real display), do nothing
+  # todo: help test this
   {
     break-unless screen
     reply screen
@@ -599,6 +600,7 @@ recipe show-screen [
   local-scope
   screen:address <- next-ingredient
   # if x exists (not real display), do nothing
+  # todo: help test this
   {
     break-unless screen
     reply screen
