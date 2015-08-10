@@ -3861,6 +3861,7 @@ recipe event-loop [
     loop-unless found?
     break-if quit?  # only in tests
     trace [app], [next-event]
+    +handle-event
     # check for global events that will trigger regardless of which editor has focus
     {
       k:address:number <- maybe-convert e:event, keycode:variant
@@ -4132,12 +4133,21 @@ recipe render-all [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
+  hide-screen screen
+  #
+  recipes:address:editor-data <- get *env, recipes:offset
+  divider:number <- get *recipes, right:offset
+  divider <- add divider, 1
+  height:number <- screen-height screen
+  draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
+  #
   screen <- render-recipes screen, env
   screen <- render-sandbox-side screen, env
-  recipes:address:editor-data <- get *env, recipes:offset
+  #
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
   update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
+  #
   show-screen screen
   reply screen/same-as-ingredient:0
 ]
@@ -4202,6 +4212,123 @@ after +global-type [
     *sandbox-in-focus? <- not *sandbox-in-focus?
     update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     show-screen screen
+    loop +next-event:label
+  }
+]
+
+# ctrl-x - maximize/unmaximize the side with focus
+
+scenario maximize-side [
+  $close-trace
+  assume-screen 30/width, 5/height
+  # initialize both halves of screen
+  1:address:array:character <- new [abc]
+  2:address:array:character <- new [def]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  screen-should-contain [
+    .           run (F4)           .
+    .abc            ┊def           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+  # hit ctrl-x
+  assume-console [
+    type [x]
+  ]
+  4:event/ctrl-x <- merge 0/text, 24/ctrl-x, 0/dummy, 0/dummy
+  replace-in-console 120/x, 4:event/ctrl-x
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # only left side visible
+  screen-should-contain [
+    .           run (F4)           .
+    .abc                           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈.
+    .                              .
+  ]
+  # hit any key to toggle back
+  assume-console [
+    press 24  # ctrl-x
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .           run (F4)           .
+    .abc            ┊def           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+]
+
+container programming-environment-data [
+  maximized?:boolean
+]
+
+after +global-type [
+  {
+    ctrl-x?:boolean <- equal *c, 24/ctrl-x
+    break-unless ctrl-x?
+    screen, console <- maximize screen, console, env:address:programming-environment-data
+    loop +next-event:label
+  }
+]
+
+recipe maximize [
+  local-scope
+  screen:address <- next-ingredient
+  console:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  hide-screen screen
+  # maximize one of the sides
+  maximized?:address:boolean <- get-address *env, maximized?:offset
+  *maximized? <- copy 1/true
+  #
+  sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
+  {
+    break-if sandbox-in-focus?
+    editor:address:editor-data <- get *env, recipes:offset
+    right:address:number <- get-address *editor, right:offset
+    *right <- screen-width screen
+    *right <- subtract *right, 1
+    screen <- render-recipes screen, env
+  }
+  {
+    break-unless sandbox-in-focus?
+    editor:address:editor-data <- get *env, current-sandbox:offset
+    left:address:number <- get-address *editor, left:offset
+    *left <- copy 0
+    screen <- render-sandbox-side screen, env
+  }
+  show-screen screen
+  reply screen/same-as-ingredient:0, console/same-as-ingredient:1
+]
+
+# when maximized, wait for any event and simply unmaximize
+after +handle-event [
+  {
+    maximized?:address:boolean <- get-address *env, maximized?:offset
+    break-unless *maximized?
+    *maximized? <- copy 0/false
+    # undo maximize
+    {
+      break-if *sandbox-in-focus?
+      editor:address:editor-data <- get *env, recipes:offset
+      right:address:number <- get-address *editor, right:offset
+      *right <- screen-width screen
+      *right <- divide *right, 2
+      *right <- subtract *right, 1
+    }
+    {
+      break-unless *sandbox-in-focus?
+      editor:address:editor-data <- get *env, current-sandbox:offset
+      left:address:number <- get-address *editor, left:offset
+      *left <- screen-width screen
+      *left <- divide *left, 2
+      *left <- add *left, 1
+    }
+    render-all screen, env
     loop +next-event:label
   }
 ]
