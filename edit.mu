@@ -335,6 +335,25 @@ recipe clear-line-delimited [
   }
 ]
 
+recipe clear-rest-of-screen [
+  local-scope
+  screen:address <- next-ingredient
+  row:number <- next-ingredient
+  left:number <- next-ingredient
+  right:number <- next-ingredient
+  row <- add row, 1
+  move-cursor screen, row, left
+  screen-height:number <- screen-height screen
+  {
+    at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
+    break-if at-bottom-of-screen?
+    move-cursor screen, row, left
+    clear-line-delimited screen, left, right
+    row <- add row, 1
+    loop
+  }
+]
+
 scenario editor-initially-prints-multiple-lines [
   assume-screen 5/width, 5/height
   run [
@@ -4180,25 +4199,6 @@ recipe render-recipes [
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   clear-rest-of-screen screen, row, left, right
   reply screen/same-as-ingredient:0
-]
-
-recipe clear-rest-of-screen [
-  local-scope
-  screen:address <- next-ingredient
-  row:number <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
-  row <- add row, 1
-  move-cursor screen, row, left
-  screen-height:number <- screen-height screen
-  {
-    at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
-    break-if at-bottom-of-screen?
-    move-cursor screen, row, left
-    clear-line-delimited screen, left, right
-    row <- add row, 1
-    loop
-  }
 ]
 
 ## running code from the editor and creating sandboxes
