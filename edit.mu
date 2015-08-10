@@ -83,6 +83,7 @@ recipe new-editor [
   *y <- copy *init
   # initial render to screen, just for some old tests
   _, screen <- render screen, result
+  +editor-initialization
   reply result
 ]
 
@@ -1017,7 +1018,16 @@ scenario editor-wraps-cursor-after-inserting-characters-2 [
   ]
 ]
 
-# if newline, move cursor to start of next line
+# if newline, move cursor to start of next line, and maybe align indent with previous line
+
+container editor-data [
+  indent:boolean
+]
+
+after +editor-initialization [
+  indent:address:boolean <- get-address *result, indent:offset
+  *indent <- copy 1/true
+]
 
 scenario editor-moves-cursor-down-after-inserting-newline [
   assume-screen 10/width, 5/height
@@ -1052,6 +1062,8 @@ after +insert-character-special-case [
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
     }
     # indent if necessary
+    indent?:boolean <- get *editor, indent:offset
+    reply-unless indent?
     d:address:duplex-list <- get *editor, data:offset
     end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
     indent:number <- line-indent end-of-previous-line, d
@@ -1171,6 +1183,52 @@ ef]
     3 <- 3  # cursor row
     4 <- 2  # cursor column (indented)
   ]
+]
+
+scenario editor-skips-indent-around-paste [
+  assume-screen 10/width, 10/height
+  1:address:array:character <- new [ab
+  cd
+ef]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  # position cursor after 'cd' and hit 'newline' surrounded by paste markers
+  assume-console [
+    left-click 2, 8
+    press 65507  # start paste
+    type [
+]
+    press 65506  # end paste
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor should be below start of previous line
+  memory-should-contain [
+    3 <- 3  # cursor row
+    4 <- 0  # cursor column (not indented)
+  ]
+]
+
+after +handle-special-key [
+  {
+    paste-start?:boolean <- equal *k, 65507/paste-start
+    break-unless paste-start?
+    indent:address:boolean <- get-address *editor, indent:offset
+    *indent <- copy 0/false
+    reply
+  }
+]
+
+after +handle-special-key [
+  {
+    paste-end?:boolean <- equal *k, 65506/paste-end
+    break-unless paste-end?
+    indent:address:boolean <- get-address *editor, indent:offset
+    *indent <- copy 1/true
+    reply
+  }
 ]
 
 ## special shortcuts for manipulating the editor
@@ -3765,6 +3823,7 @@ recipe new-programming-environment [
   current-sandbox:address:address:editor-data <- get-address *result, current-sandbox:offset
   *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
   screen <- render-all screen, result
+  +programming-environment-initialization
   reply result
 ]
 
