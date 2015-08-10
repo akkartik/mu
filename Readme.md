@@ -79,7 +79,7 @@ compiling.
 
 As a sneak peek, here's how you compute factorial in Mu:
 
-![code example](html/factorial.png)
+<img alt='code example' src='html/factorial.png' width='330px'>
 
 Mu functions or 'recipes' are lists of instructions, one to a line. Each
 instruction operates on some *ingredients* and returns some *products*.
@@ -123,7 +123,7 @@ You can also run its unit tests:
 
 Here's what one of the tests inside `factorial.mu` looks like:
 
-![test example](html/factorial-test.png)
+<img alt='test example' src='html/factorial-test.png' width='250px'>
 
 Every test conceptually spins up a really lightweight virtual machine, so you
 can do things like check the value of specific locations in memory. You can
@@ -131,7 +131,7 @@ also print to screen and check that the screen contains what you expect at the
 end of a test. For example, `chessboard.mu` checks the initial position of a
 game of chess (delimiting the edges of the screen with periods):
 
-![screen test](html/chessboard-test.png)
+<img alt='screen test' src='html/chessboard-test.png' width='320px'>
 
 Similarly you can fake the keyboard to pretend someone typed something:
 
