@@ -68,10 +68,10 @@ that aren't taken for granted in unix. In spite of needing C++ it uses no
 advanced features and is designed to eventually bootstrap using an assembler
 written directly in machine code. Currently you build it like so:
 
-```shell
+  ```shell
   $ cd mu
   $ ./mu
-```
+  ```
 
 Running mu will always recompile it if necessary. In this case it has no other
 work to do, so it'll show you a hopefully helpful message after it's done
@@ -84,42 +84,42 @@ As a sneak peek, here's how you compute factorial in Mu:
 Mu functions or 'recipes' are lists of instructions, one to a line. Each
 instruction operates on some *ingredients* and returns some *products*.
 
-```
+  ```
   [products] <- instruction [ingredients]
-```
+  ```
 
 Result and ingredient *reagents* have to be variables. But you can have any
 number of them. In particular you can have any number of products. For example,
 you can perform integer division as follows:
 
-```
+  ```
   quotient:number, remainder:number <- divide-with-remainder 11, 3
-```
+  ```
 
 Each reagent can provide a name as well as its type separated by a colon. You
 only have to specify the type the first time you mention a name, but you can
 be more explicit if you choose. Types can be multiple words, like:
 
-```nim
+  ```nim
   x:array:number:3  # x is an array of 3 numbers
   y:list:number  # y is a list of numbers
-```
+  ```
 
 Recipes load their ingredients from their caller using the *next-ingredient*
 instruction, and return products using *reply*.
 
 Try out the factorial program now:
 
-```shell
+  ```shell
   $ ./mu factorial.mu
   result: 120  # factorial of 5
-```
+  ```
 
 You can also run its unit tests:
 
-```shell
+  ```shell
   $ ./mu test factorial.mu
-```
+  ```
 
 Here's what one of the tests inside `factorial.mu` looks like:
 
@@ -135,9 +135,9 @@ game of chess (delimiting the edges of the screen with periods):
 
 Similarly you can fake the keyboard to pretend someone typed something:
 
-```
+  ```
   assume-keyboard [a2-a4]
-```
+  ```
 
 As we add a file system, graphics, audio, network support and so on, we'll
 augment scenarios with corresponding abilities to use them inside tests.
@@ -148,34 +148,47 @@ The name of a reagent is for humans, but what the computer needs to access it is
 its address. Mu maps names to addresses for you like in other languages, but
 in a more transparent, lightweight, hackable manner. This instruction:
 
-```nim
+  ```nim
   z:number <- add x:number, y:number
-```
+  ```
 
 might turn into this:
 
-```nim
+  ```nim
   3:number <- add 1:number, 2:number
-```
+  ```
 
 You shouldn't rely on the specific address Mu chooses for a variable, but it
 will be unique (other variables won't clobber it) and consistent (all mentions
-of the name will map to the same address inside a function).
+of the name will map to the same address inside a recipe).
 
-Things get more complicated when your functions call other functions. Mu
-doesn't preserve uniqueness of addresses across functions, so you need to
-organize your names into spaces. At the start of each function (like
+Things get more complicated when your recipes call other recipes. Mu
+doesn't preserve uniqueness of addresses across recipes, so you need to
+organize your names into spaces. At the start of each recipe (like
 `factorial` above), set its *default space*:
 
   ```nim
-    new-default-space
+  local-scope
   ```
 
-Without this line, all variables in the function will be *global*, something
-you rarely want. (Luckily, this is also the sort of mistake that will be
-easily caught by tests. Later we'll automatically generate this boilerplate.)
-*With* this line, all addresses in your function will by default refer to one
-of the 30 slots inside this local space. (If you need more, mu will complain.)
+or
+
+  ```nim
+  new-default-space
+  ```
+
+or
+
+  ```nim
+  default-space:address:array:location <- new location:type, 30/capacity
+  ```
+
+Without one of these lines, all variables in the recipe will be *global*,
+something you rarely want. (Luckily, this is also the sort of mistake that
+will be easily caught by tests.) *With* this line, all addresses in your
+recipe will by default refer to one of the (30, in the final case) slots
+inside this local space. (If you choose the last, most explicit option and
+need more than 30 slots, mu will complain asking you to increase capacity.)
 
 Spaces can do more than just implement local variables. You can string them
 together, pass them around, return them from functions, share them between
@@ -188,18 +201,18 @@ identical to it.)
 To string two spaces together, write one into slot 0 of the other. This
 instruction chains a space received from its caller:
 
-```nim
+  ```nim
   0:address:array:location <- next-ingredient
-```
+  ```
 
 Once you've chained spaces together, you can access variables in them by
 adding a 'space' property:
 
-```nim
+  ```nim
   3:number/space:1
-```
+  ```
 
-This reagent is the integer in slot 3 of the space chained in slot 0 of the
+This reagent is the number in slot 3 of the space chained in slot 0 of the
 default space. We usually call it slot 3 in the 'next space'. `/space:2` would
 be the next space of the next space, and so on.
 
@@ -213,11 +226,11 @@ in Mu provide the same functionality.
 You can append arbitrary properties to reagents besides types and spaces. Just
 separate them with slashes.
 
-```nim
+  ```nim
   x:array:number:3/uninitialized
   y:string/tainted:yes
   z:list:number/assign-once:true/assigned:false
-```
+  ```
 
 Most properties are meaningless to Mu, and it'll silently skip them when
 running, but they are fodder for *meta-programs* to check or modify your
@@ -233,18 +246,18 @@ columns separated by colons. The address of a reagent is always in the very
 first column of the first row of its 'table'. You can visualize the last
 example above as:
 
-```
+  ```
   z           : list : integer  /
   assign-once : true            /
   assigned    : false
-```
+  ```
 
 ---
 
 An alternative way to define factorial is by inserting *labels* and later
 inserting code at them.
 
-```nim
+  ```nim
   recipe factorial [
     new-default-space
     n:number <- next-ingredient
@@ -268,7 +281,7 @@ inserting code at them.
     result:number <- multiply subresult, n
     reply result
   ]
-```
+  ```
 
 (You'll find this version in `tangle.mu`.)
 
@@ -286,7 +299,7 @@ just flat lists of instructions.
 
 Another example, this time with concurrency.
 
-```
+  ```
   recipe main [
     start-running thread2:recipe
     {
@@ -301,18 +314,18 @@ Another example, this time with concurrency.
       loop
     }
   ]
-```
+  ```
 
-```shell
+  ```shell
   $ ./mu fork.mu
-```
+  ```
 
 Notice that it repeatedly prints either '34' or '35' at random. Hit ctrl-c to
 stop.
 
 Yet another example forks two 'routines' that communicate over a channel:
 
-```shell
+  ```shell
   $ ./mu channel.mu
   produce: 0
   produce: 1
@@ -327,7 +340,7 @@ Yet another example forks two 'routines' that communicate over a channel:
 
   # The exact order above might shift over time, but you'll never see a number
   # consumed before it's produced.
-```
+  ```
 
 Channels are the unit of synchronization in Mu. Blocking on channels are the
 only way tasks can sleep waiting for results. The plan is to do all I/O over
@@ -357,9 +370,9 @@ efforts are.
 
 c) Try running the tests:
 
-```shell
+  ```shell
   $ ./mu test
-```
+  ```
 
 You might also want to peek in the `.traces` directory, which automatically
 includes logs for each test showing you just how it ran on my machine. If Mu
@@ -375,10 +388,10 @@ be asserted on, to turn a trace into a test.
 
 d) Try out the programming environment:
 
-```shell
+  ```shell
   $ ./mu test edit.mu  # takes about 30s; shouldn't show any failures
   $ ./mu edit.mu
-```
+  ```
 
 Screenshot:
 
