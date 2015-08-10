@@ -8,10 +8,10 @@ recipe main [
   open-console
   initial-recipe:address:array:character <- restore [recipes.mu]
   initial-sandbox:address:array:character <- new []
+  hide-screen 0/screen
   env:address:programming-environment-data <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
   env <- restore-sandboxes env
   render-all 0/screen, env
-  show-screen 0/screen
   event-loop 0/screen, 0/console, env
   # never gets here
 ]
@@ -147,7 +147,6 @@ recipe render [
   left:number <- get *editor, left:offset
   screen-height:number <- screen-height screen
   right:number <- get *editor, right:offset
-  hide-screen screen
   # traversing editor
   curr:address:duplex-list <- get *editor, top-of-screen:offset
   prev:address:duplex-list <- copy curr
@@ -3841,7 +3840,6 @@ recipe new-programming-environment [
   new-left:number <- add divider, 1
   current-sandbox:address:address:editor-data <- get-address *result, current-sandbox:offset
   *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
-  screen <- render-all screen, result
   +programming-environment-initialization
   reply result
 ]
@@ -4053,6 +4051,7 @@ scenario multiple-editors-cover-only-their-own-areas [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [def]
     3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+    screen <- render-all screen, 3:address:programming-environment-data
   ]
   # divider isn't messed up
   screen-should-contain [
@@ -4074,6 +4073,7 @@ scenario editor-in-focus-keeps-cursor [
   run [
     3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 3:address:programming-environment-data
+    screen <- render-all screen, 3:address:programming-environment-data
     screen:address <- print-character screen:address, 9251/␣
   ]
   # is cursor at the right place?
@@ -4090,6 +4090,7 @@ scenario editor-in-focus-keeps-cursor [
   run [
     3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 3:address:programming-environment-data
+    screen <- render-all screen, 3:address:programming-environment-data
     screen:address <- print-character screen:address, 9251/␣
   ]
   # cursor should still be right
@@ -4118,6 +4119,7 @@ def]
   run [
     4:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 4:address:programming-environment-data
+    screen <- render-all screen, 4:address:programming-environment-data
     screen:address <- print-character screen:address, 9251/␣
   ]
   # cursor moves to end of old line
@@ -4156,6 +4158,7 @@ recipe render-minimal [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
+  hide-screen screen
   recipes:address:editor-data <- get *env, recipes:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
@@ -4211,7 +4214,6 @@ after +global-type [
     break-unless ctrl-n?
     *sandbox-in-focus? <- not *sandbox-in-focus?
     update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
-    show-screen screen
     loop +next-event:label
   }
 ]
@@ -4225,6 +4227,7 @@ scenario maximize-side [
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  screen <- render-all screen, 3:address:programming-environment-data
   screen-should-contain [
     .           run (F4)           .
     .abc            ┊def           .
@@ -4436,7 +4439,6 @@ after +global-keypress [
     # F4 might update warnings and results on both sides
     screen <- render-all screen, env
     update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
-    show-screen screen
     loop +next-event:label
   }
 ]
@@ -4981,6 +4983,7 @@ after +global-touch [
     sandbox:address:sandbox-data <- extract-sandbox env, click-row
     text:address:array:character <- get *sandbox, data:offset
     current-sandbox <- insert-text current-sandbox, text
+    hide-screen screen
     screen <- render-sandbox-side screen, env
     update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     show-screen screen
@@ -5096,6 +5099,7 @@ after +global-touch [
     was-delete?:boolean <- delete-sandbox *t, env
     break-unless was-delete?
 #?     trace [app], [delete clicked] #? 1
+    hide-screen screen
     screen <- render-sandbox-side screen, env
     update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     show-screen screen
@@ -5224,6 +5228,7 @@ after +global-touch [
     # toggle its expected-response, and save session
     sandbox <- toggle-expected-response sandbox
     save-sandboxes env
+    hide-screen screen
     screen <- render-sandbox-side screen, env, 1/clear
     # no change in cursor
     show-screen screen
@@ -5435,6 +5440,7 @@ after +global-touch [
     # toggle its display-trace? property
     x:address:boolean <- get-address *sandbox, display-trace?:offset
     *x <- not *x
+    hide-screen screen
     screen <- render-sandbox-side screen, env, 1/clear
     # no change in cursor
     show-screen screen
