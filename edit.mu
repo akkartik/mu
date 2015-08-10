@@ -3871,15 +3871,6 @@ recipe event-loop [
       c:address:character <- maybe-convert e:event, text:variant
       break-unless c
       +global-type
-      # ctrl-n? - switch focus
-      {
-        ctrl-n?:boolean <- equal *c, 14/ctrl-n
-        break-unless ctrl-n?
-        *sandbox-in-focus? <- not *sandbox-in-focus?
-        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
-        show-screen screen
-        loop +next-event:label
-      }
     }
     # 'touch' event - send to both sides, see what picks it up
     {
@@ -4199,6 +4190,20 @@ recipe render-recipes [
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   clear-rest-of-screen screen, row, left, right
   reply screen/same-as-ingredient:0
+]
+
+# ctrl-n - switch focus
+# todo: test this
+
+after +global-type [
+  {
+    ctrl-n?:boolean <- equal *c, 14/ctrl-n
+    break-unless ctrl-n?
+    *sandbox-in-focus? <- not *sandbox-in-focus?
+    update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    show-screen screen
+    loop +next-event:label
+  }
 ]
 
 ## running code from the editor and creating sandboxes
