@@ -562,7 +562,7 @@ recipe editor-event-loop [
     loop-unless found?
     break-if quit?  # only in tests
     trace [app], [next-event]
-    # 'touch' event - send to both editors
+    # 'touch' event
     t:address:touch-event <- maybe-convert e, touch:variant
     {
       break-unless t
@@ -3762,7 +3762,6 @@ recipe new-programming-environment [
   *recipes <- new-editor initial-recipe-contents, screen, 0/left, divider/right
   # sandbox editor on the right
   new-left:number <- add divider, 1
-  new-right:number <- add new-left, 5
   current-sandbox:address:address:editor-data <- get-address *result, current-sandbox:offset
   *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
   screen <- render-all screen, result
@@ -3821,6 +3820,18 @@ recipe event-loop [
       render-minimal screen, env
       loop +next-event:label
     }
+    # 'resize' event - redraw editor
+    # todo: test this after supporting resize in assume-console
+    {
+      r:address:resize-event <- maybe-convert e:event, resize:variant
+      break-unless r
+      # if more events, we're still resizing; wait until we stop
+      more-events?:boolean <- has-more-events? console
+      break-if more-events?
+      env <- resize screen, env
+      screen <- render-all screen, env
+      loop +next-event:label
+    }
     # if it's not global and not a touch event, send to appropriate editor
     {
       {
@@ -3839,6 +3850,38 @@ recipe event-loop [
     }
     loop
   }
+]
+
+recipe resize [
+  local-scope
+  screen:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  # hack: clear screen to update screen dimensions
+  clear-screen screen
+  width:number <- screen-width screen
+  height:number <- screen-height screen
+  # top menu
+  draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
+  button-start:number <- subtract width, 20
+  button-on-screen?:boolean <- greater-or-equal button-start, 0
+  assert button-on-screen?, [screen too narrow for menu]
+  move-cursor screen, 0/row, button-start
+  run-button:address:array:character <- new [ run (F4) ]
+  print-string screen, run-button, 255/white, 161/reddish
+  # dotted line down the middle
+  divider:number, _ <- divide-with-remainder width, 2
+  draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
+  # update recipe editor
+  recipes:address:editor-data <- get *env, recipes:offset
+  right:address:number <- get-address *recipes, right:offset
+  *right <- subtract divider, 1
+  # update sandbox editor
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  left:address:number <- get-address *current-sandbox, left:offset
+  right:address:number <- get-address *current-sandbox, right:offset
+  *left <- add divider, 1
+  *right <- subtract width, 1
+  reply env/same-as-ingredient:1
 ]
 
 recipe update-cursor [

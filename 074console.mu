@@ -5,6 +5,7 @@ exclusive-container event [
   text:character
   keycode:number  # keys on keyboard without a unicode representation
   touch:touch-event  # mouse, track ball, etc.
+  resize:resize-event
   # update the assume-console handler if you add more variants
 ]
 
@@ -12,6 +13,11 @@ container touch-event [
   type:number
   row:number
   column:number
+]
+
+container resize-event [
+  width:number
+  height:number
 ]
 
 container console [
