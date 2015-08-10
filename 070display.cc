@@ -335,8 +335,6 @@ case CHECK_FOR_INTERACTION: {
     break;
   }
   if (event_type == TB_EVENT_MOUSE) {
-//?     tb_shutdown(); //? 1
-//?     cerr << "AAA\n"; //? 1
     products.at(0).push_back(/*touch event*/2);
     products.at(0).push_back(event.key);  // which button, etc.
     products.at(0).push_back(event.y);  // row
@@ -344,7 +342,15 @@ case CHECK_FOR_INTERACTION: {
     products.at(1).push_back(/*found*/true);
     break;
   }
-  // ignore TB_EVENT_RESIZE events for now
+  if (event_type == TB_EVENT_RESIZE) {
+    products.at(0).push_back(/*resize event*/3);
+    products.at(0).push_back(event.w);  // width
+    products.at(0).push_back(event.h);  // height
+    products.at(0).push_back(0);
+    products.at(1).push_back(/*found*/true);
+    break;
+  }
+  assert(event_type == 0);
   products.at(0).push_back(0);
   products.at(0).push_back(0);
   products.at(0).push_back(0);
