@@ -31,6 +31,12 @@ case TRACE: {
   break;
 }
 
+:(scenario trace_with_one_argument)
+recipe main [
+  trace [foo]
+]
++app: foo
+
 :(before "End Primitive Recipe Declarations")
 HIDE_WARNINGS,
 :(before "End Primitive Recipe Numbers")
