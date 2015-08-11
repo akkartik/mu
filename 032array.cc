@@ -37,6 +37,16 @@ recipe main [
 +mem: storing 15 in location 8
 +mem: storing 16 in location 9
 
+:(scenario stash_array)
+recipe main [
+  1:number <- copy 3  # length
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  stash [foo: ], 1:array:number
+]
++app: foo: 3 14 15 16
+
 //: disable the size mismatch check since the destination array need not be initialized
 :(before "End size_mismatch(x) Cases")
 if (x.types.at(0) == Type_ordinal["array"]) return false;

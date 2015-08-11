@@ -37,6 +37,53 @@ recipe main [
 ]
 +app: foo
 
+//: a smarter but more limited version of 'trace'
+
+:(before "End Primitive Recipe Declarations")
+STASH,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["stash"] = STASH;
+:(before "End Primitive Recipe Implementations")
+case STASH: {
+  ostringstream out;
+  for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
+    out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
+  }
+  trace(1, "app") << out.str() << end();
+  break;
+}
+
+:(scenario stash_literal_string)
+recipe main [
+  stash [foo]
+]
++app: foo
+
+:(scenario stash_literal_number)
+recipe main [
+  stash [foo: ], 4
+]
++app: foo: 4
+
+:(scenario stash_number)
+recipe main [
+  1:number <- copy 34
+  stash [foo: ], 1:number
+]
++app: foo: 34
+
+:(code)
+string print_mu(const reagent& r, const vector<double>& data) {
+  if (is_literal(r))
+    return r.name;
+  // End print Special-cases(reagent r, data)
+  ostringstream out;
+  for (long long i = 0; i < SIZE(data); ++i) {
+    out << data.at(i) << ' ';
+  }
+  return out.str();
+}
+
 :(before "End Primitive Recipe Declarations")
 HIDE_WARNINGS,
 :(before "End Primitive Recipe Numbers")

@@ -346,6 +346,21 @@ long long int new_mu_string(const string& contents) {
   return result;
 }
 
+//: stash recognizes strings
+
+:(scenario stash_string)
+recipe main [
+  x:address:array:character <- new [abc]
+  stash [foo: ], x:address:array:character
+]
++app: foo: abc
+
+:(before "End print Special-cases(reagent r, data)")
+if (is_mu_string(r)) {
+  assert(scalar(data));
+  return read_mu_string(data.at(0));
+}
+
 //: Allocate more to routine when initializing a literal string
 :(scenario new_string_overflow)
 % Initial_memory_per_routine = 2;
@@ -368,4 +383,22 @@ long long int unicode_length(const string& s) {
     curr += tb_utf8_char_length(in[curr]);
   }
   return result;
+}
+
+bool is_mu_string(const reagent& x) {
+  return SIZE(x.types) == 3
+      && x.types.at(0) == Type_ordinal["address"]
+      && x.types.at(1) == Type_ordinal["array"]
+      && x.types.at(2) == Type_ordinal["character"];
+}
+
+string read_mu_string(long long int address) {
+  long long int size = Memory[address];
+  if (size == 0) return "";
+  ostringstream tmp;
+  for (long long int curr = address+1; curr <= address+size; ++curr) {
+    // todo: unicode
+    tmp << (char)(int)Memory[curr];
+  }
+  return tmp.str();
 }

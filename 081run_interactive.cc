@@ -240,29 +240,11 @@ string strip_comments(string in) {
   return result.str();
 }
 
-string read_mu_string(long long int address) {
-  long long int size = Memory[address];
-  if (size == 0) return "";
-  ostringstream tmp;
-  for (long long int curr = address+1; curr <= address+size; ++curr) {
-    // todo: unicode
-    tmp << (char)(int)Memory[curr];
-  }
-  return tmp.str();
-}
-
 long long int stringified_value_of_location(long long int address) {
   // convert to string
   ostringstream out;
   out << Memory[address];
   return new_mu_string(out.str());
-}
-
-bool is_mu_string(const reagent& x) {
-  return SIZE(x.types) == 3
-      && x.types.at(0) == Type_ordinal["address"]
-      && x.types.at(1) == Type_ordinal["array"]
-      && x.types.at(2) == Type_ordinal["character"];
 }
 
 long long int trace_contents(const string& layer) {
