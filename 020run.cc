@@ -301,3 +301,30 @@ recipe main [
   1:number, 2:array:number <- copy 34, 35
 ]
 +warn: can't copy 35 to array 2:array:number
+
+//: mu is robust to various combinations of commas and spaces. You just have
+//: to put spaces around the '<-'.
+
+:(scenario comma_without_space)
+recipe main [
+  1:number <- add 2,2
+]
++mem: storing 4 in location 1
+
+:(scenario space_without_comma)
+recipe main [
+  1:number <- add 2 2
+]
++mem: storing 4 in location 1
+
+:(scenario comma_before_space)
+recipe main [
+  1:number <- add 2, 2
+]
++mem: storing 4 in location 1
+
+:(scenario comma_after_space)
+recipe main [
+  1:number <- add 2 ,2
+]
++mem: storing 4 in location 1
