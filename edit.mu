@@ -4877,6 +4877,52 @@ scenario run-instruction-manages-screen-per-sandbox [
   ]
 ]
 
+scenario sandbox-with-print-can-be-edited [
+  $close-trace
+  assume-screen 100/width, 20/height
+  # left editor is empty
+  1:address:array:character <- new []
+  # right editor contains an instruction
+  2:address:array:character <- new [print-integer screen:address, 4]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the sandbox
+  assume-console [
+    press 65532  # F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
+    .                                                  ┊print-integer screen:address, 4                  .
+    .                                                  ┊screen:                                          .
+    .                                                  ┊  .4                             .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+  # edit the sandbox
+  assume-console [
+    left-click 3, 70
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊print-integer screen:address, 4                  .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
 recipe editor-contents [
   local-scope
   editor:address:editor-data <- next-ingredient
@@ -5256,11 +5302,9 @@ recipe find-click-in-sandbox-output [
   }
   # return sandbox if click is in its output region
   response-starting-row:number <- get *sandbox, response-starting-row-on-screen:offset
+  reply-unless response-starting-row, 0/no-click-in-sandbox-output
   click-in-response?:boolean <- greater-or-equal click-row, response-starting-row
-  {
-    break-if click-in-response?
-    reply 0/no-click-in-sandbox-output
-  }
+  reply-unless click-in-response?, 0/no-click-in-sandbox-output
   reply sandbox
 ]
 
