@@ -4849,7 +4849,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   assume-screen 100/width, 20/height
   # left editor is empty
   1:address:array:character <- new []
-  # right editor contains an illegal instruction
+  # right editor contains an instruction
   2:address:array:character <- new [print-integer screen:address, 4]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editor
@@ -4859,8 +4859,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
-  # check that it prints a little 5x5 toy screen
-  # hack: screen address is brittle
+  # check that it prints a little toy screen
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
