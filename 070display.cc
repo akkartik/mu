@@ -369,3 +369,26 @@ case INTERACTIONS_LEFT: {
   products.at(0).push_back(tb_event_ready());
   break;
 }
+
+//: a hack to make edit.mu more responsive
+
+:(before "End Primitive Recipe Declarations")
+CLEAR_DISPLAY_FROM,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["clear-display-from"] = CLEAR_DISPLAY_FROM;
+:(before "End Primitive Recipe Implementations")
+case CLEAR_DISPLAY_FROM: {
+  // todo: error checking
+  int row = ingredients.at(0).at(0);
+  int column = ingredients.at(1).at(0);
+  int left = ingredients.at(2).at(0);
+  int right = ingredients.at(3).at(0);
+  int height=tb_height();
+  for (; row < height; ++row, column=left) {  // start column from left in every inner loop except first
+    for (; column <= right; ++column) {
+      tb_change_cell(column, row, ' ', TB_WHITE, TB_BLACK);
+    }
+  }
+  if (Autodisplay) tb_present();
+  break;
+}

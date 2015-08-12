@@ -244,8 +244,7 @@ recipe render [
     *before-cursor <- copy prev
   }
   # clear rest of screen
-  clear-line-delimited screen, column, right
-  clear-rest-of-screen screen, row, left, right
+  clear-screen-from screen, row, column, left, right
   reply row, screen/same-as-ingredient:0
 ]
 
@@ -322,9 +321,8 @@ recipe render-string [
 recipe clear-line-delimited [
   local-scope
   screen:address <- next-ingredient
-  left:number <- next-ingredient
+  column:number <- next-ingredient
   right:number <- next-ingredient
-  column:number <- copy left
   {
     done?:boolean <- greater-than column, right
     break-if done?
@@ -332,6 +330,26 @@ recipe clear-line-delimited [
     column <- add column, 1
     loop
   }
+]
+
+recipe clear-screen-from [
+  local-scope
+  screen:address <- next-ingredient
+  row:number <- next-ingredient
+  column:number <- next-ingredient
+  left:number <- next-ingredient
+  right:number <- next-ingredient
+  # if it's the real screen, use the optimized primitive
+  {
+    break-if screen
+    clear-display-from row, column, left, right
+    reply screen/same-as-ingredient:0
+  }
+  # if not, go the slower route
+  move-cursor screen, row, column
+  clear-line-delimited screen, column, right
+  clear-rest-of-screen screen, row, left, right
+  reply screen/same-as-ingredient:0
 ]
 
 recipe clear-rest-of-screen [
@@ -598,8 +616,7 @@ recipe editor-event-loop [
     left:number <- get *editor, left:offset
     right:number <- get *editor, right:offset
     row <- add row, 1
-    move-cursor screen, row, left
-    clear-line-delimited screen, left, right
+    clear-screen-from screen, row, left, left, right
     loop
   }
 ]
@@ -4201,7 +4218,8 @@ recipe render-recipes [
   }
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-  clear-rest-of-screen screen, row, left, right
+  row <- add row, 1
+  clear-screen-from screen, row, left, left, right
   reply screen/same-as-ingredient:0
 ]
 
