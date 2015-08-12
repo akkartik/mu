@@ -4845,7 +4845,7 @@ scenario run-instruction-and-print-warnings-only-once [
 ]
 
 scenario run-instruction-manages-screen-per-sandbox [
-  $close-trace  # trace too long for github #? 1
+  $close-trace  # trace too long for github
   assume-screen 100/width, 20/height
   # left editor is empty
   1:address:array:character <- new []
