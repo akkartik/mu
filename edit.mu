@@ -4531,18 +4531,7 @@ recipe render-sandbox-side [
   draw-horizontal screen, row, left, right, 9473/horizontal-double
   sandbox:address:sandbox-data <- get *env, sandbox:offset
   row, screen <- render-sandboxes screen, sandbox, left, right, row
-  # clear rest of screen
-  row <- add row, 1
-  move-cursor screen, row, left
-  screen-height:number <- screen-height screen
-  {
-    at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
-    break-if at-bottom-of-screen?
-    move-cursor screen, row, left
-    clear-line-delimited screen, left, right
-    row <- add row, 1
-    loop
-  }
+  clear-rest-of-screen screen, row, left, left, right
   reply screen/same-as-ingredient:0
 ]
 
