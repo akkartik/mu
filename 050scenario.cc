@@ -37,7 +37,7 @@ scenario foo [
 scenario foo [
   run [
     1:number <- copy 13
-    trace [a], [a b c]
+    trace 1, [a], [a b c]
   ]
   memory-should-contain [
     1 <- 13
@@ -403,7 +403,7 @@ recipe main [
     a: d
   ]
 ]
-+warn: missing [b] in trace layer a
++warn: missing [b] in trace with label a
 
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_CONTAIN,
@@ -438,7 +438,7 @@ bool check_trace(const string& expected) {
   }
 
   raise << "missing [" << expected_lines.at(curr_expected_line).contents << "] "
-        << "in trace layer " << expected_lines.at(curr_expected_line).label << '\n' << end();
+        << "in trace with label " << expected_lines.at(curr_expected_line).label << '\n' << end();
   Passed = false;
   return false;
 }
@@ -460,27 +460,27 @@ vector<trace_line> parse_trace(const string& expected) {
 % Hide_warnings = true;
 recipe main [
   run [
-    trace [a], [b]
+    trace 1, [a], [b]
   ]
   trace-should-contain [
     a: b
     a: d
   ]
 ]
-+warn: missing [d] in trace layer a
++warn: missing [d] in trace with label a
 
 :(scenario trace_check_passes_silently)
 % Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   run [
-    trace [a], [b]
+    trace 1, [a], [b]
   ]
   trace-should-contain [
     a: b
   ]
 ]
--warn: missing [b] in trace layer a
+-warn: missing [b] in trace with label a
 $warn: 0
 
 //: 'trace-should-not-contain' is like the '-' lines in our scenarios so far
@@ -492,13 +492,13 @@ $warn: 0
 % Hide_warnings = true;
 recipe main [
   run [
-    trace [a], [b]
+    trace 1, [a], [b]
   ]
   trace-should-not-contain [
     a: b
   ]
 ]
-+warn: unexpected [b] in trace layer a
++warn: unexpected [b] in trace with label a
 
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_NOT_CONTAIN,
@@ -519,7 +519,7 @@ bool check_trace_missing(const string& in) {
   vector<trace_line> lines = parse_trace(in);
   for (long long int i = 0; i < SIZE(lines); ++i) {
     if (trace_count(lines.at(i).label, lines.at(i).contents) != 0) {
-      raise << "unexpected [" << lines.at(i).contents << "] in trace layer " << lines.at(i).label << '\n' << end();
+      raise << "unexpected [" << lines.at(i).contents << "] in trace with label " << lines.at(i).label << '\n' << end();
       Passed = false;
       return false;
     }
@@ -535,7 +535,7 @@ recipe main [
     a: b
   ]
 ]
--warn: unexpected [b] in trace layer a
+-warn: unexpected [b] in trace with label a
 $warn: 0
 
 :(scenario trace_negative_check_warns_on_any_unexpected_line)
@@ -543,14 +543,14 @@ $warn: 0
 % Hide_warnings = true;
 recipe main [
   run [
-    trace [a], [d]
+    trace 1, [a], [d]
   ]
   trace-should-not-contain [
     a: b
     a: d
   ]
 ]
-+warn: unexpected [d] in trace layer a
++warn: unexpected [d] in trace with label a
 
 //: Minor detail: ignore 'system' calls in scenarios, since anything we do
 //: with them is by definition impossible to test through mu.

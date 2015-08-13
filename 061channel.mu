@@ -365,7 +365,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     9:boolean/completed? <- not 8:boolean
     assert 9:boolean/completed?, [
 F buffer-lines-blocks-until-newline: channel should contain data after writing newline]
-    trace [test], [reached end]
+    trace 1, [test], [reached end]
   ]
   trace-should-contain [
     test: reached end

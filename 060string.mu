@@ -8,13 +8,13 @@ recipe string-equal [
   b-len:number <- length *b
   # compare lengths
   {
-    trace [string-equal], [comparing lengths]
+    trace 99, [string-equal], [comparing lengths]
     length-equal?:boolean <- equal a-len, b-len
     break-if length-equal?
     reply 0
   }
   # compare each corresponding character
-  trace [string-equal], [comparing characters]
+  trace 99, [string-equal], [comparing characters]
   i:number <- copy 0
   {
     done?:boolean <- greater-or-equal i, a-len
