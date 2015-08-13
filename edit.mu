@@ -610,13 +610,7 @@ recipe editor-event-loop [
       break-if t
       handle-keyboard-event screen, console, editor, e
     }
-    # send any changes to screen
-    row:number, screen <- render screen, editor
-    # clear final line, in case we just processed a backspace
-    left:number <- get *editor, left:offset
-    right:number <- get *editor, right:offset
-    row <- add row, 1
-    clear-screen-from screen, row, left, left, right
+    render screen, editor
     loop
   }
 ]
