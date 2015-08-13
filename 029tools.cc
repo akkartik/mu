@@ -2,7 +2,7 @@
 
 :(scenario trace)
 recipe main [
-  trace [foo], [this is a trace in mu]
+  trace 1, [foo], [this is a trace in mu]
 ]
 +foo: this is a trace in mu
 
@@ -12,15 +12,25 @@ TRACE,
 Recipe_ordinal["trace"] = TRACE;
 :(before "End Primitive Recipe Implementations")
 case TRACE: {
-  if (SIZE(current_instruction().ingredients) != 2) {
-    raise << current_recipe_name() << ": 'trace' takes two ingredients rather than '" << current_instruction().to_string() << "'\n" << end();
+  if (SIZE(current_instruction().ingredients) < 3) {
+    raise << current_recipe_name() << ": 'trace' takes three or more ingredients rather than '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
-  assert(is_literal(current_instruction().ingredients.at(0)));
-  string label = current_instruction().ingredients.at(0).name;
-  assert(is_literal(current_instruction().ingredients.at(1)));
-  string message = current_instruction().ingredients.at(1).name;
-  trace(1, label) << message << end();
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": first ingredient of 'trace' should be a number (depth), but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  long long int depth = ingredients.at(0).at(0);
+  if (!is_literal_string(current_instruction().ingredients.at(1))) {
+    raise << current_recipe_name() << ": second ingredient of 'trace' should be a literal string (label), but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  string label = current_instruction().ingredients.at(1).name;
+  ostringstream out;
+  for (long long int i = 2; i < SIZE(current_instruction().ingredients); ++i) {
+    out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
+  }
+  trace(depth, label) << out.str() << end();
   break;
 }
 

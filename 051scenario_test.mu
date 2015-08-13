@@ -62,7 +62,7 @@ scenario check_trace_negative [
 
 scenario check_trace_instruction [
   run [
-    trace [foo], [aaa]
+    trace 1, [foo], [aaa]
   ]
   trace-should-contain [
     foo: aaa

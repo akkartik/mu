@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    trace [a], [d]\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    trace 1, [a], [d]\n  ", properties: [_: "literal-string"]}
 parse: instruction: trace-should-not-contain
 parse:   ingredient: {name: "\n    a: b\n    a: d\n  ", properties: [_: "literal-string"]}
 after-brace: recipe main
@@ -8,18 +8,19 @@ after-brace: trace-should-not-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: main
  101 run: run [
-    trace [a], [d]
+    trace 1, [a], [d]
   ]
 parse: instruction: trace
+parse:   ingredient: {name: "1", properties: ["1": "literal"]}
 parse:   ingredient: {name: "a", properties: [_: "literal-string"]}
 parse:   ingredient: {name: "d", properties: [_: "literal-string"]}
 after-brace: recipe run1001
 after-brace: trace ...
- 101 run: trace [a], [d]
+ 101 run: trace 1, [a], [d]
    1 a: d
  100 run: trace-should-not-contain [
     a: b
     a: d
   ]
-warn: unexpected [d] in trace layer a
+warn: unexpected [d] in trace with label a
 

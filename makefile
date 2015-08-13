@@ -1,7 +1,7 @@
 all: mu_bin core.mu
 
 mu_bin: makefile enumerate/enumerate tangle/tangle mu.cc termbox/libtermbox.a
-	c++ -g -O3 -Wall -Wextra -fno-strict-aliasing mu.cc termbox/libtermbox.a -o mu_bin
+	c++ -g -Wall -Wextra -fno-strict-aliasing mu.cc termbox/libtermbox.a -o mu_bin
 
 # To see what the program looks like after all layers have been applied, read
 # mu.cc
