@@ -405,8 +405,14 @@ it. Thus, manually tested sandboxes become reproducible automated tests.
 <img alt='unexpected result' src='html/unexpected-result.png' width='180px'>
 
 Another feature: Clicking on the code in a sandbox expands its trace for you
-to browse. So far it only shows a flat listing, but soon you'll be able to
-drill down and zoom out.
+to browse. To add to the trace, use `stash`. For example:
+
+  ```nim
+  stash [first ingredient is ], x
+  ```
+
+Invaluable for understanding complex control flow without cluttering up the
+screen.
 
 The next major milestone on mu's roadmap is support for recording and faking
 console input to a sandbox, so that you can type in an input once and have it
