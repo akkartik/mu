@@ -97,11 +97,5 @@ bool exists(const string& filename) {
   return 0 == stat(filename.c_str(), &dummy);
 }
 
-string to_string(long long int x) {
-  ostringstream tmp;
-  tmp << x;
-  return tmp.str();
-}
-
 :(before "End Includes")
 #include<sys/stat.h>
