@@ -12,30 +12,17 @@ TRACE,
 Recipe_ordinal["trace"] = TRACE;
 :(before "End Primitive Recipe Implementations")
 case TRACE: {
-  if (SIZE(ingredients) == 2) {
-    assert(is_literal(current_instruction().ingredients.at(0)));
-    string label = current_instruction().ingredients.at(0).name;
-    assert(is_literal(current_instruction().ingredients.at(1)));
-    string message = current_instruction().ingredients.at(1).name;
-    trace(1, label) << message << end();
+  if (SIZE(current_instruction().ingredients) != 2) {
+    raise << current_recipe_name() << ": 'trace' takes two ingredients rather than '" << current_instruction().to_string() << "'\n" << end();
+    break;
   }
-  else if (SIZE(ingredients) == 1) {
-    assert(is_literal(current_instruction().ingredients.at(0)));
-    string message = current_instruction().ingredients.at(0).name;
-//?     cerr << "tracing " << message << '\n'; //? 1
-    trace(1, "app") << message << end();
-  }
-  else {
-    raise << current_recipe_name() << ": 'trace' takes one or two ingredients rather than '" << current_instruction().to_string() << "'\n" << end();
-  }
+  assert(is_literal(current_instruction().ingredients.at(0)));
+  string label = current_instruction().ingredients.at(0).name;
+  assert(is_literal(current_instruction().ingredients.at(1)));
+  string message = current_instruction().ingredients.at(1).name;
+  trace(1, label) << message << end();
   break;
 }
-
-:(scenario trace_with_one_argument)
-recipe main [
-  trace [foo]
-]
-+app: foo
 
 //: a smarter but more limited version of 'trace'
 
