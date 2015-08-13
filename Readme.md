@@ -386,7 +386,7 @@ d) Try out the programming environment:
 
 Screenshot:
 
-![programming environment](html/edit.png)
+<img alt='programming environment' src='html/edit.png' width='720px'>
 
 You write recipes on the left and try them out in *sandboxes* on the right.
 Hit F4 to rerun all sandboxes with the latest version of the code. More (maybe
