@@ -94,7 +94,7 @@ case INDEX: {
     break;
   }
   reagent base = canonize(current_instruction().ingredients.at(0));
-  if (base.types.at(0) != Type_ordinal["array"]) {
+  if (!is_mu_array(base)) {
     raise << current_recipe_name () << ": 'index' on a non-array " << base.original_string << '\n' << end();
     break;
   }
@@ -189,7 +189,7 @@ case INDEX_ADDRESS: {
     break;
   }
   reagent base = canonize(current_instruction().ingredients.at(0));
-  if (base.types.at(0) != Type_ordinal["array"]) {
+  if (!is_mu_array(base)) {
     raise << current_recipe_name () << ": 'index-address' on a non-array " << base.original_string << '\n' << end();
     break;
   }
@@ -264,7 +264,7 @@ case LENGTH: {
     break;
   }
   reagent x = canonize(current_instruction().ingredients.at(0));
-  if (x.types.at(0) != Type_ordinal["array"]) {
+  if (!is_mu_array(x)) {
     raise << "tried to calculate length of non-array " << x.original_string << '\n' << end();
     break;
   }
