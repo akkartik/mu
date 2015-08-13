@@ -240,15 +240,13 @@ system permits and forces them to use, you'll learn to create new checks that
 make sense for your specific program. If it makes sense to perform different
 checks in different parts of your program, you'll be able to do that.
 
-To summarize: Mu instructions have multiple ingredient and product reagents.
-Values can have multiple rows separated by slashes, and rows can have multiple
-columns separated by colons. The address of a reagent is always in the very
-first column of the first row of its 'table'. You can visualize the last
-example above as:
+You can imagine each reagent as a table, rows separated by slashes, columns
+within a row separated by colons. So the last example above would become
+something like this:
 
   ```
-  z           : list : integer  /
-  assign-once : true            /
+  z           : list   : integer  /
+  assign-once : true              /
   assigned    : false
   ```
 
@@ -259,7 +257,7 @@ inserting code at them.
 
   ```nim
   recipe factorial [
-    new-default-space
+    local-scope
     n:number <- next-ingredient
     {
       +base-case:
@@ -365,8 +363,7 @@ associate with automated tests.
 b) Try skimming the [colorized source code](http://akkartik.github.io/mu). I'd
 like it to eventually be possible to get a pretty good sense for how things
 work just by skimming the files in order, skimming the top of each file and
-ignoring details lower down. I'd love to hear feedback about how successful my
-efforts are.
+ignoring details lower down. Tell me how successful my efforts are.
 
 c) Try running the tests:
 
@@ -379,12 +376,6 @@ includes logs for each test showing you just how it ran on my machine. If Mu
 eventually gets complex enough that you have trouble running examples, these
 logs might help figure out if my system is somehow different from yours or if
 I've just been insufficiently diligent and my documentation is out of date.
-
-The immediate goal of Mu is to build up towards an environment for parsing and
-visualizing these traces in a hierarchical manner, and to easily turn traces
-into reproducible tests by flagging inputs entering the log and outputs
-leaving it. The former will have to be faked in, and the latter will want to
-be asserted on, to turn a trace into a test.
 
 d) Try out the programming environment:
 
@@ -403,6 +394,25 @@ dated) details: http://akkartik.name/post/mu. Beware, it won't save your edits
 by default. But if you create a sub-directory called `lesson/` under `mu/` it
 will. If you turn that directory into a git repo with `git init`, it will also
 back up each version you try out.
+
+Once you have a sandbox you can click on its result to mark it as expected:
+
+<img alt='expected result' src='html/expected-result.png' width='180px'>
+
+Later if the result changes it'll be flagged in red to draw your attention to
+it. Thus, manually tested sandboxes become reproducible automated tests.
+
+<img alt='unexpected result' src='html/unexpected-result.png' width='180px'>
+
+Another feature: Clicking on the code in a sandbox expands its trace for you
+to browse. So far it only shows a flat listing, but soon you'll be able to
+drill down and zoom out.
+
+The next major milestone on mu's roadmap is support for recording and faking
+console input to a sandbox, so that you can type in an input once and have it
+replay everytime you hit F4. Once this support is in place it will be easy to
+generalize to more interfaces, like requesting urls over a network or reading
+files on a disk.
 
 **Credits**
 
