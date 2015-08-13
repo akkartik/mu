@@ -134,11 +134,11 @@ case GET: {
     raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
-  type_ordinal base_type = base.types.at(0);
-  if (Type[base_type].kind != container) {
+  if (base.types.empty() || Type[base.types.at(0)].kind != container) {
     raise << current_recipe_name () << ": first ingredient of 'get' should be a container, but got " << base.original_string << '\n' << end();
     break;
   }
+  type_ordinal base_type = base.types.at(0);
   if (!is_literal(current_instruction().ingredients.at(1))) {
     raise << current_recipe_name() << ": second ingredient of 'get' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
     break;
@@ -214,11 +214,11 @@ case GET_ADDRESS: {
     raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
-  type_ordinal base_type = base.types.at(0);
-  if (Type[base_type].kind != container) {
+  if (base.types.empty() || Type[base.types.at(0)].kind != container) {
     raise << current_recipe_name () << ": first ingredient of 'get-address' should be a container, but got " << base.original_string << '\n' << end();
     break;
   }
+  type_ordinal base_type = base.types.at(0);
   if (!is_literal(current_instruction().ingredients.at(1))) {
     raise << current_recipe_name() << ": second ingredient of 'get-address' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
     break;

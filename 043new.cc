@@ -222,7 +222,7 @@ case ABANDON: {
   }
   long long int address = ingredients.at(0).at(0);
   reagent types = canonize(current_instruction().ingredients.at(0));
-  if (types.types.at(0) != Type_ordinal["address"]) {
+  if (types.types.empty() || types.types.at(0) != Type_ordinal["address"]) {
     raise << current_recipe_name() << ": first ingredient of 'abandon' should be an address, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }

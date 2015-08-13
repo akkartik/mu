@@ -57,7 +57,7 @@ reagent lookup_memory(reagent x) {
 //?   cout << "lookup_memory: " << x.to_string() << "\n"; //? 2
   static const type_ordinal ADDRESS = Type_ordinal["address"];
   reagent result;
-  if (x.types.at(0) != ADDRESS) {
+  if (x.types.empty() || x.types.at(0) != ADDRESS) {
     raise << current_recipe_name() << ": tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
     return result;
   }
