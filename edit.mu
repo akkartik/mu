@@ -5663,6 +5663,51 @@ recipe foo [
   ]
 ]
 
+scenario run-shows-warnings-everytime [
+  $close-trace
+  # try to run a file with an error
+  assume-screen 100/width, 15/height
+  assume-console [
+    press 65532  # F4
+  ]
+  run [
+    1:address:array:character <- new [ 
+recipe foo [
+  x:number <- copy y:number
+]]
+    2:address:array:character <- new [foo]
+    3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊foo                                              .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  x:number <- copy y:number                       ┊                                                 .
+    .]                                                 ┊                                                 .
+    .use before set: y in foo                          ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+  # rerun the file, check for the same error
+  assume-console [
+    press 65532  # F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊foo                                              .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  x:number <- copy y:number                       ┊                                                 .
+    .]                                                 ┊                                                 .
+    .use before set: y in foo                          ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
 ## helpers for drawing editor borders
 
 recipe draw-box [

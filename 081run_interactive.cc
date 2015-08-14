@@ -286,7 +286,10 @@ case RELOAD: {
   }
   Hide_warnings = true;
   Disable_redefine_warnings = true;
-  load(read_mu_string(ingredients.at(0).at(0)));
+  vector<recipe_ordinal> recipes_reloaded = load(read_mu_string(ingredients.at(0).at(0)));
+  for (long long int i = 0; i < SIZE(recipes_reloaded); ++i) {
+    Name.erase(recipes_reloaded.at(i));
+  }
   transform_all();
   Trace_stream->newline();  // flush trace
   Disable_redefine_warnings = false;
