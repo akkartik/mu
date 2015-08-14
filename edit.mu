@@ -598,7 +598,7 @@ recipe editor-event-loop [
     e:event, console:address, found?:boolean, quit?:boolean <- read-event console
     loop-unless found?
     break-if quit?  # only in tests
-    trace [app], [next-event]
+    trace 10, [app], [next-event]
     # 'touch' event
     t:address:touch-event <- maybe-convert e, touch:variant
     {
@@ -627,7 +627,7 @@ recipe handle-keyboard-event [
   {
     c:address:character <- maybe-convert e, text:variant
     break-unless c
-#?     trace [app], [handle-keyboard-event: special character] #? 1
+#?     trace 10, [app], [handle-keyboard-event: special character] #? 1
     # exceptions for special characters go here
     +handle-special-character
     # ignore any other special characters
@@ -1341,7 +1341,7 @@ recipe delete-before-cursor [
   # if at start of text (before-cursor at § sentinel), return
   prev:address:duplex-list <- prev-duplex *before-cursor
   reply-unless prev
-#?   trace [app], [delete-before-cursor] #? 1
+#?   trace 10, [app], [delete-before-cursor] #? 1
   editor <- move-cursor-coordinates-left editor
   remove-duplex *before-cursor
   *before-cursor <- copy prev
@@ -1358,7 +1358,7 @@ recipe move-cursor-coordinates-left [
   {
     at-left-margin?:boolean <- equal *cursor-column, left
     break-if at-left-margin?
-#?     trace [app], [decrementing cursor column] #? 1
+#?     trace 10, [app], [decrementing cursor column] #? 1
     *cursor-column <- subtract *cursor-column, 1
     reply editor/same-as-ingredient:0
   }
@@ -1378,14 +1378,14 @@ recipe move-cursor-coordinates-left [
     previous-character-is-newline?:boolean <- equal previous-character, 10/newline
     break-unless previous-character-is-newline?
     # compute length of previous line
-#?     trace [app], [switching to previous line] #? 1
+#?     trace 10, [app], [switching to previous line] #? 1
     d:address:duplex-list <- get *editor, data:offset
     end-of-line:number <- previous-line-length before-cursor, d
     *cursor-column <- add left, end-of-line
     reply editor/same-as-ingredient:0
   }
   # case 2: if previous-character was not newline, we're just at a wrapped line
-#?   trace [app], [wrapping to previous line] #? 1
+#?   trace 10, [app], [wrapping to previous line] #? 1
   right:number <- get *editor, right:offset
   *cursor-column <- subtract right, 1  # leave room for wrap icon
   reply editor/same-as-ingredient:0
@@ -1726,7 +1726,7 @@ after +handle-special-key [
   {
     move-to-previous-character?:boolean <- equal *k, 65515/left-arrow
     break-unless move-to-previous-character?
-#?     trace [app], [left arrow] #? 1
+#?     trace 10, [app], [left arrow] #? 1
     # if not at start of text (before-cursor at § sentinel)
     prev:address:duplex-list <- prev-duplex *before-cursor
     break-unless prev
@@ -3869,7 +3869,7 @@ recipe event-loop [
     e:event, console, found?:boolean, quit?:boolean <- read-event console
     loop-unless found?
     break-if quit?  # only in tests
-    trace [app], [next-event]
+    trace 10, [app], [next-event]
     +handle-event
     # check for global events that will trigger regardless of which editor has focus
     {
@@ -4534,7 +4534,7 @@ recipe render-sandbox-side [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-#?   trace [app], [render sandbox side] #? 1
+#?   trace 10, [app], [render sandbox side] #? 1
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
@@ -5144,7 +5144,7 @@ after +global-touch [
   {
     was-delete?:boolean <- delete-sandbox *t, env
     break-unless was-delete?
-#?     trace [app], [delete clicked] #? 1
+#?     trace 10, [app], [delete clicked] #? 1
     hide-screen screen
     screen <- render-sandbox-side screen, env
     update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
@@ -5352,7 +5352,7 @@ scenario sandbox-click-on-code-toggles-app-trace [
   # basic recipe
   1:address:array:character <- new [ 
 recipe foo [
-  trace [abc]
+  stash [abc]
 ]]
   # run it
   2:address:array:character <- new [foo]
@@ -5365,7 +5365,7 @@ recipe foo [
     .                     run (F4)           .
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  trace [abc]       ┊                  x.
+    .  stash [abc]       ┊                  x.
     .]                   ┊foo                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
     .                    ┊                   .
@@ -5382,7 +5382,7 @@ recipe foo [
     .                     run (F4)           .
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  trace [abc]       ┊                  x.
+    .  stash [abc]       ┊                  x.
     .]                   ┊foo                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .
     .                    ┊━━━━━━━━━━━━━━━━━━━.
@@ -5410,7 +5410,7 @@ recipe foo [
     .                     run (F4)           .
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  trace [abc]       ┊                  x.
+    .  stash [abc]       ┊                  x.
     .]                   ┊foo                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
     .                    ┊                   .
@@ -5423,7 +5423,7 @@ scenario sandbox-shows-app-trace-and-result [
   # basic recipe
   1:address:array:character <- new [ 
 recipe foo [
-  trace [abc]
+  stash [abc]
   add 2, 2
 ]]
   # run it
@@ -5437,7 +5437,7 @@ recipe foo [
     .                     run (F4)           .
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  trace [abc]       ┊                  x.
+    .  stash [abc]       ┊                  x.
     .  add 2, 2          ┊foo                .
     .]                   ┊4                  .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
@@ -5455,7 +5455,7 @@ recipe foo [
     .                     run (F4)           .
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  trace [abc]       ┊                  x.
+    .  stash [abc]       ┊                  x.
     .  add 2, 2          ┊foo                .
     .]                   ┊abc                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
