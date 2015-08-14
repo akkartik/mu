@@ -325,7 +325,9 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     vector<type_ordinal> types;
     while (!inner.eof()) {
       string type_name = slurp_until(inner, ':');
-      if (Type_ordinal.find(type_name) == Type_ordinal.end()) {
+      if (Type_ordinal.find(type_name) == Type_ordinal.end()
+          // types can contain integers, like for array sizes
+          && !is_integer(type_name)) {
 //?         cerr << type_name << " is " << Next_type_ordinal << '\n'; //? 1
         Type_ordinal[type_name] = Next_type_ordinal++;
       }

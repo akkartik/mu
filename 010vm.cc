@@ -196,7 +196,9 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
   name = properties.at(0).first;
   for (long long int i = 0; i < SIZE(properties.at(0).second); ++i) {
     string type = properties.at(0).second.at(i);
-    if (Type_ordinal.find(type) == Type_ordinal.end()) {
+    if (Type_ordinal.find(type) == Type_ordinal.end()
+        // types can contain integers, like for array sizes
+        && !is_integer(type)) {
 //?       cerr << type << " is " << Next_type_ordinal << '\n'; //? 1
       Type_ordinal[type] = Next_type_ordinal++;
     }
