@@ -143,7 +143,7 @@ INDEX,
 Recipe_ordinal["index"] = INDEX;
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
-  if (SIZE(ingredients) != 2) {
+  if (SIZE(current_instruction().ingredients) != 2) {
     raise << current_recipe_name() << ": 'index' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
@@ -238,7 +238,7 @@ INDEX_ADDRESS,
 Recipe_ordinal["index-address"] = INDEX_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
-  if (SIZE(ingredients) != 2) {
+  if (SIZE(current_instruction().ingredients) != 2) {
     raise << current_recipe_name() << ": 'index-address' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
@@ -313,7 +313,7 @@ LENGTH,
 Recipe_ordinal["length"] = LENGTH;
 :(before "End Primitive Recipe Implementations")
 case LENGTH: {
-  if (SIZE(ingredients) != 1) {
+  if (SIZE(current_instruction().ingredients) != 1) {
     raise << current_recipe_name() << ": 'length' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
@@ -330,3 +330,10 @@ case LENGTH: {
   products.at(0).push_back(Memory[x.value]);
   break;
 }
+
+//: optimization: none of the instructions in this layer use 'ingredients' so
+//: stop copying potentially huge arrays into it.
+:(before "End should_copy_ingredients Special-cases")
+recipe_ordinal r = current_instruction().operation;
+if (r == CREATE_ARRAY || r == INDEX || r == INDEX_ADDRESS || r == LENGTH)
+  return false;

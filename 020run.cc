@@ -71,10 +71,12 @@ void run_current_routine()
     // Each ingredient loads a vector of values rather than a single value; mu
     // permits operating on reagents spanning multiple locations.
     vector<vector<double> > ingredients;
-    for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
-      ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
-      Locations_read[current_recipe_name()] += SIZE(ingredients.back());
-      Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back());
+    if (should_copy_ingredients()) {
+      for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
+        ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
+        Locations_read[current_recipe_name()] += SIZE(ingredients.back());
+        Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back());
+      }
     }
     // Instructions below will write to 'products'.
     vector<vector<double> > products;
@@ -116,6 +118,11 @@ void run_current_routine()
     ++current_step_index();
   }
   stop_running_current_routine:;
+}
+
+bool should_copy_ingredients() {
+  // End should_copy_ingredients Special-cases
+  return true;
 }
 
 //: Some helpers.
