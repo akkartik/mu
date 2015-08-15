@@ -150,6 +150,7 @@ if (!Run_tests) {
 //?   Trace_stream->collect_layer.insert("app"); //? 1
   transform_all();
   recipe_ordinal r = Recipe_ordinal[string("main")];
+  atexit(dump_profile);
   if (r) run(r);
 //?   dump_memory(); //? 1
   teardown();
@@ -161,8 +162,6 @@ void dump_profile() {
     cerr << p->first << ": " << p->second << '\n';
   }
 }
-:(before "End One-time Setup")
-atexit(dump_profile);
 
 :(code)
 void cleanup_main() {
