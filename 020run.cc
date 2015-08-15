@@ -44,6 +44,7 @@ struct routine {
 
 :(before "End Globals")
 routine* Current_routine = NULL;
+map<string, long long int> Instructions_running;
 
 :(code)
 void run(recipe_ordinal r) {
@@ -57,6 +58,7 @@ void run_current_routine()
   while (!Current_routine->completed())  // later layers will modify condition
   {
     // Running One Instruction
+    Instructions_running[current_recipe_name()]++;
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string() << end();
     if (Memory[0] != 0) {
@@ -152,6 +154,15 @@ if (!Run_tests) {
 //?   dump_memory(); //? 1
   teardown();
 }
+
+:(code)
+void dump_profile() {
+  for (map<string, long long int>::iterator p = Instructions_running.begin(); p != Instructions_running.end(); ++p) {
+    cerr << p->first << ": " << p->second << '\n';
+  }
+}
+:(before "End One-time Setup")
+atexit(dump_profile);
 
 :(code)
 void cleanup_main() {
