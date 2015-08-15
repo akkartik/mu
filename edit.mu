@@ -248,7 +248,7 @@ recipe render [
   reply row, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
-# row:number, screen:address <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
+# row, screen <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
 # move cursor at start of next line
 # print a string 's' to 'editor' in 'color' starting at 'row'
 # clear rest of last line, but don't move cursor to next line
@@ -512,7 +512,7 @@ after +character-c-recived [
   color <- get-color color, c
 ]
 
-# color:number <- get-color color:number, c:character
+# color <- get-color color:number, c:character
 # so far the previous color is all the information we need; that may change
 recipe get-color [
   local-scope
@@ -4657,7 +4657,7 @@ recipe restore-sandboxes [
   reply env/same-as-ingredient:0
 ]
 
-# row:number, screen:address <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
+# row, screen <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
 # print the fake sandbox screen to 'screen' with appropriate delimiters
 # leave cursor at start of next line
 recipe render-screen [
