@@ -176,7 +176,7 @@ recipe render [
       *before-cursor <- prev-duplex curr
     }
     c:character <- get *curr, value:offset
-    +character-c-recived
+    +character-c-received
     {
       # newline? move to left rather than 0
       newline?:boolean <- equal c, 10/newline
@@ -508,7 +508,7 @@ f]
   ]
 ]
 
-after +character-c-recived [
+after +character-c-received [
   color <- get-color color, c
 ]
 
