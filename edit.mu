@@ -4447,7 +4447,9 @@ after +global-keypress [
   {
     do-run?:boolean <- equal *k, 65532/F4
     break-unless do-run?
-    run-sandboxes env
+    status:address:array:character <- new [running...  ]
+    screen <- update-status screen, status, 245/grey
+    run-sandboxes env, screen
     # F4 might update warnings and results on both sides
     screen <- render-all screen, env
     update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
@@ -4458,6 +4460,7 @@ after +global-keypress [
 recipe run-sandboxes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
+  screen:address <- next-ingredient
   recipes:address:editor-data <- get *env, recipes:offset
   # copy code from recipe editor, persist, load into mu, save any warnings
   in:address:array:character <- editor-contents recipes
@@ -4465,7 +4468,12 @@ recipe run-sandboxes [
   recipe-warnings:address:address:array:character <- get-address *env, recipe-warnings:offset
   *recipe-warnings <- reload in
   # if recipe editor has errors, stop
-  reply-if *recipe-warnings
+  {
+    break-unless *recipe-warnings
+    status:address:array:character <- new [errors found]
+    update-status screen, status, 1/red
+    reply
+  }
   # check contents of right editor (sandbox)
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   {
@@ -4502,6 +4510,18 @@ recipe run-sandboxes [
     curr <- get *curr, next-sandbox:offset
     loop
   }
+  status:address:array:character <- new [            ]
+  screen <- update-status screen, status, 245/grey
+]
+
+recipe update-status [
+  local-scope
+  screen:address <- next-ingredient
+  msg:address:array:character <- next-ingredient
+  color:number <- next-ingredient
+  move-cursor screen, 0, 2
+  screen <- print-string screen, msg, color, 238/grey/background
+  reply screen/same-as-ingredient:0
 ]
 
 recipe save-sandboxes [
@@ -5555,7 +5575,7 @@ recipe foo [
     event-loop screen:address, console:address, env:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  get 123:number, foo:offset                      ┊                                                 .
@@ -5565,7 +5585,7 @@ recipe foo [
     .                                                  ┊                                                 .
   ]
   screen-should-contain-in-color 1/red, [
-    .                                                                                                    .
+    .  errors found                                                                                      .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -5591,7 +5611,7 @@ recipe foo [
     event-loop screen:address, console:address, env:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x <- copy 0                                     ┊                                                 .
@@ -5649,7 +5669,7 @@ recipe foo [
     event-loop screen:address, console:address, env:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x:number <- copy 0                              ┊                                                 .
@@ -5680,7 +5700,7 @@ recipe foo [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x:number <- copy y:number                       ┊                                                 .
@@ -5697,7 +5717,7 @@ recipe foo [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x:number <- copy y:number                       ┊                                                 .
