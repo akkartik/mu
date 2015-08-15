@@ -45,6 +45,8 @@ struct routine {
 :(before "End Globals")
 routine* Current_routine = NULL;
 map<string, long long int> Instructions_running;
+map<string, long long int> Locations_read;
+map<string, long long int> Locations_read_by_instruction;
 
 :(code)
 void run(recipe_ordinal r) {
@@ -71,6 +73,8 @@ void run_current_routine()
     vector<vector<double> > ingredients;
     for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
       ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
+      Locations_read[current_recipe_name()] += SIZE(ingredients.back());
+      Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back());
     }
     // Instructions below will write to 'products'.
     vector<vector<double> > products;
@@ -159,6 +163,14 @@ if (!Run_tests) {
 :(code)
 void dump_profile() {
   for (map<string, long long int>::iterator p = Instructions_running.begin(); p != Instructions_running.end(); ++p) {
+    cerr << p->first << ": " << p->second << '\n';
+  }
+  cerr << "== locations read\n";
+  for (map<string, long long int>::iterator p = Locations_read.begin(); p != Locations_read.end(); ++p) {
+    cerr << p->first << ": " << p->second << '\n';
+  }
+  cerr << "== locations read by instruction\n";
+  for (map<string, long long int>::iterator p = Locations_read_by_instruction.begin(); p != Locations_read_by_instruction.end(); ++p) {
     cerr << p->first << ": " << p->second << '\n';
   }
 }
