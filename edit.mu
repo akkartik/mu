@@ -48,7 +48,7 @@ container editor-data [
   cursor-column:number
 ]
 
-# editor:address, screen:address <- new-editor s:address:array:character, screen:address, left:number, right:number
+# editor:address, screen <- new-editor s:address:array:character, screen:address, left:number, right:number
 # creates a new editor widget and renders its initial appearance to screen.
 #   top/left/right constrain the screen area available to the new editor.
 #   right is exclusive.
@@ -82,7 +82,7 @@ recipe new-editor [
   y <- get-address *result, before-cursor:offset
   *y <- copy *init
   # initial render to screen, just for some old tests
-  _, screen <- render screen, result
+  _, screen, result <- render screen, result
   +editor-initialization
   reply result
 ]
@@ -134,7 +134,7 @@ scenario editor-initializes-without-data [
   ]
 ]
 
-# bottom:number, screen:address <- render screen:address, editor:address:editor-data
+# bottom:number, screen, editor <- render screen:address, editor:address:editor-data
 #
 # Assumes cursor should be at coordinates (cursor-row, cursor-column) and
 # updates before-cursor to match. Might also move coordinates if they're
@@ -143,7 +143,7 @@ recipe render [
   local-scope
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
-  reply-unless editor, 1/top, screen/same-as-ingredient:0
+  reply-unless editor, 1/top, screen/same-as-ingredient:0, editor/same-as-ingredient:1
   left:number <- get *editor, left:offset
   screen-height:number <- screen-height screen
   right:number <- get *editor, right:offset
@@ -245,7 +245,7 @@ recipe render [
   }
   # clear rest of screen
   clear-screen-from screen, row, column, left, right
-  reply row, screen/same-as-ingredient:0
+  reply row, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
 # row:number, screen:address <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
@@ -4175,7 +4175,7 @@ recipe render-recipes [
   # render recipes
   left:number <- get *recipes, left:offset
   right:number <- get *recipes, right:offset
-  row:number, screen <- render screen, recipes
+  row:number, screen, recipes <- render screen, recipes
   recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
   {
     # print any warnings
@@ -4558,7 +4558,7 @@ recipe render-sandbox-side [
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
-  row:number, screen <- render screen, current-sandbox
+  row:number, screen, current-sandbox <- render screen, current-sandbox
   row <- add row, 1
   draw-horizontal screen, row, left, right, 9473/horizontal-double
   sandbox:address:sandbox-data <- get *env, sandbox:offset
