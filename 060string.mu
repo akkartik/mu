@@ -150,7 +150,7 @@ recipe buffer-full? [
   reply result
 ]
 
-# in:address:buffer <- buffer-append in:address:buffer, c:character
+# in <- buffer-append in:address:buffer, c:character
 recipe buffer-append [
   local-scope
   in:address:buffer <- next-ingredient
@@ -794,7 +794,7 @@ scenario string-find-next-second [
   ]
 ]
 
-# idx:number <- find-substring text:address:array:character, pattern:address:array:character, idx:number
+# next-index:number <- find-substring text:address:array:character, pattern:address:array:character, idx:number
 # like find-next, but searches for multiple characters
 # fairly dumb algorithm
 recipe find-substring [

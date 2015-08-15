@@ -50,7 +50,7 @@ recipe new-channel [
   reply result
 ]
 
-# chan:address:channel <- write chan:address:channel, val:location
+# chan <- write chan:address:channel, val:location
 recipe write [
   local-scope
   chan:address:channel <- next-ingredient
@@ -79,7 +79,7 @@ recipe write [
   reply chan/same-as-ingredient:0
 ]
 
-# result:location, chan:address:channel <- read chan:address:channel
+# result:location, chan <- read chan:address:channel
 recipe read [
   local-scope
   chan:address:channel <- next-ingredient
@@ -277,7 +277,7 @@ scenario channel-read-not-full [
 ]
 
 # helper for channels of characters in particular
-# out:address:channel <- buffer-lines in:address:channel, out:address:channel
+# out <- buffer-lines in:address:channel, out:address:channel
 recipe buffer-lines [
   local-scope
   in:address:channel <- next-ingredient
