@@ -3963,29 +3963,6 @@ recipe resize [
   reply env/same-as-ingredient:1
 ]
 
-recipe update-cursor [
-  local-scope
-  screen:address <- next-ingredient
-  recipes:address:editor-data <- next-ingredient
-  current-sandbox:address:editor-data <- next-ingredient
-  sandbox-in-focus?:boolean <- next-ingredient
-  {
-    break-if sandbox-in-focus?
-#?     $print [recipes in focus
-#? ] #? 1
-    cursor-row:number <- get *recipes, cursor-row:offset
-    cursor-column:number <- get *recipes, cursor-column:offset
-  }
-  {
-    break-unless sandbox-in-focus?
-#?     $print [sandboxes in focus
-#? ] #? 1
-    cursor-row:number <- get *current-sandbox, cursor-row:offset
-    cursor-column:number <- get *current-sandbox, cursor-column:offset
-  }
-  move-cursor screen, cursor-row, cursor-column
-]
-
 scenario point-at-multiple-editors [
   $close-trace
   assume-screen 30/width, 5/height
@@ -4215,6 +4192,29 @@ recipe render-recipes [
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
   reply screen/same-as-ingredient:0
+]
+
+recipe update-cursor [
+  local-scope
+  screen:address <- next-ingredient
+  recipes:address:editor-data <- next-ingredient
+  current-sandbox:address:editor-data <- next-ingredient
+  sandbox-in-focus?:boolean <- next-ingredient
+  {
+    break-if sandbox-in-focus?
+#?     $print [recipes in focus
+#? ] #? 1
+    cursor-row:number <- get *recipes, cursor-row:offset
+    cursor-column:number <- get *recipes, cursor-column:offset
+  }
+  {
+    break-unless sandbox-in-focus?
+#?     $print [sandboxes in focus
+#? ] #? 1
+    cursor-row:number <- get *current-sandbox, cursor-row:offset
+    cursor-column:number <- get *current-sandbox, cursor-column:offset
+  }
+  move-cursor screen, cursor-row, cursor-column
 ]
 
 # ctrl-n - switch focus
