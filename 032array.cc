@@ -10,11 +10,6 @@
 recipe main [
   # create an array occupying locations 1 (for the size) and 2-4 (for the elements)
   1:array:number:3 <- create-array
-  # write to it
-  2:number <- copy 34
-  3:number <- copy 35
-  4:number <- copy 36
-  reply 1:array:number:3
 ]
 +run: creating array of size 4
 
