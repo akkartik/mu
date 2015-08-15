@@ -232,15 +232,6 @@ recipe render [
     break-unless before-cursor?
     *cursor-row <- copy row
     *cursor-column <- copy column
-    # line not wrapped but cursor outside bounds? wrap cursor
-    {
-      too-far-right?:boolean <- greater-than *cursor-column, right
-      break-unless too-far-right?
-      *cursor-column <- copy left
-      *cursor-row <- add *cursor-row, 1
-      above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
-      assert above-screen-bottom?, [unimplemented: wrapping cursor past bottom of screen]
-    }
     *before-cursor <- copy prev
   }
   # clear rest of screen
