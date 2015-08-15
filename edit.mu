@@ -159,7 +159,7 @@ recipe render [
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  move-cursor screen, row, column
+  screen <- move-cursor screen, row, column
   {
     +next-character
     break-unless curr
@@ -195,7 +195,7 @@ recipe render [
       # skip to next line
       row <- add row, 1
       column <- copy left
-      move-cursor screen, row, column
+      screen <- move-cursor screen, row, column
       curr <- next-duplex curr
       prev <- next-duplex prev
       loop +next-character:label
@@ -209,7 +209,7 @@ recipe render [
       print-character screen, 8617/loop-back-to-left, 245/grey
       column <- copy left
       row <- add row, 1
-      move-cursor screen, row, column
+      screen <- move-cursor screen, row, column
       # don't increment curr
       loop +next-character:label
     }
@@ -263,7 +263,7 @@ recipe render-string [
   row <- add row, 1
   reply-unless s, row/same-as-ingredient:5, screen/same-as-ingredient:0
   column:number <- copy left
-  move-cursor screen, row, column
+  screen <- move-cursor screen, row, column
   screen-height:number <- screen-height screen
   i:number <- copy 0
   len:number <- length *s
@@ -282,7 +282,7 @@ recipe render-string [
       print-character screen, 8617/loop-back-to-left, 245/grey
       column <- copy left
       row <- add row, 1
-      move-cursor screen, row, column
+      screen <- move-cursor screen, row, column
       loop +next-character:label  # retry i
     }
     i <- add i, 1
@@ -300,7 +300,7 @@ recipe render-string [
       }
       row <- add row, 1
       column <- copy left
-      move-cursor screen, row, column
+      screen <- move-cursor screen, row, column
       loop +next-character:label
     }
     print-character screen, c, color
@@ -346,7 +346,7 @@ recipe clear-screen-from [
     reply screen/same-as-ingredient:0
   }
   # if not, go the slower route
-  move-cursor screen, row, column
+  screen <- move-cursor screen, row, column
   clear-line-delimited screen, column, right
   clear-rest-of-screen screen, row, left, right
   reply screen/same-as-ingredient:0
@@ -359,12 +359,12 @@ recipe clear-rest-of-screen [
   left:number <- next-ingredient
   right:number <- next-ingredient
   row <- add row, 1
-  move-cursor screen, row, left
+  screen <- move-cursor screen, row, left
   screen-height:number <- screen-height screen
   {
     at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
     break-if at-bottom-of-screen?
-    move-cursor screen, row, left
+    screen <- move-cursor screen, row, left
     clear-line-delimited screen, left, right
     row <- add row, 1
     loop
@@ -3838,7 +3838,7 @@ recipe new-programming-environment [
   button-start:number <- subtract width, 20
   button-on-screen?:boolean <- greater-or-equal button-start, 0
   assert button-on-screen?, [screen too narrow for menu]
-  move-cursor screen, 0/row, button-start
+  screen <- move-cursor screen, 0/row, button-start
   run-button:address:array:character <- new [ run (F4) ]
   print-string screen, run-button, 255/white, 161/reddish
   # dotted line down the middle
@@ -3944,7 +3944,7 @@ recipe resize [
   button-start:number <- subtract width, 20
   button-on-screen?:boolean <- greater-or-equal button-start, 0
   assert button-on-screen?, [screen too narrow for menu]
-  move-cursor screen, 0/row, button-start
+  screen <- move-cursor screen, 0/row, button-start
   run-button:address:array:character <- new [ run (F4) ]
   print-string screen, run-button, 255/white, 161/reddish
   # dotted line down the middle
@@ -4162,7 +4162,7 @@ recipe render-minimal [
     cursor-row:number <- get *current-sandbox, cursor-row:offset
     cursor-column:number <- get *current-sandbox, cursor-column:offset
   }
-  move-cursor screen, cursor-row, cursor-column
+  screen <- move-cursor screen, cursor-row, cursor-column
   show-screen screen
   reply screen/same-as-ingredient:0
 ]
@@ -4214,7 +4214,7 @@ recipe update-cursor [
     cursor-row:number <- get *current-sandbox, cursor-row:offset
     cursor-column:number <- get *current-sandbox, cursor-column:offset
   }
-  move-cursor screen, cursor-row, cursor-column
+  screen <- move-cursor screen, cursor-row, cursor-column
 ]
 
 # ctrl-n - switch focus
@@ -4519,7 +4519,7 @@ recipe update-status [
   screen:address <- next-ingredient
   msg:address:array:character <- next-ingredient
   color:number <- next-ingredient
-  move-cursor screen, 0, 2
+  screen <- move-cursor screen, 0, 2
   screen <- print-string screen, msg, color, 238/grey/background
   reply screen/same-as-ingredient:0
 ]
@@ -4580,7 +4580,7 @@ recipe render-sandboxes [
   reply-if at-bottom?:boolean, row/same-as-ingredient:4, screen/same-as-ingredient:0
   # render sandbox menu
   row <- add row, 1
-  move-cursor screen, row, left
+  screen <- move-cursor screen, row, left
   clear-line-delimited screen, left, right
   print-character screen, 120/x, 245/grey
   # save menu row so we can detect clicks to it later
@@ -4675,7 +4675,7 @@ recipe render-screen [
   row <- render-string screen, header, left, right, 245/grey, row
   # newline
   row <- add row, 1
-  move-cursor screen, row, left
+  screen <- move-cursor screen, row, left
   # start printing s
   column:number <- copy left
   s-width:number <- screen-width s
@@ -4692,7 +4692,7 @@ recipe render-screen [
     done? <- greater-or-equal row, screen-height
     break-if done?
     column <- copy left
-    move-cursor screen, row, column
+    screen <- move-cursor screen, row, column
     # initial leader for each row: two spaces and a '.'
     print-character screen, 32/space, 245/grey
     print-character screen, 32/space, 245/grey
@@ -5753,7 +5753,7 @@ recipe draw-box [
   draw-bottom-left screen, bottom, left, color
   draw-bottom-right screen, bottom, right, color
   # position cursor inside box
-  move-cursor screen, top, left
+  screen <- move-cursor screen, top, left
   cursor-down screen
   cursor-right screen
 ]
@@ -5780,7 +5780,7 @@ recipe draw-horizontal [
     break-if bg-color-found?
     bg-color <- copy 0/black
   }
-  move-cursor screen, row, x
+  screen <- move-cursor screen, row, x
   {
     continue?:boolean <- lesser-or-equal x, right  # right is inclusive, to match editor-data semantics
     break-unless continue?
@@ -5810,7 +5810,7 @@ recipe draw-vertical [
   {
     continue?:boolean <- lesser-than y, bottom
     break-unless continue?
-    move-cursor screen, y, col
+    screen <- move-cursor screen, y, col
     print-character screen, style, color
     y <- add y, 1
     loop
@@ -5828,7 +5828,7 @@ recipe draw-top-left [
     break-if color-found?
     color <- copy 245/grey
   }
-  move-cursor screen, top, left
+  screen <- move-cursor screen, top, left
   print-character screen, 9484/down-right, color
 ]
 
@@ -5843,7 +5843,7 @@ recipe draw-top-right [
     break-if color-found?
     color <- copy 245/grey
   }
-  move-cursor screen, top, right
+  screen <- move-cursor screen, top, right
   print-character screen, 9488/down-left, color
 ]
 
@@ -5858,7 +5858,7 @@ recipe draw-bottom-left [
     break-if color-found?
     color <- copy 245/grey
   }
-  move-cursor screen, bottom, left
+  screen <- move-cursor screen, bottom, left
   print-character screen, 9492/up-right, color
 ]
 
@@ -5873,7 +5873,7 @@ recipe draw-bottom-right [
     break-if color-found?
     color <- copy 245/grey
   }
-  move-cursor screen, bottom, right
+  screen <- move-cursor screen, bottom, right
   print-character screen, 9496/up-left, color
 ]
 
