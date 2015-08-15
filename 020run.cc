@@ -318,24 +318,24 @@ recipe main [
 
 :(scenario comma_without_space)
 recipe main [
-  1:number <- add 2,2
+  1:number, 2:number <- copy 2,2
 ]
-+mem: storing 4 in location 1
++mem: storing 2 in location 1
 
 :(scenario space_without_comma)
 recipe main [
-  1:number <- add 2 2
+  1:number, 2:number <- copy 2 2
 ]
-+mem: storing 4 in location 1
++mem: storing 2 in location 1
 
 :(scenario comma_before_space)
 recipe main [
-  1:number <- add 2, 2
+  1:number, 2:number <- copy 2, 2
 ]
-+mem: storing 4 in location 1
++mem: storing 2 in location 1
 
 :(scenario comma_after_space)
 recipe main [
-  1:number <- add 2 ,2
+  1:number, 2:number <- copy 2 ,2
 ]
-+mem: storing 4 in location 1
++mem: storing 2 in location 1
