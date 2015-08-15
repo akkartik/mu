@@ -4127,7 +4127,7 @@ recipe render-all [
   #
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
-  update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
+  screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
   #
   show-screen screen
   reply screen/same-as-ingredient:0
@@ -4206,6 +4206,7 @@ recipe update-cursor [
     cursor-column:number <- get *current-sandbox, cursor-column:offset
   }
   screen <- move-cursor screen, cursor-row, cursor-column
+  reply screen/same-as-ingredient:0
 ]
 
 # ctrl-n - switch focus
@@ -4216,7 +4217,7 @@ after +global-type [
     ctrl-n?:boolean <- equal *c, 14/ctrl-n
     break-unless ctrl-n?
     *sandbox-in-focus? <- not *sandbox-in-focus?
-    update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     loop +next-event:label
   }
 ]
@@ -4443,7 +4444,7 @@ after +global-keypress [
     run-sandboxes env, screen
     # F4 might update warnings and results on both sides
     screen <- render-all screen, env
-    update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     loop +next-event:label
   }
 ]
@@ -5042,7 +5043,7 @@ after +global-touch [
     current-sandbox <- insert-text current-sandbox, text
     hide-screen screen
     screen <- render-sandbox-side screen, env
-    update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     show-screen screen
     loop +next-event:label
   }
@@ -5158,7 +5159,7 @@ after +global-touch [
 #?     trace 10, [app], [delete clicked] #? 1
     hide-screen screen
     screen <- render-sandbox-side screen, env
-    update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     show-screen screen
     loop +next-event:label
   }
