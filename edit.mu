@@ -149,7 +149,7 @@ recipe render [
   right:number <- get *editor, right:offset
   # traversing editor
   curr:address:duplex-list <- get *editor, top-of-screen:offset
-  prev:address:duplex-list <- copy curr
+  prev:address:duplex-list <- copy curr  # just in case curr becomes null and we can't compute prev-duplex
   curr <- next-duplex curr
   # traversing screen
   +render-loop-initialization
@@ -173,7 +173,7 @@ recipe render [
       break-unless at-cursor-row?
       at-cursor?:boolean <- equal column, *cursor-column
       break-unless at-cursor?
-      *before-cursor <- prev-duplex curr
+      *before-cursor <- copy prev
     }
     c:character <- get *curr, value:offset
     +character-c-received
