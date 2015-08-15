@@ -595,6 +595,7 @@ recipe editor-event-loop [
     {
       break-unless t
       move-cursor-in-editor screen, editor, *t
+      loop +next-event:label
     }
     # keyboard events
     {
@@ -657,13 +658,106 @@ recipe move-cursor-in-editor [
   right:number <- get *editor, right:offset
   too-far-right?:boolean <- greater-than click-column, right
   reply-if too-far-right?, 0/false
-  # update cursor
-  cursor-row:address:number <- get-address *editor, cursor-row:offset
-  *cursor-row <- get t, row:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
-  *cursor-column <- get t, column:offset
+  # position cursor
+#?   trace 1, [print-character], [foo] #? 1
+  cursor-row:number <- get t, row:offset
+  cursor-column:number <- get t, column:offset
+  editor <- snap-cursor screen, editor, cursor-row, cursor-column
+#?   trace 1, [print-character], [foo done] #? 1
   # gain focus
   reply 1/true
+]
+
+# snap-cursor screen:address, editor:address:editor-data, target-row:number, target-column:number
+#
+# Variant of 'render' that only moves the cursor (coordinates and
+# before-cursor). If it's past the end of a line, it 'slides' it left. If it's
+# past the last line it positions at end of last line.
+recipe snap-cursor [
+  local-scope
+  screen:address <- next-ingredient
+  editor:address:editor-data <- next-ingredient
+  target-row:number <- next-ingredient
+  target-column:number <- next-ingredient
+  reply-unless editor, 1/top, editor/same-as-ingredient:1
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
+  screen-height:number <- screen-height screen
+  # count newlines until screen row
+  curr:address:duplex-list <- get *editor, top-of-screen:offset
+  prev:address:duplex-list <- copy curr  # just in case curr becomes null and we can't compute prev-duplex
+  curr <- next-duplex curr
+  row:number <- copy 1/top
+  column:number <- copy left
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  *cursor-row <- copy target-row
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  *cursor-column <- copy target-column
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  {
+    +next-character
+    break-unless curr
+    off-screen?:boolean <- greater-or-equal row, screen-height
+    break-if off-screen?
+    # update editor-data.before-cursor
+    # Doing so at the start of each iteration ensures it stays one step behind
+    # the current character.
+    {
+      at-cursor-row?:boolean <- equal row, *cursor-row
+      break-unless at-cursor-row?
+      at-cursor?:boolean <- equal column, *cursor-column
+      break-unless at-cursor?
+      *before-cursor <- copy prev
+    }
+    c:character <- get *curr, value:offset
+    {
+      # newline? move to left rather than 0
+      newline?:boolean <- equal c, 10/newline
+      break-unless newline?
+      # adjust cursor if necessary
+      {
+        at-cursor-row?:boolean <- equal row, *cursor-row
+        break-unless at-cursor-row?
+        left-of-cursor?:boolean <- lesser-than column, *cursor-column
+        break-unless left-of-cursor?
+        *cursor-column <- copy column
+        *before-cursor <- copy prev
+      }
+      # skip to next line
+      row <- add row, 1
+      column <- copy left
+      curr <- next-duplex curr
+      prev <- next-duplex prev
+      loop +next-character:label
+    }
+    {
+      # at right? wrap. even if there's only one more letter left; we need
+      # room for clicking on the cursor after it.
+      at-right?:boolean <- equal column, right
+      break-unless at-right?
+      column <- copy left
+      row <- add row, 1
+      # don't increment curr/prev
+      loop +next-character:label
+    }
+    curr <- next-duplex curr
+    prev <- next-duplex prev
+    column <- add column, 1
+    loop
+  }
+  # is cursor to the right of the last line? move to end
+  {
+    at-cursor-row?:boolean <- equal row, *cursor-row
+    cursor-outside-line?:boolean <- lesser-or-equal column, *cursor-column
+    before-cursor-on-same-line?:boolean <- and at-cursor-row?, cursor-outside-line?
+    above-cursor-row?:boolean <- lesser-than row, *cursor-row
+    before-cursor?:boolean <- or before-cursor-on-same-line?, above-cursor-row?
+    break-unless before-cursor?
+    *cursor-row <- copy row
+    *cursor-column <- copy column
+    *before-cursor <- copy prev
+  }
+  reply editor/same-as-ingredient:1
 ]
 
 recipe insert-at-cursor [
@@ -703,6 +797,7 @@ scenario editor-handles-mouse-clicks [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  $clear-trace
   assume-console [
     left-click 1, 1  # on the 'b'
   ]
@@ -720,6 +815,8 @@ scenario editor-handles-mouse-clicks [
     3 <- 1  # cursor is at row 0..
     4 <- 1  # ..and column 1
   ]
+  # performance test: moving cursor doesn't print any characters
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-handles-mouse-clicks-outside-text [
@@ -3887,7 +3984,7 @@ recipe event-loop [
       # send to both editors
       _ <- move-cursor-in-editor screen, recipes, *t
       *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
-      render-minimal screen, env
+      screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
       loop +next-event:label
     }
     # 'resize' event - redraw editor

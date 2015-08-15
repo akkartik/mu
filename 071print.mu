@@ -101,7 +101,7 @@ recipe print-character [
     break-if bg-color-found?
     bg-color <- copy 0/black
   }
-#?   trace 90, [app], [print character] #? 1
+  trace 90, [print-character], c
   {
     # if x exists
     # (handle special cases exactly like in the real screen)
