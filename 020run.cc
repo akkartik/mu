@@ -60,7 +60,7 @@ void run_current_routine()
   while (!Current_routine->completed())  // later layers will modify condition
   {
     // Running One Instruction
-    Instructions_running[current_recipe_name()]++;
+//?     Instructions_running[current_recipe_name()]++; //? 1
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string() << end();
     if (Memory[0] != 0) {
@@ -74,8 +74,8 @@ void run_current_routine()
     if (should_copy_ingredients()) {
       for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
         ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
-        Locations_read[current_recipe_name()] += SIZE(ingredients.back());
-        Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back());
+//?         Locations_read[current_recipe_name()] += SIZE(ingredients.back()); //? 1
+//?         Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back()); //? 1
       }
     }
     // Instructions below will write to 'products'.
@@ -161,7 +161,7 @@ if (!Run_tests) {
 //?   Trace_stream->collect_layer.insert("app"); //? 1
   transform_all();
   recipe_ordinal r = Recipe_ordinal[string("main")];
-  atexit(dump_profile);
+//?   atexit(dump_profile); //? 1
   if (r) run(r);
 //?   dump_memory(); //? 1
   teardown();
