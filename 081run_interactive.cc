@@ -51,10 +51,10 @@ case RUN_INTERACTIVE: {
 }
 
 :(before "End Globals")
-bool Running_interactive = false;
+bool Track_most_recent_products = false;
 long long int Old_screen = 0;  // we can support one iteration of screen inside screen
 :(before "End Setup")
-Running_interactive = false;
+Track_most_recent_products = false;
 Old_screen = 0;
 :(code)
 // reads a string, tries to call it as code (treating it as a test), saving
@@ -95,7 +95,7 @@ bool run_interactive(long long int address) {
        "]\n");
   transform_all();
   if (trace_count("warn") > 0) return false;
-  Running_interactive = true;
+  Track_most_recent_products = true;
   Current_routine->calls.push_front(call(Recipe_ordinal["interactive"]));
   return true;
 }
@@ -139,15 +139,15 @@ recipe main [
 +mem: storing 110 in location 14
 
 :(before "End Globals")
-string Most_recent_results;
+string Most_recent_products;
 :(before "End Setup")
-Most_recent_results = "";
+Most_recent_products = "";
 :(before "End of Instruction")
-if (Running_interactive) {
-  record_products(current_instruction(), products);
+if (Track_most_recent_products) {
+  track_most_recent_products(current_instruction(), products);
 }
 :(code)
-void record_products(const instruction& instruction, const vector<vector<double> >& products) {
+void track_most_recent_products(const instruction& instruction, const vector<vector<double> >& products) {
   ostringstream out;
   for (long long int i = 0; i < SIZE(products); ++i) {
     // string
@@ -171,7 +171,7 @@ void record_products(const instruction& instruction, const vector<vector<double>
       out << products.at(i).at(j) << ' ';
     out << '\n';
   }
-  Most_recent_results = out.str();
+  Most_recent_products = out.str();
 }
 :(before "Complete Call Fallthrough")
 if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction().products.empty()) {
@@ -179,7 +179,7 @@ if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction()
   // Send the results of the most recently executed instruction, regardless of
   // call depth, to be converted to string and potentially printed to string.
   vector<double> result;
-  result.push_back(new_mu_string(Most_recent_results));
+  result.push_back(new_mu_string(Most_recent_products));
   write_memory(current_instruction().products.at(0), result);
   if (SIZE(current_instruction().products) >= 2) {
     vector<double> warnings;
@@ -213,7 +213,7 @@ if (must_clean_up_interactive) clean_up_interactive();
 void clean_up_interactive() {
   Trace_stream->newline();  // flush trace
   Hide_warnings = false;
-  Running_interactive = false;
+  Track_most_recent_products = false;
   // hack: assume collect_layers isn't set anywhere else
   if (Trace_stream->is_narrowly_collecting("warn")) {
     delete Trace_stream;
