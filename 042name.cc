@@ -60,7 +60,7 @@ void transform_names(const recipe_ordinal r) {
       inst.products.at(out).set_value(lookup_name(inst.products.at(out), r));
     }
   }
-  if (names_used && numeric_locations_used && r != Recipe_ordinal["interactive"])
+  if (names_used && numeric_locations_used)
     raise << "mixing variable names and numeric addresses in " << Recipe[r].name << '\n' << end();
 }
 
