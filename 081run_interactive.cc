@@ -3,12 +3,10 @@
 
 :(scenario run_interactive_code)
 recipe main [
-  1:address:array:character <- new [add 2, 2]
-  2:address:array:character <- run-interactive 1:address:array:character
-  3:array:character <- copy *2:address:array:character
+  2:address:array:character <- new [1:number/raw <- copy 34]
+  run-interactive 2:address:array:character
 ]
-# length of result array is flexible; but first character is '4'
-+mem: storing 52 in location 4
++mem: storing 34 in location 1
 
 :(scenario run_interactive_empty)
 recipe main [
