@@ -3,10 +3,12 @@
 
 :(scenario run_interactive_code)
 recipe main [
-  2:address:array:character <- new [1:number <- copy 34]
-  run-interactive 2:address:array:character
+  1:address:array:character <- new [add 2, 2]
+  2:address:array:character <- run-interactive 1:address:array:character
+  3:array:character <- copy *2:address:array:character
 ]
-+mem: storing 34 in location 1
+# length of result array is flexible; but first character is '4'
++mem: storing 52 in location 4
 
 :(scenario run_interactive_empty)
 recipe main [
@@ -52,10 +54,8 @@ case RUN_INTERACTIVE: {
 
 :(before "End Globals")
 bool Track_most_recent_products = false;
-long long int Old_screen = 0;  // we can support one iteration of screen inside screen
 :(before "End Setup")
 Track_most_recent_products = false;
-Old_screen = 0;
 :(code)
 // reads a string, tries to call it as code (treating it as a test), saving
 // all warnings.
@@ -63,22 +63,16 @@ Old_screen = 0;
 bool run_interactive(long long int address) {
   if (Recipe_ordinal.find("interactive") == Recipe_ordinal.end())
     Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
-  Old_screen = Memory[SCREEN];
-//?   cerr << "save screen: " << Old_screen << '\n'; //? 2
   // try to sandbox the run as best you can
   // todo: test this
   if (!Current_scenario) {
-    // not already sandboxed
     for (long long int i = 1; i < Reserved_for_tests; ++i)
       Memory.erase(i);
-    Name[Recipe_ordinal["interactive"]].clear();
   }
-//?   cerr << "screen was at " << Name[Recipe_ordinal["interactive"]]["screen"] << '\n'; //? 1
-  Name[Recipe_ordinal["interactive"]]["screen"] = SCREEN;
-//?   cerr << "screen now at " << Name[Recipe_ordinal["interactive"]]["screen"] << '\n'; //? 1
   string command = trim(strip_comments(read_mu_string(address)));
   if (command.empty()) return false;
   Recipe.erase(Recipe_ordinal["interactive"]);
+  Name[Recipe_ordinal["interactive"]].clear();
   Hide_warnings = true;
   if (!Trace_stream) {
     Trace_file = "";  // if there wasn't already a stream we don't want to save it
@@ -87,11 +81,11 @@ bool run_interactive(long long int address) {
     Trace_stream->collect_layers.insert("app");
   }
   // call run(string) but without the scheduling
-  // we won't create a local scope so that we can get to the new screen after
-  // we return from 'interactive'.
   load(string("recipe interactive [\n") +
+          "local-scope\n" +
           "screen:address <- new-fake-screen 30, 5\n" +
           command + "\n" +
+          "reply screen\n" +
        "]\n");
   transform_all();
   if (trace_count("warn") > 0) return false;
@@ -173,30 +167,23 @@ void track_most_recent_products(const instruction& instruction, const vector<vec
   }
   Most_recent_products = out.str();
 }
-:(before "Complete Call Fallthrough")
-if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction().products.empty()) {
-  assert(SIZE(current_instruction().products) <= 4);
-  // Send the results of the most recently executed instruction, regardless of
-  // call depth, to be converted to string and potentially printed to string.
-  vector<double> result;
-  result.push_back(new_mu_string(Most_recent_products));
-  write_memory(current_instruction().products.at(0), result);
-  if (SIZE(current_instruction().products) >= 2) {
-    vector<double> warnings;
-    warnings.push_back(trace_contents("warn"));
-    write_memory(current_instruction().products.at(1), warnings);
-  }
-  if (SIZE(current_instruction().products) >= 3) {
-    vector<double> screen;
-    screen.push_back(Memory[SCREEN]);
-    write_memory(current_instruction().products.at(2), screen);
-  }
-  if (SIZE(current_instruction().products) >= 4) {
-//?     cerr << "emitting trace\n"; //? 1
-    vector<double> trace;
-    trace.push_back(trace_contents("app"));
-    write_memory(current_instruction().products.at(3), trace);
-  }
+
+//: Recipe 'interactive' doesn't return what 'run-interactive seems to return.
+//: Massage results from former to latter.
+
+:(after "Starting Reply")
+if (Current_routine->calls.front().running_recipe == Recipe_ordinal["interactive"]) {
+  products.resize(4);
+  products.at(0).push_back(new_mu_string(Most_recent_products));
+  products.at(1).push_back(trace_contents("warn"));
+  assert(SIZE(ingredients) == 1);
+  assert(scalar(ingredients.at(0)));
+  products.at(2).push_back(ingredients.at(0).at(0));  // screen
+  products.at(3).push_back(trace_contents("app"));
+  --Callstack_depth;
+  Current_routine->calls.pop_front();
+  assert(!Current_routine->calls.empty());
+  break;
 }
 
 //: clean up reply after we've popped it off the call-stack
@@ -218,9 +205,6 @@ void clean_up_interactive() {
     delete Trace_stream;
     Trace_stream = NULL;
   }
-//?   cerr << "restore screen: " << Memory[SCREEN] << " to " << Old_screen << '\n'; //? 1
-  Memory[SCREEN] = Old_screen;
-  Old_screen = 0;
 }
 
 :(code)
