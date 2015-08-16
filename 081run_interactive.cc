@@ -183,25 +183,16 @@ if (Current_routine->calls.front().running_recipe == Recipe_ordinal["interactive
   --Callstack_depth;
   Current_routine->calls.pop_front();
   assert(!Current_routine->calls.empty());
+  clean_up_interactive();
   break;
 }
 
 //: clean up reply after we've popped it off the call-stack
-//: however, we need what was on the stack to decide whether to clean up
-:(after "Starting Reply")
-bool must_clean_up_interactive = (current_recipe_name() == "interactive");
-:(after "Falling Through End Of Recipe")
-bool must_clean_up_interactive = (current_recipe_name() == "interactive");
-:(before "End Reply")
-if (must_clean_up_interactive) clean_up_interactive();
-:(before "Complete Call Fallthrough")
-if (must_clean_up_interactive) clean_up_interactive();
 :(code)
 void clean_up_interactive() {
   Hide_warnings = false;
   Track_most_recent_products = false;
-  // hack: assume collect_layers isn't set anywhere else
-  if (Trace_stream->is_narrowly_collecting("warn")) {
+  if (Trace_stream->is_narrowly_collecting("warn")) {  // hack
     delete Trace_stream;
     Trace_stream = NULL;
   }
