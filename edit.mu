@@ -4212,16 +4212,31 @@ recipe render-all [
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   hide-screen screen
-  #
-  recipes:address:editor-data <- get *env, recipes:offset
-  divider:number <- get *recipes, right:offset
-  divider <- add divider, 1
+  # top menu
+  width:number <- screen-width screen
+  draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
+  button-start:number <- subtract width, 20
+  button-on-screen?:boolean <- greater-or-equal button-start, 0
+  assert button-on-screen?, [screen too narrow for menu]
+  screen <- move-cursor screen, 0/row, button-start
+  run-button:address:array:character <- new [ run (F4) ]
+  print-string screen, run-button, 255/white, 161/reddish
+  # error message
+  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+  {
+    break-unless recipe-warnings
+    status:address:array:character <- new [errors found]
+    update-status screen, status, 1/red
+  }
+  # dotted line down the middle
+  divider:number, _ <- divide-with-remainder width, 2
   height:number <- screen-height screen
   draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
   #
   screen <- render-recipes screen, env
   screen <- render-sandbox-side screen, env
   #
+  recipes:address:editor-data <- get *env, recipes:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
   screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
@@ -4304,6 +4319,17 @@ recipe update-cursor [
   }
   screen <- move-cursor screen, cursor-row, cursor-column
   reply screen/same-as-ingredient:0
+]
+
+# ctrl-l - redraw screen (just in case it printed junk somehow)
+
+after +global-type [
+  {
+    ctrl-l?:boolean <- equal *c, 12/ctrl-l
+    break-unless ctrl-l?
+    screen <- render-all screen, env:address:programming-environment-data
+    loop +next-event:label
+  }
 ]
 
 # ctrl-n - switch focus
