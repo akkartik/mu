@@ -211,7 +211,6 @@ if (must_clean_up_interactive) clean_up_interactive();
 if (must_clean_up_interactive) clean_up_interactive();
 :(code)
 void clean_up_interactive() {
-  Trace_stream->newline();  // flush trace
   Hide_warnings = false;
   Track_most_recent_products = false;
   // hack: assume collect_layers isn't set anywhere else
