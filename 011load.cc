@@ -27,7 +27,7 @@ vector<recipe_ordinal> load(istream& in) {
     // Command Handlers
     if (command == "recipe") {
       string recipe_name = next_word(in);
-//?       cerr << "recipe: " << recipe_name << '\n'; //? 1
+//?       cerr << "recipe: " << recipe_name << '\n'; //? 2
       if (recipe_name.empty())
         raise << "empty recipe name\n" << end();
       if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
@@ -39,7 +39,7 @@ vector<recipe_ordinal> load(istream& in) {
       }
       // todo: save user-defined recipes to mu's memory
       Recipe[Recipe_ordinal[recipe_name]] = slurp_recipe(in);
-//?       cerr << Recipe_ordinal[recipe_name] << ": " << recipe_name << '\n'; //? 1
+//?       cerr << Recipe_ordinal[recipe_name] << ": " << recipe_name << '\n'; //? 2
       Recipe[Recipe_ordinal[recipe_name]].name = recipe_name;
       // track added recipes because we may need to undo them in tests; see below
       recently_added_recipes.push_back(Recipe_ordinal[recipe_name]);
@@ -234,7 +234,8 @@ vector<recipe_ordinal> recently_added_recipes;
 :(before "End Setup")
 for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
 //?   cout << "AAA clearing " << Recipe[recently_added_recipes.at(i)].name << '\n'; //? 2
-  Recipe_ordinal.erase(Recipe[recently_added_recipes.at(i)].name);
+  if (recently_added_recipes.at(i) >= Reserved_for_tests)  // don't renumber existing recipes, like 'interactive'
+    Recipe_ordinal.erase(Recipe[recently_added_recipes.at(i)].name);
   Recipe.erase(recently_added_recipes.at(i));
 }
 // Clear Other State For recently_added_recipes

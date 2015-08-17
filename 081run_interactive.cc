@@ -42,7 +42,7 @@ case RUN_INTERACTIVE: {
     products.at(1).push_back(trace_contents("warn"));
     products.at(2).push_back(0);
     products.at(3).push_back(trace_contents("app"));
-    clean_up_interactive();
+    cleanup_run_interactive();
     break;  // done with this instruction
   }
   else {
@@ -59,8 +59,7 @@ Track_most_recent_products = false;
 // all warnings.
 // returns true if successfully called (no errors found during load and transform)
 bool run_interactive(long long int address) {
-  if (Recipe_ordinal.find("interactive") == Recipe_ordinal.end())
-    Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
+  assert(Recipe_ordinal.find("interactive") != Recipe_ordinal.end() && Recipe_ordinal["interactive"] != 0);
   // try to sandbox the run as best you can
   // todo: test this
   if (!Current_scenario) {
@@ -71,6 +70,7 @@ bool run_interactive(long long int address) {
   if (command.empty()) return false;
   Recipe.erase(Recipe_ordinal["interactive"]);
   Name[Recipe_ordinal["interactive"]].clear();
+  // stuff to undo later, in cleanup_run_interactive()
   Hide_warnings = true;
   if (!Trace_stream) {
     Trace_file = "";  // if there wasn't already a stream we don't want to save it
@@ -81,15 +81,97 @@ bool run_interactive(long long int address) {
   // call run(string) but without the scheduling
   load(string("recipe interactive [\n") +
           "local-scope\n" +
-          "screen:address <- new-fake-screen 30, 5\n" +
+          "screen:address <- next-ingredient\n" +
+          "$start-tracking-products\n" +
           command + "\n" +
+          "$stop-tracking-products\n" +
           "reply screen\n" +
        "]\n");
   transform_all();
   if (trace_count("warn") > 0) return false;
-  Track_most_recent_products = true;
-  Current_routine->calls.push_front(call(Recipe_ordinal["interactive"]));
+  // now call 'sandbox' which will run 'interactive' in a separate routine,
+  // and wait for it
+  Current_routine->calls.push_front(call(Recipe_ordinal["sandbox"]));
   return true;
+}
+
+:(before "End Load Recipes")
+load(string(
+"recipe interactive [\n") +  // just a dummy version to initialize the Recipe_ordinal and so on
+"]\n" +
+"recipe sandbox [\n" +
+  "local-scope\n" +
+  "screen:address/shared <- new-fake-screen 30, 5\n" +
+  "r:number/routine_id <- start-running interactive:recipe, screen:address\n" +
+  "wait-for-routine r\n" +
+  "output:address:array:character <- $most-recent-products\n" +
+  "warnings:address:array:character <- save-trace [warn]\n" +
+  "stashes:address:array:character <- save-trace [app]\n" +
+  "$cleanup-run-interactive\n" +
+  "reply output, warnings, screen, stashes\n" +
+"]\n");
+transform_all();
+recently_added_recipes.clear();
+
+:(before "End Primitive Recipe Declarations")
+_START_TRACKING_PRODUCTS,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$start-tracking-products"] = _START_TRACKING_PRODUCTS;
+:(before "End Primitive Recipe Implementations")
+case _START_TRACKING_PRODUCTS: {
+  Track_most_recent_products = true;
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+_STOP_TRACKING_PRODUCTS,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$stop-tracking-products"] = _STOP_TRACKING_PRODUCTS;
+:(before "End Primitive Recipe Implementations")
+case _STOP_TRACKING_PRODUCTS: {
+  Track_most_recent_products = false;
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+_MOST_RECENT_PRODUCTS,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$most-recent-products"] = _MOST_RECENT_PRODUCTS;
+:(before "End Primitive Recipe Implementations")
+case _MOST_RECENT_PRODUCTS: {
+  products.resize(1);
+  products.at(0).push_back(new_mu_string(Most_recent_products));
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+SAVE_TRACE,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["save-trace"] = SAVE_TRACE;
+:(before "End Primitive Recipe Implementations")
+case SAVE_TRACE: {
+  products.resize(1);
+  products.at(0).push_back(trace_contents(current_instruction().ingredients.at(0).name));
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+_CLEANUP_RUN_INTERACTIVE,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$cleanup-run-interactive"] = _CLEANUP_RUN_INTERACTIVE;
+:(before "End Primitive Recipe Implementations")
+case _CLEANUP_RUN_INTERACTIVE: {
+  cleanup_run_interactive();
+  break;
+}
+
+:(code)
+void cleanup_run_interactive() {
+  Hide_warnings = false;
+  if (Trace_stream->is_narrowly_collecting("warn")) {  // hack
+    delete Trace_stream;
+    Trace_stream = NULL;
+  }
 }
 
 :(scenario "run_interactive_returns_stringified_result")
@@ -164,36 +246,6 @@ void track_most_recent_products(const instruction& instruction, const vector<vec
     out << '\n';
   }
   Most_recent_products = out.str();
-}
-
-//: Recipe 'interactive' doesn't return what 'run-interactive seems to return.
-//: Massage results from former to latter.
-
-:(after "Starting Reply")
-if (Current_routine->calls.front().running_recipe == Recipe_ordinal["interactive"]) {
-  products.resize(4);
-  products.at(0).push_back(new_mu_string(Most_recent_products));
-  products.at(1).push_back(trace_contents("warn"));
-  assert(SIZE(ingredients) == 1);
-  assert(scalar(ingredients.at(0)));
-  products.at(2).push_back(ingredients.at(0).at(0));  // screen
-  products.at(3).push_back(trace_contents("app"));
-  --Callstack_depth;
-  Current_routine->calls.pop_front();
-  assert(!Current_routine->calls.empty());
-  clean_up_interactive();
-  break;
-}
-
-//: clean up reply after we've popped it off the call-stack
-:(code)
-void clean_up_interactive() {
-  Hide_warnings = false;
-  Track_most_recent_products = false;
-  if (Trace_stream->is_narrowly_collecting("warn")) {  // hack
-    delete Trace_stream;
-    Trace_stream = NULL;
-  }
 }
 
 :(code)
