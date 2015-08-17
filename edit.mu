@@ -631,10 +631,12 @@ recipe handle-keyboard-event [
       break-if regular-character?
       row:number, column:number, screen <- render screen, editor
       clear-screen-from screen, row, column, left, right
+      screen <- move-cursor screen, *cursor-row, *cursor-column
       reply
     }
     # otherwise type it in
     editor, screen <- insert-at-cursor editor, *c, screen
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
   # special key to modify the text or move the cursor
@@ -642,6 +644,7 @@ recipe handle-keyboard-event [
   assert k, [event was of unknown type; neither keyboard nor mouse]
   # handlers for each special key will go here
   +handle-special-key
+  screen <- move-cursor screen, *cursor-row, *cursor-column
 ]
 
 # process click, return if it was on current editor
@@ -1382,6 +1385,7 @@ after +handle-special-key [
     *indent <- copy 0/false
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -1394,6 +1398,7 @@ after +handle-special-key [
     *indent <- copy 1/true
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -1433,6 +1438,7 @@ after +handle-special-character [
     insert-at-cursor editor, 32/space, screen
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -1472,6 +1478,7 @@ after +handle-special-character [
     delete-before-cursor editor
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -1623,6 +1630,7 @@ after +handle-special-key [
     _ <- remove-duplex curr
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -1669,12 +1677,14 @@ after +handle-special-key [
         break-if below-screen?
         row:number, column:number, screen <- render screen, editor
         clear-screen-from screen, row, column, left, right
+        screen <- move-cursor screen, *cursor-row, *cursor-column
         reply
       }
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
       row:number, column:number, screen <- render screen, editor
       clear-screen-from screen, row, column, left, right
+      screen <- move-cursor screen, *cursor-row, *cursor-column
       reply
     }
     # if the line wraps, move cursor to start of next row
@@ -1696,12 +1706,14 @@ after +handle-special-key [
         break-if below-screen?
         row:number, column:number, screen <- render screen, editor
         clear-screen-from screen, row, column, left, right
+        screen <- move-cursor screen, *cursor-row, *cursor-column
         reply
       }
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
       row:number, column:number, screen <- render screen, editor
       clear-screen-from screen, row, column, left, right
+      screen <- move-cursor screen, *cursor-row, *cursor-column
       reply
     }
     # otherwise move cursor one character right
@@ -1896,6 +1908,7 @@ after +handle-special-key [
     editor <- move-cursor-coordinates-left editor
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -2064,6 +2077,7 @@ after +handle-special-key [
     # that's it; render will adjust cursor-column as necessary
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -2130,6 +2144,7 @@ after +handle-special-key [
     # that's it; render will adjust cursor-column as necessary
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -2187,6 +2202,7 @@ after +handle-special-character [
     move-to-start-of-line editor
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -2198,6 +2214,7 @@ after +handle-special-key [
     move-to-start-of-line editor
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -2346,6 +2363,7 @@ after +handle-special-character [
     move-to-end-of-line editor
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -2357,6 +2375,7 @@ after +handle-special-key [
     move-to-end-of-line editor
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -2482,6 +2501,7 @@ after +handle-special-character [
     delete-to-start-of-line editor
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -2624,6 +2644,7 @@ after +handle-special-character [
     delete-to-end-of-line editor
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -3505,6 +3526,7 @@ after +handle-special-character [
     page-down editor
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -3516,6 +3538,7 @@ after +handle-special-key [
     page-down editor
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -3687,6 +3710,7 @@ after +handle-special-character [
     editor <- page-up editor, screen-height
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
@@ -3698,6 +3722,7 @@ after +handle-special-key [
     editor <- page-up editor, screen-height
     row:number, column:number, screen <- render screen, editor
     clear-screen-from screen, row, column, left, right
+    screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
   }
 ]
