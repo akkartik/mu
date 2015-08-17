@@ -37,11 +37,12 @@ case RUN_INTERACTIVE: {
   }
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
   if (!new_code_pushed_to_stack) {
-    products.resize(4);
+    products.resize(5);
     products.at(0).push_back(0);
     products.at(1).push_back(trace_contents("warn"));
     products.at(2).push_back(0);
     products.at(3).push_back(trace_contents("app"));
+    products.at(4).push_back(1);  // completed
     cleanup_run_interactive();
     break;  // done with this instruction
   }
@@ -103,12 +104,15 @@ load(string(
   "local-scope\n" +
   "screen:address/shared <- new-fake-screen 30, 5\n" +
   "r:number/routine_id <- start-running interactive:recipe, screen:address\n" +
+  "limit-time r, 750/instructions\n" +
   "wait-for-routine r\n" +
+  "sandbox-state:number <- routine-state r/routine_id\n" +
+  "completed?:boolean <- equal sandbox-state, 1/completed\n" +
   "output:address:array:character <- $most-recent-products\n" +
   "warnings:address:array:character <- save-trace [warn]\n" +
   "stashes:address:array:character <- save-trace [app]\n" +
   "$cleanup-run-interactive\n" +
-  "reply output, warnings, screen, stashes\n" +
+  "reply output, warnings, screen, stashes, completed?\n" +
 "]\n");
 transform_all();
 recently_added_recipes.clear();
