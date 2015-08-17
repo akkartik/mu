@@ -613,6 +613,9 @@ recipe handle-keyboard-event [
   screen-height:number <- screen-height screen
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
   # character
   {
     c:address:character <- maybe-convert e, text:variant
@@ -631,21 +634,12 @@ recipe handle-keyboard-event [
       reply
     }
     # otherwise type it in
-    insert-at-cursor editor, *c, screen
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, left, left, right
+    editor, screen <- insert-at-cursor editor, *c, screen
     reply
   }
   # special key to modify the text or move the cursor
   k:address:number <- maybe-convert e:event, keycode:variant
   assert k, [event was of unknown type; neither keyboard nor mouse]
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  cursor-row:address:number <- get-address *editor, cursor-row:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
   # handlers for each special key will go here
   +handle-special-key
 ]
@@ -783,6 +777,25 @@ recipe insert-at-cursor [
   +insert-character-special-case
   # but mostly we'll just move the cursor right
   *cursor-column <- add *cursor-column, 1
+  row:number, column:number, screen <- render screen, editor
+  clear-line-delimited screen, column, right
+  row <- add row, 1
+  draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+  row <- add row, 1
+  clear-screen-from screen, row, left, left, right
+  reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
+]
+
+# helper for tests
+recipe editor-render [
+  local-scope
+  screen:address <- next-ingredient
+  editor:address:editor-data <- next-ingredient
+  row:number <- render screen, editor
+  row <- add row, 1
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
+  draw-horizontal screen, row, left, right, 9480/horizontal-dotted
 ]
 
 scenario editor-handles-empty-event-queue [
@@ -1097,7 +1110,13 @@ after +insert-character-special-case [
       break-unless below-screen?
       +scroll-down
     }
-    reply
+    row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
+    clear-screen-from screen, row, left, left, right
+    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
   }
 ]
 
@@ -1199,7 +1218,7 @@ after +insert-character-special-case [
     }
     # indent if necessary
     indent?:boolean <- get *editor, indent:offset
-    reply-unless indent?
+    jump-unless indent?, +done:label
     d:address:duplex-list <- get *editor, data:offset
     end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
     indent:number <- line-indent end-of-previous-line, d
@@ -1211,7 +1230,14 @@ after +insert-character-special-case [
       i <- add i, 1
       loop
     }
-    reply
+    +done
+    row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
+    clear-screen-from screen, row, left, left, right
+    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
   }
 ]
 
