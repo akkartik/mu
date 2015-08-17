@@ -4331,7 +4331,7 @@ recipe render-recipes [
   left:number <- get *recipes, left:offset
   right:number <- get *recipes, right:offset
   row:number, column:number, screen <- render screen, recipes
-  clear-screen-from screen, row, column, left, right
+  clear-line-delimited screen, column, right
   recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
   {
     # print any warnings
