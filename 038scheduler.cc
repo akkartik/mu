@@ -130,6 +130,18 @@ START_RUNNING,
 Recipe_ordinal["start-running"] = START_RUNNING;
 :(before "End Primitive Recipe Implementations")
 case START_RUNNING: {
+  if (ingredients.empty()) {
+    raise << "'start-running' requires at least one ingredient: the recipe to start running\n" << end();
+    break;
+  }
+  if (!scalar(ingredients.at(0))) {
+    raise << "first ingredient of 'start-running' should be a recipe, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  if (!ingredients.at(0).at(0)) {
+    raise << "'start-running' received non-existent recipe: '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   routine* new_routine = new routine(ingredients.at(0).at(0));
   new_routine->parent_index = Current_routine_index;
   // populate ingredients
