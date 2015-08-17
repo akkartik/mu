@@ -82,7 +82,7 @@ recipe new-editor [
   y <- get-address *result, before-cursor:offset
   *y <- copy *init
   # initial render to screen, just for some old tests
-  _, screen, result <- render screen, result
+  _, _, screen, result <- render screen, result
   +editor-initialization
   reply result
 ]
@@ -134,7 +134,7 @@ scenario editor-initializes-without-data [
   ]
 ]
 
-# bottom:number, screen, editor <- render screen:address, editor:address:editor-data
+# last-row:number, last-column:number, screen, editor <- render screen:address, editor:address:editor-data
 #
 # Assumes cursor should be at coordinates (cursor-row, cursor-column) and
 # updates before-cursor to match. Might also move coordinates if they're
@@ -234,9 +234,7 @@ recipe render [
     *cursor-column <- copy column
     *before-cursor <- copy prev
   }
-  # clear rest of screen
-  clear-screen-from screen, row, column, left, right
-  reply row, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  reply row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
 # row, screen <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
@@ -613,6 +611,8 @@ recipe handle-keyboard-event [
   e:event <- next-ingredient
   reply-unless editor
   screen-height:number <- screen-height screen
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
   # character
   {
     c:address:character <- maybe-convert e, text:variant
@@ -626,12 +626,14 @@ recipe handle-keyboard-event [
     regular-character? <- or regular-character?, newline?
     {
       break-if regular-character?
-      render screen, editor
+      row:number, column:number, screen <- render screen, editor
+      clear-screen-from screen, row, column, left, right
       reply
     }
     # otherwise type it in
     insert-at-cursor editor, *c, screen
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
   # special key to modify the text or move the cursor
@@ -640,8 +642,6 @@ recipe handle-keyboard-event [
   before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
-  left:number <- get *editor, left:offset
-  right:number <- get *editor, right:offset
   # handlers for each special key will go here
   +handle-special-key
 ]
@@ -1337,7 +1337,8 @@ after +handle-special-key [
     break-unless paste-start?
     indent:address:boolean <- get-address *editor, indent:offset
     *indent <- copy 0/false
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -1348,7 +1349,8 @@ after +handle-special-key [
     break-unless paste-end?
     indent:address:boolean <- get-address *editor, indent:offset
     *indent <- copy 1/true
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -1386,7 +1388,8 @@ after +handle-special-character [
     break-unless tab?
     insert-at-cursor editor, 32/space, screen
     insert-at-cursor editor, 32/space, screen
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -1424,7 +1427,8 @@ after +handle-special-character [
     backspace?:boolean <- equal *c, 8/backspace
     break-unless backspace?
     delete-before-cursor editor
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -1574,7 +1578,8 @@ after +handle-special-key [
     break-unless delete?
     curr:address:duplex-list <- get **before-cursor, next:offset
     _ <- remove-duplex curr
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -1618,12 +1623,14 @@ after +handle-special-key [
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
       {
         break-if below-screen?
-        render screen, editor
+        row:number, column:number, screen <- render screen, editor
+        clear-screen-from screen, row, column, left, right
         reply
       }
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
-      render screen, editor
+      row:number, column:number, screen <- render screen, editor
+      clear-screen-from screen, row, column, left, right
       reply
     }
     # if the line wraps, move cursor to start of next row
@@ -1643,12 +1650,14 @@ after +handle-special-key [
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
       {
         break-if below-screen?
-        render screen, editor
+        row:number, column:number, screen <- render screen, editor
+        clear-screen-from screen, row, column, left, right
         reply
       }
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
-      render screen, editor
+      row:number, column:number, screen <- render screen, editor
+      clear-screen-from screen, row, column, left, right
       reply
     }
     # otherwise move cursor one character right
@@ -1837,7 +1846,8 @@ after +handle-special-key [
     prev:address:duplex-list <- prev-duplex *before-cursor
     break-unless prev
     editor <- move-cursor-coordinates-left editor
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -2004,7 +2014,8 @@ after +handle-special-key [
       +scroll-up
     }
     # that's it; render will adjust cursor-column as necessary
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -2069,7 +2080,8 @@ after +handle-special-key [
       +scroll-down
     }
     # that's it; render will adjust cursor-column as necessary
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -2125,7 +2137,8 @@ after +handle-special-character [
     ctrl-a?:boolean <- equal *c, 1/ctrl-a
     break-unless ctrl-a?
     move-to-start-of-line editor
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -2135,7 +2148,8 @@ after +handle-special-key [
     home?:boolean <- equal *k, 65521/home
     break-unless home?
     move-to-start-of-line editor
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -2281,7 +2295,8 @@ after +handle-special-character [
     ctrl-e?:boolean <- equal *c, 5/ctrl-e
     break-unless ctrl-e?
     move-to-end-of-line editor
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -2291,7 +2306,8 @@ after +handle-special-key [
     end?:boolean <- equal *k, 65520/end
     break-unless end?
     move-to-end-of-line editor
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -2415,7 +2431,8 @@ after +handle-special-character [
     ctrl-u?:boolean <- equal *c, 21/ctrl-u
     break-unless ctrl-u?
     delete-to-start-of-line editor
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -2556,7 +2573,8 @@ after +handle-special-character [
     ctrl-k?:boolean <- equal *c, 11/ctrl-k
     break-unless ctrl-k?
     delete-to-end-of-line editor
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -3436,7 +3454,8 @@ after +handle-special-character [
     ctrl-f?:boolean <- equal *c, 6/ctrl-f
     break-unless ctrl-f?
     page-down editor
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -3446,7 +3465,8 @@ after +handle-special-key [
     page-down?:boolean <- equal *k, 65518/page-down
     break-unless page-down?
     page-down editor
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -3616,7 +3636,8 @@ after +handle-special-character [
     ctrl-b?:boolean <- equal *c, 2/ctrl-f
     break-unless ctrl-b?
     editor <- page-up editor, screen-height
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -3626,7 +3647,8 @@ after +handle-special-key [
     page-up?:boolean <- equal *k, 65519/page-up
     break-unless page-up?
     editor <- page-up editor, screen-height
-    render screen, editor
+    row:number, column:number, screen <- render screen, editor
+    clear-screen-from screen, row, column, left, right
     reply
   }
 ]
@@ -4308,7 +4330,8 @@ recipe render-recipes [
   # render recipes
   left:number <- get *recipes, left:offset
   right:number <- get *recipes, right:offset
-  row:number, screen, recipes <- render screen, recipes
+  row:number, column:number, screen <- render screen, recipes
+  clear-screen-from screen, row, column, left, right
   recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
   {
     # print any warnings
@@ -4709,7 +4732,8 @@ recipe render-sandbox-side [
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
-  row:number, screen, current-sandbox <- render screen, current-sandbox
+  row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
+  clear-screen-from screen, row, column, left, right
   row <- add row, 1
   draw-horizontal screen, row, left, right, 9473/horizontal-double
   sandbox:address:sandbox-data <- get *env, sandbox:offset
