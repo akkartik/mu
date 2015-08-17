@@ -1,0 +1,28 @@
+parse: instruction: start-running
+parse:   ingredient: {name: "f2", properties: ["f2": "recipe"]}
+parse:   product: {name: "1", properties: ["1": "number", "child-id": ]}
+parse: instruction: limit-time
+parse:   ingredient: {name: "1", properties: ["1": "number", "child-id": ]}
+parse:   ingredient: {name: "1", properties: ["1": "literal"]}
+parse: label: {
+parse: instruction: loop
+parse: label: }
+after-brace: recipe f1
+after-brace: start-running ...
+after-brace: limit-time ...
+brace: 1001: push (open, 0)
+brace: push (close, 2)
+after-brace: recipe f2
+after-brace: jump -1:offset
+9999 new: routine allocated memory from 1000 to 101000
+schedule: f1
+ 101 run: 1:number/child-id <- start-running f2:recipe
+9999 new: routine allocated memory from 101000 to 201000
+9999 mem: storing 2 in location 1
+ 101 run: limit-time 1:number/child-id, 1
+9999 mem: location 1 is 2
+schedule: f2
+ 101 run: loop 
+9999 run: jumping to instruction 1
+schedule: discontinuing routine 2
+schedule: f1
