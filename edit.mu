@@ -624,10 +624,15 @@ recipe handle-keyboard-event [
     regular-character?:boolean <- greater-or-equal *c, 32/space
     newline?:boolean <- equal *c, 10/newline
     regular-character? <- or regular-character?, newline?
-    jump-unless regular-character?, +update-screen:label
+    {
+      break-if regular-character?
+      render screen, editor
+      reply
+    }
     # otherwise type it in
     insert-at-cursor editor, *c, screen
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
   # special key to modify the text or move the cursor
   k:address:number <- maybe-convert e:event, keycode:variant
@@ -639,9 +644,6 @@ recipe handle-keyboard-event [
   right:number <- get *editor, right:offset
   # handlers for each special key will go here
   +handle-special-key
-  #
-  +update-screen
-  render screen, editor
 ]
 
 # process click, return if it was on current editor
@@ -1335,7 +1337,8 @@ after +handle-special-key [
     break-unless paste-start?
     indent:address:boolean <- get-address *editor, indent:offset
     *indent <- copy 0/false
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -1345,7 +1348,8 @@ after +handle-special-key [
     break-unless paste-end?
     indent:address:boolean <- get-address *editor, indent:offset
     *indent <- copy 1/true
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -1382,7 +1386,8 @@ after +handle-special-character [
     break-unless tab?
     insert-at-cursor editor, 32/space, screen
     insert-at-cursor editor, 32/space, screen
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -1419,7 +1424,8 @@ after +handle-special-character [
     backspace?:boolean <- equal *c, 8/backspace
     break-unless backspace?
     delete-before-cursor editor
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -1568,7 +1574,8 @@ after +handle-special-key [
     break-unless delete?
     curr:address:duplex-list <- get **before-cursor, next:offset
     _ <- remove-duplex curr
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -1609,10 +1616,15 @@ after +handle-special-key [
       *cursor-row <- add *cursor-row, 1
       *cursor-column <- copy left
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
-      jump-unless below-screen?, +update-screen:label
+      {
+        break-if below-screen?
+        render screen, editor
+        reply
+      }
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
-      jump +update-screen:label
+      render screen, editor
+      reply
     }
     # if the line wraps, move cursor to start of next row
     {
@@ -1629,10 +1641,15 @@ after +handle-special-key [
       *cursor-row <- add *cursor-row, 1
       *cursor-column <- copy left
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
-      jump-unless below-screen?, +update-screen:label
+      {
+        break-if below-screen?
+        render screen, editor
+        reply
+      }
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
-      jump +update-screen:label
+      render screen, editor
+      reply
     }
     # otherwise move cursor one character right
     *cursor-column <- add *cursor-column, 1
@@ -1820,7 +1837,8 @@ after +handle-special-key [
     prev:address:duplex-list <- prev-duplex *before-cursor
     break-unless prev
     editor <- move-cursor-coordinates-left editor
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -1986,7 +2004,8 @@ after +handle-special-key [
       +scroll-up
     }
     # that's it; render will adjust cursor-column as necessary
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -2050,7 +2069,8 @@ after +handle-special-key [
       +scroll-down
     }
     # that's it; render will adjust cursor-column as necessary
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -2105,7 +2125,8 @@ after +handle-special-character [
     ctrl-a?:boolean <- equal *c, 1/ctrl-a
     break-unless ctrl-a?
     move-to-start-of-line editor
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -2114,7 +2135,8 @@ after +handle-special-key [
     home?:boolean <- equal *k, 65521/home
     break-unless home?
     move-to-start-of-line editor
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -2259,7 +2281,8 @@ after +handle-special-character [
     ctrl-e?:boolean <- equal *c, 5/ctrl-e
     break-unless ctrl-e?
     move-to-end-of-line editor
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -2268,7 +2291,8 @@ after +handle-special-key [
     end?:boolean <- equal *k, 65520/end
     break-unless end?
     move-to-end-of-line editor
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -2391,7 +2415,8 @@ after +handle-special-character [
     ctrl-u?:boolean <- equal *c, 21/ctrl-u
     break-unless ctrl-u?
     delete-to-start-of-line editor
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -2531,7 +2556,8 @@ after +handle-special-character [
     ctrl-k?:boolean <- equal *c, 11/ctrl-k
     break-unless ctrl-k?
     delete-to-end-of-line editor
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -3410,7 +3436,8 @@ after +handle-special-character [
     ctrl-f?:boolean <- equal *c, 6/ctrl-f
     break-unless ctrl-f?
     page-down editor
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -3419,7 +3446,8 @@ after +handle-special-key [
     page-down?:boolean <- equal *k, 65518/page-down
     break-unless page-down?
     page-down editor
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -3588,7 +3616,8 @@ after +handle-special-character [
     ctrl-b?:boolean <- equal *c, 2/ctrl-f
     break-unless ctrl-b?
     editor <- page-up editor, screen-height
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
@@ -3597,7 +3626,8 @@ after +handle-special-key [
     page-up?:boolean <- equal *k, 65519/page-up
     break-unless page-up?
     editor <- page-up editor, screen-height
-    jump +update-screen:label
+    render screen, editor
+    reply
   }
 ]
 
