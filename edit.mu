@@ -633,7 +633,11 @@ recipe handle-keyboard-event [
     # otherwise type it in
     insert-at-cursor editor, *c, screen
     row:number, column:number, screen <- render screen, editor
-    clear-screen-from screen, row, column, left, right
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
+    clear-screen-from screen, row, left, left, right
     reply
   }
   # special key to modify the text or move the cursor
@@ -916,6 +920,7 @@ scenario editor-inserts-characters-into-empty-editor [
   screen-should-contain [
     .          .
     .abc       .
+    .┈┈┈┈┈     .
     .          .
   ]
 ]
@@ -935,6 +940,7 @@ scenario editor-inserts-characters-at-cursor [
   screen-should-contain [
     .          .
     .0adbc     .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -953,6 +959,7 @@ scenario editor-inserts-characters-at-cursor-2 [
   screen-should-contain [
     .          .
     .abcd      .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -971,6 +978,7 @@ scenario editor-inserts-characters-at-cursor-3 [
   screen-should-contain [
     .          .
     .abcd      .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -991,6 +999,7 @@ d]
     .          .
     .abc       .
     .de        .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1011,6 +1020,7 @@ d]
     .          .
     .abc       .
     .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1028,6 +1038,7 @@ scenario editor-moves-cursor-after-inserting-characters [
   screen-should-contain [
     .          .
     .01ab      .
+    .┈┈┈┈┈     .
     .          .
   ]
 ]
@@ -1049,6 +1060,7 @@ scenario editor-wraps-line-on-insert [
   screen-should-contain [
     .     .
     .eabc .
+    .┈┈┈┈┈.
     .     .
     .     .
   ]
@@ -1064,6 +1076,7 @@ scenario editor-wraps-line-on-insert [
     .     .
     .efab↩.
     .c    .
+    .┈┈┈┈┈.
     .     .
   ]
 ]
@@ -1105,6 +1118,7 @@ scenario editor-wraps-cursor-after-inserting-characters [
     .          .
     .abcd↩     .
     .fe        .
+    .┈┈┈┈┈     .
     .          .
   ]
   memory-should-contain [
@@ -1130,6 +1144,7 @@ scenario editor-wraps-cursor-after-inserting-characters-2 [
     .          .
     .abcf↩     .
     .de        .
+    .┈┈┈┈┈     .
     .          .
   ]
   memory-should-contain [
@@ -1164,6 +1179,7 @@ scenario editor-moves-cursor-down-after-inserting-newline [
     .          .
     .0         .
     .1abc      .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1248,6 +1264,7 @@ scenario editor-moves-cursor-down-after-inserting-newline-2 [
     .          .
     . 0        .
     . 1abc     .
+    . ┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1277,7 +1294,7 @@ scenario editor-clears-previous-line-completely-after-inserting-newline [
     .          .
     .abcd↩     .
     .e         .
-    .          .
+    .┈┈┈┈┈     .
   ]
 ]
 
@@ -1600,6 +1617,7 @@ scenario editor-moves-cursor-right-with-key [
   screen-should-contain [
     .          .
     .a0bc      .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1684,6 +1702,7 @@ d]
     .          .
     .abc       .
     .0d        .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1707,6 +1726,7 @@ d]
     .          .
     . abc      .
     . 0d       .
+    . ┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1812,6 +1832,7 @@ d]
     .          .
     .abc       .
     .0d        .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1833,6 +1854,7 @@ scenario editor-moves-cursor-left-with-key [
   screen-should-contain [
     .          .
     .a0bc      .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1896,7 +1918,7 @@ g]
     .abc       .
     .def0      .
     .g         .
-    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1920,7 +1942,7 @@ g]
     .0abc      .
     .def       .
     .g         .
-    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1945,7 +1967,7 @@ d]
     .abc       .
     .0         .
     .d         .
-    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -2286,6 +2308,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-e [
     .          .
     .123z      .
     .456       .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
