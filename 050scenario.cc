@@ -110,7 +110,7 @@ time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
 for (long long int i = 0; i < SIZE(Scenarios); ++i) {
 //?   cerr << Passed << '\n'; //? 1
-//?   cerr << i << ": " << Scenarios.at(i).name << '\n'; //? 6
+//?   cerr << i << ": " << Scenarios.at(i).name << '\n'; //? 7
   run_mu_scenario(Scenarios.at(i));
   if (Passed) cerr << ".";
 }
