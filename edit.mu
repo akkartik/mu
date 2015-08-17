@@ -4138,6 +4138,8 @@ recipe event-loop [
       {
         break-unless *sandbox-in-focus?
         handle-keyboard-event screen, current-sandbox, e:event
+        screen <- render-all screen, env
+        screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
       }
     }
     loop
@@ -4274,8 +4276,8 @@ scenario editor-in-focus-keeps-cursor [
   assume-console []
   run [
     3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+    render-all screen, 3:address:programming-environment-data
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    screen <- render-all screen, 3:address:programming-environment-data
     screen:address <- print-character screen:address, 9251/␣
   ]
   # is cursor at the right place?
@@ -4292,7 +4294,6 @@ scenario editor-in-focus-keeps-cursor [
   run [
     3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    screen <- render-all screen, 3:address:programming-environment-data
     screen:address <- print-character screen:address, 9251/␣
   ]
   # cursor should still be right
@@ -4321,7 +4322,6 @@ def]
   run [
     4:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 4:address:programming-environment-data
-    screen <- render-all screen, 4:address:programming-environment-data
     screen:address <- print-character screen:address, 9251/␣
   ]
   # cursor moves to end of old line
