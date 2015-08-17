@@ -4621,7 +4621,13 @@ recipe run-sandboxes [
     warnings:address:address:array:character <- get-address *curr, warnings:offset
     trace:address:address:array:character <- get-address *curr, trace:offset
     fake-screen:address:address:screen <- get-address *curr, screen:offset
-    *response, *warnings, *fake-screen, *trace <- run-interactive *data
+    *response, *warnings, *fake-screen, *trace, completed?:boolean <- run-interactive *data
+    {
+      break-if *warnings
+      break-if completed?:boolean
+      *warnings <- new [took too long!
+]
+    }
     curr <- get *curr, next-sandbox:offset
     loop
   }
@@ -5055,6 +5061,37 @@ scenario sandbox-with-print-can-be-edited [
     .                                                  ┊print-integer screen:address, 4                  .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
+scenario sandbox-can-handle-infinite-loop [
+  $close-trace
+  assume-screen 100/width, 20/height
+  # left editor is empty
+  1:address:array:character <- new [recipe foo [
+  {
+    loop
+  }
+]]
+  # right editor contains an instruction
+  2:address:array:character <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the sandbox
+  assume-console [
+    press 65532  # F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .recipe foo [                                      ┊                                                 .
+    .  {                                               ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .    loop                                          ┊                                                x.
+    .  }                                               ┊foo                                              .
+    .]                                                 ┊took too long!                                   .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
 ]
