@@ -616,6 +616,8 @@ recipe handle-keyboard-event [
   before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
+  save-row:number <- copy *cursor-row
+  save-column:number <- copy *cursor-column
   # character
   {
     c:address:character <- maybe-convert e, text:variant
@@ -776,10 +778,26 @@ recipe insert-at-cursor [
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
+  save-row:number <- copy *cursor-row
+  save-column:number <- copy *cursor-column
   # occasionally we'll need to mess with the cursor
   +insert-character-special-case
   # but mostly we'll just move the cursor right
   *cursor-column <- add *cursor-column, 1
+  {
+    # at end of line? no need to scroll? just print the character and leave
+    next:address:duplex-list <- next-duplex *before-cursor
+    at-end?:boolean <- equal next, 0/null
+    break-unless at-end?
+    bottom:number <- subtract screen-height, 1
+    at-bottom?:boolean <- equal save-row, bottom
+    at-right?:boolean <- equal save-column, right
+    overflow?:boolean <- and at-bottom?, at-right?
+    break-if overflow?
+    move-cursor screen, save-row, save-column
+    print-character screen, c
+    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
+  }
   row:number, column:number, screen <- render screen, editor
   clear-line-delimited screen, column, right
   row <- add row, 1
@@ -927,6 +945,7 @@ scenario editor-inserts-characters-into-empty-editor [
   assume-screen 10/width, 5/height
   1:address:array:character <- new []
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  editor-render screen, 2:address:editor-data
   assume-console [
     type [abc]
   ]
@@ -965,6 +984,8 @@ scenario editor-inserts-characters-at-cursor-2 [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 1, 5  # right of last line
     type [d]  # should append
@@ -978,12 +999,16 @@ scenario editor-inserts-characters-at-cursor-2 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  # performance test: typing characters doesn't usually print more than the
+  # character being typed
+  check-trace-count-for-label 1, [print-character]
 ]
 
 scenario editor-inserts-characters-at-cursor-3 [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
   assume-console [
     left-click 3, 5  # below all text
     type [d]  # should append
@@ -1004,6 +1029,7 @@ scenario editor-inserts-characters-at-cursor-4 [
   1:address:array:character <- new [abc
 d]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
   assume-console [
     left-click 3, 5  # below all text
     type [e]  # should append
@@ -1025,6 +1051,7 @@ scenario editor-inserts-characters-at-cursor-5 [
   1:address:array:character <- new [abc
 d]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
   assume-console [
     left-click 3, 5  # below all text
     type [ef]  # should append multiple characters in order
@@ -1045,6 +1072,7 @@ scenario editor-moves-cursor-after-inserting-characters [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [ab]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  editor-render screen, 2:address:editor-data
   assume-console [
     type [01]
   ]
@@ -1065,6 +1093,7 @@ scenario editor-wraps-line-on-insert [
   assume-screen 5/width, 5/height
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  editor-render screen, 2:address:editor-data
   # type a letter
   assume-console [
     type [e]
