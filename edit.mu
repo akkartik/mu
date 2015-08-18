@@ -1413,6 +1413,10 @@ after +handle-special-key [
     indent:address:boolean <- get-address *editor, indent:offset
     *indent <- copy 0/false
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -1426,6 +1430,10 @@ after +handle-special-key [
     indent:address:boolean <- get-address *editor, indent:offset
     *indent <- copy 1/true
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -1466,6 +1474,10 @@ after +handle-special-character [
     insert-at-cursor editor, 32/space, screen
     insert-at-cursor editor, 32/space, screen
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -1492,6 +1504,7 @@ scenario editor-handles-backspace-key [
   screen-should-contain [
     .          .
     .bc        .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   memory-should-contain [
@@ -1506,6 +1519,10 @@ after +handle-special-character [
     break-unless backspace?
     delete-before-cursor editor
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -1613,6 +1630,7 @@ cd]
   screen-should-contain [
     .          .
     .abcd      .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   memory-should-contain [
@@ -1636,6 +1654,7 @@ scenario editor-handles-delete-key [
   screen-should-contain [
     .          .
     .bc        .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   assume-console [
@@ -1647,6 +1666,7 @@ scenario editor-handles-delete-key [
   screen-should-contain [
     .          .
     .c         .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1658,6 +1678,10 @@ after +handle-special-key [
     curr:address:duplex-list <- get **before-cursor, next:offset
     _ <- remove-duplex curr
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -1705,6 +1729,10 @@ after +handle-special-key [
       {
         break-if below-screen?
         row:number, column:number, screen <- render screen, editor
+        clear-line-delimited screen, column, right
+        row <- add row, 1
+        draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+        row <- add row, 1
         clear-screen-from screen, row, column, left, right
         screen <- move-cursor screen, *cursor-row, *cursor-column
         reply
@@ -1712,6 +1740,10 @@ after +handle-special-key [
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
       row:number, column:number, screen <- render screen, editor
+      clear-line-delimited screen, column, right
+      row <- add row, 1
+      draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+      row <- add row, 1
       clear-screen-from screen, row, column, left, right
       screen <- move-cursor screen, *cursor-row, *cursor-column
       reply
@@ -1734,6 +1766,10 @@ after +handle-special-key [
       {
         break-if below-screen?
         row:number, column:number, screen <- render screen, editor
+        clear-line-delimited screen, column, right
+        row <- add row, 1
+        draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+        row <- add row, 1
         clear-screen-from screen, row, column, left, right
         screen <- move-cursor screen, *cursor-row, *cursor-column
         reply
@@ -1741,6 +1777,10 @@ after +handle-special-key [
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
       row:number, column:number, screen <- render screen, editor
+      clear-line-delimited screen, column, right
+      row <- add row, 1
+      draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+      row <- add row, 1
       clear-screen-from screen, row, column, left, right
       screen <- move-cursor screen, *cursor-row, *cursor-column
       reply
@@ -1815,6 +1855,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
     .          .
     .abcd↩     .
     .ef        .
+    .┈┈┈┈┈     .
     .          .
   ]
   memory-should-contain [
@@ -1874,6 +1915,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
     .          .
     . abcd↩    .
     . ef       .
+    . ┈┈┈┈┈    .
     .          .
   ]
   memory-should-contain [
@@ -1936,6 +1978,10 @@ after +handle-special-key [
     break-unless prev
     editor <- move-cursor-coordinates-left editor
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -2105,6 +2151,10 @@ after +handle-special-key [
     }
     # that's it; render will adjust cursor-column as necessary
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -2172,6 +2222,10 @@ after +handle-special-key [
     }
     # that's it; render will adjust cursor-column as necessary
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -2230,6 +2284,10 @@ after +handle-special-character [
     break-unless ctrl-a?
     move-to-start-of-line editor
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -2242,6 +2300,10 @@ after +handle-special-key [
     break-unless home?
     move-to-start-of-line editor
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -2391,6 +2453,10 @@ after +handle-special-character [
     break-unless ctrl-e?
     move-to-end-of-line editor
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -2403,6 +2469,10 @@ after +handle-special-key [
     break-unless end?
     move-to-end-of-line editor
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -2519,6 +2589,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
     .          .
     .123       .
     .6         .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2529,6 +2600,10 @@ after +handle-special-character [
     break-unless ctrl-u?
     delete-to-start-of-line editor
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -2588,6 +2663,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
     .          .
     .3         .
     .456       .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2612,6 +2688,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
     .          .
     .          .
     .456       .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2636,6 +2713,7 @@ scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
     .          .
     .123       .
     .          .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2662,6 +2740,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
     .          .
     .1         .
     .456       .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2672,6 +2751,10 @@ after +handle-special-character [
     break-unless ctrl-k?
     delete-to-end-of-line editor
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -2723,6 +2806,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
     .          .
     .123       .
     .4         .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2747,6 +2831,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
     .          .
     .12        .
     .456       .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2771,6 +2856,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
     .          .
     .123       .
     .456       .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2795,6 +2881,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
     .          .
     .123       .
     .45        .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2819,6 +2906,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
     .          .
     .123       .
     .456       .
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -3279,7 +3367,7 @@ m]
     .k         .
     .l         .
     .m         .
-    .          .
+    .┈┈┈┈┈     .
   ]
   # move up one line
   assume-console [
@@ -3408,7 +3496,7 @@ e]
     .          .
     .d         .
     .e         .
-    .          .
+    .┈┈┈┈┈┈    .
   ]
   assume-console [
     press 65519  # page-up
@@ -3544,7 +3632,7 @@ d]
     .          .
     .c         .
     .d         .
-    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -3554,6 +3642,10 @@ after +handle-special-character [
     break-unless ctrl-f?
     page-down editor
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -3566,6 +3658,10 @@ after +handle-special-key [
     break-unless page-down?
     page-down editor
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -3602,11 +3698,12 @@ scenario editor-does-not-scroll-past-end [
   1:address:array:character <- new [a
 b]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
   screen-should-contain [
     .          .
     .a         .
     .b         .
-    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
   # scroll down
   assume-console [
@@ -3620,7 +3717,7 @@ b]
     .          .
     .a         .
     .b         .
-    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -3652,7 +3749,7 @@ cdefgh]
     .          .
     .cde↩      .
     .fgh       .
-    .          .
+    .┈┈┈┈      .
   ]
 ]
 
@@ -3714,7 +3811,7 @@ d]
     .          .
     .c         .
     .d         .
-    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
   # scroll back up
   assume-console [
@@ -3738,6 +3835,10 @@ after +handle-special-character [
     break-unless ctrl-b?
     editor <- page-up editor, screen-height
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
@@ -3750,6 +3851,10 @@ after +handle-special-key [
     break-unless page-up?
     editor <- page-up editor, screen-height
     row:number, column:number, screen <- render screen, editor
+    clear-line-delimited screen, column, right
+    row <- add row, 1
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     reply
