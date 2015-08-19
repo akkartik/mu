@@ -4435,11 +4435,11 @@ scenario editor-in-focus-keeps-cursor [
   assume-screen 30/width, 5/height
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  render-all screen, 3:address:programming-environment-data
   # initialize programming environment and highlight cursor
   assume-console []
   run [
-    3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-    render-all screen, 3:address:programming-environment-data
     event-loop screen:address, console:address, 3:address:programming-environment-data
     print-character screen:address, 9251/␣
   ]
@@ -4455,7 +4455,6 @@ scenario editor-in-focus-keeps-cursor [
     type [z]
   ]
   run [
-    3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 3:address:programming-environment-data
     print-character screen:address, 9251/␣
   ]
@@ -4475,16 +4474,16 @@ scenario backspace-in-sandbox-editor-joins-lines [
   1:address:array:character <- new []
   2:address:array:character <- new [abc
 def]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # position cursor at start of second line and hit backspace
   assume-console [
     left-click 2, 16
     type [«]
   ]
-  3:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
-  replace-in-console 171/«, 3:event/backspace
+  4:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
+  replace-in-console 171/«, 4:event/backspace
   run [
-    4:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-    event-loop screen:address, console:address, 4:address:programming-environment-data
+    event-loop screen:address, console:address, 3:address:programming-environment-data
     print-character screen:address, 9251/␣
   ]
   # cursor moves to end of old line
@@ -6006,17 +6005,17 @@ after +render-sandbox-results [
 scenario run-shows-warnings-in-get [
   $close-trace
   assume-screen 100/width, 15/height
+  1:address:array:character <- new [ 
+recipe foo [
+  get 123:number, foo:offset
+]]
+  2:address:array:character <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   assume-console [
     press 65532  # F4
   ]
   run [
-    x:address:array:character <- new [ 
-recipe foo [
-  get 123:number, foo:offset
-]]
-    y:address:array:character <- new [foo]
-    env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
-    event-loop screen:address, console:address, env:address:programming-environment-data
+    event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -6042,17 +6041,17 @@ recipe foo [
 scenario run-shows-missing-type-warnings [
   $close-trace
   assume-screen 100/width, 15/height
+  1:address:array:character <- new [ 
+recipe foo [
+  x <- copy 0
+]]
+  2:address:array:character <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   assume-console [
     press 65532  # F4
   ]
   run [
-    x:address:array:character <- new [ 
-recipe foo [
-  x <- copy 0
-]]
-    y:address:array:character <- new [foo]
-    env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
-    event-loop screen:address, console:address, env:address:programming-environment-data
+    event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -6069,18 +6068,18 @@ recipe foo [
 scenario run-shows-get-on-non-container-warnings [
   $close-trace
   assume-screen 100/width, 15/height
-  assume-console [
-    press 65532  # F4
-  ]
-  run [
-    x:address:array:character <- new [ 
+  1:address:array:character <- new [ 
 recipe foo [
   x:address:point <- new point:type
   get x:address:point, 1:offset
 ]]
-    y:address:array:character <- new [foo]
-    env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
-    event-loop screen:address, console:address, env:address:programming-environment-data
+  2:address:array:character <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  assume-console [
+    press 65532  # F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -6098,19 +6097,19 @@ recipe foo [
 scenario run-shows-non-literal-get-argument-warnings [
   $close-trace
   assume-screen 100/width, 15/height
-  assume-console [
-    press 65532  # F4
-  ]
-  run [
-    x:address:array:character <- new [ 
+  1:address:array:character <- new [ 
 recipe foo [
   x:number <- copy 0
   y:address:point <- new point:type
   get *y:address:point, x:number
 ]]
-    y:address:array:character <- new [foo]
-    env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
-    event-loop screen:address, console:address, env:address:programming-environment-data
+  2:address:array:character <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  assume-console [
+    press 65532  # F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -6131,16 +6130,16 @@ scenario run-shows-warnings-everytime [
   $close-trace
   # try to run a file with an error
   assume-screen 100/width, 15/height
+  1:address:array:character <- new [ 
+recipe foo [
+  x:number <- copy y:number
+]]
+  2:address:array:character <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   assume-console [
     press 65532  # F4
   ]
   run [
-    1:address:array:character <- new [ 
-recipe foo [
-  x:number <- copy y:number
-]]
-    2:address:array:character <- new [foo]
-    3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
