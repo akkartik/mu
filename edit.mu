@@ -4401,7 +4401,7 @@ scenario edit-multiple-editors [
   ]
   # show the cursor at the right window
   run [
-    screen:address <- print-character screen:address, 9251/␣
+    print-character screen:address, 9251/␣/cursor
   ]
   screen-should-contain [
     .           run (F4)           .
@@ -4418,7 +4418,7 @@ scenario multiple-editors-cover-only-their-own-areas [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [def]
     3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-    screen <- render-all screen, 3:address:programming-environment-data
+    render-all screen, 3:address:programming-environment-data
   ]
   # divider isn't messed up
   screen-should-contain [
@@ -4441,7 +4441,7 @@ scenario editor-in-focus-keeps-cursor [
     3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     render-all screen, 3:address:programming-environment-data
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    screen:address <- print-character screen:address, 9251/␣
+    print-character screen:address, 9251/␣
   ]
   # is cursor at the right place?
   screen-should-contain [
@@ -4457,7 +4457,7 @@ scenario editor-in-focus-keeps-cursor [
   run [
     3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    screen:address <- print-character screen:address, 9251/␣
+    print-character screen:address, 9251/␣
   ]
   # cursor should still be right
   screen-should-contain [
@@ -4485,7 +4485,7 @@ def]
   run [
     4:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 4:address:programming-environment-data
-    screen:address <- print-character screen:address, 9251/␣
+    print-character screen:address, 9251/␣
   ]
   # cursor moves to end of old line
   screen-should-contain [
