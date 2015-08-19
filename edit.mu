@@ -4763,6 +4763,7 @@ container sandbox-data [
   expected-response:address:array:character
   # coordinates to track clicks
   starting-row-on-screen:number
+  code-ending-row-on-screen:number
   response-starting-row-on-screen:number
   display-trace?:boolean
   screen:address:screen  # prints in the sandbox go here
@@ -5001,6 +5002,8 @@ recipe render-sandboxes [
   # render sandbox contents
   sandbox-data:address:array:character <- get *sandbox, data:offset
   row, screen <- render-string screen, sandbox-data, left, right, 7/white, row
+  code-ending-row:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
+  *code-ending-row <- copy row
   # render sandbox warnings, screen or response, in that order
   response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
   sandbox-response:address:array:character <- get *sandbox, response:offset
@@ -5975,8 +5978,8 @@ recipe find-click-in-sandbox-code [
     loop
   }
   # return sandbox if click is in its code region
-  response-starting-row:number <- get *sandbox, response-starting-row-on-screen:offset
-  click-above-response?:boolean <- lesser-than click-row, response-starting-row
+  code-ending-row:number <- get *sandbox, code-ending-row-on-screen:offset
+  click-above-response?:boolean <- lesser-or-equal click-row, code-ending-row
   start:number <- get *sandbox, starting-row-on-screen:offset
   click-below-menu?:boolean <- greater-than click-row, start
   click-on-sandbox-code?:boolean <- and click-above-response?, click-below-menu?
