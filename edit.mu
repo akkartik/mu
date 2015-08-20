@@ -860,7 +860,6 @@ scenario editor-handles-mouse-clicks [
     3 <- 1  # cursor is at row 0..
     4 <- 1  # ..and column 1
   ]
-  # performance test: moving cursor doesn't print any characters
   check-trace-count-for-label 0, [print-character]
 ]
 
@@ -868,6 +867,7 @@ scenario editor-handles-mouse-clicks-outside-text [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  $clear-trace
   assume-console [
     left-click 1, 7  # last line, to the right of text
   ]
@@ -880,6 +880,7 @@ scenario editor-handles-mouse-clicks-outside-text [
     3 <- 1  # cursor row
     4 <- 3  # cursor column
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-handles-mouse-clicks-outside-text-2 [
@@ -887,6 +888,7 @@ scenario editor-handles-mouse-clicks-outside-text-2 [
   1:address:array:character <- new [abc
 def]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  $clear-trace
   assume-console [
     left-click 1, 7  # interior line, to the right of text
   ]
@@ -899,6 +901,7 @@ def]
     3 <- 1  # cursor row
     4 <- 3  # cursor column
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-handles-mouse-clicks-outside-text-3 [
@@ -906,6 +909,7 @@ scenario editor-handles-mouse-clicks-outside-text-3 [
   1:address:array:character <- new [abc
 def]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  $clear-trace
   assume-console [
     left-click 3, 7  # below text
   ]
@@ -918,6 +922,7 @@ def]
     3 <- 2  # cursor row
     4 <- 3  # cursor column
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-handles-mouse-clicks-outside-column [
@@ -925,6 +930,7 @@ scenario editor-handles-mouse-clicks-outside-column [
   1:address:array:character <- new [abc]
   # editor occupies only left half of screen
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  $clear-trace
   assume-console [
     # click on right half of screen
     left-click 3, 8
@@ -943,6 +949,7 @@ scenario editor-handles-mouse-clicks-outside-column [
     3 <- 1  # no change to cursor row
     4 <- 0  # ..or column
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-inserts-characters-into-empty-editor [
@@ -950,6 +957,7 @@ scenario editor-inserts-characters-into-empty-editor [
   1:address:array:character <- new []
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     type [abc]
   ]
@@ -962,6 +970,7 @@ scenario editor-inserts-characters-into-empty-editor [
     .┈┈┈┈┈     .
     .          .
   ]
+  check-trace-count-for-label 3, [print-character]
 ]
 
 scenario editor-inserts-characters-at-cursor [
@@ -1003,8 +1012,6 @@ scenario editor-inserts-characters-at-cursor-2 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  # performance test: typing characters doesn't usually print more than the
-  # character being typed
   check-trace-count-for-label 1, [print-character]
 ]
 
@@ -1013,6 +1020,7 @@ scenario editor-inserts-characters-at-cursor-3 [
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 3, 5  # below all text
     type [d]  # should append
@@ -1026,6 +1034,7 @@ scenario editor-inserts-characters-at-cursor-3 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 1, [print-character]
 ]
 
 scenario editor-inserts-characters-at-cursor-4 [
@@ -1034,6 +1043,7 @@ scenario editor-inserts-characters-at-cursor-4 [
 d]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 3, 5  # below all text
     type [e]  # should append
@@ -1048,6 +1058,7 @@ d]
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 1, [print-character]
 ]
 
 scenario editor-inserts-characters-at-cursor-5 [
@@ -1056,6 +1067,7 @@ scenario editor-inserts-characters-at-cursor-5 [
 d]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 3, 5  # below all text
     type [ef]  # should append multiple characters in order
@@ -1070,6 +1082,7 @@ d]
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 2, [print-character]
 ]
 
 scenario editor-moves-cursor-after-inserting-characters [
