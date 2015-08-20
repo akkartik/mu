@@ -404,6 +404,78 @@ scenario string-append-1 [
   ]
 ]
 
+scenario replace-character-in-string [
+  run [
+    1:address:array:character/raw <- new [abc]
+    1:address:array:character/raw <- string-replace 1:address:array:character/raw, 98/b, 122/z
+    2:array:character/raw <- copy *1:address:array:character/raw
+  ]
+  memory-should-contain [
+    2:string <- [azc]
+  ]
+]
+
+recipe string-replace [
+  local-scope
+  s:address:array:character <- next-ingredient
+  oldc:character <- next-ingredient
+  newc:character <- next-ingredient
+  from:number <- next-ingredient
+  len:number <- length *s
+  i:number <- find-next s, oldc, from
+  done?:boolean <- greater-or-equal i, len
+  reply-if done?, s/same-as-ingredient:0
+  dest:address:character <- index-address *s, i
+  *dest <- copy newc
+  i <- add i, 1
+  s <- string-replace s, oldc, newc, i
+  reply s/same-as-ingredient:0
+]
+
+scenario replace-character-at-start [
+  run [
+    1:address:array:character/raw <- new [abc]
+    1:address:array:character/raw <- string-replace 1:address:array:character/raw, 97/a, 122/z
+    2:array:character/raw <- copy *1:address:array:character/raw
+  ]
+  memory-should-contain [
+    2:string <- [zbc]
+  ]
+]
+
+scenario replace-character-at-end [
+  run [
+    1:address:array:character/raw <- new [abc]
+    1:address:array:character/raw <- string-replace 1:address:array:character/raw, 99/c, 122/z
+    2:array:character/raw <- copy *1:address:array:character/raw
+  ]
+  memory-should-contain [
+    2:string <- [abz]
+  ]
+]
+
+scenario replace-character-missing [
+  run [
+    1:address:array:character/raw <- new [abc]
+    1:address:array:character/raw <- string-replace 1:address:array:character/raw, 100/d, 122/z
+    2:array:character/raw <- copy *1:address:array:character/raw
+  ]
+  memory-should-contain [
+    2:string <- [abc]
+  ]
+]
+
+scenario replace-all-characters [
+  run [
+    1:address:array:character/raw <- new [banana]
+    1:address:array:character/raw <- string-replace 1:address:array:character/raw, 97/a, 122/z
+    2:array:character/raw <- copy *1:address:array:character/raw
+  ]
+  memory-should-contain [
+    2:string <- [bznznz]
+  ]
+]
+
 # replace underscores in first with remaining args
 # result:address:array:character <- interpolate template:address:array:character, ...
 recipe interpolate [

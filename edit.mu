@@ -6068,6 +6068,35 @@ recipe foo [
   ]
 ]
 
+scenario run-shows-unbalanced-bracket-warnings [
+  $close-trace
+  assume-screen 100/width, 15/height
+  # recipe is incomplete (unbalanced '[')
+  1:address:array:character <- new [ 
+recipe foo «
+  x <- copy 0
+]
+  string-replace 1:address:array:character, 171/«, 91  # '['
+  2:address:array:character <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  assume-console [
+    press 65532  # F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .  errors found                                                                   run (F4)           .
+    .                                                  ┊foo                                              .
+    .recipe foo \\\[                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  x <- copy 0                                     ┊                                                 .
+    .                                                  ┊                                                 .
+    .9: unbalanced '\\\[' for recipe                      ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
 scenario run-shows-get-on-non-container-warnings [
   $close-trace
   assume-screen 100/width, 15/height

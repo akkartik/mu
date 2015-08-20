@@ -314,7 +314,8 @@ case RELOAD: {
   }
   Hide_warnings = true;
   Disable_redefine_warnings = true;
-  vector<recipe_ordinal> recipes_reloaded = load(read_mu_string(ingredients.at(0).at(0)));
+  string code = read_mu_string(ingredients.at(0).at(0));
+  vector<recipe_ordinal> recipes_reloaded = load(code);
   for (long long int i = 0; i < SIZE(recipes_reloaded); ++i) {
     Name.erase(recipes_reloaded.at(i));
   }
