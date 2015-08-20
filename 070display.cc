@@ -18,6 +18,13 @@ Recipe_ordinal["open-console"] = OPEN_CONSOLE;
 case OPEN_CONSOLE: {
   tb_init();
   Display_row = Display_column = 0;
+  long long int width = tb_width();
+  long long int height = tb_height();
+  if (width > 222 || height > 222) tb_shutdown();
+  if (width > 222)
+    raise << "sorry, mu doesn't support windows wider than 222 characters. Please resize your window.\n" << end();
+  if (height > 222)
+    raise << "sorry, mu doesn't support windows taller than 222 characters. Please resize your window.\n" << end();
   break;
 }
 
