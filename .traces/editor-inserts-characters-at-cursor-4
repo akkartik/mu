@@ -1,6 +1,6 @@
  101 run: assume-console [
     left-click 3, 5  # below all text
-    type [e]  # should append
+    type [e]
   ]
 parse: instruction: left-click
 parse:   ingredient: {name: "3", properties: ["3": "literal"]}
@@ -1221,7 +1221,7 @@ schedule: hide-screen/handle-keyboard-event/editor-event-loop/run1001/scenario-e
 9999 mem: location 1299 is 101
 9999 mem: location 1296 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 32
+9999 mem: array size is 35
 9999 mem: new alloc: 1354
  104 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1000 in location 1356
@@ -1419,22 +1419,72 @@ schedule: hide-screen/handle-keyboard-event/editor-event-loop/run1001/scenario-e
 9999 mem: location 1361 is 1007
 9999 mem: location 1361 is 1007
 9999 mem: storing 1 in location 1365
+ 104 run: screen-width:number <- screen-width screen
+9999 mem: location 1358 is 1009
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+ 105 run: sc:address:screen <- next-ingredient 
+9999 mem: storing 1009 in location 1169
+ 105 run: break-unless sc, 
+9999 mem: location 1169 is 1009
+9999 run: jump-unless fell through
+ 105 run: width:number <- get *sc, num-columns:offset
+9999 mem: location 1169 is 1009
+9999 mem: location 1009 is 5
+9999 mem: location 1010 is 10
+9999 mem: location 1011 is 3
+9999 mem: location 1012 is 9
+9999 mem: location 1013 is 1014
+9999 mem: location 1169 is 1009
+9999 run: address to copy is 1010
+9999 run: its type is number
+9999 mem: location 1010 is 10
+9999 mem: storing 10 in location 1170
+ 105 run: reply width
+9999 mem: location 1170 is 10
+9999 run: result 0 is 10
+9999 mem: storing 10 in location 1366
+ 104 run: screen-height:number <- screen-height screen
+9999 mem: location 1358 is 1009
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+ 105 run: sc:address:screen <- next-ingredient 
+9999 mem: storing 1009 in location 1169
+ 105 run: break-unless sc, 
+9999 mem: location 1169 is 1009
+9999 run: jump-unless fell through
+ 105 run: height:number <- get *sc, num-rows:offset
+9999 mem: location 1169 is 1009
+9999 mem: location 1009 is 5
+9999 mem: location 1010 is 10
+9999 mem: location 1011 is 3
+9999 mem: location 1012 is 9
+9999 mem: location 1013 is 1014
+9999 mem: location 1169 is 1009
+9999 run: address to copy is 1009
+9999 run: its type is number
+9999 mem: location 1009 is 5
+9999 mem: storing 5 in location 1170
+ 105 run: reply height
+9999 mem: location 1170 is 5
+9999 run: result 0 is 5
+9999 mem: storing 5 in location 1367
  104 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1357 is 101
-9999 mem: storing 0 in location 1366
+9999 mem: storing 0 in location 1368
  104 run: break-unless newline?, 
-9999 mem: location 1366 is 0
-9999 run: jumping to instruction 52
+9999 mem: location 1368 is 0
+9999 run: jumping to instruction 53
  104 run: wrap-column:number <- subtract right, 1
 9999 mem: location 1363 is 9
-9999 mem: storing 8 in location 1379
+9999 mem: storing 8 in location 1380
  104 run: at-wrap?:boolean <- greater-or-equal *cursor-column, wrap-column
 9999 mem: location 1361 is 1007
 9999 mem: location 1007 is 1
-9999 mem: location 1379 is 8
-9999 mem: storing 0 in location 1380
+9999 mem: location 1380 is 8
+9999 mem: storing 0 in location 1381
  104 run: break-unless at-wrap?, 
-9999 mem: location 1380 is 0
+9999 mem: location 1381 is 0
 9999 run: jumping to instruction 77
  104 run: *cursor-column <- add *cursor-column, 1
 9999 mem: location 1361 is 1007
@@ -1464,30 +1514,30 @@ schedule: hide-screen/handle-keyboard-event/editor-event-loop/run1001/scenario-e
  105 run: reply result
 9999 mem: location 1170 is 0
 9999 run: result 0 is 0
-9999 mem: storing 0 in location 1381
+9999 mem: storing 0 in location 1382
  104 run: at-end?:boolean <- equal next, 0/null
-9999 mem: location 1381 is 0
-9999 mem: storing 1 in location 1382
+9999 mem: location 1382 is 0
+9999 mem: storing 1 in location 1383
  104 run: break-unless at-end?, 
-9999 mem: location 1382 is 1
+9999 mem: location 1383 is 1
 9999 run: jump-unless fell through
  104 run: bottom:number <- subtract screen-height, 1
-9999 mem: location 1367 is 0
-9999 mem: storing -1 in location 1383
+9999 mem: location 1367 is 5
+9999 mem: storing 4 in location 1384
  104 run: at-bottom?:boolean <- equal save-row, bottom
 9999 mem: location 1364 is 2
-9999 mem: location 1383 is -1
-9999 mem: storing 0 in location 1384
+9999 mem: location 1384 is 4
+9999 mem: storing 0 in location 1385
  104 run: at-right?:boolean <- equal save-column, right
 9999 mem: location 1365 is 1
 9999 mem: location 1363 is 9
-9999 mem: storing 0 in location 1385
- 104 run: overflow?:boolean <- and at-bottom?, at-right?
-9999 mem: location 1384 is 0
-9999 mem: location 1385 is 0
 9999 mem: storing 0 in location 1386
- 104 run: break-if overflow?, 
+ 104 run: overflow?:boolean <- and at-bottom?, at-right?
+9999 mem: location 1385 is 0
 9999 mem: location 1386 is 0
+9999 mem: storing 0 in location 1387
+ 104 run: break-if overflow?, 
+9999 mem: location 1387 is 0
 9999 run: jump-if fell through
  104 run: move-cursor screen, save-row, save-column
 9999 mem: location 1358 is 1009
@@ -1786,14 +1836,14 @@ schedule: hide-screen/handle-keyboard-event/editor-event-loop/run1001/scenario-e
 9999 mem: location 1296 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 2
-9999 mem: new alloc: 1387
+9999 mem: new alloc: 1390
  104 run: screen:address <- next-ingredient 
-9999 mem: storing 1009 in location 1389
+9999 mem: storing 1009 in location 1392
  104 run: break-unless screen, 
-9999 mem: location 1389 is 1009
+9999 mem: location 1392 is 1009
 9999 run: jump-unless fell through
  104 run: reply screen
-9999 mem: location 1389 is 1009
+9999 mem: location 1392 is 1009
  103 run: reply 
  102 run: loop 
 9999 run: jumping to instruction 5

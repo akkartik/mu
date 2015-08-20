@@ -5606,7 +5606,7 @@ after-brace: editor-event-loop ...
 9999 mem: location 1268 is 10
 9999 mem: location 1265 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 32
+9999 mem: array size is 35
 9999 mem: new alloc: 1323
  104 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1000 in location 1325
@@ -5818,22 +5818,31 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
 9999 mem: location 1330 is 1007
 9999 mem: location 1330 is 1007
 9999 mem: storing 0 in location 1334
- 104 run: newline?:boolean <- equal c, 10/newline
-9999 mem: location 1326 is 10
-9999 mem: storing 1 in location 1335
- 104 run: break-unless newline?, 
-9999 mem: location 1335 is 1
+ 104 run: screen-width:number <- screen-width screen
+9999 mem: location 1327 is 1009
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+ 105 run: sc:address:screen <- next-ingredient 
+9999 mem: storing 1009 in location 1169
+ 105 run: break-unless sc, 
+9999 mem: location 1169 is 1009
 9999 run: jump-unless fell through
- 104 run: *cursor-row <- add *cursor-row, 1
-9999 mem: location 1329 is 1006
-9999 mem: location 1006 is 1
-9999 mem: location 1329 is 1006
-9999 mem: storing 2 in location 1006
- 104 run: *cursor-column <- copy left
-9999 mem: location 1331 is 0
-9999 mem: location 1330 is 1007
-9999 mem: location 1330 is 1007
-9999 mem: storing 0 in location 1007
+ 105 run: width:number <- get *sc, num-columns:offset
+9999 mem: location 1169 is 1009
+9999 mem: location 1009 is 5
+9999 mem: location 1010 is 10
+9999 mem: location 1011 is 2
+9999 mem: location 1012 is 1
+9999 mem: location 1013 is 1014
+9999 mem: location 1169 is 1009
+9999 run: address to copy is 1010
+9999 run: its type is number
+9999 mem: location 1010 is 10
+9999 mem: storing 10 in location 1170
+ 105 run: reply width
+9999 mem: location 1170 is 10
+9999 run: result 0 is 10
+9999 mem: storing 10 in location 1335
  104 run: screen-height:number <- screen-height screen
 9999 mem: location 1327 is 1009
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -5859,14 +5868,30 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
 9999 mem: location 1170 is 5
 9999 run: result 0 is 5
 9999 mem: storing 5 in location 1336
+ 104 run: newline?:boolean <- equal c, 10/newline
+9999 mem: location 1326 is 10
+9999 mem: storing 1 in location 1337
+ 104 run: break-unless newline?, 
+9999 mem: location 1337 is 1
+9999 run: jump-unless fell through
+ 104 run: *cursor-row <- add *cursor-row, 1
+9999 mem: location 1329 is 1006
+9999 mem: location 1006 is 1
+9999 mem: location 1329 is 1006
+9999 mem: storing 2 in location 1006
+ 104 run: *cursor-column <- copy left
+9999 mem: location 1331 is 0
+9999 mem: location 1330 is 1007
+9999 mem: location 1330 is 1007
+9999 mem: storing 0 in location 1007
  104 run: below-screen?:boolean <- greater-or-equal *cursor-row, screen-height
 9999 mem: location 1329 is 1006
 9999 mem: location 1006 is 2
 9999 mem: location 1336 is 5
-9999 mem: storing 0 in location 1337
+9999 mem: storing 0 in location 1338
  104 run: break-unless below-screen?, 
-9999 mem: location 1337 is 0
-9999 run: jumping to instruction 30
+9999 mem: location 1338 is 0
+9999 run: jumping to instruction 31
  104 run: indent?:boolean <- get *editor, indent:offset
 9999 mem: location 1325 is 1000
 9999 mem: location 1000 is 1152
@@ -5882,9 +5907,9 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
 9999 run: address to copy is 1008
 9999 run: its type is boolean
 9999 mem: location 1008 is 1
-9999 mem: storing 1 in location 1340
+9999 mem: storing 1 in location 1341
  104 run: jump-unless indent?, +done:label
-9999 mem: location 1340 is 1
+9999 mem: location 1341 is 1
 9999 run: jump-unless fell through
  104 run: d:address:duplex-list <- get *editor, data:offset
 9999 mem: location 1325 is 1000
@@ -5901,7 +5926,7 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
 9999 run: address to copy is 1000
 9999 run: its type is address
 9999 mem: location 1000 is 1152
-9999 mem: storing 1152 in location 1341
+9999 mem: storing 1152 in location 1342
  104 run: end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
 9999 mem: location 1328 is 1003
 9999 mem: location 1003 is 1320
@@ -5925,10 +5950,10 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
  105 run: reply result
 9999 mem: location 1170 is 1152
 9999 run: result 0 is 1152
-9999 mem: storing 1152 in location 1342
+9999 mem: storing 1152 in location 1343
  104 run: indent:number <- line-indent end-of-previous-line, d
+9999 mem: location 1343 is 1152
 9999 mem: location 1342 is 1152
-9999 mem: location 1341 is 1152
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
  105 run: curr:address:duplex-list <- next-ingredient 
@@ -5950,16 +5975,16 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
  105 run: reply result
 9999 mem: location 1159 is 0
 9999 run: result 0 is 0
-9999 mem: storing 0 in location 1343
- 104 run: i:number <- copy 0
 9999 mem: storing 0 in location 1344
+ 104 run: i:number <- copy 0
+9999 mem: storing 0 in location 1345
  104 run: indent-done?:boolean <- greater-or-equal i, indent
+9999 mem: location 1345 is 0
 9999 mem: location 1344 is 0
-9999 mem: location 1343 is 0
-9999 mem: storing 1 in location 1345
+9999 mem: storing 1 in location 1346
  104 run: break-if indent-done?, 
-9999 mem: location 1345 is 1
-9999 run: jumping to instruction 43
+9999 mem: location 1346 is 1
+9999 run: jumping to instruction 44
  104 run: row:number, column:number, screen <- render screen, editor
 9999 mem: location 1327 is 1009
 9999 mem: location 1325 is 1000
@@ -6263,22 +6288,22 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
 9999 mem: location 1189 is 4
  106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 5
-9999 mem: new alloc: 1356
+9999 mem: new alloc: 1359
  106 run: screen:address <- next-ingredient 
-9999 mem: storing 1009 in location 1358
+9999 mem: storing 1009 in location 1361
  106 run: column:number <- next-ingredient 
-9999 mem: storing 0 in location 1359
+9999 mem: storing 0 in location 1362
  106 run: right:number <- next-ingredient 
-9999 mem: storing 4 in location 1360
+9999 mem: storing 4 in location 1363
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 0
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 0
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  106 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  107 run: sc:address:screen <- next-ingredient 
@@ -6465,19 +6490,19 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
  107 run: reply sc/same-as-ingredient:0
 9999 mem: location 1219 is 1009
  106 run: column <- add column, 1
-9999 mem: location 1359 is 0
-9999 mem: storing 1 in location 1359
+9999 mem: location 1362 is 0
+9999 mem: storing 1 in location 1362
  106 run: loop 
 9999 run: jumping to instruction 5
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 1
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 1
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  106 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  107 run: sc:address:screen <- next-ingredient 
@@ -6664,19 +6689,19 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
  107 run: reply sc/same-as-ingredient:0
 9999 mem: location 1219 is 1009
  106 run: column <- add column, 1
-9999 mem: location 1359 is 1
-9999 mem: storing 2 in location 1359
+9999 mem: location 1362 is 1
+9999 mem: storing 2 in location 1362
  106 run: loop 
 9999 run: jumping to instruction 5
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 2
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 2
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  106 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  107 run: sc:address:screen <- next-ingredient 
@@ -6863,19 +6888,19 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
  107 run: reply sc/same-as-ingredient:0
 9999 mem: location 1219 is 1009
  106 run: column <- add column, 1
-9999 mem: location 1359 is 2
-9999 mem: storing 3 in location 1359
+9999 mem: location 1362 is 2
+9999 mem: storing 3 in location 1362
  106 run: loop 
 9999 run: jumping to instruction 5
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 3
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 3
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  106 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  107 run: sc:address:screen <- next-ingredient 
@@ -7062,19 +7087,19 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
  107 run: reply sc/same-as-ingredient:0
 9999 mem: location 1219 is 1009
  106 run: column <- add column, 1
-9999 mem: location 1359 is 3
-9999 mem: storing 4 in location 1359
+9999 mem: location 1362 is 3
+9999 mem: storing 4 in location 1362
  106 run: loop 
 9999 run: jumping to instruction 5
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 4
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 4
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  106 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  107 run: sc:address:screen <- next-ingredient 
@@ -7261,16 +7286,16 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
  107 run: reply sc/same-as-ingredient:0
 9999 mem: location 1219 is 1009
  106 run: column <- add column, 1
-9999 mem: location 1359 is 4
-9999 mem: storing 5 in location 1359
+9999 mem: location 1362 is 4
+9999 mem: storing 5 in location 1362
  106 run: loop 
 9999 run: jumping to instruction 5
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 5
-9999 mem: location 1360 is 4
-9999 mem: storing 1 in location 1361
+9999 mem: location 1362 is 5
+9999 mem: location 1363 is 4
+9999 mem: storing 1 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 1
+9999 mem: location 1364 is 1
 9999 run: jumping to instruction 10
  105 run: row <- add row, 1
 9999 mem: location 1193 is 1
@@ -7431,6 +7456,7 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
  106 run: break-unless color-is-white?, 
 9999 mem: location 1119 is 1
 9999 run: jump-unless fell through
+schedule: get-color/render/insert-at-cursor/handle-keyboard-event/editor-event-loop/run1001/scenario-editor-clears-previous-line-completely-after-inserting-newline
  106 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1118 is 97
 9999 mem: storing 0 in location 1120
@@ -7443,7 +7469,6 @@ schedule: insert-duplex/insert-at-cursor/handle-keyboard-event/editor-event-loop
  106 run: break-unless color-is-blue?, 
 9999 mem: location 1121 is 0
 9999 run: jumping to instruction 18
-schedule: get-color/render/insert-at-cursor/handle-keyboard-event/editor-event-loop/run1001/scenario-editor-clears-previous-line-completely-after-inserting-newline
  106 run: break-unless color-is-white?, 
 9999 mem: location 1119 is 1
 9999 run: jump-unless fell through
@@ -8916,6 +8941,7 @@ schedule: get-color/render/insert-at-cursor/handle-keyboard-event/editor-event-l
  106 run: break-unless newline?, 
 9999 mem: location 1230 is 0
 9999 run: jumping to instruction 43
+schedule: print-character/render/insert-at-cursor/handle-keyboard-event/editor-event-loop/run1001/scenario-editor-clears-previous-line-completely-after-inserting-newline
  106 run: index:number <- multiply *row, width
 9999 mem: location 1227 is 1011
 9999 mem: location 1011 is 2
@@ -8944,7 +8970,6 @@ schedule: get-color/render/insert-at-cursor/handle-keyboard-event/editor-event-l
  106 run: backspace?:boolean <- equal c, 8
 9999 mem: location 1220 is 8617
 9999 mem: storing 0 in location 1236
-schedule: print-character/render/insert-at-cursor/handle-keyboard-event/editor-event-loop/run1001/scenario-editor-clears-previous-line-completely-after-inserting-newline
  106 run: break-unless backspace?, 
 9999 mem: location 1236 is 0
 9999 run: jumping to instruction 63
@@ -9432,30 +9457,30 @@ schedule: print-character/render/insert-at-cursor/handle-keyboard-event/editor-e
 9999 run: result 0 is 3
 9999 run: result 1 is 1
 9999 run: result 2 is 1009
-9999 mem: storing 3 in location 1346
-9999 mem: storing 1 in location 1347
+9999 mem: storing 3 in location 1347
+9999 mem: storing 1 in location 1348
 9999 mem: storing 1009 in location 1327
  104 run: clear-line-delimited screen, column, right
 9999 mem: location 1327 is 1009
-9999 mem: location 1347 is 1
+9999 mem: location 1348 is 1
 9999 mem: location 1332 is 4
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 5
  105 run: screen:address <- next-ingredient 
-9999 mem: storing 1009 in location 1358
+9999 mem: storing 1009 in location 1361
  105 run: column:number <- next-ingredient 
-9999 mem: storing 1 in location 1359
+9999 mem: storing 1 in location 1362
  105 run: right:number <- next-ingredient 
-9999 mem: storing 4 in location 1360
+9999 mem: storing 4 in location 1363
  105 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 1
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 1
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  105 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  105 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  106 run: sc:address:screen <- next-ingredient 
@@ -9642,19 +9667,19 @@ schedule: print-character/render/insert-at-cursor/handle-keyboard-event/editor-e
  106 run: reply sc/same-as-ingredient:0
 9999 mem: location 1219 is 1009
  105 run: column <- add column, 1
-9999 mem: location 1359 is 1
-9999 mem: storing 2 in location 1359
+9999 mem: location 1362 is 1
+9999 mem: storing 2 in location 1362
  105 run: loop 
 9999 run: jumping to instruction 5
  105 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 2
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 2
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  105 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  105 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  106 run: sc:address:screen <- next-ingredient 
@@ -9841,19 +9866,19 @@ schedule: print-character/render/insert-at-cursor/handle-keyboard-event/editor-e
  106 run: reply sc/same-as-ingredient:0
 9999 mem: location 1219 is 1009
  105 run: column <- add column, 1
-9999 mem: location 1359 is 2
-9999 mem: storing 3 in location 1359
+9999 mem: location 1362 is 2
+9999 mem: storing 3 in location 1362
  105 run: loop 
 9999 run: jumping to instruction 5
  105 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 3
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 3
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  105 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  105 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  106 run: sc:address:screen <- next-ingredient 
@@ -10040,19 +10065,19 @@ schedule: print-character/render/insert-at-cursor/handle-keyboard-event/editor-e
  106 run: reply sc/same-as-ingredient:0
 9999 mem: location 1219 is 1009
  105 run: column <- add column, 1
-9999 mem: location 1359 is 3
-9999 mem: storing 4 in location 1359
+9999 mem: location 1362 is 3
+9999 mem: storing 4 in location 1362
  105 run: loop 
 9999 run: jumping to instruction 5
  105 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 4
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 4
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  105 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  105 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  106 run: sc:address:screen <- next-ingredient 
@@ -10239,23 +10264,23 @@ schedule: print-character/render/insert-at-cursor/handle-keyboard-event/editor-e
  106 run: reply sc/same-as-ingredient:0
 9999 mem: location 1219 is 1009
  105 run: column <- add column, 1
-9999 mem: location 1359 is 4
-9999 mem: storing 5 in location 1359
+9999 mem: location 1362 is 4
+9999 mem: storing 5 in location 1362
  105 run: loop 
 9999 run: jumping to instruction 5
  105 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 5
-9999 mem: location 1360 is 4
-9999 mem: storing 1 in location 1361
+9999 mem: location 1362 is 5
+9999 mem: location 1363 is 4
+9999 mem: storing 1 in location 1364
  105 run: break-if done?, 
-9999 mem: location 1361 is 1
+9999 mem: location 1364 is 1
 9999 run: jumping to instruction 10
  104 run: row <- add row, 1
-9999 mem: location 1346 is 3
-9999 mem: storing 4 in location 1346
+9999 mem: location 1347 is 3
+9999 mem: storing 4 in location 1347
  104 run: draw-horizontal screen, row, left, right, 9480/horizontal-dotted
 9999 mem: location 1327 is 1009
-9999 mem: location 1346 is 4
+9999 mem: location 1347 is 4
 9999 mem: location 1331 is 0
 9999 mem: location 1332 is 4
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -10570,6 +10595,7 @@ schedule: print-character/render/insert-at-cursor/handle-keyboard-event/editor-e
  106 run: trace 90, [print-character], c
 9999 mem: location 1220 is 9480
   90 print-character: 9480 
+schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event/editor-event-loop/run1001/scenario-editor-clears-previous-line-completely-after-inserting-newline
  106 run: break-unless sc, 
 9999 mem: location 1219 is 1009
 9999 run: jump-unless fell through
@@ -10619,7 +10645,6 @@ schedule: print-character/render/insert-at-cursor/handle-keyboard-event/editor-e
 9999 mem: location 1011 is 4
 9999 mem: location 1226 is 5
 9999 mem: storing 1 in location 1228
-schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event/editor-event-loop/run1001/scenario-editor-clears-previous-line-completely-after-inserting-newline
  106 run: jump-if legal?, 1:offset
 9999 mem: location 1228 is 1
 9999 run: jumping to instruction 25
@@ -11338,11 +11363,11 @@ schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event
 9999 mem: location 1262 is 0
 9999 run: jumping to instruction 27
  104 run: row <- add row, 1
-9999 mem: location 1346 is 4
-9999 mem: storing 5 in location 1346
+9999 mem: location 1347 is 4
+9999 mem: storing 5 in location 1347
  104 run: clear-screen-from screen, row, left, left, right
 9999 mem: location 1327 is 1009
-9999 mem: location 1346 is 5
+9999 mem: location 1347 is 5
 9999 mem: location 1331 is 0
 9999 mem: location 1331 is 0
 9999 mem: location 1332 is 4
@@ -11367,48 +11392,48 @@ schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event
 9999 mem: location 1214 is 0
  106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
-9999 mem: new alloc: 1362
+9999 mem: new alloc: 1365
  106 run: sc:address:screen <- next-ingredient 
-9999 mem: storing 1009 in location 1364
+9999 mem: storing 1009 in location 1367
  106 run: new-row:number <- next-ingredient 
-9999 mem: storing 5 in location 1365
+9999 mem: storing 5 in location 1368
  106 run: new-column:number <- next-ingredient 
-9999 mem: storing 0 in location 1366
+9999 mem: storing 0 in location 1369
  106 run: break-unless sc, 
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 run: jump-unless fell through
  106 run: row:address:number <- get-address *sc, cursor-row:offset
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 mem: location 1009 is 5
 9999 mem: location 1010 is 10
 9999 mem: location 1011 is 4
 9999 mem: location 1012 is 5
 9999 mem: location 1013 is 1014
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 run: address to copy is 1011
-9999 mem: storing 1011 in location 1367
+9999 mem: storing 1011 in location 1370
  106 run: *row <- copy new-row
-9999 mem: location 1365 is 5
-9999 mem: location 1367 is 1011
-9999 mem: location 1367 is 1011
+9999 mem: location 1368 is 5
+9999 mem: location 1370 is 1011
+9999 mem: location 1370 is 1011
 9999 mem: storing 5 in location 1011
  106 run: column:address:number <- get-address *sc, cursor-column:offset
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 mem: location 1009 is 5
 9999 mem: location 1010 is 10
 9999 mem: location 1011 is 5
 9999 mem: location 1012 is 5
 9999 mem: location 1013 is 1014
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 run: address to copy is 1012
-9999 mem: storing 1012 in location 1368
+9999 mem: storing 1012 in location 1371
  106 run: *column <- copy new-column
-9999 mem: location 1366 is 0
-9999 mem: location 1368 is 1012
-9999 mem: location 1368 is 1012
+9999 mem: location 1369 is 0
+9999 mem: location 1371 is 1012
+9999 mem: location 1371 is 1012
 9999 mem: storing 0 in location 1012
  106 run: reply sc/same-as-ingredient:0
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 run: result 0 is 1009
 9999 mem: storing 1009 in location 1212
  105 run: clear-line-delimited screen, column, right
@@ -11418,20 +11443,20 @@ schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event
  106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 5
  106 run: screen:address <- next-ingredient 
-9999 mem: storing 1009 in location 1358
+9999 mem: storing 1009 in location 1361
  106 run: column:number <- next-ingredient 
-9999 mem: storing 0 in location 1359
+9999 mem: storing 0 in location 1362
  106 run: right:number <- next-ingredient 
-9999 mem: storing 4 in location 1360
+9999 mem: storing 4 in location 1363
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 0
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 0
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  106 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  107 run: sc:address:screen <- next-ingredient 
@@ -11512,19 +11537,19 @@ schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event
  107 run: reply sc
 9999 mem: location 1219 is 1009
  106 run: column <- add column, 1
-9999 mem: location 1359 is 0
-9999 mem: storing 1 in location 1359
+9999 mem: location 1362 is 0
+9999 mem: storing 1 in location 1362
  106 run: loop 
 9999 run: jumping to instruction 5
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 1
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 1
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  106 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  107 run: sc:address:screen <- next-ingredient 
@@ -11605,19 +11630,19 @@ schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event
  107 run: reply sc
 9999 mem: location 1219 is 1009
  106 run: column <- add column, 1
-9999 mem: location 1359 is 1
-9999 mem: storing 2 in location 1359
+9999 mem: location 1362 is 1
+9999 mem: storing 2 in location 1362
  106 run: loop 
 9999 run: jumping to instruction 5
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 2
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 2
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  106 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  107 run: sc:address:screen <- next-ingredient 
@@ -11698,19 +11723,19 @@ schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event
  107 run: reply sc
 9999 mem: location 1219 is 1009
  106 run: column <- add column, 1
-9999 mem: location 1359 is 2
-9999 mem: storing 3 in location 1359
+9999 mem: location 1362 is 2
+9999 mem: storing 3 in location 1362
  106 run: loop 
 9999 run: jumping to instruction 5
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 3
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 3
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  106 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  107 run: sc:address:screen <- next-ingredient 
@@ -11791,19 +11816,19 @@ schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event
  107 run: reply sc
 9999 mem: location 1219 is 1009
  106 run: column <- add column, 1
-9999 mem: location 1359 is 3
-9999 mem: storing 4 in location 1359
+9999 mem: location 1362 is 3
+9999 mem: storing 4 in location 1362
  106 run: loop 
 9999 run: jumping to instruction 5
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 4
-9999 mem: location 1360 is 4
-9999 mem: storing 0 in location 1361
+9999 mem: location 1362 is 4
+9999 mem: location 1363 is 4
+9999 mem: storing 0 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 0
+9999 mem: location 1364 is 0
 9999 run: jump-if fell through
  106 run: print-character screen, 32/space
-9999 mem: location 1358 is 1009
+9999 mem: location 1361 is 1009
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  107 run: sc:address:screen <- next-ingredient 
@@ -11884,16 +11909,16 @@ schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event
  107 run: reply sc
 9999 mem: location 1219 is 1009
  106 run: column <- add column, 1
-9999 mem: location 1359 is 4
-9999 mem: storing 5 in location 1359
+9999 mem: location 1362 is 4
+9999 mem: storing 5 in location 1362
  106 run: loop 
 9999 run: jumping to instruction 5
  106 run: done?:boolean <- greater-than column, right
-9999 mem: location 1359 is 5
-9999 mem: location 1360 is 4
-9999 mem: storing 1 in location 1361
+9999 mem: location 1362 is 5
+9999 mem: location 1363 is 4
+9999 mem: storing 1 in location 1364
  106 run: break-if done?, 
-9999 mem: location 1361 is 1
+9999 mem: location 1364 is 1
 9999 run: jumping to instruction 10
  105 run: clear-rest-of-screen screen, row, left, right
 9999 mem: location 1212 is 1009
@@ -11920,46 +11945,46 @@ schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event
  107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
  107 run: sc:address:screen <- next-ingredient 
-9999 mem: storing 1009 in location 1364
+9999 mem: storing 1009 in location 1367
  107 run: new-row:number <- next-ingredient 
-9999 mem: storing 6 in location 1365
+9999 mem: storing 6 in location 1368
  107 run: new-column:number <- next-ingredient 
-9999 mem: storing 0 in location 1366
+9999 mem: storing 0 in location 1369
  107 run: break-unless sc, 
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 run: jump-unless fell through
  107 run: row:address:number <- get-address *sc, cursor-row:offset
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 mem: location 1009 is 5
 9999 mem: location 1010 is 10
 9999 mem: location 1011 is 5
 9999 mem: location 1012 is 0
 9999 mem: location 1013 is 1014
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 run: address to copy is 1011
-9999 mem: storing 1011 in location 1367
+9999 mem: storing 1011 in location 1370
  107 run: *row <- copy new-row
-9999 mem: location 1365 is 6
-9999 mem: location 1367 is 1011
-9999 mem: location 1367 is 1011
+9999 mem: location 1368 is 6
+9999 mem: location 1370 is 1011
+9999 mem: location 1370 is 1011
 9999 mem: storing 6 in location 1011
  107 run: column:address:number <- get-address *sc, cursor-column:offset
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 mem: location 1009 is 5
 9999 mem: location 1010 is 10
 9999 mem: location 1011 is 6
 9999 mem: location 1012 is 0
 9999 mem: location 1013 is 1014
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 run: address to copy is 1012
-9999 mem: storing 1012 in location 1368
+9999 mem: storing 1012 in location 1371
  107 run: *column <- copy new-column
-9999 mem: location 1366 is 0
-9999 mem: location 1368 is 1012
-9999 mem: location 1368 is 1012
+9999 mem: location 1369 is 0
+9999 mem: location 1371 is 1012
+9999 mem: location 1371 is 1012
 9999 mem: storing 0 in location 1012
  107 run: reply sc/same-as-ingredient:0
-9999 mem: location 1364 is 1009
+9999 mem: location 1367 is 1009
 9999 run: result 0 is 1009
 9999 mem: storing 1009 in location 1146
  106 run: screen-height:number <- screen-height screen
@@ -12058,14 +12083,14 @@ schedule: print-character/draw-horizontal/insert-at-cursor/handle-keyboard-event
 9999 mem: location 1265 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 2
-9999 mem: new alloc: 1369
+9999 mem: new alloc: 1372
  104 run: screen:address <- next-ingredient 
-9999 mem: storing 1009 in location 1371
+9999 mem: storing 1009 in location 1374
  104 run: break-unless screen, 
-9999 mem: location 1371 is 1009
+9999 mem: location 1374 is 1009
 9999 run: jump-unless fell through
  104 run: reply screen
-9999 mem: location 1371 is 1009
+9999 mem: location 1374 is 1009
  103 run: reply 
  102 run: loop 
 9999 run: jumping to instruction 5
