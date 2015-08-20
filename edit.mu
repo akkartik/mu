@@ -784,13 +784,15 @@ recipe insert-at-cursor [
   right:number <- get *editor, right:offset
   save-row:number <- copy *cursor-row
   save-column:number <- copy *cursor-column
+  screen-width:number <- screen-width screen
+  screen-height:number <- screen-height screen
   # occasionally we'll need to mess with the cursor
   +insert-character-special-case
   # but mostly we'll just move the cursor right
   *cursor-column <- add *cursor-column, 1
+  next:address:duplex-list <- next-duplex *before-cursor
   {
-    # at end of line? no need to scroll? just print the character and leave
-    next:address:duplex-list <- next-duplex *before-cursor
+    # at end of all text? no need to scroll? just print the character and leave
     at-end?:boolean <- equal next, 0/null
     break-unless at-end?
     bottom:number <- subtract screen-height, 1
@@ -798,6 +800,18 @@ recipe insert-at-cursor [
     at-right?:boolean <- equal save-column, right
     overflow?:boolean <- and at-bottom?, at-right?
     break-if overflow?
+    move-cursor screen, save-row, save-column
+    print-character screen, c
+    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
+  }
+  {
+    # at end of line? room left in this line? just print the character and leave
+    break-unless next
+    nextc:character <- get *next, value:offset
+    at-newline?:boolean <- equal nextc, 10/newline
+    break-unless at-newline?
+    at-right?:boolean <- greater-or-equal *cursor-column, screen-width
+    break-if at-right?
     move-cursor screen, save-row, save-column
     print-character screen, c
     reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
@@ -977,6 +991,7 @@ scenario editor-inserts-characters-at-cursor [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  # type two letters at different places
   assume-console [
     type [0]
     left-click 1, 2
@@ -1001,7 +1016,7 @@ scenario editor-inserts-characters-at-cursor-2 [
   $clear-trace
   assume-console [
     left-click 1, 5  # right of last line
-    type [d]  # should append
+    type [d]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1009,6 +1024,30 @@ scenario editor-inserts-characters-at-cursor-2 [
   screen-should-contain [
     .          .
     .abcd      .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  check-trace-count-for-label 1, [print-character]
+]
+
+scenario editor-inserts-characters-at-cursor-5 [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
+  assume-console [
+    left-click 1, 5  # right of non-last line
+    type [e]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abce      .
+    .d         .
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
@@ -1023,7 +1062,7 @@ scenario editor-inserts-characters-at-cursor-3 [
   $clear-trace
   assume-console [
     left-click 3, 5  # below all text
-    type [d]  # should append
+    type [d]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1046,7 +1085,7 @@ d]
   $clear-trace
   assume-console [
     left-click 3, 5  # below all text
-    type [e]  # should append
+    type [e]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1070,7 +1109,7 @@ d]
   $clear-trace
   assume-console [
     left-click 3, 5  # below all text
-    type [ef]  # should append multiple characters in order
+    type [ef]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1154,7 +1193,6 @@ after +insert-character-special-case [
     *cursor-row <- add *cursor-row, 1
     # if we're out of the screen, scroll down
     {
-      screen-height:number <- screen-height screen
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height
       break-unless below-screen?
       +scroll-down
@@ -1259,7 +1297,6 @@ after +insert-character-special-case [
     *cursor-row <- add *cursor-row, 1
     *cursor-column <- copy left
     {
-      screen-height:number <- screen-height screen
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal, never greater
       break-unless below-screen?
       +scroll-down
