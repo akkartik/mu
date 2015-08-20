@@ -1,0 +1,238 @@
+parse: instruction: run
+parse:   ingredient: {name: "\n    1:address:array:character/raw <- new [abc]\n    1:address:array:character/raw <- string-replace 1:address:array:character/raw, 98/b, 122/z\n    2:array:character/raw <- copy *1:address:array:character/raw\n  ", properties: [_: "literal-string"]}
+parse: instruction: memory-should-contain
+parse:   ingredient: {name: "\n    2:string <- [azc]\n  ", properties: [_: "literal-string"]}
+after-brace: recipe scenario-replace-character-in-string
+after-brace: run ...
+after-brace: memory-should-contain ...
+9999 new: routine allocated memory from 1000 to 101000
+schedule: scenario-replace-character-in-string
+ 101 run: run [
+    1:address:array:character/raw <- new [abc]
+    1:address:array:character/raw <- string-replace 1:address:array:character/raw, 98/b, 122/z
+    2:array:character/raw <- copy *1:address:array:character/raw
+  ]
+parse: instruction: new
+parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"character", "raw": ]}
+parse: instruction: string-replace
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character", "raw": ]}
+parse:   ingredient: {name: "98", properties: ["98": "literal", "b": ]}
+parse:   ingredient: {name: "122", properties: ["122": "literal", "z": ]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"character", "raw": ]}
+parse: instruction: copy
+parse:   ingredient: {name: "1", properties: ["*1": "address":"array":"character", "raw": , "lookup": ]}
+parse:   product: {name: "2", properties: ["2": "array":"character", "raw": ]}
+after-brace: recipe run1001
+after-brace: new ...
+after-brace: string-replace ...
+after-brace: copy ...
+ 101 run: 1:address:array:character/raw <- new [abc]
+9999 mem: storing 1000 in location 1
+ 101 run: 1:address:array:character/raw <- string-replace 1:address:array:character/raw, 98/b, 122/z
+9999 mem: location 1 is 1000
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 9
+9999 mem: new alloc: 1004
+ 102 run: s:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1006
+ 102 run: oldc:character <- next-ingredient 
+9999 mem: storing 98 in location 1007
+ 102 run: newc:character <- next-ingredient 
+9999 mem: storing 122 in location 1008
+ 102 run: from:number <- next-ingredient 
+9999 mem: storing 0 in location 1009
+ 102 run: len:number <- length *s
+9999 mem: location 1006 is 1000
+9999 mem: storing 3 in location 1010
+ 102 run: i:number <- find-next s, oldc, from
+9999 mem: location 1006 is 1000
+9999 mem: location 1007 is 98
+9999 mem: location 1009 is 0
+ 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 8
+9999 mem: new alloc: 1014
+ 103 run: text:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1016
+ 103 run: pattern:character <- next-ingredient 
+9999 mem: storing 98 in location 1017
+ 103 run: idx:number <- next-ingredient 
+9999 mem: storing 0 in location 1018
+ 103 run: len:number <- length *text
+9999 mem: location 1016 is 1000
+9999 mem: storing 3 in location 1019
+ 103 run: eof?:boolean <- greater-or-equal idx, len
+9999 mem: location 1018 is 0
+9999 mem: location 1019 is 3
+9999 mem: storing 0 in location 1020
+ 103 run: break-if eof?, 
+9999 mem: location 1020 is 0
+9999 run: jump-if fell through
+ 103 run: curr:character <- index *text, idx
+9999 mem: location 1016 is 1000
+9999 mem: location 1018 is 0
+9999 run: address to copy is 1001
+9999 run: its type is character
+9999 mem: location 1001 is 97
+9999 mem: storing 97 in location 1021
+ 103 run: found?:boolean <- equal curr, pattern
+9999 mem: location 1021 is 97
+9999 mem: location 1017 is 98
+9999 mem: storing 0 in location 1022
+ 103 run: break-if found?, 
+9999 mem: location 1022 is 0
+9999 run: jump-if fell through
+ 103 run: idx <- add idx, 1
+9999 mem: location 1018 is 0
+9999 mem: storing 1 in location 1018
+ 103 run: loop 
+9999 run: jumping to instruction 6
+ 103 run: eof?:boolean <- greater-or-equal idx, len
+9999 mem: location 1018 is 1
+9999 mem: location 1019 is 3
+9999 mem: storing 0 in location 1020
+ 103 run: break-if eof?, 
+9999 mem: location 1020 is 0
+9999 run: jump-if fell through
+ 103 run: curr:character <- index *text, idx
+9999 mem: location 1016 is 1000
+9999 mem: location 1018 is 1
+9999 run: address to copy is 1002
+9999 run: its type is character
+9999 mem: location 1002 is 98
+9999 mem: storing 98 in location 1021
+ 103 run: found?:boolean <- equal curr, pattern
+9999 mem: location 1021 is 98
+9999 mem: location 1017 is 98
+9999 mem: storing 1 in location 1022
+ 103 run: break-if found?, 
+9999 mem: location 1022 is 1
+9999 run: jumping to instruction 13
+ 103 run: reply idx
+9999 mem: location 1018 is 1
+9999 run: result 0 is 1
+9999 mem: storing 1 in location 1011
+ 102 run: done?:boolean <- greater-or-equal i, len
+9999 mem: location 1011 is 1
+9999 mem: location 1010 is 3
+9999 mem: storing 0 in location 1012
+ 102 run: jump-unless done?, 1:offset
+9999 mem: location 1012 is 0
+9999 run: jumping to instruction 10
+ 102 run: dest:address:character <- index-address *s, i
+9999 mem: location 1006 is 1000
+9999 mem: location 1011 is 1
+9999 mem: storing 1002 in location 1013
+ 102 run: *dest <- copy newc
+9999 mem: location 1008 is 122
+9999 mem: location 1013 is 1002
+9999 mem: location 1013 is 1002
+9999 mem: storing 122 in location 1002
+ 102 run: i <- add i, 1
+9999 mem: location 1011 is 1
+9999 mem: storing 2 in location 1011
+ 102 run: s <- string-replace s, oldc, newc, i
+9999 mem: location 1006 is 1000
+9999 mem: location 1007 is 98
+9999 mem: location 1008 is 122
+9999 mem: location 1011 is 2
+ 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 9
+9999 mem: new alloc: 1023
+ 103 run: s:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1025
+ 103 run: oldc:character <- next-ingredient 
+9999 mem: storing 98 in location 1026
+ 103 run: newc:character <- next-ingredient 
+9999 mem: storing 122 in location 1027
+ 103 run: from:number <- next-ingredient 
+9999 mem: storing 2 in location 1028
+ 103 run: len:number <- length *s
+9999 mem: location 1025 is 1000
+9999 mem: storing 3 in location 1029
+ 103 run: i:number <- find-next s, oldc, from
+9999 mem: location 1025 is 1000
+9999 mem: location 1026 is 98
+9999 mem: location 1028 is 2
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 8
+ 104 run: text:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1016
+ 104 run: pattern:character <- next-ingredient 
+9999 mem: storing 98 in location 1017
+ 104 run: idx:number <- next-ingredient 
+9999 mem: storing 2 in location 1018
+ 104 run: len:number <- length *text
+9999 mem: location 1016 is 1000
+9999 mem: storing 3 in location 1019
+ 104 run: eof?:boolean <- greater-or-equal idx, len
+9999 mem: location 1018 is 2
+9999 mem: location 1019 is 3
+9999 mem: storing 0 in location 1020
+ 104 run: break-if eof?, 
+9999 mem: location 1020 is 0
+9999 run: jump-if fell through
+ 104 run: curr:character <- index *text, idx
+9999 mem: location 1016 is 1000
+9999 mem: location 1018 is 2
+9999 run: address to copy is 1003
+9999 run: its type is character
+9999 mem: location 1003 is 99
+9999 mem: storing 99 in location 1021
+ 104 run: found?:boolean <- equal curr, pattern
+9999 mem: location 1021 is 99
+9999 mem: location 1017 is 98
+9999 mem: storing 0 in location 1022
+ 104 run: break-if found?, 
+9999 mem: location 1022 is 0
+9999 run: jump-if fell through
+ 104 run: idx <- add idx, 1
+9999 mem: location 1018 is 2
+9999 mem: storing 3 in location 1018
+ 104 run: loop 
+9999 run: jumping to instruction 6
+ 104 run: eof?:boolean <- greater-or-equal idx, len
+9999 mem: location 1018 is 3
+9999 mem: location 1019 is 3
+9999 mem: storing 1 in location 1020
+ 104 run: break-if eof?, 
+9999 mem: location 1020 is 1
+9999 run: jumping to instruction 13
+ 104 run: reply idx
+9999 mem: location 1018 is 3
+9999 run: result 0 is 3
+9999 mem: storing 3 in location 1030
+ 103 run: done?:boolean <- greater-or-equal i, len
+9999 mem: location 1030 is 3
+9999 mem: location 1029 is 3
+9999 mem: storing 1 in location 1031
+ 103 run: jump-unless done?, 1:offset
+9999 mem: location 1031 is 1
+9999 run: jump-unless fell through
+ 103 run: reply s/same-as-ingredient:0
+9999 mem: location 1025 is 1000
+9999 run: result 0 is 1000
+9999 mem: storing 1000 in location 1006
+ 102 run: reply s/same-as-ingredient:0
+9999 mem: location 1006 is 1000
+9999 run: result 0 is 1000
+9999 mem: storing 1000 in location 1
+ 101 run: 2:array:character/raw <- copy *1:address:array:character/raw
+9999 mem: location 1 is 1000
+9999 mem: location 1000 is 3
+9999 mem: location 1001 is 97
+9999 mem: location 1002 is 122
+9999 mem: location 1003 is 99
+9999 mem: location 1 is 1000
+9999 mem: location 1 is 1000
+9999 mem: storing 3 in location 2
+9999 mem: storing 97 in location 3
+9999 mem: storing 122 in location 4
+9999 mem: storing 99 in location 5
+ 100 run: memory-should-contain [
+    2:string <- [azc]
+  ]
+9999 run: checking string length at 2
+9999 run: checking location 3
+9999 run: checking location 4
+9999 run: checking location 5

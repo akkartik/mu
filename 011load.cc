@@ -63,7 +63,7 @@ recipe slurp_recipe(istream& in) {
   instruction curr;
   while (next_instruction(in, &curr)) {
     // End Rewrite Instruction(curr)
-//?     cerr << "instruction: " << curr.to_string() << '\n'; //? 2
+//?     cerr << "instruction: " << curr.to_string() << '\n'; //? 3
     result.steps.push_back(curr);
   }
   return result;
@@ -72,27 +72,39 @@ recipe slurp_recipe(istream& in) {
 bool next_instruction(istream& in, instruction* curr) {
   in >> std::noskipws;
   curr->clear();
-  if (in.eof()) return false;
+  if (in.eof()) {
+    raise << "0: unbalanced '[' for recipe\n" << end();
+    return false;
+  }
 //?   show_rest_of_stream(in); //? 1
-  skip_whitespace(in);  if (in.eof()) return false;
+  skip_whitespace(in);
+  if (in.eof()) {
+    raise << "1: unbalanced '[' for recipe\n" << end();
+    return false;
+  }
 //?   show_rest_of_stream(in); //? 1
-  skip_whitespace_and_comments(in);  if (in.eof()) return false;
+  skip_whitespace_and_comments(in);
+  if (in.eof()) {
+    raise << "2: unbalanced '[' for recipe\n" << end();
+    return false;
+  }
 
   vector<string> words;
 //?   show_rest_of_stream(in); //? 1
-  while (in.peek() != '\n') {
-    skip_whitespace(in);  if (in.eof()) return false;
+  while (in.peek() != '\n' && !in.eof()) {
+    skip_whitespace(in);
+    if (in.eof()) {
+      raise << "3: unbalanced '[' for recipe\n" << end();
+      return false;
+    }
 //?     show_rest_of_stream(in); //? 1
-    string word = next_word(in);  if (in.eof()) return false;
-//?     cerr << "AAA: " << word << '\n'; //? 1
+    string word = next_word(in);
     words.push_back(word);
-    skip_whitespace(in);  if (in.eof()) return false;
+    skip_whitespace(in);
   }
-  skip_whitespace_and_comments(in);  if (in.eof()) return false;
-
+  skip_whitespace_and_comments(in);
 //?   if (SIZE(words) == 1) cout << words.at(0) << ' ' << SIZE(words.at(0)) << '\n'; //? 1
   if (SIZE(words) == 1 && words.at(0) == "]") {
-//?     cout << "AAA\n"; //? 1
     return false;  // end of recipe
   }
 
@@ -100,7 +112,11 @@ bool next_instruction(istream& in, instruction* curr) {
     curr->is_label = true;
     curr->label = words.at(0);
     trace("parse") << "label: " << curr->label << end();
-    return !in.eof();
+    if (in.eof()) {
+      raise << "7: unbalanced '[' for recipe\n" << end();
+      return false;
+    }
+    return true;
   }
 
   vector<string>::iterator p = words.begin();
@@ -141,7 +157,11 @@ bool next_instruction(istream& in, instruction* curr) {
   for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p) {
     trace("parse") << "  product: " << p->to_string() << end();
   }
-  return !in.eof();
+  if (in.eof()) {
+    raise << "9: unbalanced '[' for recipe\n" << end();
+    return false;
+  }
+  return true;
 }
 
 string next_word(istream& in) {

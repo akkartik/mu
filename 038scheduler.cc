@@ -212,8 +212,8 @@ recipe f2 [
 //: this scenario will require some careful setup in escaped C++
 //: (straining our tangle capabilities to near-breaking point)
 :(scenario scheduler_skips_completed_routines)
-% recipe_ordinal f1 = load("recipe f1 [\n1:number <- copy 0\n]").front();
-% recipe_ordinal f2 = load("recipe f2 [\n2:number <- copy 0\n]").front();
+% recipe_ordinal f1 = load("recipe f1 [\n1:number <- copy 0\n]\n").front();
+% recipe_ordinal f2 = load("recipe f2 [\n2:number <- copy 0\n]\n").front();
 % Routines.push_back(new routine(f1));  // f1 meant to run
 % Routines.push_back(new routine(f2));
 % Routines.back()->state = COMPLETED;  // f2 not meant to run
