@@ -161,6 +161,7 @@ void setup_recipes() {
 setup_recipes();
 assert(MAX_PRIMITIVE_RECIPES < 200);  // level 0 is primitives; until 199
 Next_recipe_ordinal = 200;
+Recipe_ordinal["main"] = Next_recipe_ordinal++;
 // End Load Recipes
 :(before "End Test Run Initialization")
 assert(Next_recipe_ordinal < 1000);  // recipes being tested didn't overflow into test space

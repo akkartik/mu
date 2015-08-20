@@ -45,7 +45,7 @@ void transform_braces(const recipe_ordinal r) {
   for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
     const instruction& inst = Recipe[r].steps.at(index);
     if (inst.label == "{") {
-      trace("brace") << r << ": push (open, " << index << ")" << end();
+      trace("brace") << Recipe[r].name << ": push (open, " << index << ")" << end();
       braces.push_back(pair<int,long long int>(OPEN, index));
     }
     if (inst.label == "}") {
