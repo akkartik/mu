@@ -53,8 +53,7 @@ recipe read-event [
     *idx <- add *idx, 1
     reply result, x/same-as-ingredient:0, 1/found, 0/quit
   }
-  # real event source is infrequent; avoid polling it too much
-  switch
+  switch  # real event source is infrequent; avoid polling it too much
   result:event, found?:boolean <- check-for-interaction
   reply result, x/same-as-ingredient:0, found?, 0/quit
 ]
