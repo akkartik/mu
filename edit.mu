@@ -604,12 +604,14 @@ recipe editor-event-loop [
   }
 ]
 
+# screen, editor <- handle-keyboard-event screen:address, editor:address:editor-data, e:event
+# Process 'e' and try to minimally update the screen.
 recipe handle-keyboard-event [
   local-scope
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   e:event <- next-ingredient
-  reply-unless editor
+  reply-unless editor, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   hide-screen screen
   screen-height:number <- screen-height screen
   left:number <- get *editor, left:offset
@@ -636,13 +638,13 @@ recipe handle-keyboard-event [
       clear-screen-from screen, row, column, left, right
       screen <- move-cursor screen, *cursor-row, *cursor-column
       show-screen screen
-      reply
+      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
     }
     # otherwise type it in
     editor, screen <- insert-at-cursor editor, *c, screen
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
   # special key to modify the text or move the cursor
   k:address:number <- maybe-convert e:event, keycode:variant
@@ -651,6 +653,7 @@ recipe handle-keyboard-event [
   +handle-special-key
   screen <- move-cursor screen, *cursor-row, *cursor-column
   show-screen screen
+  reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
 # process click, return if it was on current editor
@@ -1474,7 +1477,7 @@ after +handle-special-key [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -1492,7 +1495,7 @@ after +handle-special-key [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -1537,7 +1540,7 @@ after +handle-special-character [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -1583,7 +1586,7 @@ after +handle-special-character [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -1743,7 +1746,7 @@ after +handle-special-key [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -1795,7 +1798,7 @@ after +handle-special-key [
         clear-screen-from screen, row, column, left, right
         screen <- move-cursor screen, *cursor-row, *cursor-column
         show-screen screen
-        reply
+        reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
       }
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
@@ -1807,7 +1810,7 @@ after +handle-special-key [
       clear-screen-from screen, row, column, left, right
       screen <- move-cursor screen, *cursor-row, *cursor-column
       show-screen screen
-      reply
+      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
     }
     # if the line wraps, move cursor to start of next row
     {
@@ -1834,7 +1837,7 @@ after +handle-special-key [
         clear-screen-from screen, row, column, left, right
         screen <- move-cursor screen, *cursor-row, *cursor-column
         show-screen screen
-        reply
+        reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
       }
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
@@ -1846,13 +1849,13 @@ after +handle-special-key [
       clear-screen-from screen, row, column, left, right
       screen <- move-cursor screen, *cursor-row, *cursor-column
       show-screen screen
-      reply
+      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
     }
     # otherwise move cursor one character right
     *cursor-column <- add *cursor-column, 1
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -2051,7 +2054,7 @@ after +handle-special-key [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -2225,7 +2228,7 @@ after +handle-special-key [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -2297,7 +2300,7 @@ after +handle-special-key [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -2360,7 +2363,7 @@ after +handle-special-character [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -2377,7 +2380,7 @@ after +handle-special-key [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -2531,7 +2534,7 @@ after +handle-special-character [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -2548,7 +2551,7 @@ after +handle-special-key [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -2680,7 +2683,7 @@ after +handle-special-character [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -2832,7 +2835,7 @@ after +handle-special-character [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -3724,7 +3727,7 @@ after +handle-special-character [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -3741,7 +3744,7 @@ after +handle-special-key [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -3919,7 +3922,7 @@ after +handle-special-character [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
@@ -3936,7 +3939,7 @@ after +handle-special-key [
     clear-screen-from screen, row, column, left, right
     screen <- move-cursor screen, *cursor-row, *cursor-column
     show-screen screen
-    reply
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
   }
 ]
 
