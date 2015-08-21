@@ -185,7 +185,7 @@ void dump_profile() {
 :(code)
 void cleanup_main() {
   if (!Trace_file.empty() && Trace_stream) {
-    ofstream fout(Trace_file.c_str());
+    ofstream fout((Trace_dir+Trace_file).c_str());
     fout << Trace_stream->readable_contents("");
     fout.close();
   }
