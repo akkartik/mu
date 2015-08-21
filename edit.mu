@@ -598,21 +598,25 @@ recipe editor-event-loop [
     # keyboard events
     {
       break-if t
-      handle-keyboard-event screen, editor, e
+      screen, editor, go-render?:boolean <- handle-keyboard-event screen, editor, e
+      {
+        break-unless go-render?
+        editor-render screen, editor
+      }
     }
     loop
   }
 ]
 
-# screen, editor <- handle-keyboard-event screen:address, editor:address:editor-data, e:event
-# Process 'e' and try to minimally update the screen.
+# screen, editor, go-render?:boolean <- handle-keyboard-event screen:address, editor:address:editor-data, e:event
+# Process an event 'e' and try to minimally update the screen.
+# Set 'go-render?' to true to indicate the caller must perform a non-minimal update.
 recipe handle-keyboard-event [
   local-scope
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   e:event <- next-ingredient
   reply-unless editor, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-  hide-screen screen
   screen-height:number <- screen-height screen
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
@@ -632,28 +636,17 @@ recipe handle-keyboard-event [
     regular-character?:boolean <- greater-or-equal *c, 32/space
     newline?:boolean <- equal *c, 10/newline
     regular-character? <- or regular-character?, newline?
-    {
-      break-if regular-character?
-      row:number, column:number, screen <- render screen, editor
-      clear-screen-from screen, row, column, left, right
-      screen <- move-cursor screen, *cursor-row, *cursor-column
-      show-screen screen
-      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
-    }
+    reply-unless regular-character?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     # otherwise type it in
-    editor, screen <- insert-at-cursor editor, *c, screen
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    editor, screen, go-render?:boolean <- insert-at-cursor editor, *c, screen
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
   # special key to modify the text or move the cursor
   k:address:number <- maybe-convert e:event, keycode:variant
   assert k, [event was of unknown type; neither keyboard nor mouse]
   # handlers for each special key will go here
   +handle-special-key
-  screen <- move-cursor screen, *cursor-row, *cursor-column
-  show-screen screen
-  reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
 ]
 
 # process click, return if it was on current editor
@@ -805,7 +798,7 @@ recipe insert-at-cursor [
     break-if overflow?
     move-cursor screen, save-row, save-column
     print-character screen, c
-    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
+    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 0/no-more-render
   }
   {
     # at end of line? room left in this line? just print the character and leave
@@ -817,15 +810,9 @@ recipe insert-at-cursor [
     break-if at-right?
     move-cursor screen, save-row, save-column
     print-character screen, c
-    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
+    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 0/no-more-render
   }
-  row:number, column:number, screen <- render screen, editor
-  clear-line-delimited screen, column, right
-  row <- add row, 1
-  draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-  row <- add row, 1
-  clear-screen-from screen, row, left, left, right
-  reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
+  reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 1/go-render
 ]
 
 # helper for tests
@@ -833,11 +820,14 @@ recipe editor-render [
   local-scope
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
-  row:number <- render screen, editor
-  row <- add row, 1
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
+  row:number, column:number <- render screen, editor
+  clear-line-delimited screen, column, right
+  row <- add row, 1
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+  row <- add row, 1
+  clear-screen-from screen, row, left, left, right
 ]
 
 scenario editor-handles-empty-event-queue [
@@ -1200,13 +1190,7 @@ after +insert-character-special-case [
       break-unless below-screen?
       +scroll-down
     }
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, left, left, right
-    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
+    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 1/go-render
   }
 ]
 
@@ -1307,7 +1291,7 @@ after +insert-character-special-case [
     }
     # indent if necessary
     indent?:boolean <- get *editor, indent:offset
-    jump-unless indent?, +done:label
+    reply-unless indent?, editor/same-as-ingredient:0, screen/same-as-ingredient:2, 1/go-render
     d:address:duplex-list <- get *editor, data:offset
     end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
     indent:number <- line-indent end-of-previous-line, d
@@ -1319,14 +1303,7 @@ after +insert-character-special-case [
       i <- add i, 1
       loop
     }
-    +done
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, left, left, right
-    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2
+    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 1/go-render
   }
 ]
 
@@ -1469,15 +1446,7 @@ after +handle-special-key [
     break-unless paste-start?
     indent:address:boolean <- get-address *editor, indent:offset
     *indent <- copy 0/false
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -1487,15 +1456,7 @@ after +handle-special-key [
     break-unless paste-end?
     indent:address:boolean <- get-address *editor, indent:offset
     *indent <- copy 1/true
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -1532,15 +1493,7 @@ after +handle-special-character [
     break-unless tab?
     insert-at-cursor editor, 32/space, screen
     insert-at-cursor editor, 32/space, screen
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -1578,15 +1531,7 @@ after +handle-special-character [
     backspace?:boolean <- equal *c, 8/backspace
     break-unless backspace?
     delete-before-cursor editor
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -1738,15 +1683,7 @@ after +handle-special-key [
     break-unless delete?
     curr:address:duplex-list <- get **before-cursor, next:offset
     _ <- remove-duplex curr
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -1788,29 +1725,10 @@ after +handle-special-key [
       *cursor-row <- add *cursor-row, 1
       *cursor-column <- copy left
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
-      {
-        break-if below-screen?
-        row:number, column:number, screen <- render screen, editor
-        clear-line-delimited screen, column, right
-        row <- add row, 1
-        draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-        row <- add row, 1
-        clear-screen-from screen, row, column, left, right
-        screen <- move-cursor screen, *cursor-row, *cursor-column
-        show-screen screen
-        reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
-      }
+      reply-unless below-screen?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
-      row:number, column:number, screen <- render screen, editor
-      clear-line-delimited screen, column, right
-      row <- add row, 1
-      draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-      row <- add row, 1
-      clear-screen-from screen, row, column, left, right
-      screen <- move-cursor screen, *cursor-row, *cursor-column
-      show-screen screen
-      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
     }
     # if the line wraps, move cursor to start of next row
     {
@@ -1827,35 +1745,15 @@ after +handle-special-key [
       *cursor-row <- add *cursor-row, 1
       *cursor-column <- copy left
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
-      {
-        break-if below-screen?
-        row:number, column:number, screen <- render screen, editor
-        clear-line-delimited screen, column, right
-        row <- add row, 1
-        draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-        row <- add row, 1
-        clear-screen-from screen, row, column, left, right
-        screen <- move-cursor screen, *cursor-row, *cursor-column
-        show-screen screen
-        reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
-      }
+      reply-unless below-screen?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
-      row:number, column:number, screen <- render screen, editor
-      clear-line-delimited screen, column, right
-      row <- add row, 1
-      draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-      row <- add row, 1
-      clear-screen-from screen, row, column, left, right
-      screen <- move-cursor screen, *cursor-row, *cursor-column
-      show-screen screen
-      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
     }
     # otherwise move cursor one character right
     *cursor-column <- add *cursor-column, 1
     screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
 
@@ -2046,15 +1944,7 @@ after +handle-special-key [
     prev:address:duplex-list <- prev-duplex *before-cursor
     break-unless prev
     editor <- move-cursor-coordinates-left editor
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -2220,15 +2110,7 @@ after +handle-special-key [
       +scroll-up
     }
     # that's it; render will adjust cursor-column as necessary
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -2292,15 +2174,7 @@ after +handle-special-key [
       +scroll-down
     }
     # that's it; render will adjust cursor-column as necessary
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -2355,15 +2229,7 @@ after +handle-special-character [
     ctrl-a?:boolean <- equal *c, 1/ctrl-a
     break-unless ctrl-a?
     move-to-start-of-line editor
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -2372,15 +2238,7 @@ after +handle-special-key [
     home?:boolean <- equal *k, 65521/home
     break-unless home?
     move-to-start-of-line editor
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -2526,15 +2384,7 @@ after +handle-special-character [
     ctrl-e?:boolean <- equal *c, 5/ctrl-e
     break-unless ctrl-e?
     move-to-end-of-line editor
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -2543,15 +2393,7 @@ after +handle-special-key [
     end?:boolean <- equal *k, 65520/end
     break-unless end?
     move-to-end-of-line editor
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -2675,15 +2517,7 @@ after +handle-special-character [
     ctrl-u?:boolean <- equal *c, 21/ctrl-u
     break-unless ctrl-u?
     delete-to-start-of-line editor
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -2827,15 +2661,7 @@ after +handle-special-character [
     ctrl-k?:boolean <- equal *c, 11/ctrl-k
     break-unless ctrl-k?
     delete-to-end-of-line editor
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -3719,15 +3545,7 @@ after +handle-special-character [
     ctrl-f?:boolean <- equal *c, 6/ctrl-f
     break-unless ctrl-f?
     page-down editor
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -3736,15 +3554,7 @@ after +handle-special-key [
     page-down?:boolean <- equal *k, 65518/page-down
     break-unless page-down?
     page-down editor
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -3914,15 +3724,7 @@ after +handle-special-character [
     ctrl-b?:boolean <- equal *c, 2/ctrl-f
     break-unless ctrl-b?
     editor <- page-up editor, screen-height
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -3931,15 +3733,7 @@ after +handle-special-key [
     page-up?:boolean <- equal *k, 65519/page-up
     break-unless page-up?
     editor <- page-up editor, screen-height
-    row:number, column:number, screen <- render screen, editor
-    clear-line-delimited screen, column, right
-    row <- add row, 1
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, column, left, right
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    show-screen screen
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -4347,16 +4141,25 @@ recipe event-loop [
     }
     # if it's not global and not a touch event, send to appropriate editor
     {
+      hide-screen screen
       {
         break-if *sandbox-in-focus?
-        handle-keyboard-event screen, recipes, e:event
+        screen, recipes, render?:boolean <- handle-keyboard-event screen, recipes, e:event
+        {
+          break-unless render?
+          screen <- render-recipes screen, env
+        }
       }
       {
         break-unless *sandbox-in-focus?
-        handle-keyboard-event screen, current-sandbox, e:event
-        screen <- render-all screen, env
-        screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+        screen, current-sandbox, render?:boolean <- handle-keyboard-event screen, current-sandbox, e:event
+        {
+          break-unless render?:boolean
+          screen <- render-sandbox-side screen, env
+        }
       }
+      screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+      show-screen screen
     }
     loop
   }
@@ -4528,6 +4331,14 @@ scenario backspace-in-sandbox-editor-joins-lines [
   2:address:array:character <- new [abc
 def]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  render-all screen, 3:address:programming-environment-data
+  screen-should-contain [
+    .           run (F4)           .
+    .               ┊abc           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊def           .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
   # position cursor at start of second line and hit backspace
   assume-console [
     left-click 2, 16
