@@ -1749,7 +1749,8 @@ after +handle-special-key [
       *cursor-row <- add *cursor-row, 1
       *cursor-column <- copy left
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
-      reply-unless below-screen?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+      screen <- move-cursor screen, *cursor-row, *cursor-column
+      reply-unless below-screen?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
       reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
@@ -1769,7 +1770,8 @@ after +handle-special-key [
       *cursor-row <- add *cursor-row, 1
       *cursor-column <- copy left
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
-      reply-unless below-screen?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+      screen <- move-cursor screen, *cursor-row, *cursor-column
+      reply-unless below-screen?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
       +scroll-down
       *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
       reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
@@ -1787,11 +1789,20 @@ scenario editor-moves-cursor-to-next-line-with-right-arrow [
 d]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
+  # type right-arrow a few times to get to start of second line
   assume-console [
     press 65514  # right arrow
     press 65514  # right arrow
     press 65514  # right arrow
     press 65514  # right arrow - next line
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  check-trace-count-for-label 0, [print-character]
+  # type something and ensure it goes where it should
+  assume-console [
     type [0]
   ]
   run [
@@ -1804,6 +1815,7 @@ d]
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 2, [print-character]  # new length of second line
 ]
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow-2 [
@@ -1836,6 +1848,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
   1:address:array:character <- new [abcdef]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 1, 3
     press 65514  # right arrow
@@ -1856,6 +1869,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
     3 <- 2
     4 <- 0
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
