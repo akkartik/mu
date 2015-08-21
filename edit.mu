@@ -801,15 +801,27 @@ recipe insert-at-cursor [
     reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 0/no-more-render
   }
   {
-    # at end of line? room left in this line? just print the character and leave
+    # not at right margin? print the character and rest of line
     break-unless next
-    nextc:character <- get *next, value:offset
-    at-newline?:boolean <- equal nextc, 10/newline
-    break-unless at-newline?
     at-right?:boolean <- greater-or-equal *cursor-column, screen-width
     break-if at-right?
+    curr:address:duplex-list <- copy *before-cursor
     move-cursor screen, save-row, save-column
-    print-character screen, c
+    curr-column:number <- copy save-column
+    {
+      # hit right margin? give up and let caller render
+      at-right?:boolean <- greater-or-equal curr-column, screen-width
+      reply-if at-right?, editor/same-as-ingredient:0, screen/same-as-ingredient:2, 1/go-render
+      break-unless curr
+      # newline? done.
+      currc:character <- get *curr, value:offset
+      at-newline?:boolean <- equal currc, 10/newline
+      break-if at-newline?
+      print-character screen, currc
+      curr-column <- add curr-column, 1
+      curr <- next-duplex curr
+      loop
+    }
     reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 0/no-more-render
   }
   reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 1/go-render
@@ -984,6 +996,8 @@ scenario editor-inserts-characters-at-cursor [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
   # type two letters at different places
   assume-console [
     type [0]
@@ -999,6 +1013,7 @@ scenario editor-inserts-characters-at-cursor [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 7, [print-character]  # 4 for first letter, 3 for second
 ]
 
 scenario editor-inserts-characters-at-cursor-2 [
@@ -1693,6 +1708,8 @@ scenario editor-moves-cursor-right-with-key [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     press 65514  # right arrow
     type [0]
@@ -1706,6 +1723,7 @@ scenario editor-moves-cursor-right-with-key [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 3, [print-character]  # 0 and following characters
 ]
 
 after +handle-special-key [
