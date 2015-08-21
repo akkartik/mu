@@ -408,7 +408,7 @@ scenario read-move-blocking [
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
     # press 'a'
@@ -417,7 +417,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
@@ -426,7 +426,7 @@ F read-move-blocking: routine failed to pause after rank 'a']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after file 'a2']
     # press '-'
@@ -435,7 +435,7 @@ F read-move-blocking: routine failed to pause after file 'a2']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?/routine-state, [
 F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # press 'a'
@@ -444,7 +444,7 @@ F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?/routine-state, [
 F read-move-blocking: routine failed to pause after rank 'a2-a']
     # press '4'
@@ -453,7 +453,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after file 'a2-a4']
     # press 'newline'
@@ -465,7 +465,7 @@ F read-move-blocking: routine failed to pause after file 'a2-a4']
     4:boolean/completed? <- equal 3:number/routine-state, 1/completed
     assert 4:boolean/completed?, [
 F read-move-blocking: routine failed to terminate on newline]
-    trace [test], [reached end]
+    trace 1, [test], [reached end]
   ]
   trace-should-contain [
     test: reached end
@@ -480,7 +480,7 @@ scenario read-move-quit [
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
     # press 'q'
@@ -492,7 +492,7 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
     4:boolean/completed? <- equal 3:number/routine-state, 1/completed
     assert 4:boolean/completed?, [
 F read-move-quit: routine failed to terminate on 'q']
-    trace [test], [reached end]
+    trace 1, [test], [reached end]
   ]
   trace-should-contain [
     test: reached end
@@ -507,7 +507,7 @@ scenario read-move-illegal-file [
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
     1:address:channel <- write 1:address:channel, 50/'2'
@@ -528,7 +528,7 @@ scenario read-move-illegal-rank [
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
     1:address:channel <- write 1:address:channel, 97/a
@@ -550,7 +550,7 @@ scenario read-move-empty [
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
     1:address:channel <- write 1:address:channel, 10/newline
