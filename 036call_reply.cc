@@ -44,7 +44,7 @@ case REPLY: {
       if (ingredient_index >= SIZE(caller_instruction.ingredients))
         raise << current_recipe_name() << ": 'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
       if (!is_dummy(caller_instruction.products.at(i)) && caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
-        raise << current_recipe_name() << ": 'same-as-ingredient' result " << caller_instruction.products.at(i).value << " from call to " << callee << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n' << end();
+        raise << current_recipe_name() << ": 'same-as-ingredient' product from call to " << callee << " must be " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
     }
   }
   // End Reply
@@ -81,7 +81,7 @@ recipe test1 [
   10:address:number <- next-ingredient
   reply 10:address:number/same-as-ingredient:0
 ]
-+warn: main: 'same-as-ingredient' result 2 from call to test1 must be location 1
++warn: main: 'same-as-ingredient' product from call to test1 must be 1:number rather than 2:number
 
 :(scenario reply_same_as_ingredient_dummy)
 % Hide_warnings = true;
