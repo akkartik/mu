@@ -1582,10 +1582,11 @@ recipe move-cursor-coordinates-left [
     break-if at-left-margin?
 #?     trace 10, [app], [decrementing cursor column] #? 1
     *cursor-column <- subtract *cursor-column, 1
-    reply editor/same-as-ingredient:0
+    reply editor/same-as-ingredient:0, 0/no-more-render
   }
   # if at left margin, we must move to previous row:
   top-of-screen?:boolean <- equal *cursor-row, 1  # exclude menu bar
+  go-render?:boolean <- copy 0/false
   {
     break-if top-of-screen?
     *cursor-row <- subtract *cursor-row, 1
@@ -1593,6 +1594,7 @@ recipe move-cursor-coordinates-left [
   {
     break-unless top-of-screen?
     +scroll-up
+    go-render? <- copy 1/true
   }
   {
     # case 1: if previous character was newline, figure out how long the previous line is
@@ -1604,13 +1606,13 @@ recipe move-cursor-coordinates-left [
     d:address:duplex-list <- get *editor, data:offset
     end-of-line:number <- previous-line-length before-cursor, d
     *cursor-column <- add left, end-of-line
-    reply editor/same-as-ingredient:0
+    reply editor/same-as-ingredient:0, go-render?
   }
   # case 2: if previous-character was not newline, we're just at a wrapped line
 #?   trace 10, [app], [wrapping to previous line] #? 1
   right:number <- get *editor, right:offset
   *cursor-column <- subtract right, 1  # leave room for wrap icon
-  reply editor/same-as-ingredient:0
+  reply editor/same-as-ingredient:0, go-render?
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -1878,6 +1880,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
   1:address:array:character <- new [abcde]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # position cursor at last character before wrap and hit right-arrow
   assume-console [
     left-click 1, 3
@@ -1905,6 +1908,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
     3 <- 2
     4 <- 1
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
@@ -1912,6 +1916,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
   1:address:array:character <- new [abcdef]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 1/left, 6/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 1, 4
     press 65514  # right arrow
@@ -1932,6 +1937,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
     3 <- 2
     4 <- 1
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow-at-end-of-line [
@@ -1940,6 +1946,7 @@ scenario editor-moves-cursor-to-next-line-with-right-arrow-at-end-of-line [
 d]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 1, 3
     press 65514  # right arrow - next line
@@ -1955,6 +1962,7 @@ d]
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 2, [print-character]
 ]
 
 # left arrow
@@ -1964,6 +1972,7 @@ scenario editor-moves-cursor-left-with-key [
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 1, 2
     press 65515  # left arrow
@@ -1978,6 +1987,7 @@ scenario editor-moves-cursor-left-with-key [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 3, [print-character]
 ]
 
 after +handle-special-key [
@@ -1987,9 +1997,10 @@ after +handle-special-key [
 #?     trace 10, [app], [left arrow] #? 1
     # if not at start of text (before-cursor at § sentinel)
     prev:address:duplex-list <- prev-duplex *before-cursor
-    break-unless prev
-    editor <- move-cursor-coordinates-left editor
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    reply-unless prev, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+    editor, go-render? <- move-cursor-coordinates-left editor
+    *before-cursor <- copy prev
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
 ]
 
@@ -2000,6 +2011,7 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
 d]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # position cursor at start of second line (so there's no previous newline)
   assume-console [
     left-click 2, 0
@@ -2014,6 +2026,7 @@ d]
     3 <- 1
     4 <- 3
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2 [
@@ -2024,6 +2037,7 @@ def
 g]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # position cursor further down (so there's a newline before the character at
   # the cursor)
   assume-console [
@@ -2041,6 +2055,7 @@ g]
     .g         .
     .┈┈┈┈┈┈┈┈┈┈.
   ]
+  check-trace-count-for-label 1, [print-character]  # just the '0'
 ]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-3 [
@@ -2050,6 +2065,7 @@ def
 g]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # position cursor at start of text
   assume-console [
     left-click 1, 0
@@ -2066,6 +2082,7 @@ g]
     .g         .
     .┈┈┈┈┈┈┈┈┈┈.
   ]
+  check-trace-count-for-label 4, [print-character]  # length of first line
 ]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4 [
@@ -2076,6 +2093,7 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4
 d]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # position cursor right after empty line
   assume-console [
     left-click 3, 0
@@ -2092,6 +2110,7 @@ d]
     .d         .
     .┈┈┈┈┈┈┈┈┈┈.
   ]
+  check-trace-count-for-label 1, [print-character]  # just the '0'
 ]
 
 scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
@@ -2100,6 +2119,7 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   1:address:array:character <- new [abcdef]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   screen-should-contain [
     .          .
     .abcd↩     .
@@ -2121,6 +2141,7 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
     3 <- 1  # previous row
     4 <- 3  # end of wrapped line
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 # up arrow
@@ -2261,6 +2282,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
 456]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # start on second line, press ctrl-a
   assume-console [
     left-click 2, 3
@@ -2278,6 +2300,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
     4 <- 2
     5 <- 0
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 after +handle-special-character [
@@ -2285,7 +2308,7 @@ after +handle-special-character [
     ctrl-a?:boolean <- equal *c, 1/ctrl-a
     break-unless ctrl-a?
     move-to-start-of-line editor
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
 
@@ -2294,7 +2317,7 @@ after +handle-special-key [
     home?:boolean <- equal *k, 65521/home
     break-unless home?
     move-to-start-of-line editor
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
 
@@ -2327,6 +2350,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
 456]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # start on first line (no newline before), press ctrl-a
   assume-console [
     left-click 1, 3
@@ -2344,6 +2368,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
     4 <- 1
     5 <- 0
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-moves-to-start-of-line-with-home [
@@ -2351,6 +2376,7 @@ scenario editor-moves-to-start-of-line-with-home [
   1:address:array:character <- new [123
 456]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  $clear-trace
   # start on second line, press 'home'
   assume-console [
     left-click 2, 3
@@ -2366,6 +2392,7 @@ scenario editor-moves-to-start-of-line-with-home [
     3 <- 2
     4 <- 0
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-moves-to-start-of-line-with-home-2 [
@@ -2374,6 +2401,7 @@ scenario editor-moves-to-start-of-line-with-home-2 [
 456]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # start on first line (no newline before), press 'home'
   assume-console [
     left-click 1, 3
@@ -2389,16 +2417,18 @@ scenario editor-moves-to-start-of-line-with-home-2 [
     3 <- 1
     4 <- 0
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 # ctrl-e/end - move cursor to end of line
 
-scenario editor-moves-to-start-of-line-with-ctrl-e [
+scenario editor-moves-to-end-of-line-with-ctrl-e [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # start on first line, press ctrl-e
   assume-console [
     left-click 1, 1
@@ -2416,6 +2446,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-e [
     4 <- 1
     5 <- 3
   ]
+  check-trace-count-for-label 0, [print-character]
   # editor inserts future characters at cursor
   assume-console [
     type [z]
@@ -2436,6 +2467,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-e [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 1, [print-character]
 ]
 
 after +handle-special-character [
@@ -2443,7 +2475,7 @@ after +handle-special-character [
     ctrl-e?:boolean <- equal *c, 5/ctrl-e
     break-unless ctrl-e?
     move-to-end-of-line editor
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
 
@@ -2452,7 +2484,7 @@ after +handle-special-key [
     end?:boolean <- equal *k, 65520/end
     break-unless end?
     move-to-end-of-line editor
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
 
@@ -2472,8 +2504,6 @@ recipe move-to-end-of-line [
     *cursor-column <- add *cursor-column, 1
     loop
   }
-  # move one past final character
-  *cursor-column <- add *cursor-column, 1
 ]
 
 scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
@@ -2482,6 +2512,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
 456]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # start on second line (no newline after), press ctrl-e
   assume-console [
     left-click 2, 1
@@ -2499,6 +2530,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
     4 <- 2
     5 <- 3
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-moves-to-end-of-line-with-end [
@@ -2507,6 +2539,7 @@ scenario editor-moves-to-end-of-line-with-end [
 456]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # start on first line, press 'end'
   assume-console [
     left-click 1, 1
@@ -2522,6 +2555,7 @@ scenario editor-moves-to-end-of-line-with-end [
     3 <- 1
     4 <- 3
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 scenario editor-moves-to-end-of-line-with-end-2 [
@@ -2530,6 +2564,7 @@ scenario editor-moves-to-end-of-line-with-end-2 [
 456]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # start on second line (no newline after), press 'end'
   assume-console [
     left-click 2, 1
@@ -2545,6 +2580,7 @@ scenario editor-moves-to-end-of-line-with-end-2 [
     3 <- 2
     4 <- 3
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 # ctrl-u - delete text from start of line until (but not at) cursor
