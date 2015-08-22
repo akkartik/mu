@@ -251,6 +251,7 @@ void show_rest_of_stream(istream& in) {
 //: Have tests clean up any recipes they added.
 :(before "End Globals")
 vector<recipe_ordinal> recently_added_recipes;
+long long int Reserved_for_tests = 1000;
 :(before "End Setup")
 for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
 //?   cout << "AAA clearing " << Recipe[recently_added_recipes.at(i)].name << '\n'; //? 2
