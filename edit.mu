@@ -1708,6 +1708,8 @@ scenario editor-handles-delete-key [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     press 65522  # delete
   ]
@@ -1720,6 +1722,8 @@ scenario editor-handles-delete-key [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 3, [print-character]  # length of original line to overwrite
+  $clear-trace
   assume-console [
     press 65522  # delete
   ]
@@ -1732,15 +1736,41 @@ scenario editor-handles-delete-key [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 2, [print-character]  # new length to overwrite
 ]
 
 after +handle-special-key [
   {
     delete?:boolean <- equal *k, 65522/delete
     break-unless delete?
-    curr:address:duplex-list <- get **before-cursor, next:offset
-    _ <- remove-duplex curr
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    curr:address:duplex-list <- next-duplex *before-cursor
+    reply-unless curr, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render
+    currc:character <- get *curr, value:offset
+    remove-duplex curr
+    deleted-newline?:boolean <- equal currc, 10/newline
+    reply-if deleted-newline?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    # wasn't a newline? render rest of line
+    curr:address:duplex-list <- next-duplex *before-cursor  # refresh after remove-duplex above
+    screen <- move-cursor screen, *cursor-row, *cursor-column
+    curr-column:number <- copy *cursor-column
+    screen-width:number <- screen-width screen
+    {
+      # hit right margin? give up and let caller render
+      at-right?:boolean <- greater-or-equal curr-column, screen-width
+      reply-if at-right?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render
+      break-unless curr
+      # newline? done.
+      currc:character <- get *curr, value:offset
+      at-newline?:boolean <- equal currc, 10/newline
+      break-if at-newline?
+      screen <- print-character screen, currc
+      curr-column <- add curr-column, 1
+      curr <- next-duplex curr
+      loop
+    }
+    # we're guaranteed not to be at the right margin
+    screen <- print-character screen, 32/space
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
 
