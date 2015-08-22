@@ -1524,6 +1524,8 @@ scenario editor-handles-backspace-key [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 1, 1
     type [«]
@@ -1545,28 +1547,60 @@ scenario editor-handles-backspace-key [
     4 <- 1
     5 <- 0
   ]
+  check-trace-count-for-label 3, [print-character]  # length of original line to overwrite
 ]
 
 after +handle-special-character [
   {
     backspace?:boolean <- equal *c, 8/backspace
     break-unless backspace?
-    delete-before-cursor editor
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    editor, screen, go-render?:boolean <- delete-before-cursor editor, screen
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
 ]
 
 recipe delete-before-cursor [
   local-scope
   editor:address:editor-data <- next-ingredient
+  screen:address <- next-ingredient
   before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
   # if at start of text (before-cursor at § sentinel), return
   prev:address:duplex-list <- prev-duplex *before-cursor
-  reply-unless prev
+  reply-unless prev, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render
 #?   trace 10, [app], [delete-before-cursor] #? 1
-  editor <- move-cursor-coordinates-left editor
+  original-row:number <- get *editor, cursor-row:offset
+  editor, scroll?:boolean <- move-cursor-coordinates-left editor
   remove-duplex *before-cursor
   *before-cursor <- copy prev
+  reply-if scroll?, editor/same-as-ingredient:0, 1/go-render
+  screen-width:number <- screen-width screen
+  cursor-row:number <- get *editor, cursor-row:offset
+  cursor-column:number <- get *editor, cursor-column:offset
+  # did we just backspace over a newline?
+  same-row?:boolean <- equal cursor-row, original-row
+  reply-unless same-row?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
+  curr:address:duplex-list <- next-duplex *before-cursor
+  screen <- move-cursor screen, cursor-row, cursor-column
+  curr-column:number <- copy cursor-column
+  {
+    # hit right margin? give up and let caller render
+    at-right?:boolean <- greater-or-equal curr-column, screen-width
+    reply-if at-right?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render
+    break-unless curr
+    # newline? done.
+    currc:character <- get *curr, value:offset
+    at-newline?:boolean <- equal currc, 10/newline
+    break-if at-newline?
+    screen <- print-character screen, currc
+    curr-column <- add curr-column, 1
+    curr <- next-duplex curr
+    loop
+  }
+  # we're guaranteed not to be at the right margin
+  screen <- print-character screen, 32/space
+  reply editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render
 ]
 
 recipe move-cursor-coordinates-left [
