@@ -617,6 +617,7 @@ recipe handle-keyboard-event [
   editor:address:editor-data <- next-ingredient
   e:event <- next-ingredient
   reply-unless editor, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+  screen-width:number <- screen-width screen
   screen-height:number <- screen-height screen
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
@@ -1753,7 +1754,6 @@ after +handle-special-key [
     curr:address:duplex-list <- next-duplex *before-cursor  # refresh after remove-duplex above
     screen <- move-cursor screen, *cursor-row, *cursor-column
     curr-column:number <- copy *cursor-column
-    screen-width:number <- screen-width screen
     {
       # hit right margin? give up and let caller render
       at-right?:boolean <- greater-or-equal curr-column, screen-width
