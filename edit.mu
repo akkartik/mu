@@ -666,15 +666,15 @@ recipe move-cursor-in-editor [
   reply-if too-far-right?, 0/false
   # position cursor
 #?   trace 1, [print-character], [foo] #? 1
-  cursor-row:number <- get t, row:offset
-  cursor-column:number <- get t, column:offset
-  editor <- snap-cursor screen, editor, cursor-row, cursor-column
+  click-row:number <- get t, row:offset
+  click-column:number <- get t, column:offset
+  editor <- snap-cursor screen, editor, click-row, click-column
 #?   trace 1, [print-character], [foo done] #? 1
   # gain focus
   reply 1/true
 ]
 
-# snap-cursor screen:address, editor:address:editor-data, target-row:number, target-column:number
+# editor <- snap-cursor screen:address, editor:address:editor-data, target-row:number, target-column:number
 #
 # Variant of 'render' that only moves the cursor (coordinates and
 # before-cursor). If it's past the end of a line, it 'slides' it left. If it's
@@ -2216,6 +2216,7 @@ scenario editor-moves-to-previous-line-with-up-arrow [
 def]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 2, 1
     press 65517  # up arrow
@@ -2229,6 +2230,7 @@ def]
     3 <- 1
     4 <- 1
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 after +handle-special-key [
@@ -2240,14 +2242,15 @@ after +handle-special-key [
       # if cursor not at top, move it
       break-if already-at-top?
       *cursor-row <- subtract *cursor-row, 1
+      editor <- snap-cursor screen, editor, *cursor-row, *cursor-column
+      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     }
     {
       # if cursor already at top, scroll up
       break-unless already-at-top?
       +scroll-up
+      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
     }
-    # that's it; render will adjust cursor-column as necessary
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -2257,6 +2260,7 @@ scenario editor-adjusts-column-at-previous-line [
 def]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 2, 3
     press 65517  # up arrow
@@ -2270,6 +2274,7 @@ def]
     3 <- 1
     4 <- 2
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 # down arrow
@@ -2280,6 +2285,7 @@ scenario editor-moves-to-next-line-with-down-arrow [
 def]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   # cursor starts out at (1, 0)
   assume-console [
     press 65516  # down arrow
@@ -2294,6 +2300,7 @@ def]
     3 <- 2
     4 <- 0
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 after +handle-special-key [
@@ -2306,14 +2313,15 @@ after +handle-special-key [
       # if cursor not at top, move it
       break-if already-at-bottom?
       *cursor-row <- add *cursor-row, 1
+      editor <- snap-cursor screen, editor, *cursor-row, *cursor-column
+      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     }
     {
       # if cursor already at top, scroll up
       break-unless already-at-bottom?
       +scroll-down
+      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
     }
-    # that's it; render will adjust cursor-column as necessary
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -2323,6 +2331,7 @@ scenario editor-adjusts-column-at-next-line [
 de]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
   assume-console [
     left-click 1, 3
     press 65516  # down arrow
@@ -2336,6 +2345,7 @@ de]
     3 <- 2
     4 <- 2
   ]
+  check-trace-count-for-label 0, [print-character]
 ]
 
 # ctrl-a/home - move cursor to start of line
