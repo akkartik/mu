@@ -13,14 +13,13 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
-.Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.traceContains { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
+.Constant { color: #00a0a0; }
 -->
 </style>
 
@@ -41,7 +40,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 recipe f1 [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   start-running f2:recipe
-  wait-<span class="Normal">for</span>-location <span class="Constant">1</span>:number
+  wait-for-location <span class="Constant">1</span>:number
   <span class="Comment"># now wait for f2 to run and modify location 1 before using its value</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
 ]
@@ -57,8 +56,8 @@ recipe f2 [
 WAITING<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
 <span class="Comment">// only if state == WAITING</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> waiting_on_location<span class="Delimiter">;</span>
-<span class="Normal">int</span> old_value_of_waiting_location<span class="Delimiter">;</span>
+long long int waiting_on_location<span class="Delimiter">;</span>
+int old_value_of_waiting_location<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 waiting_on_location = old_value_of_waiting_location = <span class="Constant">0</span><span class="Delimiter">;</span>
 
@@ -69,7 +68,7 @@ WAIT_FOR_LOCATION<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;wait-for-location&quot;</span>] = WAIT_FOR_LOCATION<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> WAIT_FOR_LOCATION: <span class="Delimiter">{</span>
+case WAIT_FOR_LOCATION: <span class="Delimiter">{</span>
   reagent loc = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   Current_routine<span class="Delimiter">-&gt;</span>state = WAITING<span class="Delimiter">;</span>
   Current_routine<span class="Delimiter">-&gt;</span>waiting_on_location = loc<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
@@ -81,9 +80,9 @@ Recipe_ordinal[<span class="Constant">&quot;wait-for-location&quot;</span>] = WA
 <span class="Comment">//: scheduler tweak to get routines out of that state</span>
 
 <span class="Delimiter">:(before &quot;End Scheduler State Transitions&quot;)</span>
-<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state != WAITING<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_location &amp;&amp;
+for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state != WAITING<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_location &amp;&amp;
       Memory[Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_location] != Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>old_value_of_waiting_location<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     trace<span class="Delimiter">(</span><span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;waking up routine</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = RUNNING<span class="Delimiter">;</span>
@@ -97,7 +96,7 @@ Recipe_ordinal[<span class="Constant">&quot;wait-for-location&quot;</span>] = WA
 recipe f1 [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">12</span>:number/routine<span class="Special"> &lt;- </span>start-running f2:recipe
-  wait-<span class="Normal">for</span>-routine <span class="Constant">12</span>:number/routine
+  wait-for-routine <span class="Constant">12</span>:number/routine
   <span class="Comment"># now wait for f2 to run and modify location 1 before using its value</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
 ]
@@ -114,7 +113,7 @@ recipe f2 [
 
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
 <span class="Comment">// only if state == WAITING</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> waiting_on_routine<span class="Delimiter">;</span>
+long long int waiting_on_routine<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 waiting_on_routine = <span class="Constant">0</span><span class="Delimiter">;</span>
 
@@ -123,16 +122,16 @@ WAIT_FOR_ROUTINE<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;wait-for-routine&quot;</span>] = WAIT_FOR_ROUTINE<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> WAIT_FOR_ROUTINE: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case WAIT_FOR_ROUTINE: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'wait-for-routine' requires exactly one ingredient, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'wait-for-routine' should be a routine id generated by 'start-running', but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Current_routine<span class="Delimiter">-&gt;</span>id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Current_routine<span class="Delimiter">-&gt;</span>id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: routine can't wait for itself! &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -146,13 +145,13 @@ Recipe_ordinal[<span class="Constant">&quot;wait-for-routine&quot;</span>] = WAI
 <span class="Comment">// Wake up any routines waiting for other routines to go to sleep.</span>
 <span class="Comment">// Important: this must come after the scheduler loop above giving routines</span>
 <span class="Comment">// waiting for locations to change a chance to wake up.</span>
-<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state != WAITING<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_routine<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> id = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_routine<span class="Delimiter">;</span>
+for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state != WAITING<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>!Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_routine<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+  long long int id = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_routine<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>id != Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id<span class="Delimiter">);</span>  <span class="Comment">// routine can't wait on itself</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>id == id &amp;&amp; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>state != RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>id == id &amp;&amp; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>state != RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       trace<span class="Delimiter">(</span><span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;waking up routine &quot;</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id &lt;&lt; end<span class="Delimiter">();</span>
       Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = RUNNING<span class="Delimiter">;</span>
       Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_routine = <span class="Constant">0</span><span class="Delimiter">;</span>
@@ -165,9 +164,9 @@ SWITCH<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;switch&quot;</span>] = SWITCH<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> SWITCH: <span class="Delimiter">{</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> id = some_other_running_routine<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case SWITCH: <span class="Delimiter">{</span>
+  long long int id = some_other_running_routine<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>id != Current_routine<span class="Delimiter">-&gt;</span>id<span class="Delimiter">);</span>
     Current_routine<span class="Delimiter">-&gt;</span>state = WAITING<span class="Delimiter">;</span>
     Current_routine<span class="Delimiter">-&gt;</span>waiting_on_routine = id<span class="Delimiter">;</span>
@@ -176,12 +175,12 @@ Recipe_ordinal[<span class="Constant">&quot;switch&quot;</span>] = SWITCH<span c
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> some_other_running_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>i == Current_routine_index<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+long long int some_other_running_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>i == Current_routine_index<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     assert<span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> != Current_routine<span class="Delimiter">);</span>
     assert<span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id != Current_routine<span class="Delimiter">-&gt;</span>id<span class="Delimiter">);</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span>
+    if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span>
       <span class="Identifier">return</span> Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>

@@ -13,14 +13,13 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
-.Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.traceContains { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
+.Constant { color: #00a0a0; }
 -->
 </style>
 
@@ -39,15 +38,15 @@ EQUAL<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;equal&quot;</span>] = EQUAL<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> EQUAL: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case EQUAL: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'equal' needs at least two ingredients to compare in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  vector&lt;<span class="Normal">double</span>&gt;&amp; exemplar = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">bool</span> result = <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!equal<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>end<span class="Delimiter">(),</span> exemplar<span class="Delimiter">.</span>begin<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
+  vector&lt;double&gt;&amp; exemplar = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  bool result = <span class="Constant">true</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!equal<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>end<span class="Delimiter">(),</span> exemplar<span class="Delimiter">.</span>begin<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
       result = <span class="Constant">false</span><span class="Delimiter">;</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -67,7 +66,7 @@ recipe main [
 <span class="traceContains">+mem: location 2 is 33</span>
 <span class="traceContains">+mem: storing 0 in location 3</span>
 
-<span class="Delimiter">:(scenario equal2)</span>
+<span class="Delimiter">:(scenario equal_2)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
@@ -83,7 +82,7 @@ recipe main [
 ]
 <span class="traceContains">+mem: storing 1 in location 1</span>
 
-<span class="Delimiter">:(scenario equal_multiple2)</span>
+<span class="Delimiter">:(scenario equal_multiple_2)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>equal <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
 ]
@@ -94,24 +93,24 @@ GREATER_THAN<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;greater-than&quot;</span>] = GREATER_THAN<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> GREATER_THAN: <span class="Delimiter">{</span>
-  <span class="Normal">bool</span> result = <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case GREATER_THAN: <span class="Delimiter">{</span>
+  bool result = <span class="Constant">true</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'greater-than' needs at least two ingredients to compare in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
       raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'greater-than' can only compare numbers; got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">goto</span> finish_greater_than<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Comment">/**/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i-<span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;= ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Comment">/**/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i-<span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;= ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
       result = <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">finish_greater_than</span>:
+  finish_greater_than:
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -125,7 +124,7 @@ recipe main [
 ]
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
-<span class="Delimiter">:(scenario greater_than2)</span>
+<span class="Delimiter">:(scenario greater_than_2)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
@@ -139,7 +138,7 @@ recipe main [
 ]
 <span class="traceContains">+mem: storing 1 in location 1</span>
 
-<span class="Delimiter">:(scenario greater_than_multiple2)</span>
+<span class="Delimiter">:(scenario greater_than_multiple_2)</span>
 recipe main [
   <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>greater-than <span class="Constant">36</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">35</span>
 ]
@@ -150,24 +149,24 @@ LESSER_THAN<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;lesser-than&quot;</span>] = LESSER_THAN<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> LESSER_THAN: <span class="Delimiter">{</span>
-  <span class="Normal">bool</span> result = <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case LESSER_THAN: <span class="Delimiter">{</span>
+  bool result = <span class="Constant">true</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'lesser-than' needs at least two ingredients to compare in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
       raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'lesser-than' can only compare numbers; got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">goto</span> finish_lesser_than<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Comment">/**/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i-<span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Comment">/**/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i-<span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
       result = <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">finish_lesser_than</span>:
+  finish_lesser_than:
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -181,7 +180,7 @@ recipe main [
 ]
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
-<span class="Delimiter">:(scenario lesser_than2)</span>
+<span class="Delimiter">:(scenario lesser_than_2)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>
@@ -195,7 +194,7 @@ recipe main [
 ]
 <span class="traceContains">+mem: storing 1 in location 1</span>
 
-<span class="Delimiter">:(scenario lesser_than_multiple2)</span>
+<span class="Delimiter">:(scenario lesser_than_multiple_2)</span>
 recipe main [
   <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>lesser-than <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">35</span>
 ]
@@ -206,24 +205,24 @@ GREATER_OR_EQUAL<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;greater-or-equal&quot;</span>] = GREATER_OR_EQUAL<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> GREATER_OR_EQUAL: <span class="Delimiter">{</span>
-  <span class="Normal">bool</span> result = <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case GREATER_OR_EQUAL: <span class="Delimiter">{</span>
+  bool result = <span class="Constant">true</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'greater-or-equal' needs at least two ingredients to compare in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
       raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'greater-or-equal' can only compare numbers; got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">goto</span> finish_greater_or_equal<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Comment">/**/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i-<span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Comment">/**/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i-<span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
       result = <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">finish_greater_or_equal</span>:
+  finish_greater_or_equal:
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -233,35 +232,35 @@ Recipe_ordinal[<span class="Constant">&quot;greater-or-equal&quot;</span>] = GRE
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>
-  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>greater-<span class="Normal">or</span>-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>greater-or-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
-<span class="Delimiter">:(scenario greater_or_equal2)</span>
+<span class="Delimiter">:(scenario greater_or_equal_2)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>greater-<span class="Normal">or</span>-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>greater-or-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
-<span class="Delimiter">:(scenario greater_or_equal3)</span>
+<span class="Delimiter">:(scenario greater_or_equal_3)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>greater-<span class="Normal">or</span>-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>greater-or-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing 0 in location 3</span>
 
 <span class="Delimiter">:(scenario greater_or_equal_multiple)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>greater-<span class="Normal">or</span>-equal <span class="Constant">36</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>greater-or-equal <span class="Constant">36</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">35</span>
 ]
 <span class="traceContains">+mem: storing 1 in location 1</span>
 
-<span class="Delimiter">:(scenario greater_or_equal_multiple2)</span>
+<span class="Delimiter">:(scenario greater_or_equal_multiple_2)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>greater-<span class="Normal">or</span>-equal <span class="Constant">36</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">36</span>
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>greater-or-equal <span class="Constant">36</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">36</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 
@@ -270,24 +269,24 @@ LESSER_OR_EQUAL<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;lesser-or-equal&quot;</span>] = LESSER_OR_EQUAL<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> LESSER_OR_EQUAL: <span class="Delimiter">{</span>
-  <span class="Normal">bool</span> result = <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case LESSER_OR_EQUAL: <span class="Delimiter">{</span>
+  bool result = <span class="Constant">true</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;= <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'lesser-or-equal' needs at least two ingredients to compare in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
       raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'lesser-or-equal' can only compare numbers; got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">goto</span> finish_lesser_or_equal<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Comment">/**/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i-<span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Comment">/**/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i-<span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
       result = <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">finish_lesser_or_equal</span>:
+  finish_lesser_or_equal:
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -297,35 +296,35 @@ Recipe_ordinal[<span class="Constant">&quot;lesser-or-equal&quot;</span>] = LESS
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">32</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>
-  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>lesser-<span class="Normal">or</span>-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>lesser-or-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
-<span class="Delimiter">:(scenario lesser_or_equal2)</span>
+<span class="Delimiter">:(scenario lesser_or_equal_2)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>
-  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>lesser-<span class="Normal">or</span>-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>lesser-or-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
-<span class="Delimiter">:(scenario lesser_or_equal3)</span>
+<span class="Delimiter">:(scenario lesser_or_equal_3)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>
-  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>lesser-<span class="Normal">or</span>-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>lesser-or-equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing 0 in location 3</span>
 
 <span class="Delimiter">:(scenario lesser_or_equal_multiple)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>lesser-<span class="Normal">or</span>-equal <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>lesser-or-equal <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">35</span>
 ]
 <span class="traceContains">+mem: storing 1 in location 1</span>
 
-<span class="Delimiter">:(scenario lesser_or_equal_multiple2)</span>
+<span class="Delimiter">:(scenario lesser_or_equal_multiple_2)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>lesser-<span class="Normal">or</span>-equal <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>lesser-or-equal <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 </pre>

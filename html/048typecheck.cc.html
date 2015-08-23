@@ -13,14 +13,13 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
-.Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Constant { color: #00a0a0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
+.traceContains { color: #008000; }
 -->
 </style>
 
@@ -43,8 +42,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Delimiter">:(scenario transform_types_warns_on_reusing_name_with_different_type)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-  <span class="Normal">x</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  x:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="traceContains">+warn: x used with multiple types in main</span>
 
@@ -52,43 +51,43 @@ recipe main [
   Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>transform_types<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> transform_types<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void transform_types<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   map&lt;string<span class="Delimiter">,</span> vector&lt;type_ordinal&gt; &gt; metadata<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> in = <span class="Constant">0</span><span class="Delimiter">;</span> in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    for <span class="Delimiter">(</span>long long int in = <span class="Constant">0</span><span class="Delimiter">;</span> in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       deduce_missing_type<span class="Delimiter">(</span>metadata<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
       check_metadata<span class="Delimiter">(</span>metadata<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> r<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> out = <span class="Constant">0</span><span class="Delimiter">;</span> out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    for <span class="Delimiter">(</span>long long int out = <span class="Constant">0</span><span class="Delimiter">;</span> out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       deduce_missing_type<span class="Delimiter">(</span>metadata<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">));</span>
       check_metadata<span class="Delimiter">(</span>metadata<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">),</span> r<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">void</span> check_metadata<span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> vector&lt;type_ordinal&gt; &gt;&amp; metadata<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+void check_metadata<span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> vector&lt;type_ordinal&gt; &gt;&amp; metadata<span class="Delimiter">,</span> const reagent&amp; x<span class="Delimiter">,</span> const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Comment">// if you use raw locations you're probably doing something unsafe</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// will throw a more precise warning elsewhere</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>metadata<span class="Delimiter">.</span>find<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == metadata<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+  if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// will throw a more precise warning elsewhere</span>
+  if <span class="Delimiter">(</span>metadata<span class="Delimiter">.</span>find<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == metadata<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
     metadata[x<span class="Delimiter">.</span>name] = x<span class="Delimiter">.</span>types<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>metadata[x<span class="Delimiter">.</span>name] != x<span class="Delimiter">.</span>types<span class="Delimiter">)</span>
+  if <span class="Delimiter">(</span>metadata[x<span class="Delimiter">.</span>name] != x<span class="Delimiter">.</span>types<span class="Delimiter">)</span>
     raise &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; used with multiple types in &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario transform_types_fills_in_missing_types)</span>
 recipe main [
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> <span class="Constant">1</span>
+  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  y:number<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> deduce_missing_type<span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> vector&lt;type_ordinal&gt; &gt;&amp; metadata<span class="Delimiter">,</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>metadata<span class="Delimiter">.</span>find<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == metadata<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+void deduce_missing_type<span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> vector&lt;type_ordinal&gt; &gt;&amp; metadata<span class="Delimiter">,</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>metadata<span class="Delimiter">.</span>find<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == metadata<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   copy<span class="Delimiter">(</span>metadata[x<span class="Delimiter">.</span>name]<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> metadata[x<span class="Delimiter">.</span>name]<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">,</span> x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
   assert<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>resize<span class="Delimiter">(</span>metadata[x<span class="Delimiter">.</span>name]<span class="Delimiter">.</span>size<span class="Delimiter">());</span>
@@ -97,13 +96,13 @@ recipe main [
 
 <span class="Delimiter">:(scenario transform_types_fills_in_missing_types_in_product)</span>
 recipe main [
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   x<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>
 ]
 
 <span class="Delimiter">:(scenario transform_types_fills_in_missing_types_in_product_and_ingredient)</span>
 recipe main [
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   x<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 1</span>
@@ -112,14 +111,14 @@ recipe main [
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
   x<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>
+  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>
 ]
 <span class="traceContains">+warn: missing type in 'x &lt;- copy 1'</span>
 
 <span class="Delimiter">:(scenario typo_in_address_type_warns)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
-  <span class="Normal">y</span>:address:charcter<span class="Special"> &lt;- </span><span class="Normal">new</span> character:type
+  y:address:charcter<span class="Special"> &lt;- </span>new character:type
   *y<span class="Special"> &lt;- </span>copy <span class="Constant">67</span>
 ]
 <span class="traceContains">+warn: unknown type: charcter</span>

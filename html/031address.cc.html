@@ -13,17 +13,16 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
+.SalientComment { color: #00ffff; }
 .traceAbsent { color: #c00000; }
-.Constant { color: #00a0a0; }
-.cSpecial { color: #008000; }
 .CommentedCode { color: #6c6c6c; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
-.SalientComment { color: #00ffff; }
+.Constant { color: #00a0a0; }
+.traceContains { color: #008000; }
 -->
 </style>
 
@@ -61,10 +60,13 @@ recipe main [
 
 <span class="Delimiter">:(before &quot;long long int base = x.value&quot; following &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
 x = canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   raise &lt;&lt; <span class="Constant">&quot;can't write to location 0 in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(after &quot;bool is_mu_array(reagent r)&quot;)</span>
+r = canonize<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
 
 <span class="Comment">//: writes to address 0 always loudly fail</span>
 <span class="Delimiter">:(scenario store_to_0_warns)</span>
@@ -78,25 +80,25 @@ recipe main [
 
 <span class="Delimiter">:(code)</span>
 reagent canonize<span class="Delimiter">(</span>reagent x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> x<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> x<span class="Delimiter">;</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;canonize\n&quot;; //? 1</span>
   reagent r = x<span class="Delimiter">;</span>
 <span class="CommentedCode">//?   cout &lt;&lt; x.to_string() &lt;&lt; &quot; =&gt; &quot; &lt;&lt; r.to_string() &lt;&lt; '\n'; //? 1</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">))</span>
+  while <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">))</span>
     r = lookup_memory<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
   <span class="Identifier">return</span> r<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 reagent lookup_memory<span class="Delimiter">(</span>reagent x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;lookup_memory: &quot; &lt;&lt; x.to_string() &lt;&lt; &quot;\n&quot;; //? 2</span>
-  <span class="Normal">static</span> <span class="Normal">const</span> type_ordinal ADDRESS = Type_ordinal[<span class="Constant">&quot;address&quot;</span>]<span class="Delimiter">;</span>
+  static const type_ordinal ADDRESS = Type_ordinal[<span class="Constant">&quot;address&quot;</span>]<span class="Delimiter">;</span>
   reagent result<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != ADDRESS<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != ADDRESS<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: tried to /lookup &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; but it isn't an address</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// compute value</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: tried to /lookup 0</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -107,14 +109,14 @@ reagent lookup_memory<span class="Delimiter">(</span>reagent x<span class="Delim
   copy<span class="Delimiter">(</span>++x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>result<span class="Delimiter">.</span>types<span class="Delimiter">,</span> result<span class="Delimiter">.</span>types<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
 
   <span class="Comment">// drop-one 'lookup'</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> len = SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span>i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; len<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  long long int i = <span class="Constant">0</span><span class="Delimiter">;</span>
+  long long int len = SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span>
+  for <span class="Delimiter">(</span>i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; len<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     result<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   ++i<span class="Delimiter">;</span>  <span class="Comment">// skip first lookup</span>
-  <span class="Normal">for</span> <span class="Delimiter">(;</span> i &lt; len<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(;</span> i &lt; len<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     result<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
@@ -167,11 +169,11 @@ recipe main [
 
 <span class="Delimiter">:(before &quot;End Parsing reagent&quot;)</span>
 <span class="Delimiter">{</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>!name<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; name<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'*'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>!name<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; name<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'*'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     name<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
     properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> vector&lt;string&gt; &gt;<span class="Delimiter">(</span><span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">,</span> vector&lt;string&gt;<span class="Delimiter">()));</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+  if <span class="Delimiter">(</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
     raise &lt;&lt; <span class="Constant">&quot;illegal name &quot;</span> &lt;&lt; original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
@@ -182,7 +184,7 @@ _DUMP<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;$dump&quot;</span>] = _DUMP<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> _DUMP: <span class="Delimiter">{</span>
+case _DUMP: <span class="Delimiter">{</span>
   reagent after_canonize = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   cerr &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">' '</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value &lt;&lt; <span class="Constant">&quot; =&gt; &quot;</span> &lt;&lt; after_canonize<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; =&gt; &quot;</span> &lt;&lt; Memory[after_canonize<span class="Delimiter">.</span>value] &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -191,18 +193,18 @@ Recipe_ordinal[<span class="Constant">&quot;$dump&quot;</span>] = _DUMP<span cla
 <span class="Comment">//: grab an address, and then dump its value at intervals</span>
 <span class="Comment">//: useful for tracking down memory corruption (writing to an out-of-bounds address)</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> foo = -<span class="Constant">1</span><span class="Delimiter">;</span>
+long long int foo = -<span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 _FOO<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;$foo&quot;</span>] = _FOO<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> _FOO: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>foo != -<span class="Constant">1</span><span class="Delimiter">)</span> cerr &lt;&lt; foo &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; Memory[foo] &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-    <span class="Normal">else</span> cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+case _FOO: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>foo != -<span class="Constant">1</span><span class="Delimiter">)</span> cerr &lt;&lt; foo &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; Memory[foo] &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    else cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">else</span> <span class="Delimiter">{</span>
+  else <span class="Delimiter">{</span>
     foo = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)).</span>value<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>

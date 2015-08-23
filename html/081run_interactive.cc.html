@@ -13,15 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
-.Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.CommentedCode { color: #6c6c6c; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #804000; }
+.traceContains { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.Identifier { color: #804000; }
+.CommentedCode { color: #6c6c6c; }
+.Constant { color: #00a0a0; }
 -->
 </style>
 
@@ -38,7 +37,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Delimiter">:(scenario run_interactive_code)</span>
 recipe main [
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>]
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new [<span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">34</span>]
   run-interactive <span class="Constant">2</span>:address:array:character
 ]
 <span class="traceContains">+mem: storing 34 in location 1</span>
@@ -61,84 +60,162 @@ RUN_INTERACTIVE<span class="Delimiter">,</span>
 Recipe_ordinal[<span class="Constant">&quot;run-interactive&quot;</span>] = RUN_INTERACTIVE<span class="Delimiter">;</span>
 <span class="CommentedCode">//? cerr &lt;&lt; &quot;run-interactive: &quot; &lt;&lt; RUN_INTERACTIVE &lt;&lt; '\n'; //? 1</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> RUN_INTERACTIVE: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case RUN_INTERACTIVE: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'run-interactive' requires exactly one ingredient, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'run-interactive' should be a literal string, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">bool</span> new_code_pushed_to_stack = run_interactive<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!new_code_pushed_to_stack<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">);</span>
+  bool new_code_pushed_to_stack = run_interactive<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  if <span class="Delimiter">(</span>!new_code_pushed_to_stack<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">5</span><span class="Delimiter">);</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">));</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;app&quot;</span><span class="Delimiter">));</span>
-    clean_up_interactive<span class="Delimiter">();</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// completed</span>
+    cleanup_run_interactive<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// done with this instruction</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">else</span> <span class="Delimiter">{</span>
+  else <span class="Delimiter">{</span>
     <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not done with caller; don't increment current_step_index()</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">bool</span> Running_interactive = <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Old_screen = <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// we can support one iteration of screen inside screen</span>
+bool Track_most_recent_products = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Running_interactive = <span class="Constant">false</span><span class="Delimiter">;</span>
-Old_screen = <span class="Constant">0</span><span class="Delimiter">;</span>
+Track_most_recent_products = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// reads a string, tries to call it as code (treating it as a test), saving</span>
 <span class="Comment">// all warnings.</span>
 <span class="Comment">// returns true if successfully called (no errors found during load and transform)</span>
-<span class="Normal">bool</span> run_interactive<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">)</span> == Recipe_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
-    Recipe_ordinal[<span class="Constant">&quot;interactive&quot;</span>] = Next_recipe_ordinal++<span class="Delimiter">;</span>
-  Old_screen = Memory[SCREEN]<span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;save screen: &quot; &lt;&lt; Old_screen &lt;&lt; '\n'; //? 2</span>
+bool run_interactive<span class="Delimiter">(</span>long long int address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">)</span> != Recipe_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">()</span> &amp;&amp; Recipe_ordinal[<span class="Constant">&quot;interactive&quot;</span>] != <span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// try to sandbox the run as best you can</span>
   <span class="Comment">// todo: test this</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!Current_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Comment">// not already sandboxed</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; Reserved_for_tests<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span>
+  if <span class="Delimiter">(</span>!Current_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    for <span class="Delimiter">(</span>long long int i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; Reserved_for_tests<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span>
       Memory<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    Name[Recipe_ordinal[<span class="Constant">&quot;interactive&quot;</span>]]<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;screen was at &quot; &lt;&lt; Name[Recipe_ordinal[&quot;interactive&quot;]][&quot;screen&quot;] &lt;&lt; '\n'; //? 1</span>
-  Name[Recipe_ordinal[<span class="Constant">&quot;interactive&quot;</span>]][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;screen now at &quot; &lt;&lt; Name[Recipe_ordinal[&quot;interactive&quot;]][&quot;screen&quot;] &lt;&lt; '\n'; //? 1</span>
   string command = trim<span class="Delimiter">(</span>strip_comments<span class="Delimiter">(</span>read_mu_string<span class="Delimiter">(</span>address<span class="Delimiter">)));</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>command<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>command<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recipe_ordinal[<span class="Constant">&quot;interactive&quot;</span>]<span class="Delimiter">);</span>
+  Name[Recipe_ordinal[<span class="Constant">&quot;interactive&quot;</span>]]<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  <span class="Comment">// stuff to undo later, in cleanup_run_interactive()</span>
   Hide_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Trace_file = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// if there wasn't already a stream we don't want to save it</span>
-    Trace_stream = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span>
+    Trace_stream = new trace_stream<span class="Delimiter">;</span>
     Trace_stream<span class="Delimiter">-&gt;</span>collect_layers<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">);</span>
     Trace_stream<span class="Delimiter">-&gt;</span>collect_layers<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;app&quot;</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// call run(string) but without the scheduling</span>
-  <span class="Comment">// we won't create a local scope so that we can get to the new screen after</span>
-  <span class="Comment">// we return from 'interactive'.</span>
   load<span class="Delimiter">(</span>string<span class="Delimiter">(</span><span class="Constant">&quot;recipe interactive [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">)</span> +
-          <span class="Constant">&quot;screen:address &lt;- new-fake-screen 30, 5</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+          <span class="Constant">&quot;local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+          <span class="Constant">&quot;screen:address &lt;- next-ingredient</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+          <span class="Constant">&quot;$start-tracking-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
           command + <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+          <span class="Constant">&quot;$stop-tracking-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+          <span class="Constant">&quot;reply screen</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
        <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   transform_all<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">)</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  Running_interactive = <span class="Constant">true</span><span class="Delimiter">;</span>
-  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>Recipe_ordinal[<span class="Constant">&quot;interactive&quot;</span>]<span class="Delimiter">));</span>
+  if <span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">)</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Comment">// now call 'sandbox' which will run 'interactive' in a separate routine,</span>
+  <span class="Comment">// and wait for it</span>
+  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>Recipe_ordinal[<span class="Constant">&quot;sandbox&quot;</span>]<span class="Delimiter">));</span>
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Load Recipes&quot;)</span>
+load<span class="Delimiter">(</span>string<span class="Delimiter">(</span>
+<span class="Constant">&quot;recipe interactive [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">)</span> +  <span class="Comment">// just a dummy version to initialize the Recipe_ordinal and so on</span>
+<span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+<span class="Constant">&quot;recipe sandbox [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;screen:address/shared &lt;- new-fake-screen 30, 5</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;r:number/routine_id &lt;- start-running interactive:recipe, screen:address</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;limit-time r, 750/instructions</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;wait-for-routine r</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;sandbox-state:number &lt;- routine-state r/routine_id</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;completed?:boolean &lt;- equal sandbox-state, 1/completed</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;output:address:array:character &lt;- $most-recent-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;warnings:address:array:character &lt;- save-trace [warn]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;stashes:address:array:character &lt;- save-trace [app]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;$cleanup-run-interactive</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;reply output, warnings, screen, stashes, completed?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+<span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+transform_all<span class="Delimiter">();</span>
+recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_START_TRACKING_PRODUCTS<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$start-tracking-products&quot;</span>] = _START_TRACKING_PRODUCTS<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _START_TRACKING_PRODUCTS: <span class="Delimiter">{</span>
+  Track_most_recent_products = <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_STOP_TRACKING_PRODUCTS<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$stop-tracking-products&quot;</span>] = _STOP_TRACKING_PRODUCTS<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _STOP_TRACKING_PRODUCTS: <span class="Delimiter">{</span>
+  Track_most_recent_products = <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_MOST_RECENT_PRODUCTS<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$most-recent-products&quot;</span>] = _MOST_RECENT_PRODUCTS<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _MOST_RECENT_PRODUCTS: <span class="Delimiter">{</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_string<span class="Delimiter">(</span>Most_recent_products<span class="Delimiter">));</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+SAVE_TRACE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;save-trace&quot;</span>] = SAVE_TRACE<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case SAVE_TRACE: <span class="Delimiter">{</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_CLEANUP_RUN_INTERACTIVE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;$cleanup-run-interactive&quot;</span>] = _CLEANUP_RUN_INTERACTIVE<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _CLEANUP_RUN_INTERACTIVE: <span class="Delimiter">{</span>
+  cleanup_run_interactive<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+void cleanup_run_interactive<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>is_narrowly_collecting<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// hack</span>
+    delete Trace_stream<span class="Delimiter">;</span>
+    Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario &quot;run_interactive_returns_stringified_result&quot;)</span>
 recipe main [
   <span class="Comment"># try to interactively add 2 and 2</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
   <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:array:character/lookup
 ]
@@ -148,9 +225,9 @@ recipe main [
 <span class="Delimiter">:(scenario &quot;run_interactive_returns_string&quot;)</span>
 recipe main [
   <span class="Comment"># try to interactively add 2 and 2</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [
-    <span class="Constant">100</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [a]
-    <span class="Constant">101</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [b]
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [
+    <span class="Constant">100</span>:address:array:character<span class="Special"> &lt;- </span>new [a]
+    <span class="Constant">101</span>:address:array:character<span class="Special"> &lt;- </span>new [b]
     <span class="Constant">102</span>:address:array:character<span class="Special"> &lt;- </span>string-append <span class="Constant">100</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">101</span>:address:array:character
   ]
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
@@ -163,7 +240,7 @@ recipe main [
 <span class="Delimiter">:(scenario &quot;run_interactive_returns_warnings&quot;)</span>
 recipe main [
   <span class="Comment"># run a command that generates a warning</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [get <span class="Constant">1234</span>:number<span class="Delimiter">,</span> foo:offset]
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [get <span class="Constant">1234</span>:number<span class="Delimiter">,</span> foo:offset]
   <span class="Constant">2</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
   <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:array:character/lookup
 ]
@@ -174,25 +251,25 @@ recipe main [
 <span class="traceContains">+mem: storing 110 in location 14</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-string Most_recent_results<span class="Delimiter">;</span>
+string Most_recent_products<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Most_recent_results = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+Most_recent_products = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End of Instruction&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>Running_interactive<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  record_products<span class="Delimiter">(</span>current_instruction<span class="Delimiter">(),</span> products<span class="Delimiter">);</span>
+if <span class="Delimiter">(</span>Track_most_recent_products<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  track_most_recent_products<span class="Delimiter">(</span>current_instruction<span class="Delimiter">(),</span> products<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> record_products<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; instruction<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;vector&lt;<span class="Normal">double</span>&gt; &gt;&amp; products<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void track_most_recent_products<span class="Delimiter">(</span>const instruction&amp; instruction<span class="Delimiter">,</span> const vector&lt;vector&lt;double&gt; &gt;&amp; products<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream out<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// string</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      if <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+        if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
           tb_shutdown<span class="Delimiter">();</span>
           cerr &lt;&lt; read_mu_string<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
           cerr &lt;&lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span><span class="Delimiter">;</span>
-          <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
+          for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
             cerr &lt;&lt; products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
           cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
         <span class="Delimiter">}</span>
@@ -202,114 +279,46 @@ Most_recent_results = <span class="Constant">&quot;&quot;</span><span class="Del
       <span class="Delimiter">}</span>
       <span class="Comment">// End Record Product Special-cases</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
+    for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
       out &lt;&lt; products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
     out &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  Most_recent_results = out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;Complete Call Fallthrough&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation == RUN_INTERACTIVE &amp;&amp; !current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &lt;= <span class="Constant">4</span><span class="Delimiter">);</span>
-  <span class="Comment">// Send the results of the most recently executed instruction, regardless of</span>
-  <span class="Comment">// call depth, to be converted to string and potentially printed to string.</span>
-  vector&lt;<span class="Normal">double</span>&gt; result<span class="Delimiter">;</span>
-  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_mu_string<span class="Delimiter">(</span>Most_recent_results<span class="Delimiter">));</span>
-  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> result<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &gt;= <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    vector&lt;<span class="Normal">double</span>&gt; warnings<span class="Delimiter">;</span>
-    warnings<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">));</span>
-    write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">),</span> warnings<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &gt;= <span class="Constant">3</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    vector&lt;<span class="Normal">double</span>&gt; screen<span class="Delimiter">;</span>
-    screen<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Memory[SCREEN]<span class="Delimiter">);</span>
-    write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">),</span> screen<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &gt;= <span class="Constant">4</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;emitting trace\n&quot;; //? 1</span>
-    vector&lt;<span class="Normal">double</span>&gt; trace<span class="Delimiter">;</span>
-    trace<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;app&quot;</span><span class="Delimiter">));</span>
-    write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">),</span> trace<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">//: clean up reply after we've popped it off the call-stack</span>
-<span class="Comment">//: however, we need what was on the stack to decide whether to clean up</span>
-<span class="Delimiter">:(after &quot;Starting Reply&quot;)</span>
-<span class="Normal">bool</span> must_clean_up_interactive = <span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">()</span> == <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">:(after &quot;Falling Through End Of Recipe&quot;)</span>
-<span class="Normal">bool</span> must_clean_up_interactive = <span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">()</span> == <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Reply&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>must_clean_up_interactive<span class="Delimiter">)</span> clean_up_interactive<span class="Delimiter">();</span>
-<span class="Delimiter">:(before &quot;Complete Call Fallthrough&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>must_clean_up_interactive<span class="Delimiter">)</span> clean_up_interactive<span class="Delimiter">();</span>
-<span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> clean_up_interactive<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>  <span class="Comment">// flush trace</span>
-  Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
-  Running_interactive = <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Comment">// hack: assume collect_layers isn't set anywhere else</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>is_narrowly_collecting<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    <span class="Normal">delete</span> Trace_stream<span class="Delimiter">;</span>
-    Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;restore screen: &quot; &lt;&lt; Memory[SCREEN] &lt;&lt; &quot; to &quot; &lt;&lt; Old_screen &lt;&lt; '\n'; //? 1</span>
-  Memory[SCREEN] = Old_screen<span class="Delimiter">;</span>
-  Old_screen = <span class="Constant">0</span><span class="Delimiter">;</span>
+  Most_recent_products = out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
 string strip_comments<span class="Delimiter">(</span>string in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream result<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>in<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> != <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>in<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> != <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       result &lt;&lt; in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">else</span> <span class="Delimiter">{</span>
-      <span class="Normal">while</span> <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span>
+    else <span class="Delimiter">{</span>
+      while <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span>
         ++i<span class="Delimiter">;</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> ++i<span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> ++i<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-string read_mu_string<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size = Memory[address]<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>size == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-  ostringstream tmp<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> curr = address+<span class="Constant">1</span><span class="Delimiter">;</span> curr &lt;= address+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Comment">// todo: unicode</span>
-    tmp &lt;&lt; <span class="Delimiter">(</span><span class="Normal">char</span><span class="Delimiter">)(</span><span class="Normal">int</span><span class="Delimiter">)</span>Memory[curr]<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> tmp<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
-<span class="Delimiter">}</span>
-
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> stringified_value_of_location<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+long long int stringified_value_of_location<span class="Delimiter">(</span>long long int address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// convert to string</span>
   ostringstream out<span class="Delimiter">;</span>
   out &lt;&lt; Memory[address]<span class="Delimiter">;</span>
   <span class="Identifier">return</span> new_mu_string<span class="Delimiter">(</span>out<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_mu_string<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">)</span> == <span class="Constant">3</span>
-      &amp;&amp; x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;address&quot;</span>]
-      &amp;&amp; x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;array&quot;</span>]
-      &amp;&amp; x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;character&quot;</span>]<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> trace_contents<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+long long int trace_contents<span class="Delimiter">(</span>const string&amp; layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;trace stream exists\n&quot;; //? 1</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span>layer<span class="Delimiter">)</span> &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span>layer<span class="Delimiter">)</span> &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; layer &lt;&lt; &quot; has something\n&quot;; //? 1</span>
   ostringstream out<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>label != layer<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>label != layer<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     out &lt;&lt; p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">;</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>*--p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">.</span>end<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> out &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>*--p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">.</span>end<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> out &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>!out<span class="Delimiter">.</span>str<span class="Delimiter">().</span>empty<span class="Delimiter">());</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; layer &lt;&lt; &quot;:\n&quot; &lt;&lt; out.str() &lt;&lt; &quot;\n--\n&quot;; //? 1</span>
@@ -323,23 +332,27 @@ RELOAD<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;reload&quot;</span>] = RELOAD<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> RELOAD: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case RELOAD: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'reload' requires exactly one ingredient, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'reload' should be a literal string, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Trace_file = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// if there wasn't already a stream we don't want to save it</span>
-    Trace_stream = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span>
+    Trace_stream = new trace_stream<span class="Delimiter">;</span>
     Trace_stream<span class="Delimiter">-&gt;</span>collect_layers<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   Hide_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
   Disable_redefine_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
-  load<span class="Delimiter">(</span>read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
+  string code = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  vector&lt;recipe_ordinal&gt; recipes_reloaded = load<span class="Delimiter">(</span>code<span class="Delimiter">);</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recipes_reloaded<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    Name<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recipes_reloaded<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
   transform_all<span class="Delimiter">();</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>  <span class="Comment">// flush trace</span>
   Disable_redefine_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -347,8 +360,8 @@ Recipe_ordinal[<span class="Constant">&quot;reload&quot;</span>] = RELOAD<span c
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_contents<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">));</span>
   <span class="Comment">// hack: assume collect_layers isn't set anywhere else</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>is_narrowly_collecting<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    <span class="Normal">delete</span> Trace_stream<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>is_narrowly_collecting<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    delete Trace_stream<span class="Delimiter">;</span>
     Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>

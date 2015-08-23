@@ -13,12 +13,12 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.Delimiter { color: #a04060; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
+.Delimiter { color: #a04060; }
+.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -37,6 +37,7 @@ exclusive-container event [
   text:character
   keycode:number  <span class="Comment"># keys on keyboard without a unicode representation</span>
   touch:touch-event  <span class="Comment"># mouse, track ball, etc.</span>
+  resize:resize-event
   <span class="Comment"># update the assume-console handler if you add more variants</span>
 ]
 
@@ -44,6 +45,11 @@ container touch-event [
   type:number
   row:number
   column:number
+]
+
+container resize-event [
+  width:number
+  height:number
 ]
 
 container console [
@@ -79,8 +85,7 @@ container console [
     *idx<span class="Special"> &lt;- </span>add *idx, <span class="Constant">1</span>
     <span class="muControl">reply</span> result, x/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
   <span class="Delimiter">}</span>
-  <span class="Comment"># real event source is infrequent; avoid polling it too much</span>
-  switch
+  switch  <span class="Comment"># real event source is infrequent; avoid polling it too much</span>
   result:event, found?:boolean<span class="Special"> &lt;- </span>check-for-interaction
   <span class="muControl">reply</span> result, x/same-as-ingredient:<span class="Constant">0</span>, found?, <span class="Constant">0/quit</span>
 ]

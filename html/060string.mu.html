@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.Delimiter { color: #a04060; }
-.CommentedCode { color: #6c6c6c; }
+.muScenario { color: #00af00; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.muScenario { color: #00af00; }
+.CommentedCode { color: #6c6c6c; }
+.Delimiter { color: #a04060; }
+.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -42,13 +42,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   b-len:number<span class="Special"> &lt;- </span>length *b
   <span class="Comment"># compare lengths</span>
   <span class="Delimiter">{</span>
-    trace <span class="Constant">[string-equal]</span>, <span class="Constant">[comparing lengths]</span>
+    trace <span class="Constant">99</span>, <span class="Constant">[string-equal]</span>, <span class="Constant">[comparing lengths]</span>
     length-equal?:boolean<span class="Special"> &lt;- </span>equal a-len, b-len
     <span class="muControl">break-if</span> length-equal?
     <span class="muControl">reply</span> <span class="Constant">0</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># compare each corresponding character</span>
-  trace <span class="Constant">[string-equal]</span>, <span class="Constant">[comparing characters]</span>
+  trace <span class="Constant">99</span>, <span class="Constant">[string-equal]</span>, <span class="Constant">[comparing characters]</span>
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, a-len
@@ -184,7 +184,7 @@ container buffer [
   <span class="muControl">reply</span> result
 ]
 
-<span class="Comment"># in:address:buffer &lt;- buffer-append in:address:buffer, c:character</span>
+<span class="Comment"># in &lt;- buffer-append in:address:buffer, c:character</span>
 <span class="muRecipe">recipe</span> buffer-append [
   <span class="Constant">local-scope</span>
   in:address:buffer<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -286,7 +286,7 @@ container buffer [
     negative?:boolean<span class="Special"> &lt;- </span>lesser-than n, <span class="Constant">0</span>
     <span class="muControl">break-unless</span> negative?
     negate-result<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-    n<span class="Special"> &lt;- </span>multiply n, -1
+    n<span class="Special"> &lt;- </span>multiply n, <span class="Constant">-1</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># add digits from right to left into intermediate buffer</span>
   tmp:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
@@ -374,7 +374,7 @@ container buffer [
 
 <span class="muScenario">scenario</span> integer-to-decimal-digit-negative [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>integer-to-decimal-string -1
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>integer-to-decimal-string <span class="Constant">-1</span>
     <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
@@ -435,6 +435,78 @@ container buffer [
   ]
   memory-should-contain [
     <span class="Constant">4</span>:string<span class="Special"> &lt;- </span><span class="Constant">[hello, world!]</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> replace-character-in-string [
+  run [
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>string-replace <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">98/b</span>, <span class="Constant">122/z</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+  ]
+  memory-should-contain [
+    <span class="Constant">2</span>:string<span class="Special"> &lt;- </span><span class="Constant">[azc]</span>
+  ]
+]
+
+<span class="muRecipe">recipe</span> string-replace [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  oldc:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  newc:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  from:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  len:number<span class="Special"> &lt;- </span>length *s
+  i:number<span class="Special"> &lt;- </span>find-next s, oldc, from
+  done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
+  <span class="muControl">reply-if</span> done?, s/same-as-ingredient:<span class="Constant">0</span>
+  dest:address:character<span class="Special"> &lt;- </span>index-address *s, i
+  *dest<span class="Special"> &lt;- </span>copy newc
+  i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
+  s<span class="Special"> &lt;- </span>string-replace s, oldc, newc, i
+  <span class="muControl">reply</span> s/same-as-ingredient:<span class="Constant">0</span>
+]
+
+<span class="muScenario">scenario</span> replace-character-at-start [
+  run [
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>string-replace <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+  ]
+  memory-should-contain [
+    <span class="Constant">2</span>:string<span class="Special"> &lt;- </span><span class="Constant">[zbc]</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> replace-character-at-end [
+  run [
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>string-replace <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">99/c</span>, <span class="Constant">122/z</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+  ]
+  memory-should-contain [
+    <span class="Constant">2</span>:string<span class="Special"> &lt;- </span><span class="Constant">[abz]</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> replace-character-missing [
+  run [
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>string-replace <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">100/d</span>, <span class="Constant">122/z</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+  ]
+  memory-should-contain [
+    <span class="Constant">2</span>:string<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> replace-all-characters [
+  run [
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[banana]</span>
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>string-replace <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+  ]
+  memory-should-contain [
+    <span class="Constant">2</span>:string<span class="Special"> &lt;- </span><span class="Constant">[bznznz]</span>
   ]
 ]
 
@@ -653,7 +725,7 @@ container buffer [
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># result = new character[end+1 - start]</span>
-  new-len:number<span class="Special"> &lt;- </span>subtract end, start, -1
+  new-len:number<span class="Special"> &lt;- </span>subtract end, start, <span class="Constant">-1</span>
   result:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, new-len
   <span class="Comment"># copy the untrimmed parts between start and end</span>
   i:number<span class="Special"> &lt;- </span>copy start
@@ -828,7 +900,7 @@ container buffer [
   ]
 ]
 
-<span class="Comment"># idx:number &lt;- find-substring text:address:array:character, pattern:address:array:character, idx:number</span>
+<span class="Comment"># next-index:number &lt;- find-substring text:address:array:character, pattern:address:array:character, idx:number</span>
 <span class="Comment"># like find-next, but searches for multiple characters</span>
 <span class="Comment"># fairly dumb algorithm</span>
 <span class="muRecipe">recipe</span> find-substring [
