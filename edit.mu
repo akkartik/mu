@@ -2231,6 +2231,19 @@ def]
     4 <- 1
   ]
   check-trace-count-for-label 0, [print-character]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .a0bc      .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
 ]
 
 after +handle-special-key [
@@ -2242,7 +2255,32 @@ after +handle-special-key [
       # if cursor not at top, move it
       break-if already-at-top?
       *cursor-row <- subtract *cursor-row, 1
-      editor <- snap-cursor screen, editor, *cursor-row, *cursor-column
+      # scan back two newlines, then ahead to right column or until end of line
+      prev:address:duplex-list <- before-previous-line *before-cursor, editor
+      no-motion?:boolean <- equal prev, *before-cursor
+      reply-if no-motion?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+      tmp:address:duplex-list <- copy prev
+      prev:address:duplex-list <- before-previous-line tmp, editor
+      no-motion?:boolean <- equal prev, *before-cursor
+      reply-if no-motion?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+      *before-cursor <- copy prev
+      target-column:number <- copy *cursor-column
+      *cursor-column <- copy left
+      {
+        done?:boolean <- greater-or-equal *cursor-column, target-column
+        break-if done?
+        curr:address:duplex-list <- next-duplex *before-cursor
+        break-unless curr
+        currc:character <- get *curr, value:offset
+        at-newline?:boolean <- equal currc, 10/newline
+        not-at-start?:boolean <- greater-than *cursor-column, left
+        line-done?:boolean <- and at-newline?, not-at-start?
+        break-if line-done?
+        #
+        *before-cursor <- copy curr
+        *cursor-column <- add *cursor-column, 1
+        loop
+      }
       reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     }
     {
@@ -2275,6 +2313,19 @@ def]
     4 <- 2
   ]
   check-trace-count-for-label 0, [print-character]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .ab0       .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
 ]
 
 # down arrow
@@ -2301,6 +2352,19 @@ def]
     4 <- 0
   ]
   check-trace-count-for-label 0, [print-character]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .0def      .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
 ]
 
 after +handle-special-key [
@@ -2313,7 +2377,29 @@ after +handle-special-key [
       # if cursor not at top, move it
       break-if already-at-bottom?
       *cursor-row <- add *cursor-row, 1
-      editor <- snap-cursor screen, editor, *cursor-row, *cursor-column
+      # scan to start of next line, then to right column or until end of line
+      max:number <- subtract right, left
+      next-line:address:duplex-list <- before-start-of-next-line *before-cursor, max
+      no-motion?:boolean <- equal next-line, *before-cursor
+      reply-if no-motion?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+      *before-cursor <- copy next-line
+      target-column:number <- copy *cursor-column
+      *cursor-column <- copy left
+      {
+        done?:boolean <- greater-or-equal *cursor-column, target-column
+        break-if done?
+        curr:address:duplex-list <- next-duplex *before-cursor
+        break-unless curr
+        currc:character <- get *curr, value:offset
+        at-newline?:boolean <- equal currc, 10/newline
+        not-at-start?:boolean <- greater-than *cursor-column, left
+        line-done?:boolean <- and at-newline?, not-at-start?
+        break-if line-done?
+        #
+        *before-cursor <- copy curr
+        *cursor-column <- add *cursor-column, 1
+        loop
+      }
       reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     }
     {
@@ -2346,6 +2432,19 @@ de]
     4 <- 2
   ]
   check-trace-count-for-label 0, [print-character]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .de0       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
 ]
 
 # ctrl-a/home - move cursor to start of line

@@ -135,7 +135,7 @@ case GET: {
     break;
   }
   if (base.types.empty() || Type[base.types.at(0)].kind != container) {
-    raise << current_recipe_name () << ": first ingredient of 'get' should be a container, but got " << base.original_string << '\n' << end();
+    raise << current_recipe_name () << ": first ingredient of 'get' should be a container, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.types.at(0);
@@ -215,7 +215,7 @@ case GET_ADDRESS: {
     break;
   }
   if (base.types.empty() || Type[base.types.at(0)].kind != container) {
-    raise << current_recipe_name () << ": first ingredient of 'get-address' should be a container, but got " << base.original_string << '\n' << end();
+    raise << current_recipe_name () << ": first ingredient of 'get-address' should be a container, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.types.at(0);
