@@ -13,15 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
-.Constant { color: #00a0a0; }
+.Identifier { color: #804000; }
 .cSpecial { color: #008000; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.CommentedCode { color: #6c6c6c; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.Identifier { color: #804000; }
+.CommentedCode { color: #6c6c6c; }
+.Constant { color: #00a0a0; }
+.traceContains { color: #008000; }
 -->
 </style>
 
@@ -67,7 +66,7 @@ type_ordinal recipe_ordinal = Type_ordinal[<span class="Constant">&quot;recipe-o
 Type[recipe_ordinal]<span class="Delimiter">.</span>name = <span class="Constant">&quot;recipe-ordinal&quot;</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Reagent-parsing Exceptions&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+if <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   r<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>Recipe_ordinal[r<span class="Delimiter">.</span>name]<span class="Delimiter">);</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -77,13 +76,13 @@ CALL<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;call&quot;</span>] = CALL<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> CALL: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+case CALL: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'call' requires at least one ingredient (the recipe to call)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// Begin Call</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'call' should be a recipe, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
