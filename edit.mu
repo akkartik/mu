@@ -4990,9 +4990,14 @@ after +global-keypress [
     break-unless do-run?
     status:address:array:character <- new [running...  ]
     screen <- update-status screen, status, 245/grey
-    run-sandboxes env, screen
+    screen, error?:boolean <- run-sandboxes env, screen
     # F4 might update warnings and results on both sides
     screen <- render-all screen, env
+    {
+      break-if error?
+      status:address:array:character <- new [            ]
+      screen <- update-status screen, status, 245/grey
+    }
     screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     loop +next-event:label
   }
@@ -5013,7 +5018,7 @@ recipe run-sandboxes [
     break-unless *recipe-warnings
     status:address:array:character <- new [errors found]
     update-status screen, status, 1/red
-    reply
+    reply screen/same-as-ingredient:1, 1/errors-found
   }
   # check contents of right editor (sandbox)
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
@@ -5057,8 +5062,7 @@ recipe run-sandboxes [
     curr <- get *curr, next-sandbox:offset
     loop
   }
-  status:address:array:character <- new [            ]
-  screen <- update-status screen, status, 245/grey
+  reply screen/same-as-ingredient:1, 0/no-errors-found
 ]
 
 recipe update-status [
