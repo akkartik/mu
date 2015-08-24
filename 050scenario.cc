@@ -170,7 +170,7 @@ recipe scenario-foo [
 +warn: redefining recipe scenario-foo
 
 :(after "bool warn_on_redefine(const string& recipe_name)")
-if (recipe_name.find("scenario-") == 0) return true;
+  if (recipe_name.find("scenario-") == 0) return true;
 
 //:: The special instructions we want to support inside scenarios.
 //: In a compiler for the mu VM these will require more work.
