@@ -58,21 +58,21 @@ recipe main [
 
 :(scenario stash_literal_number)
 recipe main [
-  stash [foo: ], 4
+  stash [foo:], 4
 ]
 +app: foo: 4
 
 :(scenario stash_number)
 recipe main [
   1:number <- copy 34
-  stash [foo: ], 1:number
+  stash [foo:], 1:number
 ]
 +app: foo: 34
 
 :(code)
 string print_mu(const reagent& r, const vector<double>& data) {
   if (is_literal(r))
-    return r.name;
+    return r.name+' ';
   // End print Special-cases(reagent r, data)
   ostringstream out;
   for (long long i = 0; i < SIZE(data); ++i) {

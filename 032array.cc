@@ -92,7 +92,7 @@ recipe main [
   2:number <- copy 14
   3:number <- copy 15
   4:number <- copy 16
-  stash [foo: ], 1:array:number:3
+  stash [foo:], 1:array:number:3
 ]
 +app: foo: 3 14 15 16
 
