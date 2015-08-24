@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    local-scope\n    x:address:buffer <- new-buffer 3\n    x:address:buffer <- buffer-append x:address:buffer, 97  # 'a'\n    x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'\n    x:address:buffer <- buffer-append x:address:buffer, 8/backspace\n    s:address:array:character <- buffer-to-array x:address:buffer\n    1:array:character/raw <- copy *s:address:array:character\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    local-scope\n    x:address:buffer <- new-buffer 3\n    x <- buffer-append x, 97  # 'a'\n    x <- buffer-append x, 98  # 'b'\n    x <- buffer-append x, 8/backspace\n    s:address:array:character <- buffer-to-array x\n    1:array:character/raw <- copy *s\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    1 <- 1   # length\n    2 <- 97  # contents\n    3 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-buffer-append-handles-backspace
@@ -10,33 +10,33 @@ schedule: scenario-buffer-append-handles-backspace
  101 run: run [
     local-scope
     x:address:buffer <- new-buffer 3
-    x:address:buffer <- buffer-append x:address:buffer, 97  # 'a'
-    x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'
-    x:address:buffer <- buffer-append x:address:buffer, 8/backspace
-    s:address:array:character <- buffer-to-array x:address:buffer
-    1:array:character/raw <- copy *s:address:array:character
+    x <- buffer-append x, 97  # 'a'
+    x <- buffer-append x, 98  # 'b'
+    x <- buffer-append x, 8/backspace
+    s:address:array:character <- buffer-to-array x
+    1:array:character/raw <- copy *s
   ]
 parse: instruction: local-scope
 parse: instruction: new-buffer
 parse:   ingredient: {name: "3", properties: ["3": "literal"]}
 parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
 parse: instruction: buffer-append
-parse:   ingredient: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "x", properties: ["x": ]}
 parse:   ingredient: {name: "97", properties: ["97": "literal"]}
-parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   product: {name: "x", properties: ["x": ]}
 parse: instruction: buffer-append
-parse:   ingredient: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "x", properties: ["x": ]}
 parse:   ingredient: {name: "98", properties: ["98": "literal"]}
-parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   product: {name: "x", properties: ["x": ]}
 parse: instruction: buffer-append
-parse:   ingredient: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "x", properties: ["x": ]}
 parse:   ingredient: {name: "8", properties: ["8": "literal", "backspace": ]}
-parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   product: {name: "x", properties: ["x": ]}
 parse: instruction: buffer-to-array
-parse:   ingredient: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "x", properties: ["x": ]}
 parse:   product: {name: "s", properties: ["s": "address":"array":"character"]}
 parse: instruction: copy
-parse:   ingredient: {name: "s", properties: ["*s": "address":"array":"character", "lookup": ]}
+parse:   ingredient: {name: "s", properties: ["*s": , "lookup": ]}
 parse:   product: {name: "1", properties: ["1": "array":"character", "raw": ]}
 9999 new: location -> location
 name: assign x 1
@@ -92,7 +92,7 @@ after-brace: copy ...
 9999 mem: location 1006 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: x:address:buffer <- buffer-append x:address:buffer, 97
+ 101 run: x <- buffer-append x, 97
 9999 mem: location 1002 is 1011
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -180,7 +180,7 @@ after-brace: copy ...
 9999 mem: location 1019 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: x:address:buffer <- buffer-append x:address:buffer, 98
+ 101 run: x <- buffer-append x, 98
 9999 mem: location 1002 is 1011
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -267,7 +267,7 @@ after-brace: copy ...
 9999 mem: location 1019 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: x:address:buffer <- buffer-append x:address:buffer, 8/backspace
+ 101 run: x <- buffer-append x, 8/backspace
 9999 mem: location 1002 is 1011
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -304,7 +304,7 @@ after-brace: copy ...
 9999 mem: location 1019 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: s:address:array:character <- buffer-to-array x:address:buffer
+ 101 run: s:address:array:character <- buffer-to-array x
 9999 mem: location 1002 is 1011
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -377,7 +377,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1027
 9999 run: result 0 is 1027
 9999 mem: storing 1027 in location 1003
- 101 run: 1:array:character/raw <- copy *s:address:array:character
+ 101 run: 1:array:character/raw <- copy *s
 9999 mem: location 1003 is 1027
 9999 mem: location 1027 is 1
 9999 mem: location 1028 is 97
