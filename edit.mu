@@ -2426,9 +2426,7 @@ after +handle-special-key [
         break-unless curr
         currc:character <- get *curr, value:offset
         at-newline?:boolean <- equal currc, 10/newline
-        not-at-start?:boolean <- greater-than *cursor-column, left
-        line-done?:boolean <- and at-newline?, not-at-start?
-        break-if line-done?
+        break-if at-newline?
         #
         *before-cursor <- copy curr
         *cursor-column <- add *cursor-column, 1
