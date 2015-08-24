@@ -223,11 +223,11 @@ scenario buffer-append-handles-backspace [
   run [
     local-scope
     x:address:buffer <- new-buffer 3
-    x:address:buffer <- buffer-append x:address:buffer, 97  # 'a'
-    x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'
-    x:address:buffer <- buffer-append x:address:buffer, 8/backspace
-    s:address:array:character <- buffer-to-array x:address:buffer
-    1:array:character/raw <- copy *s:address:array:character
+    x <- buffer-append x, 97  # 'a'
+    x <- buffer-append x, 98  # 'b'
+    x <- buffer-append x, 8/backspace
+    s:address:array:character <- buffer-to-array x
+    1:array:character/raw <- copy *s
   ]
   memory-should-contain [
     1 <- 1   # length
