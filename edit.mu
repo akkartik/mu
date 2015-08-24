@@ -2254,7 +2254,6 @@ after +handle-special-key [
     {
       # if cursor not at top, move it
       break-if already-at-top?
-      *cursor-row <- subtract *cursor-row, 1
       # scan back two newlines, then ahead to right column or until end of line
       prev:address:duplex-list <- before-previous-line *before-cursor, editor
       no-motion?:boolean <- equal prev, *before-cursor
@@ -2263,6 +2262,7 @@ after +handle-special-key [
       prev:address:duplex-list <- before-previous-line tmp, editor
       no-motion?:boolean <- equal prev, *before-cursor
       reply-if no-motion?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+      *cursor-row <- subtract *cursor-row, 1
       *before-cursor <- copy prev
       target-column:number <- copy *cursor-column
       *cursor-column <- copy left
@@ -2410,12 +2410,12 @@ after +handle-special-key [
     {
       # if cursor not at top, move it
       break-if already-at-bottom?
-      *cursor-row <- add *cursor-row, 1
       # scan to start of next line, then to right column or until end of line
       max:number <- subtract right, left
       next-line:address:duplex-list <- before-start-of-next-line *before-cursor, max
       no-motion?:boolean <- equal next-line, *before-cursor
       reply-if no-motion?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+      *cursor-row <- add *cursor-row, 1
       *before-cursor <- copy next-line
       target-column:number <- copy *cursor-column
       *cursor-column <- copy left
@@ -2474,6 +2474,42 @@ de]
     .          .
     .abc       .
     .de0       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
+scenario editor-stops-at-end-on-down-arrow [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+de]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
+  assume-console [
+    left-click 2, 0
+    press 65516  # down arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 2
+    4 <- 0
+  ]
+  check-trace-count-for-label 0, [print-character]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .0de       .
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
