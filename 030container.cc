@@ -105,7 +105,7 @@ recipe main [
   1:number <- copy 34  # first
   2:number <- copy 35
   3:number <- copy 36
-  stash [foo: ], 1:point-number/raw
+  stash [foo:], 1:point-number/raw
 ]
 +app: foo: 34 35 36
 

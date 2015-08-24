@@ -350,7 +350,7 @@ long long int new_mu_string(const string& contents) {
 :(scenario stash_string)
 recipe main [
   x:address:array:character <- new [abc]
-  stash [foo: ], x:address:array:character
+  stash [foo:], x:address:array:character
 ]
 +app: foo: abc
 
