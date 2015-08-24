@@ -2273,9 +2273,7 @@ after +handle-special-key [
         break-unless curr
         currc:character <- get *curr, value:offset
         at-newline?:boolean <- equal currc, 10/newline
-        not-at-start?:boolean <- greater-than *cursor-column, left
-        line-done?:boolean <- and at-newline?, not-at-start?
-        break-if line-done?
+        break-if at-newline?
         #
         *before-cursor <- copy curr
         *cursor-column <- add *cursor-column, 1
@@ -2322,6 +2320,42 @@ def]
   screen-should-contain [
     .          .
     .ab0       .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
+scenario editor-adjusts-column-at-empty-line [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [
+def]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
+  assume-console [
+    left-click 2, 3
+    press 65517  # up arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+  check-trace-count-for-label 0, [print-character]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .0         .
     .def       .
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
