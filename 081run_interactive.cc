@@ -104,7 +104,7 @@ load(string(
   "local-scope\n" +
   "screen:address/shared <- new-fake-screen 30, 5\n" +
   "r:number/routine_id <- start-running interactive:recipe, screen:address\n" +
-  "limit-time r, 750/instructions\n" +
+  "limit-time r, 10000/instructions\n" +
   "wait-for-routine r\n" +
   "sandbox-state:number <- routine-state r/routine_id\n" +
   "completed?:boolean <- equal sandbox-state, 1/completed\n" +
