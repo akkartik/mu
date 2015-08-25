@@ -75,6 +75,13 @@ void transform_braces(const recipe_ordinal r) {
       trace("after-brace") << inst.name << " ..." << end();
       continue;
     }
+    // check for errors
+    if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
+      if (inst.ingredients.empty()) {
+        raise << inst.name << " expects 1 or 2 ingredients, but got none\n" << end();
+        continue;
+      }
+    }
     // update instruction operation
     if (inst.name.find("-if") != string::npos)
       inst.operation = Recipe_ordinal["jump-if"];
@@ -363,3 +370,12 @@ recipe main [
   break
 ]
 +warn: break needs a '{' before
+
+:(scenario break_conditional_without_ingredient_warns)
+% Hide_warnings = true;
+recipe main [
+  {
+    break-if
+  }
+]
++warn: break-if expects 1 or 2 ingredients, but got none
