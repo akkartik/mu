@@ -117,6 +117,15 @@ load(string(
 transform_all();
 recently_added_recipes.clear();
 
+:(scenario run_interactive_comments)
+recipe main [
+  1:address:array:character <- new [# ab
+add 2, 2]
+  2:address:array:character <- run-interactive 1:address:array:character
+  3:array:character <- copy *2:address:array:character
+]
++mem: storing 52 in location 4
+
 :(before "End Primitive Recipe Declarations")
 _START_TRACKING_PRODUCTS,
 :(before "End Primitive Recipe Numbers")
@@ -262,7 +271,6 @@ string strip_comments(string in) {
     else {
       while (i < SIZE(in) && in.at(i) != '\n')
         ++i;
-      if (i < SIZE(in) && in.at(i) == '\n') ++i;
     }
   }
   return result.str();
