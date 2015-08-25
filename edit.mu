@@ -143,7 +143,7 @@ recipe render [
   local-scope
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
-  reply-unless editor, 1/top, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  reply-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
   left:number <- get *editor, left:offset
   screen-height:number <- screen-height screen
   right:number <- get *editor, right:offset
