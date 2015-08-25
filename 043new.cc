@@ -118,7 +118,11 @@ case NEW: {
 
 :(code)
 void ensure_space(long long int size) {
-  assert(size <= Initial_memory_per_routine);
+  if (size > Initial_memory_per_routine) {
+    tb_shutdown();
+    cerr << "can't allocate " << size << " locations, that's too much.\n";
+    exit(0);
+  }
   if (Current_routine->alloc + size > Current_routine->alloc_max) {
     // waste the remaining space and create a new chunk
     Current_routine->alloc = Memory_allocated_until;

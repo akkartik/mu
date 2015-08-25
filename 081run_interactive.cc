@@ -303,9 +303,20 @@ long long int trace_contents(const string& layer) {
     out << p->contents;
     if (*--p->contents.end() != '\n') out << '\n';
   }
-  assert(!out.str().empty());
-//?   cerr << layer << ":\n" << out.str() << "\n--\n"; //? 1
-  return new_mu_string(out.str());
+  string result = out.str();
+  assert(!result.empty());
+//?   cerr << layer << ":\n" << result << "\n--\n"; //? 1
+  truncate(result);
+  return new_mu_string(result);
+}
+
+void truncate(string& x) {
+  if (SIZE(x) > 512) {
+    x.erase(512);
+    *x.rbegin() = '\n';
+    *++x.rbegin() = '.';
+    *++++x.rbegin() = '.';
+  }
 }
 
 //: simpler version of run-interactive: doesn't do any running, just loads
