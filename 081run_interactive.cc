@@ -126,6 +126,15 @@ add 2, 2]
 ]
 +mem: storing 52 in location 4
 
+:(scenario run_interactive_just_comments_without_trace)
+recipe main [
+  $close-trace
+  1:address:array:character <- new [# ab
+]
+  2:address:array:character <- run-interactive 1:address:array:character
+  3:array:character <- copy *2:address:array:character
+]
+
 :(before "End Primitive Recipe Declarations")
 _START_TRACKING_PRODUCTS,
 :(before "End Primitive Recipe Numbers")
@@ -181,7 +190,7 @@ case _CLEANUP_RUN_INTERACTIVE: {
 :(code)
 void cleanup_run_interactive() {
   Hide_warnings = false;
-  if (Trace_stream->is_narrowly_collecting("warn")) {  // hack
+  if (Trace_stream && Trace_stream->is_narrowly_collecting("warn")) {  // hack
     delete Trace_stream;
     Trace_stream = NULL;
   }

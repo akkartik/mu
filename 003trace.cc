@@ -189,6 +189,7 @@ string Trace_file;
 struct lease_tracer {
   lease_tracer() { Trace_stream = new trace_stream; }
   ~lease_tracer() {
+    if (!Trace_stream) return;  // in case tests close Trace_stream
 //?     cerr << "write to file? " << Trace_file << "$\n"; //? 2
     if (!Trace_file.empty()) {
 //?       cerr << "writing\n"; //? 2
