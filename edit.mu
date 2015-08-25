@@ -4708,7 +4708,7 @@ scenario editor-in-focus-keeps-cursor [
   assume-console []
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    print-character screen:address, 9251/␣
+    print-character screen:address, 9251/␣/cursor
   ]
   # is cursor at the right place?
   screen-should-contain [
@@ -4723,7 +4723,7 @@ scenario editor-in-focus-keeps-cursor [
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    print-character screen:address, 9251/␣
+    print-character screen:address, 9251/␣/cursor
   ]
   # cursor should still be right
   screen-should-contain [
@@ -4759,7 +4759,7 @@ def]
   replace-in-console 171/«, 4:event/backspace
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    print-character screen:address, 9251/␣
+    print-character screen:address, 9251/␣/cursor
   ]
   # cursor moves to end of old line
   screen-should-contain [
@@ -5974,6 +5974,20 @@ recipe foo [
     .                                        .
     .                                        .
   ]
+  # cursor should remain unmoved
+  run [
+    print-character screen:address, 9251/␣/cursor
+  ]
+  screen-should-contain [
+    .                     run (F4)           .
+    .␣                   ┊                   .
+    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
+    .  add 2, 2          ┊                  x.
+    .]                   ┊foo                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
+    .                    ┊━━━━━━━━━━━━━━━━━━━.
+    .                    ┊                   .
+  ]
   # now change the second arg of the 'add'
   # then rerun
   assume-console [
@@ -6021,6 +6035,7 @@ after +global-touch [
     save-sandboxes env
     hide-screen screen
     screen <- render-sandbox-side screen, env, 1/clear
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     # no change in cursor
     show-screen screen
     loop +next-event:label
@@ -6121,11 +6136,12 @@ recipe foo [
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
+    print-character screen:address, 9251/␣/cursor
   ]
-  # trace now printed
+  # trace now printed and cursor shouldn't have budged
   screen-should-contain [
     .                     run (F4)           .
-    .                    ┊                   .
+    .␣                   ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
     .  stash [abc]       ┊                  x.
     .]                   ┊foo                .
@@ -6149,11 +6165,12 @@ recipe foo [
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
+    print-character screen:address, 9251/␣/cursor
   ]
   # trace hidden again
   screen-should-contain [
     .                     run (F4)           .
-    .                    ┊                   .
+    .␣                   ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
     .  stash [abc]       ┊                  x.
     .]                   ┊foo                .
@@ -6231,6 +6248,7 @@ after +global-touch [
     *x <- not *x
     hide-screen screen
     screen <- render-sandbox-side screen, env, 1/clear
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     # no change in cursor
     show-screen screen
     loop +next-event:label
