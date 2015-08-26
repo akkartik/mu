@@ -1600,7 +1600,8 @@ recipe delete-before-cursor [
     loop
   }
   # we're guaranteed not to be at the right margin
-  screen <- print-character screen, 32/space
+  $log [printing space for backspace]
+#?   screen <- print-character screen, 32/space
   reply editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render
 ]
 
@@ -4774,8 +4775,10 @@ recipe render-all [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
+  $log [--- render all]
   hide-screen screen
   # top menu
+  $log [-- top menu]
   width:number <- screen-width screen
   draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
   button-start:number <- subtract width, 20
@@ -4785,6 +4788,7 @@ recipe render-all [
   run-button:address:array:character <- new [ run (F4) ]
   print-string screen, run-button, 255/white, 161/reddish
   # error message
+  $log [-- status]
   recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
   {
     break-unless recipe-warnings
@@ -4792,6 +4796,7 @@ recipe render-all [
     update-status screen, status, 1/red
   }
   # dotted line down the middle
+  $log [-- vertical line]
   divider:number, _ <- divide-with-remainder width, 2
   height:number <- screen-height screen
   draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
@@ -4837,6 +4842,7 @@ recipe render-recipes [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
+  $log [-- render recipes]
   recipes:address:editor-data <- get *env, recipes:offset
   # render recipes
   left:number <- get *recipes, left:offset
@@ -4891,6 +4897,9 @@ after +global-type [
   {
     ctrl-l?:boolean <- equal *c, 12/ctrl-l
     break-unless ctrl-l?
+    $log [=== ctrl-l pressed]
+#?     screen <- clear-screen screen
+    clear-display
     screen <- render-all screen, env:address:programming-environment-data
     loop +next-event:label
   }
@@ -5245,6 +5254,7 @@ recipe render-sandbox-side [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
+  $log [-- render sandbox side]
 #?   trace 10, [app], [render sandbox side] #? 1
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset

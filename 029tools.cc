@@ -260,3 +260,23 @@ case _DUMP_MEMORY: {
   dump_memory();
   break;
 }
+
+:(before "End Primitive Recipe Declarations")
+_LOG,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$log"] = _LOG;
+:(before "End Primitive Recipe Implementations")
+case _LOG: {
+//?   ofstream fout("log", ofstream::app);
+//?   for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
+//?     fout << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
+//?   }
+//?   fout << '\n';
+//?   fout.close();
+  ostringstream out;
+  for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
+    out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
+  }
+  trace(1, "app") << out.str() << end();
+  break;
+}
