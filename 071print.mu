@@ -102,7 +102,6 @@ recipe print-character [
     bg-color <- copy 0/black
   }
   trace 90, [print-character], c
-  $log [printing character] c
   {
     # if x exists
     # (handle special cases exactly like in the real screen)
@@ -393,7 +392,6 @@ recipe move-cursor [
     reply sc/same-as-ingredient:0
   }
   # otherwise, real screen
-  $log [moving cursor to] new-row new-column
   move-cursor-on-display new-row, new-column
   reply sc/same-as-ingredient:0
 ]
