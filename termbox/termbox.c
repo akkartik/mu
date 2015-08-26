@@ -181,10 +181,6 @@ void tb_present(void)
       front = &CELL(&front_buffer, x, y);
       w = wcwidth(back->ch);
       if (w < 1) w = 1;
-      if (memcmp(back, front, sizeof(struct tb_cell)) == 0) {
-        x += w;
-        continue;
-      }
       memcpy(front, back, sizeof(struct tb_cell));
       send_attr(back->fg, back->bg);
       if (w > 1 && x >= front_buffer.width - (w - 1)) {

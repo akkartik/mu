@@ -50,6 +50,7 @@ Recipe_ordinal["clear-display"] = CLEAR_DISPLAY;
 case CLEAR_DISPLAY: {
   tb_clear();
   Display_row = Display_column = 0;
+//?   tb_present();
   break;
 }
 
@@ -103,6 +104,10 @@ case PRINT_CHARACTER_TO_DISPLAY: {
     bg_color = ingredients.at(2).at(0);
     if (bg_color == 0) bg_color = TB_BLACK;
   }
+//?   ofstream fout("log", ofstream::app);
+//?   fout << "displaying at " << Display_row << ", " << Display_column << ": " << (int)c << " in color " << color << ", " << bg_color << '\n';
+//?   fout.close();
+  trace(1, "app") << "displaying at " << Display_row << ", " << Display_column << ": " << (int)c << " in color " << color << ", " << bg_color << end();
   tb_change_cell(Display_column, Display_row, c, color, bg_color);
   if (c == '\n' || c == '\r') {
     if (Display_row < height-1) {
@@ -114,6 +119,10 @@ case PRINT_CHARACTER_TO_DISPLAY: {
     break;
   }
   if (c == '\b') {
+//?     ofstream fout("log", ofstream::app);
+//?     fout << "handling backspace\n";
+//?     fout.close();
+    trace(1, "app") << "handling backspace" << end();
     if (Display_column > 0) {
       tb_change_cell(Display_column-1, Display_row, ' ', color, bg_color);
       --Display_column;
