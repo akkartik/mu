@@ -411,8 +411,11 @@ recipe insert-duplex-range [
   next:address:duplex-list <- next-duplex in
   dest:address:address:duplex-list <- get-address *end, next:offset
   *dest <- copy next
-  dest <- get-address *next, prev:offset
-  *dest <- copy end
+  {
+    break-unless next
+    dest <- get-address *next, prev:offset
+    *dest <- copy end
+  }
   dest <- get-address *in, next:offset
   *dest <- copy start
   dest <- get-address *start, prev:offset
