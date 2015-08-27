@@ -6782,6 +6782,56 @@ scenario editor-redo-typing [
   ]
 ]
 
+scenario editor-redo-typing-empty [
+  # create an editor, type something, undo
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  assume-console [
+    type [012]
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  screen-should-contain [
+    .          .
+    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # redo
+  assume-console [
+    type [y]  # ctrl-y
+  ]
+  4:event/ctrl-y <- merge 0/text, 25/ctrl-y, 0/dummy, 0/dummy
+  replace-in-console 121/y, 4:event/ctrl-y
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # all characters must be back
+  screen-should-contain [
+    .          .
+    .012       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [3]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .0123      .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
 after +handle-redo [
   {
     typing:address:insert-operation <- maybe-convert *op, typing:variant
