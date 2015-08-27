@@ -371,15 +371,72 @@ scenario removing-from-singleton-list [
 # l:address:duplex-list <- remove-duplex-between start:address:duplex-list, end:address:duplex-list
 # Remove values between 'start' and 'end' (both exclusive). Returns some valid
 # pointer into the rest of the list.
+# Also clear pointers back out from start/end for hygiene.
 recipe remove-duplex-between [
   local-scope
   start:address:duplex-list <- next-ingredient
   end:address:duplex-list <- next-ingredient
   reply-unless start, start
+  # start->next->prev = 0
+  # start->next = end
   next:address:address:duplex-list <- get-address *start, next:offset
+  prev:address:address:duplex-list <- get-address **next, prev:offset
+  *prev <- copy 0
   *next <- copy end
   reply-unless end, start
-  prev:address:address:duplex-list <- get-address *end, prev:offset
+  # end->prev->next = 0
+  # end->prev = start
+  prev <- get-address *end, prev:offset
+  next <- get-address **prev, next:offset
+  *next <- copy 0
   *prev <- copy start
   reply start
+]
+
+# l:address:duplex-list <- insert-duplex-range in:address:duplex-list, new:address:duplex-list
+# Inserts list beginning at 'new' after 'in'. Returns some pointer into the list.
+recipe insert-duplex-range [
+  local-scope
+  in:address:duplex-list <- next-ingredient
+  start:address:duplex-list <- next-ingredient
+  reply-unless in, in
+  reply-unless start, in
+  end:address:duplex-list <- copy start
+  {
+    next:address:duplex-list <- next-duplex end
+    break-unless next
+    end <- copy next
+    loop
+  }
+  next:address:duplex-list <- next-duplex in
+  dest:address:address:duplex-list <- get-address *end, next:offset
+  *dest <- copy next
+  dest <- get-address *next, prev:offset
+  *dest <- copy end
+  dest <- get-address *in, next:offset
+  *dest <- copy start
+  dest <- get-address *start, prev:offset
+  *dest <- copy in
+  reply in
+]
+
+# helper for debugging
+recipe dump-duplex-from [
+  local-scope
+  x:address:duplex-list <- next-ingredient
+  $print x, [: ]
+  {
+    break-unless x
+    c:character <- get *x, value:offset
+    $print c, [ ]
+    x <- next-duplex x
+    {
+      is-newline?:boolean <- equal c, 10/newline
+      break-unless is-newline?
+      $print 10/newline
+      $print x, [: ]
+    }
+    loop
+  }
+  $print 10/newline, [---], 10/newline
 ]
