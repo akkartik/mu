@@ -367,3 +367,19 @@ scenario removing-from-singleton-list [
     4 <- 0
   ]
 ]
+
+# l:address:duplex-list <- remove-duplex-between start:address:duplex-list, end:address:duplex-list
+# Remove values between 'start' and 'end' (both exclusive). Returns some valid
+# pointer into the rest of the list.
+recipe remove-duplex-between [
+  local-scope
+  start:address:duplex-list <- next-ingredient
+  end:address:duplex-list <- next-ingredient
+  reply-unless start, start
+  next:address:address:duplex-list <- get-address *start, next:offset
+  *next <- copy end
+  reply-unless end, start
+  prev:address:address:duplex-list <- get-address *end, prev:offset
+  *prev <- copy start
+  reply start
+]

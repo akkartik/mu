@@ -639,7 +639,9 @@ recipe handle-keyboard-event [
     regular-character? <- or regular-character?, newline?
     reply-unless regular-character?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     # otherwise type it in
+    +insert-character-begin
     editor, screen, go-render?:boolean <- insert-at-cursor editor, *c, screen
+    +insert-character-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
   # special key to modify the text or move the cursor
@@ -6507,10 +6509,23 @@ recipe foo [
 
 ## undo/redo
 
+# for every undoable event, create a type of *operation* that contains all the
+# information needed to reverse it
 exclusive-container operation [
-  typing:character
+  typing:insert-operation
   move:move-operation
   delete:delete-operation
+]
+
+container insert-operation [
+  before-row:number
+  before-column:number
+  before-top-of-screen:address:duplex-list:character
+  after-row:number
+  after-column:number
+  after-top-of-screen:address:duplex-list:character
+  insert-from:address:duplex-list:character
+  insert-until:address:duplex-list:character
 ]
 
 container move-operation [
@@ -6531,6 +6546,82 @@ container delete-operation [
   after-top-of-screen:address:duplex-list:character
   deleted:address:duplex-list:character
   deleted-from:address:duplex-list:character
+]
+
+# every editor accumulates a list of operations to undo/redo
+container editor-data [
+  undo:address:list:address:operation
+  redo:address:list:address:operation
+]
+
+# ctrl-z - undo operation
+after +handle-special-character [
+  {
+    ctrl-z?:boolean <- equal *c, 26/ctrl-z
+    break-unless ctrl-z?
+    undo:address:address:list <- get-address *editor, undo:offset
+    break-unless *undo
+    op:address:operation <- first *undo
+    *undo <- rest *undo
+    +handle-undo
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+  }
+]
+
+# undo typing
+
+scenario editor-undo-type [
+  # create an editor and type a '0'
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  assume-console [
+    type [0]
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # now undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
+# save operation to undo
+after +insert-character-begin [
+  top-before:address:duplex-list <- get *editor, top-of-screen:offset
+]
+before +insert-character-end [
+  top-after:address:duplex-list <- get *editor, top-of-screen:offset
+  # it so happens that before-cursor is at the character we just inserted
+  insert-from:address:duplex-list <- copy *before-cursor
+  insert-to:address:duplex-list <- next-duplex insert-from
+  op:address:operation <- new operation:type
+  *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to
+  undo:address:address:list <- get-address *editor, undo:offset
+  *undo <- push op, *undo
+]
+
+after +handle-undo [
+  {
+    typing:address:insert-operation <- maybe-convert *op, typing:variant
+    break-unless typing
+    start:address:duplex-list <- get *typing, insert-from:offset
+    end:address:duplex-list <- get *typing, insert-until:offset
+    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
+    *before-cursor <- prev-duplex start
+    remove-duplex-between *before-cursor, end
+  }
 ]
 
 # todo:
