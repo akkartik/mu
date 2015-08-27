@@ -6571,7 +6571,7 @@ after +handle-special-character [
 # undo typing
 
 scenario editor-undo-type [
-  # create an editor and type a '0'
+  # create an editor and type a character
   assume-screen 10/width, 5/height
   1:address:array:character <- new []
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
@@ -6589,6 +6589,7 @@ scenario editor-undo-type [
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
+  # character should be gone
   screen-should-contain [
     .          .
     .          .
@@ -6603,13 +6604,24 @@ after +insert-character-begin [
 ]
 before +insert-character-end [
   top-after:address:duplex-list <- get *editor, top-of-screen:offset
+  undo:address:address:list <- get-address *editor, undo:offset
+  {
+    # if previous operation was an insert, merge with it
+    break-unless *undo
+    op:address:operation <- first *undo
+    typing:address:insert-operation <- maybe-convert *op, typing:variant
+    break-unless typing
+    insert-until:address:address:duplex-list <- get-address *typing, insert-until:offset
+    *insert-until <- next-duplex *before-cursor
+    jump +done-inserting-character:label
+  }
   # it so happens that before-cursor is at the character we just inserted
   insert-from:address:duplex-list <- copy *before-cursor
   insert-to:address:duplex-list <- next-duplex insert-from
   op:address:operation <- new operation:type
   *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to
-  undo:address:address:list <- get-address *editor, undo:offset
   *undo <- push op, *undo
+  +done-inserting-character
 ]
 
 after +handle-undo [
@@ -6622,6 +6634,34 @@ after +handle-undo [
     *before-cursor <- prev-duplex start
     remove-duplex-between *before-cursor, end
   }
+]
+
+scenario editor-undo-type-multiple [
+  # create an editor and type multiple characters
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  assume-console [
+    type [012]
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # now undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # all characters must be gone
+  screen-should-contain [
+    .          .
+    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
 ]
 
 # todo:
