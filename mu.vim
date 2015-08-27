@@ -61,5 +61,6 @@ syntax keyword muControl reply reply-if reply-unless jump jump-if jump-unless lo
 " common keywords
 syntax keyword muRecipe recipe before after | highlight muRecipe ctermfg=208
 syntax keyword muScenario scenario | highlight muScenario ctermfg=34
+syntax keyword muData container exclusive-container | highlight muData ctermfg=226
 
 let &cpo = s:save_cpo
