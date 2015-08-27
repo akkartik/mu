@@ -2415,27 +2415,6 @@ ghi]
   ]
 ]
 
-# helper for debugging
-recipe dump-editor-from-cursor [
-  local-scope
-  x:address:duplex-list <- next-ingredient
-  $print x, [: ]
-  {
-    break-unless x
-    c:character <- get *x, value:offset
-    $print c, [ ]
-    x <- next-duplex x
-    {
-      is-newline?:boolean <- equal c, 10/newline
-      break-unless is-newline?
-      $print 10/newline
-      $print x, [: ]
-    }
-    loop
-  }
-  $print 10/newline, [---], 10/newline
-]
-
 # down arrow
 
 scenario editor-moves-to-next-line-with-down-arrow [
@@ -6563,14 +6542,32 @@ after +handle-special-character [
     break-unless *undo
     op:address:operation <- first *undo
     *undo <- rest *undo
+    redo:address:address:list <- get-address *editor, redo:offset
+    *redo <- push op, *redo
     +handle-undo
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+  }
+]
+
+# ctrl-y - redo operation
+after +handle-special-character [
+  {
+    ctrl-y?:boolean <- equal *c, 25/ctrl-y
+    break-unless ctrl-y?
+    redo:address:address:list <- get-address *editor, redo:offset
+    break-unless *redo
+    op:address:operation <- first *redo
+    *redo <- rest *redo
+    undo:address:address:list <- get-address *editor, undo:offset
+    *undo <- push op, *undo
+    +handle-redo
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
 # undo typing
 
-scenario editor-undo-type [
+scenario editor-undo-typing [
   # create an editor and type a character
   assume-screen 10/width, 5/height
   1:address:array:character <- new []
@@ -6596,6 +6593,19 @@ scenario editor-undo-type [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .1         .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
 ]
 
 # save operation to undo
@@ -6613,6 +6623,12 @@ before +insert-character-end [
     break-unless typing
     insert-until:address:address:duplex-list <- get-address *typing, insert-until:offset
     *insert-until <- next-duplex *before-cursor
+    after-row:address:number <- get-address *typing, after-row:offset
+    *after-row <- copy *cursor-row
+    after-column:address:number <- get-address *typing, after-column:offset
+    *after-column <- copy *cursor-column
+    after-top:address:number <- get-address *typing, after-top-of-screen:offset
+    *after-top <- get *editor, top-of-screen:offset
     jump +done-inserting-character:label
   }
   # it so happens that before-cursor is at the character we just inserted
@@ -6633,10 +6649,14 @@ after +handle-undo [
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     *before-cursor <- prev-duplex start
     remove-duplex-between *before-cursor, end
+    *cursor-row <- get *typing, before-row:offset
+    *cursor-column <- get *typing, before-column:offset
+    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    *top <- get *typing, before-top-of-screen:offset
   }
 ]
 
-scenario editor-undo-type-multiple [
+scenario editor-undo-typing-multiple [
   # create an editor and type multiple characters
   assume-screen 10/width, 5/height
   1:address:array:character <- new []
@@ -6662,6 +6682,118 @@ scenario editor-undo-type-multiple [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+]
+
+scenario editor-undo-typing-multiple-2 [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [a]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # type some characters
+  assume-console [
+    type [012]
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  screen-should-contain [
+    .          .
+    .012a      .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # now undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # back to original text
+  screen-should-contain [
+    .          .
+    .a         .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [3]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .3a        .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
+scenario editor-redo-typing [
+  # create an editor, type something, undo
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [a]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  assume-console [
+    type [012]
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  screen-should-contain [
+    .          .
+    .a         .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # redo
+  assume-console [
+    type [y]  # ctrl-y
+  ]
+  4:event/ctrl-y <- merge 0/text, 25/ctrl-y, 0/dummy, 0/dummy
+  replace-in-console 121/y, 4:event/ctrl-y
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # all characters must be back
+  screen-should-contain [
+    .          .
+    .012a      .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [3]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .0123a     .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
+after +handle-redo [
+  {
+    typing:address:insert-operation <- maybe-convert *op, typing:variant
+    break-unless typing
+    insert-from:address:duplex-list <- get *typing, insert-from:offset
+    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
+    insert-duplex-range *before-cursor, insert-from
+    *cursor-row <- get *typing, after-row:offset
+    *cursor-column <- get *typing, after-column:offset
+    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    *top <- get *typing, after-top-of-screen:offset
+  }
 ]
 
 # todo:
