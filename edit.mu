@@ -33,11 +33,11 @@ scenario editor-initially-prints-string-to-screen [
 
 container editor-data [
   # editable text: doubly linked list of characters (head contains a special sentinel)
-  data:address:duplex-list
-  top-of-screen:address:duplex-list
-  bottom-of-screen:address:duplex-list
+  data:address:duplex-list:character
+  top-of-screen:address:duplex-list:character
+  bottom-of-screen:address:duplex-list:character
   # location before cursor inside data
-  before-cursor:address:duplex-list
+  before-cursor:address:duplex-list:character
 
   # raw bounds of display area on screen
   # always displays from row 1 (leaving row 0 for a menu) and at most until bottom of screen
@@ -6504,6 +6504,46 @@ recipe foo [
     .                                                  ┊                                                 .
   ]
 ]
+
+## undo/redo
+
+exclusive-container operation [
+  typing:character
+  move:move-operation
+  delete:delete-operation
+]
+
+container move-operation [
+  before-row:number
+  before-column:number
+  before-top-of-screen:address:duplex-list:character
+  after-row:number
+  after-column:number
+  after-top-of-screen:address:duplex-list:character
+]
+
+container delete-operation [
+  before-row:number
+  before-column:number
+  before-top-of-screen:address:duplex-list:character
+  after-row:number
+  after-column:number
+  after-top-of-screen:address:duplex-list:character
+  deleted:address:duplex-list:character
+  deleted-from:address:duplex-list:character
+]
+
+# todo:
+# operations for recipe side and each sandbox-data
+# undo delete sandbox as a separate primitive on the status bar
+# types of operations:
+#   typing
+#   cursor movement and scrolling
+#   delete (backspace, delete, ctrl-k, ctrl-u)
+# collapse runs
+#   of the same event (arrow keys, etc.)
+#   of typing that's not newline or backspace or tab
+# render entire screen blindly on undo/redo operations for now
 
 ## helpers for drawing editor borders
 
