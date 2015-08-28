@@ -6730,6 +6730,8 @@ scenario editor-undo-typing-multiple-2 [
   ]
 ]
 
+# redo typing
+
 scenario editor-redo-typing [
   # create an editor, type something, undo
   assume-screen 10/width, 5/height
@@ -6849,12 +6851,13 @@ after +handle-redo [
 # undo delete sandbox as a separate primitive on the status bar
 # types of operations:
 #   typing
-#   cursor movement and scrolling
+#   cursor movement and scrolling (click, arrow keys, ctrl-a, ctrl-e, page up/down)
 #   delete (backspace, delete, ctrl-k, ctrl-u)
 # collapse runs
 #   of the same event (arrow keys, etc.)
 #   of typing that's not newline or backspace or tab
 # render entire screen blindly on undo/redo operations for now
+# support resize (will invalidate row/column)
 
 ## helpers for drawing editor borders
 
