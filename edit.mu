@@ -592,7 +592,9 @@ recipe editor-event-loop [
     t:address:touch-event <- maybe-convert e, touch:variant
     {
       break-unless t
+      +move-cursor-start
       move-cursor-in-editor screen, editor, *t
+      +move-cursor-end
       loop +next-event:label
     }
     # keyboard events
@@ -6846,18 +6848,89 @@ after +handle-redo [
   }
 ]
 
+# undo cursor movement and scroll
+
+scenario editor-undo-touch [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  assume-console [
+    left-click 3, 1
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # now undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # click undone
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .1abc      .
+    .def       .
+    .ghi       .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+after +move-cursor-start [
+  before-row:number <- get *editor, cursor-row:offset
+  before-column:number <- get *editor, cursor-column:offset
+]
+before +move-cursor-end [
+  top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
+  op:address:operation <- new operation:type
+  cursor-row:number <- get *editor, cursor-row:offset
+  cursor-column:number <- get *editor, cursor-column:offset
+  *op <- merge 1/move-operation, before-row, before-column, top-of-screen, cursor-row, cursor-column, top-of-screen, 0/empty, 0/empty
+  undo:address:address:list <- get-address *editor, undo:offset
+  *undo <- push op, *undo
+]
+
+after +handle-undo [
+  {
+    move:address:move-operation <- maybe-convert *op, move:variant
+    break-unless move
+    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
+    *cursor-row <- get *move, before-row:offset
+    *cursor-column <- get *move, before-column:offset
+    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    *top <- get *move, before-top-of-screen:offset
+  }
+]
+
 # todo:
 # operations for recipe side and each sandbox-data
 # undo delete sandbox as a separate primitive on the status bar
 # types of operations:
 #   typing
-#   cursor movement and scrolling (click, arrow keys, ctrl-a, ctrl-e, page up/down)
+#   cursor movement and scrolling (click, arrow keys, ctrl-a, ctrl-e, page up/down, resize)
 #   delete (backspace, delete, ctrl-k, ctrl-u)
 # collapse runs
 #   of the same event (arrow keys, etc.)
 #   of typing that's not newline or backspace or tab
 # render entire screen blindly on undo/redo operations for now
-# support resize (will invalidate row/column)
 
 ## helpers for drawing editor borders
 
