@@ -1117,7 +1117,7 @@ d]
   check-trace-count-for-label 1, [print-character]
 ]
 
-scenario editor-inserts-characters-at-cursor-5 [
+scenario editor-inserts-characters-at-cursor-6 [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 d]

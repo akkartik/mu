@@ -60,6 +60,7 @@ struct scenario {
 
 :(before "End Globals")
 vector<scenario> Scenarios;
+set<string> Scenario_names;
 
 //:: Parse the 'scenario' form.
 //: Simply store the text of the scenario.
@@ -75,6 +76,9 @@ scenario parse_scenario(istream& in) {
   scenario result;
   result.name = next_word(in);
 //?   cerr << "scenario: " << result.name << '\n'; //? 2
+  if (Scenario_names.find(result.name) != Scenario_names.end())
+    raise << "duplicate scenario name: " << result.name << '\n' << end();
+  Scenario_names.insert(result.name);
   skip_whitespace_and_comments(in);
   assert(in.peek() == '[');
   // scenarios are take special 'code' strings so we need to ignore brackets
@@ -622,6 +626,7 @@ recipe main [
 :(code)
 // just for the scenarios running scenarios in C++ layers
 void run_mu_scenario(const string& form) {
+  Scenario_names.clear();
 //?   cerr << form << '\n'; //? 1
   istringstream in(form);
   in >> std::noskipws;
