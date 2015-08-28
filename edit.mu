@@ -4561,31 +4561,29 @@ recipe resize [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-  # hack: clear screen to update screen dimensions
-  clear-screen screen
+  clear-screen screen  # update screen dimensions
   width:number <- screen-width screen
-  height:number <- screen-height screen
-  # top menu
-  draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
-  button-start:number <- subtract width, 20
-  button-on-screen?:boolean <- greater-or-equal button-start, 0
-  assert button-on-screen?, [screen too narrow for menu]
-  screen <- move-cursor screen, 0/row, button-start
-  run-button:address:array:character <- new [ run (F4) ]
-  print-string screen, run-button, 255/white, 161/reddish
-  # dotted line down the middle
   divider:number, _ <- divide-with-remainder width, 2
-  draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
   # update recipe editor
   recipes:address:editor-data <- get *env, recipes:offset
   right:address:number <- get-address *recipes, right:offset
   *right <- subtract divider, 1
+  # reset cursor (later we'll try to preserve its position)
+  cursor-row:address:number <- get-address *recipes, cursor-row:offset
+  *cursor-row <- copy 1
+  cursor-column:address:number <- get-address *recipes, cursor-column:offset
+  *cursor-column <- copy 0
   # update sandbox editor
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:address:number <- get-address *current-sandbox, left:offset
   right:address:number <- get-address *current-sandbox, right:offset
   *left <- add divider, 1
   *right <- subtract width, 1
+  # reset cursor (later we'll try to preserve its position)
+  cursor-row:address:number <- get-address *current-sandbox, cursor-row:offset
+  *cursor-row <- copy 1
+  cursor-column:address:number <- get-address *current-sandbox, cursor-column:offset
+  *cursor-column <- copy *left
   reply env/same-as-ingredient:1
 ]
 
