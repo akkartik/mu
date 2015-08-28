@@ -6920,6 +6920,67 @@ after +handle-undo [
   }
 ]
 
+# redo cursor movement and scroll
+
+scenario editor-redo-touch [
+  # create an editor with some text, click on a character, undo
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  assume-console [
+    left-click 3, 1
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # redo
+  assume-console [
+    type [y]  # ctrl-y
+  ]
+  4:event/ctrl-y <- merge 0/text, 25/ctrl-y, 0/dummy, 0/dummy
+  replace-in-console 121/y, 4:event/ctrl-y
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor moves to left-click
+  memory-should-contain [
+    3 <- 3
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .def       .
+    .g1hi      .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+after +handle-redo [
+  {
+    move:address:move-operation <- maybe-convert *op, move:variant
+    break-unless move
+    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
+    *cursor-row <- get *move, after-row:offset
+    *cursor-column <- get *move, after-column:offset
+    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    *top <- get *move, after-top-of-screen:offset
+  }
+]
+
 # todo:
 # operations for recipe side and each sandbox-data
 # undo delete sandbox as a separate primitive on the status bar
