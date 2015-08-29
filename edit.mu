@@ -2266,55 +2266,69 @@ after +handle-special-key [
   {
     move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
     break-unless move-to-previous-line?
-    already-at-top?:boolean <- lesser-or-equal *cursor-row, 1/top
+    +move-cursor-start
+    editor, go-render? <- move-to-previous-line editor
+    +move-cursor-end
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
+  }
+]
+
+recipe move-to-previous-line [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
+  already-at-top?:boolean <- lesser-or-equal *cursor-row, 1/top
+  {
+    # if cursor not at top, move it
+    break-if already-at-top?
+    # if not at newline, move to start of line (previous newline)
+    # then scan back another line
+    # if either step fails, give up without modifying cursor or coordinates
+    curr:address:duplex-list <- copy *before-cursor
     {
-      # if cursor not at top, move it
-      break-if already-at-top?
-      # if not at newline, move to start of line (previous newline)
-      # then scan back another line
-      # if either step fails, give up without modifying cursor or coordinates
-      curr:address:duplex-list <- copy *before-cursor
-      {
-        old:address:duplex-list <- copy curr
-        c2:character <- get *curr, value:offset
-        at-newline?:boolean <- equal c2, 10/newline
-        break-if at-newline?
-        curr:address:duplex-list <- before-previous-line curr, editor
-        no-motion?:boolean <- equal curr, old
-        reply-if no-motion?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-      }
-      {
-        old <- copy curr
-        curr <- before-previous-line curr, editor
-        no-motion?:boolean <- equal curr, old
-        reply-if no-motion?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-      }
+      old:address:duplex-list <- copy curr
+      c2:character <- get *curr, value:offset
+      at-newline?:boolean <- equal c2, 10/newline
+      break-if at-newline?
+      curr:address:duplex-list <- before-previous-line curr, editor
+      no-motion?:boolean <- equal curr, old
+      reply-if no-motion?, editor/same-as-ingredient:0, 0/no-more-render
+    }
+    {
+      old <- copy curr
+      curr <- before-previous-line curr, editor
+      no-motion?:boolean <- equal curr, old
+      reply-if no-motion?, editor/same-as-ingredient:0, 0/no-more-render
+    }
+    *before-cursor <- copy curr
+    *cursor-row <- subtract *cursor-row, 1
+    # scan ahead to right column or until end of line
+    target-column:number <- copy *cursor-column
+    *cursor-column <- copy left
+    {
+      done?:boolean <- greater-or-equal *cursor-column, target-column
+      break-if done?
+      curr:address:duplex-list <- next-duplex *before-cursor
+      break-unless curr
+      currc:character <- get *curr, value:offset
+      at-newline?:boolean <- equal currc, 10/newline
+      break-if at-newline?
+      #
       *before-cursor <- copy curr
-      *cursor-row <- subtract *cursor-row, 1
-      # scan ahead to right column or until end of line
-      target-column:number <- copy *cursor-column
-      *cursor-column <- copy left
-      {
-        done?:boolean <- greater-or-equal *cursor-column, target-column
-        break-if done?
-        curr:address:duplex-list <- next-duplex *before-cursor
-        break-unless curr
-        currc:character <- get *curr, value:offset
-        at-newline?:boolean <- equal currc, 10/newline
-        break-if at-newline?
-        #
-        *before-cursor <- copy curr
-        *cursor-column <- add *cursor-column, 1
-        loop
-      }
-      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+      *cursor-column <- add *cursor-column, 1
+      loop
     }
-    {
-      # if cursor already at top, scroll up
-      break-unless already-at-top?
-      +scroll-up
-      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
-    }
+    reply editor/same-as-ingredient:0, 0/no-more-render
+  }
+  {
+    # if cursor already at top, scroll up
+    break-unless already-at-top?
+    +scroll-up
+    reply editor/same-as-ingredient:0, 1/go-render
   }
 ]
 
@@ -2472,41 +2486,56 @@ after +handle-special-key [
   {
     move-to-next-line?:boolean <- equal *k, 65516/down-arrow
     break-unless move-to-next-line?
-    last-line:number <- subtract screen-height, 1
-    already-at-bottom?:boolean <- greater-or-equal *cursor-row, last-line
+    +move-cursor-start
+    editor, go-render? <- move-to-next-line editor, screen-height
+    +move-cursor-end
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
+  }
+]
+
+recipe move-to-next-line [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  screen-height:number <- next-ingredient
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
+  last-line:number <- subtract screen-height, 1
+  already-at-bottom?:boolean <- greater-or-equal *cursor-row, last-line
+  {
+    # if cursor not at top, move it
+    break-if already-at-bottom?
+    # scan to start of next line, then to right column or until end of line
+    max:number <- subtract right, left
+    next-line:address:duplex-list <- before-start-of-next-line *before-cursor, max
+    no-motion?:boolean <- equal next-line, *before-cursor
+    reply-if no-motion?, editor/same-as-ingredient:0, 0/no-more-render
+    *cursor-row <- add *cursor-row, 1
+    *before-cursor <- copy next-line
+    target-column:number <- copy *cursor-column
+    *cursor-column <- copy left
     {
-      # if cursor not at top, move it
-      break-if already-at-bottom?
-      # scan to start of next line, then to right column or until end of line
-      max:number <- subtract right, left
-      next-line:address:duplex-list <- before-start-of-next-line *before-cursor, max
-      no-motion?:boolean <- equal next-line, *before-cursor
-      reply-if no-motion?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-      *cursor-row <- add *cursor-row, 1
-      *before-cursor <- copy next-line
-      target-column:number <- copy *cursor-column
-      *cursor-column <- copy left
-      {
-        done?:boolean <- greater-or-equal *cursor-column, target-column
-        break-if done?
-        curr:address:duplex-list <- next-duplex *before-cursor
-        break-unless curr
-        currc:character <- get *curr, value:offset
-        at-newline?:boolean <- equal currc, 10/newline
-        break-if at-newline?
-        #
-        *before-cursor <- copy curr
-        *cursor-column <- add *cursor-column, 1
-        loop
-      }
-      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+      done?:boolean <- greater-or-equal *cursor-column, target-column
+      break-if done?
+      curr:address:duplex-list <- next-duplex *before-cursor
+      break-unless curr
+      currc:character <- get *curr, value:offset
+      at-newline?:boolean <- equal currc, 10/newline
+      break-if at-newline?
+      #
+      *before-cursor <- copy curr
+      *cursor-column <- add *cursor-column, 1
+      loop
     }
-    {
-      # if cursor already at top, scroll up
-      break-unless already-at-bottom?
-      +scroll-down
-      reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
-    }
+    reply editor/same-as-ingredient:0, 0/no-more-render
+  }
+  {
+    # if cursor already at top, scroll up
+    break-unless already-at-bottom?
+    +scroll-down
+    reply editor/same-as-ingredient:0, 1/go-render
   }
 ]
 
@@ -6915,6 +6944,7 @@ def
 ghi]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  # move the cursor
   assume-console [
     left-click 3, 1
   ]
@@ -7039,6 +7069,144 @@ cdefgh]
     .b    .
     .cde1↩.
     .fgh  .
+  ]
+]
+
+scenario editor-can-undo-left-arrow [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # move the cursor
+  assume-console [
+    left-click 3, 1
+    press 65515  # left arrow
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor moves back
+  memory-should-contain [
+    3 <- 3
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .def       .
+    .g1hi      .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-can-undo-up-arrow [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # move the cursor
+  assume-console [
+    left-click 3, 1
+    press 65517  # up arrow
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor moves back
+  memory-should-contain [
+    3 <- 3
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .def       .
+    .g1hi      .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-can-undo-down-arrow [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # move the cursor
+  assume-console [
+    left-click 2, 1
+    press 65516  # down arrow
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor moves back
+  memory-should-contain [
+    3 <- 2
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .d1ef      .
+    .ghi       .
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
