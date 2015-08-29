@@ -66,8 +66,20 @@ case ASSUME_CONSOLE: {
       Current_routine->alloc += size_of_event();
     }
     else if (curr.name == "press") {
-      Memory[Current_routine->alloc] = /*tag for 'keycode' variant of 'event' exclusive-container*/1;
-      Memory[Current_routine->alloc+1] = to_integer(curr.ingredients.at(0).name);
+      string key = curr.ingredients.at(0).name;
+      if (is_integer(key))
+        Memory[Current_routine->alloc+1] = to_integer(key);
+      else if (Key.find(key) != Key.end())
+        Memory[Current_routine->alloc+1] = Key[key];
+      else
+        raise << "assume-console: can't press " << key << '\n' << end();
+      if (Memory[Current_routine->alloc+1] < 256)
+        // these keys are in ascii
+        Memory[Current_routine->alloc] = /*tag for 'text' variant of 'event' exclusive-container*/0;
+      else {
+        // distinguish from unicode
+        Memory[Current_routine->alloc] = /*tag for 'keycode' variant of 'event' exclusive-container*/1;
+      }
       Current_routine->alloc += size_of_event();
     }
     // End Event Handlers
@@ -98,17 +110,76 @@ case ASSUME_CONSOLE: {
   break;
 }
 
+:(before "End Globals")
+map<string, long long int> Key;
+:(before "End One-time Setup")
+initialize_key_names();
+:(code)
+void initialize_key_names() {
+  Key["F1"] = TB_KEY_F1;
+  Key["F2"] = TB_KEY_F2;
+  Key["F3"] = TB_KEY_F3;
+  Key["F4"] = TB_KEY_F4;
+  Key["F5"] = TB_KEY_F5;
+  Key["F6"] = TB_KEY_F6;
+  Key["F7"] = TB_KEY_F7;
+  Key["F8"] = TB_KEY_F8;
+  Key["F9"] = TB_KEY_F9;
+  Key["F10"] = TB_KEY_F10;
+  Key["F11"] = TB_KEY_F11;
+  Key["F12"] = TB_KEY_F12;
+  Key["insert"] = TB_KEY_INSERT;
+  Key["delete"] = TB_KEY_DELETE;
+  Key["home"] = TB_KEY_HOME;
+  Key["end"] = TB_KEY_END;
+  Key["page-up"] = TB_KEY_PGUP;
+  Key["page-down"] = TB_KEY_PGDN;
+  Key["up-arrow"] = TB_KEY_ARROW_UP;
+  Key["down-arrow"] = TB_KEY_ARROW_DOWN;
+  Key["left-arrow"] = TB_KEY_ARROW_LEFT;
+  Key["right-arrow"] = TB_KEY_ARROW_RIGHT;
+  Key["ctrl-a"] = TB_KEY_CTRL_A;
+  Key["ctrl-b"] = TB_KEY_CTRL_B;
+  Key["ctrl-c"] = TB_KEY_CTRL_C;
+  Key["ctrl-d"] = TB_KEY_CTRL_D;
+  Key["ctrl-e"] = TB_KEY_CTRL_E;
+  Key["ctrl-f"] = TB_KEY_CTRL_F;
+  Key["ctrl-g"] = TB_KEY_CTRL_G;
+  Key["backspace"] = TB_KEY_BACKSPACE;
+  Key["ctrl-h"] = TB_KEY_CTRL_H;
+  Key["tab"] = TB_KEY_TAB;
+  Key["ctrl-i"] = TB_KEY_CTRL_I;
+  Key["ctrl-j"] = TB_KEY_CTRL_J;
+  Key["newline"] = TB_KEY_NEWLINE;
+  Key["ctrl-k"] = TB_KEY_CTRL_K;
+  Key["ctrl-l"] = TB_KEY_CTRL_L;
+  Key["ctrl-m"] = TB_KEY_CTRL_M;
+  Key["ctrl-n"] = TB_KEY_CTRL_N;
+  Key["ctrl-o"] = TB_KEY_CTRL_O;
+  Key["ctrl-p"] = TB_KEY_CTRL_P;
+  Key["ctrl-q"] = TB_KEY_CTRL_Q;
+  Key["ctrl-r"] = TB_KEY_CTRL_R;
+  Key["ctrl-s"] = TB_KEY_CTRL_S;
+  Key["ctrl-t"] = TB_KEY_CTRL_T;
+  Key["ctrl-u"] = TB_KEY_CTRL_U;
+  Key["ctrl-v"] = TB_KEY_CTRL_V;
+  Key["ctrl-w"] = TB_KEY_CTRL_W;
+  Key["ctrl-x"] = TB_KEY_CTRL_X;
+  Key["ctrl-y"] = TB_KEY_CTRL_Y;
+  Key["ctrl-z"] = TB_KEY_CTRL_Z;
+  Key["escape"] = TB_KEY_ESC;
+}
+
 :(scenario events_in_scenario)
 scenario events-in-scenario [
   assume-console [
     type [abc]
     left-click 0, 1
-    press 65515  # up arrow
+    press up-arrow
     type [d]
   ]
   run [
     # 3 keyboard events; each event occupies 4 locations
-#?     $start-tracing #? 2
     1:event <- read-event console:address
     5:event <- read-event console:address
     9:event <- read-event console:address
@@ -137,7 +208,7 @@ scenario events-in-scenario [
     15 <- 0  # row
     16 <- 1  # column
     17 <- 1  # 'keycode'
-    18 <- 65515  # up arrow
+    18 <- 65517  # up arrow
     19 <- 0  # unused
     20 <- 0  # unused
     21 <- 0  # 'text'
