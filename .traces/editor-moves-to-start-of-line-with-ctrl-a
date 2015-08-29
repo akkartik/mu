@@ -1,22 +1,12 @@
  101 run: assume-console [
     left-click 2, 3
-    type [a]  # ctrl-a
+    press ctrl-a
   ]
 parse: instruction: left-click
 parse:   ingredient: {name: "2", properties: ["2": "literal"]}
 parse:   ingredient: {name: "3", properties: ["3": "literal"]}
-parse: instruction: type
-parse:   ingredient: {name: "a", properties: [_: "literal-string"]}
- 101 run: 3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
-9999 mem: storing 0 in location 3
-9999 mem: storing 1 in location 4
-9999 mem: storing 0 in location 5
-9999 mem: storing 0 in location 6
- 101 run: replace-in-console 97/a, 3:event/ctrl-a
-9999 mem: location 3 is 0
-9999 mem: location 4 is 1
-9999 mem: location 5 is 0
-9999 mem: location 6 is 0
+parse: instruction: press
+parse:   ingredient: {name: "ctrl-a", properties: ["ctrl-a": ]}
  101 run: run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get *2:address:editor-data, cursor-row:offset
@@ -987,10 +977,10 @@ after-brace: get ...
  104 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1201 is 53
 9999 mem: storing 0 in location 1202
-schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-editor-moves-to-start-of-line-with-ctrl-a
  104 run: break-unless newline?, 
 9999 mem: location 1202 is 0
 9999 run: jumping to instruction 49
+schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-editor-moves-to-start-of-line-with-ctrl-a
  104 run: at-right?:boolean <- equal column, right
 9999 mem: location 1194 is 1
 9999 mem: location 1189 is 9

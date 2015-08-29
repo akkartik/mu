@@ -1,22 +1,12 @@
  101 run: assume-console [
     left-click 1, 1
-    type [e]  # ctrl-e
+    press ctrl-e
   ]
 parse: instruction: left-click
 parse:   ingredient: {name: "1", properties: ["1": "literal"]}
 parse:   ingredient: {name: "1", properties: ["1": "literal"]}
-parse: instruction: type
-parse:   ingredient: {name: "e", properties: [_: "literal-string"]}
- 101 run: 3:event/ctrl-e <- merge 0/text, 5/ctrl-e, 0/dummy, 0/dummy
-9999 mem: storing 0 in location 3
-9999 mem: storing 5 in location 4
-9999 mem: storing 0 in location 5
-9999 mem: storing 0 in location 6
- 101 run: replace-in-console 101/e, 3:event/ctrl-e
-9999 mem: location 3 is 0
-9999 mem: location 4 is 5
-9999 mem: location 5 is 0
-9999 mem: location 6 is 0
+parse: instruction: press
+parse:   ingredient: {name: "ctrl-e", properties: ["ctrl-e": ]}
  101 run: run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get *2:address:editor-data, cursor-row:offset
@@ -995,12 +985,12 @@ after-brace: get ...
  104 run: break-if off-screen?, 
 9999 mem: location 1198 is 0
 9999 run: jump-if fell through
-schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-editor-moves-to-end-of-line-with-ctrl-e
  104 run: at-cursor-row?:boolean <- equal row, *cursor-row
 9999 mem: location 1193 is 2
 9999 mem: location 1195 is 1121
 9999 mem: location 1121 is 1
 9999 mem: storing 0 in location 1199
+schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-editor-moves-to-end-of-line-with-ctrl-e
  104 run: break-unless at-cursor-row?, 
 9999 mem: location 1199 is 0
 9999 run: jumping to instruction 31
@@ -3087,7 +3077,6 @@ after-brace: get ...
  104 run: trace 90, [print-character], c
 9999 mem: location 1230 is 122
   90 print-character: 122 
-schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-loop/run1002/scenario-editor-moves-to-end-of-line-with-ctrl-e
  104 run: break-unless sc, 
 9999 mem: location 1229 is 1009
 9999 run: jump-unless fell through
@@ -3103,6 +3092,7 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 run: its type is number
 9999 mem: location 1010 is 10
 9999 mem: storing 10 in location 1235
+schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-loop/run1002/scenario-editor-moves-to-end-of-line-with-ctrl-e
  104 run: height:number <- get *sc, num-rows:offset
 9999 mem: location 1229 is 1009
 9999 mem: location 1009 is 5

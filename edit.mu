@@ -1388,10 +1388,8 @@ scenario editor-clears-previous-line-completely-after-inserting-newline [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abcde]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
-  # press just a 'newline'
   assume-console [
-    type [
-]
+    press newline
   ]
   screen-should-contain [
     .          .
@@ -1447,8 +1445,7 @@ ef]
   assume-console [
     left-click 2, 8
     press 65507  # start paste
-    type [
-]
+    press newline
     press 65506  # end paste
   ]
   run [
@@ -1496,10 +1493,8 @@ scenario editor-inserts-two-spaces-on-tab [
 cd]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
-    type [»]
+    press tab
   ]
-  3:event/tab <- merge 0/text, 9/tab, 0/dummy, 0/dummy
-  replace-in-console 187/», 3:event/tab
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -1530,10 +1525,8 @@ scenario editor-handles-backspace-key [
   $clear-trace
   assume-console [
     left-click 1, 1
-    type [«]
+    press backspace
   ]
-  3:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
-  replace-in-console 171/«, 3:event/backspace
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get *2:address:editor-data, cursor-row:offset
@@ -1683,10 +1676,8 @@ cd]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 2, 0  # cursor at only character in final line
-    type [«]
+    press backspace
   ]
-  3:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
-  replace-in-console 171/«, 3:event/backspace
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get *2:address:editor-data, cursor-row:offset
@@ -1713,7 +1704,7 @@ scenario editor-handles-delete-key [
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
-    press 65522  # delete
+    press delete
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1727,7 +1718,7 @@ scenario editor-handles-delete-key [
   check-trace-count-for-label 3, [print-character]  # length of original line to overwrite
   $clear-trace
   assume-console [
-    press 65522  # delete
+    press delete
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1784,7 +1775,7 @@ scenario editor-moves-cursor-right-with-key [
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
-    press 65514  # right arrow
+    press right-arrow
     type [0]
   ]
   run [
@@ -1872,10 +1863,10 @@ d]
   $clear-trace
   # type right-arrow a few times to get to start of second line
   assume-console [
-    press 65514  # right arrow
-    press 65514  # right arrow
-    press 65514  # right arrow
-    press 65514  # right arrow - next line
+    press right-arrow
+    press right-arrow
+    press right-arrow
+    press right-arrow  # next line
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1905,10 +1896,10 @@ d]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 1/left, 10/right
   editor-render screen, 2:address:editor-data
   assume-console [
-    press 65514  # right arrow
-    press 65514  # right arrow
-    press 65514  # right arrow
-    press 65514  # right arrow - next line
+    press right-arrow
+    press right-arrow
+    press right-arrow
+    press right-arrow  # next line
     type [0]
   ]
   run [
@@ -1931,7 +1922,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
   $clear-trace
   assume-console [
     left-click 1, 3
-    press 65514  # right arrow
+    press right-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1962,7 +1953,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
   # position cursor at last character before wrap and hit right-arrow
   assume-console [
     left-click 1, 3
-    press 65514  # right arrow
+    press right-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1975,7 +1966,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
   ]
   # now hit right arrow again
   assume-console [
-    press 65514
+    press right-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1997,7 +1988,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
   $clear-trace
   assume-console [
     left-click 1, 4
-    press 65514  # right arrow
+    press right-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2025,14 +2016,16 @@ d]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
+  # move to end of line, press right-arrow, type a character
   assume-console [
     left-click 1, 3
-    press 65514  # right arrow - next line
+    press right-arrow
     type [0]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
+  # new character should be in next line
   screen-should-contain [
     .          .
     .abc       .
@@ -2053,7 +2046,7 @@ scenario editor-moves-cursor-left-with-key [
   $clear-trace
   assume-console [
     left-click 1, 2
-    press 65515  # left arrow
+    press left-arrow
     type [0]
   ]
   run [
@@ -2095,7 +2088,7 @@ d]
   # position cursor at start of second line (so there's no previous newline)
   assume-console [
     left-click 2, 0
-    press 65515  # left arrow
+    press left-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2122,7 +2115,7 @@ g]
   # the cursor)
   assume-console [
     left-click 3, 0
-    press 65515  # left arrow
+    press left-arrow
     type [0]
   ]
   run [
@@ -2146,15 +2139,16 @@ g]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
-  # position cursor at start of text
+  # position cursor at start of text, press left-arrow, then type a character
   assume-console [
     left-click 1, 0
-    press 65515  # left arrow should have no effect
+    press left-arrow
     type [0]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
+  # left-arrow should have had no effect
   screen-should-contain [
     .          .
     .0abc      .
@@ -2177,7 +2171,7 @@ d]
   # position cursor right after empty line
   assume-console [
     left-click 3, 0
-    press 65515  # left arrow
+    press left-arrow
     type [0]
   ]
   run [
@@ -2210,7 +2204,7 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   # position cursor right after empty line
   assume-console [
     left-click 2, 0
-    press 65515  # left arrow
+    press left-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2235,7 +2229,7 @@ def]
   $clear-trace
   assume-console [
     left-click 2, 1
-    press 65517  # up arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2341,7 +2335,7 @@ def]
   $clear-trace
   assume-console [
     left-click 2, 3
-    press 65517  # up arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2377,7 +2371,7 @@ def]
   $clear-trace
   assume-console [
     left-click 2, 3
-    press 65517  # up arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2416,7 +2410,7 @@ ghi]
   # click on the third line and hit up-arrow, so you end up just after a newline
   assume-console [
     left-click 3, 0
-    press 65517  # up arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2454,7 +2448,7 @@ def]
   $clear-trace
   # cursor starts out at (1, 0)
   assume-console [
-    press 65516  # down arrow
+    press down-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2548,7 +2542,7 @@ de]
   $clear-trace
   assume-console [
     left-click 1, 3
-    press 65516  # down arrow
+    press down-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2584,7 +2578,7 @@ de]
   $clear-trace
   assume-console [
     left-click 2, 0
-    press 65516  # down arrow
+    press down-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2623,10 +2617,8 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
   # start on second line, press ctrl-a
   assume-console [
     left-click 2, 3
-    type [a]  # ctrl-a
+    press ctrl-a
   ]
-  3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
-  replace-in-console 97/a, 3:event/ctrl-a
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get *2:address:editor-data, cursor-row:offset
@@ -2695,10 +2687,8 @@ scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
   # start on first line (no newline before), press ctrl-a
   assume-console [
     left-click 1, 3
-    type [a]  # ctrl-a
+    press ctrl-a
   ]
-  3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
-  replace-in-console 97/a, 3:event/ctrl-a
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get *2:address:editor-data, cursor-row:offset
@@ -2721,7 +2711,7 @@ scenario editor-moves-to-start-of-line-with-home [
   # start on second line, press 'home'
   assume-console [
     left-click 2, 3
-    press 65521  # 'home'
+    press home
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2746,7 +2736,7 @@ scenario editor-moves-to-start-of-line-with-home-2 [
   # start on first line (no newline before), press 'home'
   assume-console [
     left-click 1, 3
-    press 65521  # 'home'
+    press home
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2773,10 +2763,8 @@ scenario editor-moves-to-end-of-line-with-ctrl-e [
   # start on first line, press ctrl-e
   assume-console [
     left-click 1, 1
-    type [e]  # ctrl-e
+    press ctrl-e
   ]
-  3:event/ctrl-e <- merge 0/text, 5/ctrl-e, 0/dummy, 0/dummy
-  replace-in-console 101/e, 3:event/ctrl-e
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get *2:address:editor-data, cursor-row:offset
@@ -2861,10 +2849,8 @@ scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
   # start on second line (no newline after), press ctrl-e
   assume-console [
     left-click 2, 1
-    type [e]  # ctrl-e
+    press ctrl-e
   ]
-  3:event/ctrl-e <- merge 0/text, 5/ctrl-e, 0/dummy, 0/dummy
-  replace-in-console 101/e, 3:event/ctrl-e
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get *2:address:editor-data, cursor-row:offset
@@ -2888,7 +2874,7 @@ scenario editor-moves-to-end-of-line-with-end [
   # start on first line, press 'end'
   assume-console [
     left-click 1, 1
-    press 65520  # 'end'
+    press end
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2913,7 +2899,7 @@ scenario editor-moves-to-end-of-line-with-end-2 [
   # start on second line (no newline after), press 'end'
   assume-console [
     left-click 2, 1
-    press 65520  # 'end'
+    press end
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -2938,10 +2924,8 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
   # start on second line, press ctrl-u
   assume-console [
     left-click 2, 2
-    type [u]  # ctrl-u
+    press ctrl-u
   ]
-  3:event/ctrl-a <- merge 0/text, 21/ctrl-u, 0/dummy, 0/dummy
-  replace-in-console 117/u, 3:event/ctrl-u
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -3005,10 +2989,8 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
   # start on first line (no newline before), press ctrl-u
   assume-console [
     left-click 1, 2
-    type [u]  # ctrl-u
+    press ctrl-u
   ]
-  3:event/ctrl-u <- merge 0/text, 21/ctrl-u, 0/dummy, 0/dummy
-  replace-in-console 117/u, 3:event/ctrl-u
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -3030,10 +3012,8 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
   # start past end of line, press ctrl-u
   assume-console [
     left-click 1, 3
-    type [u]  # ctrl-u
+    press ctrl-u
   ]
-  3:event/ctrl-u <- merge 0/text, 21/ctrl-u, 0/dummy, 0/dummy
-  replace-in-console 117/u, 3:event/ctrl-u
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -3055,10 +3035,8 @@ scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
   # start past end of final line, press ctrl-u
   assume-console [
     left-click 2, 3
-    type [u]  # ctrl-u
+    press ctrl-u
   ]
-  3:event/ctrl-u <- merge 0/text, 21/ctrl-u, 0/dummy, 0/dummy
-  replace-in-console 117/u, 3:event/ctrl-u
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -3082,10 +3060,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
   # start on first line, press ctrl-k
   assume-console [
     left-click 1, 1
-    type [k]  # ctrl-k
+    press ctrl-k
   ]
-  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
-  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -3141,10 +3117,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
   # start on second line (no newline after), press ctrl-k
   assume-console [
     left-click 2, 1
-    type [k]  # ctrl-k
+    press ctrl-k
   ]
-  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
-  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -3166,10 +3140,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
   # start at end of line
   assume-console [
     left-click 1, 2
-    type [k]  # ctrl-k
+    press ctrl-k
   ]
-  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
-  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -3191,10 +3163,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
   # start past end of line
   assume-console [
     left-click 1, 3
-    type [k]  # ctrl-k
+    press ctrl-k
   ]
-  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
-  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -3216,10 +3186,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
   # start at end of text
   assume-console [
     left-click 2, 2
-    type [k]  # ctrl-k
+    press ctrl-k
   ]
-  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
-  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -3241,10 +3209,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
   # start past end of text
   assume-console [
     left-click 2, 3
-    type [k]  # ctrl-k
+    press ctrl-k
   ]
-  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
-  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -3278,7 +3244,7 @@ d]
   # position cursor at last line, then try to move further down
   assume-console [
     left-click 3, 0
-    press 65516  # down-arrow
+    press down-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3352,7 +3318,7 @@ i]
   # position cursor at last line, then try to move further down
   assume-console [
     left-click 3, 0
-    press 65516  # down-arrow
+    press down-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3378,7 +3344,7 @@ m]
   # position cursor at last line, then try to move further down
   assume-console [
     left-click 3, 0
-    press 65516  # down-arrow
+    press down-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3392,7 +3358,7 @@ m]
   ]
   # scroll down again
   assume-console [
-    press 65516  # down-arrow
+    press down-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3478,7 +3444,7 @@ cdefgh]
   # position cursor at end of screen and try to move right
   assume-console [
     left-click 3, 3
-    press 65514  # right arrow
+    press right-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3510,7 +3476,7 @@ d]
   # position cursor at end of screen and try to move right
   assume-console [
     left-click 3, 3
-    press 65514  # right arrow
+    press right-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3544,9 +3510,9 @@ g]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   # scroll down one page and one line
   assume-console [
-    press 65518  # page-down
+    press page-down
     left-click 3, 0
-    press 65516  # down-arrow
+    press down-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3579,8 +3545,8 @@ d]
   ]
   # position cursor at top of second page, then try to move up
   assume-console [
-    press 65518  # page-down
-    press 65517  # up-arrow
+    press page-down
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3662,7 +3628,7 @@ i]
   ]
   # position cursor at top of second page, just below wrapped line
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3675,7 +3641,7 @@ i]
   ]
   # now move up one line
   assume-console [
-    press 65517  # up-arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3700,7 +3666,7 @@ m]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   # position cursor at top of second page
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3714,7 +3680,7 @@ m]
   ]
   # move up one line
   assume-console [
-    press 65517  # up-arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3729,7 +3695,7 @@ m]
   ]
   # move up a second line
   assume-console [
-    press 65517  # up-arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3744,7 +3710,7 @@ m]
   ]
   # move up a third line
   assume-console [
-    press 65517  # up-arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3779,7 +3745,7 @@ i]
   ]
   # position cursor at top of second page, just below wrapped line
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3792,7 +3758,7 @@ i]
   ]
   # now move up one line
   assume-console [
-    press 65517  # up-arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3818,7 +3784,7 @@ d
 e]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 6/right
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3830,7 +3796,7 @@ e]
     .d         .
   ]
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3842,7 +3808,7 @@ e]
     .┈┈┈┈┈┈    .
   ]
   assume-console [
-    press 65519  # page-up
+    press page-up
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3867,7 +3833,7 @@ e]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   # position cursor at top of second page
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3880,7 +3846,7 @@ e]
   ]
   # now try to move left
   assume-console [
-    press 65515  # left arrow
+    press left-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3918,9 +3884,9 @@ d]
   # position cursor at top of second page, then try to move up to start of
   # text
   assume-console [
-    press 65518  # page-down
-    press 65517  # up-arrow
-    press 65517  # up-arrow
+    press page-down
+    press up-arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3934,7 +3900,7 @@ d]
   ]
   # try to move up again
   assume-console [
-    press 65517  # up-arrow
+    press up-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -3965,7 +3931,7 @@ d]
   ]
   # scroll down
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4040,7 +4006,7 @@ b]
   ]
   # scroll down
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4072,7 +4038,7 @@ cdefgh]
   ]
   # scroll down
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4103,7 +4069,7 @@ bcdefgh]
   ]
   # scroll down
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4134,7 +4100,7 @@ d]
   ]
   # scroll down
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4148,7 +4114,7 @@ d]
   ]
   # scroll back up
   assume-console [
-    press 65519  # page-up
+    press page-up
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4224,8 +4190,8 @@ h]
   ]
   # scroll down two pages
   assume-console [
-    press 65518  # page-down
-    press 65518  # page-down
+    press page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4239,7 +4205,7 @@ h]
   ]
   # scroll up
   assume-console [
-    press 65519  # page-up
+    press page-up
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4253,7 +4219,7 @@ h]
   ]
   # scroll up again
   assume-console [
-    press 65519  # page-up
+    press page-up
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4294,9 +4260,9 @@ o]
   ]
   # scroll down a page and a line
   assume-console [
-    press 65518  # page-down
+    press page-down
     left-click 5, 0
-    press 65516  # down-arrow
+    press down-arrow
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4312,7 +4278,7 @@ o]
   ]
   # now scroll up one page
   assume-console [
-    press 65519  # page-up
+    press page-up
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4345,7 +4311,7 @@ bcdefgh]
   ]
   # scroll down
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4359,7 +4325,7 @@ bcdefgh]
   ]
   # scroll back up
   assume-console [
-    press 65519  # page-up
+    press page-up
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4393,7 +4359,7 @@ hxx
     .cxx       .
   ]
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4405,7 +4371,7 @@ hxx
     .exx       .
   ]
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4418,7 +4384,7 @@ hxx
   ]
   # scroll back up past empty line
   assume-console [
-    press 65519  # page-up
+    press page-up
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4451,7 +4417,7 @@ gxy
     .cxy       .
   ]
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4463,7 +4429,7 @@ gxy
     .dxy       .
   ]
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4476,7 +4442,7 @@ gxy
   ]
   # scroll back up past empty line
   assume-console [
-    press 65519  # page-up
+    press page-up
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -4786,10 +4752,8 @@ def]
   # position cursor at start of second line and hit backspace
   assume-console [
     left-click 2, 16
-    type [«]
+    press backspace
   ]
-  4:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
-  replace-in-console 171/«, 4:event/backspace
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
     print-character screen:address, 9251/␣/cursor
@@ -4961,10 +4925,8 @@ scenario maximize-side [
   ]
   # hit ctrl-x
   assume-console [
-    type [x]
+    press ctrl-x
   ]
-  4:event/ctrl-x <- merge 0/text, 24/ctrl-x, 0/dummy, 0/dummy
-  replace-in-console 120/x, 4:event/ctrl-x
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
@@ -4977,7 +4939,7 @@ scenario maximize-side [
   ]
   # hit any key to toggle back
   assume-console [
-    press 24  # ctrl-x
+    press ctrl-x
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5089,7 +5051,7 @@ scenario run-and-show-results [
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editors
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5132,7 +5094,7 @@ scenario run-and-show-results [
   assume-console [
     left-click 1, 80
     type [add 2, 2]
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5466,7 +5428,7 @@ z:number <- add 2, 2
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editors
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5485,11 +5447,10 @@ z:number <- add 2, 2
   # make a change (incrementing one of the args to 'add'), then rerun
   assume-console [
     left-click 3, 28  # one past the value of the second arg
-    type [«3]  # replace
-    press 65532  # F4
+    press backspace
+    type [3]
+    press F4
   ]
-  4:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
-  replace-in-console 171/«, 4:event/backspace
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
@@ -5516,7 +5477,7 @@ scenario run-instruction-and-print-warnings [
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editors
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5573,8 +5534,8 @@ scenario run-instruction-and-print-warnings-only-once [
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editors multiple times
   assume-console [
-    press 65532  # F4
-    press 65532  # F4
+    press F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5602,7 +5563,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editor
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5635,7 +5596,7 @@ scenario sandbox-with-print-can-be-edited [
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the sandbox
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5685,7 +5646,7 @@ scenario sandbox-can-handle-infinite-loop [
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the sandbox
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5753,7 +5714,7 @@ recipe foo [
   # run it
   2:address:array:character <- new [foo]
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5861,9 +5822,9 @@ scenario deleting-sandboxes [
   assume-console [
     left-click 1, 80
     type [divide-with-remainder 11, 3]
-    press 65532  # F4
+    press F4
     type [add 2, 2]
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -5974,7 +5935,7 @@ recipe foo [
   # run it
   2:address:array:character <- new [foo]
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -6024,11 +5985,10 @@ recipe foo [
   # then rerun
   assume-console [
     left-click 3, 11  # cursor to end of line
-    type [«3]  # turn '2' into '3'
-    press 65532  # F4
+    press backspace
+    type [3]
+    press F4
   ]
-  4:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
-  replace-in-console 171/«, 4:event/backspace
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
@@ -6149,7 +6109,7 @@ recipe foo [
   # run it
   2:address:array:character <- new [foo]
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -6223,7 +6183,7 @@ recipe foo [
   # run it
   2:address:array:character <- new [foo]
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -6343,7 +6303,7 @@ recipe foo [
   2:address:array:character <- new [foo]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -6379,7 +6339,7 @@ recipe foo [
   2:address:array:character <- new [foo]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -6408,7 +6368,7 @@ recipe foo «
   2:address:array:character <- new [foo]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -6436,7 +6396,7 @@ recipe foo [
   2:address:array:character <- new [foo]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -6466,7 +6426,7 @@ recipe foo [
   2:address:array:character <- new [foo]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -6497,7 +6457,7 @@ recipe foo [
   2:address:array:character <- new [foo]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -6514,7 +6474,7 @@ recipe foo [
   ]
   # rerun the file, check for the same error
   assume-console [
-    press 65532  # F4
+    press F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -6637,10 +6597,8 @@ scenario editor-can-undo-typing [
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # now undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -6739,10 +6697,8 @@ scenario editor-can-undo-typing-multiple [
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # now undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -6774,10 +6730,8 @@ scenario editor-can-undo-typing-multiple-2 [
   ]
   # now undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -6813,10 +6767,8 @@ scenario editor-redo-typing [
   editor-render screen, 2:address:editor-data
   assume-console [
     type [012]
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   editor-event-loop screen:address, console:address, 2:address:editor-data
   screen-should-contain [
     .          .
@@ -6826,10 +6778,8 @@ scenario editor-redo-typing [
   ]
   # redo
   assume-console [
-    type [y]  # ctrl-y
+    press ctrl-y
   ]
-  4:event/ctrl-y <- merge 0/text, 25/ctrl-y, 0/dummy, 0/dummy
-  replace-in-console 121/y, 4:event/ctrl-y
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -6863,10 +6813,8 @@ scenario editor-redo-typing-empty [
   editor-render screen, 2:address:editor-data
   assume-console [
     type [012]
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   editor-event-loop screen:address, console:address, 2:address:editor-data
   screen-should-contain [
     .          .
@@ -6876,10 +6824,8 @@ scenario editor-redo-typing-empty [
   ]
   # redo
   assume-console [
-    type [y]  # ctrl-y
+    press ctrl-y
   ]
-  4:event/ctrl-y <- merge 0/text, 25/ctrl-y, 0/dummy, 0/dummy
-  replace-in-console 121/y, 4:event/ctrl-y
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -6915,10 +6861,8 @@ ghi]
   editor-render screen, 2:address:editor-data
   assume-console [
     type [1]
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # do some more work
   assume-console [
@@ -6934,10 +6878,8 @@ ghi]
   ]
   # redo
   assume-console [
-    type [y]  # ctrl-y
+    press ctrl-y
   ]
-  4:event/ctrl-y <- merge 0/text, 25/ctrl-y, 0/dummy, 0/dummy
-  replace-in-console 121/y, 4:event/ctrl-y
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -6982,10 +6924,8 @@ ghi]
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7049,7 +6989,7 @@ cdefgh]
   # position cursor at end of screen and try to move right
   assume-console [
     left-click 3, 3
-    press 65514  # right arrow
+    press right-arrow
   ]
   editor-event-loop screen:address, console:address, 2:address:editor-data
   3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7067,10 +7007,8 @@ cdefgh]
   ]
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7114,15 +7052,13 @@ ghi]
   # move the cursor
   assume-console [
     left-click 3, 1
-    press 65515  # left arrow
+    press left-arrow
   ]
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7160,15 +7096,19 @@ ghi]
   # move the cursor
   assume-console [
     left-click 3, 1
-    press 65517  # up arrow
+    press up-arrow
   ]
   editor-event-loop screen:address, console:address, 2:address:editor-data
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 2
+    4 <- 1
+  ]
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7206,15 +7146,13 @@ ghi]
   # move the cursor
   assume-console [
     left-click 2, 1
-    press 65516  # down arrow
+    press down-arrow
   ]
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7254,17 +7192,13 @@ f]
   editor-render screen, 2:address:editor-data
   # scroll the page
   assume-console [
-    type [f]  # ctrl-f
+    press ctrl-f
   ]
-  3:event/ctrl-f <- merge 0/text, 6/ctrl-f, 0/dummy, 0/dummy
-  replace-in-console 102/f, 3:event/ctrl-f
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7293,15 +7227,13 @@ f]
   editor-render screen, 2:address:editor-data
   # scroll the page
   assume-console [
-    press 65518  # page-down
+    press page-down
   ]
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7330,18 +7262,14 @@ f]
   editor-render screen, 2:address:editor-data
   # scroll the page down and up
   assume-console [
-    press 65518  # page-down
-    type [b]  # ctrl-b
+    press page-down
+    press ctrl-b
   ]
-  3:event/ctrl-b <- merge 0/text, 2/ctrl-b, 0/dummy, 0/dummy
-  replace-in-console 98/b, 3:event/ctrl-b
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7370,18 +7298,14 @@ f]
   editor-render screen, 2:address:editor-data
   # scroll the page down and up
   assume-console [
-    press 65518  # page-down
-    press 65519  # page-up
+    press page-down
+    press page-up
   ]
-  3:event/ctrl-b <- merge 0/text, 2/ctrl-b, 0/dummy, 0/dummy
-  replace-in-console 98/b, 3:event/ctrl-b
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7408,17 +7332,13 @@ ghi]
   # move the cursor, then to start of line
   assume-console [
     left-click 2, 1
-    type [a]  # ctrl-a
+    press ctrl-a
   ]
-  3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
-  replace-in-console 97/a, 3:event/ctrl-a
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7456,17 +7376,13 @@ ghi]
   # move the cursor, then to start of line
   assume-console [
     left-click 2, 1
-    press 65521  # home
+    press home
   ]
-  3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
-  replace-in-console 97/a, 3:event/ctrl-a
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7504,17 +7420,13 @@ ghi]
   # move the cursor, then to start of line
   assume-console [
     left-click 2, 1
-    type [e]  # ctrl-e
+    press ctrl-e
   ]
-  3:event/ctrl-e <- merge 0/text, 5/ctrl-e, 0/dummy, 0/dummy
-  replace-in-console 101/e, 3:event/ctrl-e
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7552,17 +7464,13 @@ ghi]
   # move the cursor, then to start of line
   assume-console [
     left-click 2, 1
-    press 65520  # end
+    press end
   ]
-  3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
-  replace-in-console 97/a, 3:event/ctrl-a
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # undo
   assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -7601,17 +7509,13 @@ ghi]
   editor-render screen, 2:address:editor-data
   assume-console [
     left-click 3, 1
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-  replace-in-console 122/z, 3:event/ctrl-z
   editor-event-loop screen:address, console:address, 2:address:editor-data
   # redo
   assume-console [
-    type [y]  # ctrl-y
+    press ctrl-y
   ]
-  4:event/ctrl-y <- merge 0/text, 25/ctrl-y, 0/dummy, 0/dummy
-  replace-in-console 121/y, 4:event/ctrl-y
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset

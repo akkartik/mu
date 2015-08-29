@@ -11,16 +11,7 @@ parse:   ingredient: {name: "0", properties: ["0": "literal", "left": ]}
 parse:   ingredient: {name: "5", properties: ["5": "literal", "right": ]}
 parse:   product: {name: "2", properties: ["2": "address":"editor-data"]}
 parse: instruction: assume-console
-parse:   ingredient: {name: "\n    type [»]\n  ", properties: [_: "literal-string"]}
-parse: instruction: merge
-parse:   ingredient: {name: "0", properties: ["0": "literal", "text": ]}
-parse:   ingredient: {name: "9", properties: ["9": "literal", "tab": ]}
-parse:   ingredient: {name: "0", properties: ["0": "literal", "dummy": ]}
-parse:   ingredient: {name: "0", properties: ["0": "literal", "dummy": ]}
-parse:   product: {name: "3", properties: ["3": "event", "tab": ]}
-parse: instruction: replace-in-console
-parse:   ingredient: {name: "187", properties: ["187": "literal", "»": ]}
-parse:   ingredient: {name: "3", properties: ["3": "event", "tab": ]}
+parse:   ingredient: {name: "\n    press tab\n  ", properties: [_: "literal-string"]}
 parse: instruction: run
 parse:   ingredient: {name: "\n    editor-event-loop screen:address, console:address, 2:address:editor-data\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
@@ -30,8 +21,6 @@ after-brace: new-fake-screen ...
 after-brace: new ...
 after-brace: new-editor ...
 after-brace: assume-console ...
-after-brace: merge ...
-after-brace: replace-in-console ...
 after-brace: run ...
 after-brace: screen-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
@@ -5438,20 +5427,10 @@ schedule: print-character/clear-line-delimited/render/new-editor/scenario-editor
 9999 run: result 0 is 1115
 9999 mem: storing 1115 in location 2
  101 run: assume-console [
-    type [»]
+    press tab
   ]
-parse: instruction: type
-parse:   ingredient: {name: "»", properties: [_: "literal-string"]}
- 101 run: 3:event/tab <- merge 0/text, 9/tab, 0/dummy, 0/dummy
-9999 mem: storing 0 in location 3
-9999 mem: storing 9 in location 4
-9999 mem: storing 0 in location 5
-9999 mem: storing 0 in location 6
- 101 run: replace-in-console 187/», 3:event/tab
-9999 mem: location 3 is 0
-9999 mem: location 4 is 9
-9999 mem: location 5 is 0
-9999 mem: location 6 is 0
+parse: instruction: press
+parse:   ingredient: {name: "tab", properties: ["tab": ]}
  101 run: run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -5771,10 +5750,10 @@ after-brace: editor-event-loop ...
 9999 mem: location 1308 is 1296
 9999 mem: location 1296 is 9
 9999 mem: storing 0 in location 1327
-schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-inserts-two-spaces-on-tab
  103 run: break-unless page-down?, 
 9999 mem: location 1327 is 0
 9999 run: jumping to instruction 115
+schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-inserts-two-spaces-on-tab
  103 run: delete-to-end-of-line?:boolean <- equal *c, 11/ctrl-k
 9999 mem: location 1308 is 1296
 9999 mem: location 1296 is 9
@@ -7654,10 +7633,10 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-insert
 9999 run: jump-if fell through
  105 run: bg-color <- copy 0/black
 9999 mem: storing 0 in location 1225
-schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-loop/run1001/scenario-editor-inserts-two-spaces-on-tab
  105 run: trace 90, [print-character], c
 9999 mem: location 1222 is 97
   90 print-character: 97 
+schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-loop/run1001/scenario-editor-inserts-two-spaces-on-tab
  105 run: break-unless sc, 
 9999 mem: location 1221 is 1009
 9999 run: jump-unless fell through
@@ -9371,11 +9350,11 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 mem: location 1161 is 1162
 9999 run: result 0 is 1162
 9999 mem: storing 1162 in location 1181
-schedule: render/editor-render/editor-event-loop/run1001/scenario-editor-inserts-two-spaces-on-tab
  104 run: prev <- next-duplex prev
 9999 mem: location 1182 is 1401
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
+schedule: next-duplex/render/editor-render/editor-event-loop/run1001/scenario-editor-inserts-two-spaces-on-tab
  105 run: in:address:duplex-list <- next-ingredient 
 9999 mem: storing 1401 in location 1160
  105 run: jump-if in, 1:offset
@@ -10892,12 +10871,12 @@ schedule: render/editor-render/editor-event-loop/run1001/scenario-editor-inserts
 9999 mem: array size is 25
  105 run: sc:address:screen <- next-ingredient 
 9999 mem: storing 1009 in location 1221
-schedule: print-character/clear-line-delimited/editor-render/editor-event-loop/run1001/scenario-editor-inserts-two-spaces-on-tab
  105 run: c:character <- next-ingredient 
 9999 mem: storing 32 in location 1222
  105 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1223
 9999 mem: storing 0 in location 1224
+schedule: print-character/clear-line-delimited/editor-render/editor-event-loop/run1001/scenario-editor-inserts-two-spaces-on-tab
  105 run: break-if color-found?, 
 9999 mem: location 1224 is 0
 9999 run: jump-if fell through
@@ -12620,7 +12599,6 @@ schedule: print-character/clear-line-delimited/editor-render/editor-event-loop/r
 9999 mem: location 1406 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1409
-schedule: move-cursor/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-inserts-two-spaces-on-tab
  105 run: *row <- copy new-row
 9999 mem: location 1407 is 4
 9999 mem: location 1409 is 1011
@@ -12636,6 +12614,7 @@ schedule: move-cursor/clear-screen-from/editor-render/editor-event-loop/run1001/
 9999 mem: location 1406 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1410
+schedule: move-cursor/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-inserts-two-spaces-on-tab
  105 run: *column <- copy new-column
 9999 mem: location 1408 is 0
 9999 mem: location 1410 is 1012

@@ -20,16 +20,7 @@ parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
 parse:   ingredient: {name: "console", properties: ["console": "address"]}
 parse:   ingredient: {name: "2", properties: ["2": "address":"editor-data"]}
 parse: instruction: assume-console
-parse:   ingredient: {name: "\n    type [z]  # ctrl-z\n  ", properties: [_: "literal-string"]}
-parse: instruction: merge
-parse:   ingredient: {name: "0", properties: ["0": "literal", "text": ]}
-parse:   ingredient: {name: "26", properties: ["26": "literal", "ctrl-z": ]}
-parse:   ingredient: {name: "0", properties: ["0": "literal", "dummy": ]}
-parse:   ingredient: {name: "0", properties: ["0": "literal", "dummy": ]}
-parse:   product: {name: "3", properties: ["3": "event", "ctrl-z": ]}
-parse: instruction: replace-in-console
-parse:   ingredient: {name: "122", properties: ["122": "literal", "z": ]}
-parse:   ingredient: {name: "3", properties: ["3": "event", "ctrl-z": ]}
+parse:   ingredient: {name: "\n    press ctrl-z\n  ", properties: [_: "literal-string"]}
 parse: instruction: run
 parse:   ingredient: {name: "\n    editor-event-loop screen:address, console:address, 2:address:editor-data\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
@@ -42,8 +33,6 @@ after-brace: editor-render ...
 after-brace: assume-console ...
 after-brace: editor-event-loop ...
 after-brace: assume-console ...
-after-brace: merge ...
-after-brace: replace-in-console ...
 after-brace: run ...
 after-brace: screen-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
@@ -14940,20 +14929,10 @@ schedule: insert-at-cursor/handle-keyboard-event/editor-event-loop/scenario-edit
 9999 mem: location 1273 is 1
 9999 run: jumping to instruction 36
  101 run: assume-console [
-    type [z]  # ctrl-z
+    press ctrl-z
   ]
-parse: instruction: type
-parse:   ingredient: {name: "z", properties: [_: "literal-string"]}
- 101 run: 3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
-9999 mem: storing 0 in location 3
-9999 mem: storing 26 in location 4
-9999 mem: storing 0 in location 5
-9999 mem: storing 0 in location 6
- 101 run: replace-in-console 122/z, 3:event/ctrl-z
-9999 mem: location 3 is 0
-9999 mem: location 4 is 26
-9999 mem: location 5 is 0
-9999 mem: location 6 is 0
+parse: instruction: press
+parse:   ingredient: {name: "ctrl-z", properties: ["ctrl-z": ]}
  101 run: run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -15379,7 +15358,6 @@ after-brace: editor-event-loop ...
 9999 run: result 0 is 1422
 9999 mem: location 1302 is 1125
 9999 mem: storing 1422 in location 1125
-schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  103 run: move:address:move-operation <- maybe-convert *op, move:variant
 9999 mem: location 1303 is 1393
 9999 mem: location 1393 is 0
@@ -15397,6 +15375,7 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-can-un
  103 run: break-unless move, 
 9999 mem: location 1305 is 0
 9999 run: jumping to instruction 67
+schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  103 run: typing:address:insert-operation <- maybe-convert *op, typing:variant
 9999 mem: location 1303 is 1393
 9999 mem: location 1393 is 0
@@ -17334,12 +17313,12 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-can-un
 9999 mem: location 1012 is 6
 9999 mem: location 1206 is 1012
 9999 mem: storing 7 in location 1012
-schedule: print-character/clear-line-delimited/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  105 run: reply sc/same-as-ingredient:0
 9999 mem: location 1196 is 1009
  104 run: column <- add column, 1
 9999 mem: location 1191 is 6
 9999 mem: storing 7 in location 1191
+schedule: clear-line-delimited/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  104 run: loop 
 9999 run: jumping to instruction 5
  104 run: done?:boolean <- greater-than column, right
@@ -19053,10 +19032,10 @@ schedule: print-character/clear-line-delimited/editor-render/editor-event-loop/r
  105 run: trace 90, [print-character], c
 9999 mem: location 1197 is 9480
   90 print-character: 9480 
-schedule: print-character/draw-horizontal/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  105 run: break-unless sc, 
 9999 mem: location 1196 is 1009
 9999 run: jump-unless fell through
+schedule: print-character/draw-horizontal/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  105 run: width:number <- get *sc, num-columns:offset
 9999 mem: location 1196 is 1009
 9999 mem: location 1009 is 5
@@ -20834,10 +20813,10 @@ schedule: print-character/draw-horizontal/editor-render/editor-event-loop/run100
 9999 run: its type is address
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 1211
-schedule: print-character/clear-line-delimited/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  106 run: len:number <- length *buf
 9999 mem: location 1211 is 1014
 9999 mem: storing 50 in location 1212
+schedule: print-character/clear-line-delimited/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  106 run: backspace?:boolean <- equal c, 8
 9999 mem: location 1197 is 32
 9999 mem: storing 0 in location 1213
@@ -22564,10 +22543,10 @@ schedule: print-character/clear-line-delimited/clear-screen-from/editor-render/e
  107 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1197 is 32
 9999 mem: storing 0 in location 1207
-schedule: print-character/clear-line-delimited/clear-rest-of-screen/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  107 run: break-unless newline?, 
 9999 mem: location 1207 is 0
 9999 run: jumping to instruction 43
+schedule: print-character/clear-line-delimited/clear-rest-of-screen/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  107 run: index:number <- multiply *row, width
 9999 mem: location 1204 is 1011
 9999 mem: location 1011 is 4
@@ -24285,7 +24264,6 @@ schedule: print-character/clear-line-delimited/clear-rest-of-screen/clear-screen
 9999 run: its type is address
 9999 mem: location 1417 is 1411
 9999 mem: storing 1411 in location 1224
-schedule: read-event/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  103 run: max:number <- length *buf
 9999 mem: location 1224 is 1411
 9999 mem: storing 1 in location 1225
@@ -24294,6 +24272,7 @@ schedule: read-event/editor-event-loop/run1001/scenario-editor-can-undo-typing-m
 9999 mem: location 1416 is 1
 9999 mem: location 1225 is 1
 9999 mem: storing 1 in location 1226
+schedule: read-event/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  103 run: break-unless done?, 
 9999 mem: location 1226 is 1
 9999 run: jump-unless fell through

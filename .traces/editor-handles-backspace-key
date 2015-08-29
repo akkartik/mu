@@ -1,22 +1,12 @@
  101 run: assume-console [
     left-click 1, 1
-    type [«]
+    press backspace
   ]
 parse: instruction: left-click
 parse:   ingredient: {name: "1", properties: ["1": "literal"]}
 parse:   ingredient: {name: "1", properties: ["1": "literal"]}
-parse: instruction: type
-parse:   ingredient: {name: "«", properties: [_: "literal-string"]}
- 101 run: 3:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
-9999 mem: storing 0 in location 3
-9999 mem: storing 8 in location 4
-9999 mem: storing 0 in location 5
-9999 mem: storing 0 in location 6
- 101 run: replace-in-console 171/«, 3:event/backspace
-9999 mem: location 3 is 0
-9999 mem: location 4 is 8
-9999 mem: location 5 is 0
-9999 mem: location 6 is 0
+parse: instruction: press
+parse:   ingredient: {name: "backspace", properties: ["backspace": ]}
  101 run: run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get *2:address:editor-data, cursor-row:offset
@@ -1696,7 +1686,6 @@ after-brace: get ...
  105 run: jump-if in, 1:offset
 9999 mem: location 1158 is 1150
 9999 run: jumping to instruction 4
-schedule: next-duplex/delete-before-cursor/handle-keyboard-event/editor-event-loop/run1001/scenario-editor-handles-backspace-key
  105 run: result:address:duplex-list <- get *in, next:offset
 9999 mem: location 1158 is 1150
 9999 mem: location 1150 is 167
@@ -1711,6 +1700,7 @@ schedule: next-duplex/delete-before-cursor/handle-keyboard-event/editor-event-lo
 9999 mem: location 1159 is 1160
 9999 run: result 0 is 1160
 9999 mem: storing 1160 in location 1399
+schedule: delete-before-cursor/handle-keyboard-event/editor-event-loop/run1001/scenario-editor-handles-backspace-key
  104 run: screen <- move-cursor screen, cursor-row, cursor-column
 9999 mem: location 1388 is 1009
 9999 mem: location 1394 is 1
