@@ -200,7 +200,6 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
     if (Type_ordinal.find(type) == Type_ordinal.end()
         // types can contain integers, like for array sizes
         && !is_integer(type)) {
-//?       cerr << type << " is " << Next_type_ordinal << '\n'; //? 1
       Type_ordinal[type] = Next_type_ordinal++;
     }
     types.push_back(Type_ordinal[type]);
@@ -239,7 +238,6 @@ string reagent::to_string() const {
     }
   }
   out << "}";
-//?   if (properties.at(0).second.empty()) cerr << out.str(); //? 1
   return out.str();
 }
 

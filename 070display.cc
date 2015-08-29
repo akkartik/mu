@@ -31,7 +31,6 @@ Recipe_ordinal["close-console"] = CLOSE_CONSOLE;
 :(before "End Primitive Recipe Implementations")
 case CLOSE_CONSOLE: {
   tb_shutdown();
-//?   Trace_stream->dump_layer = "all"; //? 1
   break;
 }
 

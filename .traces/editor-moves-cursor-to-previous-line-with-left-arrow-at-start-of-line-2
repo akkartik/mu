@@ -1740,7 +1740,7 @@ schedule: next-duplex/snap-cursor/move-cursor-in-editor/editor-event-loop/run100
 9999 mem: storing 0 in location 1350
  103 run: break-unless c, 
 9999 mem: location 1350 is 0
-9999 run: jumping to instruction 163
+9999 run: jumping to instruction 164
  103 run: k:address:number <- maybe-convert e:event, keycode:variant
 9999 mem: location 1337 is 1
 9999 mem: location 1338 is 65515
@@ -1755,42 +1755,42 @@ schedule: next-duplex/snap-cursor/move-cursor-in-editor/editor-event-loop/run100
 9999 mem: storing 0 in location 1362
  103 run: break-unless page-up?, 
 9999 mem: location 1362 is 0
-9999 run: jumping to instruction 172
+9999 run: jumping to instruction 173
  103 run: page-down?:boolean <- equal *k, 65518/page-down
 9999 mem: location 1380 is 1338
 9999 mem: location 1338 is 65515
 9999 mem: storing 0 in location 1363
  103 run: break-unless page-down?, 
 9999 mem: location 1363 is 0
-9999 run: jumping to instruction 178
+9999 run: jumping to instruction 179
  103 run: move-to-end-of-line?:boolean <- equal *k, 65520/end
 9999 mem: location 1380 is 1338
 9999 mem: location 1338 is 65515
 9999 mem: storing 0 in location 1366
  103 run: break-unless move-to-end-of-line?, 
 9999 mem: location 1366 is 0
-9999 run: jumping to instruction 184
+9999 run: jumping to instruction 185
  103 run: move-to-start-of-line?:boolean <- equal *k, 65521/home
 9999 mem: location 1380 is 1338
 9999 mem: location 1338 is 65515
 9999 mem: storing 0 in location 1367
  103 run: break-unless move-to-start-of-line?, 
 9999 mem: location 1367 is 0
-9999 run: jumping to instruction 190
+9999 run: jumping to instruction 191
  103 run: move-to-next-line?:boolean <- equal *k, 65516/down-arrow
 9999 mem: location 1380 is 1338
 9999 mem: location 1338 is 65515
 9999 mem: storing 0 in location 1381
  103 run: break-unless move-to-next-line?, 
 9999 mem: location 1381 is 0
-9999 run: jumping to instruction 231
+9999 run: jumping to instruction 233
  103 run: move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
 9999 mem: location 1380 is 1338
 9999 mem: location 1338 is 65515
 9999 mem: storing 0 in location 1393
  103 run: break-unless move-to-previous-line?, 
 9999 mem: location 1393 is 0
-9999 run: jumping to instruction 281
+9999 run: jumping to instruction 284
  103 run: move-to-previous-character?:boolean <- equal *k, 65515/left-arrow
 9999 mem: location 1380 is 1338
 9999 mem: location 1338 is 65515
@@ -1798,6 +1798,8 @@ schedule: next-duplex/snap-cursor/move-cursor-in-editor/editor-event-loop/run100
  103 run: break-unless move-to-previous-character?, 
 9999 mem: location 1397 is 1
 9999 run: jump-unless fell through
+ 103 run: trace 10, [app], [left arrow]
+  10 app: left arrow 
  103 run: prev:address:duplex-list <- prev-duplex *before-cursor
 9999 mem: location 1345 is 1118
 9999 mem: location 1118 is 1184
@@ -1824,7 +1826,7 @@ schedule: next-duplex/snap-cursor/move-cursor-in-editor/editor-event-loop/run100
 9999 mem: storing 1181 in location 1398
  103 run: jump-if prev, 1:offset
 9999 mem: location 1398 is 1181
-9999 run: jumping to instruction 288
+9999 run: jumping to instruction 292
  103 run: before-cursor-row:number <- get *editor, cursor-row:offset
 9999 mem: location 1336 is 1115
 9999 mem: location 1115 is 1156
@@ -1961,7 +1963,7 @@ schedule: next-duplex/snap-cursor/move-cursor-in-editor/editor-event-loop/run100
 9999 mem: storing 1 in location 1421
  104 run: break-if at-left-margin?, 
 9999 mem: location 1421 is 1
-9999 run: jumping to instruction 11
+9999 run: jumping to instruction 12
  104 run: top-of-screen?:boolean <- equal *cursor-row, 1
 9999 mem: location 1418 is 1121
 9999 mem: location 1121 is 3
@@ -1978,7 +1980,7 @@ schedule: next-duplex/snap-cursor/move-cursor-in-editor/editor-event-loop/run100
 9999 mem: storing 2 in location 1121
  104 run: break-unless top-of-screen?, 
 9999 mem: location 1422 is 0
-9999 run: jumping to instruction 24
+9999 run: jumping to instruction 26
  104 run: previous-character:character <- get *before-cursor, value:offset
 9999 mem: location 1417 is 1184
 9999 mem: location 1184 is 10
@@ -1995,6 +1997,8 @@ schedule: next-duplex/snap-cursor/move-cursor-in-editor/editor-event-loop/run100
  104 run: break-unless previous-character-is-newline?, 
 9999 mem: location 1426 is 1
 9999 run: jump-unless fell through
+ 104 run: trace 10, [app], [switching to previous line]
+  10 app: switching to previous line 
  104 run: d:address:duplex-list <- get *editor, data:offset
 9999 mem: location 1416 is 1115
 9999 mem: location 1115 is 1156
@@ -2681,77 +2685,79 @@ schedule: next-duplex/snap-cursor/move-cursor-in-editor/editor-event-loop/run100
  103 run: break-unless c, 
 9999 mem: location 1350 is 1338
 9999 run: jump-unless fell through
+ 103 run: trace 10, [app], [handle-keyboard-event: special character]
+  10 app: handle-keyboard-event: special character 
  103 run: redo?:boolean <- equal *c, 25/ctrl-y
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
 9999 mem: storing 0 in location 1351
  103 run: break-unless redo?, 
 9999 mem: location 1351 is 0
-9999 run: jumping to instruction 48
+9999 run: jumping to instruction 49
  103 run: undo?:boolean <- equal *c, 26/ctrl-z
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
 9999 mem: storing 0 in location 1359
  103 run: break-unless undo?, 
 9999 mem: location 1359 is 0
-9999 run: jumping to instruction 80
+9999 run: jumping to instruction 81
  103 run: page-up?:boolean <- equal *c, 2/ctrl-b
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
 9999 mem: storing 0 in location 1362
  103 run: break-unless page-up?, 
 9999 mem: location 1362 is 0
-9999 run: jumping to instruction 86
+9999 run: jumping to instruction 87
  103 run: page-down?:boolean <- equal *c, 6/ctrl-f
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
 9999 mem: storing 0 in location 1363
  103 run: break-unless page-down?, 
 9999 mem: location 1363 is 0
-9999 run: jumping to instruction 92
+9999 run: jumping to instruction 93
  103 run: delete-to-end-of-line?:boolean <- equal *c, 11/ctrl-k
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
 9999 mem: storing 0 in location 1364
  103 run: break-unless delete-to-end-of-line?, 
 9999 mem: location 1364 is 0
-9999 run: jumping to instruction 98
+9999 run: jumping to instruction 99
  103 run: delete-to-start-of-line?:boolean <- equal *c, 21/ctrl-u
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
 9999 mem: storing 0 in location 1365
  103 run: break-unless delete-to-start-of-line?, 
 9999 mem: location 1365 is 0
-9999 run: jumping to instruction 104
+9999 run: jumping to instruction 105
  103 run: move-to-end-of-line?:boolean <- equal *c, 5/ctrl-e
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
 9999 mem: storing 0 in location 1366
  103 run: break-unless move-to-end-of-line?, 
 9999 mem: location 1366 is 0
-9999 run: jumping to instruction 110
+9999 run: jumping to instruction 111
  103 run: move-to-start-of-line?:boolean <- equal *c, 1/ctrl-a
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
 9999 mem: storing 0 in location 1367
  103 run: break-unless move-to-start-of-line?, 
 9999 mem: location 1367 is 0
-9999 run: jumping to instruction 116
+9999 run: jumping to instruction 117
+schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2
  103 run: delete-previous-character?:boolean <- equal *c, 8/backspace
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
 9999 mem: storing 0 in location 1368
  103 run: break-unless delete-previous-character?, 
 9999 mem: location 1368 is 0
-9999 run: jumping to instruction 122
-schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2
+9999 run: jumping to instruction 123
  103 run: tab?:boolean <- equal *c, 9/tab
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
 9999 mem: storing 0 in location 1370
  103 run: break-unless tab?, 
 9999 mem: location 1370 is 0
-9999 run: jumping to instruction 129
+9999 run: jumping to instruction 130
  103 run: regular-character?:boolean <- greater-or-equal *c, 32/space
 9999 mem: location 1350 is 1338
 9999 mem: location 1338 is 48
@@ -2766,7 +2772,7 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-moves-
 9999 mem: storing 1 in location 1371
  103 run: jump-if regular-character?, 1:offset
 9999 mem: location 1371 is 1
-9999 run: jumping to instruction 135
+9999 run: jumping to instruction 136
  103 run: top-before:address:duplex-list <- get *editor, top-of-screen:offset
 9999 mem: location 1336 is 1115
 9999 mem: location 1115 is 1156
@@ -3068,7 +3074,7 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-moves-
 9999 mem: storing 0 in location 1455
  104 run: break-unless newline?, 
 9999 mem: location 1455 is 0
-9999 run: jumping to instruction 47
+9999 run: jumping to instruction 48
  104 run: wrap-column:number <- subtract right, 1
 9999 mem: location 1450 is 9
 9999 mem: storing 8 in location 1465
@@ -3079,7 +3085,7 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-moves-
 9999 mem: storing 0 in location 1466
  104 run: break-unless at-wrap?, 
 9999 mem: location 1466 is 0
-9999 run: jumping to instruction 65
+9999 run: jumping to instruction 67
  104 run: *cursor-column <- add *cursor-column, 1
 9999 mem: location 1448 is 1122
 9999 mem: location 1122 is 3
@@ -3114,7 +3120,7 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-moves-
 9999 mem: storing 0 in location 1468
  104 run: break-unless at-end?, 
 9999 mem: location 1468 is 0
-9999 run: jumping to instruction 79
+9999 run: jumping to instruction 81
  104 run: break-unless next, 
 9999 mem: location 1467 is 1184
 9999 run: jump-unless fell through
@@ -3188,7 +3194,7 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-moves-
 9999 mem: storing 0 in location 1471
  104 run: jump-unless at-right?, 1:offset
 9999 mem: location 1471 is 0
-9999 run: jumping to instruction 91
+9999 run: jumping to instruction 93
  104 run: break-unless curr, 
 9999 mem: location 1473 is 1477
 9999 run: jump-unless fell through
@@ -3423,14 +3429,14 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-moves-
 9999 run: result 0 is 1184
 9999 mem: storing 1184 in location 1473
  104 run: loop 
-9999 run: jumping to instruction 88
+9999 run: jumping to instruction 90
  104 run: at-right?:boolean <- greater-or-equal curr-column, screen-width
 9999 mem: location 1474 is 4
 9999 mem: location 1453 is 10
 9999 mem: storing 0 in location 1471
  104 run: jump-unless at-right?, 1:offset
 9999 mem: location 1471 is 0
-9999 run: jumping to instruction 91
+9999 run: jumping to instruction 93
  104 run: break-unless curr, 
 9999 mem: location 1473 is 1184
 9999 run: jump-unless fell through
@@ -3449,7 +3455,7 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-moves-
 9999 mem: storing 1 in location 1476
  104 run: break-if at-newline?, 
 9999 mem: location 1476 is 1
-9999 run: jumping to instruction 99
+9999 run: jumping to instruction 101
  104 run: reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 0/no-more-render
 9999 mem: location 1443 is 1115
 9999 mem: location 1445 is 1009
@@ -3532,7 +3538,7 @@ schedule: handle-keyboard-event/editor-event-loop/run1001/scenario-editor-moves-
 9999 mem: storing 0 in location 1357
  103 run: break-unless typing, 
 9999 mem: location 1357 is 0
-9999 run: jumping to instruction 154
+9999 run: jumping to instruction 155
  103 run: insert-from:address:duplex-list <- copy *before-cursor
 9999 mem: location 1345 is 1118
 9999 mem: location 1118 is 1477

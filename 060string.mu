@@ -105,7 +105,6 @@ container buffer [
 
 recipe new-buffer [
   local-scope
-#?   $print default-space:address:array:location, 10/newline
   result:address:buffer <- new buffer:type
   len:address:number <- get-address *result, length:offset
   *len:address:number <- copy 0
@@ -113,7 +112,6 @@ recipe new-buffer [
   capacity:number, found?:boolean <- next-ingredient
   assert found?, [new-buffer must get a capacity argument]
   *s <- new character:type, capacity
-#?   $print *s, 10/newline
   reply result
 ]
 
@@ -172,10 +170,7 @@ recipe buffer-append [
     in <- grow-buffer in
   }
   s:address:array:character <- get *in, data:offset
-#?   $print [array underlying buf: ], s, 10/newline
-#?   $print [index: ], *len, 10/newline
   dest:address:character <- index-address *s, *len
-#?   $print [storing ], c, [ in ], dest, 10/newline
   *dest <- copy c
   *len <- add *len, 1
   reply in/same-as-ingredient:0
@@ -300,13 +295,11 @@ recipe buffer-to-array [
     reply 0
   }
   len:number <- get *in, length:offset
-#?   $print [size ], len, 10/newline
   s:address:array:character <- get *in, data:offset
   # we can't just return s because it is usually the wrong length
   result:address:array:character <- new character:type, len
   i:number <- copy 0
   {
-#?     $print i #? 1
     done?:boolean <- greater-or-equal i, len
     break-if done?
     src:character <- index *s, i
@@ -494,7 +487,6 @@ recipe interpolate [
     result-len <- subtract result-len, 1
     loop
   }
-#?   $print tem-len, [ ], $result-len, 10/newline
   rewind-ingredients
   _ <- next-ingredient  # skip template
   result:address:array:character <- new character:type, result-len
@@ -557,7 +549,6 @@ recipe interpolate [
 ]
 
 scenario interpolate-works [
-#?   dump run #? 1
   run [
     1:address:array:character/raw <- new [abc _]
     2:address:array:character/raw <- new [def]

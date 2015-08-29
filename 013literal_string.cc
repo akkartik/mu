@@ -26,7 +26,6 @@ Type_ordinal["literal-string"] = 0;
     string result = slurp_quoted(in);
     skip_whitespace(in);
     skip_comment(in);
-//?     cerr << '^' << result << "$\n"; //? 1
     return result;
   }
 
@@ -48,12 +47,10 @@ bool code_string(istream& in, ostringstream& out) {
     char c = in.get();
     if (!isspace(c)) {
       in.putback(c);
-//?       cerr << "code_string: " << out.str() << '\n'; //? 1
       return false;
     }
     out << c;
     if (c == '\n') {
-//?       cerr << "code_string: " << out.str() << '\n'; //? 1
       return true;
     }
   }
@@ -63,18 +60,14 @@ bool code_string(istream& in, ostringstream& out) {
 // Read a regular string. Regular strings can only contain other regular
 // strings.
 void slurp_quoted_comment_oblivious(istream& in, ostringstream& out) {
-//?   cerr << "comment oblivious\n"; //? 1
   int brace_depth = 1;
   while (!in.eof()) {
     char c = in.get();
-//?     cerr << '%' << (int)c << ' ' << brace_depth << ": " << out.str() << "%$\n"; //? 1
-//?     cout << (int)c << ": " << brace_depth << '\n'; //? 2
     if (c == '\\') {
       out << static_cast<char>(in.get());
       continue;
     }
     out << c;
-//?     cout << out.str() << "$\n"; //? 1
     if (c == '[') ++brace_depth;
     if (c == ']') --brace_depth;
     if (brace_depth == 0) break;
@@ -87,10 +80,8 @@ void slurp_quoted_comment_oblivious(istream& in, ostringstream& out) {
 
 // Read a code string. Code strings can contain either code or regular strings.
 void slurp_quoted_comment_aware(istream& in, ostringstream& out) {
-//?   cerr << "comment aware\n"; //? 1
   char c;
   while (in >> c) {
-//?     cerr << '^' << (int)c << ": " << out.str() << "$\n"; //? 1
     if (c == '\\') {
       out << static_cast<char>(in.get());
       continue;

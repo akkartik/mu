@@ -508,13 +508,12 @@ recipe get-color [
   color:number <- next-ingredient
   c:character <- next-ingredient
   color-is-white?:boolean <- equal color, 7/white
-#?   $print [character: ], c, 10/newline #? 1
   # if color is white and next character is '#', switch color to blue
   {
     break-unless color-is-white?
     starting-comment?:boolean <- equal c, 35/#
     break-unless starting-comment?
-#?     $print [switch color back to blue], 10/newline #? 1
+    trace 90, [app], [switch color back to blue]
     color <- copy 12/lightblue
     jump +exit:label
   }
@@ -524,7 +523,7 @@ recipe get-color [
     break-unless color-is-blue?
     ending-comment?:boolean <- equal c, 10/newline
     break-unless ending-comment?
-#?     $print [switch color back to white], 10/newline #? 1
+    trace 90, [app], [switch color back to white]
     color <- copy 7/white
     jump +exit:label
   }
@@ -632,7 +631,7 @@ recipe handle-keyboard-event [
   {
     c:address:character <- maybe-convert e, text:variant
     break-unless c
-#?     trace 10, [app], [handle-keyboard-event: special character] #? 1
+    trace 10, [app], [handle-keyboard-event: special character]
     # exceptions for special characters go here
     +handle-special-character
     # ignore any other special characters
@@ -670,11 +669,9 @@ recipe move-cursor-in-editor [
   too-far-right?:boolean <- greater-than click-column, right
   reply-if too-far-right?, 0/false
   # position cursor
-#?   trace 1, [print-character], [foo] #? 1
   click-row:number <- get t, row:offset
   click-column:number <- get t, column:offset
   editor <- snap-cursor screen, editor, click-row, click-column
-#?   trace 1, [print-character], [foo done] #? 1
   # gain focus
   reply 1/true
 ]
@@ -1572,7 +1569,7 @@ recipe delete-before-cursor [
   # if at start of text (before-cursor at § sentinel), return
   prev:address:duplex-list <- prev-duplex *before-cursor
   reply-unless prev, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render
-#?   trace 10, [app], [delete-before-cursor] #? 1
+  trace 10, [app], [delete-before-cursor]
   original-row:number <- get *editor, cursor-row:offset
   editor, scroll?:boolean <- move-cursor-coordinates-left editor
   remove-duplex *before-cursor
@@ -1619,7 +1616,7 @@ recipe move-cursor-coordinates-left [
   {
     at-left-margin?:boolean <- equal *cursor-column, left
     break-if at-left-margin?
-#?     trace 10, [app], [decrementing cursor column] #? 1
+    trace 10, [app], [decrementing cursor column]
     *cursor-column <- subtract *cursor-column, 1
     reply editor/same-as-ingredient:0, 0/no-more-render
   }
@@ -1641,14 +1638,14 @@ recipe move-cursor-coordinates-left [
     previous-character-is-newline?:boolean <- equal previous-character, 10/newline
     break-unless previous-character-is-newline?
     # compute length of previous line
-#?     trace 10, [app], [switching to previous line] #? 1
+    trace 10, [app], [switching to previous line]
     d:address:duplex-list <- get *editor, data:offset
     end-of-line:number <- previous-line-length before-cursor, d
     *cursor-column <- add left, end-of-line
     reply editor/same-as-ingredient:0, go-render?
   }
   # case 2: if previous-character was not newline, we're just at a wrapped line
-#?   trace 10, [app], [wrapping to previous line] #? 1
+  trace 10, [app], [wrapping to previous line]
   right:number <- get *editor, right:offset
   *cursor-column <- subtract right, 1  # leave room for wrap icon
   reply editor/same-as-ingredient:0, go-render?
@@ -2075,7 +2072,7 @@ after +handle-special-key [
   {
     move-to-previous-character?:boolean <- equal *k, 65515/left-arrow
     break-unless move-to-previous-character?
-#?     trace 10, [app], [left arrow] #? 1
+    trace 10, [app], [left arrow]
     # if not at start of text (before-cursor at § sentinel)
     prev:address:duplex-list <- prev-duplex *before-cursor
     reply-unless prev, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
@@ -3259,7 +3256,7 @@ d]
 ]
 
 after +scroll-down [
-#?   $print [scroll down], 10/newline #? 2
+  trace 10, [app], [scroll down]
   top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
@@ -3561,7 +3558,7 @@ d]
 ]
 
 after +scroll-up [
-#?   $print [scroll up], 10/newline #? 1
+  trace 10, [app], [scroll up]
   top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
   *top-of-screen <- before-previous-line *top-of-screen, editor
 ]
@@ -3573,7 +3570,6 @@ recipe before-previous-line [
   local-scope
   curr:address:duplex-list <- next-ingredient
   c:character <- get *curr, value:offset
-#?   $print [curr at ], c, 10/newline #? 1
   # compute max, number of characters to skip
   #   1 + len%(width-1)
   #   except rotate second term to vary from 1 to width-1 rather than 0 to width-2
@@ -3583,7 +3579,6 @@ recipe before-previous-line [
   max-line-length:number <- subtract right, left, -1/exclusive-right, 1/wrap-icon
   sentinel:address:duplex-list <- get *editor, data:offset
   len:number <- previous-line-length curr, sentinel
-#?   $print [previous line: ], len, 10/newline #? 1
   {
     break-if len
     # empty line; just skip this newline
@@ -3595,11 +3590,9 @@ recipe before-previous-line [
   # remainder 0 => scan one width-worth
   {
     break-if max
-#?     $print [remainder 0; scan one width], 10/newline #? 1
     max <- copy max-line-length
   }
   max <- add max, 1
-#?   $print [skipping ], max, [ characters], 10/newline #? 1
   count:number <- copy 0
   # skip 'max' characters
   {
@@ -4154,7 +4147,6 @@ recipe page-up [
   count:number <- copy 0
   top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
   {
-#?     $print [- ], count, [ vs ], max, 10/newline #? 1
     done?:boolean <- greater-or-equal count, max
     break-if done?
     prev:address:duplex-list <- before-previous-line *top-of-screen, editor
@@ -4605,7 +4597,7 @@ recipe resize [
 ]
 
 scenario point-at-multiple-editors [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]
@@ -4631,7 +4623,7 @@ scenario point-at-multiple-editors [
 ]
 
 scenario edit-multiple-editors [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]
@@ -4675,7 +4667,7 @@ scenario edit-multiple-editors [
 ]
 
 scenario multiple-editors-cover-only-their-own-areas [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 60/width, 10/height
   run [
     1:address:array:character <- new [abc]
@@ -4694,7 +4686,7 @@ scenario multiple-editors-cover-only-their-own-areas [
 ]
 
 scenario editor-in-focus-keeps-cursor [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 30/width, 5/height
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
@@ -4731,7 +4723,7 @@ scenario editor-in-focus-keeps-cursor [
 ]
 
 scenario backspace-in-sandbox-editor-joins-lines [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 30/width, 5/height
   # initialize sandbox side with two lines
   1:address:array:character <- new []
@@ -4870,15 +4862,11 @@ recipe update-cursor [
   sandbox-in-focus?:boolean <- next-ingredient
   {
     break-if sandbox-in-focus?
-#?     $print [recipes in focus
-#? ] #? 1
     cursor-row:number <- get *recipes, cursor-row:offset
     cursor-column:number <- get *recipes, cursor-column:offset
   }
   {
     break-unless sandbox-in-focus?
-#?     $print [sandboxes in focus
-#? ] #? 1
     cursor-row:number <- get *current-sandbox, cursor-row:offset
     cursor-column:number <- get *current-sandbox, cursor-column:offset
   }
@@ -4913,7 +4901,7 @@ after +global-type [
 # ctrl-x - maximize/unmaximize the side with focus
 
 scenario maximize-side [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]
@@ -5047,7 +5035,7 @@ container sandbox-data [
 ]
 
 scenario run-and-show-results [
-  $close-trace  # trace too long for github
+  $close-trace  # trace too long
   assume-screen 100/width, 15/height
   # recipe editor is empty
   1:address:array:character <- new []
@@ -5304,7 +5292,6 @@ recipe render-sandboxes [
   {
     break-if sandbox-warnings
     break-unless empty-screen?
-#?     $print [display response from ], row, 10/newline #? 1
     *response-starting-row <- add row, 1
     +render-sandbox-response
     row, screen <- render-string screen, sandbox-response, left, right, 245/grey, row
@@ -5422,7 +5409,7 @@ recipe render-screen [
 ]
 
 scenario run-updates-results [
-  $close-trace  # trace too long for github
+  $close-trace  # trace too long
   assume-screen 100/width, 12/height
   # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
   1:address:array:character <- new [ 
@@ -5475,7 +5462,7 @@ z:number <- add 2, 2
 ]
 
 scenario run-instruction-and-print-warnings [
-  $close-trace  # trace too long for github
+  $close-trace  # trace too long
   assume-screen 100/width, 10/height
   # left editor is empty
   1:address:array:character <- new []
@@ -5532,7 +5519,7 @@ scenario run-instruction-and-print-warnings [
 ]
 
 scenario run-instruction-and-print-warnings-only-once [
-  $close-trace  # trace too long for github
+  $close-trace  # trace too long
   assume-screen 100/width, 10/height
   # left editor is empty
   1:address:array:character <- new []
@@ -5561,7 +5548,7 @@ scenario run-instruction-and-print-warnings-only-once [
 ]
 
 scenario run-instruction-manages-screen-per-sandbox [
-  $close-trace  # trace too long for github
+  $close-trace  # trace too long
   assume-screen 100/width, 20/height
   # left editor is empty
   1:address:array:character <- new []
@@ -5594,7 +5581,7 @@ scenario run-instruction-manages-screen-per-sandbox [
 ]
 
 scenario sandbox-with-print-can-be-edited [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 100/width, 20/height
   # left editor is empty
   1:address:array:character <- new []
@@ -5640,7 +5627,7 @@ scenario sandbox-with-print-can-be-edited [
 ]
 
 scenario sandbox-can-handle-infinite-loop [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 100/width, 20/height
   # left editor is empty
   1:address:array:character <- new [recipe foo [
@@ -5711,7 +5698,7 @@ scenario editor-provides-edited-contents [
 ## editing sandboxes after they've been created
 
 scenario clicking-on-a-sandbox-moves-it-to-editor [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 40/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
@@ -5820,7 +5807,7 @@ recipe extract-sandbox [
 ## deleting sandboxes
 
 scenario deleting-sandboxes [
-  $close-trace  # trace too long for github
+  $close-trace  # trace too long
   assume-screen 100/width, 15/height
   1:address:array:character <- new []
   2:address:array:character <- new []
@@ -5890,7 +5877,6 @@ after +global-touch [
   {
     was-delete?:boolean <- delete-sandbox *t, env
     break-unless was-delete?
-#?     trace 10, [app], [delete clicked] #? 1
     hide-screen screen
     screen <- render-sandbox-side screen, env
     screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
@@ -5933,7 +5919,7 @@ recipe delete-sandbox [
 ## clicking on sandbox results to 'fix' them and turn sandboxes into tests
 
 scenario sandbox-click-on-result-toggles-color-to-green [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 40/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
@@ -6108,7 +6094,7 @@ after +render-sandbox-response [
 ## clicking on the code typed into a sandbox toggles its trace
 
 scenario sandbox-click-on-code-toggles-app-trace [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 40/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
@@ -6181,7 +6167,7 @@ recipe foo [
 ]
 
 scenario sandbox-shows-app-trace-and-result [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 40/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
@@ -6295,7 +6281,6 @@ after +render-sandbox-results [
     break-unless display-trace?
     sandbox-trace:address:array:character <- get *sandbox, trace:offset
     break-unless sandbox-trace  # nothing to print; move on
-#?     $print [display trace from ], row, 10/newline #? 1
     row, screen <- render-string, screen, sandbox-trace, left, right, 245/grey, row
     row <- subtract row, 1  # trim the trailing newline that's always present
   }
@@ -6304,7 +6289,7 @@ after +render-sandbox-results [
 ## handling malformed programs
 
 scenario run-shows-warnings-in-get [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 100/width, 15/height
   1:address:array:character <- new [ 
 recipe foo [
@@ -6340,7 +6325,7 @@ recipe foo [
 ]
 
 scenario run-shows-missing-type-warnings [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 100/width, 15/height
   1:address:array:character <- new [ 
 recipe foo [
@@ -6367,7 +6352,7 @@ recipe foo [
 ]
 
 scenario run-shows-unbalanced-bracket-warnings [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 100/width, 15/height
   # recipe is incomplete (unbalanced '[')
   1:address:array:character <- new [ 
@@ -6396,7 +6381,7 @@ recipe foo «
 ]
 
 scenario run-shows-get-on-non-container-warnings [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 100/width, 15/height
   1:address:array:character <- new [ 
 recipe foo [
@@ -6425,7 +6410,7 @@ recipe foo [
 ]
 
 scenario run-shows-non-literal-get-argument-warnings [
-  $close-trace
+  $close-trace  # trace too long
   assume-screen 100/width, 15/height
   1:address:array:character <- new [ 
 recipe foo [
@@ -6457,7 +6442,7 @@ recipe foo [
 ]
 
 scenario run-shows-warnings-everytime [
-  $close-trace
+  $close-trace  # trace too long
   # try to run a file with an error
   assume-screen 100/width, 15/height
   1:address:array:character <- new [ 

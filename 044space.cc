@@ -49,7 +49,6 @@ default_space = 0;
 reagent r = absolutize(x);
 :(code)
 reagent absolutize(reagent x) {
-//?   cout << "absolutize " << x.to_string() << '\n'; //? 4
   if (is_raw(x) || is_dummy(x)) return x;
   if (x.name == "default-space") return x;
   if (!x.initialized) {
@@ -203,7 +202,6 @@ long long int space_base(const reagent& x) {
 
 long long int address(long long int offset, long long int base) {
   if (base == 0) return offset;  // raw
-//?   cout << base << '\n'; //? 2
   if (offset >= static_cast<long long int>(Memory[base])) {
     // todo: test
     raise << "location " << offset << " is out of bounds " << Memory[base] << " at " << base << '\n' << end();

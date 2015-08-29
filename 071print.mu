@@ -122,7 +122,6 @@ recipe print-character [
     # special-case: newline
     {
       newline?:boolean <- equal c, 10/newline
-#?       $print c, [ ], newline?, 10/newline
       break-unless newline?
       {
         # unless cursor is already at bottom
@@ -159,7 +158,6 @@ recipe print-character [
       }
       reply sc/same-as-ingredient:0
     }
-#?     $print [saving character ], c, [ to fake screen ], cursor, 10/newline
     cursor:address:screen-cell <- index-address *buf, index
     cursor-contents:address:character <- get-address *cursor, contents:offset
     *cursor-contents <- copy c
@@ -181,7 +179,6 @@ recipe print-character [
 
 scenario print-character-at-top-left [
   run [
-#?     $start-tracing #? 3
     1:address:screen <- new-fake-screen 3/width, 2/height
     1:address:screen <- print-character 1:address:screen, 97  # 'a'
     2:address:array:screen-cell <- get *1:address:screen, data:offset
@@ -212,7 +209,6 @@ scenario print-character-color [
 
 scenario print-backspace-character [
   run [
-#?     $start-tracing #? 3
     1:address:screen <- new-fake-screen 3/width, 2/height
     1:address:screen <- print-character 1:address:screen, 97  # 'a'
     1:address:screen <- print-character 1:address:screen, 8  # backspace
@@ -271,7 +267,6 @@ scenario print-at-right-margin [
 
 scenario print-newline-character [
   run [
-#?     $start-tracing #? 3
     1:address:screen <- new-fake-screen 3/width, 2/height
     1:address:screen <- print-character 1:address:screen, 97  # 'a'
     1:address:screen <- print-character 1:address:screen, 10/newline
@@ -345,9 +340,7 @@ recipe clear-line [
     column:address:number <- get-address *sc, cursor-column:offset
     original-column:number <- copy *column
     # space over the entire line
-#?     $start-tracing #? 1
     {
-#?       $print *column, 10/newline
       right:number <- subtract width, 1
       done?:boolean <- greater-or-equal *column, right
       break-if done?
@@ -398,7 +391,6 @@ recipe move-cursor [
 
 scenario clear-line-erases-printed-characters [
   run [
-#?     $start-tracing #? 4
     1:address:screen <- new-fake-screen 3/width, 2/height
     # print a character
     1:address:screen <- print-character 1:address:screen, 97  # 'a'

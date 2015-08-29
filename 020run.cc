@@ -60,7 +60,7 @@ void run_current_routine()
   while (!Current_routine->completed())  // later layers will modify condition
   {
     // Running One Instruction
-//?     Instructions_running[current_recipe_name()]++; //? 1
+//?     Instructions_running[current_recipe_name()]++;
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string() << end();
     if (Memory[0] != 0) {
@@ -74,8 +74,8 @@ void run_current_routine()
     if (should_copy_ingredients()) {
       for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
         ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
-//?         Locations_read[current_recipe_name()] += SIZE(ingredients.back()); //? 1
-//?         Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back()); //? 1
+//?         Locations_read[current_recipe_name()] += SIZE(ingredients.back());
+//?         Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back());
       }
     }
     // Instructions below will write to 'products'.
@@ -156,14 +156,14 @@ if (argc > 1) {
 :(before "End Main")
 if (!Run_tests) {
   setup();
-//?   Trace_file = "interactive"; //? 3
-//?   START_TRACING_UNTIL_END_OF_SCOPE; //? 3
-//?   Trace_stream->collect_layers.insert("app"); //? 2
+//?   Trace_file = "interactive";
+//?   START_TRACING_UNTIL_END_OF_SCOPE;
+//?   Trace_stream->collect_layers.insert("app");
   transform_all();
   recipe_ordinal r = Recipe_ordinal[string("main")];
-//?   atexit(dump_profile); //? 1
+//?   atexit(dump_profile);
   if (r) run(r);
-//?   dump_memory(); //? 1
+//?   dump_memory();
   teardown();
 }
 
@@ -217,7 +217,6 @@ load_permanently("core.mu");
 :(code)
 // helper for tests
 void run(string form) {
-//?   cerr << form << '\n'; //? 1
   vector<recipe_ordinal> tmp = load(form);
   if (tmp.empty()) return;
   transform_all();
@@ -227,7 +226,6 @@ void run(string form) {
 //:: Reading from memory, writing to memory.
 
 vector<double> read_memory(reagent x) {
-//?   cout << "read_memory: " << x.to_string() << '\n'; //? 2
   vector<double> result;
   if (is_literal(x)) {
     result.push_back(x.value);
@@ -272,7 +270,7 @@ long long int size_of(const vector<type_ordinal>& types) {
 bool size_mismatch(const reagent& x, const vector<double>& data) {
   if (x.types.empty()) return true;
   // End size_mismatch(x) Cases
-//?   if (size_of(x) != SIZE(data)) cerr << size_of(x) << " vs " << SIZE(data) << '\n'; //? 2
+//?   if (size_of(x) != SIZE(data)) cerr << size_of(x) << " vs " << SIZE(data) << '\n';
   return size_of(x) != SIZE(data);
 }
 

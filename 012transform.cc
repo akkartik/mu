@@ -15,7 +15,6 @@ vector<transform_fn> Transform;
 
 :(code)
 void transform_all() {
-//?   cerr << "AAA transform_all\n"; //? 2
   for (long long int t = 0; t < SIZE(Transform); ++t) {
     for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
       recipe& r = p->second;
@@ -29,7 +28,6 @@ void transform_all() {
 }
 
 void parse_int_reagents() {
-//?   cout << "parse_int_reagents\n"; //? 1
   for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
     recipe& r = p->second;
     if (r.steps.empty()) continue;

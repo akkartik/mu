@@ -80,8 +80,8 @@ case NEW: {
       size = size_of(type);
     }
   }
-//?   Total_alloc += size; //? 1
-//?   Num_alloc++; //? 1
+//?   Total_alloc += size;
+//?   Num_alloc++;
   // compute the region of memory to return
   // really crappy at the moment
   ensure_space(size);
@@ -104,17 +104,17 @@ case NEW: {
   break;
 }
 
-//? :(before "End Globals") //? 1
-//? long long int Total_alloc = 0; //? 1
-//? long long int Num_alloc = 0; //? 1
-//? long long int Total_free = 0; //? 1
-//? long long int Num_free = 0; //? 1
-//? :(before "End Setup") //? 1
-//? Total_alloc = Num_alloc = Total_free = Num_free = 0; //? 1
-//? :(before "End Teardown") //? 1
-//? cerr << Total_alloc << "/" << Num_alloc //? 1
-//?      << " vs " << Total_free << "/" << Num_free << '\n'; //? 1
-//? cerr << SIZE(Memory) << '\n'; //? 1
+//? :(before "End Globals")
+//? long long int Total_alloc = 0;
+//? long long int Num_alloc = 0;
+//? long long int Total_free = 0;
+//? long long int Num_free = 0;
+//? :(before "End Setup")
+//? Total_alloc = Num_alloc = Total_free = Num_free = 0;
+//? :(before "End Teardown")
+//? cerr << Total_alloc << "/" << Num_alloc
+//?      << " vs " << Total_free << "/" << Num_free << '\n';
+//? cerr << SIZE(Memory) << '\n';
 
 :(code)
 void ensure_space(long long int size) {
@@ -236,9 +236,9 @@ case ABANDON: {
 
 :(code)
 void abandon(long long int address, long long int size) {
-//?   Total_free += size; //? 1
-//?   Num_free++; //? 1
-//?   cerr << "abandon: " << size << '\n'; //? 2
+//?   Total_free += size;
+//?   Num_free++;
+//?   cerr << "abandon: " << size << '\n';
   // clear memory
   for (long long int curr = address; curr < address+size; ++curr)
     Memory[curr] = 0;
@@ -328,9 +328,8 @@ if (is_literal(current_instruction().ingredients.at(0))
 long long int new_mu_string(const string& contents) {
   // allocate an array just large enough for it
   long long int string_length = unicode_length(contents);
-//?   cout << "string_length is " << string_length << '\n'; //? 1
-//?   Total_alloc += string_length+1; //? 1
-//?   Num_alloc++; //? 1
+//?   Total_alloc += string_length+1;
+//?   Num_alloc++;
   ensure_space(string_length+1);  // don't forget the extra location for array size
   // initialize string
   long long int result = Current_routine->alloc;

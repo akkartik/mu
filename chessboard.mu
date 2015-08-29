@@ -155,11 +155,9 @@ recipe print-board [
   board:address:array:address:array:character <- next-ingredient
   row:number <- copy 7  # start printing from the top of the board
   # print each row
-#?   $print [printing board to screen ], screen, 10/newline
   {
     done?:boolean <- lesser-than row, 0
     break-if done?
-#?     $print [printing rank ], row, 10/newline
     # print rank number as a legend
     rank:number <- add row, 1
     print-integer screen, rank
@@ -182,17 +180,12 @@ recipe print-board [
     loop
   }
   # print file letters as legend
-#?   $print [printing legend
-#? ] #? 1
   s <- new [  +----------------]
   print-string screen, s
   screen <- cursor-to-next-line screen
-#?   screen <- print-character screen, 97 #? 1
   s <- new [    a b c d e f g h]
   screen <- print-string screen, s
   screen <- cursor-to-next-line screen
-#?   $print [done printing board
-#? ] #? 1
 ]
 
 # board:address:array:address:array:character <- initial-position
@@ -225,7 +218,6 @@ scenario printing-the-board [
   run [
     1:address:array:address:array:character/board <- initial-position
     screen:address <- print-board screen:address, 1:address:array:address:array:character/board
-#?     $dump-screen #? 1
   ]
   screen-should-contain [
   #  012345678901234567890123456789

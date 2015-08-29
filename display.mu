@@ -20,6 +20,5 @@ recipe main [
   wait-for-some-interaction
   move-cursor-up-on-display
   wait-for-some-interaction
-#?   $print [aaa] #? 1
   close-console
 ]

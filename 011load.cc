@@ -20,14 +20,12 @@ vector<recipe_ordinal> load(istream& in) {
   in >> std::noskipws;
   vector<recipe_ordinal> result;
   while (!in.eof()) {
-//?     cerr << "===\n"; //? 1
     skip_whitespace_and_comments(in);
     if (in.eof()) break;
     string command = next_word(in);
     // Command Handlers
     if (command == "recipe") {
       string recipe_name = next_word(in);
-//?       cerr << "recipe: " << recipe_name << '\n'; //? 2
       if (recipe_name.empty())
         raise << "empty recipe name\n" << end();
       if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
@@ -39,7 +37,6 @@ vector<recipe_ordinal> load(istream& in) {
       }
       // todo: save user-defined recipes to mu's memory
       Recipe[Recipe_ordinal[recipe_name]] = slurp_recipe(in);
-//?       cerr << Recipe_ordinal[recipe_name] << ": " << recipe_name << '\n'; //? 2
       Recipe[Recipe_ordinal[recipe_name]].name = recipe_name;
       // track added recipes because we may need to undo them in tests; see below
       recently_added_recipes.push_back(Recipe_ordinal[recipe_name]);
@@ -63,7 +60,6 @@ recipe slurp_recipe(istream& in) {
   instruction curr;
   while (next_instruction(in, &curr)) {
     // End Rewrite Instruction(curr)
-//?     cerr << "instruction: " << curr.to_string() << '\n'; //? 3
     result.steps.push_back(curr);
   }
   return result;
@@ -76,13 +72,11 @@ bool next_instruction(istream& in, instruction* curr) {
     raise << "0: unbalanced '[' for recipe\n" << end();
     return false;
   }
-//?   show_rest_of_stream(in); //? 1
   skip_whitespace(in);
   if (in.eof()) {
     raise << "1: unbalanced '[' for recipe\n" << end();
     return false;
   }
-//?   show_rest_of_stream(in); //? 1
   skip_whitespace_and_comments(in);
   if (in.eof()) {
     raise << "2: unbalanced '[' for recipe\n" << end();
@@ -90,20 +84,17 @@ bool next_instruction(istream& in, instruction* curr) {
   }
 
   vector<string> words;
-//?   show_rest_of_stream(in); //? 1
   while (in.peek() != '\n' && !in.eof()) {
     skip_whitespace(in);
     if (in.eof()) {
       raise << "3: unbalanced '[' for recipe\n" << end();
       return false;
     }
-//?     show_rest_of_stream(in); //? 1
     string word = next_word(in);
     words.push_back(word);
     skip_whitespace(in);
   }
   skip_whitespace_and_comments(in);
-//?   if (SIZE(words) == 1) cout << words.at(0) << ' ' << SIZE(words.at(0)) << '\n'; //? 1
   if (SIZE(words) == 1 && words.at(0) == "]") {
     return false;  // end of recipe
   }
@@ -124,7 +115,6 @@ bool next_instruction(istream& in, instruction* curr) {
     for (; *p != "<-"; ++p) {
       if (*p == ",") continue;
       curr->products.push_back(reagent(*p));
-//?       cerr << "product: " << curr->products.back().to_string() << '\n'; //? 1
     }
     ++p;  // skip <-
   }
@@ -136,7 +126,6 @@ bool next_instruction(istream& in, instruction* curr) {
   curr->name = *p;
   if (Recipe_ordinal.find(*p) == Recipe_ordinal.end()) {
     Recipe_ordinal[*p] = Next_recipe_ordinal++;
-//?     cout << "AAA: " << *p << " is now " << Recipe_ordinal[*p] << '\n'; //? 1
   }
   if (Recipe_ordinal[*p] == 0) {
     raise << "Recipe " << *p << " has number 0, which is reserved for IDLE.\n" << end() << end();
@@ -147,7 +136,6 @@ bool next_instruction(istream& in, instruction* curr) {
   for (; p != words.end(); ++p) {
     if (*p == ",") continue;
     curr->ingredients.push_back(reagent(*p));
-//?     cerr << "ingredient: " << curr->ingredients.back().to_string() << '\n'; //? 1
   }
 
   trace("parse") << "instruction: " << curr->name << end();
@@ -165,18 +153,15 @@ bool next_instruction(istream& in, instruction* curr) {
 }
 
 string next_word(istream& in) {
-//?   cout << "AAA next_word\n"; //? 1
   ostringstream out;
   skip_whitespace(in);
   slurp_word(in, out);
   skip_whitespace(in);
   skip_comment(in);
-//?   cerr << '^' << out.str() << "$\n"; //? 1
   return out.str();
 }
 
 void slurp_word(istream& in, ostream& out) {
-//?   cout << "AAA slurp_word\n"; //? 1
   char c;
   if (in.peek() == ',') {
     in >> c;
@@ -184,7 +169,6 @@ void slurp_word(istream& in, ostream& out) {
     return;
   }
   while (in >> c) {
-//?     cout << c << '\n'; //? 1
     if (isspace(c) || c == ',') {
       in.putback(c);
       break;
@@ -254,7 +238,6 @@ vector<recipe_ordinal> recently_added_recipes;
 long long int Reserved_for_tests = 1000;
 :(before "End Setup")
 for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
-//?   cout << "AAA clearing " << Recipe[recently_added_recipes.at(i)].name << '\n'; //? 2
   if (recently_added_recipes.at(i) >= Reserved_for_tests)  // don't renumber existing recipes, like 'interactive'
     Recipe_ordinal.erase(Recipe[recently_added_recipes.at(i)].name);
   Recipe.erase(recently_added_recipes.at(i));

@@ -7,7 +7,6 @@ Recipe_ordinal["add"] = ADD;
 :(before "End Primitive Recipe Implementations")
 case ADD: {
   double result = 0;
-//?   if (!tb_is_active()) cerr << ingredients.at(1).at(0) << '\n'; //? 1
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
     if (!scalar(ingredients.at(i))) {
       raise << current_recipe_name() << ": 'add' requires number ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();

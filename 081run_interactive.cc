@@ -24,7 +24,6 @@ recipe main [
 RUN_INTERACTIVE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
-//? cerr << "run-interactive: " << RUN_INTERACTIVE << '\n'; //? 1
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
   if (SIZE(ingredients) != 1) {
@@ -294,9 +293,7 @@ long long int stringified_value_of_location(long long int address) {
 
 long long int trace_contents(const string& layer) {
   if (!Trace_stream) return 0;
-//?   cerr << "trace stream exists\n"; //? 1
   if (trace_count(layer) <= 0) return 0;
-//?   cerr << layer << " has something\n"; //? 1
   ostringstream out;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (p->label != layer) continue;
@@ -305,7 +302,6 @@ long long int trace_contents(const string& layer) {
   }
   string result = out.str();
   assert(!result.empty());
-//?   cerr << layer << ":\n" << result << "\n--\n"; //? 1
   truncate(result);
   return new_mu_string(result);
 }

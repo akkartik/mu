@@ -35,7 +35,6 @@ case RESTORE: {
 
 :(code)
 string slurp(const string& filename) {
-//?   cerr << filename << '\n'; //? 1
   ostringstream result;
   ifstream fin(filename.c_str());
   fin.peek();
@@ -48,7 +47,6 @@ string slurp(const string& filename) {
     result << buf;
   }
   fin.close();
-//?   cerr << "=> " << result.str(); //? 1
   return result.str();
 }
 

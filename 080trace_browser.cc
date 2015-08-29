@@ -71,16 +71,12 @@ void start_trace_browser() {
     }
     if (key == 'K' || key == TB_KEY_PGUP) {
       // page-up is more convoluted
-//?       tb_shutdown(); //? 1
-//?       cerr << "page-up: Top_of_screen is currently " << Top_of_screen << '\n'; //? 1
       for (int screen_row = tb_height(); screen_row > 0 && Top_of_screen > 0; --screen_row) {
         --Top_of_screen;
         if (Top_of_screen <= 0) break;
         while (Top_of_screen > 0 && Visible.find(Top_of_screen) == Visible.end())
           --Top_of_screen;
-//?         cerr << "now " << Top_of_screen << '\n'; //? 1
       }
-//?       exit(0); //? 1
       if (Top_of_screen > 0)
         refresh_screen_rows();
     }
@@ -100,10 +96,8 @@ void start_trace_browser() {
     }
     if (key == TB_KEY_CARRIAGE_RETURN) {
       // expand lines under current by one level
-//?       tb_shutdown();
       assert(Trace_index.find(Display_row) != Trace_index.end());
       long long int start_index = Trace_index[Display_row];
-//?       cerr << "start_index is " << start_index << '\n';
       long long int index = 0;
       // simultaneously compute end_index and min_depth
       int min_depth = 9999;
@@ -114,18 +108,14 @@ void start_trace_browser() {
         assert(curr_line.depth > Trace_stream->past_lines.at(start_index).depth);
         if (curr_line.depth < min_depth) min_depth = curr_line.depth;
       }
-//?       cerr << "min_depth is " << min_depth << '\n';
       long long int end_index = index;
-//?       cerr << "end_index is " << end_index << '\n';
       // mark as visible all intervening indices at min_depth
       for (index = start_index; index < end_index; ++index) {
         trace_line& curr_line = Trace_stream->past_lines.at(index);
         if (curr_line.depth == min_depth) {
-//?           cerr << "adding " << index << '\n';
           Visible.insert(index);
         }
       }
-//?       exit(0);
       refresh_screen_rows();
     }
     if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
