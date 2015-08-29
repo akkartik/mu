@@ -6550,6 +6550,9 @@ container insert-operation [
   after-top-of-screen:address:duplex-list:character
   insert-from:address:duplex-list:character
   insert-until:address:duplex-list:character
+  tag:number  # event causing this operation; might be used to coalesce runs of similar events
+    # 0: no coalesce (enter+indent)
+    # 1: regular alphanumeric characters
 ]
 
 container move-operation [
@@ -6559,6 +6562,12 @@ container move-operation [
   after-row:number
   after-column:number
   after-top-of-screen:address:duplex-list:character
+  tag:number  # event causing this operation; might be used to coalesce runs of similar events
+    # 0: no coalesce (touch events, etc)
+    # 1: left arrow
+    # 2: right arrow
+    # 3: up arrow
+    # 4: down arrow
 ]
 
 container delete-operation [
@@ -6570,6 +6579,10 @@ container delete-operation [
   after-top-of-screen:address:duplex-list:character
   deleted:address:duplex-list:character
   deleted-from:address:duplex-list:character
+  tag:number  # event causing this operation; might be used to coalesce runs of similar events
+    # 0: no coalesce (ctrl-k, ctrl-u)
+    # 1: backspace
+    # 2: delete
 ]
 
 # every editor accumulates a list of operations to undo/redo
@@ -6666,6 +6679,8 @@ before +insert-character-end [
     op:address:operation <- first *undo
     typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
+    previous-tag:number <- get *typing, tag:offset
+    break-unless previous-tag
     insert-until:address:address:duplex-list <- get-address *typing, insert-until:offset
     *insert-until <- next-duplex *before-cursor
     after-row:address:number <- get-address *typing, after-row:offset
@@ -6680,7 +6695,7 @@ before +insert-character-end [
   insert-from:address:duplex-list <- copy *before-cursor
   insert-to:address:duplex-list <- next-duplex insert-from
   op:address:operation <- new operation:type
-  *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to
+  *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to, 1/coalesce
   editor <- add-operation editor, op
   +done-inserting-character
 ]
@@ -7007,7 +7022,7 @@ before +move-cursor-end [
   after-cursor-column:number <- get *editor, cursor-column:offset
   after-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
   op:address:operation <- new operation:type
-  *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, 0/empty, 0/empty
+  *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, 0/empty, 0/empty, 0/empty
   editor <- add-operation editor, op
 ]
 
