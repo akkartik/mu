@@ -1557,8 +1557,8 @@ scenario editor-handles-backspace-key [
 
 after +handle-special-character [
   {
-    backspace?:boolean <- equal *c, 8/backspace
-    break-unless backspace?
+    delete-previous-character?:boolean <- equal *c, 8/backspace
+    break-unless delete-previous-character?
     editor, screen, go-render?:boolean <- delete-before-cursor editor, screen
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
@@ -1746,8 +1746,8 @@ scenario editor-handles-delete-key [
 
 after +handle-special-key [
   {
-    delete?:boolean <- equal *k, 65522/delete
-    break-unless delete?
+    delete-next-character?:boolean <- equal *k, 65522/delete
+    break-unless delete-next-character?
     curr:address:duplex-list <- next-duplex *before-cursor
     reply-unless curr, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render
     currc:character <- get *curr, value:offset
@@ -2601,8 +2601,8 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
 
 after +handle-special-character [
   {
-    ctrl-a?:boolean <- equal *c, 1/ctrl-a
-    break-unless ctrl-a?
+    move-to-start-of-line?:boolean <- equal *c, 1/ctrl-a
+    break-unless move-to-start-of-line?
     move-to-start-of-line editor
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
@@ -2610,8 +2610,8 @@ after +handle-special-character [
 
 after +handle-special-key [
   {
-    home?:boolean <- equal *k, 65521/home
-    break-unless home?
+    move-to-start-of-line?:boolean <- equal *k, 65521/home
+    break-unless move-to-start-of-line?
     move-to-start-of-line editor
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
@@ -2768,8 +2768,8 @@ scenario editor-moves-to-end-of-line-with-ctrl-e [
 
 after +handle-special-character [
   {
-    ctrl-e?:boolean <- equal *c, 5/ctrl-e
-    break-unless ctrl-e?
+    move-to-end-of-line?:boolean <- equal *c, 5/ctrl-e
+    break-unless move-to-end-of-line?
     move-to-end-of-line editor
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
@@ -2777,8 +2777,8 @@ after +handle-special-character [
 
 after +handle-special-key [
   {
-    end?:boolean <- equal *k, 65520/end
-    break-unless end?
+    move-to-end-of-line?:boolean <- equal *k, 65520/end
+    break-unless move-to-end-of-line?
     move-to-end-of-line editor
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
@@ -2908,8 +2908,8 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
 
 after +handle-special-character [
   {
-    ctrl-u?:boolean <- equal *c, 21/ctrl-u
-    break-unless ctrl-u?
+    delete-to-start-of-line?:boolean <- equal *c, 21/ctrl-u
+    break-unless delete-to-start-of-line?
     delete-to-start-of-line editor
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
@@ -3052,8 +3052,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
 
 after +handle-special-character [
   {
-    ctrl-k?:boolean <- equal *c, 11/ctrl-k
-    break-unless ctrl-k?
+    delete-to-end-of-line?:boolean <- equal *c, 11/ctrl-k
+    break-unless delete-to-end-of-line?
     delete-to-end-of-line editor
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
@@ -3936,8 +3936,8 @@ d]
 
 after +handle-special-character [
   {
-    ctrl-f?:boolean <- equal *c, 6/ctrl-f
-    break-unless ctrl-f?
+    page-down?:boolean <- equal *c, 6/ctrl-f
+    break-unless page-down?
     page-down editor
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
@@ -4115,8 +4115,8 @@ d]
 
 after +handle-special-character [
   {
-    ctrl-b?:boolean <- equal *c, 2/ctrl-f
-    break-unless ctrl-b?
+    page-up?:boolean <- equal *c, 2/ctrl-b
+    break-unless page-up?
     editor <- page-up editor, screen-height
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
@@ -4875,8 +4875,8 @@ recipe update-cursor [
 
 after +global-type [
   {
-    ctrl-l?:boolean <- equal *c, 12/ctrl-l
-    break-unless ctrl-l?
+    redraw-screen??:boolean <- equal *c, 12/ctrl-l
+    break-unless redraw-screen??
     screen <- render-all screen, env:address:programming-environment-data
     loop +next-event:label
   }
@@ -4887,8 +4887,8 @@ after +global-type [
 
 after +global-type [
   {
-    ctrl-n?:boolean <- equal *c, 14/ctrl-n
-    break-unless ctrl-n?
+    switch-side?:boolean <- equal *c, 14/ctrl-n
+    break-unless switch-side?
     *sandbox-in-focus? <- not *sandbox-in-focus?
     screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
     loop +next-event:label
@@ -4948,8 +4948,8 @@ container programming-environment-data [
 
 after +global-type [
   {
-    ctrl-x?:boolean <- equal *c, 24/ctrl-x
-    break-unless ctrl-x?
+    maximize?:boolean <- equal *c, 24/ctrl-x
+    break-unless maximize?
     screen, console <- maximize screen, console, env:address:programming-environment-data
     loop +next-event:label
   }
@@ -6536,8 +6536,8 @@ container editor-data [
 # ctrl-z - undo operation
 after +handle-special-character [
   {
-    ctrl-z?:boolean <- equal *c, 26/ctrl-z
-    break-unless ctrl-z?
+    undo?:boolean <- equal *c, 26/ctrl-z
+    break-unless undo?
     undo:address:address:list <- get-address *editor, undo:offset
     break-unless *undo
     op:address:operation <- first *undo
@@ -6552,8 +6552,8 @@ after +handle-special-character [
 # ctrl-y - redo operation
 after +handle-special-character [
   {
-    ctrl-y?:boolean <- equal *c, 25/ctrl-y
-    break-unless ctrl-y?
+    redo?:boolean <- equal *c, 25/ctrl-y
+    break-unless redo?
     redo:address:address:list <- get-address *editor, redo:offset
     break-unless *redo
     op:address:operation <- first *redo
