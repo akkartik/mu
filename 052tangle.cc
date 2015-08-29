@@ -32,13 +32,11 @@ Fragments_used.clear();
 else if (command == "before") {
   string label = next_word(in);
   recipe tmp = slurp_recipe(in);
-//?   cerr << "adding before fragment " << label << '\n'; //? 1
   Before_fragments[label].steps.insert(Before_fragments[label].steps.end(), tmp.steps.begin(), tmp.steps.end());
 }
 else if (command == "after") {
   string label = next_word(in);
   recipe tmp = slurp_recipe(in);
-//?   cerr << "adding after fragment " << label << '\n'; //? 1
   After_fragments[label].steps.insert(After_fragments[label].steps.begin(), tmp.steps.begin(), tmp.steps.end());
 }
 
@@ -72,12 +70,10 @@ void insert_fragments(const recipe_ordinal r) {
       made_progress = true;
       Fragments_used.insert(inst.label);
       if (Before_fragments.find(inst.label) != Before_fragments.end()) {
-//?         cerr << "loading code before " << inst.label << '\n'; //? 1
         result.insert(result.end(), Before_fragments[inst.label].steps.begin(), Before_fragments[inst.label].steps.end());
       }
       result.push_back(inst);
       if (After_fragments.find(inst.label) != After_fragments.end()) {
-//?         cerr << "loading code after " << inst.label << '\n'; //? 1
         result.insert(result.end(), After_fragments[inst.label].steps.begin(), After_fragments[inst.label].steps.end());
       }
     }

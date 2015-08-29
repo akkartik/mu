@@ -76,8 +76,6 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
 
 :(replace{} "long long int lookup_name(const reagent& r, const recipe_ordinal default_recipe)")
 long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe) {
-//?   cout << "AAA " << default_recipe << " " << Recipe[default_recipe].name << '\n'; //? 2
-//?   cout << "AAA " << x.to_string() << '\n'; //? 1
   if (!has_property(x, "space")) {
     if (Name[default_recipe].empty()) raise << "name not found: " << x.name << '\n' << end();
     return Name[default_recipe][x.name];

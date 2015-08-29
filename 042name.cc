@@ -65,7 +65,6 @@ void transform_names(const recipe_ordinal r) {
 }
 
 bool disqualified(/*mutable*/ reagent& x, const instruction& inst) {
-//?   cerr << x.to_string() << '\n'; //? 1
   if (x.types.empty()) {
     raise << "missing type in '" << inst.to_string() << "'\n" << end();
     return true;
@@ -96,7 +95,6 @@ type_ordinal skip_addresses(const vector<type_ordinal>& types) {
 
 int find_element_name(const type_ordinal t, const string& name) {
   const type_info& container = Type[t];
-//?   cout << "looking for element " << name << " in type " << container.name << " with " << SIZE(container.element_names) << " elements\n"; //? 1
   for (long long int i = 0; i < SIZE(container.element_names); ++i) {
     if (container.element_names.at(i) == name) return i;
   }

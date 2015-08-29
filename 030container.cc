@@ -302,9 +302,6 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   skip_whitespace(in);
   string name = next_word(in);
   trace("parse") << "reading " << command << ' ' << name << end();
-//?   cout << name << '\n'; //? 2
-//?   if (Type_ordinal.find(name) != Type_ordinal.end()) //? 1
-//?     cerr << Type_ordinal[name] << '\n'; //? 1
   if (Type_ordinal.find(name) == Type_ordinal.end()
       || Type_ordinal[name] == 0) {
     Type_ordinal[name] = Next_type_ordinal++;
@@ -328,7 +325,6 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
       if (Type_ordinal.find(type_name) == Type_ordinal.end()
           // types can contain integers, like for array sizes
           && !is_integer(type_name)) {
-//?         cerr << type_name << " is " << Next_type_ordinal << '\n'; //? 1
         Type_ordinal[type_name] = Next_type_ordinal++;
       }
       types.push_back(Type_ordinal[type_name]);
@@ -366,7 +362,6 @@ vector<type_ordinal> recently_added_types;
 recently_added_types.clear();
 :(before "End Setup")  //: for tests
 for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
-//?   cout << "erasing " << Type[recently_added_types.at(i)].name << '\n'; //? 1
   Type_ordinal.erase(Type[recently_added_types.at(i)].name);
   Type.erase(recently_added_types.at(i));
 }
@@ -382,7 +377,6 @@ while(p != Type_ordinal.end()) {
   ++p;
   // now delete current item if necessary
   if (t >= 1000) {
-//?     cerr << "AAA " << name << " " << t << '\n'; //? 1
     Type_ordinal.erase(name);
   }
 }
@@ -469,7 +463,6 @@ check_container_field_types();
 void check_container_field_types() {
   for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
     const type_info& info = p->second;
-//?     cerr << "checking " << p->first << '\n'; //? 1
     for (long long int i = 0; i < SIZE(info.elements); ++i) {
       for (long long int j = 0; j < SIZE(info.elements.at(i)); ++j) {
         if (info.elements.at(i).at(j) == 0) continue;

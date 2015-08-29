@@ -73,7 +73,6 @@ scenario duplex-list-handling [
     4:address:duplex-list <- prev-duplex 4:address:duplex-list
     13:number <- first-duplex 4:address:duplex-list
     14:boolean <- equal 3:address:duplex-list, 4:address:duplex-list
-#?     $dump-trace #? 1
   ]
   memory-should-contain [
     0 <- 0  # no modifications to null pointers

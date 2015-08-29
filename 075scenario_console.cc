@@ -46,12 +46,10 @@ ASSUME_CONSOLE,
 Recipe_ordinal["assume-console"] = ASSUME_CONSOLE;
 :(before "End Primitive Recipe Implementations")
 case ASSUME_CONSOLE: {
-//?   cerr << "aaa: " << current_instruction().ingredients.at(0).name << '\n'; //? 2
   // create a temporary recipe just for parsing; it won't contain valid instructions
   istringstream in("[" + current_instruction().ingredients.at(0).name + "]");
   recipe r = slurp_recipe(in);
   long long int num_events = count_events(r);
-//?   cerr << "fff: " << num_events << '\n'; //? 3
   // initialize the events
   long long int size = num_events*size_of_event() + /*space for length*/1;
   ensure_space(size);
@@ -65,13 +63,11 @@ case ASSUME_CONSOLE: {
       Memory[Current_routine->alloc+1+/*offset of 'type' in 'mouse-event'*/0] = TB_KEY_MOUSE_LEFT;
       Memory[Current_routine->alloc+1+/*offset of 'row' in 'mouse-event'*/1] = to_integer(curr.ingredients.at(0).name);
       Memory[Current_routine->alloc+1+/*offset of 'column' in 'mouse-event'*/2] = to_integer(curr.ingredients.at(1).name);
-//?       cerr << "AA left click: " << Memory[Current_routine->alloc+2] << ' ' << Memory[Current_routine->alloc+3] << '\n'; //? 1
       Current_routine->alloc += size_of_event();
     }
     else if (curr.name == "press") {
       Memory[Current_routine->alloc] = /*tag for 'keycode' variant of 'event' exclusive-container*/1;
       Memory[Current_routine->alloc+1] = to_integer(curr.ingredients.at(0).name);
-//?       cerr << "AA press: " << Memory[Current_routine->alloc+1] << '\n'; //? 3
       Current_routine->alloc += size_of_event();
     }
     // End Event Handlers
@@ -82,13 +78,11 @@ case ASSUME_CONSOLE: {
       const char* raw_contents = contents.c_str();
       long long int num_keyboard_events = unicode_length(contents);
       long long int curr = 0;
-//?       cerr << "AAA: " << num_keyboard_events << '\n'; //? 1
       for (long long int i = 0; i < num_keyboard_events; ++i) {
         Memory[Current_routine->alloc] = /*tag for 'text' variant of 'event' exclusive-container*/0;
         uint32_t curr_character;
         assert(curr < SIZE(contents));
         tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
-//?         cerr << "AA keyboard: " << curr_character << '\n'; //? 3
         Memory[Current_routine->alloc+/*skip exclusive container tag*/1] = curr_character;
         curr += tb_utf8_char_length(raw_contents[curr]);
         Current_routine->alloc += size_of_event();
@@ -100,10 +94,7 @@ case ASSUME_CONSOLE: {
   ensure_space(size_of_events());
   Memory[CONSOLE] = Current_routine->alloc;
   Current_routine->alloc += size_of_events();
-//?   cerr << "writing " << event_data_address << " to location " << Memory[CONSOLE]+1 << '\n'; //? 1
   Memory[Memory[CONSOLE]+/*offset of 'data' in container 'events'*/1] = event_data_address;
-//?   cerr << Memory[Memory[CONSOLE]+1] << '\n'; //? 1
-//?   cerr << "alloc now " << Current_routine->alloc << '\n'; //? 1
   break;
 }
 
@@ -166,17 +157,13 @@ Recipe_ordinal["replace-in-console"] = REPLACE_IN_CONSOLE;
 :(before "End Primitive Recipe Implementations")
 case REPLACE_IN_CONSOLE: {
   assert(scalar(ingredients.at(0)));
-//?   cerr << "console: " << Memory[CONSOLE] << '\n'; //? 1
   if (!Memory[CONSOLE]) {
     raise << "console not initialized\n" << end();
     break;
   }
   long long int console_data = Memory[Memory[CONSOLE]+1];
-//?   cerr << "console data starts at " << console_data << '\n'; //? 1
   long long int size = Memory[console_data];  // array size
-//?   cerr << "size of console data is " << size << '\n'; //? 1
   for (long long int i = 0, curr = console_data+1; i < size; ++i, curr+=size_of_event()) {
-//?     cerr << curr << '\n'; //? 1
     if (Memory[curr] != /*text*/0) continue;
     if (Memory[curr+1] != ingredients.at(0).at(0)) continue;
     for (long long int n = 0; n < size_of_event(); ++n)
@@ -190,13 +177,10 @@ long long int count_events(const recipe& r) {
   long long int result = 0;
   for (long long int i = 0; i < SIZE(r.steps); ++i) {
     const instruction& curr = r.steps.at(i);
-//?     cerr << "aa: " << curr.name << '\n'; //? 3
-//?     cerr << "bb: " << curr.ingredients.at(0).name << '\n'; //? 1
     if (curr.name == "type")
       result += unicode_length(curr.ingredients.at(0).name);
     else
       result++;
-//?     cerr << "cc: " << result << '\n'; //? 1
   }
   return result;
 }

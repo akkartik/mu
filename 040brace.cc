@@ -37,8 +37,6 @@ recipe main [
 
 :(code)
 void transform_braces(const recipe_ordinal r) {
-//?   cout << "AAA transform_braces\n"; //? 1
-//?   exit(0); //? 1
   const int OPEN = 0, CLOSE = 1;
   // use signed integer for step index because we'll be doing arithmetic on it
   list<pair<int/*OPEN/CLOSE*/, /*step*/long long int> > braces;

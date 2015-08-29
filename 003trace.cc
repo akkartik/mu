@@ -83,7 +83,6 @@
 :(before "End Tracing")
 bool Hide_warnings = false;
 :(before "End Setup")
-//? cerr << "AAA setup\n"; //? 2
 Hide_warnings = false;
 
 :(before "End Types")
@@ -136,7 +135,6 @@ struct trace_stream {
     past_lines.push_back(trace_line(curr_depth, trim(curr_layer), curr_contents));  // preserve indent in contents
     if (curr_layer == dump_layer || curr_layer == "dump" || dump_layer == "all" ||
         (!Hide_warnings && curr_layer == "warn"))
-//?     if (dump_layer == "all" && (Current_routine->id == 3 || curr_layer == "schedule")) //? 1
       cerr << curr_layer << ": " << curr_contents << '\n';
     delete curr_stream;
     curr_stream = NULL;
@@ -190,9 +188,7 @@ struct lease_tracer {
   lease_tracer() { Trace_stream = new trace_stream; }
   ~lease_tracer() {
     if (!Trace_stream) return;  // in case tests close Trace_stream
-//?     cerr << "write to file? " << Trace_file << "$\n"; //? 2
     if (!Trace_file.empty()) {
-//?       cerr << "writing\n"; //? 2
       ofstream fout((Trace_dir+Trace_file).c_str());
       fout << Trace_stream->readable_contents("");
       fout.close();
@@ -204,7 +200,6 @@ struct lease_tracer {
 #define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;
 :(before "End Test Setup")
 START_TRACING_UNTIL_END_OF_SCOPE
-//? Trace_stream->dump_layer = "all"; //? 1
 
 #define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 
@@ -218,15 +213,12 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   string layer, contents;
   split_layer_contents(expected_lines.at(curr_expected_line), &layer, &contents);
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-//?     cerr << "AAA " << layer << ' ' << p->label << '\n'; //? 1
     if (layer != p->label)
       continue;
 
-//?     cerr << "BBB ^" << contents << "$ ^" << p->contents << "$\n"; //? 1
     if (contents != trim(p->contents))
       continue;
 
-//?     cerr << "CCC\n"; //? 1
     ++curr_expected_line;
     while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
@@ -237,7 +229,6 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   ++Num_failures;
   cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << contents << "] in trace:\n";
   DUMP(layer);
-//?   exit(0); //? 1
   Passed = false;
   return false;
 }
@@ -265,8 +256,6 @@ int trace_count(string layer, string line) {
   long result = 0;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (layer == p->label) {
-//?       cerr << "a: " << line << "$\n"; //? 1
-//?       cerr << "b: " << trim(p->contents) << "$\n"; //? 1
       if (line == "" || line == trim(p->contents))
         ++result;
     }

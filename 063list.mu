@@ -39,7 +39,6 @@ recipe rest [
 
 scenario list-handling [
   run [
-#?     $start-tracing #? 1
     1:address:list <- copy 0
     1:address:list <- push 3, 1:address:list
     1:address:list <- push 4, 1:address:list

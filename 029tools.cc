@@ -111,7 +111,6 @@ case _START_TRACING: {
     Trace_stream->dump_layer = "all";
   else
     Trace_stream->dump_layer = current_instruction().ingredients.at(0).name;
-//?   cout << Trace_stream << ": " << Trace_stream->dump_layer << '\n'; //? 1
   break;
 }
 

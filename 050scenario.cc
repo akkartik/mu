@@ -72,10 +72,8 @@ else if (command == "scenario") {
 
 :(code)
 scenario parse_scenario(istream& in) {
-//?   cerr << "parse scenario\n"; //? 1
   scenario result;
   result.name = next_word(in);
-//?   cerr << "scenario: " << result.name << '\n'; //? 2
   if (Scenario_names.find(result.name) != Scenario_names.end())
     raise << "duplicate scenario name: " << result.name << '\n' << end();
   Scenario_names.insert(result.name);
@@ -87,7 +85,6 @@ scenario parse_scenario(istream& in) {
   // delete [] delimiters
   assert(result.to_run.at(0) == '[');
   result.to_run.erase(0, 1);
-//?   cerr << (int)result.to_run.at(SIZE(result.to_run)-1) << '\n'; //? 1
   assert(result.to_run.at(SIZE(result.to_run)-1) == ']');
   result.to_run.erase(SIZE(result.to_run)-1);
   return result;
@@ -113,8 +110,7 @@ scenario foo [
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
 for (long long int i = 0; i < SIZE(Scenarios); ++i) {
-//?   cerr << Passed << '\n'; //? 1
-//?   cerr << i << ": " << Scenarios.at(i).name << '\n'; //? 7
+//?   cerr << i << ": " << Scenarios.at(i).name << '\n';
   run_mu_scenario(Scenarios.at(i));
   if (Passed) cerr << ".";
 }
@@ -135,7 +131,7 @@ const scenario* Current_scenario = NULL;
 void run_mu_scenario(const scenario& s) {
   Current_scenario = &s;
   bool not_already_inside_test = !Trace_stream;
-//?   cerr << s.name << '\n'; //? 12
+//?   cerr << s.name << '\n';
   if (not_already_inside_test) {
     Trace_file = s.name;
     Trace_stream = new trace_stream;
@@ -196,14 +192,11 @@ RUN,
 Recipe_ordinal["run"] = RUN;
 :(before "End Primitive Recipe Implementations")
 case RUN: {
-//?   cout << "recipe " << current_instruction().ingredients.at(0).name << '\n'; //? 1
   ostringstream tmp;
   tmp << "recipe run" << Next_recipe_ordinal << " [ " << current_instruction().ingredients.at(0).name << " ]";
-//?   Show_rest_of_stream = true; //? 1
   vector<recipe_ordinal> tmp_recipe = load(tmp.str());
   bind_special_scenario_names(tmp_recipe.at(0));
   transform_all();
-//?   cout << tmp_recipe.at(0) << ' ' << Recipe_ordinal["main"] << '\n'; //? 1
   Current_routine->calls.push_front(call(tmp_recipe.at(0)));
   continue;  // not done with caller; don't increment current_step_index()
 }
@@ -254,7 +247,6 @@ Recipe_ordinal["memory-should-contain"] = MEMORY_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case MEMORY_SHOULD_CONTAIN: {
   if (!Passed) break;
-//?   cout << current_instruction().ingredients.at(0).name << '\n'; //? 1
   check_memory(current_instruction().ingredients.at(0).name);
   break;
 }
@@ -424,10 +416,8 @@ case TRACE_SHOULD_CONTAIN: {
 // simplified version of check_trace_contents() that emits warnings rather
 // than just printing to stderr
 bool check_trace(const string& expected) {
-//?   cerr << "AAA " << expected << '\n'; //? 1
   Trace_stream->newline();
   vector<trace_line> expected_lines = parse_trace(expected);
-//?   cerr << "BBB " << SIZE(expected_lines) << '\n'; //? 1
   if (expected_lines.empty()) return true;
   long long int curr_expected_line = 0;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
@@ -436,7 +426,6 @@ bool check_trace(const string& expected) {
     // match
     ++curr_expected_line;
     if (curr_expected_line == SIZE(expected_lines)) {
-//?       cerr << "ZZZ\n"; //? 1
       return true;
     }
   }
@@ -627,12 +616,10 @@ recipe main [
 // just for the scenarios running scenarios in C++ layers
 void run_mu_scenario(const string& form) {
   Scenario_names.clear();
-//?   cerr << form << '\n'; //? 1
   istringstream in(form);
   in >> std::noskipws;
   skip_whitespace_and_comments(in);
   string _scenario = next_word(in);
-//?   cout << _scenario << '\n'; //? 2
   assert(_scenario == "scenario");
   scenario s = parse_scenario(in);
   run_mu_scenario(s);

@@ -45,16 +45,13 @@ recipe main [
 :(code)
 reagent canonize(reagent x) {
   if (is_literal(x)) return x;
-//?   cout << "canonize\n"; //? 1
   reagent r = x;
-//?   cout << x.to_string() << " => " << r.to_string() << '\n'; //? 1
   while (has_property(r, "lookup"))
     r = lookup_memory(r);
   return r;
 }
 
 reagent lookup_memory(reagent x) {
-//?   cout << "lookup_memory: " << x.to_string() << "\n"; //? 2
   static const type_ordinal ADDRESS = Type_ordinal["address"];
   reagent result;
   if (x.types.empty() || x.types.at(0) != ADDRESS) {
