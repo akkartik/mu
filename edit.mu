@@ -2644,7 +2644,9 @@ after +handle-special-character [
   {
     move-to-start-of-line?:boolean <- equal *c, 1/ctrl-a
     break-unless move-to-start-of-line?
+    +move-cursor-start
     move-to-start-of-line editor
+    +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
@@ -2653,7 +2655,9 @@ after +handle-special-key [
   {
     move-to-start-of-line?:boolean <- equal *k, 65521/home
     break-unless move-to-start-of-line?
+    +move-cursor-start
     move-to-start-of-line editor
+    +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
@@ -2811,7 +2815,9 @@ after +handle-special-character [
   {
     move-to-end-of-line?:boolean <- equal *c, 5/ctrl-e
     break-unless move-to-end-of-line?
+    +move-cursor-start
     move-to-end-of-line editor
+    +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
@@ -2820,7 +2826,9 @@ after +handle-special-key [
   {
     move-to-end-of-line?:boolean <- equal *k, 65520/end
     break-unless move-to-end-of-line?
+    +move-cursor-start
     move-to-end-of-line editor
+    +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
@@ -7370,6 +7378,198 @@ f]
     .d         .
     .e         .
     .f         .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-can-undo-ctrl-a [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # move the cursor, then to start of line
+  assume-console [
+    left-click 2, 1
+    type [a]  # ctrl-a
+  ]
+  3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
+  replace-in-console 97/a, 3:event/ctrl-a
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor moves back
+  memory-should-contain [
+    3 <- 2
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .d1ef      .
+    .ghi       .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-can-undo-home [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # move the cursor, then to start of line
+  assume-console [
+    left-click 2, 1
+    press 65521  # home
+  ]
+  3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
+  replace-in-console 97/a, 3:event/ctrl-a
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor moves back
+  memory-should-contain [
+    3 <- 2
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .d1ef      .
+    .ghi       .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-can-undo-ctrl-e [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # move the cursor, then to start of line
+  assume-console [
+    left-click 2, 1
+    type [e]  # ctrl-e
+  ]
+  3:event/ctrl-e <- merge 0/text, 5/ctrl-e, 0/dummy, 0/dummy
+  replace-in-console 101/e, 3:event/ctrl-e
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor moves back
+  memory-should-contain [
+    3 <- 2
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .d1ef      .
+    .ghi       .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-can-undo-end [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # move the cursor, then to start of line
+  assume-console [
+    left-click 2, 1
+    press 65520  # end
+  ]
+  3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
+  replace-in-console 97/a, 3:event/ctrl-a
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor moves back
+  memory-should-contain [
+    3 <- 2
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .d1ef      .
+    .ghi       .
     .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
