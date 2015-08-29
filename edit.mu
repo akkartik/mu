@@ -6636,8 +6636,19 @@ before +insert-character-end [
   insert-to:address:duplex-list <- next-duplex insert-from
   op:address:operation <- new operation:type
   *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to
-  *undo <- push op, *undo
+  editor <- add-operation editor, op
   +done-inserting-character
+]
+
+recipe add-operation [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  op:address:operation <- next-ingredient
+  undo:address:address:list:address:operation <- get-address *editor, undo:offset
+  *undo <- push op *undo
+  redo:address:address:list:address:operation <- get-address *editor, redo:offset
+  *redo <- copy 0
+  reply editor/same-as-ingredient:0
 ]
 
 after +handle-undo [
@@ -6834,6 +6845,52 @@ scenario editor-redo-typing-empty [
   ]
 ]
 
+scenario editor-work-clears-redo-stack [
+  # create an editor with some text, do some work, undo
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  assume-console [
+    type [1]
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # do some more work
+  assume-console [
+    type [0]
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  screen-should-contain [
+    .          .
+    .0abc      .
+    .def       .
+    .ghi       .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+  # redo
+  assume-console [
+    type [y]  # ctrl-y
+  ]
+  4:event/ctrl-y <- merge 0/text, 25/ctrl-y, 0/dummy, 0/dummy
+  replace-in-console 121/y, 4:event/ctrl-y
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # nothing should happen
+  screen-should-contain [
+    .          .
+    .0abc      .
+    .def       .
+    .ghi       .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
 after +handle-redo [
   {
     typing:address:insert-operation <- maybe-convert *op, typing:variant
@@ -6905,8 +6962,7 @@ before +move-cursor-end [
   after-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
   op:address:operation <- new operation:type
   *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, 0/empty, 0/empty
-  undo:address:address:list <- get-address *editor, undo:offset
-  *undo <- push op, *undo
+  editor <- add-operation editor, op
 ]
 
 after +handle-undo [
