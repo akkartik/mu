@@ -6567,7 +6567,7 @@ after +handle-special-character [
 
 # undo typing
 
-scenario editor-undo-typing [
+scenario editor-can-undo-typing [
   # create an editor and type a character
   assume-screen 10/width, 5/height
   1:address:array:character <- new []
@@ -6656,7 +6656,7 @@ after +handle-undo [
   }
 ]
 
-scenario editor-undo-typing-multiple [
+scenario editor-can-undo-typing-multiple [
   # create an editor and type multiple characters
   assume-screen 10/width, 5/height
   1:address:array:character <- new []
@@ -6684,7 +6684,7 @@ scenario editor-undo-typing-multiple [
   ]
 ]
 
-scenario editor-undo-typing-multiple-2 [
+scenario editor-can-undo-typing-multiple-2 [
   # create an editor with some text
   assume-screen 10/width, 5/height
   1:address:array:character <- new [a]
@@ -6850,7 +6850,7 @@ after +handle-redo [
 
 # undo cursor movement and scroll
 
-scenario editor-undo-touch [
+scenario editor-can-undo-touch [
   # create an editor with some text
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
@@ -6862,7 +6862,7 @@ ghi]
     left-click 3, 1
   ]
   editor-event-loop screen:address, console:address, 2:address:editor-data
-  # now undo
+  # undo
   assume-console [
     type [z]  # ctrl-z
   ]
