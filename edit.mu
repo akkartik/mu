@@ -3975,7 +3975,9 @@ after +handle-special-character [
   {
     page-down?:boolean <- equal *c, 6/ctrl-f
     break-unless page-down?
+    +move-cursor-start
     page-down editor
+    +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -3984,7 +3986,9 @@ after +handle-special-key [
   {
     page-down?:boolean <- equal *k, 65518/page-down
     break-unless page-down?
+    +move-cursor-start
     page-down editor
+    +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -4154,7 +4158,9 @@ after +handle-special-character [
   {
     page-up?:boolean <- equal *c, 2/ctrl-b
     break-unless page-up?
+    +move-cursor-start
     editor <- page-up editor, screen-height
+    +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -4163,7 +4169,9 @@ after +handle-special-key [
   {
     page-up?:boolean <- equal *k, 65519/page-up
     break-unless page-up?
+    +move-cursor-start
     editor <- page-up editor, screen-height
+    +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -7206,6 +7214,162 @@ ghi]
     .abc       .
     .d1ef      .
     .ghi       .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-can-undo-ctrl-f [
+  # create an editor with multiple pages of text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [a
+b
+c
+d
+e
+f]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # scroll the page
+  assume-console [
+    type [f]  # ctrl-f
+  ]
+  3:event/ctrl-f <- merge 0/text, 6/ctrl-f, 0/dummy, 0/dummy
+  replace-in-console 102/f, 3:event/ctrl-f
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen should again show page 1
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+    .d         .
+  ]
+]
+
+scenario editor-can-undo-page-down [
+  # create an editor with multiple pages of text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [a
+b
+c
+d
+e
+f]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # scroll the page
+  assume-console [
+    press 65518  # page-down
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen should again show page 1
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .c         .
+    .d         .
+  ]
+]
+
+scenario editor-can-undo-ctrl-b [
+  # create an editor with multiple pages of text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [a
+b
+c
+d
+e
+f]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # scroll the page down and up
+  assume-console [
+    press 65518  # page-down
+    type [b]  # ctrl-b
+  ]
+  3:event/ctrl-b <- merge 0/text, 2/ctrl-b, 0/dummy, 0/dummy
+  replace-in-console 98/b, 3:event/ctrl-b
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen should again show page 2
+  screen-should-contain [
+    .          .
+    .d         .
+    .e         .
+    .f         .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-can-undo-page-up [
+  # create an editor with multiple pages of text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [a
+b
+c
+d
+e
+f]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # scroll the page down and up
+  assume-console [
+    press 65518  # page-down
+    press 65519  # page-up
+  ]
+  3:event/ctrl-b <- merge 0/text, 2/ctrl-b, 0/dummy, 0/dummy
+  replace-in-console 98/b, 3:event/ctrl-b
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # undo
+  assume-console [
+    type [z]  # ctrl-z
+  ]
+  3:event/ctrl-z <- merge 0/text, 26/ctrl-z, 0/dummy, 0/dummy
+  replace-in-console 122/z, 3:event/ctrl-z
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen should again show page 2
+  screen-should-contain [
+    .          .
+    .d         .
+    .e         .
+    .f         .
     .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
