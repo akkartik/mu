@@ -1807,10 +1807,10 @@ after +handle-special-key [
     move-to-next-character?:boolean <- equal *k, 65514/right-arrow
     break-unless move-to-next-character?
     # if not at end of text
-    old-cursor:address:duplex-list <- next-duplex *before-cursor
-    break-unless old-cursor
+    next-cursor:address:duplex-list <- next-duplex *before-cursor
+    break-unless next-cursor
     # scan to next character
-    *before-cursor <- copy old-cursor
+    *before-cursor <- copy next-cursor
     # if crossed a newline, move cursor to start of next row
     {
       old-cursor-character:character <- get **before-cursor, value:offset
@@ -1832,9 +1832,9 @@ after +handle-special-key [
       at-wrap?:boolean <- equal *cursor-column, wrap-column
       break-unless at-wrap?
       # and if next character isn't newline
-      new-cursor:address:duplex-list <- next-duplex old-cursor
-      break-unless new-cursor
-      next-character:character <- get *new-cursor, value:offset
+      next:address:duplex-list <- next-duplex *before-cursor
+      break-unless next
+      next-character:character <- get *next, value:offset
       newline?:boolean <- equal next-character, 10/newline
       break-if newline?
       *cursor-row <- add *cursor-row, 1
