@@ -6809,6 +6809,20 @@ scenario editor-redo-typing [
   ]
 ]
 
+after +handle-redo [
+  {
+    typing:address:insert-operation <- maybe-convert *op, typing:variant
+    break-unless typing
+    insert-from:address:duplex-list <- get *typing, insert-from:offset
+    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
+    insert-duplex-range *before-cursor, insert-from
+    *cursor-row <- get *typing, after-row:offset
+    *cursor-column <- get *typing, after-column:offset
+    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    *top <- get *typing, after-top-of-screen:offset
+  }
+]
+
 scenario editor-redo-typing-empty [
   # create an editor, type something, undo
   assume-screen 10/width, 5/height
@@ -6895,20 +6909,6 @@ ghi]
     .ghi       .
     .┈┈┈┈┈┈┈┈┈┈.
   ]
-]
-
-after +handle-redo [
-  {
-    typing:address:insert-operation <- maybe-convert *op, typing:variant
-    break-unless typing
-    insert-from:address:duplex-list <- get *typing, insert-from:offset
-    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    insert-duplex-range *before-cursor, insert-from
-    *cursor-row <- get *typing, after-row:offset
-    *cursor-column <- get *typing, after-column:offset
-    top:address:address:duplex-list <- get *editor, top-of-screen:offset
-    *top <- get *typing, after-top-of-screen:offset
-  }
 ]
 
 # undo cursor movement and scroll
