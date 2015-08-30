@@ -1389,7 +1389,7 @@ scenario editor-clears-previous-line-completely-after-inserting-newline [
   1:address:array:character <- new [abcde]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
-    press newline
+    press enter
   ]
   screen-should-contain [
     .          .
@@ -1445,7 +1445,7 @@ ef]
   assume-console [
     left-click 2, 8
     press 65507  # start paste
-    press newline
+    press enter
     press 65506  # end paste
   ]
   run [
