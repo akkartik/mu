@@ -6658,6 +6658,10 @@ before +insert-character-end [
   +done-inserting-character
 ]
 
+# Everytime you add a new operation to the undo stack, be sure to clear the
+# redo stack, because it's now obsolete.
+# Beware: since we're counting cursor moves as operations, this means just
+# moving the cursor can lose work on the undo stack.
 recipe add-operation [
   local-scope
   editor:address:editor-data <- next-ingredient
