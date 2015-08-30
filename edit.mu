@@ -1341,7 +1341,7 @@ recipe insert-new-line-and-indent [
   {
     indent-done?:boolean <- greater-or-equal i, indent
     break-if indent-done?
-    insert-at-cursor editor, 32/space, screen
+    editor, screen, go-render?:boolean <- insert-at-cursor editor, 32/space, screen
     i <- add i, 1
     loop
   }
@@ -1528,8 +1528,8 @@ after +handle-special-character [
     tab?:boolean <- equal *c, 9/tab
     break-unless tab?
     +insert-character-begin
-    insert-at-cursor editor, 32/space, screen
-    insert-at-cursor editor, 32/space, screen
+    editor, screen, go-render?:boolean <- insert-at-cursor editor, 32/space, screen
+    editor, screen, go-render?:boolean <- insert-at-cursor editor, 32/space, screen
     +insert-character-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
@@ -3284,7 +3284,14 @@ after +scroll-down [
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   max:number <- subtract right, left
+  old-top:address:duplex-list <- copy *top-of-screen
   *top-of-screen <- before-start-of-next-line *top-of-screen, max
+  no-movement?:boolean <- equal old-top, *top-of-screen
+  # Hack: this reply doesn't match one of the locations of +scroll-down, directly
+  # within insert-at-cursor. however, I'm unable to trigger the error..
+  # If necessary create a duplicate copy of +scroll-down with the right
+  # 'reply-if'.
+  reply-if no-movement?, editor/same-as-ingredient:0, 0/no-more-render
 ]
 
 # takes a pointer into the doubly-linked list, scans ahead at most 'max'
@@ -3583,7 +3590,10 @@ d]
 after +scroll-up [
   trace 10, [app], [scroll up]
   top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+  old-top:address:duplex-list <- copy *top-of-screen
   *top-of-screen <- before-previous-line *top-of-screen, editor
+  no-movement?:boolean <- equal old-top, *top-of-screen
+  reply-if no-movement?, editor/same-as-ingredient:0, 0/no-more-render
 ]
 
 # takes a pointer into the doubly-linked list, scans back to before start of
@@ -4913,9 +4923,10 @@ recipe update-cursor [
 
 after +global-type [
   {
-    redraw-screen??:boolean <- equal *c, 12/ctrl-l
-    break-unless redraw-screen??
+    redraw-screen?:boolean <- equal *c, 12/ctrl-l
+    break-unless redraw-screen?
     screen <- render-all screen, env:address:programming-environment-data
+    sync-screen screen
     loop +next-event:label
   }
 ]
