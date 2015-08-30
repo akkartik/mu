@@ -636,8 +636,6 @@ recipe handle-keyboard-event [
     +handle-special-character
     # ignore any other special characters
     regular-character?:boolean <- greater-or-equal *c, 32/space
-    newline?:boolean <- equal *c, 10/newline
-    regular-character? <- or regular-character?, newline?
     reply-unless regular-character?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     # otherwise type it in
     +insert-character-begin
@@ -1300,34 +1298,54 @@ scenario editor-moves-cursor-down-after-inserting-newline [
   ]
 ]
 
-after +insert-character-special-case [
+after +handle-special-character [
   {
-    newline?:boolean <- equal c, 10/newline
+    newline?:boolean <- equal *c, 10/newline
     break-unless newline?
-    *cursor-row <- add *cursor-row, 1
-    *cursor-column <- copy left
-    {
-      below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal, never greater
-      break-unless below-screen?
-      +scroll-down
-      *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
-    }
-    # indent if necessary
-    indent?:boolean <- get *editor, indent:offset
-    reply-unless indent?, editor/same-as-ingredient:0, screen/same-as-ingredient:2, 1/go-render
-    d:address:duplex-list <- get *editor, data:offset
-    end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
-    indent:number <- line-indent end-of-previous-line, d
-    i:number <- copy 0
-    {
-      indent-done?:boolean <- greater-or-equal i, indent
-      break-if indent-done?
-      insert-at-cursor editor, 32/space, screen
-      i <- add i, 1
-      loop
-    }
-    reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 1/go-render
+    +insert-enter-start
+    editor <- insert-new-line-and-indent editor, screen
+    +insert-enter-end
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
+]
+
+recipe insert-new-line-and-indent [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  screen:address <- next-ingredient
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
+  screen-height:number <- screen-height screen
+  # insert newline
+  insert-duplex 10/newline, *before-cursor
+  *before-cursor <- next-duplex *before-cursor
+  *cursor-row <- add *cursor-row, 1
+  *cursor-column <- copy left
+  # maybe scroll
+  {
+    below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal, never greater
+    break-unless below-screen?
+    +scroll-down
+    *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
+  }
+  # indent if necessary
+  indent?:boolean <- get *editor, indent:offset
+  reply-unless indent?, editor/same-as-ingredient:0, screen/same-as-ingredient:1
+  d:address:duplex-list <- get *editor, data:offset
+  end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
+  indent:number <- line-indent end-of-previous-line, d
+  i:number <- copy 0
+  {
+    indent-done?:boolean <- greater-or-equal i, indent
+    break-if indent-done?
+    insert-at-cursor editor, 32/space, screen
+    i <- add i, 1
+    loop
+  }
+  reply editor/same-as-ingredient:0, screen/same-as-ingredient:1
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -6658,6 +6676,23 @@ before +insert-character-end [
   +done-inserting-character
 ]
 
+# enter operations never coalesce with typing before or after
+after +insert-enter-start [
+  cursor-row-before:number <- copy *cursor-row
+  cursor-column-before:number <- copy *cursor-column
+  top-before:address:duplex-list <- get *editor, top-of-screen:offset
+  cursor-before:address:duplex-list <- copy *before-cursor
+]
+after +insert-enter-end [
+  top-after:address:duplex-list <- get *editor, top-of-screen:offset
+  # never merge
+  insert-from:address:duplex-list <- next-duplex cursor-before
+  insert-to:address:duplex-list <- next-duplex *before-cursor
+  op:address:operation <- new operation:type
+  *op <- merge 0/insert-operation, cursor-row-before, cursor-column-before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to, 0/never-coalesce
+  editor <- add-operation editor, op
+]
+
 # Everytime you add a new operation to the undo stack, be sure to clear the
 # redo stack, because it's now obsolete.
 # Beware: since we're counting cursor moves as operations, this means just
@@ -6756,6 +6791,76 @@ scenario editor-can-undo-typing-multiple-2 [
   screen-should-contain [
     .          .
     .3a        .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
+scenario editor-can-undo-typing-enter [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [  abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # new line
+  assume-console [
+    left-click 1, 8
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 5
+  ]
+  assume-console [
+    press enter
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  # line is indented
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 2
+    4 <- 2
+  ]
+  screen-should-contain [
+    .          .
+    .  abc     .
+    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # now undo
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 5
+  ]
+  # back to original text
+  screen-should-contain [
+    .          .
+    .  abc     .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # cursor should be at end of line
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .  abc1    .
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
