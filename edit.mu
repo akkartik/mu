@@ -4579,6 +4579,9 @@ recipe event-loop [
         screen, recipes, render?:boolean <- handle-keyboard-event screen, recipes, e:event
         {
           break-unless render?
+          # optimization: refresh screen only if no more events
+          more-events?:boolean <- has-more-events? console
+          break-if more-events?
           screen <- render-recipes screen, env
         }
       }
@@ -4587,6 +4590,9 @@ recipe event-loop [
         screen, current-sandbox, render?:boolean <- handle-keyboard-event screen, current-sandbox, e:event
         {
           break-unless render?:boolean
+          # optimization: refresh screen only if no more events
+          more-events?:boolean <- has-more-events? console
+          break-if more-events?
           screen <- render-sandbox-side screen, env
         }
       }
