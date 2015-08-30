@@ -6813,9 +6813,10 @@ after +handle-redo [
   {
     typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
-    insert-from:address:duplex-list <- get *typing, insert-from:offset
-    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
+    insert-from:address:duplex-list <- get *typing, insert-from:offset  # ignore insert-to because it's already been spliced away
+    # assert insert-to matches next-duplex(*before-cursor)
     insert-duplex-range *before-cursor, insert-from
+    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     *cursor-row <- get *typing, after-row:offset
     *cursor-column <- get *typing, after-column:offset
     top:address:address:duplex-list <- get *editor, top-of-screen:offset
