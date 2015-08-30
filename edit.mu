@@ -591,9 +591,7 @@ recipe editor-event-loop [
     t:address:touch-event <- maybe-convert e, touch:variant
     {
       break-unless t
-      +move-cursor-start
       move-cursor-in-editor screen, editor, *t
-      +move-cursor-end
       loop +next-event:label
     }
     # keyboard events
@@ -667,9 +665,11 @@ recipe move-cursor-in-editor [
   too-far-right?:boolean <- greater-than click-column, right
   reply-if too-far-right?, 0/false
   # position cursor
+  +move-cursor-start
   click-row:number <- get t, row:offset
   click-column:number <- get t, column:offset
   editor <- snap-cursor screen, editor, click-row, click-column
+  +move-cursor-end
   # gain focus
   reply 1/true
 ]
@@ -4972,6 +4972,17 @@ scenario maximize-side [
   ]
 ]
 
+#? # ctrl-t - browse trace
+#? after +global-type [
+#?   {
+#?     browse-trace?:boolean <- equal *c, 20/ctrl-t
+#?     break-unless browse-trace?
+#?     $browse-trace
+#?     screen <- render-all screen, env:address:programming-environment-data
+#?     loop +next-event:label
+#?   }
+#? ]
+
 container programming-environment-data [
   maximized?:boolean
 ]
@@ -7753,6 +7764,152 @@ ghi]
     .d1ef      .
     .ghi       .
     .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-separates-undo-insert-from-undo-cursor-move [
+  # create an editor, type some text, move the cursor, type some more text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  assume-console [
+    type [abc]
+    left-click 1, 1
+    type [d]
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  screen-should-contain [
+    .          .
+    .adbc      .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 2
+  ]
+  # undo
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # last letter typed is deleted
+  screen-should-contain [
+    .          .
+    .abc       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 1
+  ]
+  # undo again
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # no change to screen; cursor moves
+  screen-should-contain [
+    .          .
+    .abc       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 3
+  ]
+  # undo again
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen empty
+  screen-should-contain [
+    .          .
+    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+  # redo
+  assume-console [
+    press ctrl-y
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # first insert
+  screen-should-contain [
+    .          .
+    .abc       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 3
+  ]
+  # redo again
+  assume-console [
+    press ctrl-y
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor moves
+  screen-should-contain [
+    .          .
+    .abc       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 1
+  ]
+  # redo again
+  assume-console [
+    press ctrl-y
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # second insert
+  screen-should-contain [
+    .          .
+    .adbc      .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 2
   ]
 ]
 
