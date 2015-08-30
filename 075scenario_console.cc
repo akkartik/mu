@@ -150,7 +150,7 @@ void initialize_key_names() {
   Key["tab"] = TB_KEY_TAB;
   Key["ctrl-i"] = TB_KEY_CTRL_I;
   Key["ctrl-j"] = TB_KEY_CTRL_J;
-  Key["newline"] = TB_KEY_NEWLINE;
+  Key["enter"] = TB_KEY_NEWLINE;  // ignore CR/LF distinction; there is only 'enter'
   Key["ctrl-k"] = TB_KEY_CTRL_K;
   Key["ctrl-l"] = TB_KEY_CTRL_L;
   Key["ctrl-m"] = TB_KEY_CTRL_M;
