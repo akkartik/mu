@@ -65,6 +65,16 @@ recipe clear-screen [
   reply sc/same-as-ingredient:0
 ]
 
+recipe sync-screen [
+  local-scope
+  sc:address:screen <- next-ingredient
+  {
+    break-if sc
+    sync-display
+  }
+  # do nothing for fake screens
+]
+
 recipe fake-screen-is-empty? [
   local-scope
   sc:address:screen <- next-ingredient

@@ -181,6 +181,10 @@ void tb_present(void)
       front = &CELL(&front_buffer, x, y);
       w = wcwidth(back->ch);
       if (w < 1) w = 1;
+      if (memcmp(back, front, sizeof(struct tb_cell)) == 0) {
+        x += w;
+        continue;
+      }
       memcpy(front, back, sizeof(struct tb_cell));
       send_attr(back->fg, back->bg);
       if (w > 1 && x >= front_buffer.width - (w - 1)) {
@@ -203,6 +207,11 @@ void tb_present(void)
   if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
     write_cursor(cursor_x, cursor_y);
   bytebuffer_flush(&output_buffer, inout);
+}
+
+void tb_sync(void) {
+  cellbuf_clear(&front_buffer);
+  tb_present();
 }
 
 void tb_set_cursor(int cx, int cy)

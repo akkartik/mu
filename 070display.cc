@@ -49,6 +49,16 @@ case CLEAR_DISPLAY: {
 }
 
 :(before "End Primitive Recipe Declarations")
+SYNC_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["sync-display"] = SYNC_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case SYNC_DISPLAY: {
+  tb_sync();
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
 CLEAR_LINE_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["clear-line-on-display"] = CLEAR_LINE_ON_DISPLAY;
