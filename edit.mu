@@ -3979,9 +3979,13 @@ after +handle-special-character [
   {
     page-down?:boolean <- equal *c, 6/ctrl-f
     break-unless page-down?
+    top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+    old-top:address:duplex-list <- copy *top-of-screen
     +move-cursor-start
     page-down editor
     +move-cursor-end
+    no-movement?:boolean <- equal *top-of-screen, old-top
+    reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -3990,9 +3994,13 @@ after +handle-special-key [
   {
     page-down?:boolean <- equal *k, 65518/page-down
     break-unless page-down?
+    top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+    old-top:address:duplex-list <- copy *top-of-screen
     +move-cursor-start
     page-down editor
     +move-cursor-end
+    no-movement?:boolean <- equal *top-of-screen, old-top
+    reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -4162,9 +4170,13 @@ after +handle-special-character [
   {
     page-up?:boolean <- equal *c, 2/ctrl-b
     break-unless page-up?
+    top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+    old-top:address:duplex-list <- copy *top-of-screen
     +move-cursor-start
     editor <- page-up editor, screen-height
     +move-cursor-end
+    no-movement?:boolean <- equal *top-of-screen, old-top
+    reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -4173,9 +4185,14 @@ after +handle-special-key [
   {
     page-up?:boolean <- equal *k, 65519/page-up
     break-unless page-up?
+    top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+    old-top:address:duplex-list <- copy *top-of-screen
     +move-cursor-start
     editor <- page-up editor, screen-height
     +move-cursor-end
+    no-movement?:boolean <- equal *top-of-screen, old-top
+    # don't bother re-rendering if nothing changed. todo: test this
+    reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
