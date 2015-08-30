@@ -21664,21 +21664,21 @@ parse:   ingredient: {name: "ctrl-z", properties: ["ctrl-z": ]}
 9999 mem: storing 0 in location 1377
  103 run: break-unless tab?, 
 9999 mem: location 1377 is 0
-9999 run: jumping to instruction 174
+9999 run: jumping to instruction 203
  103 run: newline?:boolean <- equal *c, 10/newline
 9999 mem: location 1351 is 1339
 9999 mem: location 1339 is 49
-9999 mem: storing 0 in location 1378
+9999 mem: storing 0 in location 1387
  103 run: break-unless newline?, 
-9999 mem: location 1378 is 0
-9999 run: jumping to instruction 192
+9999 mem: location 1387 is 0
+9999 run: jumping to instruction 221
  103 run: regular-character?:boolean <- greater-or-equal *c, 32/space
 9999 mem: location 1351 is 1339
 9999 mem: location 1339 is 49
-9999 mem: storing 1 in location 1385
+9999 mem: storing 1 in location 1390
  103 run: jump-if regular-character?, 1:offset
-9999 mem: location 1385 is 1
-9999 run: jumping to instruction 196
+9999 mem: location 1390 is 1
+9999 run: jumping to instruction 225
  103 run: top-before:address:duplex-list <- get *editor, top-of-screen:offset
 9999 mem: location 1337 is 1115
 9999 mem: location 1115 is 1158
@@ -21696,7 +21696,13 @@ parse:   ingredient: {name: "ctrl-z", properties: ["ctrl-z": ]}
 9999 run: address to copy is 1116
 9999 run: its type is address
 9999 mem: location 1116 is 1158
-9999 mem: storing 1158 in location 1381
+9999 mem: storing 1158 in location 1378
+ 103 run: cursor-before:address:duplex-list <- copy *before-cursor
+9999 mem: location 1346 is 1118
+9999 mem: location 1118 is 1158
+9999 mem: location 1346 is 1118
+9999 mem: location 1346 is 1118
+9999 mem: storing 1158 in location 1379
  103 run: editor, screen, go-render?:boolean <- insert-at-cursor editor, *c, screen
 9999 mem: location 1337 is 1115
 9999 mem: location 1351 is 1339
@@ -22529,12 +22535,12 @@ parse:   ingredient: {name: "ctrl-z", properties: ["ctrl-z": ]}
  105 run: right:number <- subtract width, 1
 9999 mem: location 1251 is 10
 9999 mem: storing 9 in location 1267
+schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: at-right?:boolean <- greater-or-equal *column, right
 9999 mem: location 1255 is 1012
 9999 mem: location 1012 is 1
 9999 mem: location 1267 is 9
 9999 mem: storing 0 in location 1268
-schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: break-if at-right?, 
 9999 mem: location 1268 is 0
 9999 run: jump-if fell through
@@ -23109,7 +23115,7 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 run: address to copy is 1116
 9999 run: its type is address
 9999 mem: location 1116 is 1158
-9999 mem: storing 1158 in location 1383
+9999 mem: storing 1158 in location 1380
  103 run: undo:address:address:list <- get-address *editor, undo:offset
 9999 mem: location 1337 is 1115
 9999 mem: location 1115 is 1158
@@ -23129,12 +23135,29 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
  103 run: break-unless *undo, 
 9999 mem: location 1355 is 1124
 9999 mem: location 1124 is 0
-9999 run: jumping to instruction 217
- 103 run: insert-from:address:duplex-list <- copy *before-cursor
-9999 mem: location 1346 is 1118
-9999 mem: location 1118 is 1437
-9999 mem: location 1346 is 1118
-9999 mem: location 1346 is 1118
+9999 run: jumping to instruction 247
+ 103 run: insert-from:address:duplex-list <- next-duplex cursor-before
+9999 mem: location 1379 is 1158
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+ 104 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1158 in location 1166
+ 104 run: jump-if in, 1:offset
+9999 mem: location 1166 is 1158
+9999 run: jumping to instruction 4
+ 104 run: result:address:duplex-list <- get *in, next:offset
+9999 mem: location 1166 is 1158
+9999 mem: location 1158 is 167
+9999 mem: location 1159 is 1437
+9999 mem: location 1160 is 0
+9999 mem: location 1166 is 1158
+9999 run: address to copy is 1159
+9999 run: its type is address
+9999 mem: location 1159 is 1437
+9999 mem: storing 1437 in location 1167
+ 104 run: reply result
+9999 mem: location 1167 is 1437
+9999 run: result 0 is 1437
 9999 mem: storing 1437 in location 1359
  103 run: insert-to:address:duplex-list <- next-duplex insert-from
 9999 mem: location 1359 is 1437
@@ -23158,21 +23181,21 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
  104 run: reply result
 9999 mem: location 1167 is 1161
 9999 run: result 0 is 1161
-9999 mem: storing 1161 in location 1384
+9999 mem: storing 1161 in location 1386
  103 run: op:address:operation <- new operation:type
 9999 mem: new alloc: 1440
 9999 mem: storing 1440 in location 1354
  103 run: *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to, 1/coalesce
 9999 mem: location 1349 is 1
 9999 mem: location 1350 is 0
-9999 mem: location 1381 is 1158
+9999 mem: location 1378 is 1158
 9999 mem: location 1347 is 1121
 9999 mem: location 1121 is 1
 9999 mem: location 1348 is 1122
 9999 mem: location 1122 is 1
-9999 mem: location 1383 is 1158
+9999 mem: location 1380 is 1158
 9999 mem: location 1359 is 1437
-9999 mem: location 1384 is 1161
+9999 mem: location 1386 is 1161
 9999 mem: location 1354 is 1440
 9999 mem: storing 0 in location 1440
 9999 mem: storing 1 in location 1441
@@ -24581,6 +24604,7 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 mem: location 1216 is 98
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
+schedule: get-color/render/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: color:number <- next-ingredient 
 9999 mem: storing 7 in location 1234
  105 run: c:character <- next-ingredient 
@@ -24594,7 +24618,6 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
  105 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1235 is 98
 9999 mem: storing 0 in location 1237
-schedule: get-color/render/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: break-unless starting-comment?, 
 9999 mem: location 1237 is 0
 9999 run: jumping to instruction 11
@@ -26145,6 +26168,7 @@ schedule: get-color/render/editor-render/editor-event-loop/scenario-editor-work-
  106 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1249
 9999 mem: storing 0 in location 1250
+schedule: print-character/clear-line-delimited/render/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  106 run: break-if bg-color-found?, 
 9999 mem: location 1250 is 0
 9999 run: jump-if fell through
@@ -26153,7 +26177,6 @@ schedule: get-color/render/editor-render/editor-event-loop/scenario-editor-work-
  106 run: trace 90, [print-character], c
 9999 mem: location 1246 is 32
   90 print-character: 32 
-schedule: print-character/clear-line-delimited/render/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  106 run: break-unless sc, 
 9999 mem: location 1245 is 1009
 9999 run: jump-unless fell through
@@ -27746,6 +27769,7 @@ schedule: print-character/clear-line-delimited/render/editor-render/editor-event
 9999 mem: storing 3 in location 1012
  105 run: reply sc/same-as-ingredient:0
 9999 mem: location 1245 is 1009
+schedule: render/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  104 run: curr <- next-duplex curr
 9999 mem: location 1205 is 1183
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -27769,7 +27793,6 @@ schedule: print-character/clear-line-delimited/render/editor-render/editor-event
 9999 mem: location 1167 is 1186
 9999 run: result 0 is 1186
 9999 mem: storing 1186 in location 1205
-schedule: render/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  104 run: prev <- next-duplex prev
 9999 mem: location 1206 is 1180
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -29427,6 +29450,7 @@ schedule: render/editor-render/editor-event-loop/scenario-editor-work-clears-red
  104 run: color <- get-color color, c
 9999 mem: location 1207 is 7
 9999 mem: location 1216 is 103
+schedule: get-color/render/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
  105 run: color:number <- next-ingredient 
@@ -29439,7 +29463,6 @@ schedule: render/editor-render/editor-event-loop/scenario-editor-work-clears-red
  105 run: break-unless color-is-white?, 
 9999 mem: location 1236 is 1
 9999 run: jump-unless fell through
-schedule: get-color/render/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: starting-comment?:boolean <- equal c, 35/#
 9999 mem: location 1235 is 103
 9999 mem: storing 0 in location 1237
@@ -31020,6 +31043,7 @@ schedule: get-color/render/editor-render/editor-event-loop/scenario-editor-work-
  105 run: right:number <- subtract width, 1
 9999 mem: location 1251 is 10
 9999 mem: storing 9 in location 1267
+schedule: print-character/clear-line-delimited/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: at-right?:boolean <- greater-or-equal *column, right
 9999 mem: location 1255 is 1012
 9999 mem: location 1012 is 5
@@ -31038,7 +31062,6 @@ schedule: get-color/render/editor-render/editor-event-loop/scenario-editor-work-
  104 run: column <- add column, 1
 9999 mem: location 1272 is 5
 9999 mem: storing 6 in location 1272
-schedule: clear-line-delimited/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  104 run: loop 
 9999 run: jumping to instruction 5
  104 run: done?:boolean <- greater-than column, right
@@ -32744,6 +32767,7 @@ schedule: clear-line-delimited/editor-render/editor-event-loop/scenario-editor-w
  105 run: break-if color-found?, 
 9999 mem: location 1248 is 1
 9999 run: jumping to instruction 7
+schedule: print-character/draw-horizontal/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1249
 9999 mem: storing 1 in location 1250
@@ -32753,7 +32777,6 @@ schedule: clear-line-delimited/editor-render/editor-event-loop/scenario-editor-w
  105 run: trace 90, [print-character], c
 9999 mem: location 1246 is 9480
   90 print-character: 9480 
-schedule: print-character/draw-horizontal/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: break-unless sc, 
 9999 mem: location 1245 is 1009
 9999 run: jump-unless fell through
@@ -34470,6 +34493,7 @@ schedule: print-character/draw-horizontal/editor-render/editor-event-loop/scenar
 9999 run: jump-if fell through
  105 run: print-character screen, 32/space
 9999 mem: location 1271 is 1009
+schedule: print-character/clear-line-delimited/clear-screen-from/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 25
  106 run: sc:address:screen <- next-ingredient 
@@ -34482,7 +34506,6 @@ schedule: print-character/draw-horizontal/editor-render/editor-event-loop/scenar
  106 run: break-if color-found?, 
 9999 mem: location 1248 is 0
 9999 run: jump-if fell through
-schedule: print-character/clear-line-delimited/clear-screen-from/editor-render/editor-event-loop/scenario-editor-work-clears-redo-stack
  106 run: color <- copy 7/white
 9999 mem: storing 7 in location 1247
  106 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
@@ -35456,21 +35479,21 @@ parse:   ingredient: {name: "0", properties: [_: "literal-string"]}
 9999 mem: storing 0 in location 1377
  103 run: break-unless tab?, 
 9999 mem: location 1377 is 0
-9999 run: jumping to instruction 174
+9999 run: jumping to instruction 203
  103 run: newline?:boolean <- equal *c, 10/newline
 9999 mem: location 1351 is 1339
 9999 mem: location 1339 is 48
-9999 mem: storing 0 in location 1378
+9999 mem: storing 0 in location 1387
  103 run: break-unless newline?, 
-9999 mem: location 1378 is 0
-9999 run: jumping to instruction 192
+9999 mem: location 1387 is 0
+9999 run: jumping to instruction 221
  103 run: regular-character?:boolean <- greater-or-equal *c, 32/space
 9999 mem: location 1351 is 1339
 9999 mem: location 1339 is 48
-9999 mem: storing 1 in location 1385
+9999 mem: storing 1 in location 1390
  103 run: jump-if regular-character?, 1:offset
-9999 mem: location 1385 is 1
-9999 run: jumping to instruction 196
+9999 mem: location 1390 is 1
+9999 run: jumping to instruction 225
  103 run: top-before:address:duplex-list <- get *editor, top-of-screen:offset
 9999 mem: location 1337 is 1115
 9999 mem: location 1115 is 1158
@@ -35488,7 +35511,13 @@ parse:   ingredient: {name: "0", properties: [_: "literal-string"]}
 9999 run: address to copy is 1116
 9999 run: its type is address
 9999 mem: location 1116 is 1158
-9999 mem: storing 1158 in location 1381
+9999 mem: storing 1158 in location 1378
+ 103 run: cursor-before:address:duplex-list <- copy *before-cursor
+9999 mem: location 1346 is 1118
+9999 mem: location 1118 is 1158
+9999 mem: location 1346 is 1118
+9999 mem: location 1346 is 1118
+9999 mem: storing 1158 in location 1379
  103 run: editor, screen, go-render?:boolean <- insert-at-cursor editor, *c, screen
 9999 mem: location 1337 is 1115
 9999 mem: location 1351 is 1339
@@ -36258,6 +36287,7 @@ parse:   ingredient: {name: "0", properties: [_: "literal-string"]}
  105 run: break-unless newline?, 
 9999 mem: location 1256 is 0
 9999 run: jumping to instruction 43
+schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: index:number <- multiply *row, width
 9999 mem: location 1253 is 1011
 9999 mem: location 1011 is 1
@@ -36286,7 +36316,6 @@ parse:   ingredient: {name: "0", properties: [_: "literal-string"]}
  105 run: backspace?:boolean <- equal c, 8
 9999 mem: location 1246 is 97
 9999 mem: storing 0 in location 1262
-schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-loop/scenario-editor-work-clears-redo-stack
  105 run: break-unless backspace?, 
 9999 mem: location 1262 is 0
 9999 run: jumping to instruction 63
@@ -36900,7 +36929,7 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 run: address to copy is 1116
 9999 run: its type is address
 9999 mem: location 1116 is 1158
-9999 mem: storing 1158 in location 1383
+9999 mem: storing 1158 in location 1380
  103 run: undo:address:address:list <- get-address *editor, undo:offset
 9999 mem: location 1337 is 1115
 9999 mem: location 1115 is 1158
@@ -36920,12 +36949,29 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
  103 run: break-unless *undo, 
 9999 mem: location 1355 is 1124
 9999 mem: location 1124 is 0
-9999 run: jumping to instruction 217
- 103 run: insert-from:address:duplex-list <- copy *before-cursor
-9999 mem: location 1346 is 1118
-9999 mem: location 1118 is 1465
-9999 mem: location 1346 is 1118
-9999 mem: location 1346 is 1118
+9999 run: jumping to instruction 247
+ 103 run: insert-from:address:duplex-list <- next-duplex cursor-before
+9999 mem: location 1379 is 1158
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+ 104 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1158 in location 1463
+ 104 run: jump-if in, 1:offset
+9999 mem: location 1463 is 1158
+9999 run: jumping to instruction 4
+ 104 run: result:address:duplex-list <- get *in, next:offset
+9999 mem: location 1463 is 1158
+9999 mem: location 1158 is 1158
+9999 mem: location 1159 is 1465
+9999 mem: location 1160 is 0
+9999 mem: location 1463 is 1158
+9999 run: address to copy is 1159
+9999 run: its type is address
+9999 mem: location 1159 is 1465
+9999 mem: storing 1465 in location 1464
+ 104 run: reply result
+9999 mem: location 1464 is 1465
+9999 run: result 0 is 1465
 9999 mem: storing 1465 in location 1359
  103 run: insert-to:address:duplex-list <- next-duplex insert-from
 9999 mem: location 1359 is 1465
@@ -36949,21 +36995,21 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
  104 run: reply result
 9999 mem: location 1464 is 1161
 9999 run: result 0 is 1161
-9999 mem: storing 1161 in location 1384
+9999 mem: storing 1161 in location 1386
  103 run: op:address:operation <- new operation:type
 9999 mem: new alloc: 1468
 9999 mem: storing 1468 in location 1354
  103 run: *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to, 1/coalesce
 9999 mem: location 1349 is 1
 9999 mem: location 1350 is 0
-9999 mem: location 1381 is 1158
+9999 mem: location 1378 is 1158
 9999 mem: location 1347 is 1121
 9999 mem: location 1121 is 1
 9999 mem: location 1348 is 1122
 9999 mem: location 1122 is 1
-9999 mem: location 1383 is 1158
+9999 mem: location 1380 is 1158
 9999 mem: location 1359 is 1465
-9999 mem: location 1384 is 1161
+9999 mem: location 1386 is 1161
 9999 mem: location 1354 is 1468
 9999 mem: storing 0 in location 1468
 9999 mem: storing 1 in location 1469
@@ -37536,20 +37582,20 @@ after-brace: editor-event-loop ...
 9999 mem: storing 0 in location 1377
  103 run: break-unless tab?, 
 9999 mem: location 1377 is 0
-9999 run: jumping to instruction 174
+9999 run: jumping to instruction 203
  103 run: newline?:boolean <- equal *c, 10/newline
 9999 mem: location 1351 is 1339
 9999 mem: location 1339 is 25
-9999 mem: storing 0 in location 1378
+9999 mem: storing 0 in location 1387
  103 run: break-unless newline?, 
-9999 mem: location 1378 is 0
-9999 run: jumping to instruction 192
+9999 mem: location 1387 is 0
+9999 run: jumping to instruction 221
  103 run: regular-character?:boolean <- greater-or-equal *c, 32/space
 9999 mem: location 1351 is 1339
 9999 mem: location 1339 is 25
-9999 mem: storing 0 in location 1385
+9999 mem: storing 0 in location 1390
  103 run: jump-if regular-character?, 1:offset
-9999 mem: location 1385 is 0
+9999 mem: location 1390 is 0
 9999 run: jump-if fell through
  103 run: reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
 9999 mem: location 1336 is 1009

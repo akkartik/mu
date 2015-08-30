@@ -1527,8 +1527,10 @@ after +handle-special-character [
   {
     tab?:boolean <- equal *c, 9/tab
     break-unless tab?
+    +insert-character-begin
     insert-at-cursor editor, 32/space, screen
     insert-at-cursor editor, 32/space, screen
+    +insert-character-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -6613,7 +6615,7 @@ scenario editor-can-undo-typing [
     type [0]
   ]
   editor-event-loop screen:address, console:address, 2:address:editor-data
-  # now undo
+  # undo
   assume-console [
     press ctrl-z
   ]
@@ -6645,6 +6647,7 @@ scenario editor-can-undo-typing [
 # save operation to undo
 after +insert-character-begin [
   top-before:address:duplex-list <- get *editor, top-of-screen:offset
+  cursor-before:address:duplex-list <- copy *before-cursor
 ]
 before +insert-character-end [
   top-after:address:duplex-list <- get *editor, top-of-screen:offset
@@ -6667,8 +6670,8 @@ before +insert-character-end [
     *after-top <- get *editor, top-of-screen:offset
     jump +done-inserting-character:label
   }
-  # it so happens that before-cursor is at the character we just inserted
-  insert-from:address:duplex-list <- copy *before-cursor
+  # if not, create a new operation
+  insert-from:address:duplex-list <- next-duplex cursor-before
   insert-to:address:duplex-list <- next-duplex insert-from
   op:address:operation <- new operation:type
   *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to, 1/coalesce
@@ -6734,7 +6737,7 @@ scenario editor-can-undo-typing-multiple [
     type [012]
   ]
   editor-event-loop screen:address, console:address, 2:address:editor-data
-  # now undo
+  # undo
   assume-console [
     press ctrl-z
   ]
@@ -6767,7 +6770,7 @@ scenario editor-can-undo-typing-multiple-2 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  # now undo
+  # undo
   assume-console [
     press ctrl-z
   ]
@@ -6805,25 +6808,9 @@ scenario editor-can-undo-typing-enter [
   # new line
   assume-console [
     left-click 1, 8
-  ]
-  editor-event-loop screen:address, console:address, 2:address:editor-data
-  3:number <- get *2:address:editor-data, cursor-row:offset
-  4:number <- get *2:address:editor-data, cursor-column:offset
-  memory-should-contain [
-    3 <- 1
-    4 <- 5
-  ]
-  assume-console [
     press enter
   ]
   editor-event-loop screen:address, console:address, 2:address:editor-data
-  # line is indented
-  3:number <- get *2:address:editor-data, cursor-row:offset
-  4:number <- get *2:address:editor-data, cursor-column:offset
-  memory-should-contain [
-    3 <- 2
-    4 <- 2
-  ]
   screen-should-contain [
     .          .
     .  abc     .
@@ -6831,7 +6818,14 @@ scenario editor-can-undo-typing-enter [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  # now undo
+  # line is indented
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 2
+    4 <- 2
+  ]
+  # undo
   assume-console [
     press ctrl-z
   ]
@@ -7014,6 +7008,161 @@ ghi]
     .def       .
     .ghi       .
     .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-can-redo-typing-and-enter-and-tab [
+  # create an editor
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # insert some text and tabs, hit enter, some more text and tabs
+  assume-console [
+    press tab
+    type [ab]
+    press tab
+    type [cd]
+    press enter
+    press tab
+    type [efg]
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  screen-should-contain [
+    .          .
+    .  ab  cd  .
+    .    efg   .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 2
+    4 <- 7
+  ]
+  # undo
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # typing in second line deleted, but not indent
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 2
+    4 <- 2
+  ]
+  screen-should-contain [
+    .          .
+    .  ab  cd  .
+    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # undo again
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # indent and newline deleted
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 8
+  ]
+  screen-should-contain [
+    .          .
+    .  ab  cd  .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # undo again
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # empty screen
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+  screen-should-contain [
+    .          .
+    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # redo
+  assume-console [
+    press ctrl-y
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # first line inserted
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 8
+  ]
+  screen-should-contain [
+    .          .
+    .  ab  cd  .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # redo again
+  assume-console [
+    press ctrl-y
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # newline and indent inserted
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 2
+    4 <- 2
+  ]
+  screen-should-contain [
+    .          .
+    .  ab  cd  .
+    .          .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # redo again
+  assume-console [
+    press ctrl-y
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # indent and newline deleted
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 2
+    4 <- 7
+  ]
+  screen-should-contain [
+    .          .
+    .  ab  cd  .
+    .    efg   .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
   ]
 ]
 
