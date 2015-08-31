@@ -669,6 +669,7 @@ recipe move-cursor-in-editor [
   click-row:number <- get t, row:offset
   click-column:number <- get t, column:offset
   editor <- snap-cursor screen, editor, click-row, click-column
+  undo-coalesce-tag:number <- copy 0/never
   +move-cursor-end
   # gain focus
   reply 1/true
@@ -1822,6 +1823,7 @@ after +handle-special-key [
     *before-cursor <- copy next-cursor
     editor, go-render?:boolean <- move-cursor-coordinates-right editor, screen-height
     screen <- move-cursor screen, *cursor-row, *cursor-column
+    undo-coalesce-tag:number <- copy 2/right-arrow
     +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
@@ -2092,6 +2094,7 @@ after +handle-special-key [
     +move-cursor-start
     editor, go-render? <- move-cursor-coordinates-left editor
     *before-cursor <- copy prev
+    undo-coalesce-tag:number <- copy 1/left-arrow
     +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
@@ -2282,6 +2285,7 @@ after +handle-special-key [
     break-unless move-to-previous-line?
     +move-cursor-start
     editor, go-render? <- move-to-previous-line editor
+    undo-coalesce-tag:number <- copy 3/up-arrow
     +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
@@ -2502,6 +2506,7 @@ after +handle-special-key [
     break-unless move-to-next-line?
     +move-cursor-start
     editor, go-render? <- move-to-next-line editor, screen-height
+    undo-coalesce-tag:number <- copy 4/down-arrow
     +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
@@ -2658,6 +2663,7 @@ after +handle-special-character [
     break-unless move-to-start-of-line?
     +move-cursor-start
     move-to-start-of-line editor
+    undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
@@ -2669,6 +2675,7 @@ after +handle-special-key [
     break-unless move-to-start-of-line?
     +move-cursor-start
     move-to-start-of-line editor
+    undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
@@ -2825,6 +2832,7 @@ after +handle-special-character [
     break-unless move-to-end-of-line?
     +move-cursor-start
     move-to-end-of-line editor
+    undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
@@ -2836,6 +2844,7 @@ after +handle-special-key [
     break-unless move-to-end-of-line?
     +move-cursor-start
     move-to-end-of-line editor
+    undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
@@ -3983,6 +3992,7 @@ after +handle-special-character [
     old-top:address:duplex-list <- copy *top-of-screen
     +move-cursor-start
     page-down editor
+    undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
     no-movement?:boolean <- equal *top-of-screen, old-top
     reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
@@ -3998,6 +4008,7 @@ after +handle-special-key [
     old-top:address:duplex-list <- copy *top-of-screen
     +move-cursor-start
     page-down editor
+    undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
     no-movement?:boolean <- equal *top-of-screen, old-top
     reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
@@ -4174,6 +4185,7 @@ after +handle-special-character [
     old-top:address:duplex-list <- copy *top-of-screen
     +move-cursor-start
     editor <- page-up editor, screen-height
+    undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
     no-movement?:boolean <- equal *top-of-screen, old-top
     reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
@@ -4189,6 +4201,7 @@ after +handle-special-key [
     old-top:address:duplex-list <- copy *top-of-screen
     +move-cursor-start
     editor <- page-up editor, screen-height
+    undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
     no-movement?:boolean <- equal *top-of-screen, old-top
     # don't bother re-rendering if nothing changed. todo: test this
@@ -6698,13 +6711,13 @@ before +insert-character-end [
   top-after:address:duplex-list <- get *editor, top-of-screen:offset
   undo:address:address:list <- get-address *editor, undo:offset
   {
-    # if previous operation was an insert, merge with it
+    # if previous operation was an insert, coalesce this operation with it
     break-unless *undo
     op:address:operation <- first *undo
     typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
-    previous-tag:number <- get *typing, tag:offset
-    break-unless previous-tag
+    previous-coalesce-tag:number <- get *typing, tag:offset
+    break-unless previous-coalesce-tag
     insert-until:address:address:duplex-list <- get-address *typing, insert-until:offset
     *insert-until <- next-duplex *before-cursor
     after-row:address:number <- get-address *typing, after-row:offset
@@ -6713,7 +6726,7 @@ before +insert-character-end [
     *after-column <- copy *cursor-column
     after-top:address:number <- get-address *typing, after-top-of-screen:offset
     *after-top <- get *editor, top-of-screen:offset
-    jump +done-inserting-character:label
+    break +done-adding-insert-operation:label
   }
   # if not, create a new operation
   insert-from:address:duplex-list <- next-duplex cursor-before
@@ -6721,7 +6734,7 @@ before +insert-character-end [
   op:address:operation <- new operation:type
   *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to, 1/coalesce
   editor <- add-operation editor, op
-  +done-inserting-character
+  +done-adding-insert-operation
 ]
 
 # enter operations never coalesce with typing before or after
@@ -7265,9 +7278,30 @@ before +move-cursor-end [
   after-cursor-row:number <- get *editor, cursor-row:offset
   after-cursor-column:number <- get *editor, cursor-column:offset
   after-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
+  {
+    break-unless undo-coalesce-tag
+    # if previous operation was also a move, and also had the same coalesce
+    # tag, merge with it
+    undo:address:address:list <- get-address *editor, undo:offset
+    break-unless *undo
+    op:address:operation <- first *undo
+    move:address:move-operation <- maybe-convert *op, move:variant
+    break-unless move
+    previous-coalesce-tag:number <- get *move, tag:offset
+    coalesce?:boolean <- equal undo-coalesce-tag, previous-coalesce-tag
+    break-unless coalesce?
+    after-row:address:number <- get-address *move, after-row:offset
+    *after-row <- copy after-cursor-row
+    after-column:address:number <- get-address *move, after-column:offset
+    *after-column <- copy after-cursor-column
+    after-top:address:number <- get-address *move, after-top-of-screen:offset
+    *after-top <- get *editor, top-of-screen:offset
+    break +done-adding-move-operation:label
+  }
   op:address:operation <- new operation:type
-  *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, 0/empty, 0/empty, 0/empty
+  *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, undo-coalesce-tag, 0/empty, 0/empty
   editor <- add-operation editor, op
+  +done-adding-move-operation
 ]
 
 after +handle-undo [
@@ -7944,6 +7978,58 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
   memory-should-contain [
     3 <- 1
     4 <- 2
+  ]
+]
+
+scenario editor-can-undo-multiple-arrows-in-the-same-direction [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def
+ghi]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # move the cursor
+  assume-console [
+    left-click 2, 1
+    press right-arrow
+    press right-arrow
+    press up-arrow
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 3
+  ]
+  # undo
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # up-arrow is undone
+  memory-should-contain [
+    3 <- 2
+    4 <- 3
+  ]
+  # undo again
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # both right-arrows are undone
+  memory-should-contain [
+    3 <- 2
+    4 <- 1
   ]
 ]
 
