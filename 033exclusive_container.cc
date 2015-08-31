@@ -148,3 +148,39 @@ recipe main [
 +mem: storing 34 in location 3
 +mem: storing 1 in location 4
 +mem: storing 34 in location 5
+
+//: Since the different variants of an exclusive-container might have
+//: different sizes, relax the size mismatch check for 'merge' instructions.
+:(before "End size_mismatch(x) Cases")
+if (current_instruction().operation == MERGE
+    && !current_instruction().products.empty()
+    && !current_instruction().products.at(0).types.empty()) {
+  reagent x = canonize(current_instruction().products.at(0));
+  if (Type[x.types.at(0)].kind == exclusive_container) {
+    return size_of(x) < SIZE(data);
+  }
+}
+
+:(scenario merge_exclusive_container_with_mismatched_sizes)
+container foo [
+  x:number
+  y:number
+]
+
+exclusive-container bar [
+  x:number
+  y:foo
+]
+
+recipe main [
+  1:number <- copy 34
+  2:number <- copy 35
+  3:bar <- merge 0/x, 1:number
+  6:bar <- merge 1/foo, 1:number, 2:number
+]
++mem: storing 0 in location 3
++mem: storing 34 in location 4
+# bar is always 3 large so location 5 is skipped
++mem: storing 1 in location 6
++mem: storing 34 in location 7
++mem: storing 35 in location 8

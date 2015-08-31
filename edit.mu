@@ -6746,7 +6746,7 @@ after +insert-enter-start [
 ]
 after +insert-enter-end [
   top-after:address:duplex-list <- get *editor, top-of-screen:offset
-  # never merge
+  # never coalesce
   insert-from:address:duplex-list <- next-duplex cursor-before
   insert-to:address:duplex-list <- next-duplex *before-cursor
   op:address:operation <- new operation:type
@@ -7281,7 +7281,7 @@ before +move-cursor-end [
   {
     break-unless undo-coalesce-tag
     # if previous operation was also a move, and also had the same coalesce
-    # tag, merge with it
+    # tag, coalesce with it
     undo:address:address:list <- get-address *editor, undo:offset
     break-unless *undo
     op:address:operation <- first *undo
@@ -7299,7 +7299,7 @@ before +move-cursor-end [
     break +done-adding-move-operation:label
   }
   op:address:operation <- new operation:type
-  *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, undo-coalesce-tag, 0/empty, 0/empty
+  *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, undo-coalesce-tag
   editor <- add-operation editor, op
   +done-adding-move-operation
 ]
