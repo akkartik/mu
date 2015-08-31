@@ -8093,14 +8093,6 @@ after +handle-redo [
 # todo:
 # operations for recipe side and each sandbox-data
 # undo delete sandbox as a separate primitive on the status bar
-# types of operations:
-#   typing
-#   cursor movement and scrolling (click, arrow keys, ctrl-a, ctrl-e, page up/down, resize)
-#   delete (backspace, delete, ctrl-k, ctrl-u)
-# collapse runs
-#   of the same event (arrow keys, etc.)
-#   of typing that's not newline or backspace or tab
-# render entire screen blindly on undo/redo operations for now
 
 ## helpers for drawing editor borders
 
