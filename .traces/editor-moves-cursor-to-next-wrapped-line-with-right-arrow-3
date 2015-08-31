@@ -140,7 +140,7 @@ after-brace: get ...
 9999 mem: location 1262 is 1
 9999 mem: location 1263 is 4
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 19
+9999 mem: array size is 27
 9999 mem: new alloc: 1307
  103 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 1309
@@ -1147,6 +1147,8 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1181 is 1115
 9999 run: result 0 is 1115
 9999 mem: storing 1115 in location 1310
+ 103 run: undo-coalesce-tag:number <- copy 0/never
+9999 mem: storing 0 in location 1323
  103 run: after-cursor-row:number <- get *editor, cursor-row:offset
 9999 mem: location 1310 is 1115
 9999 mem: location 1115 is 1153
@@ -1164,7 +1166,7 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 run: address to copy is 1121
 9999 run: its type is number
 9999 mem: location 1121 is 1
-9999 mem: storing 1 in location 1323
+9999 mem: storing 1 in location 1324
  103 run: after-cursor-column:number <- get *editor, cursor-column:offset
 9999 mem: location 1310 is 1115
 9999 mem: location 1115 is 1153
@@ -1182,7 +1184,7 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 run: address to copy is 1122
 9999 run: its type is number
 9999 mem: location 1122 is 4
-9999 mem: storing 4 in location 1324
+9999 mem: storing 4 in location 1325
  103 run: after-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
 9999 mem: location 1310 is 1115
 9999 mem: location 1115 is 1153
@@ -1200,37 +1202,41 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 run: address to copy is 1116
 9999 run: its type is address
 9999 mem: location 1116 is 1153
-9999 mem: storing 1153 in location 1325
+9999 mem: storing 1153 in location 1326
+ 103 run: break-unless undo-coalesce-tag, 
+9999 mem: location 1323 is 0
+9999 run: jumping to instruction 43
  103 run: op:address:operation <- new operation:type
-9999 mem: new alloc: 1327
-9999 mem: storing 1327 in location 1326
- 103 run: *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, 0/empty, 0/empty, 0/empty
+9999 mem: new alloc: 1335
+9999 mem: storing 1335 in location 1328
+ 103 run: *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, undo-coalesce-tag, 0/empty, 0/empty
 9999 mem: location 1319 is 1
 9999 mem: location 1320 is 1
 9999 mem: location 1321 is 1153
-9999 mem: location 1323 is 1
-9999 mem: location 1324 is 4
-9999 mem: location 1325 is 1153
-9999 mem: location 1326 is 1327
-9999 mem: storing 1 in location 1327
-9999 mem: storing 1 in location 1328
-9999 mem: storing 1 in location 1329
-9999 mem: storing 1153 in location 1330
-9999 mem: storing 1 in location 1331
-9999 mem: storing 4 in location 1332
-9999 mem: storing 1153 in location 1333
-9999 mem: storing 0 in location 1334
-9999 mem: storing 0 in location 1335
-9999 mem: storing 0 in location 1336
+9999 mem: location 1324 is 1
+9999 mem: location 1325 is 4
+9999 mem: location 1326 is 1153
+9999 mem: location 1323 is 0
+9999 mem: location 1328 is 1335
+9999 mem: storing 1 in location 1335
+9999 mem: storing 1 in location 1336
+9999 mem: storing 1 in location 1337
+9999 mem: storing 1153 in location 1338
+9999 mem: storing 1 in location 1339
+9999 mem: storing 4 in location 1340
+9999 mem: storing 1153 in location 1341
+9999 mem: storing 0 in location 1342
+9999 mem: storing 0 in location 1343
+9999 mem: storing 0 in location 1344
  103 run: editor <- add-operation editor, op
 9999 mem: location 1310 is 1115
-9999 mem: location 1326 is 1327
+9999 mem: location 1328 is 1335
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 5
  104 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1115 in location 1251
  104 run: op:address:operation <- next-ingredient 
-9999 mem: storing 1327 in location 1252
+9999 mem: storing 1335 in location 1252
  104 run: undo:address:address:list:address:operation <- get-address *editor, undo:offset
 9999 mem: location 1251 is 1115
 9999 mem: location 1115 is 1153
@@ -1248,47 +1254,47 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 run: address to copy is 1124
 9999 mem: storing 1124 in location 1253
  104 run: *undo <- push op, *undo
-9999 mem: location 1252 is 1327
+9999 mem: location 1252 is 1335
 9999 mem: location 1253 is 1124
 9999 mem: location 1124 is 0
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
  105 run: x:location <- next-ingredient 
-9999 mem: storing 1327 in location 1207
+9999 mem: storing 1335 in location 1207
  105 run: in:address:list <- next-ingredient 
 9999 mem: storing 0 in location 1208
  105 run: result:address:list <- new list:type
-9999 mem: new alloc: 1337
-9999 mem: storing 1337 in location 1209
+9999 mem: new alloc: 1345
+9999 mem: storing 1345 in location 1209
  105 run: val:address:location <- get-address *result, value:offset
-9999 mem: location 1209 is 1337
-9999 mem: location 1337 is 0
-9999 mem: location 1338 is 0
-9999 mem: location 1209 is 1337
-9999 run: address to copy is 1337
-9999 mem: storing 1337 in location 1210
+9999 mem: location 1209 is 1345
+9999 mem: location 1345 is 0
+9999 mem: location 1346 is 0
+9999 mem: location 1209 is 1345
+9999 run: address to copy is 1345
+9999 mem: storing 1345 in location 1210
  105 run: *val <- copy x
-9999 mem: location 1207 is 1327
-9999 mem: location 1210 is 1337
-9999 mem: location 1210 is 1337
-9999 mem: storing 1327 in location 1337
+9999 mem: location 1207 is 1335
+9999 mem: location 1210 is 1345
+9999 mem: location 1210 is 1345
+9999 mem: storing 1335 in location 1345
  105 run: next:address:address:list <- get-address *result, next:offset
-9999 mem: location 1209 is 1337
-9999 mem: location 1337 is 1327
-9999 mem: location 1338 is 0
-9999 mem: location 1209 is 1337
-9999 run: address to copy is 1338
-9999 mem: storing 1338 in location 1211
+9999 mem: location 1209 is 1345
+9999 mem: location 1345 is 1335
+9999 mem: location 1346 is 0
+9999 mem: location 1209 is 1345
+9999 run: address to copy is 1346
+9999 mem: storing 1346 in location 1211
  105 run: *next <- copy in
 9999 mem: location 1208 is 0
-9999 mem: location 1211 is 1338
-9999 mem: location 1211 is 1338
-9999 mem: storing 0 in location 1338
+9999 mem: location 1211 is 1346
+9999 mem: location 1211 is 1346
+9999 mem: storing 0 in location 1346
  105 run: reply result
-9999 mem: location 1209 is 1337
-9999 run: result 0 is 1337
+9999 mem: location 1209 is 1345
+9999 run: result 0 is 1345
 9999 mem: location 1253 is 1124
-9999 mem: storing 1337 in location 1124
+9999 mem: storing 1345 in location 1124
  104 run: redo:address:address:list:address:operation <- get-address *editor, redo:offset
 9999 mem: location 1251 is 1115
 9999 mem: location 1115 is 1153
@@ -1300,7 +1306,7 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
 9999 mem: location 1251 is 1115
 9999 run: address to copy is 1125
@@ -1416,22 +1422,22 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1262 is 0
 9999 mem: location 1263 is 0
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 76
-9999 mem: new alloc: 1339
+9999 mem: array size is 78
+9999 mem: new alloc: 1347
  103 run: screen:address <- next-ingredient 
-9999 mem: storing 1009 in location 1341
+9999 mem: storing 1009 in location 1349
  103 run: editor:address:editor-data <- next-ingredient 
-9999 mem: storing 1115 in location 1342
+9999 mem: storing 1115 in location 1350
  103 run: e:event <- next-ingredient 
-9999 mem: storing 1 in location 1343
-9999 mem: storing 65514 in location 1344
-9999 mem: storing 0 in location 1345
-9999 mem: storing 0 in location 1346
+9999 mem: storing 1 in location 1351
+9999 mem: storing 65514 in location 1352
+9999 mem: storing 0 in location 1353
+9999 mem: storing 0 in location 1354
  103 run: jump-if editor, 1:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: jumping to instruction 6
  103 run: screen-width:number <- screen-width screen
-9999 mem: location 1341 is 1009
+9999 mem: location 1349 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
  104 run: sc:address:screen <- next-ingredient 
@@ -1454,9 +1460,9 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
  104 run: reply width
 9999 mem: location 1162 is 10
 9999 run: result 0 is 10
-9999 mem: storing 10 in location 1347
+9999 mem: storing 10 in location 1355
  103 run: screen-height:number <- screen-height screen
-9999 mem: location 1341 is 1009
+9999 mem: location 1349 is 1009
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
  104 run: sc:address:screen <- next-ingredient 
@@ -1479,9 +1485,9 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
  104 run: reply height
 9999 mem: location 1162 is 5
 9999 run: result 0 is 5
-9999 mem: storing 5 in location 1348
+9999 mem: storing 5 in location 1356
  103 run: left:number <- get *editor, left:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1491,15 +1497,15 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1119
 9999 run: its type is number
 9999 mem: location 1119 is 1
-9999 mem: storing 1 in location 1349
+9999 mem: storing 1 in location 1357
  103 run: right:number <- get *editor, right:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1509,15 +1515,15 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1120
 9999 run: its type is number
 9999 mem: location 1120 is 5
-9999 mem: storing 5 in location 1350
+9999 mem: storing 5 in location 1358
  103 run: before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1527,13 +1533,13 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1118
-9999 mem: storing 1118 in location 1351
+9999 mem: storing 1118 in location 1359
  103 run: cursor-row:address:number <- get-address *editor, cursor-row:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1543,13 +1549,13 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1121
-9999 mem: storing 1121 in location 1352
+9999 mem: storing 1121 in location 1360
  103 run: cursor-column:address:number <- get-address *editor, cursor-column:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1559,98 +1565,98 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1122
-9999 mem: storing 1122 in location 1353
+9999 mem: storing 1122 in location 1361
  103 run: save-row:number <- copy *cursor-row
-9999 mem: location 1352 is 1121
+9999 mem: location 1360 is 1121
 9999 mem: location 1121 is 1
-9999 mem: location 1352 is 1121
-9999 mem: location 1352 is 1121
-9999 mem: storing 1 in location 1354
+9999 mem: location 1360 is 1121
+9999 mem: location 1360 is 1121
+9999 mem: storing 1 in location 1362
  103 run: save-column:number <- copy *cursor-column
-9999 mem: location 1353 is 1122
+9999 mem: location 1361 is 1122
 9999 mem: location 1122 is 4
-9999 mem: location 1353 is 1122
-9999 mem: location 1353 is 1122
-9999 mem: storing 4 in location 1355
+9999 mem: location 1361 is 1122
+9999 mem: location 1361 is 1122
+9999 mem: storing 4 in location 1363
  103 run: c:address:character <- maybe-convert e, text:variant
-9999 mem: location 1343 is 1
-9999 mem: location 1344 is 65514
-9999 mem: location 1345 is 0
-9999 mem: location 1346 is 0
-9999 mem: storing 0 in location 1356
+9999 mem: location 1351 is 1
+9999 mem: location 1352 is 65514
+9999 mem: location 1353 is 0
+9999 mem: location 1354 is 0
+9999 mem: storing 0 in location 1364
  103 run: break-unless c, 
-9999 mem: location 1356 is 0
-9999 run: jumping to instruction 266
+9999 mem: location 1364 is 0
+9999 run: jumping to instruction 346
  103 run: k:address:number <- maybe-convert e:event, keycode:variant
-9999 mem: location 1343 is 1
-9999 mem: location 1344 is 65514
-9999 mem: location 1345 is 0
-9999 mem: location 1346 is 0
-9999 mem: storing 1344 in location 1399
+9999 mem: location 1351 is 1
+9999 mem: location 1352 is 65514
+9999 mem: location 1353 is 0
+9999 mem: location 1354 is 0
+9999 mem: storing 1352 in location 1409
  103 run: assert k, [event was of unknown type; neither keyboard nor mouse]
-9999 mem: location 1399 is 1344
+9999 mem: location 1409 is 1352
  103 run: page-up?:boolean <- equal *k, 65519/page-up
-9999 mem: location 1399 is 1344
-9999 mem: location 1344 is 65514
-9999 mem: storing 0 in location 1368
+9999 mem: location 1409 is 1352
+9999 mem: location 1352 is 65514
+9999 mem: storing 0 in location 1376
  103 run: break-unless page-up?, 
-9999 mem: location 1368 is 0
-9999 run: jumping to instruction 291
+9999 mem: location 1376 is 0
+9999 run: jumping to instruction 391
  103 run: page-down?:boolean <- equal *k, 65518/page-down
-9999 mem: location 1399 is 1344
-9999 mem: location 1344 is 65514
-9999 mem: storing 0 in location 1378
+9999 mem: location 1409 is 1352
+9999 mem: location 1352 is 65514
+9999 mem: storing 0 in location 1392
  103 run: break-unless page-down?, 
-9999 mem: location 1378 is 0
-9999 run: jumping to instruction 313
+9999 mem: location 1392 is 0
+9999 run: jumping to instruction 433
  103 run: move-to-end-of-line?:boolean <- equal *k, 65520/end
-9999 mem: location 1399 is 1344
-9999 mem: location 1344 is 65514
-9999 mem: storing 0 in location 1381
+9999 mem: location 1409 is 1352
+9999 mem: location 1352 is 65514
+9999 mem: storing 0 in location 1395
  103 run: break-unless move-to-end-of-line?, 
-9999 mem: location 1381 is 0
-9999 run: jumping to instruction 330
+9999 mem: location 1395 is 0
+9999 run: jumping to instruction 470
  103 run: move-to-start-of-line?:boolean <- equal *k, 65521/home
-9999 mem: location 1399 is 1344
-9999 mem: location 1344 is 65514
-9999 mem: storing 0 in location 1382
+9999 mem: location 1409 is 1352
+9999 mem: location 1352 is 65514
+9999 mem: storing 0 in location 1396
  103 run: break-unless move-to-start-of-line?, 
-9999 mem: location 1382 is 0
-9999 run: jumping to instruction 347
+9999 mem: location 1396 is 0
+9999 run: jumping to instruction 507
  103 run: move-to-next-line?:boolean <- equal *k, 65516/down-arrow
-9999 mem: location 1399 is 1344
-9999 mem: location 1344 is 65514
-9999 mem: storing 0 in location 1400
+9999 mem: location 1409 is 1352
+9999 mem: location 1352 is 65514
+9999 mem: storing 0 in location 1410
  103 run: break-unless move-to-next-line?, 
-9999 mem: location 1400 is 0
-9999 run: jumping to instruction 364
+9999 mem: location 1410 is 0
+9999 run: jumping to instruction 544
  103 run: move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
-9999 mem: location 1399 is 1344
-9999 mem: location 1344 is 65514
-9999 mem: storing 0 in location 1401
+9999 mem: location 1409 is 1352
+9999 mem: location 1352 is 65514
+9999 mem: storing 0 in location 1411
  103 run: break-unless move-to-previous-line?, 
-9999 mem: location 1401 is 0
-9999 run: jumping to instruction 381
+9999 mem: location 1411 is 0
+9999 run: jumping to instruction 581
  103 run: move-to-previous-character?:boolean <- equal *k, 65515/left-arrow
-9999 mem: location 1399 is 1344
-9999 mem: location 1344 is 65514
-9999 mem: storing 0 in location 1402
+9999 mem: location 1409 is 1352
+9999 mem: location 1352 is 65514
+9999 mem: storing 0 in location 1412
  103 run: break-unless move-to-previous-character?, 
-9999 mem: location 1402 is 0
-9999 run: jumping to instruction 403
+9999 mem: location 1412 is 0
+9999 run: jumping to instruction 623
  103 run: move-to-next-character?:boolean <- equal *k, 65514/right-arrow
-9999 mem: location 1399 is 1344
-9999 mem: location 1344 is 65514
-9999 mem: storing 1 in location 1404
+9999 mem: location 1409 is 1352
+9999 mem: location 1352 is 65514
+9999 mem: storing 1 in location 1414
  103 run: break-unless move-to-next-character?, 
-9999 mem: location 1404 is 1
+9999 mem: location 1414 is 1
 9999 run: jump-unless fell through
  103 run: next-cursor:address:duplex-list <- next-duplex *before-cursor
-9999 mem: location 1351 is 1118
+9999 mem: location 1359 is 1118
 9999 mem: location 1118 is 1166
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -1672,12 +1678,12 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
  104 run: reply result
 9999 mem: location 1162 is 1169
 9999 run: result 0 is 1169
-9999 mem: storing 1169 in location 1405
+9999 mem: storing 1169 in location 1415
  103 run: break-unless next-cursor, 
-9999 mem: location 1405 is 1169
+9999 mem: location 1415 is 1169
 9999 run: jump-unless fell through
  103 run: before-cursor-row:number <- get *editor, cursor-row:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1687,15 +1693,15 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1121
 9999 run: its type is number
 9999 mem: location 1121 is 1
-9999 mem: storing 1 in location 1371
+9999 mem: storing 1 in location 1379
  103 run: before-cursor-column:number <- get *editor, cursor-column:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1705,15 +1711,15 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1122
 9999 run: its type is number
 9999 mem: location 1122 is 4
-9999 mem: storing 4 in location 1372
+9999 mem: storing 4 in location 1380
  103 run: before-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1723,30 +1729,30 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1116
 9999 run: its type is address
 9999 mem: location 1116 is 1153
-9999 mem: storing 1153 in location 1373
+9999 mem: storing 1153 in location 1381
  103 run: *before-cursor <- copy next-cursor
-9999 mem: location 1405 is 1169
-9999 mem: location 1351 is 1118
-9999 mem: location 1351 is 1118
+9999 mem: location 1415 is 1169
+9999 mem: location 1359 is 1118
+9999 mem: location 1359 is 1118
 9999 mem: storing 1169 in location 1118
  103 run: editor, go-render?:boolean <- move-cursor-coordinates-right editor, screen-height
-9999 mem: location 1342 is 1115
-9999 mem: location 1348 is 5
+9999 mem: location 1350 is 1115
+9999 mem: location 1356 is 5
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 20
-9999 mem: new alloc: 1416
+9999 mem: new alloc: 1426
  104 run: editor:address:editor-data <- next-ingredient 
-9999 mem: storing 1115 in location 1418
+9999 mem: storing 1115 in location 1428
  104 run: screen-height:number <- next-ingredient 
-9999 mem: storing 5 in location 1419
+9999 mem: storing 5 in location 1429
  104 run: before-cursor:address:duplex-list <- get *editor, before-cursor:offset
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1756,15 +1762,15 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 run: address to copy is 1118
 9999 run: its type is address
 9999 mem: location 1118 is 1169
-9999 mem: storing 1169 in location 1420
+9999 mem: storing 1169 in location 1430
  104 run: cursor-row:address:number <- get-address *editor, cursor-row:offset
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1774,13 +1780,13 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 run: address to copy is 1121
-9999 mem: storing 1121 in location 1421
+9999 mem: storing 1121 in location 1431
  104 run: cursor-column:address:number <- get-address *editor, cursor-column:offset
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1790,13 +1796,13 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 run: address to copy is 1122
-9999 mem: storing 1122 in location 1422
+9999 mem: storing 1122 in location 1432
  104 run: left:number <- get *editor, left:offset
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1806,15 +1812,15 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 run: address to copy is 1119
 9999 run: its type is number
 9999 mem: location 1119 is 1
-9999 mem: storing 1 in location 1423
+9999 mem: storing 1 in location 1433
  104 run: right:number <- get *editor, right:offset
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1824,42 +1830,42 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 1
 9999 mem: location 1122 is 4
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 run: address to copy is 1120
 9999 run: its type is number
 9999 mem: location 1120 is 5
-9999 mem: storing 5 in location 1424
+9999 mem: storing 5 in location 1434
  104 run: old-cursor-character:character <- get *before-cursor, value:offset
-9999 mem: location 1420 is 1169
+9999 mem: location 1430 is 1169
 9999 mem: location 1169 is 100
 9999 mem: location 1170 is 1172
 9999 mem: location 1171 is 1166
-9999 mem: location 1420 is 1169
+9999 mem: location 1430 is 1169
 9999 run: address to copy is 1169
 9999 run: its type is number
 9999 mem: location 1169 is 100
-9999 mem: storing 100 in location 1425
+9999 mem: storing 100 in location 1435
  104 run: was-at-newline?:boolean <- equal old-cursor-character, 10/newline
-9999 mem: location 1425 is 100
-9999 mem: storing 0 in location 1426
+9999 mem: location 1435 is 100
+9999 mem: storing 0 in location 1436
  104 run: break-unless was-at-newline?, 
-9999 mem: location 1426 is 0
+9999 mem: location 1436 is 0
 9999 run: jumping to instruction 30
  104 run: wrap-column:number <- subtract right, 1
-9999 mem: location 1424 is 5
-9999 mem: storing 4 in location 1432
+9999 mem: location 1434 is 5
+9999 mem: storing 4 in location 1442
  104 run: at-wrap?:boolean <- equal *cursor-column, wrap-column
-9999 mem: location 1422 is 1122
+9999 mem: location 1432 is 1122
 9999 mem: location 1122 is 4
-9999 mem: location 1432 is 4
-9999 mem: storing 1 in location 1433
+9999 mem: location 1442 is 4
+9999 mem: storing 1 in location 1443
  104 run: break-unless at-wrap?, 
-9999 mem: location 1433 is 1
+9999 mem: location 1443 is 1
 9999 run: jump-unless fell through
  104 run: next:address:duplex-list <- next-duplex before-cursor
-9999 mem: location 1420 is 1169
+9999 mem: location 1430 is 1169
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
  105 run: in:address:duplex-list <- next-ingredient 
@@ -1880,55 +1886,55 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
  105 run: reply result
 9999 mem: location 1162 is 1172
 9999 run: result 0 is 1172
-9999 mem: storing 1172 in location 1434
+9999 mem: storing 1172 in location 1444
  104 run: break-unless next, 
-9999 mem: location 1434 is 1172
+9999 mem: location 1444 is 1172
 9999 run: jump-unless fell through
  104 run: next-character:character <- get *next, value:offset
-9999 mem: location 1434 is 1172
+9999 mem: location 1444 is 1172
 9999 mem: location 1172 is 101
 9999 mem: location 1173 is 1175
 9999 mem: location 1174 is 1169
-9999 mem: location 1434 is 1172
+9999 mem: location 1444 is 1172
 9999 run: address to copy is 1172
 9999 run: its type is number
 9999 mem: location 1172 is 101
-9999 mem: storing 101 in location 1435
+9999 mem: storing 101 in location 1445
  104 run: newline?:boolean <- equal next-character, 10/newline
-9999 mem: location 1435 is 101
-9999 mem: storing 0 in location 1436
+9999 mem: location 1445 is 101
+9999 mem: storing 0 in location 1446
  104 run: break-if newline?, 
-9999 mem: location 1436 is 0
+9999 mem: location 1446 is 0
 9999 run: jump-if fell through
  104 run: *cursor-row <- add *cursor-row, 1
-9999 mem: location 1421 is 1121
+9999 mem: location 1431 is 1121
 9999 mem: location 1121 is 1
-9999 mem: location 1421 is 1121
+9999 mem: location 1431 is 1121
 9999 mem: storing 2 in location 1121
  104 run: *cursor-column <- copy left
-9999 mem: location 1423 is 1
-9999 mem: location 1422 is 1122
-9999 mem: location 1422 is 1122
+9999 mem: location 1433 is 1
+9999 mem: location 1432 is 1122
+9999 mem: location 1432 is 1122
 9999 mem: storing 1 in location 1122
  104 run: below-screen?:boolean <- greater-or-equal *cursor-row, screen-height
-9999 mem: location 1421 is 1121
+9999 mem: location 1431 is 1121
 9999 mem: location 1121 is 2
-9999 mem: location 1419 is 5
-9999 mem: storing 0 in location 1427
+9999 mem: location 1429 is 5
+9999 mem: storing 0 in location 1437
  104 run: jump-if below-screen?, 1:offset
-9999 mem: location 1427 is 0
+9999 mem: location 1437 is 0
 9999 run: jump-if fell through
  104 run: reply editor/same-as-ingredient:0, 0/no-more-render
-9999 mem: location 1418 is 1115
+9999 mem: location 1428 is 1115
 9999 run: result 0 is 1115
 9999 run: result 1 is 0
-9999 mem: storing 1115 in location 1342
-9999 mem: storing 0 in location 1384
+9999 mem: storing 1115 in location 1350
+9999 mem: storing 0 in location 1398
  103 run: screen <- move-cursor screen, *cursor-row, *cursor-column
-9999 mem: location 1341 is 1009
-9999 mem: location 1352 is 1121
+9999 mem: location 1349 is 1009
+9999 mem: location 1360 is 1121
 9999 mem: location 1121 is 2
-9999 mem: location 1353 is 1122
+9999 mem: location 1361 is 1122
 9999 mem: location 1122 is 1
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
@@ -1974,9 +1980,11 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
  104 run: reply sc/same-as-ingredient:0
 9999 mem: location 1207 is 1009
 9999 run: result 0 is 1009
-9999 mem: storing 1009 in location 1341
+9999 mem: storing 1009 in location 1349
+ 103 run: undo-coalesce-tag:number <- copy 2/right-arrow
+9999 mem: storing 2 in location 1382
  103 run: after-cursor-row:number <- get *editor, cursor-row:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -1986,15 +1994,15 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 2
 9999 mem: location 1122 is 1
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1121
 9999 run: its type is number
 9999 mem: location 1121 is 2
-9999 mem: storing 2 in location 1374
+9999 mem: storing 2 in location 1383
  103 run: after-cursor-column:number <- get *editor, cursor-column:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -2004,15 +2012,15 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 2
 9999 mem: location 1122 is 1
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1122
 9999 run: its type is number
 9999 mem: location 1122 is 1
-9999 mem: storing 1 in location 1375
+9999 mem: storing 1 in location 1384
  103 run: after-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 mem: location 1115 is 1153
 9999 mem: location 1116 is 1153
 9999 mem: location 1117 is 0
@@ -2022,43 +2030,125 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 2
 9999 mem: location 1122 is 1
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
-9999 mem: location 1342 is 1115
+9999 mem: location 1350 is 1115
 9999 run: address to copy is 1116
 9999 run: its type is address
 9999 mem: location 1116 is 1153
-9999 mem: storing 1153 in location 1376
+9999 mem: storing 1153 in location 1385
+ 103 run: break-unless undo-coalesce-tag, 
+9999 mem: location 1382 is 2
+9999 run: jump-unless fell through
+ 103 run: undo:address:address:list <- get-address *editor, undo:offset
+9999 mem: location 1350 is 1115
+9999 mem: location 1115 is 1153
+9999 mem: location 1116 is 1153
+9999 mem: location 1117 is 0
+9999 mem: location 1118 is 1169
+9999 mem: location 1119 is 1
+9999 mem: location 1120 is 5
+9999 mem: location 1121 is 2
+9999 mem: location 1122 is 1
+9999 mem: location 1123 is 1
+9999 mem: location 1124 is 1345
+9999 mem: location 1125 is 0
+9999 mem: location 1350 is 1115
+9999 run: address to copy is 1124
+9999 mem: storing 1124 in location 1368
+ 103 run: break-unless *undo, 
+9999 mem: location 1368 is 1124
+9999 mem: location 1124 is 1345
+9999 run: jump-unless fell through
+ 103 run: op:address:operation <- first *undo
+9999 mem: location 1368 is 1124
+9999 mem: location 1124 is 1345
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+ 104 run: in:address:list <- next-ingredient 
+9999 mem: storing 1345 in location 1161
+ 104 run: result:location <- get *in, value:offset
+9999 mem: location 1161 is 1345
+9999 mem: location 1345 is 1335
+9999 mem: location 1346 is 0
+9999 mem: location 1161 is 1345
+9999 run: address to copy is 1345
+9999 run: its type is number
+9999 mem: location 1345 is 1335
+9999 mem: storing 1335 in location 1162
+ 104 run: reply result
+9999 mem: location 1162 is 1335
+9999 run: result 0 is 1335
+9999 mem: storing 1335 in location 1367
+ 103 run: move:address:move-operation <- maybe-convert *op, move:variant
+9999 mem: location 1367 is 1335
+9999 mem: location 1335 is 1
+9999 mem: location 1336 is 1
+9999 mem: location 1337 is 1
+9999 mem: location 1338 is 1153
+9999 mem: location 1339 is 1
+9999 mem: location 1340 is 4
+9999 mem: location 1341 is 1153
+9999 mem: location 1342 is 0
+9999 mem: location 1343 is 0
+9999 mem: location 1344 is 0
+9999 mem: location 1367 is 1335
+9999 mem: storing 1336 in location 1369
+ 103 run: break-unless move, 
+9999 mem: location 1369 is 1336
+9999 run: jump-unless fell through
+ 103 run: previous-coalesce-tag:number <- get *move, tag:offset
+9999 mem: location 1369 is 1336
+9999 mem: location 1336 is 1
+9999 mem: location 1337 is 1
+9999 mem: location 1338 is 1153
+9999 mem: location 1339 is 1
+9999 mem: location 1340 is 4
+9999 mem: location 1341 is 1153
+9999 mem: location 1342 is 0
+9999 mem: location 1369 is 1336
+9999 run: address to copy is 1342
+9999 run: its type is number
+9999 mem: location 1342 is 0
+9999 mem: storing 0 in location 1386
+ 103 run: coalesce?:boolean <- equal undo-coalesce-tag, previous-coalesce-tag
+9999 mem: location 1382 is 2
+9999 mem: location 1386 is 0
+9999 mem: storing 0 in location 1387
+ 103 run: break-unless coalesce?, 
+9999 mem: location 1387 is 0
+9999 run: jumping to instruction 657
  103 run: op:address:operation <- new operation:type
-9999 mem: new alloc: 1437
-9999 mem: storing 1437 in location 1359
- 103 run: *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, 0/empty, 0/empty, 0/empty
-9999 mem: location 1371 is 1
-9999 mem: location 1372 is 4
-9999 mem: location 1373 is 1153
-9999 mem: location 1374 is 2
-9999 mem: location 1375 is 1
-9999 mem: location 1376 is 1153
-9999 mem: location 1359 is 1437
-9999 mem: storing 1 in location 1437
-9999 mem: storing 1 in location 1438
-9999 mem: storing 4 in location 1439
-9999 mem: storing 1153 in location 1440
-9999 mem: storing 2 in location 1441
-9999 mem: storing 1 in location 1442
-9999 mem: storing 1153 in location 1443
-9999 mem: storing 0 in location 1444
-9999 mem: storing 0 in location 1445
-9999 mem: storing 0 in location 1446
+9999 mem: new alloc: 1447
+9999 mem: storing 1447 in location 1367
+ 103 run: *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, undo-coalesce-tag, 0/empty, 0/empty
+9999 mem: location 1379 is 1
+9999 mem: location 1380 is 4
+9999 mem: location 1381 is 1153
+9999 mem: location 1383 is 2
+9999 mem: location 1384 is 1
+9999 mem: location 1385 is 1153
+9999 mem: location 1382 is 2
+9999 mem: location 1367 is 1447
+9999 mem: storing 1 in location 1447
+9999 mem: storing 1 in location 1448
+9999 mem: storing 4 in location 1449
+9999 mem: storing 1153 in location 1450
+9999 mem: storing 2 in location 1451
+9999 mem: storing 1 in location 1452
+9999 mem: storing 1153 in location 1453
+9999 mem: storing 2 in location 1454
+9999 mem: storing 0 in location 1455
+9999 mem: storing 0 in location 1456
  103 run: editor <- add-operation editor, op
-9999 mem: location 1342 is 1115
-9999 mem: location 1359 is 1437
+9999 mem: location 1350 is 1115
+9999 mem: location 1367 is 1447
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 5
  104 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1115 in location 1251
  104 run: op:address:operation <- next-ingredient 
-9999 mem: storing 1437 in location 1252
+9999 mem: storing 1447 in location 1252
  104 run: undo:address:address:list:address:operation <- get-address *editor, undo:offset
 9999 mem: location 1251 is 1115
 9999 mem: location 1115 is 1153
@@ -2070,53 +2160,53 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 2
 9999 mem: location 1122 is 1
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
 9999 mem: location 1125 is 0
 9999 mem: location 1251 is 1115
 9999 run: address to copy is 1124
 9999 mem: storing 1124 in location 1253
  104 run: *undo <- push op, *undo
-9999 mem: location 1252 is 1437
+9999 mem: location 1252 is 1447
 9999 mem: location 1253 is 1124
-9999 mem: location 1124 is 1337
+9999 mem: location 1124 is 1345
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
  105 run: x:location <- next-ingredient 
-9999 mem: storing 1437 in location 1207
+9999 mem: storing 1447 in location 1207
  105 run: in:address:list <- next-ingredient 
-9999 mem: storing 1337 in location 1208
+9999 mem: storing 1345 in location 1208
  105 run: result:address:list <- new list:type
-9999 mem: new alloc: 1447
-9999 mem: storing 1447 in location 1209
+9999 mem: new alloc: 1457
+9999 mem: storing 1457 in location 1209
  105 run: val:address:location <- get-address *result, value:offset
-9999 mem: location 1209 is 1447
-9999 mem: location 1447 is 0
-9999 mem: location 1448 is 0
-9999 mem: location 1209 is 1447
-9999 run: address to copy is 1447
-9999 mem: storing 1447 in location 1210
+9999 mem: location 1209 is 1457
+9999 mem: location 1457 is 0
+9999 mem: location 1458 is 0
+9999 mem: location 1209 is 1457
+9999 run: address to copy is 1457
+9999 mem: storing 1457 in location 1210
  105 run: *val <- copy x
-9999 mem: location 1207 is 1437
-9999 mem: location 1210 is 1447
-9999 mem: location 1210 is 1447
-9999 mem: storing 1437 in location 1447
+9999 mem: location 1207 is 1447
+9999 mem: location 1210 is 1457
+9999 mem: location 1210 is 1457
+9999 mem: storing 1447 in location 1457
  105 run: next:address:address:list <- get-address *result, next:offset
-9999 mem: location 1209 is 1447
-9999 mem: location 1447 is 1437
-9999 mem: location 1448 is 0
-9999 mem: location 1209 is 1447
-9999 run: address to copy is 1448
-9999 mem: storing 1448 in location 1211
+9999 mem: location 1209 is 1457
+9999 mem: location 1457 is 1447
+9999 mem: location 1458 is 0
+9999 mem: location 1209 is 1457
+9999 run: address to copy is 1458
+9999 mem: storing 1458 in location 1211
  105 run: *next <- copy in
-9999 mem: location 1208 is 1337
-9999 mem: location 1211 is 1448
-9999 mem: location 1211 is 1448
-9999 mem: storing 1337 in location 1448
+9999 mem: location 1208 is 1345
+9999 mem: location 1211 is 1458
+9999 mem: location 1211 is 1458
+9999 mem: storing 1345 in location 1458
  105 run: reply result
-9999 mem: location 1209 is 1447
-9999 run: result 0 is 1447
+9999 mem: location 1209 is 1457
+9999 run: result 0 is 1457
 9999 mem: location 1253 is 1124
-9999 mem: storing 1447 in location 1124
+9999 mem: storing 1457 in location 1124
  104 run: redo:address:address:list:address:operation <- get-address *editor, redo:offset
 9999 mem: location 1251 is 1115
 9999 mem: location 1115 is 1153
@@ -2128,7 +2218,7 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 2
 9999 mem: location 1122 is 1
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1447
+9999 mem: location 1124 is 1457
 9999 mem: location 1125 is 0
 9999 mem: location 1251 is 1115
 9999 run: address to copy is 1125
@@ -2140,11 +2230,11 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
  104 run: reply editor/same-as-ingredient:0
 9999 mem: location 1251 is 1115
 9999 run: result 0 is 1115
-9999 mem: storing 1115 in location 1342
+9999 mem: storing 1115 in location 1350
  103 run: reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
-9999 mem: location 1341 is 1009
-9999 mem: location 1342 is 1115
-9999 mem: location 1384 is 0
+9999 mem: location 1349 is 1009
+9999 mem: location 1350 is 1115
+9999 mem: location 1398 is 0
 9999 run: result 0 is 1009
 9999 run: result 1 is 1115
 9999 run: result 2 is 0
@@ -2229,7 +2319,7 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 2
 9999 mem: location 1122 is 1
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1447
+9999 mem: location 1124 is 1457
 9999 mem: location 1125 is 0
 9999 mem: location 2 is 1115
 9999 run: address to copy is 1121
@@ -2247,7 +2337,7 @@ schedule: snap-cursor/move-cursor-in-editor/editor-event-loop/run1001/scenario-e
 9999 mem: location 1121 is 2
 9999 mem: location 1122 is 1
 9999 mem: location 1123 is 1
-9999 mem: location 1124 is 1447
+9999 mem: location 1124 is 1457
 9999 mem: location 1125 is 0
 9999 mem: location 2 is 1115
 9999 run: address to copy is 1122

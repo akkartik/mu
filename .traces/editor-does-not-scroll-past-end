@@ -13482,7 +13482,7 @@ after-brace: editor-event-loop ...
 9999 mem: location 1230 is 0
 9999 mem: location 1231 is 0
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 76
+9999 mem: array size is 78
 9999 mem: new alloc: 1271
  103 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 1273
@@ -13650,28 +13650,28 @@ after-brace: editor-event-loop ...
 9999 mem: storing 0 in location 1288
  103 run: break-unless c, 
 9999 mem: location 1288 is 0
-9999 run: jumping to instruction 266
+9999 run: jumping to instruction 346
  103 run: k:address:number <- maybe-convert e:event, keycode:variant
 9999 mem: location 1275 is 1
 9999 mem: location 1276 is 65518
 9999 mem: location 1277 is 0
 9999 mem: location 1278 is 0
-9999 mem: storing 1276 in location 1331
+9999 mem: storing 1276 in location 1333
  103 run: assert k, [event was of unknown type; neither keyboard nor mouse]
-9999 mem: location 1331 is 1276
+9999 mem: location 1333 is 1276
  103 run: page-up?:boolean <- equal *k, 65519/page-up
-9999 mem: location 1331 is 1276
+9999 mem: location 1333 is 1276
 9999 mem: location 1276 is 65518
 9999 mem: storing 0 in location 1300
  103 run: break-unless page-up?, 
 9999 mem: location 1300 is 0
-9999 run: jumping to instruction 291
+9999 run: jumping to instruction 391
  103 run: page-down?:boolean <- equal *k, 65518/page-down
-9999 mem: location 1331 is 1276
+9999 mem: location 1333 is 1276
 9999 mem: location 1276 is 65518
-9999 mem: storing 1 in location 1310
+9999 mem: storing 1 in location 1316
  103 run: break-unless page-down?, 
-9999 mem: location 1310 is 1
+9999 mem: location 1316 is 1
 9999 run: jump-unless fell through
  103 run: top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
 9999 mem: location 1274 is 1095
@@ -13778,6 +13778,8 @@ after-brace: editor-event-loop ...
 9999 run: jump-if fell through
  104 run: reply editor/same-as-ingredient:0
 9999 mem: location 1124 is 1095
+ 103 run: undo-coalesce-tag:number <- copy 0/never
+9999 mem: storing 0 in location 1306
  103 run: after-cursor-row:number <- get *editor, cursor-row:offset
 9999 mem: location 1274 is 1095
 9999 mem: location 1095 is 1130
@@ -13795,7 +13797,7 @@ after-brace: editor-event-loop ...
 9999 run: address to copy is 1101
 9999 run: its type is number
 9999 mem: location 1101 is 1
-9999 mem: storing 1 in location 1306
+9999 mem: storing 1 in location 1307
  103 run: after-cursor-column:number <- get *editor, cursor-column:offset
 9999 mem: location 1274 is 1095
 9999 mem: location 1095 is 1130
@@ -13813,7 +13815,7 @@ after-brace: editor-event-loop ...
 9999 run: address to copy is 1102
 9999 run: its type is number
 9999 mem: location 1102 is 0
-9999 mem: storing 0 in location 1307
+9999 mem: storing 0 in location 1308
  103 run: after-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
 9999 mem: location 1274 is 1095
 9999 mem: location 1095 is 1130
@@ -13831,37 +13833,41 @@ after-brace: editor-event-loop ...
 9999 run: address to copy is 1096
 9999 run: its type is address
 9999 mem: location 1096 is 1130
-9999 mem: storing 1130 in location 1308
+9999 mem: storing 1130 in location 1309
+ 103 run: break-unless undo-coalesce-tag, 
+9999 mem: location 1306 is 0
+9999 run: jumping to instruction 423
  103 run: op:address:operation <- new operation:type
-9999 mem: new alloc: 1348
-9999 mem: storing 1348 in location 1291
- 103 run: *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, 0/empty, 0/empty, 0/empty
+9999 mem: new alloc: 1350
+9999 mem: storing 1350 in location 1291
+ 103 run: *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, undo-coalesce-tag, 0/empty, 0/empty
 9999 mem: location 1303 is 1
 9999 mem: location 1304 is 0
 9999 mem: location 1305 is 1130
-9999 mem: location 1306 is 1
-9999 mem: location 1307 is 0
-9999 mem: location 1308 is 1130
-9999 mem: location 1291 is 1348
-9999 mem: storing 1 in location 1348
-9999 mem: storing 1 in location 1349
-9999 mem: storing 0 in location 1350
-9999 mem: storing 1130 in location 1351
-9999 mem: storing 1 in location 1352
-9999 mem: storing 0 in location 1353
-9999 mem: storing 1130 in location 1354
+9999 mem: location 1307 is 1
+9999 mem: location 1308 is 0
+9999 mem: location 1309 is 1130
+9999 mem: location 1306 is 0
+9999 mem: location 1291 is 1350
+9999 mem: storing 1 in location 1350
+9999 mem: storing 1 in location 1351
+9999 mem: storing 0 in location 1352
+9999 mem: storing 1130 in location 1353
+9999 mem: storing 1 in location 1354
 9999 mem: storing 0 in location 1355
-9999 mem: storing 0 in location 1356
+9999 mem: storing 1130 in location 1356
 9999 mem: storing 0 in location 1357
+9999 mem: storing 0 in location 1358
+9999 mem: storing 0 in location 1359
  103 run: editor <- add-operation editor, op
 9999 mem: location 1274 is 1095
-9999 mem: location 1291 is 1348
+9999 mem: location 1291 is 1350
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 5
  104 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1095 in location 1219
  104 run: op:address:operation <- next-ingredient 
-9999 mem: storing 1348 in location 1220
+9999 mem: storing 1350 in location 1220
  104 run: undo:address:address:list:address:operation <- get-address *editor, undo:offset
 9999 mem: location 1219 is 1095
 9999 mem: location 1095 is 1130
@@ -13879,47 +13885,47 @@ after-brace: editor-event-loop ...
 9999 run: address to copy is 1104
 9999 mem: storing 1104 in location 1221
  104 run: *undo <- push op, *undo
-9999 mem: location 1220 is 1348
+9999 mem: location 1220 is 1350
 9999 mem: location 1221 is 1104
 9999 mem: location 1104 is 0
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
  105 run: x:location <- next-ingredient 
-9999 mem: storing 1348 in location 1175
+9999 mem: storing 1350 in location 1175
  105 run: in:address:list <- next-ingredient 
 9999 mem: storing 0 in location 1176
  105 run: result:address:list <- new list:type
-9999 mem: new alloc: 1358
-9999 mem: storing 1358 in location 1177
+9999 mem: new alloc: 1360
+9999 mem: storing 1360 in location 1177
  105 run: val:address:location <- get-address *result, value:offset
-9999 mem: location 1177 is 1358
-9999 mem: location 1358 is 0
-9999 mem: location 1359 is 0
-9999 mem: location 1177 is 1358
-9999 run: address to copy is 1358
-9999 mem: storing 1358 in location 1178
+9999 mem: location 1177 is 1360
+9999 mem: location 1360 is 0
+9999 mem: location 1361 is 0
+9999 mem: location 1177 is 1360
+9999 run: address to copy is 1360
+9999 mem: storing 1360 in location 1178
  105 run: *val <- copy x
-9999 mem: location 1175 is 1348
-9999 mem: location 1178 is 1358
-9999 mem: location 1178 is 1358
-9999 mem: storing 1348 in location 1358
+9999 mem: location 1175 is 1350
+9999 mem: location 1178 is 1360
+9999 mem: location 1178 is 1360
+9999 mem: storing 1350 in location 1360
  105 run: next:address:address:list <- get-address *result, next:offset
-9999 mem: location 1177 is 1358
-9999 mem: location 1358 is 1348
-9999 mem: location 1359 is 0
-9999 mem: location 1177 is 1358
-9999 run: address to copy is 1359
-9999 mem: storing 1359 in location 1179
+9999 mem: location 1177 is 1360
+9999 mem: location 1360 is 1350
+9999 mem: location 1361 is 0
+9999 mem: location 1177 is 1360
+9999 run: address to copy is 1361
+9999 mem: storing 1361 in location 1179
  105 run: *next <- copy in
 9999 mem: location 1176 is 0
-9999 mem: location 1179 is 1359
-9999 mem: location 1179 is 1359
-9999 mem: storing 0 in location 1359
+9999 mem: location 1179 is 1361
+9999 mem: location 1179 is 1361
+9999 mem: storing 0 in location 1361
  105 run: reply result
-9999 mem: location 1177 is 1358
-9999 run: result 0 is 1358
+9999 mem: location 1177 is 1360
+9999 run: result 0 is 1360
 9999 mem: location 1221 is 1104
-9999 mem: storing 1358 in location 1104
+9999 mem: storing 1360 in location 1104
  104 run: redo:address:address:list:address:operation <- get-address *editor, redo:offset
 9999 mem: location 1219 is 1095
 9999 mem: location 1095 is 1130
@@ -13931,7 +13937,7 @@ after-brace: editor-event-loop ...
 9999 mem: location 1101 is 1
 9999 mem: location 1102 is 0
 9999 mem: location 1103 is 1
-9999 mem: location 1104 is 1358
+9999 mem: location 1104 is 1360
 9999 mem: location 1105 is 0
 9999 mem: location 1219 is 1095
 9999 run: address to copy is 1105
@@ -13948,9 +13954,9 @@ after-brace: editor-event-loop ...
 9999 mem: location 1301 is 1096
 9999 mem: location 1096 is 1130
 9999 mem: location 1302 is 1130
-9999 mem: storing 1 in location 1309
+9999 mem: storing 1 in location 1315
  103 run: jump-unless no-movement?, 1:offset
-9999 mem: location 1309 is 1
+9999 mem: location 1315 is 1
 9999 run: jump-unless fell through
  103 run: reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
 9999 mem: location 1273 is 1009
