@@ -665,7 +665,7 @@ recipe move-cursor-in-editor [
   too-far-right?:boolean <- greater-than click-column, right
   reply-if too-far-right?, 0/false
   # position cursor
-  +move-cursor-start
+  +move-cursor-begin
   click-row:number <- get t, row:offset
   click-column:number <- get t, column:offset
   editor <- snap-cursor screen, editor, click-row, click-column
@@ -1303,7 +1303,7 @@ after +handle-special-character [
   {
     newline?:boolean <- equal *c, 10/newline
     break-unless newline?
-    +insert-enter-start
+    +insert-enter-begin
     editor <- insert-new-line-and-indent editor, screen
     +insert-enter-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
@@ -1819,7 +1819,7 @@ after +handle-special-key [
     next-cursor:address:duplex-list <- next-duplex *before-cursor
     break-unless next-cursor
     # scan to next character
-    +move-cursor-start
+    +move-cursor-begin
     *before-cursor <- copy next-cursor
     editor, go-render?:boolean <- move-cursor-coordinates-right editor, screen-height
     screen <- move-cursor screen, *cursor-row, *cursor-column
@@ -2091,7 +2091,7 @@ after +handle-special-key [
     # if not at start of text (before-cursor at § sentinel)
     prev:address:duplex-list <- prev-duplex *before-cursor
     reply-unless prev, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-    +move-cursor-start
+    +move-cursor-begin
     editor, go-render? <- move-cursor-coordinates-left editor
     *before-cursor <- copy prev
     undo-coalesce-tag:number <- copy 1/left-arrow
@@ -2283,7 +2283,7 @@ after +handle-special-key [
   {
     move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
     break-unless move-to-previous-line?
-    +move-cursor-start
+    +move-cursor-begin
     editor, go-render? <- move-to-previous-line editor
     undo-coalesce-tag:number <- copy 3/up-arrow
     +move-cursor-end
@@ -2504,7 +2504,7 @@ after +handle-special-key [
   {
     move-to-next-line?:boolean <- equal *k, 65516/down-arrow
     break-unless move-to-next-line?
-    +move-cursor-start
+    +move-cursor-begin
     editor, go-render? <- move-to-next-line editor, screen-height
     undo-coalesce-tag:number <- copy 4/down-arrow
     +move-cursor-end
@@ -2661,7 +2661,7 @@ after +handle-special-character [
   {
     move-to-start-of-line?:boolean <- equal *c, 1/ctrl-a
     break-unless move-to-start-of-line?
-    +move-cursor-start
+    +move-cursor-begin
     move-to-start-of-line editor
     undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
@@ -2673,7 +2673,7 @@ after +handle-special-key [
   {
     move-to-start-of-line?:boolean <- equal *k, 65521/home
     break-unless move-to-start-of-line?
-    +move-cursor-start
+    +move-cursor-begin
     move-to-start-of-line editor
     undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
@@ -2830,7 +2830,7 @@ after +handle-special-character [
   {
     move-to-end-of-line?:boolean <- equal *c, 5/ctrl-e
     break-unless move-to-end-of-line?
-    +move-cursor-start
+    +move-cursor-begin
     move-to-end-of-line editor
     undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
@@ -2842,7 +2842,7 @@ after +handle-special-key [
   {
     move-to-end-of-line?:boolean <- equal *k, 65520/end
     break-unless move-to-end-of-line?
-    +move-cursor-start
+    +move-cursor-begin
     move-to-end-of-line editor
     undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
@@ -3990,7 +3990,7 @@ after +handle-special-character [
     break-unless page-down?
     top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     old-top:address:duplex-list <- copy *top-of-screen
-    +move-cursor-start
+    +move-cursor-begin
     page-down editor
     undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
@@ -4006,7 +4006,7 @@ after +handle-special-key [
     break-unless page-down?
     top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     old-top:address:duplex-list <- copy *top-of-screen
-    +move-cursor-start
+    +move-cursor-begin
     page-down editor
     undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
@@ -4183,7 +4183,7 @@ after +handle-special-character [
     break-unless page-up?
     top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     old-top:address:duplex-list <- copy *top-of-screen
-    +move-cursor-start
+    +move-cursor-begin
     editor <- page-up editor, screen-height
     undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
@@ -4199,7 +4199,7 @@ after +handle-special-key [
     break-unless page-up?
     top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     old-top:address:duplex-list <- copy *top-of-screen
-    +move-cursor-start
+    +move-cursor-begin
     editor <- page-up editor, screen-height
     undo-coalesce-tag:number <- copy 0/never
     +move-cursor-end
@@ -6738,7 +6738,7 @@ before +insert-character-end [
 ]
 
 # enter operations never coalesce with typing before or after
-after +insert-enter-start [
+after +insert-enter-begin [
   cursor-row-before:number <- copy *cursor-row
   cursor-column-before:number <- copy *cursor-column
   top-before:address:duplex-list <- get *editor, top-of-screen:offset
@@ -7269,7 +7269,7 @@ ghi]
   ]
 ]
 
-after +move-cursor-start [
+after +move-cursor-begin [
   before-cursor-row:number <- get *editor, cursor-row:offset
   before-cursor-column:number <- get *editor, cursor-column:offset
   before-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
