@@ -811,7 +811,7 @@ recipe insert-at-cursor [
     curr-column:number <- copy save-column
     {
       # hit right margin? give up and let caller render
-      at-right?:boolean <- greater-or-equal curr-column, screen-width
+      at-right?:boolean <- greater-than curr-column, right
       reply-if at-right?, editor/same-as-ingredient:0, screen/same-as-ingredient:2, 1/go-render
       break-unless curr
       # newline? done.
@@ -1194,6 +1194,38 @@ scenario editor-wraps-line-on-insert [
     .c    .
     .┈┈┈┈┈.
     .     .
+  ]
+]
+
+scenario editor-wraps-line-on-insert-2 [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abcdefg
+defg]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  editor-render screen, 2:address:editor-data
+  # type more text at the start
+  assume-console [
+    left-click 3, 0
+    type [abc]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # cursor is not wrapped
+  memory-should-contain [
+    3 <- 3
+    4 <- 3
+  ]
+  # but line is wrapped
+  screen-should-contain [
+    .          .
+    .abcd↩     .
+    .efg       .
+    .abcd↩     .
+    .efg       .
   ]
 ]
 
