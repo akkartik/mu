@@ -422,6 +422,19 @@ recipe insert-duplex-range [
   reply in
 ]
 
+recipe last-duplex [
+  local-scope
+  in:address:duplex-list <- next-ingredient
+  result:address:duplex-list <- copy in
+  {
+    next:address:duplex-list <- next-duplex result
+    break-unless next
+    result <- copy next
+    loop
+  }
+  reply result
+]
+
 # helper for debugging
 recipe dump-duplex-from [
   local-scope
