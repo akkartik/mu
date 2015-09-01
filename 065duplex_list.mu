@@ -379,6 +379,8 @@ recipe remove-duplex-between [
   # start->next->prev = 0
   # start->next = end
   next:address:address:duplex-list <- get-address *start, next:offset
+  nothing-to-delete?:boolean <- equal *next, end
+  reply-if nothing-to-delete?, start
   prev:address:address:duplex-list <- get-address **next, prev:offset
   *prev <- copy 0
   *next <- copy end
@@ -455,6 +457,29 @@ scenario remove-range-to-end [
     6 <- 14
     8 <- 18
     9 <- 0
+  ]
+]
+
+scenario remove-range-empty [
+  # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
+  1:address:duplex-list <- copy 0  # 1 points to singleton list
+  1:address:duplex-list <- push-duplex 14, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 13, 1:address:duplex-list
+  run [
+    # delete 16 onwards
+    # first pointer: to the third element
+    2:address:duplex-list <- next-duplex 1:address:duplex-list
+    remove-duplex-between 1:address:duplex-list, 2:address:duplex-list
+    # now check the list
+    4:number <- get *1:address:duplex-list, value:offset
+    5:address:duplex-list <- next-duplex 1:address:duplex-list
+    6:number <- get *5:address:duplex-list, value:offset
+    7:address:duplex-list <- next-duplex 5:address:duplex-list
+  ]
+  memory-should-contain [
+    4 <- 13
+    6 <- 14
+    7 <- 0
   ]
 ]
 
