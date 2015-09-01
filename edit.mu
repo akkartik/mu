@@ -1764,34 +1764,48 @@ after +handle-special-key [
   {
     delete-next-character?:boolean <- equal *k, 65522/delete
     break-unless delete-next-character?
-    curr:address:duplex-list <- next-duplex *before-cursor
-    reply-unless curr, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render
-    currc:character <- get *curr, value:offset
-    remove-duplex curr
-    deleted-newline?:boolean <- equal currc, 10/newline
-    reply-if deleted-newline?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
-    # wasn't a newline? render rest of line
-    curr:address:duplex-list <- next-duplex *before-cursor  # refresh after remove-duplex above
-    screen <- move-cursor screen, *cursor-row, *cursor-column
-    curr-column:number <- copy *cursor-column
-    {
-      # hit right margin? give up and let caller render
-      at-right?:boolean <- greater-or-equal curr-column, screen-width
-      reply-if at-right?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render
-      break-unless curr
-      # newline? done.
-      currc:character <- get *curr, value:offset
-      at-newline?:boolean <- equal currc, 10/newline
-      break-if at-newline?
-      screen <- print-character screen, currc
-      curr-column <- add curr-column, 1
-      curr <- next-duplex curr
-      loop
-    }
-    # we're guaranteed not to be at the right margin
-    screen <- print-character screen, 32/space
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+    +delete-character-begin
+    editor, screen, go-render?:boolean <- delete-at-cursor editor, screen
+    +delete-character-end
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
+]
+
+recipe delete-at-cursor [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  screen:address <- next-ingredient
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  curr:address:duplex-list <- next-duplex *before-cursor
+  reply-unless curr, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render
+  currc:character <- get *curr, value:offset
+  remove-duplex curr
+  deleted-newline?:boolean <- equal currc, 10/newline
+  reply-if deleted-newline?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+  # wasn't a newline? render rest of line
+  curr:address:duplex-list <- next-duplex *before-cursor  # refresh after remove-duplex above
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  screen <- move-cursor screen, *cursor-row, *cursor-column
+  curr-column:number <- copy *cursor-column
+  screen-width:number <- screen-width screen
+  {
+    # hit right margin? give up and let caller render
+    at-right?:boolean <- greater-or-equal curr-column, screen-width
+    reply-if at-right?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    break-unless curr
+    # newline? done.
+    currc:character <- get *curr, value:offset
+    at-newline?:boolean <- equal currc, 10/newline
+    break-if at-newline?
+    screen <- print-character screen, currc
+    curr-column <- add curr-column, 1
+    curr <- next-duplex curr
+    loop
+  }
+  # we're guaranteed not to be at the right margin
+  screen <- print-character screen, 32/space
+  reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
 ]
 
 # right arrow
