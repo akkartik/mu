@@ -2993,7 +2993,9 @@ after +handle-special-character [
   {
     delete-to-start-of-line?:boolean <- equal *c, 21/ctrl-u
     break-unless delete-to-start-of-line?
-    delete-to-start-of-line editor
+    +delete-to-start-of-line-begin
+    deleted-cells:address:duplex-list <- delete-to-start-of-line editor
+    +delete-to-start-of-line-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -3017,18 +3019,14 @@ recipe delete-to-start-of-line [
     loop
   }
   # snip it out
-  start-next:address:address:duplex-list <- get-address *start, next:offset
-  *start-next <- copy end
-  {
-    break-unless end
-    end-prev:address:address:duplex-list <- get-address *end, prev:offset
-    *end-prev <- copy start
-  }
+  result:address:duplex-list <- next-duplex start
+  remove-duplex-between start, end
   # adjust cursor
   *before-cursor <- prev-duplex end
   left:number <- get *editor, left:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   *cursor-column <- copy left
+  reply result
 ]
 
 scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
@@ -3129,7 +3127,9 @@ after +handle-special-character [
   {
     delete-to-end-of-line?:boolean <- equal *c, 11/ctrl-k
     break-unless delete-to-end-of-line?
-    delete-to-end-of-line editor
+    +delete-to-end-of-line-begin
+    deleted-cells:address:duplex-list <- delete-to-end-of-line editor
+    +delete-to-end-of-line-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -3150,13 +3150,9 @@ recipe delete-to-end-of-line [
     loop
   }
   # snip it out
-  start-next:address:address:duplex-list <- get-address *start, next:offset
-  *start-next <- copy end
-  {
-    break-unless end
-    end-prev:address:address:duplex-list <- get-address *end, prev:offset
-    *end-prev <- copy start
-  }
+  result:address:duplex-list <- next-duplex start
+  remove-duplex-between start, end
+  reply result
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
@@ -3195,7 +3191,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
-  # cursor deletes to end of line
+  # cursor deletes just last character
   screen-should-contain [
     .          .
     .12        .
@@ -3218,7 +3214,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
-  # cursor deletes to end of line
+  # cursor deletes nothing
   screen-should-contain [
     .          .
     .123       .
@@ -3241,7 +3237,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
-  # cursor deletes to end of line
+  # cursor deletes just the final character
   screen-should-contain [
     .          .
     .123       .
@@ -3264,7 +3260,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
-  # cursor deletes to end of line
+  # cursor deletes nothing
   screen-should-contain [
     .          .
     .123       .
@@ -8403,10 +8399,8 @@ scenario editor-can-undo-and-redo-delete [
   ]
 ]
 
-# save operation to undo
 after +delete-character-begin [
   top-before:address:duplex-list <- get *editor, top-of-screen:offset
-  undo:address:address:list <- get-address *editor, undo:offset
 ]
 before +delete-character-end [
   {
@@ -8442,6 +8436,209 @@ before +delete-character-end [
     +done-adding-delete-operation
   }
 ]
+
+# undo ctrl-k
+
+scenario editor-can-undo-and-redo-ctrl-k [
+  # create an editor
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # insert some text and hit delete and backspace a few times
+  assume-console [
+    left-click 1, 1
+    press ctrl-k
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  screen-should-contain [
+    .          .
+    .a         .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 1
+  ]
+  # undo
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 1
+  ]
+  # redo
+  assume-console [
+    press ctrl-y
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # first line inserted
+  screen-should-contain [
+    .          .
+    .a         .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .a1        .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
+after +delete-to-end-of-line-begin [
+  top-before:address:duplex-list <- get *editor, top-of-screen:offset
+]
+before +delete-to-end-of-line-end [
+  {
+    break-unless deleted-cells  # delete failed; don't add an undo operation
+    top-after:address:duplex-list <- get *editor, top-of-screen:offset
+    undo:address:address:list <- get-address *editor, undo:offset
+    op:address:operation <- new operation:type
+    deleted-until:address:duplex-list <- next-duplex *before-cursor
+    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, deleted-cells/deleted, *before-cursor/delete-from, deleted-until, 0/never-coalesce
+    editor <- add-operation editor, op
+    +done-adding-delete-operation
+  }
+]
+
+# undo ctrl-u
+
+scenario editor-can-undo-and-redo-ctrl-u [
+  # create an editor
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+def]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # insert some text and hit delete and backspace a few times
+  assume-console [
+    left-click 1, 2
+    press ctrl-u
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  screen-should-contain [
+    .          .
+    .c         .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+  # undo
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 2
+  ]
+  # redo
+  assume-console [
+    press ctrl-y
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # first line inserted
+  screen-should-contain [
+    .          .
+    .c         .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .1c        .
+    .def       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
+after +delete-to-start-of-line-begin [
+  top-before:address:duplex-list <- get *editor, top-of-screen:offset
+]
+before +delete-to-start-of-line-end [
+  {
+    break-unless deleted-cells  # delete failed; don't add an undo operation
+    top-after:address:duplex-list <- get *editor, top-of-screen:offset
+    undo:address:address:list <- get-address *editor, undo:offset
+    op:address:operation <- new operation:type
+    deleted-until:address:duplex-list <- next-duplex *before-cursor
+    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, deleted-cells/deleted, *before-cursor/delete-from, deleted-until, 0/never-coalesce
+    editor <- add-operation editor, op
+    +done-adding-delete-operation
+  }
+]
+
 
 # todo:
 # operations for recipe side and each sandbox-data
