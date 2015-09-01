@@ -1570,11 +1570,17 @@ after +handle-special-character [
   {
     delete-previous-character?:boolean <- equal *c, 8/backspace
     break-unless delete-previous-character?
-    editor, screen, go-render?:boolean <- delete-before-cursor editor, screen
+    +backspace-character-begin
+    editor, screen, go-render?:boolean, backspaced-cell:address:duplex-list <- delete-before-cursor editor, screen
+    +backspace-character-end
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
 ]
 
+# editor, screen, go-render?:boolean, deleted:address:duplex-list <- delete-before-cursor editor:address:editor-data, screen
+# return values:
+#   go-render? - whether caller needs to update the screen
+#   deleted - value deleted (or 0 if nothing was deleted) so we can save it for undo, etc.
 recipe delete-before-cursor [
   local-scope
   editor:address:editor-data <- next-ingredient
@@ -1582,19 +1588,20 @@ recipe delete-before-cursor [
   before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
   # if at start of text (before-cursor at § sentinel), return
   prev:address:duplex-list <- prev-duplex *before-cursor
-  reply-unless prev, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render
+  reply-unless prev, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render, 0/nothing-deleted
   trace 10, [app], [delete-before-cursor]
   original-row:number <- get *editor, cursor-row:offset
   editor, scroll?:boolean <- move-cursor-coordinates-left editor
-  remove-duplex *before-cursor
+  backspaced:address:duplex-list <- copy *before-cursor
+  remove-duplex *before-cursor  # will also neatly trim next/prev pointers in backspaced/*before-cursor
   *before-cursor <- copy prev
-  reply-if scroll?, editor/same-as-ingredient:0, 1/go-render
+  reply-if scroll?, editor/same-as-ingredient:0, 1/go-render, backspaced
   screen-width:number <- screen-width screen
   cursor-row:number <- get *editor, cursor-row:offset
   cursor-column:number <- get *editor, cursor-column:offset
   # did we just backspace over a newline?
   same-row?:boolean <- equal cursor-row, original-row
-  reply-unless same-row?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render
+  reply-unless same-row?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render, backspaced
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   curr:address:duplex-list <- next-duplex *before-cursor
@@ -1603,7 +1610,7 @@ recipe delete-before-cursor [
   {
     # hit right margin? give up and let caller render
     at-right?:boolean <- greater-or-equal curr-column, screen-width
-    reply-if at-right?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render
+    reply-if at-right?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render, backspaced
     break-unless curr
     # newline? done.
     currc:character <- get *curr, value:offset
@@ -1616,7 +1623,7 @@ recipe delete-before-cursor [
   }
   # we're guaranteed not to be at the right margin
   screen <- print-character screen, 32/space
-  reply editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render
+  reply editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render, backspaced
 ]
 
 recipe move-cursor-coordinates-left [
@@ -6586,6 +6593,7 @@ container insert-operation [
   after-row:number
   after-column:number
   after-top-of-screen:address:duplex-list:character
+  # inserted text is from 'insert-from' until 'insert-until'; list doesn't have to terminate
   insert-from:address:duplex-list:character
   insert-until:address:duplex-list:character
   tag:number  # event causing this operation; might be used to coalesce runs of similar events
@@ -6615,7 +6623,9 @@ container delete-operation [
   after-row:number
   after-column:number
   after-top-of-screen:address:duplex-list:character
+  # deleted text is from 'deleted' until terminal
   deleted:address:duplex-list:character
+  # where it was deleted from
   deleted-from:address:duplex-list:character
   tag:number  # event causing this operation; might be used to coalesce runs of similar events
     # 0: no coalesce (ctrl-k, ctrl-u)
@@ -8087,6 +8097,115 @@ after +handle-redo [
     *cursor-column <- get *move, after-column:offset
     top:address:address:duplex-list <- get *editor, top-of-screen:offset
     *top <- get *move, after-top-of-screen:offset
+  }
+]
+
+# undo backspace
+
+scenario editor-can-undo-and-redo-backspace [
+  # create an editor
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # insert some text and hit backspace
+  assume-console [
+    type [abc]
+    press backspace
+    press backspace
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  screen-should-contain [
+    .          .
+    .a         .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 1
+  ]
+  # undo
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # typing in second line deleted, but not indent
+  3:number <- get *2:address:editor-data, cursor-row:offset
+  4:number <- get *2:address:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 3
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
+# save operation to undo
+after +backspace-character-begin [
+  top-before:address:duplex-list <- get *editor, top-of-screen:offset
+]
+before +backspace-character-end [
+  {
+    break-unless backspaced-cell  # backspace failed; don't add an undo operation
+    top-after:address:duplex-list <- get *editor, top-of-screen:offset
+    undo:address:address:list <- get-address *editor, undo:offset
+    {
+      # if previous operation was an insert, coalesce this operation with it
+      break-unless *undo
+      op:address:operation <- first *undo
+      deletion:address:delete-operation <- maybe-convert *op, delete:variant
+      break-unless deletion
+      previous-coalesce-tag:number <- get *deletion, tag:offset
+      coalesce?:boolean <- equal previous-coalesce-tag, 1/coalesce-backspace
+      break-unless coalesce?
+      deleted-from:address:address:duplex-list <- get-address *deletion, deleted-from:offset
+      *deleted-from <- copy *before-cursor
+      backspaced-so-far:address:address:duplex-list <- get-address *deletion, deleted:offset
+      insert-duplex-range backspaced-cell, *backspaced-so-far
+      *backspaced-so-far <- copy backspaced-cell
+      after-row:address:number <- get-address *deletion, after-row:offset
+      *after-row <- copy *cursor-row
+      after-column:address:number <- get-address *deletion, after-column:offset
+      *after-column <- copy *cursor-column
+      after-top:address:number <- get-address *deletion, after-top-of-screen:offset
+      *after-top <- get *editor, top-of-screen:offset
+      break +done-adding-insert-operation:label
+    }
+    # if not, create a new operation
+    op:address:operation <- new operation:type
+    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, backspaced-cell/deleted, *before-cursor/deleted-from, 1/coalesce-backspace
+    deletion:address:delete-operation <- maybe-convert *op, delete:variant
+    deleted-from:address:address:duplex-list <- get-address *deletion, deleted-from:offset
+    editor <- add-operation editor, op
+    +done-adding-insert-operation
+  }
+]
+
+after +handle-undo [
+  {
+    deletion:address:delete-operation <- maybe-convert *op, delete:variant
+    break-unless deletion
+    start2:address:address:duplex-list <- get-address *editor, data:offset
+    anchor:address:duplex-list <- get *deletion, deleted-from:offset
+    break-unless anchor
+    deleted:address:duplex-list <- get *deletion, deleted:offset
+    old-cursor:address:duplex-list <- last-duplex deleted
+    insert-duplex-range anchor, deleted
+    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
+    *before-cursor <- copy old-cursor
+    *cursor-row <- get *deletion, before-row:offset
+    *cursor-column <- get *deletion, before-column:offset
+    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    *top <- get *deletion, before-top-of-screen:offset
   }
 ]
 
