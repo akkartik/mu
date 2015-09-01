@@ -392,6 +392,72 @@ recipe remove-duplex-between [
   reply start
 ]
 
+scenario remove-range [
+  # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
+  1:address:duplex-list <- copy 0  # 1 points to singleton list
+  1:address:duplex-list <- push-duplex 18, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 17, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 16, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 15, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 14, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 13, 1:address:duplex-list
+  run [
+    # delete 16 onwards
+    # first pointer: to the third element
+    2:address:duplex-list <- next-duplex 1:address:duplex-list
+    2:address:duplex-list <- next-duplex 2:address:duplex-list
+    remove-duplex-between 2:address:duplex-list, 0
+    # now check the list
+    4:number <- get *1:address:duplex-list, value:offset
+    5:address:duplex-list <- next-duplex 1:address:duplex-list
+    6:number <- get *5:address:duplex-list, value:offset
+    7:address:duplex-list <- next-duplex 5:address:duplex-list
+    8:number <- get *7:address:duplex-list, value:offset
+    9:address:duplex-list <- next-duplex 7:address:duplex-list
+  ]
+  memory-should-contain [
+    4 <- 13
+    6 <- 14
+    8 <- 15
+    9 <- 0
+  ]
+]
+
+scenario remove-range-to-end [
+  # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
+  1:address:duplex-list <- copy 0  # 1 points to singleton list
+  1:address:duplex-list <- push-duplex 18, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 17, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 16, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 15, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 14, 1:address:duplex-list
+  1:address:duplex-list <- push-duplex 13, 1:address:duplex-list
+  run [
+    # delete 15, 16 and 17
+    # first pointer: to the third element
+    2:address:duplex-list <- next-duplex 1:address:duplex-list
+    # second pointer: to the fifth element
+    3:address:duplex-list <- next-duplex 2:address:duplex-list
+    3:address:duplex-list <- next-duplex 3:address:duplex-list
+    3:address:duplex-list <- next-duplex 3:address:duplex-list
+    3:address:duplex-list <- next-duplex 3:address:duplex-list
+    remove-duplex-between 2:address:duplex-list, 3:address:duplex-list
+    # now check the list
+    4:number <- get *1:address:duplex-list, value:offset
+    5:address:duplex-list <- next-duplex 1:address:duplex-list
+    6:number <- get *5:address:duplex-list, value:offset
+    7:address:duplex-list <- next-duplex 5:address:duplex-list
+    8:number <- get *7:address:duplex-list, value:offset
+    9:address:duplex-list <- next-duplex 7:address:duplex-list
+  ]
+  memory-should-contain [
+    4 <- 13
+    6 <- 14
+    8 <- 18
+    9 <- 0
+  ]
+]
+
 # l:address:duplex-list <- insert-duplex-range in:address:duplex-list, new:address:duplex-list
 # Inserts list beginning at 'new' after 'in'. Returns some pointer into the list.
 recipe insert-duplex-range [
@@ -420,6 +486,19 @@ recipe insert-duplex-range [
   dest <- get-address *start, prev:offset
   *dest <- copy in
   reply in
+]
+
+recipe append-duplex [
+  local-scope
+  in:address:duplex-list <- next-ingredient
+  new:address:duplex-list <- next-ingredient
+  last:address:duplex-list <- last-duplex in
+  dest:address:address:duplex-list <- get-address *last, next:offset
+  *dest <- copy new
+  reply-unless new, in/same-as-ingredient:0
+  dest <- get-address *new, prev:offset
+  *dest <- copy last
+  reply in/same-as-ingredient:0
 ]
 
 recipe last-duplex [
