@@ -1,0 +1,632 @@
+parse: instruction: copy
+parse:   ingredient: {name: "0", properties: ["0": "literal"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: push-duplex
+parse:   ingredient: {name: "18", properties: ["18": "literal"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: push-duplex
+parse:   ingredient: {name: "17", properties: ["17": "literal"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: push-duplex
+parse:   ingredient: {name: "16", properties: ["16": "literal"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: push-duplex
+parse:   ingredient: {name: "15", properties: ["15": "literal"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: push-duplex
+parse:   ingredient: {name: "14", properties: ["14": "literal"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: push-duplex
+parse:   ingredient: {name: "13", properties: ["13": "literal"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: run
+parse:   ingredient: {name: "\n    # delete 16 onwards\n    # first pointer: to the third element\n    2:address:duplex-list <- next-duplex 1:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    remove-duplex-between 2:address:duplex-list, 0\n    # now check the list\n    4:number <- get *1:address:duplex-list, value:offset\n    5:address:duplex-list <- next-duplex 1:address:duplex-list\n    6:number <- get *5:address:duplex-list, value:offset\n    7:address:duplex-list <- next-duplex 5:address:duplex-list\n    8:number <- get *7:address:duplex-list, value:offset\n    9:address:duplex-list <- next-duplex 7:address:duplex-list\n  ", properties: [_: "literal-string"]}
+parse: instruction: memory-should-contain
+parse:   ingredient: {name: "\n    4 <- 13\n    6 <- 14\n    8 <- 15\n    9 <- 0\n  ", properties: [_: "literal-string"]}
+after-brace: recipe scenario-remove-range
+after-brace: copy ...
+after-brace: push-duplex ...
+after-brace: push-duplex ...
+after-brace: push-duplex ...
+after-brace: push-duplex ...
+after-brace: push-duplex ...
+after-brace: push-duplex ...
+after-brace: run ...
+after-brace: memory-should-contain ...
+9999 new: routine allocated memory from 1000 to 101000
+schedule: scenario-remove-range
+ 101 run: 1:address:duplex-list <- copy 0
+9999 mem: storing 0 in location 1
+ 101 run: 1:address:duplex-list <- push-duplex 18, 1:address:duplex-list
+9999 mem: location 1 is 0
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 7
+9999 mem: new alloc: 1000
+ 102 run: x:location <- next-ingredient 
+9999 mem: storing 18 in location 1002
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 0 in location 1003
+ 102 run: result:address:duplex-list <- new duplex-list:type
+9999 mem: new alloc: 1008
+9999 mem: storing 1008 in location 1004
+ 102 run: val:address:location <- get-address *result, value:offset
+9999 mem: location 1004 is 1008
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 0
+9999 mem: location 1004 is 1008
+9999 run: address to copy is 1008
+9999 mem: storing 1008 in location 1005
+ 102 run: *val <- copy x
+9999 mem: location 1002 is 18
+9999 mem: location 1005 is 1008
+9999 mem: location 1005 is 1008
+9999 mem: storing 18 in location 1008
+ 102 run: next:address:address:duplex-list <- get-address *result, next:offset
+9999 mem: location 1004 is 1008
+9999 mem: location 1008 is 18
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 0
+9999 mem: location 1004 is 1008
+9999 run: address to copy is 1009
+9999 mem: storing 1009 in location 1006
+ 102 run: *next <- copy in
+9999 mem: location 1003 is 0
+9999 mem: location 1006 is 1009
+9999 mem: location 1006 is 1009
+9999 mem: storing 0 in location 1009
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1003 is 0
+9999 run: jump-if fell through
+ 102 run: reply result
+9999 mem: location 1004 is 1008
+9999 run: result 0 is 1008
+9999 mem: storing 1008 in location 1
+ 101 run: 1:address:duplex-list <- push-duplex 17, 1:address:duplex-list
+9999 mem: location 1 is 1008
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 7
+ 102 run: x:location <- next-ingredient 
+9999 mem: storing 17 in location 1002
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1008 in location 1003
+ 102 run: result:address:duplex-list <- new duplex-list:type
+9999 mem: new alloc: 1011
+9999 mem: storing 1011 in location 1004
+ 102 run: val:address:location <- get-address *result, value:offset
+9999 mem: location 1004 is 1011
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 0
+9999 mem: location 1004 is 1011
+9999 run: address to copy is 1011
+9999 mem: storing 1011 in location 1005
+ 102 run: *val <- copy x
+9999 mem: location 1002 is 17
+9999 mem: location 1005 is 1011
+9999 mem: location 1005 is 1011
+9999 mem: storing 17 in location 1011
+ 102 run: next:address:address:duplex-list <- get-address *result, next:offset
+9999 mem: location 1004 is 1011
+9999 mem: location 1011 is 17
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 0
+9999 mem: location 1004 is 1011
+9999 run: address to copy is 1012
+9999 mem: storing 1012 in location 1006
+ 102 run: *next <- copy in
+9999 mem: location 1003 is 1008
+9999 mem: location 1006 is 1012
+9999 mem: location 1006 is 1012
+9999 mem: storing 1008 in location 1012
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1003 is 1008
+9999 run: jumping to instruction 10
+ 102 run: prev:address:address:duplex-list <- get-address *in, prev:offset
+9999 mem: location 1003 is 1008
+9999 mem: location 1008 is 18
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 0
+9999 mem: location 1003 is 1008
+9999 run: address to copy is 1010
+9999 mem: storing 1010 in location 1007
+ 102 run: *prev <- copy result
+9999 mem: location 1004 is 1011
+9999 mem: location 1007 is 1010
+9999 mem: location 1007 is 1010
+9999 mem: storing 1011 in location 1010
+ 102 run: reply result
+9999 mem: location 1004 is 1011
+9999 run: result 0 is 1011
+9999 mem: storing 1011 in location 1
+ 101 run: 1:address:duplex-list <- push-duplex 16, 1:address:duplex-list
+9999 mem: location 1 is 1011
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 7
+ 102 run: x:location <- next-ingredient 
+9999 mem: storing 16 in location 1002
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1011 in location 1003
+ 102 run: result:address:duplex-list <- new duplex-list:type
+9999 mem: new alloc: 1014
+9999 mem: storing 1014 in location 1004
+ 102 run: val:address:location <- get-address *result, value:offset
+9999 mem: location 1004 is 1014
+9999 mem: location 1014 is 0
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 0
+9999 mem: location 1004 is 1014
+9999 run: address to copy is 1014
+9999 mem: storing 1014 in location 1005
+ 102 run: *val <- copy x
+9999 mem: location 1002 is 16
+9999 mem: location 1005 is 1014
+9999 mem: location 1005 is 1014
+9999 mem: storing 16 in location 1014
+ 102 run: next:address:address:duplex-list <- get-address *result, next:offset
+9999 mem: location 1004 is 1014
+9999 mem: location 1014 is 16
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 0
+9999 mem: location 1004 is 1014
+9999 run: address to copy is 1015
+9999 mem: storing 1015 in location 1006
+ 102 run: *next <- copy in
+9999 mem: location 1003 is 1011
+9999 mem: location 1006 is 1015
+9999 mem: location 1006 is 1015
+9999 mem: storing 1011 in location 1015
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1003 is 1011
+9999 run: jumping to instruction 10
+ 102 run: prev:address:address:duplex-list <- get-address *in, prev:offset
+9999 mem: location 1003 is 1011
+9999 mem: location 1011 is 17
+9999 mem: location 1012 is 1008
+9999 mem: location 1013 is 0
+9999 mem: location 1003 is 1011
+9999 run: address to copy is 1013
+9999 mem: storing 1013 in location 1007
+ 102 run: *prev <- copy result
+9999 mem: location 1004 is 1014
+9999 mem: location 1007 is 1013
+9999 mem: location 1007 is 1013
+9999 mem: storing 1014 in location 1013
+ 102 run: reply result
+9999 mem: location 1004 is 1014
+9999 run: result 0 is 1014
+9999 mem: storing 1014 in location 1
+ 101 run: 1:address:duplex-list <- push-duplex 15, 1:address:duplex-list
+9999 mem: location 1 is 1014
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 7
+ 102 run: x:location <- next-ingredient 
+9999 mem: storing 15 in location 1002
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1014 in location 1003
+ 102 run: result:address:duplex-list <- new duplex-list:type
+9999 mem: new alloc: 1017
+9999 mem: storing 1017 in location 1004
+ 102 run: val:address:location <- get-address *result, value:offset
+9999 mem: location 1004 is 1017
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 0
+9999 mem: location 1019 is 0
+9999 mem: location 1004 is 1017
+9999 run: address to copy is 1017
+9999 mem: storing 1017 in location 1005
+ 102 run: *val <- copy x
+9999 mem: location 1002 is 15
+9999 mem: location 1005 is 1017
+9999 mem: location 1005 is 1017
+9999 mem: storing 15 in location 1017
+ 102 run: next:address:address:duplex-list <- get-address *result, next:offset
+9999 mem: location 1004 is 1017
+9999 mem: location 1017 is 15
+9999 mem: location 1018 is 0
+9999 mem: location 1019 is 0
+9999 mem: location 1004 is 1017
+9999 run: address to copy is 1018
+9999 mem: storing 1018 in location 1006
+ 102 run: *next <- copy in
+9999 mem: location 1003 is 1014
+9999 mem: location 1006 is 1018
+9999 mem: location 1006 is 1018
+9999 mem: storing 1014 in location 1018
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1003 is 1014
+9999 run: jumping to instruction 10
+ 102 run: prev:address:address:duplex-list <- get-address *in, prev:offset
+9999 mem: location 1003 is 1014
+9999 mem: location 1014 is 16
+9999 mem: location 1015 is 1011
+9999 mem: location 1016 is 0
+9999 mem: location 1003 is 1014
+9999 run: address to copy is 1016
+9999 mem: storing 1016 in location 1007
+ 102 run: *prev <- copy result
+9999 mem: location 1004 is 1017
+9999 mem: location 1007 is 1016
+9999 mem: location 1007 is 1016
+9999 mem: storing 1017 in location 1016
+ 102 run: reply result
+9999 mem: location 1004 is 1017
+9999 run: result 0 is 1017
+9999 mem: storing 1017 in location 1
+ 101 run: 1:address:duplex-list <- push-duplex 14, 1:address:duplex-list
+9999 mem: location 1 is 1017
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 7
+ 102 run: x:location <- next-ingredient 
+9999 mem: storing 14 in location 1002
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1017 in location 1003
+ 102 run: result:address:duplex-list <- new duplex-list:type
+9999 mem: new alloc: 1020
+9999 mem: storing 1020 in location 1004
+ 102 run: val:address:location <- get-address *result, value:offset
+9999 mem: location 1004 is 1020
+9999 mem: location 1020 is 0
+9999 mem: location 1021 is 0
+9999 mem: location 1022 is 0
+9999 mem: location 1004 is 1020
+9999 run: address to copy is 1020
+9999 mem: storing 1020 in location 1005
+ 102 run: *val <- copy x
+9999 mem: location 1002 is 14
+9999 mem: location 1005 is 1020
+9999 mem: location 1005 is 1020
+9999 mem: storing 14 in location 1020
+ 102 run: next:address:address:duplex-list <- get-address *result, next:offset
+9999 mem: location 1004 is 1020
+9999 mem: location 1020 is 14
+9999 mem: location 1021 is 0
+9999 mem: location 1022 is 0
+9999 mem: location 1004 is 1020
+9999 run: address to copy is 1021
+9999 mem: storing 1021 in location 1006
+ 102 run: *next <- copy in
+9999 mem: location 1003 is 1017
+9999 mem: location 1006 is 1021
+9999 mem: location 1006 is 1021
+9999 mem: storing 1017 in location 1021
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1003 is 1017
+9999 run: jumping to instruction 10
+ 102 run: prev:address:address:duplex-list <- get-address *in, prev:offset
+9999 mem: location 1003 is 1017
+9999 mem: location 1017 is 15
+9999 mem: location 1018 is 1014
+9999 mem: location 1019 is 0
+9999 mem: location 1003 is 1017
+9999 run: address to copy is 1019
+9999 mem: storing 1019 in location 1007
+ 102 run: *prev <- copy result
+9999 mem: location 1004 is 1020
+9999 mem: location 1007 is 1019
+9999 mem: location 1007 is 1019
+9999 mem: storing 1020 in location 1019
+ 102 run: reply result
+9999 mem: location 1004 is 1020
+9999 run: result 0 is 1020
+9999 mem: storing 1020 in location 1
+ 101 run: 1:address:duplex-list <- push-duplex 13, 1:address:duplex-list
+9999 mem: location 1 is 1020
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 7
+ 102 run: x:location <- next-ingredient 
+9999 mem: storing 13 in location 1002
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1020 in location 1003
+ 102 run: result:address:duplex-list <- new duplex-list:type
+9999 mem: new alloc: 1023
+9999 mem: storing 1023 in location 1004
+ 102 run: val:address:location <- get-address *result, value:offset
+9999 mem: location 1004 is 1023
+9999 mem: location 1023 is 0
+9999 mem: location 1024 is 0
+9999 mem: location 1025 is 0
+9999 mem: location 1004 is 1023
+9999 run: address to copy is 1023
+9999 mem: storing 1023 in location 1005
+ 102 run: *val <- copy x
+9999 mem: location 1002 is 13
+9999 mem: location 1005 is 1023
+9999 mem: location 1005 is 1023
+9999 mem: storing 13 in location 1023
+ 102 run: next:address:address:duplex-list <- get-address *result, next:offset
+9999 mem: location 1004 is 1023
+9999 mem: location 1023 is 13
+9999 mem: location 1024 is 0
+9999 mem: location 1025 is 0
+9999 mem: location 1004 is 1023
+9999 run: address to copy is 1024
+9999 mem: storing 1024 in location 1006
+ 102 run: *next <- copy in
+9999 mem: location 1003 is 1020
+9999 mem: location 1006 is 1024
+9999 mem: location 1006 is 1024
+9999 mem: storing 1020 in location 1024
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1003 is 1020
+9999 run: jumping to instruction 10
+ 102 run: prev:address:address:duplex-list <- get-address *in, prev:offset
+9999 mem: location 1003 is 1020
+9999 mem: location 1020 is 14
+9999 mem: location 1021 is 1017
+9999 mem: location 1022 is 0
+9999 mem: location 1003 is 1020
+9999 run: address to copy is 1022
+9999 mem: storing 1022 in location 1007
+ 102 run: *prev <- copy result
+9999 mem: location 1004 is 1023
+9999 mem: location 1007 is 1022
+9999 mem: location 1007 is 1022
+9999 mem: storing 1023 in location 1022
+ 102 run: reply result
+9999 mem: location 1004 is 1023
+9999 run: result 0 is 1023
+9999 mem: storing 1023 in location 1
+ 101 run: run [
+    # delete 16 onwards
+    # first pointer: to the third element
+    2:address:duplex-list <- next-duplex 1:address:duplex-list
+    2:address:duplex-list <- next-duplex 2:address:duplex-list
+    remove-duplex-between 2:address:duplex-list, 0
+    # now check the list
+    4:number <- get *1:address:duplex-list, value:offset
+    5:address:duplex-list <- next-duplex 1:address:duplex-list
+    6:number <- get *5:address:duplex-list, value:offset
+    7:address:duplex-list <- next-duplex 5:address:duplex-list
+    8:number <- get *7:address:duplex-list, value:offset
+    9:address:duplex-list <- next-duplex 7:address:duplex-list
+  ]
+parse: instruction: next-duplex
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse: instruction: next-duplex
+parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse: instruction: remove-duplex-between
+parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse:   ingredient: {name: "0", properties: ["0": "literal"]}
+parse: instruction: get
+parse:   ingredient: {name: "1", properties: ["*1": "address":"duplex-list", "lookup": ]}
+parse:   ingredient: {name: "value", properties: ["value": "offset"]}
+parse:   product: {name: "4", properties: ["4": "number"]}
+parse: instruction: next-duplex
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "5", properties: ["5": "address":"duplex-list"]}
+parse: instruction: get
+parse:   ingredient: {name: "5", properties: ["*5": "address":"duplex-list", "lookup": ]}
+parse:   ingredient: {name: "value", properties: ["value": "offset"]}
+parse:   product: {name: "6", properties: ["6": "number"]}
+parse: instruction: next-duplex
+parse:   ingredient: {name: "5", properties: ["5": "address":"duplex-list"]}
+parse:   product: {name: "7", properties: ["7": "address":"duplex-list"]}
+parse: instruction: get
+parse:   ingredient: {name: "7", properties: ["*7": "address":"duplex-list", "lookup": ]}
+parse:   ingredient: {name: "value", properties: ["value": "offset"]}
+parse:   product: {name: "8", properties: ["8": "number"]}
+parse: instruction: next-duplex
+parse:   ingredient: {name: "7", properties: ["7": "address":"duplex-list"]}
+parse:   product: {name: "9", properties: ["9": "address":"duplex-list"]}
+name: element value of type duplex-list is at offset 0
+name: element value of type duplex-list is at offset 0
+name: element value of type duplex-list is at offset 0
+after-brace: recipe run1001
+after-brace: next-duplex ...
+after-brace: next-duplex ...
+after-brace: remove-duplex-between ...
+after-brace: get ...
+after-brace: next-duplex ...
+after-brace: get ...
+after-brace: next-duplex ...
+after-brace: get ...
+after-brace: next-duplex ...
+ 101 run: 2:address:duplex-list <- next-duplex 1:address:duplex-list
+9999 mem: location 1 is 1023
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+9999 mem: new alloc: 1026
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1023 in location 1028
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1028 is 1023
+9999 run: jumping to instruction 4
+ 102 run: result:address:duplex-list <- get *in, next:offset
+9999 mem: location 1028 is 1023
+9999 mem: location 1023 is 13
+9999 mem: location 1024 is 1020
+9999 mem: location 1025 is 0
+9999 mem: location 1028 is 1023
+9999 run: address to copy is 1024
+9999 run: its type is address
+9999 mem: location 1024 is 1020
+9999 mem: storing 1020 in location 1029
+ 102 run: reply result
+9999 mem: location 1029 is 1020
+9999 run: result 0 is 1020
+9999 mem: storing 1020 in location 2
+ 101 run: 2:address:duplex-list <- next-duplex 2:address:duplex-list
+9999 mem: location 2 is 1020
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1020 in location 1028
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1028 is 1020
+9999 run: jumping to instruction 4
+ 102 run: result:address:duplex-list <- get *in, next:offset
+9999 mem: location 1028 is 1020
+9999 mem: location 1020 is 14
+9999 mem: location 1021 is 1017
+9999 mem: location 1022 is 1023
+9999 mem: location 1028 is 1020
+9999 run: address to copy is 1021
+9999 run: its type is address
+9999 mem: location 1021 is 1017
+9999 mem: storing 1017 in location 1029
+ 102 run: reply result
+9999 mem: location 1029 is 1017
+9999 run: result 0 is 1017
+9999 mem: storing 1017 in location 2
+ 101 run: remove-duplex-between 2:address:duplex-list, 0
+9999 mem: location 2 is 1017
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 5
+9999 mem: new alloc: 1030
+ 102 run: start:address:duplex-list <- next-ingredient 
+9999 mem: storing 1017 in location 1032
+ 102 run: end:address:duplex-list <- next-ingredient 
+9999 mem: storing 0 in location 1033
+ 102 run: jump-if start, 1:offset
+9999 mem: location 1032 is 1017
+9999 run: jumping to instruction 5
+ 102 run: next:address:address:duplex-list <- get-address *start, next:offset
+9999 mem: location 1032 is 1017
+9999 mem: location 1017 is 15
+9999 mem: location 1018 is 1014
+9999 mem: location 1019 is 1020
+9999 mem: location 1032 is 1017
+9999 run: address to copy is 1018
+9999 mem: storing 1018 in location 1034
+ 102 run: prev:address:address:duplex-list <- get-address **next, prev:offset
+9999 mem: location 1034 is 1018
+9999 mem: location 1018 is 1014
+9999 mem: location 1014 is 16
+9999 mem: location 1015 is 1011
+9999 mem: location 1016 is 1017
+9999 mem: location 1034 is 1018
+9999 mem: location 1018 is 1014
+9999 run: address to copy is 1016
+9999 mem: storing 1016 in location 1035
+ 102 run: *prev <- copy 0
+9999 mem: location 1035 is 1016
+9999 mem: location 1035 is 1016
+9999 mem: storing 0 in location 1016
+ 102 run: *next <- copy end
+9999 mem: location 1033 is 0
+9999 mem: location 1034 is 1018
+9999 mem: location 1034 is 1018
+9999 mem: storing 0 in location 1018
+ 102 run: jump-if end, 1:offset
+9999 mem: location 1033 is 0
+9999 run: jump-if fell through
+ 102 run: reply start
+9999 mem: location 1032 is 1017
+ 101 run: 4:number <- get *1:address:duplex-list, value:offset
+9999 mem: location 1 is 1023
+9999 mem: location 1023 is 13
+9999 mem: location 1024 is 1020
+9999 mem: location 1025 is 0
+9999 mem: location 1 is 1023
+9999 run: address to copy is 1023
+9999 run: its type is number
+9999 mem: location 1023 is 13
+9999 mem: storing 13 in location 4
+ 101 run: 5:address:duplex-list <- next-duplex 1:address:duplex-list
+9999 mem: location 1 is 1023
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1023 in location 1028
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1028 is 1023
+9999 run: jumping to instruction 4
+ 102 run: result:address:duplex-list <- get *in, next:offset
+9999 mem: location 1028 is 1023
+9999 mem: location 1023 is 13
+9999 mem: location 1024 is 1020
+9999 mem: location 1025 is 0
+9999 mem: location 1028 is 1023
+9999 run: address to copy is 1024
+9999 run: its type is address
+9999 mem: location 1024 is 1020
+9999 mem: storing 1020 in location 1029
+ 102 run: reply result
+9999 mem: location 1029 is 1020
+9999 run: result 0 is 1020
+9999 mem: storing 1020 in location 5
+ 101 run: 6:number <- get *5:address:duplex-list, value:offset
+9999 mem: location 5 is 1020
+9999 mem: location 1020 is 14
+9999 mem: location 1021 is 1017
+9999 mem: location 1022 is 1023
+9999 mem: location 5 is 1020
+9999 run: address to copy is 1020
+9999 run: its type is number
+9999 mem: location 1020 is 14
+9999 mem: storing 14 in location 6
+ 101 run: 7:address:duplex-list <- next-duplex 5:address:duplex-list
+9999 mem: location 5 is 1020
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1020 in location 1028
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1028 is 1020
+9999 run: jumping to instruction 4
+ 102 run: result:address:duplex-list <- get *in, next:offset
+9999 mem: location 1028 is 1020
+9999 mem: location 1020 is 14
+9999 mem: location 1021 is 1017
+9999 mem: location 1022 is 1023
+9999 mem: location 1028 is 1020
+9999 run: address to copy is 1021
+9999 run: its type is address
+9999 mem: location 1021 is 1017
+9999 mem: storing 1017 in location 1029
+ 102 run: reply result
+9999 mem: location 1029 is 1017
+9999 run: result 0 is 1017
+9999 mem: storing 1017 in location 7
+ 101 run: 8:number <- get *7:address:duplex-list, value:offset
+9999 mem: location 7 is 1017
+9999 mem: location 1017 is 15
+9999 mem: location 1018 is 0
+9999 mem: location 1019 is 1020
+9999 mem: location 7 is 1017
+9999 run: address to copy is 1017
+9999 run: its type is number
+9999 mem: location 1017 is 15
+9999 mem: storing 15 in location 8
+ 101 run: 9:address:duplex-list <- next-duplex 7:address:duplex-list
+9999 mem: location 7 is 1017
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 3
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1017 in location 1028
+ 102 run: jump-if in, 1:offset
+9999 mem: location 1028 is 1017
+9999 run: jumping to instruction 4
+ 102 run: result:address:duplex-list <- get *in, next:offset
+9999 mem: location 1028 is 1017
+9999 mem: location 1017 is 15
+9999 mem: location 1018 is 0
+9999 mem: location 1019 is 1020
+9999 mem: location 1028 is 1017
+9999 run: address to copy is 1018
+9999 run: its type is address
+9999 mem: location 1018 is 0
+9999 mem: storing 0 in location 1029
+ 102 run: reply result
+9999 mem: location 1029 is 0
+9999 run: result 0 is 0
+9999 mem: storing 0 in location 9
+ 100 run: memory-should-contain [
+    4 <- 13
+    6 <- 14
+    8 <- 15
+    9 <- 0
+  ]
+9999 run: checking location 4
+9999 run: checking location 6
+9999 run: checking location 8
+9999 run: checking location 9
