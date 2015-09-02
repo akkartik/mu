@@ -338,6 +338,11 @@ case RELOAD: {
   }
   Hide_warnings = true;
   Disable_redefine_warnings = true;
+  // clear any containers in advance
+  for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
+    Type_ordinal.erase(Type[recently_added_types.at(i)].name);
+    Type.erase(recently_added_types.at(i));
+  }
   string code = read_mu_string(ingredients.at(0).at(0));
   vector<recipe_ordinal> recipes_reloaded = load(code);
   for (long long int i = 0; i < SIZE(recipes_reloaded); ++i) {
