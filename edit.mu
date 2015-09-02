@@ -5942,6 +5942,23 @@ recipe foo [
     .                    ┊                   .
     .                    ┊                   .
   ]
+  # cursor should be in the right place
+  assume-console [
+    type [0]
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                     run (F4)           .
+    .                    ┊0foo               .
+    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
+    .  add 2, 2          ┊                   .
+    .]                   ┊                   .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                   .
+    .                    ┊                   .
+    .                    ┊                   .
+  ]
 ]
 
 after +global-touch [
@@ -6003,6 +6020,9 @@ recipe extract-sandbox [
   # snip sandbox out of its list
   result:address:sandbox-data <- copy *sandbox
   *sandbox <- copy next-sandbox
+  # position cursor in sandbox editor
+  sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
+  *sandbox-in-focus? <- copy 1/true
   reply result
 ]
 
