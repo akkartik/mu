@@ -159,8 +159,7 @@ int tb_is_active(void)
   return termw != -1;
 }
 
-void tb_present(void)
-{
+static void tb_repaint(bool force) {
   int x,y,w,i;
   struct tb_cell *back, *front;
 
@@ -181,7 +180,7 @@ void tb_present(void)
       front = &CELL(&front_buffer, x, y);
       w = wcwidth(back->ch);
       if (w < 1) w = 1;
-      if (memcmp(back, front, sizeof(struct tb_cell)) == 0) {
+      if (!force && memcmp(back, front, sizeof(struct tb_cell)) == 0) {
         x += w;
         continue;
       }
@@ -209,9 +208,14 @@ void tb_present(void)
   bytebuffer_flush(&output_buffer, inout);
 }
 
-void tb_sync(void) {
-  cellbuf_clear(&front_buffer);
-  tb_present();
+void tb_present(void)
+{
+  tb_repaint(false);
+}
+
+void tb_sync(void)
+{
+  tb_repaint(true);
 }
 
 void tb_set_cursor(int cx, int cy)
