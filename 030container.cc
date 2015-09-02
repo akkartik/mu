@@ -32,7 +32,7 @@ recipe main [
 recipe main [
   2:point <- copy 1:number
 ]
-+warn: main: size mismatch in storing to 2:point at '2:point <- copy 1:number'
++warn: main: size mismatch in storing to 2:point (2 vs 1) at '2:point <- copy 1:number'
 
 :(before "End Mu Types Initialization")
 // A more complex container, containing another container as one of its
