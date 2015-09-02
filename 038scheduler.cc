@@ -382,12 +382,15 @@ case _DUMP_ROUTINES: {
 % Scheduling_interval = 2;
 recipe f1 [
   1:number/child-id <- start-running f2:recipe
-  limit-time 1:number/child-id, 1
+  limit-time 1:number/child-id, 10
+  # padding loop just to make sure f2 has time to completed
+  2:number <- copy 20
+  2:number <- subtract 2:number, 1
+  jump-if 2:number, -2:offset
 ]
 recipe f2 [
-{
-  loop  # run forever
-}
+  jump -1:offset  # run forever
+  $print [should never get here], 10/newline
 ]
 # f2 terminates
 +schedule: discontinuing routine 2
