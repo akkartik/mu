@@ -719,13 +719,14 @@ recipe handle-keyboard-event [
 ]
 
 # process click, return if it was on current editor
-# todo: ignores menu bar (for now just displays shortcuts)
 recipe move-cursor-in-editor [
   local-scope
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   t:touch-event <- next-ingredient
   reply-unless editor, 0/false
+  click-row:number <- get t, row:offset
+  reply-unless click-row, 0/false  # ignore clicks on 'menu'
   click-column:number <- get t, column:offset
   left:number <- get *editor, left:offset
   too-far-left?:boolean <- lesser-than click-column, left
@@ -735,8 +736,6 @@ recipe move-cursor-in-editor [
   reply-if too-far-right?, 0/false
   # position cursor
   +move-cursor-begin
-  click-row:number <- get t, row:offset
-  click-column:number <- get t, column:offset
   editor <- snap-cursor screen, editor, click-row, click-column
   undo-coalesce-tag:number <- copy 0/never
   +move-cursor-end
@@ -1045,6 +1044,28 @@ scenario editor-handles-mouse-clicks-outside-column [
     4 <- 0  # ..or column
   ]
   check-trace-count-for-label 0, [print-character]
+]
+
+scenario editor-handles-mouse-clicks-in-menu-area [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
+  assume-console [
+    # click on first, 'menu' row
+    left-click 0, 3
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # no change to cursor
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
 ]
 
 scenario editor-inserts-characters-into-empty-editor [

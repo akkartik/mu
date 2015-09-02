@@ -1,10 +1,10 @@
  101 run: assume-console [
-    # click on right half of screen
-    left-click 3, 8
+    # click on first, 'menu' row
+    left-click 0, 3
   ]
 parse: instruction: left-click
+parse:   ingredient: {name: "0", properties: ["0": "literal"]}
 parse:   ingredient: {name: "3", properties: ["3": "literal"]}
-parse:   ingredient: {name: "8", properties: ["8": "literal"]}
  101 run: run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get *2:address:editor-data, cursor-row:offset
@@ -34,7 +34,7 @@ after-brace: get ...
 9999 mem: location 2 is 1115
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
-schedule: editor-event-loop/run1001/scenario-editor-handles-mouse-clicks-outside-column
+schedule: editor-event-loop/run1001/scenario-editor-handles-mouse-clicks-in-menu-area
  102 run: screen:address <- next-ingredient 
 9999 mem: storing 1009 in location 1245
  102 run: console:address <- next-ingredient 
@@ -86,12 +86,12 @@ schedule: editor-event-loop/run1001/scenario-editor-handles-mouse-clicks-outside
 9999 run: its type is event
 9999 mem: location 1272 is 2
 9999 mem: location 1273 is 65513
-9999 mem: location 1274 is 3
-9999 mem: location 1275 is 8
+9999 mem: location 1274 is 0
+9999 mem: location 1275 is 3
 9999 mem: storing 2 in location 1286
 9999 mem: storing 65513 in location 1287
-9999 mem: storing 3 in location 1288
-9999 mem: storing 8 in location 1289
+9999 mem: storing 0 in location 1288
+9999 mem: storing 3 in location 1289
  103 run: *idx <- add *idx, 1
 9999 mem: location 1281 is 1276
 9999 mem: location 1276 is 0
@@ -100,17 +100,17 @@ schedule: editor-event-loop/run1001/scenario-editor-handles-mouse-clicks-outside
  103 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1286 is 2
 9999 mem: location 1287 is 65513
-9999 mem: location 1288 is 3
-9999 mem: location 1289 is 8
+9999 mem: location 1288 is 0
+9999 mem: location 1289 is 3
 9999 mem: location 1280 is 1276
-9999 run: result 0 is [2, 65513, 3, 8]
+9999 run: result 0 is [2, 65513, 0, 3]
 9999 run: result 1 is 1276
 9999 run: result 2 is 1
 9999 run: result 3 is 0
 9999 mem: storing 2 in location 1248
 9999 mem: storing 65513 in location 1249
-9999 mem: storing 3 in location 1250
-9999 mem: storing 8 in location 1251
+9999 mem: storing 0 in location 1250
+9999 mem: storing 3 in location 1251
 9999 mem: storing 1276 in location 1246
 9999 mem: storing 1 in location 1252
 9999 mem: storing 0 in location 1253
@@ -125,8 +125,8 @@ schedule: editor-event-loop/run1001/scenario-editor-handles-mouse-clicks-outside
  102 run: t:address:touch-event <- maybe-convert e, touch:variant
 9999 mem: location 1248 is 2
 9999 mem: location 1249 is 65513
-9999 mem: location 1250 is 3
-9999 mem: location 1251 is 8
+9999 mem: location 1250 is 0
+9999 mem: location 1251 is 3
 9999 mem: storing 1249 in location 1254
  102 run: break-unless t, 
 9999 mem: location 1254 is 1249
@@ -136,8 +136,8 @@ schedule: editor-event-loop/run1001/scenario-editor-handles-mouse-clicks-outside
 9999 mem: location 1247 is 1115
 9999 mem: location 1254 is 1249
 9999 mem: location 1249 is 65513
-9999 mem: location 1250 is 3
-9999 mem: location 1251 is 8
+9999 mem: location 1250 is 0
+9999 mem: location 1251 is 3
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 27
 9999 mem: new alloc: 1291
@@ -147,80 +147,22 @@ schedule: editor-event-loop/run1001/scenario-editor-handles-mouse-clicks-outside
 9999 mem: storing 1115 in location 1294
  103 run: t:touch-event <- next-ingredient 
 9999 mem: storing 65513 in location 1295
-9999 mem: storing 3 in location 1296
-9999 mem: storing 8 in location 1297
+9999 mem: storing 0 in location 1296
+9999 mem: storing 3 in location 1297
  103 run: jump-if editor, 1:offset
 9999 mem: location 1294 is 1115
 9999 run: jumping to instruction 6
  103 run: click-row:number <- get t, row:offset
 9999 mem: location 1295 is 65513
-9999 mem: location 1296 is 3
-9999 mem: location 1297 is 8
+9999 mem: location 1296 is 0
+9999 mem: location 1297 is 3
 9999 run: address to copy is 1296
 9999 run: its type is number
-9999 mem: location 1296 is 3
-9999 mem: storing 3 in location 1298
+9999 mem: location 1296 is 0
+9999 mem: storing 0 in location 1298
  103 run: jump-if click-row, 1:offset
-9999 mem: location 1298 is 3
-9999 run: jumping to instruction 9
- 103 run: click-column:number <- get t, column:offset
-9999 mem: location 1295 is 65513
-9999 mem: location 1296 is 3
-9999 mem: location 1297 is 8
-9999 run: address to copy is 1297
-9999 run: its type is number
-9999 mem: location 1297 is 8
-9999 mem: storing 8 in location 1299
- 103 run: left:number <- get *editor, left:offset
-9999 mem: location 1294 is 1115
-9999 mem: location 1115 is 1150
-9999 mem: location 1116 is 1150
-9999 mem: location 1117 is 0
-9999 mem: location 1118 is 1150
-9999 mem: location 1119 is 0
-9999 mem: location 1120 is 4
-9999 mem: location 1121 is 1
-9999 mem: location 1122 is 0
-9999 mem: location 1123 is 1
-9999 mem: location 1124 is 0
-9999 mem: location 1125 is 0
-9999 mem: location 1294 is 1115
-9999 run: address to copy is 1119
-9999 run: its type is number
-9999 mem: location 1119 is 0
-9999 mem: storing 0 in location 1300
- 103 run: too-far-left?:boolean <- lesser-than click-column, left
-9999 mem: location 1299 is 8
-9999 mem: location 1300 is 0
-9999 mem: storing 0 in location 1301
- 103 run: jump-unless too-far-left?, 1:offset
-9999 mem: location 1301 is 0
-9999 run: jumping to instruction 14
- 103 run: right:number <- get *editor, right:offset
-9999 mem: location 1294 is 1115
-9999 mem: location 1115 is 1150
-9999 mem: location 1116 is 1150
-9999 mem: location 1117 is 0
-9999 mem: location 1118 is 1150
-9999 mem: location 1119 is 0
-9999 mem: location 1120 is 4
-9999 mem: location 1121 is 1
-9999 mem: location 1122 is 0
-9999 mem: location 1123 is 1
-9999 mem: location 1124 is 0
-9999 mem: location 1125 is 0
-9999 mem: location 1294 is 1115
-9999 run: address to copy is 1120
-9999 run: its type is number
-9999 mem: location 1120 is 4
-9999 mem: storing 4 in location 1302
- 103 run: too-far-right?:boolean <- greater-than click-column, right
-9999 mem: location 1299 is 8
-9999 mem: location 1302 is 4
-9999 mem: storing 1 in location 1303
- 103 run: jump-unless too-far-right?, 1:offset
-9999 mem: location 1303 is 1
-9999 run: jump-unless fell through
+9999 mem: location 1298 is 0
+9999 run: jump-if fell through
  103 run: reply 0/false
  102 run: loop +next-event:label
 9999 run: jumping to instruction 6
@@ -322,16 +264,9 @@ schedule: editor-event-loop/run1001/scenario-editor-handles-mouse-clicks-outside
 9999 run: its type is number
 9999 mem: location 1122 is 0
 9999 mem: storing 0 in location 4
- 100 run: screen-should-contain [
-    .          .
-    .abc       .
-    .┈┈┈┈┈     .
-    .          .
-  ]
  100 run: memory-should-contain [
-    3 <- 1  # no change to cursor row
-    4 <- 0  # ..or column
+    3 <- 1
+    4 <- 0
   ]
 9999 run: checking location 3
 9999 run: checking location 4
- 100 run: check-trace-count-for-label 0, [print-character]

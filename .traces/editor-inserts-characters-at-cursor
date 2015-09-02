@@ -2115,6 +2115,17 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
  103 run: jump-if editor, 1:offset
 9999 mem: location 1424 is 1115
 9999 run: jumping to instruction 6
+ 103 run: click-row:number <- get t, row:offset
+9999 mem: location 1425 is 65513
+9999 mem: location 1426 is 1
+9999 mem: location 1427 is 2
+9999 run: address to copy is 1426
+9999 run: its type is number
+9999 mem: location 1426 is 1
+9999 mem: storing 1 in location 1428
+ 103 run: jump-if click-row, 1:offset
+9999 mem: location 1428 is 1
+9999 run: jumping to instruction 9
  103 run: click-column:number <- get t, column:offset
 9999 mem: location 1425 is 65513
 9999 mem: location 1426 is 1
@@ -2122,7 +2133,7 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 run: address to copy is 1427
 9999 run: its type is number
 9999 mem: location 1427 is 2
-9999 mem: storing 2 in location 1428
+9999 mem: storing 2 in location 1429
  103 run: left:number <- get *editor, left:offset
 9999 mem: location 1424 is 1115
 9999 mem: location 1115 is 1150
@@ -2140,14 +2151,14 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 run: address to copy is 1119
 9999 run: its type is number
 9999 mem: location 1119 is 0
-9999 mem: storing 0 in location 1429
- 103 run: too-far-left?:boolean <- lesser-than click-column, left
-9999 mem: location 1428 is 2
-9999 mem: location 1429 is 0
 9999 mem: storing 0 in location 1430
- 103 run: jump-unless too-far-left?, 1:offset
+ 103 run: too-far-left?:boolean <- lesser-than click-column, left
+9999 mem: location 1429 is 2
 9999 mem: location 1430 is 0
-9999 run: jumping to instruction 11
+9999 mem: storing 0 in location 1431
+ 103 run: jump-unless too-far-left?, 1:offset
+9999 mem: location 1431 is 0
+9999 run: jumping to instruction 14
  103 run: right:number <- get *editor, right:offset
 9999 mem: location 1424 is 1115
 9999 mem: location 1115 is 1150
@@ -2165,14 +2176,14 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 run: address to copy is 1120
 9999 run: its type is number
 9999 mem: location 1120 is 9
-9999 mem: storing 9 in location 1431
+9999 mem: storing 9 in location 1432
  103 run: too-far-right?:boolean <- greater-than click-column, right
-9999 mem: location 1428 is 2
-9999 mem: location 1431 is 9
-9999 mem: storing 0 in location 1432
+9999 mem: location 1429 is 2
+9999 mem: location 1432 is 9
+9999 mem: storing 0 in location 1433
  103 run: jump-unless too-far-right?, 1:offset
-9999 mem: location 1432 is 0
-9999 run: jumping to instruction 15
+9999 mem: location 1433 is 0
+9999 run: jumping to instruction 18
  103 run: before-cursor-row:number <- get *editor, cursor-row:offset
 9999 mem: location 1424 is 1115
 9999 mem: location 1115 is 1150
@@ -2190,7 +2201,7 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 run: address to copy is 1121
 9999 run: its type is number
 9999 mem: location 1121 is 1
-9999 mem: storing 1 in location 1433
+9999 mem: storing 1 in location 1434
  103 run: before-cursor-column:number <- get *editor, cursor-column:offset
 9999 mem: location 1424 is 1115
 9999 mem: location 1115 is 1150
@@ -2208,7 +2219,7 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 run: address to copy is 1122
 9999 run: its type is number
 9999 mem: location 1122 is 1
-9999 mem: storing 1 in location 1434
+9999 mem: storing 1 in location 1435
  103 run: before-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
 9999 mem: location 1424 is 1115
 9999 mem: location 1115 is 1150
@@ -2226,28 +2237,12 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 run: address to copy is 1116
 9999 run: its type is address
 9999 mem: location 1116 is 1150
-9999 mem: storing 1150 in location 1435
- 103 run: click-row:number <- get t, row:offset
-9999 mem: location 1425 is 65513
-9999 mem: location 1426 is 1
-9999 mem: location 1427 is 2
-9999 run: address to copy is 1426
-9999 run: its type is number
-9999 mem: location 1426 is 1
-9999 mem: storing 1 in location 1436
- 103 run: click-column:number <- get t, column:offset
-9999 mem: location 1425 is 65513
-9999 mem: location 1426 is 1
-9999 mem: location 1427 is 2
-9999 run: address to copy is 1427
-9999 run: its type is number
-9999 mem: location 1427 is 2
-9999 mem: storing 2 in location 1428
+9999 mem: storing 1150 in location 1436
  103 run: editor <- snap-cursor screen, editor, click-row, click-column
 9999 mem: location 1423 is 1009
 9999 mem: location 1424 is 1115
-9999 mem: location 1436 is 1
-9999 mem: location 1428 is 2
+9999 mem: location 1428 is 1
+9999 mem: location 1429 is 2
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 26
  104 run: screen:address <- next-ingredient 
@@ -2925,14 +2920,14 @@ schedule: print-character/insert-at-cursor/handle-keyboard-event/editor-event-lo
 9999 mem: storing 1150 in location 1440
  103 run: break-unless undo-coalesce-tag, 
 9999 mem: location 1437 is 0
-9999 run: jumping to instruction 43
+9999 run: jumping to instruction 44
  103 run: op:address:operation <- new operation:type
 9999 mem: new alloc: 1449
 9999 mem: storing 1449 in location 1442
  103 run: *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, undo-coalesce-tag
-9999 mem: location 1433 is 1
 9999 mem: location 1434 is 1
-9999 mem: location 1435 is 1150
+9999 mem: location 1435 is 1
+9999 mem: location 1436 is 1150
 9999 mem: location 1438 is 1
 9999 mem: location 1439 is 2
 9999 mem: location 1440 is 1150

@@ -153,6 +153,17 @@ after-brace: get ...
  103 run: jump-if editor, 1:offset
 9999 mem: location 1306 is 1115
 9999 run: jumping to instruction 6
+ 103 run: click-row:number <- get t, row:offset
+9999 mem: location 1307 is 65513
+9999 mem: location 1308 is 1
+9999 mem: location 1309 is 3
+9999 run: address to copy is 1308
+9999 run: its type is number
+9999 mem: location 1308 is 1
+9999 mem: storing 1 in location 1310
+ 103 run: jump-if click-row, 1:offset
+9999 mem: location 1310 is 1
+9999 run: jumping to instruction 9
  103 run: click-column:number <- get t, column:offset
 9999 mem: location 1307 is 65513
 9999 mem: location 1308 is 1
@@ -160,7 +171,7 @@ after-brace: get ...
 9999 run: address to copy is 1309
 9999 run: its type is number
 9999 mem: location 1309 is 3
-9999 mem: storing 3 in location 1310
+9999 mem: storing 3 in location 1311
  103 run: left:number <- get *editor, left:offset
 9999 mem: location 1306 is 1115
 9999 mem: location 1115 is 1152
@@ -178,14 +189,14 @@ after-brace: get ...
 9999 run: address to copy is 1119
 9999 run: its type is number
 9999 mem: location 1119 is 0
-9999 mem: storing 0 in location 1311
- 103 run: too-far-left?:boolean <- lesser-than click-column, left
-9999 mem: location 1310 is 3
-9999 mem: location 1311 is 0
 9999 mem: storing 0 in location 1312
- 103 run: jump-unless too-far-left?, 1:offset
+ 103 run: too-far-left?:boolean <- lesser-than click-column, left
+9999 mem: location 1311 is 3
 9999 mem: location 1312 is 0
-9999 run: jumping to instruction 11
+9999 mem: storing 0 in location 1313
+ 103 run: jump-unless too-far-left?, 1:offset
+9999 mem: location 1313 is 0
+9999 run: jumping to instruction 14
  103 run: right:number <- get *editor, right:offset
 9999 mem: location 1306 is 1115
 9999 mem: location 1115 is 1152
@@ -203,14 +214,14 @@ after-brace: get ...
 9999 run: address to copy is 1120
 9999 run: its type is number
 9999 mem: location 1120 is 4
-9999 mem: storing 4 in location 1313
+9999 mem: storing 4 in location 1314
  103 run: too-far-right?:boolean <- greater-than click-column, right
-9999 mem: location 1310 is 3
-9999 mem: location 1313 is 4
-9999 mem: storing 0 in location 1314
+9999 mem: location 1311 is 3
+9999 mem: location 1314 is 4
+9999 mem: storing 0 in location 1315
  103 run: jump-unless too-far-right?, 1:offset
-9999 mem: location 1314 is 0
-9999 run: jumping to instruction 15
+9999 mem: location 1315 is 0
+9999 run: jumping to instruction 18
  103 run: before-cursor-row:number <- get *editor, cursor-row:offset
 9999 mem: location 1306 is 1115
 9999 mem: location 1115 is 1152
@@ -228,7 +239,7 @@ after-brace: get ...
 9999 run: address to copy is 1121
 9999 run: its type is number
 9999 mem: location 1121 is 1
-9999 mem: storing 1 in location 1315
+9999 mem: storing 1 in location 1316
  103 run: before-cursor-column:number <- get *editor, cursor-column:offset
 9999 mem: location 1306 is 1115
 9999 mem: location 1115 is 1152
@@ -246,7 +257,7 @@ after-brace: get ...
 9999 run: address to copy is 1122
 9999 run: its type is number
 9999 mem: location 1122 is 0
-9999 mem: storing 0 in location 1316
+9999 mem: storing 0 in location 1317
  103 run: before-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
 9999 mem: location 1306 is 1115
 9999 mem: location 1115 is 1152
@@ -264,28 +275,12 @@ after-brace: get ...
 9999 run: address to copy is 1116
 9999 run: its type is address
 9999 mem: location 1116 is 1152
-9999 mem: storing 1152 in location 1317
- 103 run: click-row:number <- get t, row:offset
-9999 mem: location 1307 is 65513
-9999 mem: location 1308 is 1
-9999 mem: location 1309 is 3
-9999 run: address to copy is 1308
-9999 run: its type is number
-9999 mem: location 1308 is 1
-9999 mem: storing 1 in location 1318
- 103 run: click-column:number <- get t, column:offset
-9999 mem: location 1307 is 65513
-9999 mem: location 1308 is 1
-9999 mem: location 1309 is 3
-9999 run: address to copy is 1309
-9999 run: its type is number
-9999 mem: location 1309 is 3
-9999 mem: storing 3 in location 1310
+9999 mem: storing 1152 in location 1318
  103 run: editor <- snap-cursor screen, editor, click-row, click-column
 9999 mem: location 1305 is 1009
 9999 mem: location 1306 is 1115
-9999 mem: location 1318 is 1
-9999 mem: location 1310 is 3
+9999 mem: location 1310 is 1
+9999 mem: location 1311 is 3
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 26
  104 run: screen:address <- next-ingredient 
@@ -1112,13 +1107,13 @@ after-brace: get ...
 9999 mem: storing 1152 in location 1322
  103 run: break-unless undo-coalesce-tag, 
 9999 mem: location 1319 is 0
-9999 run: jumping to instruction 43
+9999 run: jumping to instruction 44
  103 run: op:address:operation <- new operation:type
 9999 mem: storing 1208 in location 1324
  103 run: *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, undo-coalesce-tag
-9999 mem: location 1315 is 1
-9999 mem: location 1316 is 0
-9999 mem: location 1317 is 1152
+9999 mem: location 1316 is 1
+9999 mem: location 1317 is 0
+9999 mem: location 1318 is 1152
 9999 mem: location 1320 is 1
 9999 mem: location 1321 is 3
 9999 mem: location 1322 is 1152
