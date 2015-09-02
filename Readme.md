@@ -62,20 +62,17 @@ before we invest in the *visual* tools for making them concise.
 **Taking Mu for a spin**
 
 Mu is currently implemented in C++ and requires a unix-like environment. It's
-been tested on ubuntu 14.04 with recent versions of gcc and clang, but should
-work with earlier versions going quite far back. It has no other dependencies
-that aren't taken for granted in unix. In spite of needing C++ it uses no
-advanced features and is designed to eventually bootstrap using an assembler
-written directly in machine code. Currently you build it like so:
+been tested on ubuntu 14.04 on x86, x86\_64 and ARMv7 with recent versions of
+gcc and clang. Since it uses no recent language features and has no exotic
+dependencies, it should work with most reasonable versions, compilers or
+processors.
+
+Running Mu will always recompile it if necessary:
 
   ```shell
   $ cd mu
   $ ./mu
   ```
-
-Running mu will always recompile it if necessary. In this case it has no other
-work to do, so it'll show you a hopefully helpful message after it's done
-compiling.
 
 As a sneak peek, here's how you compute factorial in Mu:
 
@@ -414,7 +411,7 @@ to browse. To add to the trace, use `stash`. For example:
 Invaluable for understanding complex control flow without cluttering up the
 screen.
 
-The next major milestone on mu's roadmap is support for recording and faking
+The next major milestone on Mu's roadmap is support for recording and faking
 console input to a sandbox, so that you can type in an input once and have it
 replay everytime you hit F4. Once this support is in place it will be easy to
 generalize to more interfaces, like requesting urls over a network or reading
