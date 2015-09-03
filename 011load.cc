@@ -163,7 +163,7 @@ string next_word(istream& in) {
 
 void slurp_word(istream& in, ostream& out) {
   char c;
-  if (in.peek() == ',') {
+  if (!in.eof() && in.peek() == ',') {
     in >> c;
     out << c;
     return;
@@ -178,13 +178,14 @@ void slurp_word(istream& in, ostream& out) {
 }
 
 void skip_whitespace(istream& in) {
-  while (isspace(in.peek()) && in.peek() != '\n') {
+  while (!in.eof() && isspace(in.peek()) && in.peek() != '\n') {
     in.get();
   }
 }
 
 void skip_whitespace_and_comments(istream& in) {
   while (true) {
+    if (in.eof()) break;
     if (isspace(in.peek())) in.get();
     else if (in.peek() == '#') skip_comment(in);
     else break;
@@ -192,15 +193,15 @@ void skip_whitespace_and_comments(istream& in) {
 }
 
 void skip_comment(istream& in) {
-  if (in.peek() == '#') {
+  if (!in.eof() && in.peek() == '#') {
     in.get();
-    while (in.peek() != '\n') in.get();
+    while (!in.eof() && in.peek() != '\n') in.get();
   }
 }
 
 void skip_comma(istream& in) {
   skip_whitespace(in);
-  if (in.peek() == ',') in.get();
+  if (!in.eof() && in.peek() == ',') in.get();
   skip_whitespace(in);
 }
 
@@ -350,3 +351,14 @@ recipe main [
   1:number:address/lookup <- copy 23
 ]
 +parse:   product: {name: "1", properties: ["1": "number":"address", "lookup": ]}
+
+//: this test we can't represent with a scenario
+:(code)
+void test_parse_comment_terminated_by_eof() {
+  Trace_file = "parse_comment_terminated_by_eof";
+  load("recipe main [\n"
+       "  a:number <- copy 34\n"
+       "]\n"
+       "# abc");  // no newline after comment
+  cerr << ".";  // termination = success
+}
