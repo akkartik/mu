@@ -2671,13 +2671,20 @@ recipe move-to-next-line [
   last-line:number <- subtract screen-height, 1
   already-at-bottom?:boolean <- greater-or-equal *cursor-row, last-line
   {
-    # if cursor not at top, move it
+    # if cursor not at bottom, move it
     break-if already-at-bottom?
     # scan to start of next line, then to right column or until end of line
     max:number <- subtract right, left
     next-line:address:duplex-list <- before-start-of-next-line *before-cursor, max
-    no-motion?:boolean <- equal next-line, *before-cursor
-    reply-if no-motion?, editor/same-as-ingredient:0, 0/no-more-render
+    {
+      # already at end of buffer? try to scroll up (so we can see more
+      # warnings or sandboxes below)
+      no-motion?:boolean <- equal next-line, *before-cursor
+      break-unless no-motion?
+      scroll?:boolean <- greater-than *cursor-row, 1
+      break-if scroll?, +try-to-scroll:label
+      reply editor/same-as-ingredient:0, 0/no-more-render
+    }
     *cursor-row <- add *cursor-row, 1
     *before-cursor <- copy next-line
     target-column:number <- copy *cursor-column
@@ -2697,12 +2704,9 @@ recipe move-to-next-line [
     }
     reply editor/same-as-ingredient:0, 0/no-more-render
   }
-  {
-    # if cursor already at top, scroll up
-    break-unless already-at-bottom?
-    +scroll-down
-    reply editor/same-as-ingredient:0, 1/go-render
-  }
+  +try-to-scroll
+  +scroll-down
+  reply editor/same-as-ingredient:0, 1/go-render
 ]
 
 scenario editor-adjusts-column-at-next-line [
@@ -2741,12 +2745,41 @@ de]
   ]
 ]
 
-scenario editor-stops-at-end-on-down-arrow [
+scenario editor-scrolls-at-end-on-down-arrow [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 de]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   editor-render screen, 2:address:editor-data
+  $clear-trace
+  # try to move down past end of text
+  assume-console [
+    left-click 2, 0
+    press down-arrow
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen should scroll, moving cursor to end of text
+  memory-should-contain [
+    3 <- 1
+    4 <- 2
+  ]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .de0       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # try to move down again
   $clear-trace
   assume-console [
     left-click 2, 0
@@ -2757,21 +2790,21 @@ de]
     3:number <- get *2:address:editor-data, cursor-row:offset
     4:number <- get *2:address:editor-data, cursor-column:offset
   ]
+  # screen stops scrolling because cursor is already at top
   memory-should-contain [
-    3 <- 2
-    4 <- 0
+    3 <- 1
+    4 <- 3
   ]
   check-trace-count-for-label 0, [print-character]
   assume-console [
-    type [0]
+    type [1]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
-    .abc       .
-    .0de       .
+    .de01      .
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
@@ -3440,7 +3473,7 @@ after +scroll-down [
   *top-of-screen <- before-start-of-next-line *top-of-screen, max
   no-movement?:boolean <- equal old-top, *top-of-screen
   # Hack: this reply doesn't match one of the locations of +scroll-down, directly
-  # within insert-at-cursor. however, I'm unable to trigger the error..
+  # within insert-at-cursor. However, I'm unable to trigger the error..
   # If necessary create a duplicate copy of +scroll-down with the right
   # 'reply-if'.
   reply-if no-movement?, editor/same-as-ingredient:0, 0/no-more-render
