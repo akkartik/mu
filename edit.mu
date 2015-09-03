@@ -83,7 +83,7 @@ recipe new-editor [
   *y <- copy *init
   # initial render to screen, just for some old tests
   _, _, screen, result <- render screen, result
-  +editor-initialization
+  <editor-initialization>
   reply result
 ]
 
@@ -176,7 +176,7 @@ recipe render [
       *before-cursor <- copy prev
     }
     c:character <- get *curr, value:offset
-    +character-c-received
+    <character-c-received>
     {
       # newline? move to left rather than 0
       newline?:boolean <- equal c, 10/newline
@@ -331,7 +331,7 @@ recipe render-code-string [
     done? <- greater-or-equal row, screen-height
     break-if done?
     c:character <- index *s, i
-    +character-c-received  # only line different from render-string
+    <character-c-received>  # only line different from render-string
     {
       # at right? wrap.
       at-right?:boolean <- equal column, right
@@ -566,7 +566,7 @@ f]
   ]
 ]
 
-after +character-c-received [
+after <character-c-received> [
   color <- get-color color, c
 ]
 
@@ -700,21 +700,21 @@ recipe handle-keyboard-event [
     break-unless c
     trace 10, [app], [handle-keyboard-event: special character]
     # exceptions for special characters go here
-    +handle-special-character
+    <handle-special-character>
     # ignore any other special characters
     regular-character?:boolean <- greater-or-equal *c, 32/space
     reply-unless regular-character?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     # otherwise type it in
-    +insert-character-begin
+    <insert-character-begin>
     editor, screen, go-render?:boolean <- insert-at-cursor editor, *c, screen
-    +insert-character-end
+    <insert-character-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
   # special key to modify the text or move the cursor
   k:address:number <- maybe-convert e:event, keycode:variant
   assert k, [event was of unknown type; neither keyboard nor mouse]
   # handlers for each special key will go here
-  +handle-special-key
+  <handle-special-key>
   reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
 ]
 
@@ -735,10 +735,10 @@ recipe move-cursor-in-editor [
   too-far-right?:boolean <- greater-than click-column, right
   reply-if too-far-right?, 0/false
   # position cursor
-  +move-cursor-begin
+  <move-cursor-begin>
   editor <- snap-cursor screen, editor, click-row, click-column
   undo-coalesce-tag:number <- copy 0/never
-  +move-cursor-end
+  <move-cursor-end>
   # gain focus
   reply 1/true
 ]
@@ -852,7 +852,7 @@ recipe insert-at-cursor [
   screen-width:number <- screen-width screen
   screen-height:number <- screen-height screen
   # occasionally we'll need to mess with the cursor
-  +insert-character-special-case
+  <insert-character-special-case>
   # but mostly we'll just move the cursor right
   *cursor-column <- add *cursor-column, 1
   next:address:duplex-list <- next-duplex *before-cursor
@@ -1319,7 +1319,7 @@ defg]
   ]
 ]
 
-after +insert-character-special-case [
+after <insert-character-special-case> [
   # if the line wraps at the cursor, move cursor to start of next row
   {
     # if we're at the column just before the wrap indicator
@@ -1332,7 +1332,7 @@ after +insert-character-special-case [
     {
       below-screen?:boolean <- greater-or-equal *cursor-row, screen-height
       break-unless below-screen?
-      +scroll-down
+      <scroll-down>
     }
     reply editor/same-as-ingredient:0, screen/same-as-ingredient:2, 1/go-render
   }
@@ -1396,7 +1396,7 @@ container editor-data [
   indent:boolean
 ]
 
-after +editor-initialization [
+after <editor-initialization> [
   indent:address:boolean <- get-address *result, indent:offset
   *indent <- copy 1/true
 ]
@@ -1421,13 +1421,13 @@ scenario editor-moves-cursor-down-after-inserting-newline [
   ]
 ]
 
-after +handle-special-character [
+after <handle-special-character> [
   {
     newline?:boolean <- equal *c, 10/newline
     break-unless newline?
-    +insert-enter-begin
+    <insert-enter-begin>
     editor <- insert-new-line-and-indent editor, screen
-    +insert-enter-end
+    <insert-enter-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -1451,7 +1451,7 @@ recipe insert-new-line-and-indent [
   {
     below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal, never greater
     break-unless below-screen?
-    +scroll-down
+    <scroll-down>
     *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
   }
   # indent if necessary
@@ -1601,7 +1601,7 @@ ef]
   ]
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     paste-start?:boolean <- equal *k, 65507/paste-start
     break-unless paste-start?
@@ -1611,7 +1611,7 @@ after +handle-special-key [
   }
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     paste-end?:boolean <- equal *k, 65506/paste-end
     break-unless paste-end?
@@ -1646,14 +1646,14 @@ cd]
   ]
 ]
 
-after +handle-special-character [
+after <handle-special-character> [
   {
     tab?:boolean <- equal *c, 9/tab
     break-unless tab?
-    +insert-character-begin
+    <insert-character-begin>
     editor, screen, go-render?:boolean <- insert-at-cursor editor, 32/space, screen
     editor, screen, go-render?:boolean <- insert-at-cursor editor, 32/space, screen
-    +insert-character-end
+    <insert-character-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -1688,13 +1688,13 @@ scenario editor-handles-backspace-key [
   check-trace-count-for-label 3, [print-character]  # length of original line to overwrite
 ]
 
-after +handle-special-character [
+after <handle-special-character> [
   {
     delete-previous-character?:boolean <- equal *c, 8/backspace
     break-unless delete-previous-character?
-    +backspace-character-begin
+    <backspace-character-begin>
     editor, screen, go-render?:boolean, backspaced-cell:address:duplex-list <- delete-before-cursor editor, screen
-    +backspace-character-end
+    <backspace-character-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
 ]
@@ -1772,7 +1772,7 @@ recipe move-cursor-coordinates-left [
   }
   {
     break-unless top-of-screen?
-    +scroll-up
+    <scroll-up>
     go-render? <- copy 1/true
   }
   {
@@ -1882,13 +1882,13 @@ scenario editor-handles-delete-key [
   check-trace-count-for-label 2, [print-character]  # new length to overwrite
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     delete-next-character?:boolean <- equal *k, 65522/delete
     break-unless delete-next-character?
-    +delete-character-begin
+    <delete-character-begin>
     editor, screen, go-render?:boolean, deleted-cell:address:duplex-list <- delete-at-cursor editor, screen
-    +delete-character-end
+    <delete-character-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
 ]
@@ -1954,7 +1954,7 @@ scenario editor-moves-cursor-right-with-key [
   check-trace-count-for-label 3, [print-character]  # 0 and following characters
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     move-to-next-character?:boolean <- equal *k, 65514/right-arrow
     break-unless move-to-next-character?
@@ -1962,12 +1962,12 @@ after +handle-special-key [
     next-cursor:address:duplex-list <- next-duplex *before-cursor
     break-unless next-cursor
     # scan to next character
-    +move-cursor-begin
+    <move-cursor-begin>
     *before-cursor <- copy next-cursor
     editor, go-render?:boolean <- move-cursor-coordinates-right editor, screen-height
     screen <- move-cursor screen, *cursor-row, *cursor-column
     undo-coalesce-tag:number <- copy 2/right-arrow
-    +move-cursor-end
+    <move-cursor-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
 ]
@@ -1990,7 +1990,7 @@ recipe move-cursor-coordinates-right [
     *cursor-column <- copy left
     below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
     reply-unless below-screen?, editor/same-as-ingredient:0, 0/no-more-render
-    +scroll-down
+    <scroll-down>
     *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
     reply editor/same-as-ingredient:0, 1/go-render
   }
@@ -2010,7 +2010,7 @@ recipe move-cursor-coordinates-right [
     *cursor-column <- copy left
     below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
     reply-unless below-screen?, editor/same-as-ingredient:0, 0/no-more-render
-    +scroll-down
+    <scroll-down>
     *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
     reply editor/same-as-ingredient:0, 1/go-render
   }
@@ -2228,7 +2228,7 @@ scenario editor-moves-cursor-left-with-key [
   check-trace-count-for-label 3, [print-character]
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     move-to-previous-character?:boolean <- equal *k, 65515/left-arrow
     break-unless move-to-previous-character?
@@ -2236,11 +2236,11 @@ after +handle-special-key [
     # if not at start of text (before-cursor at § sentinel)
     prev:address:duplex-list <- prev-duplex *before-cursor
     reply-unless prev, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-    +move-cursor-begin
+    <move-cursor-begin>
     editor, go-render? <- move-cursor-coordinates-left editor
     *before-cursor <- copy prev
     undo-coalesce-tag:number <- copy 1/left-arrow
-    +move-cursor-end
+    <move-cursor-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
 ]
@@ -2426,14 +2426,14 @@ def]
   ]
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
     break-unless move-to-previous-line?
-    +move-cursor-begin
+    <move-cursor-begin>
     editor, go-render? <- move-to-previous-line editor
     undo-coalesce-tag:number <- copy 3/up-arrow
-    +move-cursor-end
+    <move-cursor-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
 ]
@@ -2492,7 +2492,7 @@ recipe move-to-previous-line [
   {
     # if cursor already at top, scroll up
     break-unless already-at-top?
-    +scroll-up
+    <scroll-up>
     reply editor/same-as-ingredient:0, 1/go-render
   }
 ]
@@ -2647,14 +2647,14 @@ def]
   ]
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     move-to-next-line?:boolean <- equal *k, 65516/down-arrow
     break-unless move-to-next-line?
-    +move-cursor-begin
+    <move-cursor-begin>
     editor, go-render? <- move-to-next-line editor, screen-height
     undo-coalesce-tag:number <- copy 4/down-arrow
-    +move-cursor-end
+    <move-cursor-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
   }
 ]
@@ -2705,7 +2705,7 @@ recipe move-to-next-line [
     reply editor/same-as-ingredient:0, 0/no-more-render
   }
   +try-to-scroll
-  +scroll-down
+  <scroll-down>
   reply editor/same-as-ingredient:0, 1/go-render
 ]
 
@@ -2837,26 +2837,26 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
   check-trace-count-for-label 0, [print-character]
 ]
 
-after +handle-special-character [
+after <handle-special-character> [
   {
     move-to-start-of-line?:boolean <- equal *c, 1/ctrl-a
     break-unless move-to-start-of-line?
-    +move-cursor-begin
+    <move-cursor-begin>
     move-to-start-of-line editor
     undo-coalesce-tag:number <- copy 0/never
-    +move-cursor-end
+    <move-cursor-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     move-to-start-of-line?:boolean <- equal *k, 65521/home
     break-unless move-to-start-of-line?
-    +move-cursor-begin
+    <move-cursor-begin>
     move-to-start-of-line editor
     undo-coalesce-tag:number <- copy 0/never
-    +move-cursor-end
+    <move-cursor-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
@@ -3006,26 +3006,26 @@ scenario editor-moves-to-end-of-line-with-ctrl-e [
   check-trace-count-for-label 1, [print-character]
 ]
 
-after +handle-special-character [
+after <handle-special-character> [
   {
     move-to-end-of-line?:boolean <- equal *c, 5/ctrl-e
     break-unless move-to-end-of-line?
-    +move-cursor-begin
+    <move-cursor-begin>
     move-to-end-of-line editor
     undo-coalesce-tag:number <- copy 0/never
-    +move-cursor-end
+    <move-cursor-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     move-to-end-of-line?:boolean <- equal *k, 65520/end
     break-unless move-to-end-of-line?
-    +move-cursor-begin
+    <move-cursor-begin>
     move-to-end-of-line editor
     undo-coalesce-tag:number <- copy 0/never
-    +move-cursor-end
+    <move-cursor-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
   }
 ]
@@ -3148,13 +3148,13 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
   ]
 ]
 
-after +handle-special-character [
+after <handle-special-character> [
   {
     delete-to-start-of-line?:boolean <- equal *c, 21/ctrl-u
     break-unless delete-to-start-of-line?
-    +delete-to-start-of-line-begin
+    <delete-to-start-of-line-begin>
     deleted-cells:address:duplex-list <- delete-to-start-of-line editor
-    +delete-to-start-of-line-end
+    <delete-to-start-of-line-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -3282,13 +3282,13 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
   ]
 ]
 
-after +handle-special-character [
+after <handle-special-character> [
   {
     delete-to-end-of-line?:boolean <- equal *c, 11/ctrl-k
     break-unless delete-to-end-of-line?
-    +delete-to-end-of-line-begin
+    <delete-to-end-of-line-begin>
     deleted-cells:address:duplex-list <- delete-to-end-of-line editor
-    +delete-to-end-of-line-end
+    <delete-to-end-of-line-end>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -3463,7 +3463,7 @@ d]
   ]
 ]
 
-after +scroll-down [
+after <scroll-down> [
   trace 10, [app], [scroll down]
   top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
   left:number <- get *editor, left:offset
@@ -3472,10 +3472,10 @@ after +scroll-down [
   old-top:address:duplex-list <- copy *top-of-screen
   *top-of-screen <- before-start-of-next-line *top-of-screen, max
   no-movement?:boolean <- equal old-top, *top-of-screen
-  # Hack: this reply doesn't match one of the locations of +scroll-down, directly
-  # within insert-at-cursor. However, I'm unable to trigger the error..
-  # If necessary create a duplicate copy of +scroll-down with the right
-  # 'reply-if'.
+  # Hack: this reply doesn't match one of the locations of <scroll-down>,
+  # directly within insert-at-cursor. However, I'm unable to trigger the
+  # error.. If necessary create a duplicate copy of <scroll-down> with the
+  # right 'reply-if'.
   reply-if no-movement?, editor/same-as-ingredient:0, 0/no-more-render
 ]
 
@@ -3772,7 +3772,7 @@ d]
   ]
 ]
 
-after +scroll-up [
+after <scroll-up> [
   trace 10, [app], [scroll up]
   top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
   old-top:address:duplex-list <- copy *top-of-screen
@@ -4160,32 +4160,32 @@ d]
   ]
 ]
 
-after +handle-special-character [
+after <handle-special-character> [
   {
     page-down?:boolean <- equal *c, 6/ctrl-f
     break-unless page-down?
     top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     old-top:address:duplex-list <- copy *top-of-screen
-    +move-cursor-begin
+    <move-cursor-begin>
     page-down editor
     undo-coalesce-tag:number <- copy 0/never
-    +move-cursor-end
+    <move-cursor-end>
     no-movement?:boolean <- equal *top-of-screen, old-top
     reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     page-down?:boolean <- equal *k, 65518/page-down
     break-unless page-down?
     top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     old-top:address:duplex-list <- copy *top-of-screen
-    +move-cursor-begin
+    <move-cursor-begin>
     page-down editor
     undo-coalesce-tag:number <- copy 0/never
-    +move-cursor-end
+    <move-cursor-end>
     no-movement?:boolean <- equal *top-of-screen, old-top
     reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
@@ -4353,32 +4353,32 @@ d]
   ]
 ]
 
-after +handle-special-character [
+after <handle-special-character> [
   {
     page-up?:boolean <- equal *c, 2/ctrl-b
     break-unless page-up?
     top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     old-top:address:duplex-list <- copy *top-of-screen
-    +move-cursor-begin
+    <move-cursor-begin>
     editor <- page-up editor, screen-height
     undo-coalesce-tag:number <- copy 0/never
-    +move-cursor-end
+    <move-cursor-end>
     no-movement?:boolean <- equal *top-of-screen, old-top
     reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
-after +handle-special-key [
+after <handle-special-key> [
   {
     page-up?:boolean <- equal *k, 65519/page-up
     break-unless page-up?
     top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     old-top:address:duplex-list <- copy *top-of-screen
-    +move-cursor-begin
+    <move-cursor-begin>
     editor <- page-up editor, screen-height
     undo-coalesce-tag:number <- copy 0/never
-    +move-cursor-end
+    <move-cursor-end>
     no-movement?:boolean <- equal *top-of-screen, old-top
     # don't bother re-rendering if nothing changed. todo: test this
     reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
@@ -4746,17 +4746,17 @@ recipe event-loop [
     loop-unless found?
     break-if quit?  # only in tests
     trace 10, [app], [next-event]
-    +handle-event
+    <handle-event>
     # check for global events that will trigger regardless of which editor has focus
     {
       k:address:number <- maybe-convert e:event, keycode:variant
       break-unless k
-      +global-keypress
+      <global-keypress>
     }
     {
       c:address:character <- maybe-convert e:event, text:variant
       break-unless c
-      +global-type
+      <global-type>
     }
     # 'touch' event - send to both sides, see what picks it up
     {
@@ -4768,7 +4768,7 @@ recipe event-loop [
       is-left-click?:boolean <- equal touch-type, 65513/mouse-left
       loop-unless is-left-click?, +next-event:label
       # later exceptions for non-editor touches will go here
-      +global-touch
+      <global-touch>
       # send to both editors
       _ <- move-cursor-in-editor screen, recipes, *t
       *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
@@ -5127,7 +5127,7 @@ recipe update-cursor [
 
 # ctrl-l - redraw screen (just in case it printed junk somehow)
 
-after +global-type [
+after <global-type> [
   {
     redraw-screen?:boolean <- equal *c, 12/ctrl-l
     break-unless redraw-screen?
@@ -5140,7 +5140,7 @@ after +global-type [
 # ctrl-n - switch focus
 # todo: test this
 
-after +global-type [
+after <global-type> [
   {
     switch-side?:boolean <- equal *c, 14/ctrl-n
     break-unless switch-side?
@@ -5196,7 +5196,7 @@ scenario maximize-side [
 ]
 
 #? # ctrl-t - browse trace
-#? after +global-type [
+#? after <global-type> [
 #?   {
 #?     browse-trace?:boolean <- equal *c, 20/ctrl-t
 #?     break-unless browse-trace?
@@ -5210,7 +5210,7 @@ container programming-environment-data [
   maximized?:boolean
 ]
 
-after +global-type [
+after <global-type> [
   {
     maximize?:boolean <- equal *c, 24/ctrl-x
     break-unless maximize?
@@ -5250,7 +5250,7 @@ recipe maximize [
 ]
 
 # when maximized, wait for any event and simply unmaximize
-after +handle-event [
+after <handle-event> [
   {
     maximized?:address:boolean <- get-address *env, maximized?:offset
     break-unless *maximized?
@@ -5373,7 +5373,7 @@ scenario run-and-show-results [
 
 # hook into event-loop recipe: read non-unicode keypress from k, process it if
 # necessary, then go to next level
-after +global-keypress [
+after <global-keypress> [
   # F4? load all code and run all sandboxes.
   {
     do-run?:boolean <- equal *k, 65532/F4
@@ -5538,7 +5538,7 @@ recipe render-sandboxes [
   sandbox-response:address:array:character <- get *sandbox, response:offset
   sandbox-warnings:address:array:character <- get *sandbox, warnings:offset
   sandbox-screen:address <- get *sandbox, screen:offset
-  +render-sandbox-results
+  <render-sandbox-results>
   {
     break-unless sandbox-warnings
     *response-starting-row <- copy 0  # no response
@@ -5554,7 +5554,7 @@ recipe render-sandboxes [
     break-if sandbox-warnings
     break-unless empty-screen?
     *response-starting-row <- add row, 1
-    +render-sandbox-response
+    <render-sandbox-response>
     row, screen <- render-string screen, sandbox-response, left, right, 245/grey, row
   }
   +render-sandbox-end
@@ -6019,7 +6019,7 @@ recipe foo [
   ]
 ]
 
-after +global-touch [
+after <global-touch> [
   # right side of screen and below sandbox editor? pop appropriate sandbox
   # contents back into sandbox editor provided it's empty
   {
@@ -6152,7 +6152,7 @@ scenario deleting-sandboxes [
   ]
 ]
 
-after +global-touch [
+after <global-touch> [
   # on a sandbox delete icon? process delete
   {
     was-delete?:boolean <- delete-sandbox *t, env
@@ -6280,7 +6280,7 @@ recipe foo [
 ]
 
 # clicks on sandbox responses save it as 'expected'
-after +global-touch [
+after <global-touch> [
   # right side of screen? check if it's inside the output of any sandbox
   {
     sandbox-left-margin:number <- get *current-sandbox, left:offset
@@ -6352,7 +6352,7 @@ recipe toggle-expected-response [
 ]
 
 # when rendering a sandbox, color it in red/green if expected response exists
-after +render-sandbox-response [
+after <render-sandbox-response> [
   {
     break-unless sandbox-response
     expected-response:address:array:character <- get *sandbox, expected-response:offset
@@ -6493,7 +6493,7 @@ recipe foo [
 ]
 
 # clicks on sandbox code toggle its display-trace? flag
-after +global-touch [
+after <global-touch> [
   # right side of screen? check if it's inside the code of any sandbox
   {
     sandbox-left-margin:number <- get *current-sandbox, left:offset
@@ -6554,7 +6554,7 @@ recipe find-click-in-sandbox-code [
 ]
 
 # when rendering a sandbox, dump its trace before response/warning if display-trace? property is set
-after +render-sandbox-results [
+after <render-sandbox-results> [
   {
     display-trace?:boolean <- get *sandbox, display-trace?:offset
     break-unless display-trace?
@@ -6828,7 +6828,7 @@ container editor-data [
 ]
 
 # ctrl-z - undo operation
-after +handle-special-character [
+after <handle-special-character> [
   {
     undo?:boolean <- equal *c, 26/ctrl-z
     break-unless undo?
@@ -6838,13 +6838,13 @@ after +handle-special-character [
     *undo <- rest *undo
     redo:address:address:list <- get-address *editor, redo:offset
     *redo <- push op, *redo
-    +handle-undo
+    <handle-undo>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
 # ctrl-y - redo operation
-after +handle-special-character [
+after <handle-special-character> [
   {
     redo?:boolean <- equal *c, 25/ctrl-y
     break-unless redo?
@@ -6854,7 +6854,7 @@ after +handle-special-character [
     *redo <- rest *redo
     undo:address:address:list <- get-address *editor, undo:offset
     *undo <- push op, *undo
-    +handle-redo
+    <handle-redo>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -6901,11 +6901,11 @@ scenario editor-can-undo-typing [
 ]
 
 # save operation to undo
-after +insert-character-begin [
+after <insert-character-begin> [
   top-before:address:duplex-list <- get *editor, top-of-screen:offset
   cursor-before:address:duplex-list <- copy *before-cursor
 ]
-before +insert-character-end [
+before <insert-character-end> [
   top-after:address:duplex-list <- get *editor, top-of-screen:offset
   undo:address:address:list <- get-address *editor, undo:offset
   {
@@ -6936,13 +6936,13 @@ before +insert-character-end [
 ]
 
 # enter operations never coalesce with typing before or after
-after +insert-enter-begin [
+after <insert-enter-begin> [
   cursor-row-before:number <- copy *cursor-row
   cursor-column-before:number <- copy *cursor-column
   top-before:address:duplex-list <- get *editor, top-of-screen:offset
   cursor-before:address:duplex-list <- copy *before-cursor
 ]
-after +insert-enter-end [
+before <insert-enter-end> [
   top-after:address:duplex-list <- get *editor, top-of-screen:offset
   # never coalesce
   insert-from:address:duplex-list <- next-duplex cursor-before
@@ -6967,7 +6967,7 @@ recipe add-operation [
   reply editor/same-as-ingredient:0
 ]
 
-after +handle-undo [
+after <handle-undo> [
   {
     typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
@@ -7164,7 +7164,7 @@ scenario editor-redo-typing [
   ]
 ]
 
-after +handle-redo [
+after <handle-redo> [
   {
     typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
@@ -7467,12 +7467,12 @@ ghi]
   ]
 ]
 
-after +move-cursor-begin [
+after <move-cursor-begin> [
   before-cursor-row:number <- get *editor, cursor-row:offset
   before-cursor-column:number <- get *editor, cursor-column:offset
   before-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
 ]
-before +move-cursor-end [
+before <move-cursor-end> [
   after-cursor-row:number <- get *editor, cursor-row:offset
   after-cursor-column:number <- get *editor, cursor-column:offset
   after-top-of-screen:address:duplex-list <- get *editor, top-of-screen:offset
@@ -7502,7 +7502,7 @@ before +move-cursor-end [
   +done-adding-move-operation
 ]
 
-after +handle-undo [
+after <handle-undo> [
   {
     move:address:move-operation <- maybe-convert *op, move:variant
     break-unless move
@@ -8276,7 +8276,7 @@ ghi]
   ]
 ]
 
-after +handle-redo [
+after <handle-redo> [
   {
     move:address:move-operation <- maybe-convert *op, move:variant
     break-unless move
@@ -8356,10 +8356,10 @@ scenario editor-can-undo-and-redo-backspace [
 ]
 
 # save operation to undo
-after +backspace-character-begin [
+after <backspace-character-begin> [
   top-before:address:duplex-list <- get *editor, top-of-screen:offset
 ]
-before +backspace-character-end [
+before <backspace-character-end> [
   {
     break-unless backspaced-cell  # backspace failed; don't add an undo operation
     top-after:address:duplex-list <- get *editor, top-of-screen:offset
@@ -8395,7 +8395,7 @@ before +backspace-character-end [
   }
 ]
 
-after +handle-undo [
+after <handle-undo> [
   {
     deletion:address:delete-operation <- maybe-convert *op, delete:variant
     break-unless deletion
@@ -8414,7 +8414,7 @@ after +handle-undo [
   }
 ]
 
-after +handle-redo [
+after <handle-redo> [
   {
     deletion:address:delete-operation <- maybe-convert *op, delete:variant
     break-unless deletion
@@ -8578,10 +8578,10 @@ scenario editor-can-undo-and-redo-delete [
   ]
 ]
 
-after +delete-character-begin [
+after <delete-character-begin> [
   top-before:address:duplex-list <- get *editor, top-of-screen:offset
 ]
-before +delete-character-end [
+before <delete-character-end> [
   {
     break-unless deleted-cell  # delete failed; don't add an undo operation
     top-after:address:duplex-list <- get *editor, top-of-screen:offset
@@ -8701,10 +8701,10 @@ def]
   ]
 ]
 
-after +delete-to-end-of-line-begin [
+after <delete-to-end-of-line-begin> [
   top-before:address:duplex-list <- get *editor, top-of-screen:offset
 ]
-before +delete-to-end-of-line-end [
+before <delete-to-end-of-line-end> [
   {
     break-unless deleted-cells  # delete failed; don't add an undo operation
     top-after:address:duplex-list <- get *editor, top-of-screen:offset
@@ -8802,10 +8802,10 @@ def]
   ]
 ]
 
-after +delete-to-start-of-line-begin [
+after <delete-to-start-of-line-begin> [
   top-before:address:duplex-list <- get *editor, top-of-screen:offset
 ]
-before +delete-to-start-of-line-end [
+before <delete-to-start-of-line-end> [
   {
     break-unless deleted-cells  # delete failed; don't add an undo operation
     top-after:address:duplex-list <- get *editor, top-of-screen:offset
