@@ -130,8 +130,12 @@ struct tb_event {
 #define TB_KEY_MOUSE_RELEASE    (0xFFFF-25)
 #define TB_KEY_MOUSE_WHEEL_UP   (0xFFFF-26)
 #define TB_KEY_MOUSE_WHEEL_DOWN (0xFFFF-27)
-#define TB_KEY_START_PASTE (0xFFFF-28)
-#define TB_KEY_END_PASTE (0xFFFF-29)
+#define TB_KEY_START_PASTE      (0xFFFF-28)
+#define TB_KEY_END_PASTE        (0xFFFF-29)
+#define TB_KEY_CTRL_ARROW_UP    (0xFFFF-30)
+#define TB_KEY_CTRL_ARROW_DOWN  (0xFFFF-31)
+#define TB_KEY_CTRL_ARROW_LEFT  (0xFFFF-32)
+#define TB_KEY_CTRL_ARROW_RIGHT (0xFFFF-33)
 /* These are all ASCII code points below SPACE character and a BACKSPACE key. */
 #define TB_KEY_CTRL_TILDE       0x00
 #define TB_KEY_CTRL_2           0x00 /* clash with 'CTRL_TILDE' */
