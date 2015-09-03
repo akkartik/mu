@@ -80,6 +80,26 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
     event->key = TB_KEY_END_PASTE;
     return strlen("\033[201~");
   }
+  if (starts_with(buf, len, "\033[1;5A")) {
+    event->ch = 0;
+    event->key = TB_KEY_CTRL_ARROW_UP;
+    return strlen("\033[1;5A");
+  }
+  if (starts_with(buf, len, "\033[1;5B")) {
+    event->ch = 0;
+    event->key = TB_KEY_CTRL_ARROW_DOWN;
+    return strlen("\033[1;5B");
+  }
+  if (starts_with(buf, len, "\033[1;5C")) {
+    event->ch = 0;
+    event->key = TB_KEY_CTRL_ARROW_RIGHT;
+    return strlen("\033[1;5C");
+  }
+  if (starts_with(buf, len, "\033[1;5D")) {
+    event->ch = 0;
+    event->key = TB_KEY_CTRL_ARROW_LEFT;
+    return strlen("\033[1;5D");
+  }
 
   return 0;
 }
@@ -97,9 +117,8 @@ static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf)
 //?     FOO("%x\n", (unsigned char)buf[x]);
 //?   }
   if (buf[0] == '\033') {
-//?     FOO("AAA\n");
     int n = parse_escape_seq(event, buf, len);
-//?     FOO("AAA: %u %u %u %u\n", n, (unsigned int)event->type, (unsigned int)event->key, event->ch);
+//?     FOO("parsed: %u %u %u %u\n", n, (unsigned int)event->type, (unsigned int)event->key, event->ch);
     if (n != 0) {
       bool success = true;
       if (n < 0) {
