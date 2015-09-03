@@ -2201,6 +2201,8 @@ d]
   check-trace-count-for-label 2, [print-character]
 ]
 
+# todo: ctrl-right: next word-end
+
 # left arrow
 
 scenario editor-moves-cursor-left-with-key [
@@ -2383,6 +2385,8 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   ]
   check-trace-count-for-label 0, [print-character]
 ]
+
+# todo: ctrl-left: previous word-start
 
 # up arrow
 
