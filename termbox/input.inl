@@ -155,7 +155,6 @@ static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf)
   if ((unsigned char)buf[0] <= TB_KEY_SPACE ||
       (unsigned char)buf[0] == TB_KEY_BACKSPACE2)
   {
-//?     FOO("BBB\n");
     // fill event, pop buffer, return success */
     event->ch = 0;
     event->key = (uint16_t)buf[0];
@@ -167,10 +166,8 @@ static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf)
 
   // check if there is all bytes
   if (len >= tb_utf8_char_length(buf[0])) {
-//?     FOO("CCC\n");
     /* everything ok, fill event, pop buffer, return success */
     tb_utf8_char_to_unicode(&event->ch, buf);
-//?     FOO("CCC: %d\n", event->ch);
     event->key = 0;
     bytebuffer_truncate(inbuf, tb_utf8_char_length(buf[0]));
     return true;
@@ -178,6 +175,5 @@ static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf)
 
   // event isn't recognized, perhaps there is not enough bytes in utf8
   // sequence
-//?   FOO("ZZZ\n");
   return false;
 }
