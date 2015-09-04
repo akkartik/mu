@@ -55,7 +55,6 @@ recipe main [
   1:number <- copy 0
   2:continuation <- current-continuation
   {
-#?     $print 1:number
     3:boolean <- greater-or-equal 1:number, 3
     break-if 3:boolean
     1:number <- add 1:number, 1
@@ -70,7 +69,6 @@ recipe main [
 $current-continuation: 1
 
 :(scenario continuation_inside_caller)
-#? % Trace_stream->dump_layer = "all"; #? 1
 recipe main [
   1:number <- copy 0
   2:continuation <- loop-body
@@ -131,7 +129,6 @@ recipe g [
   23:number <- add 22:number, 1
   reply 23:number
 ]
-#? ?
 # first call of 'g' executes the part before reply-delimited-continuation
 +mem: storing 12 in location 21
 +run: 2:number <- copy 5

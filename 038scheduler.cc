@@ -217,7 +217,6 @@ recipe f2 [
 % Routines.push_back(new routine(f1));  // f1 meant to run
 % Routines.push_back(new routine(f2));
 % Routines.back()->state = COMPLETED;  // f2 not meant to run
-#? % Trace_stream->dump_layer = "all";
 # must have at least one routine without escaping
 recipe f3 [
   3:number <- copy 0
