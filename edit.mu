@@ -5693,7 +5693,14 @@ recipe render-screen [
       break-if row-done?
       curr:screen-cell <- index *buf, i
       c:character <- get curr, contents:offset
-      print-character screen, c, 245/grey
+      color:number <- get curr, color:offset
+      {
+        # damp whites down to grey
+        white?:boolean <- equal color, 7/white
+        break-unless white?
+        color <- copy 245/grey
+      }
+      print-character screen, c, color
       column <- add column, 1
       i <- add i, 1
       loop
