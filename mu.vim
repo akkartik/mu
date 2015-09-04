@@ -46,6 +46,7 @@ syntax match muNumber %\<[0-9-]\?[0-9]\+/[^ ,]*%
 highlight link muNumber Constant
 syntax match muLabel "^\s\+[^ 0-9a-zA-Z{}#\[\]][^ ]*\s*$"
 syntax match muLabel %[^ ]\+:label/\?[^ ,]*%
+syntax match muLabel "<[^ ]*>"
 highlight link muLabel Constant
 syntax match muLiteral %[^ ]\+:type/\?[^ ,]*%
 syntax match muLiteral %[^ ]\+:offset/\?[^ ,]*%
