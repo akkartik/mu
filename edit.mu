@@ -4739,6 +4739,10 @@ recipe event-loop [
   recipes:address:editor-data <- get *env, recipes:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
+  # if we fall behind we'll stop updating the screen, but then we have to
+  # render the entire screen when we catch up.
+  # todo: test this
+  render-all-on-no-more-events?:boolean <- copy 0/false
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -4782,9 +4786,16 @@ recipe event-loop [
       break-unless r
       # if more events, we're still resizing; wait until we stop
       more-events?:boolean <- has-more-events? console
-      break-if more-events?
-      env <- resize screen, env
-      screen <- render-all screen, env
+      {
+        break-unless more-events?
+        render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
+      }
+      {
+        break-if more-events?
+        env <- resize screen, env
+        screen <- render-all screen, env
+        render-all-on-no-more-events? <- copy 0/false  # full render done
+      }
       loop +next-event:label
     }
     # if it's not global and not a touch event, send to appropriate editor
@@ -4793,25 +4804,60 @@ recipe event-loop [
       {
         break-if *sandbox-in-focus?
         screen, recipes, render?:boolean <- handle-keyboard-event screen, recipes, e:event
+        # refresh screen only if no more events
+        # if there are more events to process, wait for them to clear up, then make sure you render-all afterward.
+        more-events?:boolean <- has-more-events? console
         {
-          break-unless render?
-          # optimization: refresh screen only if no more events
-          more-events?:boolean <- has-more-events? console
+          break-unless more-events?
+          render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
+          jump +finish-event:label
+        }
+        {
           break-if more-events?
-          screen <- render-recipes screen, env
+          {
+            break-unless render-all-on-no-more-events?
+            # no more events, and we have to force render
+            screen <- render-all screen, env
+            render-all-on-no-more-events? <- copy 0/false
+            jump +finish-event:label
+          }
+          # no more events, no force render
+          {
+            break-unless render?
+            screen <- render-recipes screen, env
+            jump +finish-event:label
+          }
         }
       }
       {
         break-unless *sandbox-in-focus?
         screen, current-sandbox, render?:boolean <- handle-keyboard-event screen, current-sandbox, e:event
+        # refresh screen only if no more events
+        # if there are more events to process, wait for them to clear up, then make sure you render-all afterward.
+        more-events?:boolean <- has-more-events? console
         {
-          break-unless render?:boolean
-          # optimization: refresh screen only if no more events
-          more-events?:boolean <- has-more-events? console
+          break-unless more-events?
+          render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
+          jump +finish-event:label
+        }
+        {
           break-if more-events?
-          screen <- render-sandbox-side screen, env
+          {
+            break-unless render-all-on-no-more-events?
+            # no more events, and we have to force render
+            screen <- render-all screen, env
+            render-all-on-no-more-events? <- copy 0/false
+            jump +finish-event:label
+          }
+          # no more events, no force render
+          {
+            break-unless render?
+            screen <- render-sandbox-side screen, env
+            jump +finish-event:label
+          }
         }
       }
+      +finish-event
       screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
       show-screen screen
     }
