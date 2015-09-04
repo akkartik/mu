@@ -1,15 +1,19 @@
-//: Allow code for recipes to be pulled in from multiple places.
+//: Allow code for recipes to be pulled in from multiple places and inserted
+//: at special labels called 'waypoints'. Unlike jump targets, a recipe can
+//: have multiple ambiguous waypoints with the same name. Any 'before' and
+//: 'after' fragments will simply be inserted at all applicable waypoints.
+//: Waypoints are always surrounded by '<>', e.g. <handle-request>.
 //:
 //: TODO: switch recipe.steps to a more efficient data structure.
 
 :(scenario tangle_before)
 recipe main [
   1:number <- copy 0
-  +label1
+  <label1>
   3:number <- copy 0
 ]
 
-before +label1 [
+before <label1> [
   2:number <- copy 0
 ]
 +mem: storing 0 in location 1
@@ -32,12 +36,18 @@ Fragments_used.clear();
 else if (command == "before") {
   string label = next_word(in);
   recipe tmp = slurp_recipe(in);
-  Before_fragments[label].steps.insert(Before_fragments[label].steps.end(), tmp.steps.begin(), tmp.steps.end());
+  if (is_waypoint(label))
+    Before_fragments[label].steps.insert(Before_fragments[label].steps.end(), tmp.steps.begin(), tmp.steps.end());
+  else
+    raise << "can't tangle before label " << label << '\n' << end();
 }
 else if (command == "after") {
   string label = next_word(in);
   recipe tmp = slurp_recipe(in);
-  After_fragments[label].steps.insert(After_fragments[label].steps.begin(), tmp.steps.begin(), tmp.steps.end());
+  if (is_waypoint(label))
+    After_fragments[label].steps.insert(After_fragments[label].steps.begin(), tmp.steps.begin(), tmp.steps.end());
+  else
+    raise << "can't tangle after label " << label << '\n' << end();
 }
 
 //: after all recipes are loaded, insert fragments at appropriate labels.
@@ -56,29 +66,68 @@ tangle_done = false;
 :(code)
 void insert_fragments(const recipe_ordinal r) {
   bool made_progress = true;
+  long long int pass = 0;
   while (made_progress) {
     made_progress = false;
     // create a new vector because insertions invalidate iterators
     vector<instruction> result;
     for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
-      const instruction inst = Recipe[r].steps.at(i);
-      if (!inst.is_label || inst.tangle_done) {
+      const instruction& inst = Recipe[r].steps.at(i);
+      if (!inst.is_label || !is_waypoint(inst.label) || inst.tangle_done) {
         result.push_back(inst);
         continue;
       }
       inst.tangle_done = true;
       made_progress = true;
       Fragments_used.insert(inst.label);
+      ostringstream prefix;
+      prefix << '+' << Recipe[r].name << '_' << pass << '_' << i;
       if (Before_fragments.find(inst.label) != Before_fragments.end()) {
-        result.insert(result.end(), Before_fragments[inst.label].steps.begin(), Before_fragments[inst.label].steps.end());
+        append_fragment(result, Before_fragments[inst.label].steps, prefix.str());
       }
       result.push_back(inst);
       if (After_fragments.find(inst.label) != After_fragments.end()) {
-        result.insert(result.end(), After_fragments[inst.label].steps.begin(), After_fragments[inst.label].steps.end());
+        append_fragment(result, After_fragments[inst.label].steps, prefix.str());
       }
     }
     Recipe[r].steps.swap(result);
+    ++pass;
   }
+}
+
+void append_fragment(vector<instruction>& base, const vector<instruction>& patch, const string prefix) {
+  // append 'patch' to 'base' while keeping 'base' oblivious to any new jump
+  // targets in 'patch' oblivious to 'base' by prepending 'prefix' to them.
+  // we might tangle the same fragment at multiple points in a single recipe,
+  // and we need to avoid duplicate jump targets.
+  // so we'll keep jump targets local to the specific before/after fragment
+  // that introduces them.
+  set<string> jump_targets;
+  for (long long int i = 0; i < SIZE(patch); ++i) {
+    const instruction& inst = patch.at(i);
+    if (inst.is_label && is_jump_target(inst.label))
+      jump_targets.insert(inst.label);
+  }
+  for (long long int i = 0; i < SIZE(patch); ++i) {
+    instruction inst = patch.at(i);
+    if (inst.is_label) {
+      if (jump_targets.find(inst.label) != jump_targets.end())
+        inst.label = prefix+inst.label;
+      base.push_back(inst);
+      continue;
+    }
+    for (long long int j = 0; j < SIZE(inst.ingredients); ++j) {
+      reagent& x = inst.ingredients.at(j);
+      if (!is_literal(x)) continue;
+      if (x.properties.at(0).second.at(0) == "label" && jump_targets.find(x.name) != jump_targets.end())
+        x.name = prefix+x.name;
+    }
+    base.push_back(inst);
+  }
+}
+
+bool is_waypoint(string label) {
+  return *label.begin() == '<' && *label.rbegin() == '>';
 }
 
 //: warn about unapplied fragments
@@ -103,13 +152,13 @@ void check_insert_fragments(unused recipe_ordinal) {
 :(scenario tangle_before_and_after)
 recipe main [
   1:number <- copy 0
-  +label1
+  <label1>
   4:number <- copy 0
 ]
-before +label1 [
+before <label1> [
   2:number <- copy 0
 ]
-after +label1 [
+after <label1> [
   3:number <- copy 0
 ]
 +mem: storing 0 in location 1
@@ -120,23 +169,41 @@ after +label1 [
 # nothing else
 $mem: 4
 
-:(scenario tangle_keeps_labels_separate)
+:(scenario tangle_ignores_jump_target)
+% Hide_warnings = true;
 recipe main [
   1:number <- copy 0
   +label1
-  +label2
-  6:number <- copy 0
+  4:number <- copy 0
 ]
 before +label1 [
   2:number <- copy 0
 ]
-after +label1 [
++warn: can't tangle before label +label1
++mem: storing 0 in location 1
++mem: storing 0 in location 4
+# label1
+-mem: storing 0 in location 2
+# nothing else
+$mem: 2
+
+:(scenario tangle_keeps_labels_separate)
+recipe main [
+  1:number <- copy 0
+  <label1>
+  <label2>
+  6:number <- copy 0
+]
+before <label1> [
+  2:number <- copy 0
+]
+after <label1> [
   3:number <- copy 0
 ]
-before +label2 [
+before <label2> [
   4:number <- copy 0
 ]
-after +label2 [
+after <label2> [
   5:number <- copy 0
 ]
 +mem: storing 0 in location 1
@@ -154,19 +221,19 @@ $mem: 6
 :(scenario tangle_stacks_multiple_fragments)
 recipe main [
   1:number <- copy 0
-  +label1
+  <label1>
   6:number <- copy 0
 ]
-before +label1 [
+before <label1> [
   2:number <- copy 0
 ]
-after +label1 [
+after <label1> [
   3:number <- copy 0
 ]
-before +label1 [
+before <label1> [
   4:number <- copy 0
 ]
-after +label1 [
+after <label1> [
   5:number <- copy 0
 ]
 +mem: storing 0 in location 1
@@ -184,14 +251,14 @@ $mem: 6
 :(scenario tangle_supports_fragments_with_multiple_instructions)
 recipe main [
   1:number <- copy 0
-  +label1
+  <label1>
   6:number <- copy 0
 ]
-before +label1 [
+before <label1> [
   2:number <- copy 0
   3:number <- copy 0
 ]
-after +label1 [
+after <label1> [
   4:number <- copy 0
   5:number <- copy 0
 ]
@@ -208,19 +275,19 @@ $mem: 6
 :(scenario tangle_tangles_into_all_labels_with_same_name)
 recipe main [
   1:number <- copy 10
-  +label1
+  <label1>
   4:number <- copy 10
   recipe2
 ]
 recipe recipe2 [
   1:number <- copy 11
-  +label1
+  <label1>
   4:number <- copy 11
 ]
-before +label1 [
+before <label1> [
   2:number <- copy 12
 ]
-after +label1 [
+after <label1> [
   3:number <- copy 12
 ]
 +mem: storing 10 in location 1
@@ -240,14 +307,14 @@ $mem: 8
 :(scenario tangle_tangles_into_all_labels_with_same_name_2)
 recipe main [
   1:number <- copy 10
-  +label1
-  +label1
+  <label1>
+  <label1>
   4:number <- copy 10
 ]
-before +label1 [
+before <label1> [
   2:number <- copy 12
 ]
-after +label1 [
+after <label1> [
   3:number <- copy 12
 ]
 +mem: storing 10 in location 1
@@ -264,26 +331,90 @@ $mem: 6
 :(scenario tangle_tangles_into_all_labels_with_same_name_3)
 recipe main [
   1:number <- copy 10
-  +label1
-  +foo
+  <label1>
+  <foo>
   4:number <- copy 10
 ]
-before +label1 [
+before <label1> [
   2:number <- copy 12
 ]
-after +label1 [
+after <label1> [
   3:number <- copy 12
 ]
-after +foo [
-  +label1
+after <foo> [
+  <label1>
 ]
 +mem: storing 10 in location 1
 +mem: storing 12 in location 2
 # label1
 +mem: storing 12 in location 3
 +mem: storing 12 in location 2
-# +foo/label1
+# foo/label1
 +mem: storing 12 in location 3
 +mem: storing 10 in location 4
 # nothing else
 $mem: 6
+
+:(scenario tangle_handles_jump_target_inside_fragment)
+recipe main [
+  1:number <- copy 10
+  <label1>
+  4:number <- copy 10
+]
+before <label1> [
+  jump +label2:label
+  2:number <- copy 12
+  +label2
+  3:number <- copy 12
+]
++mem: storing 10 in location 1
+# label1
++mem: storing 12 in location 3
++mem: storing 10 in location 4
+# ignored by jump
+-mem: storing 12 in label 2
+# nothing else
+$mem: 3
+
+:(scenario tangle_renames_jump_target)
+recipe main [
+  1:number <- copy 10
+  <label1>
+  +label2
+  4:number <- copy 10
+]
+before <label1> [
+  jump +label2:label
+  2:number <- copy 12
+  +label2  # renamed
+  3:number <- copy 12
+]
++mem: storing 10 in location 1
+# label1
++mem: storing 12 in location 3
++mem: storing 10 in location 4
+# ignored by jump
+-mem: storing 12 in label 2
+# nothing else
+$mem: 3
+
+:(scenario tangle_jump_to_base_recipe)
+recipe main [
+  1:number <- copy 10
+  <label1>
+  +label2
+  4:number <- copy 10
+]
+before <label1> [
+  jump +label2:label
+  2:number <- copy 12
+  3:number <- copy 12
+]
++mem: storing 10 in location 1
+# label1
++mem: storing 10 in location 4
+# ignored by jump
+-mem: storing 12 in label 2
+-mem: storing 12 in location 3
+# nothing else
+$mem: 2
