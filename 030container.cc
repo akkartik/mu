@@ -393,7 +393,6 @@ Next_type_ordinal = 1000;
 
 :(scenario run_warns_on_unknown_types)
 % Hide_warnings = true;
-#? % Trace_stream->dump_layer = "run";
 recipe main [
   # integer is not a type
   1:integer <- copy 0

@@ -22,7 +22,6 @@ recipe f [
   reply 3:number
 ]
 +mem: storing 34 in location 2
-#? ?
 
 :(before "End Mu Types Initialization")
 // 'recipe' is a literal

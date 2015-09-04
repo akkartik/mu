@@ -178,7 +178,6 @@ recipe scenario-foo [
 //: 'run' interprets a string as a set of instructions
 
 :(scenario run)
-#? % Trace_stream->dump_layer = "all";
 recipe main [
   run [
     1:number <- copy 13

@@ -60,7 +60,6 @@ void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, co
 
 :(scenario break_to_label)
 recipe main [
-#?   $print [aaa]
   {
     {
       break +target:label

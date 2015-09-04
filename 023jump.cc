@@ -1,7 +1,6 @@
 //: Jump primitives
 
 :(scenario jump_can_skip_instructions)
-#? % Trace_stream->dump_layer = "all"; #? 1
 recipe main [
   jump 1:offset
   1:number <- copy 1

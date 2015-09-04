@@ -346,7 +346,6 @@ recipe main [
 //: test how things actually run
 :(scenarios run)
 :(scenario brace_conversion_and_run)
-#? % Trace_stream->dump_layer = "run";
 recipe test-factorial [
   1:number <- copy 5
   2:number <- copy 1
