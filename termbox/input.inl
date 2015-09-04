@@ -21,6 +21,9 @@ static bool starts_with(const char *s1, int len, const char *s2)
 // convert escape sequence to event, and return consumed bytes on success (failure == 0)
 static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
 {
+  static int parse_attempts = 0;
+  static const int MAX_PARSE_ATTEMPTS = 2;
+
 //?   int x = 0;
 //?   FOO("-- %d\n", len);
 //?   for (x = 0; x < len; ++x) {
@@ -48,6 +51,7 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
       event->key = TB_KEY_MOUSE_RELEASE;
       break;
     default:
+      parse_attempts = 0;
       return -6;
     }
     event->type = TB_EVENT_MOUSE; // TB_EVENT_KEY by default
@@ -56,6 +60,7 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
     event->x = (uint8_t)buf[4] - 1 - 32;
     event->y = (uint8_t)buf[5] - 1 - 32;
 
+    parse_attempts = 0;
     return 6;
   }
 
@@ -66,6 +71,7 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
     if (starts_with(buf, len, keys[i])) {
       event->ch = 0;
       event->key = 0xFFFF-i;
+      parse_attempts = 0;
       return strlen(keys[i]);
     }
   }
@@ -73,35 +79,48 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
   if (starts_with(buf, len, "\033[200~")) {
     event->ch = 0;
     event->key = TB_KEY_START_PASTE;
+    parse_attempts = 0;
     return strlen("\033[200~");
   }
   if (starts_with(buf, len, "\033[201~")) {
     event->ch = 0;
     event->key = TB_KEY_END_PASTE;
+    parse_attempts = 0;
     return strlen("\033[201~");
   }
   if (starts_with(buf, len, "\033[1;5A")) {
     event->ch = 0;
     event->key = TB_KEY_CTRL_ARROW_UP;
+    parse_attempts = 0;
     return strlen("\033[1;5A");
   }
   if (starts_with(buf, len, "\033[1;5B")) {
     event->ch = 0;
     event->key = TB_KEY_CTRL_ARROW_DOWN;
+    parse_attempts = 0;
     return strlen("\033[1;5B");
   }
   if (starts_with(buf, len, "\033[1;5C")) {
     event->ch = 0;
     event->key = TB_KEY_CTRL_ARROW_RIGHT;
+    parse_attempts = 0;
     return strlen("\033[1;5C");
   }
   if (starts_with(buf, len, "\033[1;5D")) {
     event->ch = 0;
     event->key = TB_KEY_CTRL_ARROW_LEFT;
+    parse_attempts = 0;
     return strlen("\033[1;5D");
   }
 
-  return 0;
+  // no escape sequence recognized? wait a bit in case our buffer is incomplete
+  ++parse_attempts;
+  if (parse_attempts < MAX_PARSE_ATTEMPTS) return 0;
+  // still nothing? give up and consume just the esc
+  event->ch = 0;
+  event->key = TB_KEY_ESC;
+  parse_attempts = 0;
+  return 1;
 }
 
 static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf)
@@ -118,23 +137,15 @@ static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf)
 //?   }
   if (buf[0] == '\033') {
     int n = parse_escape_seq(event, buf, len);
+    if (n == 0) return false;
 //?     FOO("parsed: %u %u %u %u\n", n, (unsigned int)event->type, (unsigned int)event->key, event->ch);
-    if (n != 0) {
-      bool success = true;
-      if (n < 0) {
-        success = false;
-        n = -n;
-      }
-      bytebuffer_truncate(inbuf, n);
-      return success;
-    } else {
-//?       FOO("escape sequence\n");
-      // it's not escape sequence; assume it's esc
-      event->ch = 0;
-      event->key = TB_KEY_ESC;
-      bytebuffer_truncate(inbuf, 1);
-      return true;
+    bool success = true;
+    if (n < 0) {
+      success = false;
+      n = -n;
     }
+    bytebuffer_truncate(inbuf, n);
+    return success;
   }
 
   // if we're here, this is not an escape sequence and not an alt sequence
