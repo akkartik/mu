@@ -60,7 +60,7 @@ syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
 syntax match muGlobal %[^ ]\+:global/\?[^ ,]*% | highlight link muGlobal SpecialChar
 syntax keyword muControl reply reply-if reply-unless jump jump-if jump-unless loop loop-if loop-unless break break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
 " common keywords
-syntax keyword muRecipe recipe before after | highlight muRecipe ctermfg=208
+syntax keyword muRecipe recipe recipe! before after | highlight muRecipe ctermfg=208
 syntax keyword muScenario scenario | highlight muScenario ctermfg=34
 syntax keyword muData container exclusive-container | highlight muData ctermfg=226
 
