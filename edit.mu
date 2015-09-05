@@ -676,48 +676,6 @@ recipe editor-event-loop [
   }
 ]
 
-# screen, editor, go-render?:boolean <- handle-keyboard-event screen:address, editor:address:editor-data, e:event
-# Process an event 'e' and try to minimally update the screen.
-# Set 'go-render?' to true to indicate the caller must perform a non-minimal update.
-recipe handle-keyboard-event [
-  local-scope
-  screen:address <- next-ingredient
-  editor:address:editor-data <- next-ingredient
-  e:event <- next-ingredient
-  reply-unless editor, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-  screen-width:number <- screen-width screen
-  screen-height:number <- screen-height screen
-  left:number <- get *editor, left:offset
-  right:number <- get *editor, right:offset
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  cursor-row:address:number <- get-address *editor, cursor-row:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
-  save-row:number <- copy *cursor-row
-  save-column:number <- copy *cursor-column
-  # character
-  {
-    c:address:character <- maybe-convert e, text:variant
-    break-unless c
-    trace 10, [app], [handle-keyboard-event: special character]
-    # exceptions for special characters go here
-    <handle-special-character>
-    # ignore any other special characters
-    regular-character?:boolean <- greater-or-equal *c, 32/space
-    reply-unless regular-character?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-    # otherwise type it in
-    <insert-character-begin>
-    editor, screen, go-render?:boolean <- insert-at-cursor editor, *c, screen
-    <insert-character-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
-  }
-  # special key to modify the text or move the cursor
-  k:address:number <- maybe-convert e:event, keycode:variant
-  assert k, [event was of unknown type; neither keyboard nor mouse]
-  # handlers for each special key will go here
-  <handle-special-key>
-  reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
-]
-
 # process click, return if it was on current editor
 recipe move-cursor-in-editor [
   local-scope
@@ -833,6 +791,48 @@ recipe snap-cursor [
     *before-cursor <- copy prev
   }
   reply editor/same-as-ingredient:1
+]
+
+# screen, editor, go-render?:boolean <- handle-keyboard-event screen:address, editor:address:editor-data, e:event
+# Process an event 'e' and try to minimally update the screen.
+# Set 'go-render?' to true to indicate the caller must perform a non-minimal update.
+recipe handle-keyboard-event [
+  local-scope
+  screen:address <- next-ingredient
+  editor:address:editor-data <- next-ingredient
+  e:event <- next-ingredient
+  reply-unless editor, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+  screen-width:number <- screen-width screen
+  screen-height:number <- screen-height screen
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  save-row:number <- copy *cursor-row
+  save-column:number <- copy *cursor-column
+  # character
+  {
+    c:address:character <- maybe-convert e, text:variant
+    break-unless c
+    trace 10, [app], [handle-keyboard-event: special character]
+    # exceptions for special characters go here
+    <handle-special-character>
+    # ignore any other special characters
+    regular-character?:boolean <- greater-or-equal *c, 32/space
+    reply-unless regular-character?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+    # otherwise type it in
+    <insert-character-begin>
+    editor, screen, go-render?:boolean <- insert-at-cursor editor, *c, screen
+    <insert-character-end>
+    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
+  }
+  # special key to modify the text or move the cursor
+  k:address:number <- maybe-convert e:event, keycode:variant
+  assert k, [event was of unknown type; neither keyboard nor mouse]
+  # handlers for each special key will go here
+  <handle-special-key>
+  reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
 ]
 
 recipe insert-at-cursor [
