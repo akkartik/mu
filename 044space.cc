@@ -52,7 +52,7 @@ reagent absolutize(reagent x) {
   if (is_raw(x) || is_dummy(x)) return x;
   if (x.name == "default-space") return x;
   if (!x.initialized) {
-    raise << current_instruction().to_string() << ": reagent not initialized: " << x.original_string << end();
+    raise << current_instruction().to_string() << ": reagent not initialized: " << x.original_string << '\n' << end();
     return x;
   }
   reagent r = x;
