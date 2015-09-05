@@ -455,7 +455,7 @@ container foo [
 +parse:   element name: y
 +parse:   type: 1
 
-:(before "End Load Sanity Checks")
+:(before "End Transform")
 check_container_field_types();
 
 :(code)

@@ -220,8 +220,8 @@ transform_all();
 // helper for tests
 void run(string form) {
   vector<recipe_ordinal> tmp = load(form);
-  if (tmp.empty()) return;
   transform_all();
+  if (tmp.empty()) return;
   run(tmp.front());
 }
 
