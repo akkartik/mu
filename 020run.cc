@@ -152,6 +152,7 @@ if (argc > 1) {
     load_permanently(argv[i]);
   }
   transform_all();
+  if (Run_tests) Recipe.erase(Recipe_ordinal[string("main")]);
 }
 
 :(before "End Main")
