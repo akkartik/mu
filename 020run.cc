@@ -151,6 +151,7 @@ if (argc > 1) {
   for (int i = 1; i < argc; ++i) {
     load_permanently(argv[i]);
   }
+  transform_all();
 }
 
 :(before "End Main")
@@ -203,7 +204,6 @@ void load_permanently(string filename) {
   }
   fin >> std::noskipws;
   load(fin);
-  transform_all();
   fin.close();
   // freeze everything so it doesn't get cleared by tests
   recently_added_recipes.clear();
@@ -213,6 +213,7 @@ void load_permanently(string filename) {
 //:: On startup, load everything in core.mu
 :(before "End Load Recipes")
 load_permanently("core.mu");
+transform_all();
 
 :(code)
 // helper for tests
