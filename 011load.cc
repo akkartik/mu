@@ -25,22 +25,12 @@ vector<recipe_ordinal> load(istream& in) {
     string command = next_word(in);
     // Command Handlers
     if (command == "recipe") {
-      string recipe_name = next_word(in);
-      if (recipe_name.empty())
-        raise << "empty recipe name\n" << end();
-      if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
-        Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
-      }
-      if (warn_on_redefine(recipe_name)
-          && Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
-        raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
-      }
-      // todo: save user-defined recipes to mu's memory
-      Recipe[Recipe_ordinal[recipe_name]] = slurp_body(in);
-      Recipe[Recipe_ordinal[recipe_name]].name = recipe_name;
-      // track added recipes because we may need to undo them in tests; see below
-      recently_added_recipes.push_back(Recipe_ordinal[recipe_name]);
-      result.push_back(Recipe_ordinal[recipe_name]);
+      result.push_back(slurp_recipe(in));
+    }
+    else if (command == "recipe!") {
+      Disable_redefine_warnings = true;
+      result.push_back(slurp_recipe(in));
+      Disable_redefine_warnings = false;
     }
     // End Command Handlers
     else {
@@ -49,6 +39,25 @@ vector<recipe_ordinal> load(istream& in) {
   }
   // End Load Sanity Checks
   return result;
+}
+
+long long int slurp_recipe(istream& in) {
+  string recipe_name = next_word(in);
+  if (recipe_name.empty())
+    raise << "empty recipe name\n" << end();
+  if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
+    Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
+  }
+  if (warn_on_redefine(recipe_name)
+      && Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
+    raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
+  }
+  // todo: save user-defined recipes to mu's memory
+  Recipe[Recipe_ordinal[recipe_name]] = slurp_body(in);
+  Recipe[Recipe_ordinal[recipe_name]].name = recipe_name;
+  // track added recipes because we may need to undo them in tests; see below
+  recently_added_recipes.push_back(Recipe_ordinal[recipe_name]);
+  return Recipe_ordinal[recipe_name];
 }
 
 recipe slurp_body(istream& in) {
@@ -362,3 +371,24 @@ void test_parse_comment_terminated_by_eof() {
        "# abc");  // no newline after comment
   cerr << ".";  // termination = success
 }
+
+:(scenario warn_on_redefine)
+% Hide_warnings = true;
+recipe main [
+  1:number <- copy 23
+]
+recipe main [
+  1:number <- copy 24
+]
++warn: redefining recipe main
+
+:(scenario redefine_without_warning)
+% Hide_warnings = true;
+recipe main [
+  1:number <- copy 23
+]
+recipe! main [
+  1:number <- copy 24
+]
+-warn: redefining recipe main
+$warn: 0
