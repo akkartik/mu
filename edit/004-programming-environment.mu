@@ -18,7 +18,6 @@ recipe main [
 
 container programming-environment-data [
   recipes:address:editor-data
-  recipe-warnings:address:array:character
   current-sandbox:address:editor-data
   sandbox-in-focus?:boolean  # false => cursor in recipes; true => cursor in current-sandbox
 ]
@@ -401,14 +400,7 @@ recipe render-all [
   #
   screen <- render-recipes screen, env
   screen <- render-sandbox-side screen, env
-  # error message
-  trace 11, [app], [render status]
-  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
-  {
-    break-unless recipe-warnings
-    status:address:array:character <- new [errors found]
-    update-status screen, status, 1/red
-  }
+  <render-components-end>
   #
   recipes:address:editor-data <- get *env, recipes:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
@@ -430,13 +422,8 @@ recipe render-recipes [
   right:number <- get *recipes, right:offset
   row:number, column:number, screen <- render screen, recipes
   clear-line-delimited screen, column, right
-  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
   row <- add row, 1
-  {
-    # print any warnings
-    break-unless recipe-warnings
-    row, screen <- render-string screen, recipe-warnings, left, right, 1/red, row
-  }
+  <render-recipe-components-end>
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   row <- add row, 1
