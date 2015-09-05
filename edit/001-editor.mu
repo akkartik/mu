@@ -7,6 +7,7 @@ scenario editor-initially-prints-string-to-screen [
     new-editor 1:address:array:character, screen:address, 0/left, 10/right
   ]
   screen-should-contain [
+    # top line of screen reserved for menu
     .          .
     .abc       .
     .          .
