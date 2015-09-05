@@ -1,5 +1,78 @@
 ## handling malformed programs
 
+container programming-environment-data [
+  recipe-warnings:address:array:character
+]
+
+# copy code from recipe editor, persist, load into mu, save any warnings
+recipe! update-recipes [
+  local-scope
+  env:address:programming-environment-data <- next-ingredient
+  screen:address <- next-ingredient
+  recipes:address:editor-data <- get *env, recipes:offset
+  in:address:array:character <- editor-contents recipes
+  save [recipes.mu], in
+  recipe-warnings:address:address:array:character <- get-address *env, recipe-warnings:offset
+  *recipe-warnings <- reload in
+  # if recipe editor has errors, stop
+  {
+    break-unless *recipe-warnings
+    status:address:array:character <- new [errors found]
+    update-status screen, status, 1/red
+    reply 1/errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
+  }
+  reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
+]
+
+before <render-components-end> [
+  trace 11, [app], [render status]
+  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+  {
+    break-unless recipe-warnings
+    status:address:array:character <- new [errors found]
+    update-status screen, status, 1/red
+  }
+]
+
+before <render-recipe-components-end> [
+  {
+    recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+    break-unless recipe-warnings
+    row, screen <- render-string screen, recipe-warnings, left, right, 1/red, row
+  }
+]
+
+container sandbox-data [
+  warnings:address:array:character
+]
+
+recipe! update-sandbox [
+  local-scope
+  sandbox:address:sandbox-data <- next-ingredient
+  data:address:array:character <- get *sandbox, data:offset
+  response:address:address:array:character <- get-address *sandbox, response:offset
+  warnings:address:address:array:character <- get-address *sandbox, warnings:offset
+  trace:address:address:array:character <- get-address *sandbox, trace:offset
+  fake-screen:address:address:screen <- get-address *sandbox, screen:offset
+  *response, *warnings, *fake-screen, *trace, completed?:boolean <- run-interactive data
+  {
+    break-if *warnings
+    break-if completed?:boolean
+    *warnings <- new [took too long!
+]
+  }
+]
+
+after <render-sandbox-results> [
+  {
+    sandbox-warnings:address:array:character <- get *sandbox, warnings:offset
+    break-unless sandbox-warnings
+    *response-starting-row <- copy 0  # no response
+    row, screen <- render-string screen, sandbox-warnings, left, right, 1/red, row
+    jump +render-sandbox-end:label
+  }
+]
+
 scenario run-shows-warnings-in-get [
   $close-trace  # trace too long
   assume-screen 100/width, 15/height
@@ -194,6 +267,123 @@ recipe foo [
     .]                                                 ┊                                                 .
     .use before set: y in foo                          ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
+scenario run-instruction-and-print-warnings [
+  $close-trace  # trace too long
+  assume-screen 100/width, 10/height
+  # left editor is empty
+  1:address:array:character <- new []
+  # right editor contains an illegal instruction
+  2:address:array:character <- new [get 1234:number, foo:offset]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the code in the editors
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # check that screen prints error message in red
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
+    .                                                  ┊get 1234:number, foo:offset                      .
+    .                                                  ┊unknown element foo in container number          .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+  screen-should-contain-in-color 7/white, [
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                   get 1234:number, foo:offset                      .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+  ]
+  screen-should-contain-in-color 1/red, [
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                   unknown element foo in container number          .
+    .                                                                                                    .
+  ]
+  screen-should-contain-in-color 245/grey, [
+    .                                                                                                    .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
+    .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+]
+
+scenario run-instruction-and-print-warnings-only-once [
+  $close-trace  # trace too long
+  assume-screen 100/width, 10/height
+  # left editor is empty
+  1:address:array:character <- new []
+  # right editor contains an illegal instruction
+  2:address:array:character <- new [get 1234:number, foo:offset]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the code in the editors multiple times
+  assume-console [
+    press F4
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # check that screen prints error message just once
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
+    .                                                  ┊get 1234:number, foo:offset                      .
+    .                                                  ┊unknown element foo in container number          .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+]
+
+scenario sandbox-can-handle-infinite-loop [
+  $close-trace  # trace too long
+  assume-screen 100/width, 20/height
+  # left editor is empty
+  1:address:array:character <- new [recipe foo [
+  {
+    loop
+  }
+]]
+  # right editor contains an instruction
+  2:address:array:character <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the sandbox
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .recipe foo [                                      ┊                                                 .
+    .  {                                               ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .    loop                                          ┊                                                x.
+    .  }                                               ┊foo                                              .
+    .]                                                 ┊took too long!                                   .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
 ]
