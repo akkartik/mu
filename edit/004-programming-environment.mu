@@ -20,7 +20,6 @@ container programming-environment-data [
   recipes:address:editor-data
   recipe-warnings:address:array:character
   current-sandbox:address:editor-data
-  sandbox:address:sandbox-data  # list of sandboxes, from top to bottom
   sandbox-in-focus?:boolean  # false => cursor in recipes; true => cursor in current-sandbox
 ]
 
@@ -444,6 +443,24 @@ recipe render-recipes [
   }
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+  row <- add row, 1
+  clear-screen-from screen, row, left, left, right
+  reply screen/same-as-ingredient:0
+]
+
+# replaced in a later layer
+recipe render-sandbox-side [
+  local-scope
+  screen:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  left:number <- get *current-sandbox, left:offset
+  right:number <- get *current-sandbox, right:offset
+  row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
+  clear-line-delimited screen, column, right
+  row <- add row, 1
+  # draw solid line after recipes (you'll see why in later layers)
+  draw-horizontal screen, row, left, right, 9473/horizontal
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
   reply screen/same-as-ingredient:0

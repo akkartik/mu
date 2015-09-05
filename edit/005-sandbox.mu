@@ -1,4 +1,12 @@
 ## running code from the editor and creating sandboxes
+#
+# Running code in the sandbox editor prepends its contents to a list of
+# (non-editable) sandboxes below the editor, showing the result and a maybe
+# few other things.
+
+container programming-environment-data [
+  sandbox:address:sandbox-data  # list of sandboxes, from top to bottom
+]
 
 container sandbox-data [
   data:address:array:character
@@ -211,7 +219,7 @@ recipe save-sandboxes [
   }
 ]
 
-recipe render-sandbox-side [
+recipe! render-sandbox-side [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
@@ -563,52 +571,6 @@ scenario run-instruction-manages-screen-per-sandbox [
     .                                                  ┊  .                              .               .
     .                                                  ┊  .                              .               .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
-  ]
-]
-
-scenario sandbox-with-print-can-be-edited [
-  $close-trace  # trace too long
-  assume-screen 100/width, 20/height
-  # left editor is empty
-  1:address:array:character <- new []
-  # right editor contains an instruction
-  2:address:array:character <- new [print-integer screen:address, 4]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-  # run the sandbox
-  assume-console [
-    press F4
-  ]
-  run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  ]
-  screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                x.
-    .                                                  ┊print-integer screen:address, 4                  .
-    .                                                  ┊screen:                                          .
-    .                                                  ┊  .4                             .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
-  ]
-  # edit the sandbox
-  assume-console [
-    left-click 3, 70
-  ]
-  run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  ]
-  screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊print-integer screen:address, 4                  .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
     .                                                  ┊                                                 .
   ]
 ]

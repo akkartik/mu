@@ -126,3 +126,49 @@ recipe extract-sandbox [
   *sandbox-in-focus? <- copy 1/true
   reply result
 ]
+
+scenario sandbox-with-print-can-be-edited [
+  $close-trace  # trace too long
+  assume-screen 100/width, 20/height
+  # left editor is empty
+  1:address:array:character <- new []
+  # right editor contains an instruction
+  2:address:array:character <- new [print-integer screen:address, 4]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the sandbox
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
+    .                                                  ┊print-integer screen:address, 4                  .
+    .                                                  ┊screen:                                          .
+    .                                                  ┊  .4                             .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+  # edit the sandbox
+  assume-console [
+    left-click 3, 70
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊print-integer screen:address, 4                  .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
