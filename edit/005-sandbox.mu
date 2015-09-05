@@ -273,15 +273,14 @@ recipe render-sandboxes [
     break-unless sandbox-warnings
     *response-starting-row <- copy 0  # no response
     row, screen <- render-string screen, sandbox-warnings, left, right, 1/red, row
+    jump +render-sandbox-end:label
   }
   {
-    break-if sandbox-warnings
     empty-screen?:boolean <- fake-screen-is-empty? sandbox-screen
     break-if empty-screen?
     row, screen <- render-screen screen, sandbox-screen, left, right, row
   }
   {
-    break-if sandbox-warnings
     break-unless empty-screen?
     *response-starting-row <- copy row
     <render-sandbox-response>
