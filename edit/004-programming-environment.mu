@@ -393,14 +393,6 @@ recipe render-all [
   screen <- move-cursor screen, 0/row, button-start
   run-button:address:array:character <- new [ run (F4) ]
   print-string screen, run-button, 255/white, 161/reddish
-  # error message
-  trace 11, [app], [render status]
-  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
-  {
-    break-unless recipe-warnings
-    status:address:array:character <- new [errors found]
-    update-status screen, status, 1/red
-  }
   # dotted line down the middle
   trace 11, [app], [render divider]
   divider:number, _ <- divide-with-remainder width, 2
@@ -409,6 +401,14 @@ recipe render-all [
   #
   screen <- render-recipes screen, env
   screen <- render-sandbox-side screen, env
+  # error message
+  trace 11, [app], [render status]
+  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+  {
+    break-unless recipe-warnings
+    status:address:array:character <- new [errors found]
+    update-status screen, status, 1/red
+  }
   #
   recipes:address:editor-data <- get *env, recipes:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
