@@ -5097,31 +5097,6 @@ recipe render-all [
   reply screen/same-as-ingredient:0
 ]
 
-recipe render-minimal [
-  local-scope
-  screen:address <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
-  hide-screen screen
-  recipes:address:editor-data <- get *env, recipes:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
-  sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
-  {
-    break-if sandbox-in-focus?
-    screen <- render-recipes screen, env
-    cursor-row:number <- get *recipes, cursor-row:offset
-    cursor-column:number <- get *recipes, cursor-column:offset
-  }
-  {
-    break-unless sandbox-in-focus?
-    screen <- render-sandbox-side screen, env
-    cursor-row:number <- get *current-sandbox, cursor-row:offset
-    cursor-column:number <- get *current-sandbox, cursor-column:offset
-  }
-  screen <- move-cursor screen, cursor-row, cursor-column
-  show-screen screen
-  reply screen/same-as-ingredient:0
-]
-
 recipe render-recipes [
   local-scope
   screen:address <- next-ingredient
