@@ -11,13 +11,11 @@ container programming-environment-data [
 container sandbox-data [
   data:address:array:character
   response:address:array:character
-  trace:address:array:character
   expected-response:address:array:character
   # coordinates to track clicks
   starting-row-on-screen:number
   code-ending-row-on-screen:number  # past end of code
   response-starting-row-on-screen:number
-  display-trace?:boolean
   screen:address:screen  # prints in the sandbox go here
   next-sandbox:address:sandbox-data
 ]
@@ -173,14 +171,14 @@ recipe update-recipes [
   reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
 ]
 
+# replaced in a later layer
 recipe update-sandbox [
   local-scope
   sandbox:address:sandbox-data <- next-ingredient
   data:address:array:character <- get *sandbox, data:offset
   response:address:address:array:character <- get-address *sandbox, response:offset
-  trace:address:address:array:character <- get-address *sandbox, trace:offset
   fake-screen:address:address:screen <- get-address *sandbox, screen:offset
-  *response, _, *fake-screen, *trace <- run-interactive data
+  *response, _, *fake-screen <- run-interactive data
 ]
 
 recipe update-status [

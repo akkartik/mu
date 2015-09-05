@@ -120,6 +120,22 @@ recipe foo [
   ]
 ]
 
+container sandbox-data [
+  trace:address:array:character
+  display-trace?:boolean
+]
+
+# replaced in a later layer
+recipe! update-sandbox [
+  local-scope
+  sandbox:address:sandbox-data <- next-ingredient
+  data:address:array:character <- get *sandbox, data:offset
+  response:address:address:array:character <- get-address *sandbox, response:offset
+  trace:address:address:array:character <- get-address *sandbox, trace:offset
+  fake-screen:address:address:screen <- get-address *sandbox, screen:offset
+  *response, _, *fake-screen, *trace <- run-interactive data
+]
+
 # clicks on sandbox code toggle its display-trace? flag
 after <global-touch> [
   # right side of screen? check if it's inside the code of any sandbox
