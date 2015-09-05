@@ -19,7 +19,7 @@ int enumerate_files_in_cwd_until(string last_file) {
   int num_files = scandir(".", &files, NULL, alphasort);
   for (int i = 0; i < num_files; ++i) {
     string curr_file = files[i]->d_name;
-    if (!isdigit(curr_file[0])) continue;
+    if (!isdigit(curr_file.at(0))) continue;
     if (!last_file.empty() && curr_file > last_file) break;
     cout << curr_file << '\n';
   }
