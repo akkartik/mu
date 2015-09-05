@@ -1,0 +1,173 @@
+## clicking on sandbox results to 'fix' them and turn sandboxes into tests
+
+scenario sandbox-click-on-result-toggles-color-to-green [
+  $close-trace  # trace too long
+  assume-screen 40/width, 10/height
+  # basic recipe
+  1:address:array:character <- new [ 
+recipe foo [
+  add 2, 2
+]]
+  # run it
+  2:address:array:character <- new [foo]
+  assume-console [
+    press F4
+  ]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  event-loop screen:address, console:address, 3:address:programming-environment-data
+  screen-should-contain [
+    .                     run (F4)           .
+    .                    ┊                   .
+    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
+    .  add 2, 2          ┊                  x.
+    .]                   ┊foo                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
+    .                    ┊━━━━━━━━━━━━━━━━━━━.
+    .                    ┊                   .
+  ]
+  # click on the '4' in the result
+  assume-console [
+    left-click 5, 21
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # color toggles to green
+  screen-should-contain-in-color 2/green, [
+    .                                        .
+    .                                        .
+    .                                        .
+    .                                        .
+    .                                        .
+    .                     4                  .
+    .                                        .
+    .                                        .
+  ]
+  # cursor should remain unmoved
+  run [
+    print-character screen:address, 9251/␣/cursor
+  ]
+  screen-should-contain [
+    .                     run (F4)           .
+    .␣                   ┊                   .
+    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
+    .  add 2, 2          ┊                  x.
+    .]                   ┊foo                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
+    .                    ┊━━━━━━━━━━━━━━━━━━━.
+    .                    ┊                   .
+  ]
+  # now change the second arg of the 'add'
+  # then rerun
+  assume-console [
+    left-click 3, 11  # cursor to end of line
+    press backspace
+    type [3]
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # result turns red
+  screen-should-contain-in-color 1/red, [
+    .                                        .
+    .                                        .
+    .                                        .
+    .                                        .
+    .                                        .
+    .                     5                  .
+    .                                        .
+    .                                        .
+  ]
+]
+
+# clicks on sandbox responses save it as 'expected'
+after <global-touch> [
+  # right side of screen? check if it's inside the output of any sandbox
+  {
+    sandbox-left-margin:number <- get *current-sandbox, left:offset
+    click-column:number <- get *t, column:offset
+    on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
+    break-unless on-sandbox-side?
+    first-sandbox:address:sandbox-data <- get *env, sandbox:offset
+    break-unless first-sandbox
+    first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
+    click-row:number <- get *t, row:offset
+    below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
+    break-unless below-sandbox-editor?
+    # identify the sandbox whose output is being clicked on
+    sandbox:address:sandbox-data <- find-click-in-sandbox-output env, click-row
+    break-unless sandbox
+    # toggle its expected-response, and save session
+    sandbox <- toggle-expected-response sandbox
+    save-sandboxes env
+    hide-screen screen
+    screen <- render-sandbox-side screen, env, 1/clear
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    # no change in cursor
+    show-screen screen
+    loop +next-event:label
+  }
+]
+
+recipe find-click-in-sandbox-output [
+  local-scope
+  env:address:programming-environment-data <- next-ingredient
+  click-row:number <- next-ingredient
+  # assert click-row >= sandbox.starting-row-on-screen
+  sandbox:address:sandbox-data <- get *env, sandbox:offset
+  start:number <- get *sandbox, starting-row-on-screen:offset
+  clicked-on-sandboxes?:boolean <- greater-or-equal click-row, start
+  assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
+  # while click-row < sandbox.next-sandbox.starting-row-on-screen
+  {
+    next-sandbox:address:sandbox-data <- get *sandbox, next-sandbox:offset
+    break-unless next-sandbox
+    next-start:number <- get *next-sandbox, starting-row-on-screen:offset
+    found?:boolean <- lesser-than click-row, next-start
+    break-if found?
+    sandbox <- copy next-sandbox
+    loop
+  }
+  # return sandbox if click is in its output region
+  response-starting-row:number <- get *sandbox, response-starting-row-on-screen:offset
+  reply-unless response-starting-row, 0/no-click-in-sandbox-output
+  click-in-response?:boolean <- greater-or-equal click-row, response-starting-row
+  reply-unless click-in-response?, 0/no-click-in-sandbox-output
+  reply sandbox
+]
+
+recipe toggle-expected-response [
+  local-scope
+  sandbox:address:sandbox-data <- next-ingredient
+  expected-response:address:address:array:character <- get-address *sandbox, expected-response:offset
+  {
+    # if expected-response is set, reset
+    break-unless *expected-response
+    *expected-response <- copy 0
+    reply sandbox/same-as-ingredient:0
+  }
+  # if not, current response is the expected response
+  response:address:array:character <- get *sandbox, response:offset
+  *expected-response <- copy response
+  reply sandbox/same-as-ingredient:0
+]
+
+# when rendering a sandbox, color it in red/green if expected response exists
+after <render-sandbox-response> [
+  {
+    break-unless sandbox-response
+    expected-response:address:array:character <- get *sandbox, expected-response:offset
+    break-unless expected-response  # fall-through to print in grey
+    response-is-expected?:boolean <- string-equal expected-response, sandbox-response
+    {
+      break-if response-is-expected?:boolean
+      row, screen <- render-string screen, sandbox-response, left, right, 1/red, row
+    }
+    {
+      break-unless response-is-expected?:boolean
+      row, screen <- render-string screen, sandbox-response, left, right, 2/green, row
+    }
+    jump +render-sandbox-end:label
+  }
+]

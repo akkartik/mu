@@ -377,8 +377,8 @@ I've just been insufficiently diligent and my documentation is out of date.
 d) Try out the programming environment:
 
   ```shell
-  $ ./mu test edit.mu  # takes about 30s; shouldn't show any failures
-  $ ./mu edit.mu
+  $ ./mu test edit  # takes about 30s; shouldn't show any failures
+  $ ./mu edit
   ```
 
 Screenshot:
