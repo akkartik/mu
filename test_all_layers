@@ -6,6 +6,12 @@ do
   ./build_and_test_until $f || exit 0
 done
 
-echo "=== chessboard"  # our most intensive test so far
+echo "=== chessboard"
 rm mu.cc
 CXX=clang++ ./mu test chessboard.mu
+
+for f in edit/[0-9]*
+do
+  echo "=== edit: until $f"
+  ./mu test `echo edit/[0-9]* |perl -pwe "s,$f.*,$f,"`
+done
