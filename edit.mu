@@ -8846,40 +8846,11 @@ before <delete-to-start-of-line-end> [
   }
 ]
 
-
 # todo:
 # operations for recipe side and each sandbox-data
 # undo delete sandbox as a separate primitive on the status bar
 
-## helpers for drawing editor borders
-
-recipe draw-box [
-  local-scope
-  screen:address <- next-ingredient
-  top:number <- next-ingredient
-  left:number <- next-ingredient
-  bottom:number <- next-ingredient
-  right:number <- next-ingredient
-  color:number, color-found?:boolean <- next-ingredient
-  {
-    # default color to white
-    break-if color-found?
-    color <- copy 245/grey
-  }
-  # top border
-  draw-horizontal screen, top, left, right, color
-  draw-horizontal screen, bottom, left, right, color
-  draw-vertical screen, left, top, bottom, color
-  draw-vertical screen, right, top, bottom, color
-  draw-top-left screen, top, left, color
-  draw-top-right screen, top, right, color
-  draw-bottom-left screen, bottom, left, color
-  draw-bottom-right screen, bottom, right, color
-  # position cursor inside box
-  screen <- move-cursor screen, top, left
-  cursor-down screen
-  cursor-right screen
-]
+## helpers for drawing borders
 
 recipe draw-horizontal [
   local-scope
@@ -8938,88 +8909,4 @@ recipe draw-vertical [
     y <- add y, 1
     loop
   }
-]
-
-recipe draw-top-left [
-  local-scope
-  screen:address <- next-ingredient
-  top:number <- next-ingredient
-  left:number <- next-ingredient
-  color:number, color-found?:boolean <- next-ingredient
-  {
-    # default color to white
-    break-if color-found?
-    color <- copy 245/grey
-  }
-  screen <- move-cursor screen, top, left
-  print-character screen, 9484/down-right, color
-]
-
-recipe draw-top-right [
-  local-scope
-  screen:address <- next-ingredient
-  top:number <- next-ingredient
-  right:number <- next-ingredient
-  color:number, color-found?:boolean <- next-ingredient
-  {
-    # default color to white
-    break-if color-found?
-    color <- copy 245/grey
-  }
-  screen <- move-cursor screen, top, right
-  print-character screen, 9488/down-left, color
-]
-
-recipe draw-bottom-left [
-  local-scope
-  screen:address <- next-ingredient
-  bottom:number <- next-ingredient
-  left:number <- next-ingredient
-  color:number, color-found?:boolean <- next-ingredient
-  {
-    # default color to white
-    break-if color-found?
-    color <- copy 245/grey
-  }
-  screen <- move-cursor screen, bottom, left
-  print-character screen, 9492/up-right, color
-]
-
-recipe draw-bottom-right [
-  local-scope
-  screen:address <- next-ingredient
-  bottom:number <- next-ingredient
-  right:number <- next-ingredient
-  color:number, color-found?:boolean <- next-ingredient
-  {
-    # default color to white
-    break-if color-found?
-    color <- copy 245/grey
-  }
-  screen <- move-cursor screen, bottom, right
-  print-character screen, 9496/up-left, color
-]
-
-recipe print-string-with-gradient-background [
-  local-scope
-  screen:address <- next-ingredient
-  s:address:array:character <- next-ingredient
-  color:number <- next-ingredient
-  bg-color1:number <- next-ingredient
-  bg-color2:number <- next-ingredient
-  len:number <- length *s
-  color-range:number <- subtract bg-color2, bg-color1
-  color-quantum:number <- divide color-range, len
-  bg-color:number <- copy bg-color1
-  i:number <- copy 0
-  {
-    done?:boolean <- greater-or-equal i, len
-    break-if done?
-    c:character <- index *s, i
-    print-character screen, c, color, bg-color
-    i <- add i, 1
-    bg-color <- add bg-color, color-quantum
-    loop
-  }
-  reply screen/same-as-ingredient:0
 ]
