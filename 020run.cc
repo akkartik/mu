@@ -197,6 +197,10 @@ atexit(cleanup_main);
 
 :(code)
 void load_permanently(string filename) {
+  if (is_directory(filename)) {
+    load_all_permanently(filename);
+    return;
+  }
   ifstream fin(filename.c_str());
   fin.peek();
   if (!fin) {
@@ -210,6 +214,27 @@ void load_permanently(string filename) {
   recently_added_recipes.clear();
   // End load_permanently.
 }
+
+bool is_directory(string path) {
+  struct stat info;
+  if (stat(path.c_str(), &info)) return false;  // error
+  return info.st_mode & S_IFDIR;
+}
+
+void load_all_permanently(string dir) {
+  dirent** files;
+  int num_files = scandir(dir.c_str(), &files, NULL, alphasort);
+  for (int i = 0; i < num_files; ++i) {
+    string curr_file = files[i]->d_name;
+    if (!isdigit(curr_file.at(0))) continue;
+    load_permanently(dir+'/'+curr_file);
+    free(files[i]);
+    files[i] = NULL;
+  }
+  free(files);
+}
+:(before "End Includes")
+#include<dirent.h>
 
 //:: On startup, load everything in core.mu
 :(before "End Load Recipes")
