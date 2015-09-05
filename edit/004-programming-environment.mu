@@ -486,6 +486,145 @@ recipe update-cursor [
   reply screen/same-as-ingredient:0
 ]
 
+# row, screen <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
+# move cursor at start of next line
+# print a string 's' to 'editor' in 'color' starting at 'row'
+# clear rest of last line, but don't move cursor to next line
+recipe render-string [
+  local-scope
+  screen:address <- next-ingredient
+  s:address:array:character <- next-ingredient
+  left:number <- next-ingredient
+  right:number <- next-ingredient
+  color:number <- next-ingredient
+  row:number <- next-ingredient
+  row <- add row, 1
+  reply-unless s, row/same-as-ingredient:5, screen/same-as-ingredient:0
+  column:number <- copy left
+  screen <- move-cursor screen, row, column
+  screen-height:number <- screen-height screen
+  i:number <- copy 0
+  len:number <- length *s
+  {
+    +next-character
+    done?:boolean <- greater-or-equal i, len
+    break-if done?
+    done? <- greater-or-equal row, screen-height
+    break-if done?
+    c:character <- index *s, i
+    {
+      # at right? wrap.
+      at-right?:boolean <- equal column, right
+      break-unless at-right?
+      # print wrap icon
+      print-character screen, 8617/loop-back-to-left, 245/grey
+      column <- copy left
+      row <- add row, 1
+      screen <- move-cursor screen, row, column
+      loop +next-character:label  # retry i
+    }
+    i <- add i, 1
+    {
+      # newline? move to left rather than 0
+      newline?:boolean <- equal c, 10/newline
+      break-unless newline?
+      # clear rest of line in this window
+      {
+        done?:boolean <- greater-than column, right
+        break-if done?
+        print-character screen, 32/space
+        column <- add column, 1
+        loop
+      }
+      row <- add row, 1
+      column <- copy left
+      screen <- move-cursor screen, row, column
+      loop +next-character:label
+    }
+    print-character screen, c, color
+    column <- add column, 1
+    loop
+  }
+  {
+    # clear rest of current line
+    line-done?:boolean <- greater-than column, right
+    break-if line-done?
+    print-character screen, 32/space
+    column <- add column, 1
+    loop
+  }
+  reply row/same-as-ingredient:5, screen/same-as-ingredient:0
+]
+
+# row, screen <- render-code-string screen:address, s:address:array:character, left:number, right:number, row:number
+# like 'render-string' but with colorization for comments like in the editor
+recipe render-code-string [
+  local-scope
+  screen:address <- next-ingredient
+  s:address:array:character <- next-ingredient
+  left:number <- next-ingredient
+  right:number <- next-ingredient
+  row:number <- next-ingredient
+  row <- add row, 1
+  reply-unless s, row/same-as-ingredient:4, screen/same-as-ingredient:0
+  color:number <- copy 7/white
+  column:number <- copy left
+  screen <- move-cursor screen, row, column
+  screen-height:number <- screen-height screen
+  i:number <- copy 0
+  len:number <- length *s
+  {
+    +next-character
+    done?:boolean <- greater-or-equal i, len
+    break-if done?
+    done? <- greater-or-equal row, screen-height
+    break-if done?
+    c:character <- index *s, i
+    <character-c-received>  # only line different from render-string
+    {
+      # at right? wrap.
+      at-right?:boolean <- equal column, right
+      break-unless at-right?
+      # print wrap icon
+      print-character screen, 8617/loop-back-to-left, 245/grey
+      column <- copy left
+      row <- add row, 1
+      screen <- move-cursor screen, row, column
+      loop +next-character:label  # retry i
+    }
+    i <- add i, 1
+    {
+      # newline? move to left rather than 0
+      newline?:boolean <- equal c, 10/newline
+      break-unless newline?
+      # clear rest of line in this window
+      {
+        done?:boolean <- greater-than column, right
+        break-if done?
+        print-character screen, 32/space
+        column <- add column, 1
+        loop
+      }
+      row <- add row, 1
+      column <- copy left
+      screen <- move-cursor screen, row, column
+      loop +next-character:label
+    }
+    print-character screen, c, color
+    column <- add column, 1
+    loop
+  }
+  {
+    # clear rest of current line
+    line-done?:boolean <- greater-than column, right
+    break-if line-done?
+    print-character screen, 32/space
+    column <- add column, 1
+    loop
+  }
+  reply row/same-as-ingredient:4, screen/same-as-ingredient:0
+]
+
 # ctrl-l - redraw screen (just in case it printed junk somehow)
 
 after <global-type> [
