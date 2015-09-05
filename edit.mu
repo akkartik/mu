@@ -1393,12 +1393,12 @@ scenario editor-wraps-cursor-after-inserting-characters-2 [
 # if newline, move cursor to start of next line, and maybe align indent with previous line
 
 container editor-data [
-  indent:boolean
+  indent?:boolean
 ]
 
 after <editor-initialization> [
-  indent:address:boolean <- get-address *result, indent:offset
-  *indent <- copy 1/true
+  indent?:address:boolean <- get-address *result, indent?:offset
+  *indent? <- copy 1/true
 ]
 
 scenario editor-moves-cursor-down-after-inserting-newline [
@@ -1455,7 +1455,7 @@ recipe insert-new-line-and-indent [
     *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
   }
   # indent if necessary
-  indent?:boolean <- get *editor, indent:offset
+  indent?:boolean <- get *editor, indent?:offset
   reply-unless indent?, editor/same-as-ingredient:0, screen/same-as-ingredient:1
   d:address:duplex-list <- get *editor, data:offset
   end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
@@ -1605,8 +1605,8 @@ after <handle-special-key> [
   {
     paste-start?:boolean <- equal *k, 65507/paste-start
     break-unless paste-start?
-    indent:address:boolean <- get-address *editor, indent:offset
-    *indent <- copy 0/false
+    indent?:address:boolean <- get-address *editor, indent?:offset
+    *indent? <- copy 0/false
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
@@ -1615,8 +1615,8 @@ after <handle-special-key> [
   {
     paste-end?:boolean <- equal *k, 65506/paste-end
     break-unless paste-end?
-    indent:address:boolean <- get-address *editor, indent:offset
-    *indent <- copy 1/true
+    indent?:address:boolean <- get-address *editor, indent?:offset
+    *indent? <- copy 1/true
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
