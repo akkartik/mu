@@ -170,7 +170,7 @@ recipe find-click-in-sandbox-code [
   }
   # return sandbox if click is in its code region
   code-ending-row:number <- get *sandbox, code-ending-row-on-screen:offset
-  click-above-response?:boolean <- lesser-or-equal click-row, code-ending-row
+  click-above-response?:boolean <- lesser-than click-row, code-ending-row
   start:number <- get *sandbox, starting-row-on-screen:offset
   click-below-menu?:boolean <- greater-than click-row, start
   click-on-sandbox-code?:boolean <- and click-above-response?, click-below-menu?
@@ -189,6 +189,5 @@ after <render-sandbox-results> [
     sandbox-trace:address:array:character <- get *sandbox, trace:offset
     break-unless sandbox-trace  # nothing to print; move on
     row, screen <- render-string, screen, sandbox-trace, left, right, 245/grey, row
-    row <- subtract row, 1  # trim the trailing newline that's always present
   }
 ]

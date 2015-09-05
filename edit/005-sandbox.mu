@@ -16,7 +16,7 @@ container sandbox-data [
   expected-response:address:array:character
   # coordinates to track clicks
   starting-row-on-screen:number
-  code-ending-row-on-screen:number
+  code-ending-row-on-screen:number  # past end of code
   response-starting-row-on-screen:number
   display-trace?:boolean
   screen:address:screen  # prints in the sandbox go here
@@ -257,6 +257,8 @@ recipe render-sandboxes [
   starting-row:address:number <- get-address *sandbox, starting-row-on-screen:offset
   *starting-row <- copy row
   # render sandbox contents
+  row <- add row, 1
+  screen <- move-cursor screen, row, left
   sandbox-data:address:array:character <- get *sandbox, data:offset
   row, screen <- render-code-string screen, sandbox-data, left, right, row
   code-ending-row:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
@@ -281,7 +283,7 @@ recipe render-sandboxes [
   {
     break-if sandbox-warnings
     break-unless empty-screen?
-    *response-starting-row <- add row, 1
+    *response-starting-row <- copy row
     <render-sandbox-response>
     row, screen <- render-string screen, sandbox-response, left, right, 245/grey, row
   }
@@ -338,14 +340,10 @@ recipe render-screen [
   left:number <- next-ingredient
   right:number <- next-ingredient
   row:number <- next-ingredient
-  row <- add row, 1
   reply-unless s, row/same-as-ingredient:4, screen/same-as-ingredient:0
   # print 'screen:'
   header:address:array:character <- new [screen:]
-  row <- subtract row, 1  # compensate for render-string below
   row <- render-string screen, header, left, right, 245/grey, row
-  # newline
-  row <- add row, 1
   screen <- move-cursor screen, row, left
   # start printing s
   column:number <- copy left

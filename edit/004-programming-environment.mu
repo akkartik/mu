@@ -431,15 +431,11 @@ recipe render-recipes [
   row:number, column:number, screen <- render screen, recipes
   clear-line-delimited screen, column, right
   recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+  row <- add row, 1
   {
     # print any warnings
     break-unless recipe-warnings
     row, screen <- render-string screen, recipe-warnings, left, right, 1/red, row
-  }
-  {
-    # no warnings? move to next line
-    break-if recipe-warnings
-    row <- add row, 1
   }
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
@@ -487,9 +483,8 @@ recipe update-cursor [
 ]
 
 # row, screen <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
-# move cursor at start of next line
 # print a string 's' to 'editor' in 'color' starting at 'row'
-# clear rest of last line, but don't move cursor to next line
+# clear rest of last line, move cursor to next line
 recipe render-string [
   local-scope
   screen:address <- next-ingredient
@@ -498,7 +493,6 @@ recipe render-string [
   right:number <- next-ingredient
   color:number <- next-ingredient
   row:number <- next-ingredient
-  row <- add row, 1
   reply-unless s, row/same-as-ingredient:5, screen/same-as-ingredient:0
   column:number <- copy left
   screen <- move-cursor screen, row, column
@@ -545,7 +539,13 @@ recipe render-string [
     column <- add column, 1
     loop
   }
+  was-at-left?:boolean <- equal column, left
   clear-line-delimited screen, column, right
+  {
+    break-if was-at-left?
+    row <- add row, 1
+  }
+  move-cursor row, left
   reply row/same-as-ingredient:5, screen/same-as-ingredient:0
 ]
 
@@ -558,7 +558,6 @@ recipe render-code-string [
   left:number <- next-ingredient
   right:number <- next-ingredient
   row:number <- next-ingredient
-  row <- add row, 1
   reply-unless s, row/same-as-ingredient:4, screen/same-as-ingredient:0
   color:number <- copy 7/white
   column:number <- copy left
@@ -607,7 +606,13 @@ recipe render-code-string [
     column <- add column, 1
     loop
   }
+  was-at-left?:boolean <- equal column, left
   clear-line-delimited screen, column, right
+  {
+    break-if was-at-left?
+    row <- add row, 1
+  }
+  move-cursor row, left
   reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
