@@ -36,7 +36,7 @@ vector<recipe_ordinal> load(istream& in) {
         raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
       }
       // todo: save user-defined recipes to mu's memory
-      Recipe[Recipe_ordinal[recipe_name]] = slurp_recipe(in);
+      Recipe[Recipe_ordinal[recipe_name]] = slurp_body(in);
       Recipe[Recipe_ordinal[recipe_name]].name = recipe_name;
       // track added recipes because we may need to undo them in tests; see below
       recently_added_recipes.push_back(Recipe_ordinal[recipe_name]);
@@ -51,7 +51,7 @@ vector<recipe_ordinal> load(istream& in) {
   return result;
 }
 
-recipe slurp_recipe(istream& in) {
+recipe slurp_body(istream& in) {
   recipe result;
   skip_whitespace(in);
   if (in.get() != '[')
