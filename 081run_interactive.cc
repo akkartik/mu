@@ -31,7 +31,7 @@ case RUN_INTERACTIVE: {
     break;
   }
   if (!scalar(ingredients.at(0))) {
-    raise << current_recipe_name() << ": first ingredient of 'run-interactive' should be a literal string, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    raise << current_recipe_name() << ": first ingredient of 'run-interactive' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
     break;
   }
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
