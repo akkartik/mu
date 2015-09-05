@@ -545,14 +545,7 @@ recipe render-string [
     column <- add column, 1
     loop
   }
-  {
-    # clear rest of current line
-    line-done?:boolean <- greater-than column, right
-    break-if line-done?
-    print-character screen, 32/space
-    column <- add column, 1
-    loop
-  }
+  clear-line-delimited screen, column, right
   reply row/same-as-ingredient:5, screen/same-as-ingredient:0
 ]
 
@@ -614,14 +607,7 @@ recipe render-code-string [
     column <- add column, 1
     loop
   }
-  {
-    # clear rest of current line
-    line-done?:boolean <- greater-than column, right
-    break-if line-done?
-    print-character screen, 32/space
-    column <- add column, 1
-    loop
-  }
+  clear-line-delimited screen, column, right
   reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
