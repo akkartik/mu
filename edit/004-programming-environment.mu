@@ -3,7 +3,7 @@
 # Consists of one editor on the left for recipes and one on the right for the
 # sandbox.
 
-recipe main [
+recipe! main [
   local-scope
   open-console
   initial-recipe:address:array:character <- restore [recipes.mu]
