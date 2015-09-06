@@ -47,7 +47,12 @@ Scheduling_interval = 500;
 Routines.clear();
 :(replace{} "void run(recipe_ordinal r)")
 void run(recipe_ordinal r) {
-  Routines.push_back(new routine(r));
+  run(new routine(r));
+}
+
+:(code)
+void run(routine* rr) {
+  Routines.push_back(rr);
   Current_routine_index = 0, Current_routine = Routines.at(0);
   while (!all_routines_done()) {
     skip_to_next_routine();
@@ -65,7 +70,6 @@ void run(recipe_ordinal r) {
   }
 }
 
-:(code)
 bool all_routines_done() {
   for (long long int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->state == RUNNING) {
@@ -102,6 +106,24 @@ string current_routine_label() {
 for (long long int i = 0; i < SIZE(Routines); ++i)
   delete Routines.at(i);
 Routines.clear();
+
+//: special case for the very first routine
+:(replace{} "void run_main(int argc, char* argv[])")
+void run_main(int argc, char* argv[]) {
+  recipe_ordinal r = Recipe_ordinal[string("main")];
+  if (r) {
+    // pass in commandline args as ingredients to main
+    // todo: test this
+    routine* rr = new routine(r);
+    Current_routine = rr;
+    for (long long int i = 1; i < argc; ++i) {
+      vector<double> arg;
+      arg.push_back(new_mu_string(argv[i]));
+      Current_routine->calls.front().ingredient_atoms.push_back(arg);
+    }
+    run(rr);
+  }
+}
 
 //:: To schedule new routines to run, call 'start-running'.
 

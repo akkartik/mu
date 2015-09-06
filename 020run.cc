@@ -154,10 +154,16 @@ transform_all();
 
 //: Step 2: load any .mu files provided at the commandline
 :(before "End Commandline Parsing")
-// Loading Commandline Files
 if (argc > 1) {
-  for (int i = 1; i < argc; ++i) {
-    load_permanently(argv[i]);
+  // skip argv[0]
+  argv++;
+  argc--;
+  // ignore argv past '--'; that's commandline args for 'main'
+  while (argc > 0) {
+    if (string(*argv) == "--") break;
+    load_permanently(*argv);
+    argv++;
+    argc--;
   }
   transform_all();
   if (Run_tests) Recipe.erase(Recipe_ordinal[string("main")]);
@@ -171,9 +177,14 @@ if (!Run_tests) {
 //?   Trace_file = "interactive";
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
 //?   Trace_stream->collect_layers.insert("app");
+  run_main(argc, argv);
+  teardown();
+}
+
+:(code)
+void run_main(int argc, char* argv[]) {
   recipe_ordinal r = Recipe_ordinal[string("main")];
   if (r) run(r);
-  teardown();
 }
 
 :(code)
