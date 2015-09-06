@@ -165,7 +165,6 @@ if (!Run_tests) {
   recipe_ordinal r = Recipe_ordinal[string("main")];
 //?   atexit(dump_profile);
   if (r) run(r);
-//?   dump_memory();
   teardown();
 }
 
