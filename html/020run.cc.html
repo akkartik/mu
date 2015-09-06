@@ -14,15 +14,16 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .SalientComment { color: #00ffff; }
-.Identifier { color: #804000; }
+.CommentedCode { color: #6c6c6c; }
+.PreProc { color: #c000c0; }
 .traceAbsent { color: #c00000; }
+.Delimiter { color: #a04060; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
-.Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
 .Constant { color: #00a0a0; }
-.traceContains { color: #008000; }
+.Special { color: #ff6060; }
+.Identifier { color: #804000; }
 -->
 </style>
 
@@ -96,7 +97,7 @@ void run_current_routine<span class="Delimiter">()</span>
   while <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>  <span class="Comment">// later layers will modify condition</span>
   <span class="Delimiter">{</span>
     <span class="Comment">// Running One Instruction</span>
-<span class="CommentedCode">//?     Instructions_running[current_recipe_name()]++; //? 1</span>
+<span class="CommentedCode">//?     Instructions_running[current_recipe_name()]++;</span>
     if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>is_label<span class="Delimiter">)</span> <span class="Delimiter">{</span> ++current_step_index<span class="Delimiter">();</span> <span class="Identifier">continue</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
     trace<span class="Delimiter">(</span>Initial_callstack_depth+Callstack_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
     if <span class="Delimiter">(</span>Memory[<span class="Constant">0</span>] != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -110,8 +111,8 @@ void run_current_routine<span class="Delimiter">()</span>
     if <span class="Delimiter">(</span>should_copy_ingredients<span class="Delimiter">())</span> <span class="Delimiter">{</span>
       for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
-<span class="CommentedCode">//?         Locations_read[current_recipe_name()] += SIZE(ingredients.back()); //? 1</span>
-<span class="CommentedCode">//?         Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back()); //? 1</span>
+<span class="CommentedCode">//?         Locations_read[current_recipe_name()] += SIZE(ingredients.back());</span>
+<span class="CommentedCode">//?         Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back());</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
     <span class="Comment">// Instructions below will write to 'products'.</span>
@@ -181,26 +182,46 @@ inline bool routine::completed<span class="Delimiter">()</span> const <span clas
   <span class="Identifier">return</span> running_step_index &gt;= SIZE<span class="Delimiter">(</span>Recipe[running_recipe]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="SalientComment">//:: Startup flow</span>
+
+<span class="Comment">//: Step 1: load all .mu files with numeric prefixes (in order)</span>
+<span class="Delimiter">:(before &quot;End Load Recipes&quot;)</span>
+load_permanently<span class="Delimiter">(</span><span class="Constant">&quot;core.mu&quot;</span><span class="Delimiter">);</span>
+transform_all<span class="Delimiter">();</span>
+
+<span class="Comment">//: Step 2: load any .mu files provided at the commandline</span>
 <span class="Delimiter">:(before &quot;End Commandline Parsing&quot;)</span>
-<span class="Comment">// Loading Commandline Files</span>
 if <span class="Delimiter">(</span>argc &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>int i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; argc<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    load_permanently<span class="Delimiter">(</span>argv[i]<span class="Delimiter">);</span>
+  <span class="Comment">// skip argv[0]</span>
+  argv++<span class="Delimiter">;</span>
+  argc--<span class="Delimiter">;</span>
+  <span class="Comment">// ignore argv past '--'; that's commandline args for 'main'</span>
+  while <span class="Delimiter">(</span>argc &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>string<span class="Delimiter">(</span>*argv<span class="Delimiter">)</span> == <span class="Constant">&quot;--&quot;</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    load_permanently<span class="Delimiter">(</span>*argv<span class="Delimiter">);</span>
+    argv++<span class="Delimiter">;</span>
+    argc--<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  transform_all<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>Run_tests<span class="Delimiter">)</span> Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recipe_ordinal[string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span>]<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: Step 3: if we aren't running tests, locate a recipe called 'main' and</span>
+<span class="Comment">//: start running it.</span>
 <span class="Delimiter">:(before &quot;End Main&quot;)</span>
 if <span class="Delimiter">(</span>!Run_tests<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   setup<span class="Delimiter">();</span>
-<span class="CommentedCode">//?   Trace_file = &quot;interactive&quot;; //? 2</span>
-<span class="CommentedCode">//?   START_TRACING_UNTIL_END_OF_SCOPE; //? 2</span>
-<span class="CommentedCode">//?   Trace_stream-&gt;collect_layer.insert(&quot;app&quot;); //? 1</span>
-  transform_all<span class="Delimiter">();</span>
-  recipe_ordinal r = Recipe_ordinal[string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span>]<span class="Delimiter">;</span>
-<span class="CommentedCode">//?   atexit(dump_profile); //? 1</span>
-  if <span class="Delimiter">(</span>r<span class="Delimiter">)</span> run<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
-<span class="CommentedCode">//?   dump_memory(); //? 1</span>
+<span class="CommentedCode">//?   Trace_file = &quot;interactive&quot;;</span>
+<span class="CommentedCode">//?   START_TRACING_UNTIL_END_OF_SCOPE;</span>
+<span class="CommentedCode">//?   Trace_stream-&gt;collect_layers.insert(&quot;app&quot;);</span>
+  run_main<span class="Delimiter">(</span>argc<span class="Delimiter">,</span> argv<span class="Delimiter">);</span>
   teardown<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+void run_main<span class="Delimiter">(</span>int argc<span class="Delimiter">,</span> char* argv[]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  recipe_ordinal r = Recipe_ordinal[string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span>]<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>r<span class="Delimiter">)</span> run<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
@@ -217,6 +238,8 @@ void dump_profile<span class="Delimiter">()</span> <span class="Delimiter">{</sp
     cerr &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
+<span class="CommentedCode">//? atexit(dump_profile);</span>
 
 <span class="Delimiter">:(code)</span>
 void cleanup_main<span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -231,6 +254,10 @@ atexit<span class="Delimiter">(</span>cleanup_main<span class="Delimiter">);</sp
 
 <span class="Delimiter">:(code)</span>
 void load_permanently<span class="Delimiter">(</span>string filename<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>is_directory<span class="Delimiter">(</span>filename<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    load_all_permanently<span class="Delimiter">(</span>filename<span class="Delimiter">);</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   ifstream fin<span class="Delimiter">(</span>filename<span class="Delimiter">.</span>c_str<span class="Delimiter">());</span>
   fin<span class="Delimiter">.</span>peek<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>!fin<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -239,31 +266,37 @@ void load_permanently<span class="Delimiter">(</span>string filename<span class=
   <span class="Delimiter">}</span>
   fin &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   load<span class="Delimiter">(</span>fin<span class="Delimiter">);</span>
-  transform_all<span class="Delimiter">();</span>
   fin<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
   <span class="Comment">// freeze everything so it doesn't get cleared by tests</span>
   recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   <span class="Comment">// End load_permanently.</span>
 <span class="Delimiter">}</span>
 
-<span class="SalientComment">//:: On startup, load everything in core.mu</span>
-<span class="Delimiter">:(before &quot;End Load Recipes&quot;)</span>
-load_permanently<span class="Delimiter">(</span><span class="Constant">&quot;core.mu&quot;</span><span class="Delimiter">);</span>
-
-<span class="Delimiter">:(code)</span>
-<span class="Comment">// helper for tests</span>
-void run<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; form &lt;&lt; '\n'; //? 1</span>
-  vector&lt;recipe_ordinal&gt; tmp = load<span class="Delimiter">(</span>form<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  transform_all<span class="Delimiter">();</span>
-  run<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>front<span class="Delimiter">());</span>
+bool is_directory<span class="Delimiter">(</span>string path<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  struct stat info<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>stat<span class="Delimiter">(</span>path<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> &amp;info<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// error</span>
+  <span class="Identifier">return</span> info<span class="Delimiter">.</span>st_mode &amp; S_IFDIR<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+
+void load_all_permanently<span class="Delimiter">(</span>string dir<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  dirent** files<span class="Delimiter">;</span>
+  int num_files = scandir<span class="Delimiter">(</span>dir<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> &amp;files<span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">,</span> alphasort<span class="Delimiter">);</span>
+  for <span class="Delimiter">(</span>int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; num_files<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    string curr_file = files[i]<span class="Delimiter">-&gt;</span>d_name<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>!isdigit<span class="Delimiter">(</span>curr_file<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    load_permanently<span class="Delimiter">(</span>dir+<span class="Constant">'/'</span>+curr_file<span class="Delimiter">);</span>
+    free<span class="Delimiter">(</span>files[i]<span class="Delimiter">);</span>
+    files[i] = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  free<span class="Delimiter">(</span>files<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span class="PreProc">#include</span><span class="Constant">&lt;dirent.h&gt;</span>
 
 <span class="SalientComment">//:: Reading from memory, writing to memory.</span>
 
+<span class="Delimiter">:(code)</span>
 vector&lt;double&gt; read_memory<span class="Delimiter">(</span>reagent x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   cout &lt;&lt; &quot;read_memory: &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 2</span>
   vector&lt;double&gt; result<span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>x<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
@@ -284,7 +317,7 @@ void write_memory<span class="Delimiter">(</span>reagent x<span class="Delimiter
   if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   long long int base = x<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>size_mismatch<span class="Delimiter">(</span>x<span class="Delimiter">,</span> data<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: size mismatch in storing to &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; at '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: size mismatch in storing to &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; (&quot;</span> &lt;&lt; size_of<span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; vs &quot;</span> &lt;&lt; SIZE<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;) at '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   for <span class="Delimiter">(</span>long long int offset = <span class="Constant">0</span><span class="Delimiter">;</span> offset &lt; SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span> ++offset<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -308,7 +341,7 @@ long long int size_of<span class="Delimiter">(</span>const vector&lt;type_ordina
 bool size_mismatch<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">,</span> const vector&lt;double&gt;&amp; data<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Comment">// End size_mismatch(x) Cases</span>
-<span class="CommentedCode">//?   if (size_of(x) != SIZE(data)) cerr &lt;&lt; size_of(x) &lt;&lt; &quot; vs &quot; &lt;&lt; SIZE(data) &lt;&lt; '\n'; //? 2</span>
+<span class="CommentedCode">//?   if (size_of(x) != SIZE(data)) cerr &lt;&lt; size_of(x) &lt;&lt; &quot; vs &quot; &lt;&lt; SIZE(data) &lt;&lt; '\n';</span>
   <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -322,6 +355,15 @@ bool is_literal<span class="Delimiter">(</span>const reagent&amp; r<span class="
 
 bool is_mu_array<span class="Delimiter">(</span>reagent r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> !r<span class="Delimiter">.</span>types<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; r<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Comment">// helper for tests</span>
+void run<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  vector&lt;recipe_ordinal&gt; tmp = load<span class="Delimiter">(</span>form<span class="Delimiter">);</span>
+  transform_all<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  run<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>front<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario run_label)</span>

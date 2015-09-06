@@ -13,12 +13,11 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.Identifier { color: #804000; }
 .cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
+.Identifier { color: #804000; }
 .Constant { color: #00a0a0; }
 .traceContains { color: #008000; }
 -->
@@ -60,7 +59,6 @@ Type_ordinal[<span class="Constant">&quot;literal-string&quot;</span>] = <span c
     string result = slurp_quoted<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; '^' &lt;&lt; result &lt;&lt; &quot;$\n&quot;; //? 1</span>
     <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
@@ -82,12 +80,10 @@ bool code_string<span class="Delimiter">(</span>istream&amp; in<span class="Deli
     char c = in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
     if <span class="Delimiter">(</span>!isspace<span class="Delimiter">(</span>c<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       in<span class="Delimiter">.</span>putback<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; &quot;code_string: &quot; &lt;&lt; out.str() &lt;&lt; '\n'; //? 1</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     out &lt;&lt; c<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>c == <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; &quot;code_string: &quot; &lt;&lt; out.str() &lt;&lt; '\n'; //? 1</span>
       <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -97,18 +93,14 @@ bool code_string<span class="Delimiter">(</span>istream&amp; in<span class="Deli
 <span class="Comment">// Read a regular string. Regular strings can only contain other regular</span>
 <span class="Comment">// strings.</span>
 void slurp_quoted_comment_oblivious<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostringstream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;comment oblivious\n&quot;; //? 1</span>
   int brace_depth = <span class="Constant">1</span><span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     char c = in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; '%' &lt;&lt; (int)c &lt;&lt; ' ' &lt;&lt; brace_depth &lt;&lt; &quot;: &quot; &lt;&lt; out.str() &lt;&lt; &quot;%$\n&quot;; //? 1</span>
-<span class="CommentedCode">//?     cout &lt;&lt; (int)c &lt;&lt; &quot;: &quot; &lt;&lt; brace_depth &lt;&lt; '\n'; //? 2</span>
     if <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     out &lt;&lt; c<span class="Delimiter">;</span>
-<span class="CommentedCode">//?     cout &lt;&lt; out.str() &lt;&lt; &quot;$\n&quot;; //? 1</span>
     if <span class="Delimiter">(</span>c == <span class="Constant">'['</span><span class="Delimiter">)</span> ++brace_depth<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>c == <span class="Constant">']'</span><span class="Delimiter">)</span> --brace_depth<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>brace_depth == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -121,10 +113,8 @@ void slurp_quoted_comment_oblivious<span class="Delimiter">(</span>istream&amp; 
 
 <span class="Comment">// Read a code string. Code strings can contain either code or regular strings.</span>
 void slurp_quoted_comment_aware<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostringstream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;comment aware\n&quot;; //? 1</span>
   char c<span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; '^' &lt;&lt; (int)c &lt;&lt; &quot;: &quot; &lt;&lt; out.str() &lt;&lt; &quot;$\n&quot;; //? 1</span>
     if <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>

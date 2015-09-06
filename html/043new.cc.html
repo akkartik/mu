@@ -115,8 +115,8 @@ case NEW: <span class="Delimiter">{</span>
       size = size_of<span class="Delimiter">(</span>type<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-<span class="CommentedCode">//?   Total_alloc += size; //? 1</span>
-<span class="CommentedCode">//?   Num_alloc++; //? 1</span>
+<span class="CommentedCode">//?   Total_alloc += size;</span>
+<span class="CommentedCode">//?   Num_alloc++;</span>
   <span class="Comment">// compute the region of memory to return</span>
   <span class="Comment">// really crappy at the moment</span>
   ensure_space<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
@@ -139,21 +139,25 @@ case NEW: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="CommentedCode">//? :(before &quot;End Globals&quot;) //? 1</span>
-<span class="CommentedCode">//? long long int Total_alloc = 0; //? 1</span>
-<span class="CommentedCode">//? long long int Num_alloc = 0; //? 1</span>
-<span class="CommentedCode">//? long long int Total_free = 0; //? 1</span>
-<span class="CommentedCode">//? long long int Num_free = 0; //? 1</span>
-<span class="CommentedCode">//? :(before &quot;End Setup&quot;) //? 1</span>
-<span class="CommentedCode">//? Total_alloc = Num_alloc = Total_free = Num_free = 0; //? 1</span>
-<span class="CommentedCode">//? :(before &quot;End Teardown&quot;) //? 1</span>
-<span class="CommentedCode">//? cerr &lt;&lt; Total_alloc &lt;&lt; &quot;/&quot; &lt;&lt; Num_alloc //? 1</span>
-<span class="CommentedCode">//?      &lt;&lt; &quot; vs &quot; &lt;&lt; Total_free &lt;&lt; &quot;/&quot; &lt;&lt; Num_free &lt;&lt; '\n'; //? 1</span>
-<span class="CommentedCode">//? cerr &lt;&lt; SIZE(Memory) &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//? :(before &quot;End Globals&quot;)</span>
+<span class="CommentedCode">//? long long int Total_alloc = 0;</span>
+<span class="CommentedCode">//? long long int Num_alloc = 0;</span>
+<span class="CommentedCode">//? long long int Total_free = 0;</span>
+<span class="CommentedCode">//? long long int Num_free = 0;</span>
+<span class="CommentedCode">//? :(before &quot;End Setup&quot;)</span>
+<span class="CommentedCode">//? Total_alloc = Num_alloc = Total_free = Num_free = 0;</span>
+<span class="CommentedCode">//? :(before &quot;End Teardown&quot;)</span>
+<span class="CommentedCode">//? cerr &lt;&lt; Total_alloc &lt;&lt; &quot;/&quot; &lt;&lt; Num_alloc</span>
+<span class="CommentedCode">//?      &lt;&lt; &quot; vs &quot; &lt;&lt; Total_free &lt;&lt; &quot;/&quot; &lt;&lt; Num_free &lt;&lt; '\n';</span>
+<span class="CommentedCode">//? cerr &lt;&lt; SIZE(Memory) &lt;&lt; '\n';</span>
 
 <span class="Delimiter">:(code)</span>
 void ensure_space<span class="Delimiter">(</span>long long int size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>size &lt;= Initial_memory_per_routine<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>size &gt; Initial_memory_per_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    tb_shutdown<span class="Delimiter">();</span>
+    cerr &lt;&lt; <span class="Constant">&quot;can't allocate &quot;</span> &lt;&lt; size &lt;&lt; <span class="Constant">&quot; locations, that's too much.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc + size &gt; Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// waste the remaining space and create a new chunk</span>
     Current_routine<span class="Delimiter">-&gt;</span>alloc = Memory_allocated_until<span class="Delimiter">;</span>
@@ -267,9 +271,9 @@ case ABANDON: <span class="Delimiter">{</span>
 
 <span class="Delimiter">:(code)</span>
 void abandon<span class="Delimiter">(</span>long long int address<span class="Delimiter">,</span> long long int size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   Total_free += size; //? 1</span>
-<span class="CommentedCode">//?   Num_free++; //? 1</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;abandon: &quot; &lt;&lt; size &lt;&lt; '\n'; //? 2</span>
+<span class="CommentedCode">//?   Total_free += size;</span>
+<span class="CommentedCode">//?   Num_free++;</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;abandon: &quot; &lt;&lt; size &lt;&lt; '\n';</span>
   <span class="Comment">// clear memory</span>
   for <span class="Delimiter">(</span>long long int curr = address<span class="Delimiter">;</span> curr &lt; address+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span>
     Memory[curr] = <span class="Constant">0</span><span class="Delimiter">;</span>
@@ -359,9 +363,8 @@ if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>cur
 long long int new_mu_string<span class="Delimiter">(</span>const string&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// allocate an array just large enough for it</span>
   long long int string_length = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
-<span class="CommentedCode">//?   cout &lt;&lt; &quot;string_length is &quot; &lt;&lt; string_length &lt;&lt; '\n'; //? 1</span>
-<span class="CommentedCode">//?   Total_alloc += string_length+1; //? 1</span>
-<span class="CommentedCode">//?   Num_alloc++; //? 1</span>
+<span class="CommentedCode">//?   Total_alloc += string_length+1;</span>
+<span class="CommentedCode">//?   Num_alloc++;</span>
   ensure_space<span class="Delimiter">(</span>string_length+<span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// don't forget the extra location for array size</span>
   <span class="Comment">// initialize string</span>
   long long int result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
@@ -385,7 +388,7 @@ long long int new_mu_string<span class="Delimiter">(</span>const string&amp; con
 <span class="Delimiter">:(scenario stash_string)</span>
 recipe main [
   x:address:array:character<span class="Special"> &lt;- </span>new [abc]
-  stash [foo: ]<span class="Delimiter">,</span> x:address:array:character
+  stash [foo:]<span class="Delimiter">,</span> x:address:array:character
 ]
 <span class="traceContains">+app: foo: abc</span>
 

@@ -15,7 +15,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .SalientComment { color: #00ffff; }
 .traceAbsent { color: #c00000; }
-.CommentedCode { color: #6c6c6c; }
 .cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
@@ -68,7 +67,7 @@ recipe main [
 recipe main [
   <span class="Constant">2</span>:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
 ]
-<span class="traceContains">+warn: main: size mismatch in storing to 2:point at '2:point &lt;- copy 1:number'</span>
+<span class="traceContains">+warn: main: size mismatch in storing to 2:point (2 vs 1) at '2:point &lt;- copy 1:number'</span>
 
 <span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
 <span class="Comment">// A more complex container, containing another container as one of its</span>
@@ -141,7 +140,7 @@ recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># first</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  stash [foo: ]<span class="Delimiter">,</span> <span class="Constant">1</span>:point-number/<span class="Special">raw</span>
+  stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:point-number/<span class="Special">raw</span>
 ]
 <span class="traceContains">+app: foo: 34 35 36</span>
 
@@ -338,9 +337,6 @@ void insert_container<span class="Delimiter">(</span>const string&amp; command<s
   skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   string name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;reading &quot;</span> &lt;&lt; command &lt;&lt; <span class="Constant">' '</span> &lt;&lt; name &lt;&lt; end<span class="Delimiter">();</span>
-<span class="CommentedCode">//?   cout &lt;&lt; name &lt;&lt; '\n'; //? 2</span>
-<span class="CommentedCode">//?   if (Type_ordinal.find(name) != Type_ordinal.end()) //? 1</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; Type_ordinal[name] &lt;&lt; '\n'; //? 1</span>
   if <span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span>name<span class="Delimiter">)</span> == Type_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">()</span>
       || Type_ordinal[name] == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Type_ordinal[name] = Next_type_ordinal++<span class="Delimiter">;</span>
@@ -364,7 +360,6 @@ void insert_container<span class="Delimiter">(</span>const string&amp; command<s
       if <span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span>type_name<span class="Delimiter">)</span> == Type_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">()</span>
           <span class="Comment">// types can contain integers, like for array sizes</span>
           &amp;&amp; !is_integer<span class="Delimiter">(</span>type_name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?         cerr &lt;&lt; type_name &lt;&lt; &quot; is &quot; &lt;&lt; Next_type_ordinal &lt;&lt; '\n'; //? 1</span>
         Type_ordinal[type_name] = Next_type_ordinal++<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
       types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_ordinal[type_name]<span class="Delimiter">);</span>
@@ -402,7 +397,6 @@ vector&lt;type_ordinal&gt; recently_added_types<span class="Delimiter">;</span>
 recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>  <span class="Comment">//: for tests</span>
 for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   cout &lt;&lt; &quot;erasing &quot; &lt;&lt; Type[recently_added_types.at(i)].name &lt;&lt; '\n'; //? 1</span>
   Type_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Type[recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span>]<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
   Type<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
@@ -418,7 +412,6 @@ while<span class="Delimiter">(</span>p != Type_ordinal<span class="Delimiter">.<
   ++p<span class="Delimiter">;</span>
   <span class="Comment">// now delete current item if necessary</span>
   if <span class="Delimiter">(</span>t &gt;= <span class="Constant">1000</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;AAA &quot; &lt;&lt; name &lt;&lt; &quot; &quot; &lt;&lt; t &lt;&lt; '\n'; //? 1</span>
     Type_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>name<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
@@ -435,7 +428,6 @@ Next_type_ordinal = <span class="Constant">1000</span><span class="Delimiter">;<
 
 <span class="Delimiter">:(scenario run_warns_on_unknown_types)</span>
 <span class="Special">% Hide_warnings = true;</span>
-<span class="CommentedCode">#? % Trace_stream-&gt;dump_layer = &quot;run&quot;;</span>
 recipe main [
   <span class="Comment"># integer is not a type</span>
   <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -498,14 +490,13 @@ container foo [
 <span class="traceContains">+parse:   element name: y</span>
 <span class="traceContains">+parse:   type: 1</span>
 
-<span class="Delimiter">:(before &quot;End Load Sanity Checks&quot;)</span>
+<span class="Delimiter">:(before &quot;End Transform&quot;)</span>
 check_container_field_types<span class="Delimiter">();</span>
 
 <span class="Delimiter">:(code)</span>
 void check_container_field_types<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   for <span class="Delimiter">(</span>map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt;::iterator p = Type<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Type<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     const type_info&amp; info = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;checking &quot; &lt;&lt; p-&gt;first &lt;&lt; '\n'; //? 1</span>
     for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         if <span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>

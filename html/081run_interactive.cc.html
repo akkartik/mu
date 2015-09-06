@@ -14,12 +14,11 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .cSpecial { color: #008000; }
-.Identifier { color: #804000; }
 .traceContains { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
+.Identifier { color: #804000; }
 .Constant { color: #00a0a0; }
 -->
 </style>
@@ -58,7 +57,6 @@ recipe main [
 RUN_INTERACTIVE<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;run-interactive&quot;</span>] = RUN_INTERACTIVE<span class="Delimiter">;</span>
-<span class="CommentedCode">//? cerr &lt;&lt; &quot;run-interactive: &quot; &lt;&lt; RUN_INTERACTIVE &lt;&lt; '\n'; //? 1</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case RUN_INTERACTIVE: <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -66,7 +64,7 @@ case RUN_INTERACTIVE: <span class="Delimiter">{</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'run-interactive' should be a literal string, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'run-interactive' should be a string, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   bool new_code_pushed_to_stack = run_interactive<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
@@ -138,7 +136,7 @@ load<span class="Delimiter">(</span>string<span class="Delimiter">(</span>
   <span class="Constant">&quot;local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;screen:address/shared &lt;- new-fake-screen 30, 5</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;r:number/routine_id &lt;- start-running interactive:recipe, screen:address</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;limit-time r, 750/instructions</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;limit-time r, 100000/instructions</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;wait-for-routine r</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;sandbox-state:number &lt;- routine-state r/routine_id</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;completed?:boolean &lt;- equal sandbox-state, 1/completed</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
@@ -150,6 +148,24 @@ load<span class="Delimiter">(</span>string<span class="Delimiter">(</span>
 <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
 transform_all<span class="Delimiter">();</span>
 recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+
+<span class="Delimiter">:(scenario run_interactive_comments)</span>
+recipe main [
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [<span class="Comment"># ab</span>
+add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+]
+<span class="traceContains">+mem: storing 52 in location 4</span>
+
+<span class="Delimiter">:(scenario run_interactive_just_comments_without_trace)</span>
+recipe main [
+  $close-trace
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [<span class="Comment"># ab</span>
+]
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+]
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 _START_TRACKING_PRODUCTS<span class="Delimiter">,</span>
@@ -206,7 +222,7 @@ case _CLEANUP_RUN_INTERACTIVE: <span class="Delimiter">{</span>
 <span class="Delimiter">:(code)</span>
 void cleanup_run_interactive<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>is_narrowly_collecting<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// hack</span>
+  if <span class="Delimiter">(</span>Trace_stream &amp;&amp; Trace_stream<span class="Delimiter">-&gt;</span>is_narrowly_collecting<span class="Delimiter">(</span><span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// hack</span>
     delete Trace_stream<span class="Delimiter">;</span>
     Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -296,7 +312,6 @@ string strip_comments<span class="Delimiter">(</span>string in<span class="Delim
     else <span class="Delimiter">{</span>
       while <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span>
         ++i<span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> ++i<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
@@ -311,18 +326,26 @@ long long int stringified_value_of_location<span class="Delimiter">(</span>long 
 
 long long int trace_contents<span class="Delimiter">(</span>const string&amp; layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;trace stream exists\n&quot;; //? 1</span>
   if <span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span>layer<span class="Delimiter">)</span> &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; layer &lt;&lt; &quot; has something\n&quot;; //? 1</span>
   ostringstream out<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>label != layer<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     out &lt;&lt; p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>*--p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">.</span>end<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> out &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  assert<span class="Delimiter">(</span>!out<span class="Delimiter">.</span>str<span class="Delimiter">().</span>empty<span class="Delimiter">());</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; layer &lt;&lt; &quot;:\n&quot; &lt;&lt; out.str() &lt;&lt; &quot;\n--\n&quot;; //? 1</span>
-  <span class="Identifier">return</span> new_mu_string<span class="Delimiter">(</span>out<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+  string result = out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+  assert<span class="Delimiter">(</span>!result<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  truncate<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> new_mu_string<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+void truncate<span class="Delimiter">(</span>string&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>x<span class="Delimiter">)</span> &gt; <span class="Constant">512</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    x<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">512</span><span class="Delimiter">);</span>
+    *x<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> = <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    *++x<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> = <span class="Constant">'.'</span><span class="Delimiter">;</span>
+    *++++x<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> = <span class="Constant">'.'</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: simpler version of run-interactive: doesn't do any running, just loads</span>
@@ -348,6 +371,11 @@ case RELOAD: <span class="Delimiter">{</span>
   <span class="Delimiter">}</span>
   Hide_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
   Disable_redefine_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Comment">// clear any containers in advance</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    Type_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Type[recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span>]<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
+    Type<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
   string code = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   vector&lt;recipe_ordinal&gt; recipes_reloaded = load<span class="Delimiter">(</span>code<span class="Delimiter">);</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recipes_reloaded<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
