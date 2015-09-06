@@ -1,5 +1,16 @@
 ## handling events from the keyboard, mouse, touch screen, ...
 
+# temporary main: interactive editor
+# hit ctrl-c to exit
+recipe! main [
+  local-scope
+  text:address:array:character <- next-ingredient
+  open-console
+  editor:address:editor-data <- new-editor text, 0/screen, 5/left, 45/right
+  editor-event-loop 0/screen, 0/console, editor
+  close-console
+]
+
 recipe editor-event-loop [
   local-scope
   screen:address <- next-ingredient
@@ -8,6 +19,9 @@ recipe editor-event-loop [
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
+    cursor-row:number <- get *editor, cursor-row:offset
+    cursor-column:number <- get *editor, cursor-column:offset
+    screen <- move-cursor screen, cursor-row, cursor-column
     e:event, console:address, found?:boolean, quit?:boolean <- read-event console
     loop-unless found?
     break-if quit?  # only in tests
@@ -25,7 +39,7 @@ recipe editor-event-loop [
       screen, editor, go-render?:boolean <- handle-keyboard-event screen, editor, e
       {
         break-unless go-render?
-        editor-render screen, editor
+        screen <- editor-render screen, editor
       }
     }
     loop
@@ -683,6 +697,7 @@ after <insert-character-special-case> [
     at-wrap?:boolean <- greater-or-equal *cursor-column, wrap-column
     break-unless at-wrap?
     *cursor-column <- subtract *cursor-column, wrap-column
+    *cursor-column <- add *cursor-column, left
     *cursor-row <- add *cursor-row, 1
     # if we're out of the screen, scroll down
     {
@@ -743,6 +758,32 @@ scenario editor-wraps-cursor-after-inserting-characters-2 [
   memory-should-contain [
     3 <- 2  # cursor row
     4 <- 0  # cursor column
+  ]
+]
+
+scenario editor-wraps-cursor-to-left-margin [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abcde]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 2/left, 7/right
+  assume-console [
+    left-click 1, 5  # line is full; no wrap icon yet
+    type [01]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .  abc0↩   .
+    .  1de     .
+    .  ┈┈┈┈┈   .
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 2  # cursor row
+    4 <- 3  # cursor column
   ]
 ]
 
