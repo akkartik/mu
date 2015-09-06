@@ -1,5 +1,18 @@
 ## the basic editor data structure, and how it displays text to the screen
 
+# temporary main for this layer: just render the given string at the given
+# screen dimensions, then stop
+recipe! main [
+  local-scope
+  text:address:array:character <- next-ingredient
+  open-console
+  hide-screen 0/screen
+  new-editor text, 0/screen, 0/left, 5/right
+  show-screen 0/screen
+  wait-for-event 0/console
+  close-console
+]
+
 scenario editor-initially-prints-string-to-screen [
   assume-screen 10/width, 5/height
   run [
