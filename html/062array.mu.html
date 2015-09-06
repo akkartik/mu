@@ -13,13 +13,10 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muScenario { color: #00af00; }
-.muRecipe { color: #ff8700; }
+.Underlined { color: #c000c0; text-decoration: underline; }
 .Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
+.Identifier { color: #804000; }
 -->
 </style>
 
@@ -31,45 +28,45 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="muScenario">scenario</span> array-from-args [
+scenario <span class="Identifier">array</span>-from-<span class="Identifier">args</span> [
   run [
-    <span class="Constant">1</span>:address:array:location<span class="Special"> &lt;- </span>new-array <span class="Constant">0</span>, <span class="Constant">1</span>, <span class="Constant">2</span>
-    <span class="Constant">2</span>:array:location<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:array:location
+    1:address:<span class="Identifier">array</span>:location<span class="Special"> &lt;- </span><span class="Identifier">new</span>-<span class="Identifier">array</span> 0, 1, 2
+    2:<span class="Identifier">array</span>:location<span class="Special"> &lt;- </span><span class="Identifier">copy</span> *1:address:<span class="Identifier">array</span>:location
   ]
   memory-should-contain [
-    <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">3</span>  <span class="Comment"># array length</span>
-    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
-    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
-    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
+    2<span class="Special"> &lt;- </span>3  <span class="Comment"># array length</span>
+    3<span class="Special"> &lt;- </span>0
+    4<span class="Special"> &lt;- </span>1
+    5<span class="Special"> &lt;- </span>2
   ]
 ]
 
 <span class="Comment"># create an array out of a list of scalar args</span>
-<span class="muRecipe">recipe</span> new-array [
-  <span class="Constant">local-scope</span>
-  capacity:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Delimiter">{</span>
+recipe <span class="Identifier">new</span>-<span class="Identifier">array</span> [
+  <span class="Underlined">local</span>-scope
+  capacity:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 0
+  {
     <span class="Comment"># while read curr-value</span>
-    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-    <span class="muControl">break-unless</span> exists?
-    capacity<span class="Special"> &lt;- </span>add capacity, <span class="Constant">1</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-  result:address:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, capacity
+    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span>next-ingredient
+    break-unless exists?
+    capacity<span class="Special"> &lt;- </span>add capacity, 1
+    loop
+  }
+  result:address:<span class="Identifier">array</span>:location<span class="Special"> &lt;- </span><span class="Identifier">new</span> location:<span class="Identifier">type</span>, capacity
   rewind-ingredients
-  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Delimiter">{</span>
+  i:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 0
+  {
     <span class="Comment"># while read curr-value</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, capacity
-    <span class="muControl">break-if</span> done?
-    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-    assert exists?, <span class="Constant">[error in rewinding ingredients to new-array]</span>
+    break-if done?
+    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span>next-ingredient
+    <span class="Identifier">assert</span> exists?, [<span class="Identifier">error</span> <span class="Identifier">in</span> rewinding ingredients to <span class="Identifier">new</span>-<span class="Identifier">array</span>]
     tmp:address:location<span class="Special"> &lt;- </span>index-address *result, i
-    *tmp<span class="Special"> &lt;- </span>copy curr-value
-    i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> result
+    *tmp<span class="Special"> &lt;- </span><span class="Identifier">copy</span> curr-value
+    i<span class="Special"> &lt;- </span>add i, 1
+    loop
+  }
+  reply result
 ]
 </pre>
 </body>

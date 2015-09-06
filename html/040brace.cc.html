@@ -13,7 +13,6 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.CommentedCode { color: #6c6c6c; }
 .cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
@@ -71,8 +70,6 @@ recipe main [
 
 <span class="Delimiter">:(code)</span>
 void transform_braces<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   cout &lt;&lt; &quot;AAA transform_braces\n&quot;; //? 1</span>
-<span class="CommentedCode">//?   exit(0); //? 1</span>
   const int OPEN = <span class="Constant">0</span><span class="Delimiter">,</span> CLOSE = <span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Comment">// use signed integer for step index because we'll be doing arithmetic on it</span>
   list&lt;pair&lt;int<span class="Comment">/*</span><span class="Comment">OPEN/CLOSE</span><span class="Comment">*/</span><span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">step</span><span class="Comment">*/</span>long long int&gt; &gt; braces<span class="Delimiter">;</span>
@@ -108,6 +105,13 @@ void transform_braces<span class="Delimiter">(</span>const recipe_ordinal r<span
          &amp;&amp; inst<span class="Delimiter">.</span>operation != Recipe_ordinal[<span class="Constant">&quot;break-unless&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; ...&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment">// check for errors</span>
+    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-if&quot;</span><span class="Delimiter">)</span> != string::npos || inst<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-unless&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+        raise &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; expects 1 or 2 ingredients, but got none</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
     <span class="Comment">// update instruction operation</span>
     if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-if&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span>
@@ -375,7 +379,6 @@ recipe main [
 <span class="Comment">//: test how things actually run</span>
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario brace_conversion_and_run)</span>
-<span class="CommentedCode">#? % Trace_stream-&gt;dump_layer = &quot;run&quot;;</span>
 recipe test-factorial [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
@@ -397,6 +400,15 @@ recipe main [
   <span class="Identifier">break</span>
 ]
 <span class="traceContains">+warn: break needs a '{' before</span>
+
+<span class="Delimiter">:(scenario break_conditional_without_ingredient_warns)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break</span>-if
+  <span class="Delimiter">}</span>
+]
+<span class="traceContains">+warn: break-if expects 1 or 2 ingredients, but got none</span>
 </pre>
 </body>
 </html>

@@ -13,15 +13,12 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muRecipe { color: #ff8700; }
 .SalientComment { color: #00ffff; }
-.muScenario { color: #00af00; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.Special { color: #ff6060; }
 .CommentedCode { color: #6c6c6c; }
-.Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
+.Underlined { color: #c000c0; text-decoration: underline; }
+.Comment { color: #9090ff; }
+.Special { color: #ff6060; }
+.Identifier { color: #804000; }
 -->
 </style>
 
@@ -37,202 +34,195 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># display the position after each move.</span>
 
 <span class="Comment"># recipes are mu's names for functions</span>
-<span class="muRecipe">recipe</span> main [
+recipe main [
   open-console  <span class="Comment"># take control of screen, keyboard and mouse</span>
 
   <span class="Comment"># The chessboard recipe takes keyboard and screen objects as 'ingredients'.</span>
-  <span class="Comment">#</span>
+  #
   <span class="Comment"># In mu it is good form (though not required) to explicitly show the</span>
   <span class="Comment"># hardware you rely on.</span>
-  <span class="Comment">#</span>
+  #
   <span class="Comment"># The chessboard also returns the same keyboard and screen objects. In mu it</span>
   <span class="Comment"># is good form to not modify ingredients of a recipe unless they are also</span>
   <span class="Comment"># results. Here we clearly modify both keyboard and screen, so we return</span>
   <span class="Comment"># both.</span>
-  <span class="Comment">#</span>
+  #
   <span class="Comment"># Here the console and screen are both 0, which usually indicates real</span>
   <span class="Comment"># hardware rather than a fake for testing as you'll see below.</span>
-  <span class="Constant">0/screen</span>, <span class="Constant">0/console</span><span class="Special"> &lt;- </span>chessboard <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>
+  0/screen, 0/console<span class="Special"> &lt;- </span>chessboard 0/screen, 0/console
 
   close-console  <span class="Comment"># cleanup screen, keyboard and mouse</span>
 ]
 
 <span class="SalientComment">## But enough about mu. Here's what it looks like to run the chessboard program.</span>
 
-<span class="muScenario">scenario</span> print-board-and-read-move [
+scenario <span class="Identifier">print</span>-board-and-<span class="Identifier">read</span>-move [
   $close-trace  <span class="Comment"># administrivia: most scenarios save and check traces, but this one gets too large/slow</span>
   <span class="Comment"># we'll make the screen really wide because the program currently prints out a long line</span>
-  assume-screen <span class="Constant">120/width</span>, <span class="Constant">20/height</span>
+  <span class="Identifier">assume</span>-screen 120/width, 20/height
   <span class="Comment"># initialize keyboard to type in a move</span>
-  assume-console [
-    type <span class="Constant">[a2-a4</span>
-<span class="Constant">]</span>
+  <span class="Identifier">assume</span>-console [
+    <span class="Identifier">type</span> [a2-a4
+]
   ]
   run [
     screen:address, console:address<span class="Special"> &lt;- </span>chessboard screen:address, console:address
     <span class="Comment"># icon for the cursor</span>
-    screen<span class="Special"> &lt;- </span>print-character screen, <span class="Constant">9251/␣</span>
+    screen<span class="Special"> &lt;- </span><span class="Identifier">print</span>-character screen, 9251/␣
   ]
   screen-should-contain [
   <span class="Comment">#            1         2         3         4         5         6         7         8         9         10        11</span>
   <span class="Comment">#  012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789</span>
-   <span class="Constant"> .Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.         .</span>
-   <span class="Constant"> .                                                                                                                        .</span>
-   <span class="Constant"> .8 | r n b q k b n r                                                                                                     .</span>
-   <span class="Constant"> .7 | p p p p p p p p                                                                                                     .</span>
-   <span class="Constant"> .6 |                                                                                                                     .</span>
-   <span class="Constant"> .5 |                                                                                                                     .</span>
-   <span class="Constant"> .4 | P                                                                                                                   .</span>
-   <span class="Constant"> .3 |                                                                                                                     .</span>
-   <span class="Constant"> .2 |   P P P P P P P                                                                                                     .</span>
-   <span class="Constant"> .1 | R N B Q K B N R                                                                                                     .</span>
-   <span class="Constant"> .  +----------------                                                                                                     .</span>
-   <span class="Constant"> .    a b c d e f g h                                                                                                     .</span>
-   <span class="Constant"> .                                                                                                                        .</span>
-   <span class="Constant"> .Type in your move as &lt;from square&gt;-&lt;to square&gt;. For example: 'a2-a4'. Then press &lt;enter&gt;.                               .</span>
-   <span class="Constant"> .                                                                                                                        .</span>
-   <span class="Constant"> .Hit 'q' to exit.                                                                                                        .</span>
-   <span class="Constant"> .                                                                                                                        .</span>
-   <span class="Constant"> .move: ␣                                                                                                                 .</span>
-   <span class="Constant"> .                                                                                                                        .</span>
-   <span class="Constant"> .                                                                                                                        .</span>
+    .Stupid text-mode chessboard. White pieces <span class="Identifier">in</span> uppercase; black pieces <span class="Identifier">in</span> lowercase. No checking for legal moves.         .
+    .                                                                                                                        .
+    .8 | r n b q k b n r                                                                                                     .
+    .7 | p p p p p p p p                                                                                                     .
+    .6 |                                                                                                                     .
+    .5 |                                                                                                                     .
+    .4 | P                                                                                                                   .
+    .3 |                                                                                                                     .
+    .2 |   P P P P P P P                                                                                                     .
+    .1 | R N B Q K B N R                                                                                                     .
+    .  +----------------                                                                                                     .
+    .    a b c d e f g h                                                                                                     .
+    .                                                                                                                        .
+    .Type <span class="Identifier">in</span> your move as &lt;from square&gt;-&lt;to square&gt;. For example: 'a2-a4'. Then press &lt;enter&gt;.                               .
+    .                                                                                                                        .
+    .Hit 'q' to exit.                                                                                                        .
+    .                                                                                                                        .
+    .move: ␣                                                                                                                 .
+    .                                                                                                                        .
+    .                                                                                                                        .
   ]
 ]
 
 <span class="SalientComment">## Here's how 'chessboard' is implemented.</span>
 
-<span class="muRecipe">recipe</span> chessboard [
-  <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  board:address:array:address:array:character<span class="Special"> &lt;- </span>initial-position
+recipe chessboard [
+  <span class="Underlined">local</span>-scope
+  screen:address<span class="Special"> &lt;- </span>next-ingredient
+  console:address<span class="Special"> &lt;- </span>next-ingredient
+  board:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span>initial-position
   <span class="Comment"># hook up stdin</span>
-  stdin:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">10/capacity</span>
-  start-running <span class="Constant">send-keys-to-channel:recipe</span>, console, stdin, screen
+  stdin:address:channel<span class="Special"> &lt;- </span><span class="Identifier">new</span>-channel 10/capacity
+  start-running send-keys-to-channel:recipe, console, stdin, screen
   <span class="Comment"># buffer lines in stdin</span>
-  buffered-stdin:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">10/capacity</span>
-  start-running <span class="Constant">buffer-lines:recipe</span>, stdin, buffered-stdin
-  <span class="Delimiter">{</span>
-    msg:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.</span>
-<span class="Constant">]</span>
-    print-string screen, msg
+  buffered-stdin:address:channel<span class="Special"> &lt;- </span><span class="Identifier">new</span>-channel 10/capacity
+  start-running buffer-lines:recipe, stdin, buffered-stdin
+  {
+    msg:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span><span class="Identifier">new</span> [Stupid text-mode chessboard. White pieces <span class="Identifier">in</span> uppercase; black pieces <span class="Identifier">in</span> lowercase. No checking for legal moves.
+]
+    <span class="Identifier">print</span>-string screen, msg
     cursor-to-next-line screen
-    print-board screen, board
+    <span class="Identifier">print</span>-board screen, board
     cursor-to-next-line screen
-    msg<span class="Special"> &lt;- </span>new <span class="Constant">[Type in your move as &lt;from square&gt;-&lt;to square&gt;. For example: 'a2-a4'. Then press &lt;enter&gt;.</span>
-<span class="Constant">]</span>
-    print-string screen, msg
+    msg<span class="Special"> &lt;- </span><span class="Identifier">new</span> [Type <span class="Identifier">in</span> your move as &lt;from square&gt;-&lt;to square&gt;. For example: 'a2-a4'. Then press &lt;enter&gt;.
+]
+    <span class="Identifier">print</span>-string screen, msg
     cursor-to-next-line screen
-    msg<span class="Special"> &lt;- </span>new <span class="Constant">[Hit 'q' to exit.</span>
-<span class="Constant">]</span>
-    print-string screen, msg
-    <span class="Delimiter">{</span>
+    msg<span class="Special"> &lt;- </span><span class="Identifier">new</span> [Hit 'q' to exit.
+]
+    <span class="Identifier">print</span>-string screen, msg
+    {
       cursor-to-next-line screen
-      msg<span class="Special"> &lt;- </span>new <span class="Constant">[move: ]</span>
-      print-string screen, msg
-      m:address:move, quit:boolean, error:boolean<span class="Special"> &lt;- </span>read-move buffered-stdin, screen
-      <span class="muControl">break-if</span> quit, <span class="Constant">+quit:label</span>
+      msg<span class="Special"> &lt;- </span><span class="Identifier">new</span> [move: ]
+      <span class="Identifier">print</span>-string screen, msg
+      m:address:move, <span class="Identifier">quit</span>:boolean, <span class="Identifier">error</span>:boolean<span class="Special"> &lt;- </span><span class="Identifier">read</span>-move buffered-stdin, screen
+      break-if <span class="Identifier">quit</span>, +<span class="Identifier">quit</span>:label
       buffered-stdin<span class="Special"> &lt;- </span>clear-channel buffered-stdin  <span class="Comment"># cleanup after error. todo: test this?</span>
-      <span class="muControl">loop-if</span> error
-    <span class="Delimiter">}</span>
+      loop-if <span class="Identifier">error</span>
+    }
     board<span class="Special"> &lt;- </span>make-move board, m
     clear-screen screen
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-<span class="Constant">  +quit</span>
+    loop
+  }
+  +<span class="Identifier">quit</span>
 ]
 
 <span class="SalientComment">## a board is an array of files, a file is an array of characters (squares)</span>
 
-<span class="muRecipe">recipe</span> new-board [
-  <span class="Constant">local-scope</span>
-  initial-position:address:array:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+recipe <span class="Identifier">new</span>-board [
+  <span class="Underlined">local</span>-scope
+  initial-position:address:<span class="Identifier">array</span>:number<span class="Special"> &lt;- </span>next-ingredient
   <span class="Comment"># assert(length(initial-position) == 64)</span>
-  len:number<span class="Special"> &lt;- </span>length *initial-position
-  correct-length?:boolean<span class="Special"> &lt;- </span>equal len, <span class="Constant">64</span>
-  assert correct-length?, <span class="Constant">[chessboard had incorrect size]</span>
+  len:number<span class="Special"> &lt;- </span><span class="Identifier">length</span> *initial-position
+  correct-<span class="Identifier">length</span>?:boolean<span class="Special"> &lt;- </span>equal len, 64
+  <span class="Identifier">assert</span> correct-<span class="Identifier">length</span>?, [chessboard had incorrect size]
   <span class="Comment"># board is an array of pointers to files; file is an array of characters</span>
-  board:address:array:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">8</span>
-  col:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>equal col, <span class="Constant">8</span>
-    <span class="muControl">break-if</span> done?
-    file:address:address:array:character<span class="Special"> &lt;- </span>index-address *board, col
-    *file<span class="Special"> &lt;- </span>new-file initial-position, col
-    col<span class="Special"> &lt;- </span>add col, <span class="Constant">1</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> board
+  board:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span><span class="Identifier">new</span> location:<span class="Identifier">type</span>, 8
+  col:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 0
+  {
+    done?:boolean<span class="Special"> &lt;- </span>equal col, 8
+    break-if done?
+    file:address:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span>index-address *board, col
+    *file<span class="Special"> &lt;- </span><span class="Identifier">new</span>-file initial-position, col
+    col<span class="Special"> &lt;- </span>add col, 1
+    loop
+  }
+  reply board
 ]
 
-<span class="muRecipe">recipe</span> new-file [
-  <span class="Constant">local-scope</span>
-  position:address:array:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  index:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  index<span class="Special"> &lt;- </span>multiply index, <span class="Constant">8</span>
-  result:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, <span class="Constant">8</span>
-  row:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>equal row, <span class="Constant">8</span>
-    <span class="muControl">break-if</span> done?
+recipe <span class="Identifier">new</span>-file [
+  <span class="Underlined">local</span>-scope
+  position:address:<span class="Identifier">array</span>:number<span class="Special"> &lt;- </span>next-ingredient
+  index:number<span class="Special"> &lt;- </span>next-ingredient
+  index<span class="Special"> &lt;- </span>multiply index, 8
+  result:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span><span class="Identifier">new</span> character:<span class="Identifier">type</span>, 8
+  row:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 0
+  {
+    done?:boolean<span class="Special"> &lt;- </span>equal row, 8
+    break-if done?
     dest:address:character<span class="Special"> &lt;- </span>index-address *result, row
     *dest<span class="Special"> &lt;- </span>index *position, index
-    row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
-    index<span class="Special"> &lt;- </span>add index, <span class="Constant">1</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> result
+    row<span class="Special"> &lt;- </span>add row, 1
+    index<span class="Special"> &lt;- </span>add index, 1
+    loop
+  }
+  reply result
 ]
 
-<span class="muRecipe">recipe</span> print-board [
-  <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  board:address:array:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  row:number<span class="Special"> &lt;- </span>copy <span class="Constant">7</span>  <span class="Comment"># start printing from the top of the board</span>
+recipe <span class="Identifier">print</span>-board [
+  <span class="Underlined">local</span>-scope
+  screen:address<span class="Special"> &lt;- </span>next-ingredient
+  board:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span>next-ingredient
+  row:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 7  <span class="Comment"># start printing from the top of the board</span>
   <span class="Comment"># print each row</span>
-<span class="CommentedCode">#?   $print [printing board to screen ], screen, 10/newline</span>
-  <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>lesser-than row, <span class="Constant">0</span>
-    <span class="muControl">break-if</span> done?
-<span class="CommentedCode">#?     $print [printing rank ], row, 10/newline</span>
+  {
+    done?:boolean<span class="Special"> &lt;- </span>lesser-than row, 0
+    break-if done?
     <span class="Comment"># print rank number as a legend</span>
-    rank:number<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
-    print-integer screen, rank
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ | ]</span>
-    print-string screen, s
+    rank:number<span class="Special"> &lt;- </span>add row, 1
+    <span class="Identifier">print</span>-integer screen, rank
+    s:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span><span class="Identifier">new</span> [ | ]
+    <span class="Identifier">print</span>-string screen, s
     <span class="Comment"># print each square in the row</span>
-    col:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    <span class="Delimiter">{</span>
-      done?:boolean<span class="Special"> &lt;- </span>equal col:number, <span class="Constant">8</span>
-      <span class="muControl">break-if</span> done?:boolean
-      f:address:array:character<span class="Special"> &lt;- </span>index *board, col
+    col:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 0
+    {
+      done?:boolean<span class="Special"> &lt;- </span>equal col:number, 8
+      break-if done?:boolean
+      f:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span>index *board, col
       c:character<span class="Special"> &lt;- </span>index *f, row
-      print-character screen, c
-      print-character screen, <span class="Constant">32/space</span>
-      col<span class="Special"> &lt;- </span>add col, <span class="Constant">1</span>
-      <span class="muControl">loop</span>
-    <span class="Delimiter">}</span>
-    row<span class="Special"> &lt;- </span>subtract row, <span class="Constant">1</span>
+      <span class="Identifier">print</span>-character screen, c
+      <span class="Identifier">print</span>-character screen, 32/space
+      col<span class="Special"> &lt;- </span>add col, 1
+      loop
+    }
+    row<span class="Special"> &lt;- </span>subtract row, 1
     cursor-to-next-line screen
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
+    loop
+  }
   <span class="Comment"># print file letters as legend</span>
-<span class="CommentedCode">#?   $print [printing legend</span>
-<span class="CommentedCode">#? ] #? 1</span>
-  s<span class="Special"> &lt;- </span>new <span class="Constant">[  +----------------]</span>
-  print-string screen, s
+  s<span class="Special"> &lt;- </span><span class="Identifier">new</span> [  +----------------]
+  <span class="Identifier">print</span>-string screen, s
   screen<span class="Special"> &lt;- </span>cursor-to-next-line screen
-<span class="CommentedCode">#?   screen &lt;- print-character screen, 97 #? 1</span>
-  s<span class="Special"> &lt;- </span>new <span class="Constant">[    a b c d e f g h]</span>
-  screen<span class="Special"> &lt;- </span>print-string screen, s
+  s<span class="Special"> &lt;- </span><span class="Identifier">new</span> [    a b c d e f g h]
+  screen<span class="Special"> &lt;- </span><span class="Identifier">print</span>-string screen, s
   screen<span class="Special"> &lt;- </span>cursor-to-next-line screen
-<span class="CommentedCode">#?   $print [done printing board</span>
-<span class="CommentedCode">#? ] #? 1</span>
 ]
 
 <span class="Comment"># board:address:array:address:array:character &lt;- initial-position</span>
-<span class="muRecipe">recipe</span> initial-position [
-  <span class="Constant">local-scope</span>
+recipe initial-position [
+  <span class="Underlined">local</span>-scope
   <span class="Comment"># layout in memory (in raster order):</span>
   <span class="Comment">#   R P _ _ _ _ p r</span>
   <span class="Comment">#   N P _ _ _ _ p n</span>
@@ -242,7 +232,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment">#   B P _ _ _ _ p B</span>
   <span class="Comment">#   N P _ _ _ _ p n</span>
   <span class="Comment">#   R P _ _ _ _ p r</span>
-  initial-position:address:array:number<span class="Special"> &lt;- </span>new-array <span class="Constant">82/R</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">114/r</span>, <span class="Constant">78/N</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">110/n</span>, <span class="Constant">66/B</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">98/b</span>, <span class="Constant">81/Q</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">113/q</span>, <span class="Constant">75/K</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">107/k</span>, <span class="Constant">66/B</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">98/b</span>, <span class="Constant">78/N</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">110/n</span>, <span class="Constant">82/R</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">114/r</span>
+  initial-position:address:<span class="Identifier">array</span>:number<span class="Special"> &lt;- </span><span class="Identifier">new</span>-<span class="Identifier">array</span> 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 81/Q, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 113/q, 75/K, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 107/k, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r
 <span class="CommentedCode">#?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r,</span>
 <span class="CommentedCode">#?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,</span>
 <span class="CommentedCode">#?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, </span>
@@ -251,31 +241,30 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="CommentedCode">#?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b,</span>
 <span class="CommentedCode">#?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,</span>
 <span class="CommentedCode">#?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r</span>
-  board:address:array:address:array:character<span class="Special"> &lt;- </span>new-board initial-position
-  <span class="muControl">reply</span> board
+  board:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span><span class="Identifier">new</span>-board initial-position
+  reply board
 ]
 
-<span class="muScenario">scenario</span> printing-the-board [
-  assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
+scenario printing-the-board [
+  <span class="Identifier">assume</span>-screen 30/width, 12/height
   run [
-    <span class="Constant">1</span>:address:array:address:array:character/board<span class="Special"> &lt;- </span>initial-position
-    screen:address<span class="Special"> &lt;- </span>print-board screen:address, <span class="Constant">1</span>:address:array:address:array:character/board
-<span class="CommentedCode">#?     $dump-screen #? 1</span>
+    1:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character/board<span class="Special"> &lt;- </span>initial-position
+    screen:address<span class="Special"> &lt;- </span><span class="Identifier">print</span>-board screen:address, 1:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character/board
   ]
   screen-should-contain [
   <span class="Comment">#  012345678901234567890123456789</span>
-   <span class="Constant"> .8 | r n b q k b n r           .</span>
-   <span class="Constant"> .7 | p p p p p p p p           .</span>
-   <span class="Constant"> .6 |                           .</span>
-   <span class="Constant"> .5 |                           .</span>
-   <span class="Constant"> .4 |                           .</span>
-   <span class="Constant"> .3 |                           .</span>
-   <span class="Constant"> .2 | P P P P P P P P           .</span>
-   <span class="Constant"> .1 | R N B Q K B N R           .</span>
-   <span class="Constant"> .  +----------------           .</span>
-   <span class="Constant"> .    a b c d e f g h           .</span>
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .                              .</span>
+    .8 | r n b q k b n r           .
+    .7 | p p p p p p p p           .
+    .6 |                           .
+    .5 |                           .
+    .4 |                           .
+    .3 |                           .
+    .2 | P P P P P P P P           .
+    .1 | R N B Q K B N R           .
+    .  +----------------           .
+    .    a b c d e f g h           .
+    .                              .
+    .                              .
   ]
 ]
 
@@ -291,360 +280,360 @@ container move [
 
 <span class="Comment"># result:address:move, quit?:boolean, error?:boolean &lt;- read-move stdin:address:channel, screen:address</span>
 <span class="Comment"># prints only error messages to screen</span>
-<span class="muRecipe">recipe</span> read-move [
-  <span class="Constant">local-scope</span>
-  stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  from-file:number, quit?:boolean, error?:boolean<span class="Special"> &lt;- </span>read-file stdin, screen
-  <span class="muControl">reply-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
-  <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
+recipe <span class="Identifier">read</span>-move [
+  <span class="Underlined">local</span>-scope
+  stdin:address:channel<span class="Special"> &lt;- </span>next-ingredient
+  screen:address<span class="Special"> &lt;- </span>next-ingredient
+  from-file:number, <span class="Identifier">quit</span>?:boolean, <span class="Identifier">error</span>?:boolean<span class="Special"> &lt;- </span><span class="Identifier">read</span>-file stdin, screen
+  reply-if <span class="Identifier">quit</span>?, 0/dummy, <span class="Identifier">quit</span>?, <span class="Identifier">error</span>?
+  reply-if <span class="Identifier">error</span>?, 0/dummy, <span class="Identifier">quit</span>?, <span class="Identifier">error</span>?
   <span class="Comment"># construct the move object</span>
-  result:address:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
-  x:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">from-file:offset</span>
-  *x<span class="Special"> &lt;- </span>copy from-file
-  x<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">from-rank:offset</span>
-  *x, quit?, error?<span class="Special"> &lt;- </span>read-rank stdin, screen
-  <span class="muControl">reply-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
-  <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
-  error?<span class="Special"> &lt;- </span>expect-from-channel stdin, <span class="Constant">45/dash</span>, screen
-  <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, error?
-  x<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">to-file:offset</span>
-  *x, quit?, error?<span class="Special"> &lt;- </span>read-file stdin, screen
-  <span class="muControl">reply-if</span> quit?:boolean, <span class="Constant">0/dummy</span>, quit?:boolean, error?:boolean
-  <span class="muControl">reply-if</span> error?:boolean, <span class="Constant">0/dummy</span>, quit?:boolean, error?:boolean
-  x:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">to-rank:offset</span>
-  *x, quit?, error?<span class="Special"> &lt;- </span>read-rank stdin, screen
-  <span class="muControl">reply-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
-  <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
-  error?<span class="Special"> &lt;- </span>expect-from-channel stdin, <span class="Constant">10/newline</span>, screen
-  <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, error?
-  <span class="muControl">reply</span> result, quit?, error?
+  result:address:move<span class="Special"> &lt;- </span><span class="Identifier">new</span> move:<span class="Identifier">type</span>
+  x:address:number<span class="Special"> &lt;- </span>get-address *result, from-file:offset
+  *x<span class="Special"> &lt;- </span><span class="Identifier">copy</span> from-file
+  x<span class="Special"> &lt;- </span>get-address *result, from-rank:offset
+  *x, <span class="Identifier">quit</span>?, <span class="Identifier">error</span>?<span class="Special"> &lt;- </span><span class="Identifier">read</span>-rank stdin, screen
+  reply-if <span class="Identifier">quit</span>?, 0/dummy, <span class="Identifier">quit</span>?, <span class="Identifier">error</span>?
+  reply-if <span class="Identifier">error</span>?, 0/dummy, <span class="Identifier">quit</span>?, <span class="Identifier">error</span>?
+  <span class="Identifier">error</span>?<span class="Special"> &lt;- </span>expect-from-channel stdin, 45/dash, screen
+  reply-if <span class="Identifier">error</span>?, 0/dummy, 0/<span class="Identifier">quit</span>, <span class="Identifier">error</span>?
+  x<span class="Special"> &lt;- </span>get-address *result, to-file:offset
+  *x, <span class="Identifier">quit</span>?, <span class="Identifier">error</span>?<span class="Special"> &lt;- </span><span class="Identifier">read</span>-file stdin, screen
+  reply-if <span class="Identifier">quit</span>?:boolean, 0/dummy, <span class="Identifier">quit</span>?:boolean, <span class="Identifier">error</span>?:boolean
+  reply-if <span class="Identifier">error</span>?:boolean, 0/dummy, <span class="Identifier">quit</span>?:boolean, <span class="Identifier">error</span>?:boolean
+  x:address:number<span class="Special"> &lt;- </span>get-address *result, to-rank:offset
+  *x, <span class="Identifier">quit</span>?, <span class="Identifier">error</span>?<span class="Special"> &lt;- </span><span class="Identifier">read</span>-rank stdin, screen
+  reply-if <span class="Identifier">quit</span>?, 0/dummy, <span class="Identifier">quit</span>?, <span class="Identifier">error</span>?
+  reply-if <span class="Identifier">error</span>?, 0/dummy, <span class="Identifier">quit</span>?, <span class="Identifier">error</span>?
+  <span class="Identifier">error</span>?<span class="Special"> &lt;- </span>expect-from-channel stdin, 10/newline, screen
+  reply-if <span class="Identifier">error</span>?, 0/dummy, 0/<span class="Identifier">quit</span>, <span class="Identifier">error</span>?
+  reply result, <span class="Identifier">quit</span>?, <span class="Identifier">error</span>?
 ]
 
 <span class="Comment"># file:number, quit:boolean, error:boolean &lt;- read-file stdin:address:channel, screen:address</span>
 <span class="Comment"># valid values for file: 0-7</span>
-<span class="muRecipe">recipe</span> read-file [
-  <span class="Constant">local-scope</span>
-  stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  c:character, stdin<span class="Special"> &lt;- </span>read stdin
-  <span class="Delimiter">{</span>
-    q-pressed?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">81/Q</span>
-    <span class="muControl">break-unless</span> q-pressed?
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    q-pressed?<span class="Special"> &lt;- </span>equal c, <span class="Constant">113/q</span>
-    <span class="muControl">break-unless</span> q-pressed?
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    empty-fake-keyboard?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">0/eof</span>
-    <span class="muControl">break-unless</span> empty-fake-keyboard?
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    newline?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
-    <span class="muControl">break-unless</span> newline?
-    error-message:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[that's not enough]</span>
-    print-string screen, error-message
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-  <span class="Delimiter">}</span>
-  file:number<span class="Special"> &lt;- </span>subtract c, <span class="Constant">97/a</span>
+recipe <span class="Identifier">read</span>-file [
+  <span class="Underlined">local</span>-scope
+  stdin:address:channel<span class="Special"> &lt;- </span>next-ingredient
+  screen:address<span class="Special"> &lt;- </span>next-ingredient
+  c:character, stdin<span class="Special"> &lt;- </span><span class="Identifier">read</span> stdin
+  {
+    q-pressed?:boolean<span class="Special"> &lt;- </span>equal c, 81/Q
+    break-unless q-pressed?
+    reply 0/dummy, 1/<span class="Identifier">quit</span>, 0/<span class="Identifier">error</span>
+  }
+  {
+    q-pressed?<span class="Special"> &lt;- </span>equal c, 113/q
+    break-unless q-pressed?
+    reply 0/dummy, 1/<span class="Identifier">quit</span>, 0/<span class="Identifier">error</span>
+  }
+  {
+    empty-fake-keyboard?:boolean<span class="Special"> &lt;- </span>equal c, 0/eof
+    break-unless empty-fake-keyboard?
+    reply 0/dummy, 1/<span class="Identifier">quit</span>, 0/<span class="Identifier">error</span>
+  }
+  {
+    newline?:boolean<span class="Special"> &lt;- </span>equal c, 10/newline
+    break-unless newline?
+    <span class="Identifier">error</span>-message:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span><span class="Identifier">new</span> [that's not enough]
+    <span class="Identifier">print</span>-string screen, <span class="Identifier">error</span>-message
+    reply 0/dummy, 0/<span class="Identifier">quit</span>, 1/<span class="Identifier">error</span>
+  }
+  file:number<span class="Special"> &lt;- </span>subtract c, 97/a
   <span class="Comment"># 'a' &lt;= file &lt;= 'h'</span>
-  <span class="Delimiter">{</span>
-    above-min:boolean<span class="Special"> &lt;- </span>greater-or-equal file, <span class="Constant">0</span>
-    <span class="muControl">break-if</span> above-min
-    error-message:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[file too low: ]</span>
-    print-string screen, error-message
-    print-character screen, c
+  {
+    above-<span class="Identifier">min</span>:boolean<span class="Special"> &lt;- </span>greater-or-equal file, 0
+    break-if above-<span class="Identifier">min</span>
+    <span class="Identifier">error</span>-message:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span><span class="Identifier">new</span> [file too low: ]
+    <span class="Identifier">print</span>-string screen, <span class="Identifier">error</span>-message
+    <span class="Identifier">print</span>-character screen, c
     cursor-to-next-line screen
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    below-max:boolean<span class="Special"> &lt;- </span>lesser-than file, <span class="Constant">8</span>
-    <span class="muControl">break-if</span> below-max
-    error-message<span class="Special"> &lt;- </span>new <span class="Constant">[file too high: ]</span>
-    print-string screen, error-message
-    print-character screen, c
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-  <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> file, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
+    reply 0/dummy, 0/<span class="Identifier">quit</span>, 1/<span class="Identifier">error</span>
+  }
+  {
+    below-<span class="Identifier">max</span>:boolean<span class="Special"> &lt;- </span>lesser-than file, 8
+    break-if below-<span class="Identifier">max</span>
+    <span class="Identifier">error</span>-message<span class="Special"> &lt;- </span><span class="Identifier">new</span> [file too high: ]
+    <span class="Identifier">print</span>-string screen, <span class="Identifier">error</span>-message
+    <span class="Identifier">print</span>-character screen, c
+    reply 0/dummy, 0/<span class="Identifier">quit</span>, 1/<span class="Identifier">error</span>
+  }
+  reply file, 0/<span class="Identifier">quit</span>, 0/<span class="Identifier">error</span>
 ]
 
 <span class="Comment"># rank:number &lt;- read-rank stdin:address:channel, screen:address</span>
 <span class="Comment"># valid values: 0-7, -1 (quit), -2 (error)</span>
-<span class="muRecipe">recipe</span> read-rank [
-  <span class="Constant">local-scope</span>
-  stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  c:character, stdin<span class="Special"> &lt;- </span>read stdin
-  <span class="Delimiter">{</span>
-    q-pressed?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">8/Q</span>
-    <span class="muControl">break-unless</span> q-pressed?
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    q-pressed?<span class="Special"> &lt;- </span>equal c, <span class="Constant">113/q</span>
-    <span class="muControl">break-unless</span> q-pressed?
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    newline?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10</span>  <span class="Comment"># newline</span>
-    <span class="muControl">break-unless</span> newline?
-    error-message:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[that's not enough]</span>
-    print-string screen, error-message
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-  <span class="Delimiter">}</span>
-  rank:number<span class="Special"> &lt;- </span>subtract c, <span class="Constant">49/'1'</span>
+recipe <span class="Identifier">read</span>-rank [
+  <span class="Underlined">local</span>-scope
+  stdin:address:channel<span class="Special"> &lt;- </span>next-ingredient
+  screen:address<span class="Special"> &lt;- </span>next-ingredient
+  c:character, stdin<span class="Special"> &lt;- </span><span class="Identifier">read</span> stdin
+  {
+    q-pressed?:boolean<span class="Special"> &lt;- </span>equal c, 8/Q
+    break-unless q-pressed?
+    reply 0/dummy, 1/<span class="Identifier">quit</span>, 0/<span class="Identifier">error</span>
+  }
+  {
+    q-pressed?<span class="Special"> &lt;- </span>equal c, 113/q
+    break-unless q-pressed?
+    reply 0/dummy, 1/<span class="Identifier">quit</span>, 0/<span class="Identifier">error</span>
+  }
+  {
+    newline?:boolean<span class="Special"> &lt;- </span>equal c, 10  <span class="Comment"># newline</span>
+    break-unless newline?
+    <span class="Identifier">error</span>-message:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span><span class="Identifier">new</span> [that's not enough]
+    <span class="Identifier">print</span>-string screen, <span class="Identifier">error</span>-message
+    reply 0/dummy, 0/<span class="Identifier">quit</span>, 1/<span class="Identifier">error</span>
+  }
+  rank:number<span class="Special"> &lt;- </span>subtract c, 49/'1'
   <span class="Comment"># assert'1' &lt;= rank &lt;= '8'</span>
-  <span class="Delimiter">{</span>
-    above-min:boolean<span class="Special"> &lt;- </span>greater-or-equal rank, <span class="Constant">0</span>
-    <span class="muControl">break-if</span> above-min
-    error-message<span class="Special"> &lt;- </span>new <span class="Constant">[rank too low: ]</span>
-    print-string screen, error-message
-    print-character screen, c
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    below-max:boolean<span class="Special"> &lt;- </span>lesser-or-equal rank, <span class="Constant">7</span>
-    <span class="muControl">break-if</span> below-max
-    error-message<span class="Special"> &lt;- </span>new <span class="Constant">[rank too high: ]</span>
-    print-string screen, error-message
-    print-character screen, c
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-  <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> rank, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
+  {
+    above-<span class="Identifier">min</span>:boolean<span class="Special"> &lt;- </span>greater-or-equal rank, 0
+    break-if above-<span class="Identifier">min</span>
+    <span class="Identifier">error</span>-message<span class="Special"> &lt;- </span><span class="Identifier">new</span> [rank too low: ]
+    <span class="Identifier">print</span>-string screen, <span class="Identifier">error</span>-message
+    <span class="Identifier">print</span>-character screen, c
+    reply 0/dummy, 0/<span class="Identifier">quit</span>, 1/<span class="Identifier">error</span>
+  }
+  {
+    below-<span class="Identifier">max</span>:boolean<span class="Special"> &lt;- </span>lesser-or-equal rank, 7
+    break-if below-<span class="Identifier">max</span>
+    <span class="Identifier">error</span>-message<span class="Special"> &lt;- </span><span class="Identifier">new</span> [rank too high: ]
+    <span class="Identifier">print</span>-string screen, <span class="Identifier">error</span>-message
+    <span class="Identifier">print</span>-character screen, c
+    reply 0/dummy, 0/<span class="Identifier">quit</span>, 1/<span class="Identifier">error</span>
+  }
+  reply rank, 0/<span class="Identifier">quit</span>, 0/<span class="Identifier">error</span>
 ]
 
 <span class="Comment"># read a character from the given channel and check that it's what we expect</span>
 <span class="Comment"># return true on error</span>
-<span class="muRecipe">recipe</span> expect-from-channel [
-  <span class="Constant">local-scope</span>
-  stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  expected:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  c:character, stdin<span class="Special"> &lt;- </span>read stdin
-  <span class="Delimiter">{</span>
-    match?:boolean<span class="Special"> &lt;- </span>equal c, expected
-    <span class="muControl">break-if</span> match?
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[expected character not found]</span>
-    print-string screen, s
-  <span class="Delimiter">}</span>
-  result:boolean<span class="Special"> &lt;- </span>not match?
-  <span class="muControl">reply</span> result
+recipe expect-from-channel [
+  <span class="Underlined">local</span>-scope
+  stdin:address:channel<span class="Special"> &lt;- </span>next-ingredient
+  expected:character<span class="Special"> &lt;- </span>next-ingredient
+  screen:address<span class="Special"> &lt;- </span>next-ingredient
+  c:character, stdin<span class="Special"> &lt;- </span><span class="Identifier">read</span> stdin
+  {
+    <span class="Identifier">match</span>?:boolean<span class="Special"> &lt;- </span>equal c, expected
+    break-if <span class="Identifier">match</span>?
+    s:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span><span class="Identifier">new</span> [expected character not found]
+    <span class="Identifier">print</span>-string screen, s
+  }
+  result:boolean<span class="Special"> &lt;- </span>not <span class="Identifier">match</span>?
+  reply result
 ]
 
-<span class="muScenario">scenario</span> read-move-blocking [
-  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+scenario <span class="Identifier">read</span>-move-blocking [
+  <span class="Identifier">assume</span>-screen 20/width, 2/height
   run [
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2</span>
-    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running <span class="Constant">read-move:recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">new</span>-channel 2
+    2:number/routine<span class="Special"> &lt;- </span>start-running <span class="Identifier">read</span>-move:recipe, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
-    <span class="Constant">4</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">4</span>:boolean/waiting?, [
-F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> coming up (<span class="muRecipe">before</span> any keys were pressed)]
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number/<span class="Identifier">id</span>
+    4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 3/waiting
+    <span class="Identifier">assert</span> 4:boolean/waiting?, [
+F <span class="Identifier">read</span>-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
     <span class="Comment"># press 'a'</span>
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">97/a</span>
-    restart <span class="Constant">2</span>:number/routine
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 97/a
+    restart 2:number/routine
     <span class="Comment"># 'read-move' still waiting for input</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
-    <span class="Constant">4</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">4</span>:boolean/waiting?, [
-F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> rank 'a']
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number/<span class="Identifier">id</span>
+    4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 3/waiting
+    <span class="Identifier">assert</span> 4:boolean/waiting?, [
+F <span class="Identifier">read</span>-move-blocking: routine failed to pause after rank 'a']
     <span class="Comment"># press '2'</span>
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">50/'2'</span>
-    restart <span class="Constant">2</span>:number/routine
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 50/'2'
+    restart 2:number/routine
     <span class="Comment"># 'read-move' still waiting for input</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
-    <span class="Constant">4</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">4</span>:boolean/waiting?, [
-F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> file 'a2']
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number/<span class="Identifier">id</span>
+    4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 3/waiting
+    <span class="Identifier">assert</span> 4:boolean/waiting?, [
+F <span class="Identifier">read</span>-move-blocking: routine failed to pause after file 'a2']
     <span class="Comment"># press '-'</span>
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">45/'-'</span>
-    restart <span class="Constant">2</span>:number/routine
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 45/'-'
+    restart 2:number/routine
     <span class="Comment"># 'read-move' still waiting for input</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number
-    <span class="Constant">4</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">4</span>:boolean/waiting?/routine-state, [
-F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> hyphen 'a2-']
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number
+    4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 3/waiting
+    <span class="Identifier">assert</span> 4:boolean/waiting?/routine-state, [
+F <span class="Identifier">read</span>-move-blocking: routine failed to pause after hyphen 'a2-']
     <span class="Comment"># press 'a'</span>
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">97/a</span>
-    restart <span class="Constant">2</span>:number/routine
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 97/a
+    restart 2:number/routine
     <span class="Comment"># 'read-move' still waiting for input</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number
-    <span class="Constant">4</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">4</span>:boolean/waiting?/routine-state, [
-F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> rank 'a2-a']
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number
+    4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 3/waiting
+    <span class="Identifier">assert</span> 4:boolean/waiting?/routine-state, [
+F <span class="Identifier">read</span>-move-blocking: routine failed to pause after rank 'a2-a']
     <span class="Comment"># press '4'</span>
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">52/'4'</span>
-    restart <span class="Constant">2</span>:number/routine
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 52/'4'
+    restart 2:number/routine
     <span class="Comment"># 'read-move' still waiting for input</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number
-    <span class="Constant">4</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">4</span>:boolean/waiting?, [
-F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> file 'a2-a4']
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number
+    4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 3/waiting
+    <span class="Identifier">assert</span> 4:boolean/waiting?, [
+F <span class="Identifier">read</span>-move-blocking: routine failed to pause after file 'a2-a4']
     <span class="Comment"># press 'newline'</span>
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">10</span>  <span class="Comment"># newline</span>
-    restart <span class="Constant">2</span>:number/routine
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 10  <span class="Comment"># newline</span>
+    restart 2:number/routine
     <span class="Comment"># 'read-move' now completes</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number
-    <span class="Constant">4</span>:boolean/completed?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">1/completed</span>
-    assert <span class="Constant">4</span>:boolean/completed?, [
-F read-move-blocking: routine failed to terminate on newline]
-    trace <span class="Constant">1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number
+    4:boolean/completed?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 1/completed
+    <span class="Identifier">assert</span> 4:boolean/completed?, [
+F <span class="Identifier">read</span>-move-blocking: routine failed to terminate on newline]
+    trace 1, [test], [reached end]
   ]
   trace-should-contain [
     test: reached end
   ]
 ]
 
-<span class="muScenario">scenario</span> read-move-quit [
-  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+scenario <span class="Identifier">read</span>-move-<span class="Identifier">quit</span> [
+  <span class="Identifier">assume</span>-screen 20/width, 2/height
   run [
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2</span>
-    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running <span class="Constant">read-move:recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">new</span>-channel 2
+    2:number/routine<span class="Special"> &lt;- </span>start-running <span class="Identifier">read</span>-move:recipe, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
-    <span class="Constant">4</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">4</span>:boolean/waiting?, [
-F read-move-quit: routine failed to pause <span class="muRecipe">after</span> coming up (<span class="muRecipe">before</span> any keys were pressed)]
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number/<span class="Identifier">id</span>
+    4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 3/waiting
+    <span class="Identifier">assert</span> 4:boolean/waiting?, [
+F <span class="Identifier">read</span>-move-<span class="Identifier">quit</span>: routine failed to pause after coming up (before any keys were pressed)]
     <span class="Comment"># press 'q'</span>
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">113/q</span>
-    restart <span class="Constant">2</span>:number/routine
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 113/q
+    restart 2:number/routine
     <span class="Comment"># 'read-move' completes</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
-    <span class="Constant">4</span>:boolean/completed?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">1/completed</span>
-    assert <span class="Constant">4</span>:boolean/completed?, [
-F read-move-quit: routine failed to terminate on 'q']
-    trace <span class="Constant">1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number/<span class="Identifier">id</span>
+    4:boolean/completed?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 1/completed
+    <span class="Identifier">assert</span> 4:boolean/completed?, [
+F <span class="Identifier">read</span>-move-<span class="Identifier">quit</span>: routine failed to terminate on 'q']
+    trace 1, [test], [reached end]
   ]
   trace-should-contain [
     test: reached end
   ]
 ]
 
-<span class="muScenario">scenario</span> read-move-illegal-file [
-  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+scenario <span class="Identifier">read</span>-move-illegal-file [
+  <span class="Identifier">assume</span>-screen 20/width, 2/height
   run [
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2</span>
-    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running <span class="Constant">read-move:recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">new</span>-channel 2
+    2:number/routine<span class="Special"> &lt;- </span>start-running <span class="Identifier">read</span>-move:recipe, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
-    <span class="Constant">4</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">4</span>:boolean/waiting?, [
-F read-move-file: routine failed to pause <span class="muRecipe">after</span> coming up (<span class="muRecipe">before</span> any keys were pressed)]
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">50/'2'</span>
-    restart <span class="Constant">2</span>:number/routine
-    wait-for-routine <span class="Constant">2</span>:number
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number/<span class="Identifier">id</span>
+    4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 3/waiting
+    <span class="Identifier">assert</span> 4:boolean/waiting?, [
+F <span class="Identifier">read</span>-move-file: routine failed to pause after coming up (before any keys were pressed)]
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 50/'2'
+    restart 2:number/routine
+    wait-for-routine 2:number
   ]
   screen-should-contain [
-   <span class="Constant"> .file too low: 2     .</span>
-   <span class="Constant"> .                    .</span>
+    .file too low: 2     .
+    .                    .
   ]
 ]
 
-<span class="muScenario">scenario</span> read-move-illegal-rank [
-  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+scenario <span class="Identifier">read</span>-move-illegal-rank [
+  <span class="Identifier">assume</span>-screen 20/width, 2/height
   run [
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2</span>
-    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running <span class="Constant">read-move:recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">new</span>-channel 2
+    2:number/routine<span class="Special"> &lt;- </span>start-running <span class="Identifier">read</span>-move:recipe, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
-    <span class="Constant">4</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">4</span>:boolean/waiting?, [
-F read-move-file: routine failed to pause <span class="muRecipe">after</span> coming up (<span class="muRecipe">before</span> any keys were pressed)]
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">97/a</span>
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">97/a</span>
-    restart <span class="Constant">2</span>:number/routine
-    wait-for-routine <span class="Constant">2</span>:number
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number/<span class="Identifier">id</span>
+    4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 3/waiting
+    <span class="Identifier">assert</span> 4:boolean/waiting?, [
+F <span class="Identifier">read</span>-move-file: routine failed to pause after coming up (before any keys were pressed)]
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 97/a
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 97/a
+    restart 2:number/routine
+    wait-for-routine 2:number
   ]
   screen-should-contain [
-   <span class="Constant"> .rank too high: a    .</span>
-   <span class="Constant"> .                    .</span>
+    .rank too high: a    .
+    .                    .
   ]
 ]
 
-<span class="muScenario">scenario</span> read-move-empty [
-  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+scenario <span class="Identifier">read</span>-move-empty [
+  <span class="Identifier">assume</span>-screen 20/width, 2/height
   run [
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2</span>
-    <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running <span class="Constant">read-move:recipe</span>, <span class="Constant">1</span>:address:channel, screen:address
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">new</span>-channel 2
+    2:number/routine<span class="Special"> &lt;- </span>start-running <span class="Identifier">read</span>-move:recipe, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
-    wait-for-routine <span class="Constant">2</span>:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">2</span>:number/id
-    <span class="Constant">4</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">4</span>:boolean/waiting?, [
-F read-move-file: routine failed to pause <span class="muRecipe">after</span> coming up (<span class="muRecipe">before</span> any keys were pressed)]
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">10/newline</span>
-    <span class="Constant">1</span>:address:channel<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:channel, <span class="Constant">97/a</span>
-    restart <span class="Constant">2</span>:number/routine
-    wait-for-routine <span class="Constant">2</span>:number
+    wait-for-routine 2:number
+    3:number<span class="Special"> &lt;- </span>routine-state 2:number/<span class="Identifier">id</span>
+    4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, 3/waiting
+    <span class="Identifier">assert</span> 4:boolean/waiting?, [
+F <span class="Identifier">read</span>-move-file: routine failed to pause after coming up (before any keys were pressed)]
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 10/newline
+    1:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> 1:address:channel, 97/a
+    restart 2:number/routine
+    wait-for-routine 2:number
   ]
   screen-should-contain [
-   <span class="Constant"> .that's not enough   .</span>
-   <span class="Constant"> .                    .</span>
+    .that's not enough   .
+    .                    .
   ]
 ]
 
-<span class="muRecipe">recipe</span> make-move [
-  <span class="Constant">local-scope</span>
-  b:address:array:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  m:address:move<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  from-file:number<span class="Special"> &lt;- </span>get *m, <span class="Constant">from-file:offset</span>
-  from-rank:number<span class="Special"> &lt;- </span>get *m, <span class="Constant">from-rank:offset</span>
-  to-file:number<span class="Special"> &lt;- </span>get *m, <span class="Constant">to-file:offset</span>
-  to-rank:number<span class="Special"> &lt;- </span>get *m, <span class="Constant">to-rank:offset</span>
-  f:address:array:character<span class="Special"> &lt;- </span>index *b, from-file
+recipe make-move [
+  <span class="Underlined">local</span>-scope
+  b:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span>next-ingredient
+  m:address:move<span class="Special"> &lt;- </span>next-ingredient
+  from-file:number<span class="Special"> &lt;- </span>get *m, from-file:offset
+  from-rank:number<span class="Special"> &lt;- </span>get *m, from-rank:offset
+  to-file:number<span class="Special"> &lt;- </span>get *m, to-file:offset
+  to-rank:number<span class="Special"> &lt;- </span>get *m, to-rank:offset
+  f:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span>index *b, from-file
   src:address:character/square<span class="Special"> &lt;- </span>index-address *f, from-rank
   f<span class="Special"> &lt;- </span>index *b, to-file
   dest:address:character/square<span class="Special"> &lt;- </span>index-address *f, to-rank
-  *dest<span class="Special"> &lt;- </span>copy *src
-  *src<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
-  <span class="muControl">reply</span> b/same-as-ingredient:<span class="Constant">0</span>
+  *dest<span class="Special"> &lt;- </span><span class="Identifier">copy</span> *src
+  *src<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 32/space
+  reply b/same-as-ingredient:0
 ]
 
-<span class="muScenario">scenario</span> making-a-move [
-  assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
+scenario making-a-move [
+  <span class="Identifier">assume</span>-screen 30/width, 12/height
   run [
-    <span class="Constant">2</span>:address:array:address:array:character/board<span class="Special"> &lt;- </span>initial-position
-    <span class="Constant">3</span>:address:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
-    <span class="Constant">4</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, <span class="Constant">from-file:offset</span>
-    *<span class="Constant">4</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">6/g</span>
-    <span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, <span class="Constant">from-rank:offset</span>
-    *<span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1/'2'</span>
-    <span class="Constant">6</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, <span class="Constant">to-file:offset</span>
-    *<span class="Constant">6</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">6/g</span>
-    <span class="Constant">7</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">3</span>:address:move, <span class="Constant">to-rank:offset</span>
-    *<span class="Constant">7</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">3/'4'</span>
-    <span class="Constant">2</span>:address:array:address:array:character/board<span class="Special"> &lt;- </span>make-move <span class="Constant">2</span>:address:array:address:array:character/board, <span class="Constant">3</span>:address:move
-    screen:address<span class="Special"> &lt;- </span>print-board screen:address, <span class="Constant">2</span>:address:array:address:array:character/board
+    2:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character/board<span class="Special"> &lt;- </span>initial-position
+    3:address:move<span class="Special"> &lt;- </span><span class="Identifier">new</span> move:<span class="Identifier">type</span>
+    4:address:number<span class="Special"> &lt;- </span>get-address *3:address:move, from-file:offset
+    *4:address:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 6/g
+    5:address:number<span class="Special"> &lt;- </span>get-address *3:address:move, from-rank:offset
+    *5:address:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 1/'2'
+    6:address:number<span class="Special"> &lt;- </span>get-address *3:address:move, to-file:offset
+    *6:address:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 6/g
+    7:address:number<span class="Special"> &lt;- </span>get-address *3:address:move, to-rank:offset
+    *7:address:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 3/'4'
+    2:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character/board<span class="Special"> &lt;- </span>make-move 2:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character/board, 3:address:move
+    screen:address<span class="Special"> &lt;- </span><span class="Identifier">print</span>-board screen:address, 2:address:<span class="Identifier">array</span>:address:<span class="Identifier">array</span>:character/board
   ]
   screen-should-contain [
   <span class="Comment">#  012345678901234567890123456789</span>
-   <span class="Constant"> .8 | r n b q k b n r           .</span>
-   <span class="Constant"> .7 | p p p p p p p p           .</span>
-   <span class="Constant"> .6 |                           .</span>
-   <span class="Constant"> .5 |                           .</span>
-   <span class="Constant"> .4 |             P             .</span>
-   <span class="Constant"> .3 |                           .</span>
-   <span class="Constant"> .2 | P P P P P P   P           .</span>
-   <span class="Constant"> .1 | R N B Q K B N R           .</span>
-   <span class="Constant"> .  +----------------           .</span>
-   <span class="Constant"> .    a b c d e f g h           .</span>
-   <span class="Constant"> .                              .</span>
+    .8 | r n b q k b n r           .
+    .7 | p p p p p p p p           .
+    .6 |                           .
+    .5 |                           .
+    .4 |             P             .
+    .3 |                           .
+    .2 | P P P P P P   P           .
+    .1 | R N B Q K B N R           .
+    .  +----------------           .
+    .    a b c d e f g h           .
+    .                              .
   ]
 ]
 </pre>

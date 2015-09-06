@@ -14,12 +14,11 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .cSpecial { color: #008000; }
-.Identifier { color: #804000; }
 .Constant { color: #00a0a0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .SalientComment { color: #00ffff; }
-.CommentedCode { color: #6c6c6c; }
+.Identifier { color: #804000; }
 -->
 </style>
 
@@ -32,10 +31,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <body>
 <pre id='vimCodeElement'>
 <span class="Comment">//: Take charge of the text-mode display and console.</span>
-
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Comment">// uncomment to debug console programs</span>
-<span class="CommentedCode">//? ofstream LOG(&quot;log.txt&quot;);</span>
 
 <span class="SalientComment">//:: Display management</span>
 
@@ -68,7 +63,6 @@ Recipe_ordinal[<span class="Constant">&quot;close-console&quot;</span>] = CLOSE_
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case CLOSE_CONSOLE: <span class="Delimiter">{</span>
   tb_shutdown<span class="Delimiter">();</span>
-<span class="CommentedCode">//?   Trace_stream-&gt;dump_layer = &quot;all&quot;; //? 1</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -83,6 +77,16 @@ Recipe_ordinal[<span class="Constant">&quot;clear-display&quot;</span>] = CLEAR_
 case CLEAR_DISPLAY: <span class="Delimiter">{</span>
   tb_clear<span class="Delimiter">();</span>
   Display_row = Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+SYNC_DISPLAY<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;sync-display&quot;</span>] = SYNC_DISPLAY<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case SYNC_DISPLAY: <span class="Delimiter">{</span>
+  tb_sync<span class="Delimiter">();</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

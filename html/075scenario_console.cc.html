@@ -14,7 +14,6 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .cSpecial { color: #008000; }
-.CommentedCode { color: #6c6c6c; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -79,12 +78,10 @@ ASSUME_CONSOLE<span class="Delimiter">,</span>
 Recipe_ordinal[<span class="Constant">&quot;assume-console&quot;</span>] = ASSUME_CONSOLE<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case ASSUME_CONSOLE: <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;aaa: &quot; &lt;&lt; current_instruction().ingredients.at(0).name &lt;&lt; '\n'; //? 2</span>
   <span class="Comment">// create a temporary recipe just for parsing; it won't contain valid instructions</span>
   istringstream in<span class="Delimiter">(</span><span class="Constant">&quot;[&quot;</span> + current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name + <span class="Constant">&quot;]&quot;</span><span class="Delimiter">);</span>
-  recipe r = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  recipe r = slurp_body<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   long long int num_events = count_events<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;fff: &quot; &lt;&lt; num_events &lt;&lt; '\n'; //? 3</span>
   <span class="Comment">// initialize the events</span>
   long long int size = num_events*size_of_event<span class="Delimiter">()</span> + <span class="Comment">/*</span><span class="Comment">space for length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   ensure_space<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
@@ -98,13 +95,23 @@ case ASSUME_CONSOLE: <span class="Delimiter">{</span>
       Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'type' in 'mouse-event'</span><span class="Comment">*/</span><span class="Constant">0</span>] = TB_KEY_MOUSE_LEFT<span class="Delimiter">;</span>
       Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'row' in 'mouse-event'</span><span class="Comment">*/</span><span class="Constant">1</span>] = to_integer<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
       Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'column' in 'mouse-event'</span><span class="Comment">*/</span><span class="Constant">2</span>] = to_integer<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; &quot;AA left click: &quot; &lt;&lt; Memory[Current_routine-&gt;alloc+2] &lt;&lt; ' ' &lt;&lt; Memory[Current_routine-&gt;alloc+3] &lt;&lt; '\n'; //? 1</span>
       Current_routine<span class="Delimiter">-&gt;</span>alloc += size_of_event<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     else if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;press&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc] = <span class="Comment">/*</span><span class="Comment">tag for 'keycode' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
-      Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Constant">1</span>] = to_integer<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; &quot;AA press: &quot; &lt;&lt; Memory[Current_routine-&gt;alloc+1] &lt;&lt; '\n'; //? 3</span>
+      string key = curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>key<span class="Delimiter">))</span>
+        Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Constant">1</span>] = to_integer<span class="Delimiter">(</span>key<span class="Delimiter">);</span>
+      else if <span class="Delimiter">(</span>Key<span class="Delimiter">.</span>find<span class="Delimiter">(</span>key<span class="Delimiter">)</span> != Key<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+        Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Constant">1</span>] = Key[key]<span class="Delimiter">;</span>
+      else
+        raise &lt;&lt; <span class="Constant">&quot;assume-console: can't press &quot;</span> &lt;&lt; key &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      if <span class="Delimiter">(</span>Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Constant">1</span>] &lt; <span class="Constant">256</span><span class="Delimiter">)</span>
+        <span class="Comment">// these keys are in ascii</span>
+        Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc] = <span class="Comment">/*</span><span class="Comment">tag for 'text' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">;</span>
+      else <span class="Delimiter">{</span>
+        <span class="Comment">// distinguish from unicode</span>
+        Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc] = <span class="Comment">/*</span><span class="Comment">tag for 'keycode' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
       Current_routine<span class="Delimiter">-&gt;</span>alloc += size_of_event<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     <span class="Comment">// End Event Handlers</span>
@@ -115,13 +122,11 @@ case ASSUME_CONSOLE: <span class="Delimiter">{</span>
       const char* raw_contents = contents<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
       long long int num_keyboard_events = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
       long long int curr = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; &quot;AAA: &quot; &lt;&lt; num_keyboard_events &lt;&lt; '\n'; //? 1</span>
       for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; num_keyboard_events<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc] = <span class="Comment">/*</span><span class="Comment">tag for 'text' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">;</span>
         uint32_t curr_character<span class="Delimiter">;</span>
         assert<span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
         tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;curr_character<span class="Delimiter">,</span> &amp;raw_contents[curr]<span class="Delimiter">);</span>
-<span class="CommentedCode">//?         cerr &lt;&lt; &quot;AA keyboard: &quot; &lt;&lt; curr_character &lt;&lt; '\n'; //? 3</span>
         Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Comment">/*</span><span class="Comment">skip exclusive container tag</span><span class="Comment">*/</span><span class="Constant">1</span>] = curr_character<span class="Delimiter">;</span>
         curr += tb_utf8_char_length<span class="Delimiter">(</span>raw_contents[curr]<span class="Delimiter">);</span>
         Current_routine<span class="Delimiter">-&gt;</span>alloc += size_of_event<span class="Delimiter">();</span>
@@ -133,11 +138,68 @@ case ASSUME_CONSOLE: <span class="Delimiter">{</span>
   ensure_space<span class="Delimiter">(</span>size_of_events<span class="Delimiter">());</span>
   Memory[CONSOLE] = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
   Current_routine<span class="Delimiter">-&gt;</span>alloc += size_of_events<span class="Delimiter">();</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;writing &quot; &lt;&lt; event_data_address &lt;&lt; &quot; to location &quot; &lt;&lt; Memory[CONSOLE]+1 &lt;&lt; '\n'; //? 1</span>
   Memory[Memory[CONSOLE]+<span class="Comment">/*</span><span class="Comment">offset of 'data' in container 'events'</span><span class="Comment">*/</span><span class="Constant">1</span>] = event_data_address<span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; Memory[Memory[CONSOLE]+1] &lt;&lt; '\n'; //? 1</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;alloc now &quot; &lt;&lt; Current_routine-&gt;alloc &lt;&lt; '\n'; //? 1</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+map&lt;string<span class="Delimiter">,</span> long long int&gt; Key<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
+initialize_key_names<span class="Delimiter">();</span>
+<span class="Delimiter">:(code)</span>
+void initialize_key_names<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  Key[<span class="Constant">&quot;F1&quot;</span>] = TB_KEY_F1<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F2&quot;</span>] = TB_KEY_F2<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F3&quot;</span>] = TB_KEY_F3<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F4&quot;</span>] = TB_KEY_F4<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F5&quot;</span>] = TB_KEY_F5<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F6&quot;</span>] = TB_KEY_F6<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F7&quot;</span>] = TB_KEY_F7<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F8&quot;</span>] = TB_KEY_F8<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F9&quot;</span>] = TB_KEY_F9<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F10&quot;</span>] = TB_KEY_F10<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F11&quot;</span>] = TB_KEY_F11<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;F12&quot;</span>] = TB_KEY_F12<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;insert&quot;</span>] = TB_KEY_INSERT<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;delete&quot;</span>] = TB_KEY_DELETE<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;home&quot;</span>] = TB_KEY_HOME<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;end&quot;</span>] = TB_KEY_END<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;page-up&quot;</span>] = TB_KEY_PGUP<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;page-down&quot;</span>] = TB_KEY_PGDN<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;up-arrow&quot;</span>] = TB_KEY_ARROW_UP<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;down-arrow&quot;</span>] = TB_KEY_ARROW_DOWN<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;left-arrow&quot;</span>] = TB_KEY_ARROW_LEFT<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;right-arrow&quot;</span>] = TB_KEY_ARROW_RIGHT<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-a&quot;</span>] = TB_KEY_CTRL_A<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-b&quot;</span>] = TB_KEY_CTRL_B<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-c&quot;</span>] = TB_KEY_CTRL_C<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-d&quot;</span>] = TB_KEY_CTRL_D<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-e&quot;</span>] = TB_KEY_CTRL_E<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-f&quot;</span>] = TB_KEY_CTRL_F<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-g&quot;</span>] = TB_KEY_CTRL_G<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;backspace&quot;</span>] = TB_KEY_BACKSPACE<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-h&quot;</span>] = TB_KEY_CTRL_H<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;tab&quot;</span>] = TB_KEY_TAB<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-i&quot;</span>] = TB_KEY_CTRL_I<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-j&quot;</span>] = TB_KEY_CTRL_J<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;enter&quot;</span>] = TB_KEY_NEWLINE<span class="Delimiter">;</span>  <span class="Comment">// ignore CR/LF distinction; there is only 'enter'</span>
+  Key[<span class="Constant">&quot;ctrl-k&quot;</span>] = TB_KEY_CTRL_K<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-l&quot;</span>] = TB_KEY_CTRL_L<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-m&quot;</span>] = TB_KEY_CTRL_M<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-n&quot;</span>] = TB_KEY_CTRL_N<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-o&quot;</span>] = TB_KEY_CTRL_O<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-p&quot;</span>] = TB_KEY_CTRL_P<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-q&quot;</span>] = TB_KEY_CTRL_Q<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-r&quot;</span>] = TB_KEY_CTRL_R<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-s&quot;</span>] = TB_KEY_CTRL_S<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-t&quot;</span>] = TB_KEY_CTRL_T<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-u&quot;</span>] = TB_KEY_CTRL_U<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-v&quot;</span>] = TB_KEY_CTRL_V<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-w&quot;</span>] = TB_KEY_CTRL_W<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-x&quot;</span>] = TB_KEY_CTRL_X<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-y&quot;</span>] = TB_KEY_CTRL_Y<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;ctrl-z&quot;</span>] = TB_KEY_CTRL_Z<span class="Delimiter">;</span>
+  Key[<span class="Constant">&quot;escape&quot;</span>] = TB_KEY_ESC<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario events_in_scenario)</span>
@@ -145,12 +207,11 @@ scenario events-in-scenario [
   assume-console [
     type [abc]
     left-click <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>
-    press <span class="Constant">65515</span>  <span class="Comment"># up arrow</span>
+    press up-arrow
     type [d]
   ]
   run [
     <span class="Comment"># 3 keyboard events; each event occupies 4 locations</span>
-<span class="CommentedCode">#?     $start-tracing #? 2</span>
     <span class="Constant">1</span>:event<span class="Special"> &lt;- </span>read-event console:address
     <span class="Constant">5</span>:event<span class="Special"> &lt;- </span>read-event console:address
     <span class="Constant">9</span>:event<span class="Special"> &lt;- </span>read-event console:address
@@ -179,7 +240,7 @@ scenario events-in-scenario [
     <span class="Constant">15</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># row</span>
     <span class="Constant">16</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># column</span>
     <span class="Constant">17</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># 'keycode'</span>
-    <span class="Constant">18</span><span class="Special"> &lt;- </span><span class="Constant">65515</span>  <span class="Comment"># up arrow</span>
+    <span class="Constant">18</span><span class="Special"> &lt;- </span><span class="Constant">65517</span>  <span class="Comment"># up arrow</span>
     <span class="Constant">19</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># unused</span>
     <span class="Constant">20</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># unused</span>
     <span class="Constant">21</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># 'text'</span>
@@ -199,17 +260,13 @@ Recipe_ordinal[<span class="Constant">&quot;replace-in-console&quot;</span>] = R
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case REPLACE_IN_CONSOLE: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;console: &quot; &lt;&lt; Memory[CONSOLE] &lt;&lt; '\n'; //? 1</span>
   if <span class="Delimiter">(</span>!Memory[CONSOLE]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;console not initialized</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   long long int console_data = Memory[Memory[CONSOLE]+<span class="Constant">1</span>]<span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;console data starts at &quot; &lt;&lt; console_data &lt;&lt; '\n'; //? 1</span>
   long long int size = Memory[console_data]<span class="Delimiter">;</span>  <span class="Comment">// array size</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;size of console data is &quot; &lt;&lt; size &lt;&lt; '\n'; //? 1</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">,</span> curr = console_data+<span class="Constant">1</span><span class="Delimiter">;</span> i &lt; size<span class="Delimiter">;</span> ++i<span class="Delimiter">,</span> curr+=size_of_event<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; curr &lt;&lt; '\n'; //? 1</span>
     if <span class="Delimiter">(</span>Memory[curr] != <span class="Comment">/*</span><span class="Comment">text</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>Memory[curr+<span class="Constant">1</span>] != ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     for <span class="Delimiter">(</span>long long int n = <span class="Constant">0</span><span class="Delimiter">;</span> n &lt; size_of_event<span class="Delimiter">();</span> ++n<span class="Delimiter">)</span>
@@ -223,13 +280,10 @@ long long int count_events<span class="Delimiter">(</span>const recipe&amp; r<sp
   long long int result = <span class="Constant">0</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     const instruction&amp; curr = r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;aa: &quot; &lt;&lt; curr.name &lt;&lt; '\n'; //? 3</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;bb: &quot; &lt;&lt; curr.ingredients.at(0).name &lt;&lt; '\n'; //? 1</span>
     if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;type&quot;</span><span class="Delimiter">)</span>
       result += unicode_length<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
     else
       result++<span class="Delimiter">;</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;cc: &quot; &lt;&lt; result &lt;&lt; '\n'; //? 1</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>

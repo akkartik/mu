@@ -14,7 +14,6 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .cSpecial { color: #008000; }
-.CommentedCode { color: #6c6c6c; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Identifier { color: #804000; }
@@ -103,16 +102,12 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
     <span class="Delimiter">}</span>
     if <span class="Delimiter">(</span>key == <span class="Constant">'K'</span> || key == TB_KEY_PGUP<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// page-up is more convoluted</span>
-<span class="CommentedCode">//?       tb_shutdown(); //? 1</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; &quot;page-up: Top_of_screen is currently &quot; &lt;&lt; Top_of_screen &lt;&lt; '\n'; //? 1</span>
       for <span class="Delimiter">(</span>int screen_row = tb_height<span class="Delimiter">();</span> screen_row &gt; <span class="Constant">0</span> &amp;&amp; Top_of_screen &gt; <span class="Constant">0</span><span class="Delimiter">;</span> --screen_row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         --Top_of_screen<span class="Delimiter">;</span>
         if <span class="Delimiter">(</span>Top_of_screen &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
         while <span class="Delimiter">(</span>Top_of_screen &gt; <span class="Constant">0</span> &amp;&amp; Visible<span class="Delimiter">.</span>find<span class="Delimiter">(</span>Top_of_screen<span class="Delimiter">)</span> == Visible<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
           --Top_of_screen<span class="Delimiter">;</span>
-<span class="CommentedCode">//?         cerr &lt;&lt; &quot;now &quot; &lt;&lt; Top_of_screen &lt;&lt; '\n'; //? 1</span>
       <span class="Delimiter">}</span>
-<span class="CommentedCode">//?       exit(0); //? 1</span>
       if <span class="Delimiter">(</span>Top_of_screen &gt; <span class="Constant">0</span><span class="Delimiter">)</span>
         refresh_screen_rows<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
@@ -132,10 +127,8 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
     <span class="Delimiter">}</span>
     if <span class="Delimiter">(</span>key == TB_KEY_CARRIAGE_RETURN<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// expand lines under current by one level</span>
-<span class="CommentedCode">//?       tb_shutdown();</span>
       assert<span class="Delimiter">(</span>Trace_index<span class="Delimiter">.</span>find<span class="Delimiter">(</span>Display_row<span class="Delimiter">)</span> != Trace_index<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
       long long int start_index = Trace_index[Display_row]<span class="Delimiter">;</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; &quot;start_index is &quot; &lt;&lt; start_index &lt;&lt; '\n';</span>
       long long int index = <span class="Constant">0</span><span class="Delimiter">;</span>
       <span class="Comment">// simultaneously compute end_index and min_depth</span>
       int min_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
@@ -146,18 +139,14 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
         assert<span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth &gt; Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>start_index<span class="Delimiter">).</span>depth<span class="Delimiter">);</span>
         if <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth &lt; min_depth<span class="Delimiter">)</span> min_depth = curr_line<span class="Delimiter">.</span>depth<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; &quot;min_depth is &quot; &lt;&lt; min_depth &lt;&lt; '\n';</span>
       long long int end_index = index<span class="Delimiter">;</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; &quot;end_index is &quot; &lt;&lt; end_index &lt;&lt; '\n';</span>
       <span class="Comment">// mark as visible all intervening indices at min_depth</span>
       for <span class="Delimiter">(</span>index = start_index<span class="Delimiter">;</span> index &lt; end_index<span class="Delimiter">;</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         trace_line&amp; curr_line = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
         if <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth == min_depth<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?           cerr &lt;&lt; &quot;adding &quot; &lt;&lt; index &lt;&lt; '\n';</span>
           Visible<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
         <span class="Delimiter">}</span>
       <span class="Delimiter">}</span>
-<span class="CommentedCode">//?       exit(0);</span>
       refresh_screen_rows<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     if <span class="Delimiter">(</span>key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2<span class="Delimiter">)</span> <span class="Delimiter">{</span>

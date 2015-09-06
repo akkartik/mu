@@ -13,11 +13,10 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muRecipe { color: #ff8700; }
+.Underlined { color: #c000c0; text-decoration: underline; }
 .Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.muControl { color: #c0a020; }
+.Identifier { color: #804000; }
 -->
 </style>
 
@@ -32,36 +31,36 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># example program: maintain multiple counters with isolated lexical scopes</span>
 <span class="Comment"># (spaces)</span>
 
-<span class="muRecipe">recipe</span> new-counter [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
-  n:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="muControl">reply</span> <span class="Constant">default-space</span>
+recipe <span class="Identifier">new</span>-counter [
+  default-space:address:<span class="Identifier">array</span>:location<span class="Special"> &lt;- </span><span class="Identifier">new</span> location:<span class="Identifier">type</span>, 30
+  n:number<span class="Special"> &lt;- </span>next-ingredient
+  reply default-space
 ]
 
-<span class="muRecipe">recipe</span> increment-counter [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">0</span>:address:array:location/names:new-counter<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>  <span class="Comment"># setup outer space; it *must* come from 'new-counter'</span>
-  x:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  n:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>add n:number/space:<span class="Constant">1</span>, x
-  <span class="muControl">reply</span> n:number/space:<span class="Constant">1</span>
+recipe increment-counter [
+  <span class="Underlined">local</span>-scope
+  0:address:<span class="Identifier">array</span>:location/names:<span class="Identifier">new</span>-counter<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># setup outer space; it *must* come from 'new-counter'</span>
+  x:number<span class="Special"> &lt;- </span>next-ingredient
+  n:number/space:1<span class="Special"> &lt;- </span>add n:number/space:1, x
+  reply n:number/space:1
 ]
 
-<span class="muRecipe">recipe</span> main [
-  <span class="Constant">local-scope</span>
+recipe main [
+  <span class="Underlined">local</span>-scope
   <span class="Comment"># counter A</span>
-  a:address:array:location<span class="Special"> &lt;- </span>new-counter <span class="Constant">34</span>
+  a:address:<span class="Identifier">array</span>:location<span class="Special"> &lt;- </span><span class="Identifier">new</span>-counter 34
   <span class="Comment"># counter B</span>
-  b:address:array:location<span class="Special"> &lt;- </span>new-counter <span class="Constant">23</span>
+  b:address:<span class="Identifier">array</span>:location<span class="Special"> &lt;- </span><span class="Identifier">new</span>-counter 23
   <span class="Comment"># increment both by 2 but in different ways</span>
-  increment-counter a, <span class="Constant">1</span>
-  b-value:number<span class="Special"> &lt;- </span>increment-counter b, <span class="Constant">2</span>
-  a-value:number<span class="Special"> &lt;- </span>increment-counter a, <span class="Constant">1</span>
+  increment-counter a, 1
+  b-value:number<span class="Special"> &lt;- </span>increment-counter b, 2
+  a-value:number<span class="Special"> &lt;- </span>increment-counter a, 1
   <span class="Comment"># check results</span>
-  $print <span class="Constant">[Contents of counters</span>
-<span class="Constant">]</span>
+  $<span class="Identifier">print</span> [Contents of counters
+]
   <span class="Comment"># trailing space in next line is to help with syntax highlighting</span>
-  $print <span class="Constant">[a: ]</span>, a-value, <span class="Constant">[ b: ]</span>, b-value, <span class="Constant">[ </span>
-<span class="Constant">]</span>
+  $<span class="Identifier">print</span> [a: ], a-value, [ b: ], b-value, [
+]
 ]
 </pre>
 </body>

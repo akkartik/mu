@@ -13,12 +13,10 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muRecipe { color: #ff8700; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
+.Comment { color: #9090ff; }
+.Underlined { color: #c000c0; text-decoration: underline; }
+.Identifier { color: #804000; }
 -->
 </style>
 
@@ -32,44 +30,44 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <pre id='vimCodeElement'>
 <span class="Comment"># example program: communicating between routines using channels</span>
 
-<span class="muRecipe">recipe</span> producer [
+recipe producer [
   <span class="Comment"># produce numbers 1 to 5 on a channel</span>
-  <span class="Constant">local-scope</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Underlined">local</span>-scope
+  chan:address:channel<span class="Special"> &lt;- </span>next-ingredient
   <span class="Comment"># n = 0</span>
-  n:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>lesser-than n, <span class="Constant">5</span>
-    <span class="muControl">break-unless</span> done?
+  n:number<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 0
+  {
+    done?:boolean<span class="Special"> &lt;- </span>lesser-than n, 5
+    break-unless done?
     <span class="Comment"># other threads might get between these prints</span>
-    $print <span class="Constant">[produce: ]</span>, n, <span class="Constant">[ </span>
-<span class="Constant">]</span>
-    chan:address:channel<span class="Special"> &lt;- </span>write chan, n
-    n<span class="Special"> &lt;- </span>add n, <span class="Constant">1</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
+    $<span class="Identifier">print</span> [produce: ], n, [
+]
+    chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">write</span> chan, n
+    n<span class="Special"> &lt;- </span>add n, 1
+    loop
+  }
 ]
 
-<span class="muRecipe">recipe</span> consumer [
+recipe consumer [
   <span class="Comment"># consume and print integers from a channel</span>
-  <span class="Constant">local-scope</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="Delimiter">{</span>
+  <span class="Underlined">local</span>-scope
+  chan:address:channel<span class="Special"> &lt;- </span>next-ingredient
+  {
     <span class="Comment"># read an integer from the channel</span>
-    n:number, chan:address:channel<span class="Special"> &lt;- </span>read chan
+    n:number, chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">read</span> chan
     <span class="Comment"># other threads might get between these prints</span>
-    $print <span class="Constant">[consume: ]</span>, n:number, <span class="Constant">[ </span>
-<span class="Constant">]</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
+    $<span class="Identifier">print</span> [consume: ], n:number, [
+]
+    loop
+  }
 ]
 
-<span class="muRecipe">recipe</span> main [
-  <span class="Constant">local-scope</span>
-  chan:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3</span>
+recipe main [
+  <span class="Underlined">local</span>-scope
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">new</span>-channel 3
   <span class="Comment"># create two background 'routines' that communicate by a channel</span>
-  routine1:number<span class="Special"> &lt;- </span>start-running <span class="Constant">producer:recipe</span>, chan
-  routine2:number<span class="Special"> &lt;- </span>start-running <span class="Constant">consumer:recipe</span>, chan
+  routine1:number<span class="Special"> &lt;- </span>start-running producer:recipe, chan
+  routine2:number<span class="Special"> &lt;- </span>start-running consumer:recipe, chan
   wait-for-routine routine1
   wait-for-routine routine2
 ]

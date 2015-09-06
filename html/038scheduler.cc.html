@@ -15,7 +15,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .SalientComment { color: #00ffff; }
 .traceAbsent { color: #c00000; }
-.CommentedCode { color: #6c6c6c; }
 .cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
@@ -83,7 +82,12 @@ Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;
 Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">:(replace{} &quot;void run(recipe_ordinal r)&quot;)</span>
 void run<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  Routines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new routine<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
+  run<span class="Delimiter">(</span>new routine<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+void run<span class="Delimiter">(</span>routine* rr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  Routines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>rr<span class="Delimiter">);</span>
   Current_routine_index = <span class="Constant">0</span><span class="Delimiter">,</span> Current_routine = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   while <span class="Delimiter">(</span>!all_routines_done<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     skip_to_next_routine<span class="Delimiter">();</span>
@@ -101,7 +105,6 @@ void run<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(code)</span>
 bool all_routines_done<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -138,6 +141,24 @@ string current_routine_label<span class="Delimiter">()</span> <span class="Delim
 for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
   delete Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
 Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+
+<span class="Comment">//: special case for the very first routine</span>
+<span class="Delimiter">:(replace{} &quot;void run_main(int argc, char* argv[])&quot;)</span>
+void run_main<span class="Delimiter">(</span>int argc<span class="Delimiter">,</span> char* argv[]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  recipe_ordinal r = Recipe_ordinal[string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span>]<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// pass in commandline args as ingredients to main</span>
+    <span class="Comment">// todo: test this</span>
+    routine* rr = new routine<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+    Current_routine = rr<span class="Delimiter">;</span>
+    for <span class="Delimiter">(</span>long long int i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; argc<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      vector&lt;double&gt; arg<span class="Delimiter">;</span>
+      arg<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_mu_string<span class="Delimiter">(</span>argv[i]<span class="Delimiter">));</span>
+      Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+    run<span class="Delimiter">(</span>rr<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: To schedule new routines to run, call 'start-running'.</span>
 
@@ -253,7 +274,6 @@ recipe f2 [
 <span class="Special">% Routines.push_back(new routine(f1));  // f1 meant to run</span>
 <span class="Special">% Routines.push_back(new routine(f2));</span>
 <span class="Special">% Routines.back()-&gt;state = COMPLETED;  // f2 not meant to run</span>
-<span class="CommentedCode">#? % Trace_stream-&gt;dump_layer = &quot;all&quot;;</span>
 <span class="Comment"># must have at least one routine without escaping</span>
 recipe f3 [
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -418,12 +438,15 @@ case _DUMP_ROUTINES: <span class="Delimiter">{</span>
 <span class="Special">% Scheduling_interval = 2;</span>
 recipe f1 [
   <span class="Constant">1</span>:number/child-id<span class="Special"> &lt;- </span>start-running f2:recipe
-  limit-time <span class="Constant">1</span>:number/child-id<span class="Delimiter">,</span> <span class="Constant">1</span>
+  limit-time <span class="Constant">1</span>:number/child-id<span class="Delimiter">,</span> <span class="Constant">10</span>
+  <span class="Comment"># padding loop just to make sure f2 has time to completed</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>subtract <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
+  jump-if <span class="Constant">2</span>:number<span class="Delimiter">,</span> -<span class="Constant">2</span>:offset
 ]
 recipe f2 [
-<span class="Delimiter">{</span>
-  loop  <span class="Comment"># run forever</span>
-<span class="Delimiter">}</span>
+  jump -<span class="Constant">1</span>:offset  <span class="Comment"># run forever</span>
+  $print [should never get here]<span class="Delimiter">,</span> <span class="Constant">10</span>/newline
 ]
 <span class="Comment"># f2 terminates</span>
 <span class="traceContains">+schedule: discontinuing routine 2</span>
