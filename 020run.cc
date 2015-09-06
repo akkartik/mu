@@ -161,7 +161,6 @@ if (!Run_tests) {
 //?   Trace_file = "interactive";
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
 //?   Trace_stream->collect_layers.insert("app");
-  transform_all();
   recipe_ordinal r = Recipe_ordinal[string("main")];
 //?   atexit(dump_profile);
   if (r) run(r);
