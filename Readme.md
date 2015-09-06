@@ -386,9 +386,9 @@ Screenshot:
 <img alt='programming environment' src='html/edit.png' width='720px'>
 
 You write recipes on the left and try them out in *sandboxes* on the right.
-Hit F4 to rerun all sandboxes with the latest version of the code. More (maybe
-dated) details: http://akkartik.name/post/mu. Beware, it won't save your edits
-by default. But if you create a sub-directory called `lesson/` under `mu/` it
+Hit F4 to rerun all sandboxes with the latest version of the code. More
+details: http://akkartik.name/post/mu. Beware, it won't save your edits by
+default. But if you create a sub-directory called `lesson/` under `mu/` it
 will. If you turn that directory into a git repo with `git init`, it will also
 back up each version you try out.
 
