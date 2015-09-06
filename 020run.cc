@@ -145,6 +145,14 @@ inline bool routine::completed() const {
   return running_step_index >= SIZE(Recipe[running_recipe].steps);
 }
 
+//:: Startup flow
+
+//: Step 1: load all .mu files with numeric prefixes (in order)
+:(before "End Load Recipes")
+load_permanently("core.mu");
+transform_all();
+
+//: Step 2: load any .mu files provided at the commandline
 :(before "End Commandline Parsing")
 // Loading Commandline Files
 if (argc > 1) {
@@ -155,6 +163,8 @@ if (argc > 1) {
   if (Run_tests) Recipe.erase(Recipe_ordinal[string("main")]);
 }
 
+//: Step 3: if we aren't running tests, locate a recipe called 'main' and
+//: start running it.
 :(before "End Main")
 if (!Run_tests) {
   setup();
@@ -162,7 +172,6 @@ if (!Run_tests) {
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
 //?   Trace_stream->collect_layers.insert("app");
   recipe_ordinal r = Recipe_ordinal[string("main")];
-//?   atexit(dump_profile);
   if (r) run(r);
   teardown();
 }
@@ -181,6 +190,8 @@ void dump_profile() {
     cerr << p->first << ": " << p->second << '\n';
   }
 }
+:(before "End One-time Setup")
+//? atexit(dump_profile);
 
 :(code)
 void cleanup_main() {
@@ -234,22 +245,9 @@ void load_all_permanently(string dir) {
 :(before "End Includes")
 #include<dirent.h>
 
-//:: On startup, load everything in core.mu
-:(before "End Load Recipes")
-load_permanently("core.mu");
-transform_all();
-
-:(code)
-// helper for tests
-void run(string form) {
-  vector<recipe_ordinal> tmp = load(form);
-  transform_all();
-  if (tmp.empty()) return;
-  run(tmp.front());
-}
-
 //:: Reading from memory, writing to memory.
 
+:(code)
 vector<double> read_memory(reagent x) {
   vector<double> result;
   if (is_literal(x)) {
@@ -309,6 +307,15 @@ bool is_literal(const reagent& r) {
 
 bool is_mu_array(reagent r) {
   return !r.types.empty() && r.types.at(0) == Type_ordinal["array"];
+}
+
+:(code)
+// helper for tests
+void run(string form) {
+  vector<recipe_ordinal> tmp = load(form);
+  transform_all();
+  if (tmp.empty()) return;
+  run(tmp.front());
 }
 
 :(scenario run_label)
