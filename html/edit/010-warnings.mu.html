@@ -1,0 +1,428 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - edit/010-warnings.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1.05em; }
+.muRecipe { color: #ff8700; }
+.muData { color: #ffff00; }
+.Special { color: #ff6060; }
+.muScenario { color: #00af00; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.SalientComment { color: #00ffff; }
+.Delimiter { color: #a04060; }
+.muControl { color: #c0a020; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="SalientComment">## handling malformed programs</span>
+
+<span class="muData">container</span> programming-environment-data [
+  recipe-warnings:address:array:character
+]
+
+<span class="Comment"># copy code from recipe editor, persist, load into mu, save any warnings</span>
+<span class="muRecipe">recipe!</span> update-recipes [
+  <span class="Constant">local-scope</span>
+  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  recipes:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
+  in:address:array:character<span class="Special"> &lt;- </span>editor-contents recipes
+  save <span class="Constant">[recipes.mu]</span>, in
+  recipe-warnings:address:address:array:character<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">recipe-warnings:offset</span>
+  *recipe-warnings<span class="Special"> &lt;- </span>reload in
+  <span class="Comment"># if recipe editor has errors, stop</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> *recipe-warnings
+    status:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[errors found]</span>
+    update-status screen, status, <span class="Constant">1/red</span>
+    <span class="muControl">reply</span> <span class="Constant">1/errors-found</span>, env/same-as-ingredient:<span class="Constant">0</span>, screen/same-as-ingredient:<span class="Constant">1</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">reply</span> <span class="Constant">0/no-errors-found</span>, env/same-as-ingredient:<span class="Constant">0</span>, screen/same-as-ingredient:<span class="Constant">1</span>
+]
+
+<span class="muRecipe">before</span> <span class="Constant">&lt;render-components-end&gt;</span> [
+  trace <span class="Constant">11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render status]</span>
+  recipe-warnings:address:array:character<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-warnings:offset</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> recipe-warnings
+    status:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[errors found]</span>
+    update-status screen, status, <span class="Constant">1/red</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">before</span> <span class="Constant">&lt;render-recipe-components-end&gt;</span> [
+  <span class="Delimiter">{</span>
+    recipe-warnings:address:array:character<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-warnings:offset</span>
+    <span class="muControl">break-unless</span> recipe-warnings
+    row, screen<span class="Special"> &lt;- </span>render-string screen, recipe-warnings, left, right, <span class="Constant">1/red</span>, row
+  <span class="Delimiter">}</span>
+]
+
+<span class="muData">container</span> sandbox-data [
+  warnings:address:array:character
+]
+
+<span class="muRecipe">recipe!</span> update-sandbox [
+  <span class="Constant">local-scope</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  data:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
+  response:address:address:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response:offset</span>
+  warnings:address:address:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">warnings:offset</span>
+  trace:address:address:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">trace:offset</span>
+  fake-screen:address:address:screen<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">screen:offset</span>
+  *response, *warnings, *fake-screen, *trace, completed?:boolean<span class="Special"> &lt;- </span>run-interactive data
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> *warnings
+    <span class="muControl">break-if</span> completed?:boolean
+    *warnings<span class="Special"> &lt;- </span>new <span class="Constant">[took too long!</span>
+<span class="Constant">]</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">after</span> <span class="Constant">&lt;render-sandbox-results&gt;</span> [
+  <span class="Delimiter">{</span>
+    sandbox-warnings:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">warnings:offset</span>
+    <span class="muControl">break-unless</span> sandbox-warnings
+    *response-starting-row<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># no response</span>
+    row, screen<span class="Special"> &lt;- </span>render-string screen, sandbox-warnings, left, right, <span class="Constant">1/red</span>, row
+    <span class="muControl">jump</span> <span class="Constant">+render-sandbox-end:label</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muScenario">scenario</span> run-shows-warnings-in-get [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  get 123:number, foo:offset</span>
+<span class="Constant">]</span>]
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  get 123:number, foo:offset                      ┊                                                 .</span>
+   <span class="Constant"> .]                                                 ┊                                                 .</span>
+   <span class="Constant"> .unknown element foo in container number           ┊                                                 .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  screen-should-contain-in-color <span class="Constant">1/red</span>, [
+   <span class="Constant"> .  errors found                                                                                      .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .unknown element foo in container number                                                             .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-shows-missing-type-warnings [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  x &lt;- copy 0</span>
+<span class="Constant">]</span>]
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  x &lt;- copy 0                                     ┊                                                 .</span>
+   <span class="Constant"> .]                                                 ┊                                                 .</span>
+   <span class="Constant"> .missing type in 'x &lt;- copy 0'                     ┊                                                 .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-shows-unbalanced-bracket-warnings [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
+  <span class="Comment"># recipe is incomplete (unbalanced '[')</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo «</span>
+<span class="Constant">  x &lt;- copy 0</span>
+<span class="Constant">]</span>
+  string-replace <span class="Constant">1</span>:address:array:character, <span class="Constant">171/«</span>, <span class="Constant">91</span>  <span class="Comment"># '['</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo \\\[                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  x &lt;- copy 0                                     ┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .9: unbalanced '\\\[' for recipe                      ┊                                                 .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-shows-get-on-non-container-warnings [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  x:address:point &lt;- new point:type</span>
+<span class="Constant">  get x:address:point, 1:offset</span>
+<span class="Constant">]</span>]
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  x:address:point &lt;- new point:type               ┊                                                x.</span>
+   <span class="Constant"> .  get x:address:point, 1:offset                   ┊foo                                              .</span>
+   <span class="Constant"> .]                                                 ┊foo: first ingredient of 'get' should be a conta↩.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊iner, but got x:address:point                    .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-shows-non-literal-get-argument-warnings [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  x:number &lt;- copy 0</span>
+<span class="Constant">  y:address:point &lt;- new point:type</span>
+<span class="Constant">  get *y:address:point, x:number</span>
+<span class="Constant">]</span>]
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  x:number &lt;- copy 0                              ┊                                                 .</span>
+   <span class="Constant"> .  y:address:point &lt;- new point:type               ┊                                                 .</span>
+   <span class="Constant"> .  get *y:address:point, x:number                  ┊                                                 .</span>
+   <span class="Constant"> .]                                                 ┊                                                 .</span>
+   <span class="Constant"> .foo: expected ingredient 1 of 'get' to have type ↩┊                                                 .</span>
+   <span class="Constant"> .'offset'; got x:number                            ┊                                                 .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-shows-warnings-everytime [
+  $close-trace  <span class="Comment"># trace too long</span>
+  <span class="Comment"># try to run a file with an error</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  x:number &lt;- copy y:number</span>
+<span class="Constant">]</span>]
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  x:number &lt;- copy y:number                       ┊                                                 .</span>
+   <span class="Constant"> .]                                                 ┊                                                 .</span>
+   <span class="Constant"> .use before set: y in foo                          ┊                                                 .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># rerun the file, check for the same error</span>
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  x:number &lt;- copy y:number                       ┊                                                 .</span>
+   <span class="Constant"> .]                                                 ┊                                                 .</span>
+   <span class="Constant"> .use before set: y in foo                          ┊                                                 .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-instruction-and-print-warnings [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+  <span class="Comment"># left editor is empty</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Comment"># right editor contains an illegal instruction</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:number, foo:offset]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Comment"># run the code in the editors</span>
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># check that screen prints error message in red</span>
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
+   <span class="Constant"> .                                                  ┊get 1234:number, foo:offset                      .</span>
+   <span class="Constant"> .                                                  ┊unknown element foo in container number          .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  screen-should-contain-in-color <span class="Constant">7/white</span>, [
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                   get 1234:number, foo:offset                      .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+  ]
+  screen-should-contain-in-color <span class="Constant">1/red</span>, [
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                   unknown element foo in container number          .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+  ]
+  screen-should-contain-in-color <span class="Constant">245/grey</span>, [
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-instruction-and-print-warnings-only-once [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+  <span class="Comment"># left editor is empty</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Comment"># right editor contains an illegal instruction</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:number, foo:offset]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Comment"># run the code in the editors multiple times</span>
+  assume-console [
+    press F4
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># check that screen prints error message just once</span>
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
+   <span class="Constant"> .                                                  ┊get 1234:number, foo:offset                      .</span>
+   <span class="Constant"> .                                                  ┊unknown element foo in container number          .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> sandbox-can-handle-infinite-loop [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">20/height</span>
+  <span class="Comment"># left editor is empty</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo [</span>
+<span class="Constant">  {</span>
+<span class="Constant">    loop</span>
+<span class="Constant">  }</span>
+<span class="Constant">]</span>]
+  <span class="Comment"># right editor contains an instruction</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Comment"># run the sandbox</span>
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .recipe foo [                                      ┊                                                 .</span>
+   <span class="Constant"> .  {                                               ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .    loop                                          ┊                                                x.</span>
+   <span class="Constant"> .  }                                               ┊foo                                              .</span>
+   <span class="Constant"> .]                                                 ┊took too long!                                   .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

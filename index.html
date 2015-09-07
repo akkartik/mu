@@ -10,7 +10,7 @@ Mu.
 
 Read these first: <a href='http://akkartik.name/about'>problem statement</a>,
 <a href='http://github.com/akkartik/mu#readme'>readme and installation
-  instructions</a> (mu requires minimal dependencies).
+  instructions</a> (Mu requires minimal dependencies).
 
 <p>
 Mu's code looks quite alien, requiring editors to be specially configured to
@@ -21,13 +21,13 @@ showing how it currently looks in my <a href='https://github.com/akkartik/mu/blo
 
 <ul>
 <li><a href='html/x.mu.html'>x.mu</a>: a simple program to add two numbers
-together. Shows that at bottom mu is a simple VM bytecode designed to convert
+together. Shows that at bottom Mu is a simple VM bytecode designed to convert
 directly to machine code.
 <li><a href='html/factorial.mu.html'>factorial.mu</a>: everyone's favorite
-example, showing how mu supports conditionals and loops without any special
+example, showing how Mu supports conditionals and loops without any special
 syntax, using the special labels '{' and '}'.
 <li><a href='html/tangle.mu.html'>tangle.mu</a>: another (contrived) version
-of factorial showing mu's ability to 'tangle' code from multiple places into a
+of factorial showing Mu's ability to 'tangle' code from multiple places into a
 single function or 'recipe'.
 <li><a href='html/counters.mu.html'>counters.mu</a>: lexical scope
 <li><a href='html/callcc.mu.html'>callcc.mu</a>: first-class continuations. Mu
@@ -44,6 +44,10 @@ together, a little console program along with thorough tests of its behavior
 including both screen and keyboard handling.
 </ul>
 
+Now a listing of every layer in mu. Recall that you can <a href='http://akkartik.name/post/wart-layers'>stop
+loading at any layer and get a valid program to run with a subset of features,
+that passes all its tests</a>.
+
 <p><b>Part I</b>: basic infrastructure
 <p/><a href='html/000organization.cc.html'>000organization.cc</a>: the basic
 skeleton program. Compiles and runs but doesn't do much. Later <em>layers</em>
@@ -51,30 +55,30 @@ hook into this skeleton to add functionality. Mu's guarantee: you can <a href='h
 features</a> up until any layer, and it will compile and pass all tests until
 that point. <a href='http://akkartik.name/post/wart-layers'>More details &rarr;</a>
 <br/><a href='html/001help.cc.html'>001help.cc</a>: just a simple test layer
-to show how to hook into the skeleton. Also summarizes how to invoke mu,
+to show how to hook into the skeleton. Also summarizes how to invoke Mu,
 behaviors that later layers will be providing.
-<br/><a href='html/002test.cc.html'>002test.cc</a>: mu's minimalist test
+<br/><a href='html/002test.cc.html'>002test.cc</a>: Mu's minimalist test
 harness, relying on a couple of one-liners in the makefile to autogenerate
 lists of tests to run.
 <br/><a href='html/003trace.cc.html'>003trace.cc</a>: support for logging
 facts about our program, and for <a href='http://akkartik.name/post/tracing-tests'>checking the facts logged in tests</a>.
 (<a href='html/003trace.test.cc.html'>tests for the test harness</a>)
 
-<p><b>Part II</b>: the mu virtual machine, designed to compile easily to
+<p><b>Part II</b>: the Mu virtual machine, designed to compile easily to
 machine language.
 <p/><a href='html/010vm.cc.html'>010vm.cc</a>: core data structures: recipes
 (functions), instructions and reagents (operands).
 <br/><a href='html/011load.cc.html'>011load.cc</a>: the textual representation
 of recipes and how it's turned into the data structures.
-<br/><a href='html/012transform.cc.html'>012transform.cc</a>: after mu
+<br/><a href='html/012transform.cc.html'>012transform.cc</a>: after Mu
 programs are loaded but before they are run they can be transformed in an
-extensible manner akin to lisp macros. Think of this as the core of mu's
+extensible manner akin to lisp macros. Think of this as the core of Mu's
 &lsquo;compiler&rsquo; for providing high-level features atop the core.
 <br/><a href='html/013literal_string.cc.html'>013literal_string.cc</a>: extend
 the loader to support literal strings in various instructions.
 <br/><a href='html/014literal_noninteger.cc.html'>014literal_noninteger.cc</a>:
 extend the loader to support non-integer numbers.
-<br/><a href='html/020run.cc.html'>020run.cc</a>: executing mu recipes by
+<br/><a href='html/020run.cc.html'>020run.cc</a>: executing Mu recipes by
 executing the list of instructions they contain.
 <br/>Various primitive operations: on <a href='html/021arithmetic.cc.html'>numbers</a>,
 <a href='html/022boolean.cc.html'>booleans</a>, for <a href='html/023jump.cc.html'>control flow</a>,
@@ -86,8 +90,8 @@ and <a href='html/024compare.cc.html'>comparing values</a>.
 <br/><a href='html/030container.cc.html'>030container.cc</a>: compound types
 akin to records, structs or classes.
 <br/><a href='html/031address.cc.html'>031address.cc</a>: adding and removing
-layers of indirection to mu data.
-<br/><a href='html/032array.cc.html'>032array.cc</a>: all mu data structures
+layers of indirection to Mu data.
+<br/><a href='html/032array.cc.html'>032array.cc</a>: all Mu data structures
 are bounds-checked.
 <br/><a href='html/033exclusive_container.cc.html'>033exclusive_container.cc</a>: tagged unions or sum types.
 <br/><a href='html/034call.cc.html'>034call.cc</a>: calls to recipes look
@@ -108,13 +112,13 @@ synchronization between routines.
 <p><b>Part III</b>: transforms to provide 80% of the benefits of high-level
 languages.
 <br/><a href='html/040brace.cc.html'>040brace.cc</a> and
-<a href='html/041jump_label.cc.html'>041jump_label.cc</a>: how mu provides
+<a href='html/041jump_label.cc.html'>041jump_label.cc</a>: how Mu provides
 structured goto-less programming without introducing the syntax of
 conditionals and loops other languages require.
-<br/><a href='html/042name.cc.html'>042name.cc</a>: how mu transforms variable
+<br/><a href='html/042name.cc.html'>042name.cc</a>: how Mu transforms variable
 names to raw memory addresses.
 <br/><a href='html/043new.cc.html'>043new.cc</a>: rudimentary memory
-allocator that is aware of all global types in any mu program.
+allocator that is aware of all global types in any Mu program.
 <br/><a href='html/044space.cc.html'>044space.cc</a>: how variables in
 different routines are isolated from each other using <em>spaces</em>. Mu
 &lsquo;local variables&rsquo; are allocated on the heap.
@@ -128,18 +132,22 @@ variables that are always available inside a single routine. Mu has no
 variables that are available transparently across routines.
 <br/><a href='html/048typecheck.cc.html'>048typecheck.cc</a>: a simple
 transformer to insert missing types in instructions.
-<br/><a href='html/050scenario.cc.html'>050scenario.cc</a>: mu's first syntax
+<br/><a href='html/050scenario.cc.html'>050scenario.cc</a>: Mu's first syntax
 &mdash; not for code but for tests. (<a href='html/051scenario_test.mu.html'>example</a>)
 <br/><a href='html/052tangle.cc.html'>052tangle.cc</a>: support for layers in
-mu programs. They've been so good to us.
+Mu programs. They've been so good to us.
 <br/><a href='html/053continuation.cc.html'>053continuation.cc</a>:
 first-class and delimited continuations, primitives for yield, exceptions and
 much else besides.
+<p/><a href='html/999spaces.cc.html'>999spaces.cc.html</a>: Maps summarizing
+various address spaces in the core, and the conventions that regulate their
+use in previous layers.
 
 <p><b>Part IV</b>: beginnings of a standard library
-<p/><a href='html/060string.mu.html'>060string.mu</a>: strings in mu are
-bounds-checked rather than null-terminated. They're also unicode-aware.
-<br/><a href='html/061channel.mu.html'>061channel.mu</a>: channels are mu's
+<p/><a href='html/060string.mu.html'>060string.mu</a>: strings in Mu are
+bounds-checked rather than null-terminated. They're also unicode-aware (code
+points only; no control characters, no combining characters, no normalization).
+<br/><a href='html/061channel.mu.html'>061channel.mu</a>: channels are Mu's
 only synchronization primitive, queues that can cause the routine reading or
 writing from them to stall without taking up CPU resources.
 <br/><a href='html/062array.mu.html'>062array.mu</a>
@@ -152,7 +160,7 @@ lists that can be traversed both forwards and back.
 <br/><a href='html/066stream.mu'>066stream.mu</a>: data structure to
 efficiently append strings.
 
-<p><b>Part V</b>: Nascent tools for browsing mu codebases, and for teaching
+<p><b>Part V</b>: Nascent tools for browsing Mu codebases, and for teaching
 programming to non-programmers by getting them hooked on the value of tests.
 The eventual goal is <b>an environment that watches programmers as they
 manually test their code, and turns these interactive sessions into
@@ -171,18 +179,49 @@ swap the real keyboard and mouse with fake ones for testing.
 writing tests for keyboard and mouse using the fakes.
 (<a href='html/076scenario_console_test.mu.html'>examples</a>)
 <br/><a href='html/080trace_browser.cc.html'>080trace_browser.cc</a>: a
-zoomable UI for inspecting traces generated by mu programs. Allows both
+zoomable UI for inspecting traces generated by Mu programs. Allows both
 scanning a high-level view and drilling down into selective details.
 <br/><a href='html/081run_interactive.cc.html'>081run_interactive.cc</a>:
-hacky primitives for supporting the mu programming environment in <a
-href='html/edit.mu.html'>edit.mu</a>.
+hacky primitives for running Mu code in the programming environment below.
 <br/><a href='html/082persist.cc.html'>082persist.cc</a>: more hacky
-primitives for supporting saving/restoring sessions in the mu programming
+primitives for supporting saving/restoring sessions in the Mu programming
 environment.
 
-<p/><a href='html/999spaces.cc.html'>Epilogue</a>: maps summarizing various
-address spaces, and the conventions that regulate their use in previous
-layers.
+<p>Finally, the programming environment, the first major application in its
+own directory. Stop loading after each of these layers to get a working
+version with just fewer features. The <a href='https://github.com/akkartik/mu/blob/master/edit/Readme.md'>readme
+for the app</a> contains instructions for running it.<br>
+
+<br/><a href='html/edit/001-editor.mu.html'>edit/001-editor.mu</a>: data
+structures for a simple text editor widget. Load just this layer to see just
+the rendering and line-wrapping at work.
+<br/><a href='html/edit/002-typing.mu.html'>edit/002-typing.mu</a>: support
+for moving the cursor anywhere with the mouse and typing text in there.
+<br/><a href='html/edit/003-shortcuts.mu.html'>edit/003-shortcuts.mu</a>:
+support for various keyboard shortcuts for manipulating text you've typed in.
+<br/><a href='html/edit/004-programming-environment.mu.html'>edit/004-programming-environment.mu</a>:
+combining two text editor widgets, one on the left, one on the right.
+<br/><a href='html/edit/005-sandbox.mu.html'>edit/005-sandbox.mu</a>: support
+for running mu code in the right-hand widget using code from the left, and
+displaying results in a <em>sandbox</em> below on the right. You can have
+multiple sandboxes, and hit F4 to rerun them all at anytime with the latest
+version of the code on the left side.
+<br/><a href='html/edit/006-sandbox-edit.mu.html'>edit/006-sandbox-edit.mu</a>:
+click on the title bar of each sandbox to pop it back into the sandbox editor
+and make changes to it.
+<br/><a href='html/edit/007-sandbox-delete.mu.html'>edit/007-sandbox-delete.mu</a>:
+click on the 'x' in the title bar of a sandbox to delete it.
+<br/><a href='html/edit/008-sandbox-test.mu.html'>edit/008-sandbox-test.mu</a>:
+click on the results of a sandbox to turn them green and save the output as
+golden/expected. Any future changes to the output will then be flagged in red.
+<br/><a href='html/edit/009-sandbox-trace.mu.html'>edit/009-sandbox-trace.mu</a>:
+click on code in a sandbox to open up a drawer containing its trace. The trace
+can be added to using the <span style='font-family:courier,fixed'>stash</span>
+command.
+<br/><a href='html/edit/010-warnings.mu.html'>edit/010-warnings.mu</a>:
+support for rendering warnings on both the left and in each sandbox.
+<br/><a href='html/edit/011-editor-undo.mu.html'>edit/011-editor-undo.mu</a>:
+support for undo in the editor widget.
 
 <hr>
 

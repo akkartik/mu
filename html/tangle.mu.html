@@ -13,10 +13,12 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.Special { color: #ff6060; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
-.Underlined { color: #c000c0; text-decoration: underline; }
-.Identifier { color: #804000; }
+.Constant { color: #00a0a0; }
+.Special { color: #ff6060; }
+.Delimiter { color: #a04060; }
+.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -29,40 +31,40 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <body>
 <pre id='vimCodeElement'>
 <span class="Comment"># example program: constructing recipes out of order</span>
-#
+<span class="Comment">#</span>
 <span class="Comment"># We construct a factorial function with separate base and recursive cases.</span>
 <span class="Comment"># Compare factorial.mu.</span>
-#
+<span class="Comment">#</span>
 <span class="Comment"># This isn't a very tasteful example, just a simple demonstration of</span>
 <span class="Comment"># possibilities.</span>
 
-recipe factorial [
-  <span class="Underlined">local</span>-scope
-  n:number<span class="Special"> &lt;- </span>next-ingredient
-  {
-    +base-case
-  }
-  +recursive-case
+<span class="muRecipe">recipe</span> factorial [
+  <span class="Constant">local-scope</span>
+  n:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+<span class="Constant">    +base-case</span>
+  <span class="Delimiter">}</span>
+<span class="Constant">  +recursive-case</span>
 ]
 
-after +base-case [
+<span class="muRecipe">after</span> +base-case [
   <span class="Comment"># if n=0 return 1</span>
-  zero?:boolean<span class="Special"> &lt;- </span>equal n, 0
-  break-unless zero?
-  reply 1
+  zero?:boolean<span class="Special"> &lt;- </span>equal n, <span class="Constant">0</span>
+  <span class="muControl">break-unless</span> zero?
+  <span class="muControl">reply</span> <span class="Constant">1</span>
 ]
 
-after +recursive-case [
+<span class="muRecipe">after</span> +recursive-case [
   <span class="Comment"># return n * factorial(n - 1)</span>
-  x:number<span class="Special"> &lt;- </span>subtract n, 1
+  x:number<span class="Special"> &lt;- </span>subtract n, <span class="Constant">1</span>
   subresult:number<span class="Special"> &lt;- </span>factorial x
   result:number<span class="Special"> &lt;- </span>multiply subresult, n
-  reply result
+  <span class="muControl">reply</span> result
 ]
 
-recipe main [
-  1:number<span class="Special"> &lt;- </span>factorial 5
-  $<span class="Identifier">print</span> [result: ], 1:number, [
+<span class="muRecipe">recipe</span> main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>factorial <span class="Constant">5</span>
+  $print <span class="Constant">[result: ]</span>, <span class="Constant">1</span>:number, [
 ]
 ]
 </pre>
