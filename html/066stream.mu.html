@@ -13,10 +13,12 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.Special { color: #ff6060; }
+.muRecipe { color: #ff8700; }
+.muData { color: #ffff00; }
 .Comment { color: #9090ff; }
-.Underlined { color: #c000c0; text-decoration: underline; }
-.Identifier { color: #804000; }
+.Constant { color: #00a0a0; }
+.Special { color: #ff6060; }
+.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -29,48 +31,48 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <body>
 <pre id='vimCodeElement'>
 <span class="Comment"># new type to help incrementally read strings</span>
-container stream [
+<span class="muData">container</span> stream [
   index:number
-  data:address:<span class="Identifier">array</span>:character
+  data:address:array:character
 ]
 
-recipe <span class="Identifier">new</span>-stream [
-  <span class="Underlined">local</span>-scope
-  result:address:stream<span class="Special"> &lt;- </span><span class="Identifier">new</span> stream:<span class="Identifier">type</span>
-  i:address:number<span class="Special"> &lt;- </span>get-address *result, index:offset
-  *i<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 0
-  d:address:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span>get-address *result, data:offset
-  *d<span class="Special"> &lt;- </span>next-ingredient
-  reply result
+<span class="muRecipe">recipe</span> new-stream [
+  <span class="Constant">local-scope</span>
+  result:address:stream<span class="Special"> &lt;- </span>new <span class="Constant">stream:type</span>
+  i:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">index:offset</span>
+  *i<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  d:address:address:array:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
+  *d<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="muControl">reply</span> result
 ]
 
-recipe rewind-stream [
-  <span class="Underlined">local</span>-scope
-  <span class="Identifier">in</span>:address:stream<span class="Special"> &lt;- </span>next-ingredient
-  x:address:number<span class="Special"> &lt;- </span>get-address *<span class="Identifier">in</span>, index:offset
-  *x<span class="Special"> &lt;- </span><span class="Identifier">copy</span> 0
-  reply <span class="Identifier">in</span>/same-as-<span class="Identifier">arg</span>:0
+<span class="muRecipe">recipe</span> rewind-stream [
+  <span class="Constant">local-scope</span>
+  in:address:stream<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  x:address:number<span class="Special"> &lt;- </span>get-address *in, <span class="Constant">index:offset</span>
+  *x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="muControl">reply</span> in/same-as-arg:<span class="Constant">0</span>
 ]
 
-recipe <span class="Identifier">read</span>-line [
-  <span class="Underlined">local</span>-scope
-  <span class="Identifier">in</span>:address:stream<span class="Special"> &lt;- </span>next-ingredient
-  idx:address:number<span class="Special"> &lt;- </span>get-address *<span class="Identifier">in</span>, index:offset
-  s:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span>get *<span class="Identifier">in</span>, data:offset
-  next-idx:number<span class="Special"> &lt;- </span>find-next s, 10/newline, *idx
-  result:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span>string-<span class="Identifier">copy</span> s, *idx, next-idx
-  *idx<span class="Special"> &lt;- </span>add next-idx, 1  <span class="Comment"># skip newline</span>
-  reply result
+<span class="muRecipe">recipe</span> read-line [
+  <span class="Constant">local-scope</span>
+  in:address:stream<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  idx:address:number<span class="Special"> &lt;- </span>get-address *in, <span class="Constant">index:offset</span>
+  s:address:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  next-idx:number<span class="Special"> &lt;- </span>find-next s, <span class="Constant">10/newline</span>, *idx
+  result:address:array:character<span class="Special"> &lt;- </span>string-copy s, *idx, next-idx
+  *idx<span class="Special"> &lt;- </span>add next-idx, <span class="Constant">1</span>  <span class="Comment"># skip newline</span>
+  <span class="muControl">reply</span> result
 ]
 
-recipe end-of-stream? [
-  <span class="Underlined">local</span>-scope
-  <span class="Identifier">in</span>:address:stream<span class="Special"> &lt;- </span>next-ingredient
-  idx:address:number<span class="Special"> &lt;- </span>get *<span class="Identifier">in</span>, index:offset
-  s:address:<span class="Identifier">array</span>:character<span class="Special"> &lt;- </span>get *<span class="Identifier">in</span>, data:offset
-  len:number<span class="Special"> &lt;- </span><span class="Identifier">length</span> *s
+<span class="muRecipe">recipe</span> end-of-stream? [
+  <span class="Constant">local-scope</span>
+  in:address:stream<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  idx:address:number<span class="Special"> &lt;- </span>get *in, <span class="Constant">index:offset</span>
+  s:address:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  len:number<span class="Special"> &lt;- </span>length *s
   result:boolean<span class="Special"> &lt;- </span>greater-or-equal idx, len
-  reply result
+  <span class="muControl">reply</span> result
 ]
 </pre>
 </body>

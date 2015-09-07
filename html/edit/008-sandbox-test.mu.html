@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - edit/008-sandbox-test.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1.05em; }
+.muScenario { color: #00af00; }
+.Special { color: #ff6060; }
+.muRecipe { color: #ff8700; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.SalientComment { color: #00ffff; }
+.Delimiter { color: #a04060; }
+.muControl { color: #c0a020; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="SalientComment">## clicking on sandbox results to 'fix' them and turn sandboxes into tests</span>
+
+<span class="muScenario">scenario</span> sandbox-click-on-result-toggles-color-to-green [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">40/width</span>, <span class="Constant">10/height</span>
+  <span class="Comment"># basic recipe</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  add 2, 2</span>
+<span class="Constant">]</span>]
+  <span class="Comment"># run it</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  assume-console [
+    press F4
+  ]
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  screen-should-contain [
+   <span class="Constant"> .                     run (F4)           .</span>
+   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  add 2, 2          ┊                  x.</span>
+   <span class="Constant"> .]                   ┊foo                .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .</span>
+   <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                    ┊                   .</span>
+  ]
+  <span class="Comment"># click on the '4' in the result</span>
+  assume-console [
+    left-click <span class="Constant">5</span>, <span class="Constant">21</span>
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># color toggles to green</span>
+  screen-should-contain-in-color <span class="Constant">2/green</span>, [
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                     4                  .</span>
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                                        .</span>
+  ]
+  <span class="Comment"># cursor should remain unmoved</span>
+  run [
+    print-character screen:address, <span class="Constant">9251/␣/cursor</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                     run (F4)           .</span>
+   <span class="Constant"> .␣                   ┊                   .</span>
+   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  add 2, 2          ┊                  x.</span>
+   <span class="Constant"> .]                   ┊foo                .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .</span>
+   <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                    ┊                   .</span>
+  ]
+  <span class="Comment"># now change the second arg of the 'add'</span>
+  <span class="Comment"># then rerun</span>
+  assume-console [
+    left-click <span class="Constant">3</span>, <span class="Constant">11</span>  <span class="Comment"># cursor to end of line</span>
+    press backspace
+    type <span class="Constant">[3]</span>
+    press F4
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># result turns red</span>
+  screen-should-contain-in-color <span class="Constant">1/red</span>, [
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                     5                  .</span>
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                                        .</span>
+  ]
+]
+
+<span class="Comment"># clicks on sandbox responses save it as 'expected'</span>
+<span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
+  <span class="Comment"># right side of screen? check if it's inside the output of any sandbox</span>
+  <span class="Delimiter">{</span>
+    sandbox-left-margin:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">left:offset</span>
+    click-column:number<span class="Special"> &lt;- </span>get *t, <span class="Constant">column:offset</span>
+    on-sandbox-side?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-column, sandbox-left-margin
+    <span class="muControl">break-unless</span> on-sandbox-side?
+    first-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+    <span class="muControl">break-unless</span> first-sandbox
+    first-sandbox-begins:number<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+    click-row:number<span class="Special"> &lt;- </span>get *t, <span class="Constant">row:offset</span>
+    below-sandbox-editor?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-row, first-sandbox-begins
+    <span class="muControl">break-unless</span> below-sandbox-editor?
+    <span class="Comment"># identify the sandbox whose output is being clicked on</span>
+    sandbox:address:sandbox-data<span class="Special"> &lt;- </span>find-click-in-sandbox-output env, click-row
+    <span class="muControl">break-unless</span> sandbox
+    <span class="Comment"># toggle its expected-response, and save session</span>
+    sandbox<span class="Special"> &lt;- </span>toggle-expected-response sandbox
+    save-sandboxes env
+    hide-screen screen
+    screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, <span class="Constant">1/clear</span>
+    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    <span class="Comment"># no change in cursor</span>
+    show-screen screen
+    <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> find-click-in-sandbox-output [
+  <span class="Constant">local-scope</span>
+  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  click-row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Comment"># assert click-row &gt;= sandbox.starting-row-on-screen</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  start:number<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+  clicked-on-sandboxes?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-row, start
+  assert clicked-on-sandboxes?, <span class="Constant">[extract-sandbox called on click to sandbox editor]</span>
+  <span class="Comment"># while click-row &lt; sandbox.next-sandbox.starting-row-on-screen</span>
+  <span class="Delimiter">{</span>
+    next-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
+    <span class="muControl">break-unless</span> next-sandbox
+    next-start:number<span class="Special"> &lt;- </span>get *next-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+    found?:boolean<span class="Special"> &lt;- </span>lesser-than click-row, next-start
+    <span class="muControl">break-if</span> found?
+    sandbox<span class="Special"> &lt;- </span>copy next-sandbox
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># return sandbox if click is in its output region</span>
+  response-starting-row:number<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>
+  <span class="muControl">reply-unless</span> response-starting-row, <span class="Constant">0/no-click-in-sandbox-output</span>
+  click-in-response?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-row, response-starting-row
+  <span class="muControl">reply-unless</span> click-in-response?, <span class="Constant">0/no-click-in-sandbox-output</span>
+  <span class="muControl">reply</span> sandbox
+]
+
+<span class="muRecipe">recipe</span> toggle-expected-response [
+  <span class="Constant">local-scope</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  expected-response:address:address:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">expected-response:offset</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># if expected-response is set, reset</span>
+    <span class="muControl">break-unless</span> *expected-response
+    *expected-response<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+    <span class="muControl">reply</span> sandbox/same-as-ingredient:<span class="Constant">0</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># if not, current response is the expected response</span>
+  response:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response:offset</span>
+  *expected-response<span class="Special"> &lt;- </span>copy response
+  <span class="muControl">reply</span> sandbox/same-as-ingredient:<span class="Constant">0</span>
+]
+
+<span class="Comment"># when rendering a sandbox, color it in red/green if expected response exists</span>
+<span class="muRecipe">after</span> <span class="Constant">&lt;render-sandbox-response&gt;</span> [
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> sandbox-response
+    expected-response:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>
+    <span class="muControl">break-unless</span> expected-response  <span class="Comment"># fall-through to print in grey</span>
+    response-is-expected?:boolean<span class="Special"> &lt;- </span>string-equal expected-response, sandbox-response
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-if</span> response-is-expected?:boolean
+      row, screen<span class="Special"> &lt;- </span>render-string screen, sandbox-response, left, right, <span class="Constant">1/red</span>, row
+    <span class="Delimiter">}</span>
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-unless</span> response-is-expected?:boolean
+      row, screen<span class="Special"> &lt;- </span>render-string screen, sandbox-response, left, right, <span class="Constant">2/green</span>, row
+    <span class="Delimiter">}</span>
+    <span class="muControl">jump</span> <span class="Constant">+render-sandbox-end:label</span>
+  <span class="Delimiter">}</span>
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

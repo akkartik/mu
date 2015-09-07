@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - edit/009-sandbox-trace.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1.05em; }
+.muScenario { color: #00af00; }
+.muData { color: #ffff00; }
+.Special { color: #ff6060; }
+.muRecipe { color: #ff8700; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.SalientComment { color: #00ffff; }
+.Delimiter { color: #a04060; }
+.muControl { color: #c0a020; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="SalientComment">## clicking on the code typed into a sandbox toggles its trace</span>
+
+<span class="muScenario">scenario</span> sandbox-click-on-code-toggles-app-trace [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">40/width</span>, <span class="Constant">10/height</span>
+  <span class="Comment"># basic recipe</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  stash [abc]</span>
+]]
+  <span class="Comment"># run it</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  assume-console [
+    press F4
+  ]
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  screen-should-contain [
+   <span class="Constant"> .                     run (F4)           .</span>
+   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  stash [abc]       ┊                  x.</span>
+   <span class="Constant"> .]                   ┊foo                .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                    ┊                   .</span>
+  ]
+  <span class="Comment"># click on the 'foo' line in the sandbox</span>
+  assume-console [
+    left-click <span class="Constant">4</span>, <span class="Constant">21</span>
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+    print-character screen:address, <span class="Constant">9251/␣/cursor</span>
+  ]
+  <span class="Comment"># trace now printed and cursor shouldn't have budged</span>
+  screen-should-contain [
+   <span class="Constant"> .                     run (F4)           .</span>
+   <span class="Constant"> .␣                   ┊                   .</span>
+   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  stash [abc]       ┊                  x.</span>
+   <span class="Constant"> .]                   ┊foo                .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .</span>
+   <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                    ┊                   .</span>
+  ]
+  screen-should-contain-in-color <span class="Constant">245/grey</span>, [
+   <span class="Constant"> .                                        .</span>
+   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                    ┊                  x.</span>
+   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .</span>
+   <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                    ┊                   .</span>
+  ]
+  <span class="Comment"># click again on the same region</span>
+  assume-console [
+    left-click <span class="Constant">4</span>, <span class="Constant">25</span>
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+    print-character screen:address, <span class="Constant">9251/␣/cursor</span>
+  ]
+  <span class="Comment"># trace hidden again</span>
+  screen-should-contain [
+   <span class="Constant"> .                     run (F4)           .</span>
+   <span class="Constant"> .␣                   ┊                   .</span>
+   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  stash [abc]       ┊                  x.</span>
+   <span class="Constant"> .]                   ┊foo                .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                    ┊                   .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> sandbox-shows-app-trace-and-result [
+  $close-trace  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">40/width</span>, <span class="Constant">10/height</span>
+  <span class="Comment"># basic recipe</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  stash [abc]</span>
+  add <span class="Constant">2</span>, <span class="Constant">2</span>
+]]
+  <span class="Comment"># run it</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  assume-console [
+    press F4
+  ]
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  screen-should-contain [
+   <span class="Constant"> .                     run (F4)           .</span>
+   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  stash [abc]       ┊                  x.</span>
+   <span class="Constant"> .  add 2, 2          ┊foo                .</span>
+   <span class="Constant"> .]                   ┊4                  .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                    ┊                   .</span>
+  ]
+  <span class="Comment"># click on the 'foo' line in the sandbox</span>
+  assume-console [
+    left-click <span class="Constant">4</span>, <span class="Constant">21</span>
+  ]
+  run [
+    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># trace now printed</span>
+  screen-should-contain [
+   <span class="Constant"> .                     run (F4)           .</span>
+   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  stash [abc]       ┊                  x.</span>
+   <span class="Constant"> .  add 2, 2          ┊foo                .</span>
+   <span class="Constant"> .]                   ┊abc                .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .</span>
+   <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                    ┊                   .</span>
+  ]
+]
+
+<span class="muData">container</span> sandbox-data [
+  trace:address:array:character
+  display-trace?:boolean
+]
+
+<span class="Comment"># replaced in a later layer</span>
+<span class="muRecipe">recipe!</span> update-sandbox [
+  <span class="Constant">local-scope</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  data:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
+  response:address:address:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response:offset</span>
+  trace:address:address:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">trace:offset</span>
+  fake-screen:address:address:screen<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">screen:offset</span>
+  *response, _, *fake-screen, *trace<span class="Special"> &lt;- </span>run-interactive data
+]
+
+<span class="Comment"># clicks on sandbox code toggle its display-trace? flag</span>
+<span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
+  <span class="Comment"># right side of screen? check if it's inside the code of any sandbox</span>
+  <span class="Delimiter">{</span>
+    sandbox-left-margin:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">left:offset</span>
+    click-column:number<span class="Special"> &lt;- </span>get *t, <span class="Constant">column:offset</span>
+    on-sandbox-side?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-column, sandbox-left-margin
+    <span class="muControl">break-unless</span> on-sandbox-side?
+    first-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+    <span class="muControl">break-unless</span> first-sandbox
+    first-sandbox-begins:number<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+    click-row:number<span class="Special"> &lt;- </span>get *t, <span class="Constant">row:offset</span>
+    below-sandbox-editor?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-row, first-sandbox-begins
+    <span class="muControl">break-unless</span> below-sandbox-editor?
+    <span class="Comment"># identify the sandbox whose code is being clicked on</span>
+    sandbox:address:sandbox-data<span class="Special"> &lt;- </span>find-click-in-sandbox-code env, click-row
+    <span class="muControl">break-unless</span> sandbox
+    <span class="Comment"># toggle its display-trace? property</span>
+    x:address:boolean<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">display-trace?:offset</span>
+    *x<span class="Special"> &lt;- </span>not *x
+    hide-screen screen
+    screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, <span class="Constant">1/clear</span>
+    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    <span class="Comment"># no change in cursor</span>
+    show-screen screen
+    <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> find-click-in-sandbox-code [
+  <span class="Constant">local-scope</span>
+  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  click-row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Comment"># assert click-row &gt;= sandbox.starting-row-on-screen</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  start:number<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+  clicked-on-sandboxes?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-row, start
+  assert clicked-on-sandboxes?, <span class="Constant">[extract-sandbox called on click to sandbox editor]</span>
+  <span class="Comment"># while click-row &lt; sandbox.next-sandbox.starting-row-on-screen</span>
+  <span class="Delimiter">{</span>
+    next-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
+    <span class="muControl">break-unless</span> next-sandbox
+    next-start:number<span class="Special"> &lt;- </span>get *next-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+    found?:boolean<span class="Special"> &lt;- </span>lesser-than click-row, next-start
+    <span class="muControl">break-if</span> found?
+    sandbox<span class="Special"> &lt;- </span>copy next-sandbox
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># return sandbox if click is in its code region</span>
+  code-ending-row:number<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>
+  click-above-response?:boolean<span class="Special"> &lt;- </span>lesser-than click-row, code-ending-row
+  start:number<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+  click-below-menu?:boolean<span class="Special"> &lt;- </span>greater-than click-row, start
+  click-on-sandbox-code?:boolean<span class="Special"> &lt;- </span>and click-above-response?, click-below-menu?
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> click-on-sandbox-code?
+    <span class="muControl">reply</span> <span class="Constant">0/no-click-in-sandbox-output</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">reply</span> sandbox
+]
+
+<span class="Comment"># when rendering a sandbox, dump its trace before response/warning if display-trace? property is set</span>
+<span class="muRecipe">after</span> <span class="Constant">&lt;render-sandbox-results&gt;</span> [
+  <span class="Delimiter">{</span>
+    display-trace?:boolean<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">display-trace?:offset</span>
+    <span class="muControl">break-unless</span> display-trace?
+    sandbox-trace:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">trace:offset</span>
+    <span class="muControl">break-unless</span> sandbox-trace  <span class="Comment"># nothing to print; move on</span>
+    row, screen<span class="Special"> &lt;- </span>render-string, screen, sandbox-trace, left, right, <span class="Constant">245/grey</span>, row
+  <span class="Delimiter">}</span>
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
