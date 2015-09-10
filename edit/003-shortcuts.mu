@@ -1558,7 +1558,7 @@ recipe delete-to-start-of-line [
   result:address:duplex-list <- next-duplex start
   remove-duplex-between start, end
   # adjust cursor
-  *before-cursor <- prev-duplex end
+  *before-cursor <- copy start
   left:number <- get *editor, left:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   *cursor-column <- copy left
