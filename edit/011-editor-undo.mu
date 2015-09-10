@@ -2051,6 +2051,27 @@ before <delete-to-start-of-line-end> [
   }
 ]
 
+scenario editor-can-undo-and-redo-ctrl-u-2 [
+  # create an editor
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  # insert some text and hit delete and backspace a few times
+  assume-console [
+    type [abc]
+    press ctrl-u
+    press ctrl-z
+  ]
+  editor-event-loop screen:address, console:address, 2:address:editor-data
+  screen-should-contain [
+    .          .
+    .abc       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
 # todo:
 # operations for recipe side and each sandbox-data
 # undo delete sandbox as a separate primitive on the status bar
