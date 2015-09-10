@@ -51,7 +51,7 @@ case SUBTRACT: {
   }
   if (!scalar(ingredients.at(0))) {
     raise << current_recipe_name() << ": 'subtract' requires number ingredients, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    goto finish_instruction;
+    break;
   }
   double result = ingredients.at(0).at(0);
   for (long long int i = 1; i < SIZE(ingredients); ++i) {
@@ -137,7 +137,7 @@ case DIVIDE: {
   }
   if (!scalar(ingredients.at(0))) {
     raise << current_recipe_name() << ": 'divide' requires number ingredients, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    goto finish_instruction;
+    break;
   }
   double result = ingredients.at(0).at(0);
   for (long long int i = 1; i < SIZE(ingredients); ++i) {
@@ -187,10 +187,16 @@ case DIVIDE_WITH_REMAINDER: {
   }
   if (!scalar(ingredients.at(0)) || !scalar(ingredients.at(1))) {
     raise << current_recipe_name() << ": 'divide-with-remainder' requires number ingredients, but got '" << current_instruction().to_string() << "'\n" << end();
-    goto finish_instruction;
+    break;
   }
-  long long int quotient = ingredients.at(0).at(0) / ingredients.at(1).at(0);
-  long long int remainder = static_cast<long long int>(ingredients.at(0).at(0)) % static_cast<long long int>(ingredients.at(1).at(0));
+  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
+  long long int b = static_cast<long long int>(ingredients.at(1).at(0));
+  if (b == 0) {
+    raise << current_recipe_name() << ": divide by zero in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
+  long long int quotient = a / b;
+  long long int remainder = a % b;
   // very large integers will lose precision
   products.at(0).push_back(quotient);
   products.at(1).push_back(remainder);
@@ -215,10 +221,23 @@ recipe main [
 
 :(scenario divide_with_decimal_point)
 recipe main [
-  # todo: literal floats?
   1:number <- divide 5, 2
 ]
 +mem: storing 2.5 in location 1
+
+:(scenario divide_by_zero)
+recipe main [
+  1:number <- divide 4, 0
+]
++mem: storing inf in location 1
+
+:(scenario divide_by_zero_2)
+% Hide_warnings = true;
+recipe main [
+  1:number <- divide-with-remainder 4, 0
+]
+# integer division can't return floating-point infinity
++warn: main: divide by zero in '1:number <- divide-with-remainder 4, 0'
 
 :(code)
 inline bool scalar(const vector<long long int>& x) {
