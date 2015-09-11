@@ -206,4 +206,5 @@ after <render-sandbox-results> [
     break-unless sandbox-trace  # nothing to print; move on
     row, screen <- render-string, screen, sandbox-trace, left, right, 245/grey, row
   }
+  <render-sandbox-trace-done>
 ]

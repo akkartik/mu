@@ -63,12 +63,14 @@ recipe! update-sandbox [
   }
 ]
 
-after <render-sandbox-results> [
+# make sure we render any trace
+after <render-sandbox-trace-done> [
   {
     sandbox-warnings:address:array:character <- get *sandbox, warnings:offset
     break-unless sandbox-warnings
     *response-starting-row <- copy 0  # no response
     row, screen <- render-string screen, sandbox-warnings, left, right, 1/red, row
+    # don't try to print anything more for this sandbox
     jump +render-sandbox-end:label
   }
 ]
@@ -385,5 +387,54 @@ scenario sandbox-can-handle-infinite-loop [
     .]                                                 ┊took too long!                                   .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
+  ]
+]
+
+scenario sandbox-with-warnings-shows-trace [
+  $close-trace  # trace too long
+  assume-screen 100/width, 10/height
+  # generate a stash and a warning
+  1:address:array:character <- new [recipe foo [
+local-scope
+a:number <- next-ingredient
+b:number <- next-ingredient
+stash [dividing by], b
+_, c:number <- divide-with-remainder a, b
+reply b
+]]
+  2:address:array:character <- new [foo 4, 0]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run
+  assume-console [
+    press F4
+  ]
+  event-loop screen:address, console:address, 3:address:programming-environment-data
+  # screen prints error message
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .recipe foo \\\[                                      ┊                                                 .
+    .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .a:number <- next-ingredient                       ┊                                                x.
+    .b:number <- next-ingredient                       ┊foo 4, 0                                         .
+    .stash [dividing by], b                            ┊foo: divide by zero in '_, c:number <- divide-wi↩.
+    ._, c:number <- divide-with-remainder a, b         ┊th-remainder a, b'                               .
+  ]
+  # click on the call in the sandbox
+  assume-console [
+    left-click 4, 55
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # screen should expand trace
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .recipe foo \\\[                                      ┊                                                 .
+    .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .a:number <- next-ingredient                       ┊                                                x.
+    .b:number <- next-ingredient                       ┊foo 4, 0                                         .
+    .stash [dividing by], b                            ┊dividing by 0                                    .
+    ._, c:number <- divide-with-remainder a, b         ┊foo: divide by zero in '_, c:number <- divide-wi↩.
+    .reply b                                           ┊th-remainder a, b'                               .
   ]
 ]
