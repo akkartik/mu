@@ -112,6 +112,12 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
     parse_attempts = 0;
     return strlen("\033[1;5D");
   }
+  if (starts_with(buf, len, "\033[Z")) {
+    event->ch = 0;
+    event->key = TB_KEY_SHIFT_TAB;
+    parse_attempts = 0;
+    return strlen("\033[Z");
+  }
 
   // no escape sequence recognized? wait a bit in case our buffer is incomplete
   ++parse_attempts;

@@ -97,11 +97,7 @@ struct tb_event {
 #define TB_EVENT_RESIZE 2
 #define TB_EVENT_MOUSE  3
 
-/* Possible values for tb_event.key.
- *
- * These are a safe subset of terminfo keys, which exist on all popular
- * terminals. Termbox uses only them to stay truly portable.
- */
+/* Possible values for tb_event.key. */
 #define TB_KEY_F1               (0xFFFF-0)
 #define TB_KEY_F2               (0xFFFF-1)
 #define TB_KEY_F3               (0xFFFF-2)
@@ -136,6 +132,9 @@ struct tb_event {
 #define TB_KEY_CTRL_ARROW_DOWN  (0xFFFF-31)
 #define TB_KEY_CTRL_ARROW_LEFT  (0xFFFF-32)
 #define TB_KEY_CTRL_ARROW_RIGHT (0xFFFF-33)
+#define TB_KEY_SHIFT_TAB (0xFFFF-34)
+
+/* Names for some of the possible values for tb_event.ch. */
 /* These are all ASCII code points below SPACE character and a BACKSPACE key. */
 #define TB_KEY_CTRL_TILDE       0x00
 #define TB_KEY_CTRL_2           0x00 /* clash with 'CTRL_TILDE' */
