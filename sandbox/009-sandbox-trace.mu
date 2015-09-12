@@ -3,120 +3,112 @@
 scenario sandbox-click-on-code-toggles-app-trace [
   $close-trace  # trace too long
   assume-screen 40/width, 10/height
-  # basic recipe
-  1:address:array:character <- new [ 
-recipe foo [
-  stash [abc]
-]]
-  # run it
-  2:address:array:character <- new [foo]
+  # run a stash instruction
+  1:address:array:character <- new [stash [abc]]
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-  event-loop screen:address, console:address, 3:address:programming-environment-data
+  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
+  event-loop screen:address, console:address, 2:address:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                        .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                       x.
+    .stash [abc]                             .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                        .
   ]
   # click on the code in the sandbox
   assume-console [
     left-click 4, 21
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address, console:address, 2:address:programming-environment-data
     print-character screen:address, 9251/␣/cursor
   ]
   # trace now printed and cursor shouldn't have budged
   screen-should-contain [
     .                     run (F4)           .
-    .␣                   ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .␣                                       .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                       x.
+    .stash [abc]                             .
+    .abc                                     .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                        .
   ]
   screen-should-contain-in-color 245/grey, [
     .                                        .
-    .                    ┊                   .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                  x.
-    .                    ┊                   .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                        .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                       x.
+    .                                        .
+    .abc                                     .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                        .
   ]
   # click again on the same region
   assume-console [
     left-click 4, 25
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address, console:address, 2:address:programming-environment-data
     print-character screen:address, 9251/␣/cursor
   ]
   # trace hidden again
   screen-should-contain [
     .                     run (F4)           .
-    .␣                   ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .␣                                       .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                       x.
+    .stash [abc]                             .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                        .
   ]
 ]
 
 scenario sandbox-shows-app-trace-and-result [
   $close-trace  # trace too long
   assume-screen 40/width, 10/height
-  # basic recipe
-  1:address:array:character <- new [ 
-recipe foo [
-  stash [abc]
-  add 2, 2
-]]
-  # run it
-  2:address:array:character <- new [foo]
+  # run a stash instruction and some code
+  1:address:array:character <- new [stash [abc]
+add 2, 2]
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-  event-loop screen:address, console:address, 3:address:programming-environment-data
+  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
+  event-loop screen:address, console:address, 2:address:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
-    .  add 2, 2          ┊foo                .
-    .]                   ┊4                  .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                        .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                       x.
+    .stash [abc]                             .
+    .add 2, 2                                .
+    .4                                       .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                        .
   ]
   # click on the code in the sandbox
   assume-console [
     left-click 4, 21
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address, console:address, 2:address:programming-environment-data
   ]
   # trace now printed above result
   screen-should-contain [
     .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
-    .  add 2, 2          ┊foo                .
-    .]                   ┊abc                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                        .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                       x.
+    .stash [abc]                             .
+    .add 2, 2                                .
+    .abc                                     .
+    .4                                       .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                        .
   ]
 ]
 
@@ -158,7 +150,7 @@ after <global-touch> [
     *x <- not *x
     hide-screen screen
     screen <- render-sandbox-side screen, env, 1/clear
-    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, current-sandbox
     # no change in cursor
     show-screen screen
     loop +next-event:label

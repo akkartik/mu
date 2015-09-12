@@ -22,52 +22,50 @@ container sandbox-data [
 
 scenario run-and-show-results [
   $close-trace  # trace too long
-  assume-screen 100/width, 15/height
-  # recipe editor is empty
-  1:address:array:character <- new []
+  assume-screen 50/width, 15/height
   # sandbox editor contains an instruction without storing outputs
-  2:address:array:character <- new [divide-with-remainder 11, 3]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  1:address:array:character <- new [divide-with-remainder 11, 3]
+  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
   # run the code in the editors
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address, console:address, 2:address:programming-environment-data
   ]
   # check that screen prints the results
   screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                x.
-    .                                                  ┊divide-with-remainder 11, 3                      .
-    .                                                  ┊3                                                .
-    .                                                  ┊2                                                .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                 x.
+    .divide-with-remainder 11, 3                       .
+    .3                                                 .
+    .2                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
   screen-should-contain-in-color 7/white, [
-    .                                                                                                    .
-    .                                                                                                    .
-    .                                                                                                    .
-    .                                                                                                    .
-    .                                                   divide-with-remainder 11, 3                      .
-    .                                                                                                    .
-    .                                                                                                    .
-    .                                                                                                    .
-    .                                                                                                    .
+    .                                                  .
+    .                                                  .
+    .                                                  .
+    .                                                  .
+    .divide-with-remainder 11, 3                       .
+    .                                                  .
+    .                                                  .
+    .                                                  .
+    .                                                  .
   ]
   screen-should-contain-in-color 245/grey, [
-    .                                                                                                    .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                x.
-    .                                                  ┊                                                 .
-    .                                                  ┊3                                                .
-    .                                                  ┊2                                                .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .                                                  .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                 x.
+    .                                                  .
+    .3                                                 .
+    .2                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
   # run another command
   assume-console [
@@ -76,23 +74,23 @@ scenario run-and-show-results [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address, console:address, 2:address:programming-environment-data
   ]
-  # check that screen prints the results
+  # check that screen prints both sandboxes
   screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                x.
-    .                                                  ┊add 2, 2                                         .
-    .                                                  ┊4                                                .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                x.
-    .                                                  ┊divide-with-remainder 11, 3                      .
-    .                                                  ┊3                                                .
-    .                                                  ┊2                                                .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                 x.
+    .add 2, 2                                          .
+    .4                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                 x.
+    .divide-with-remainder 11, 3                       .
+    .3                                                 .
+    .2                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
 ]
 
@@ -111,7 +109,7 @@ after <global-keypress> [
       status:address:array:character <- new [            ]
       screen <- update-status screen, status, 245/grey
     }
-    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, current-sandbox
     loop +next-event:label
   }
 ]
@@ -122,7 +120,7 @@ recipe run-sandboxes [
   screen:address <- next-ingredient
   stop?:boolean, env, screen <- update-recipes env, screen
   reply-if stop?, 1/errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
-  # check contents of right editor (sandbox)
+  # check contents of editor
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   {
     sandbox-contents:address:array:character <- editor-contents current-sandbox
@@ -156,15 +154,13 @@ recipe run-sandboxes [
   reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
 ]
 
-# copy code from recipe editor, persist, load into mu
+# load code from recipes.mu
 # replaced in a later layer
 recipe update-recipes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
   screen:address <- next-ingredient
-  recipes:address:editor-data <- get *env, recipes:offset
-  in:address:array:character <- editor-contents recipes
-  save [recipes.mu], in
+  in:address:array:character <- restore [recipes.mu]
   reload in
   reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
 ]
@@ -390,85 +386,34 @@ recipe render-screen [
   reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
-scenario run-updates-results [
-  $close-trace  # trace too long
-  assume-screen 100/width, 12/height
-  # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
-  1:address:array:character <- new [ 
-recipe foo [
-z:number <- add 2, 2
-]]
-  # sandbox editor contains an instruction without storing outputs
-  2:address:array:character <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-  # run the code in the editors
-  assume-console [
-    press F4
-  ]
-  event-loop screen:address, console:address, 3:address:programming-environment-data
-  screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .z:number <- add 2, 2                              ┊                                                x.
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
-  ]
-  # make a change (incrementing one of the args to 'add'), then rerun
-  assume-console [
-    left-click 3, 28  # one past the value of the second arg
-    press backspace
-    type [3]
-    press F4
-  ]
-  run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  ]
-  # check that screen updates the result on the right
-  screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .z:number <- add 2, 3                              ┊                                                x.
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊5                                                .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
-  ]
-]
-
 scenario run-instruction-manages-screen-per-sandbox [
   $close-trace  # trace too long
-  assume-screen 100/width, 20/height
-  # left editor is empty
-  1:address:array:character <- new []
-  # right editor contains an instruction
-  2:address:array:character <- new [print-integer screen:address, 4]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  assume-screen 50/width, 20/height
+  # editor contains an instruction
+  1:address:array:character <- new [print-integer screen:address, 4]
+  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
   # run the code in the editor
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address, console:address, 2:address:programming-environment-data
   ]
   # check that it prints a little toy screen
   screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                x.
-    .                                                  ┊print-integer screen:address, 4                  .
-    .                                                  ┊screen:                                          .
-    .                                                  ┊  .4                             .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                 x.
+    .print-integer screen:address, 4                   .
+    .screen:                                           .
+    .  .4                             .                .
+    .  .                              .                .
+    .  .                              .                .
+    .  .                              .                .
+    .  .                              .                .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
 ]
 

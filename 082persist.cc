@@ -23,7 +23,12 @@ case RESTORE: {
     raise << current_recipe_name() << ": first ingredient of 'restore' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
     break;
   }
-  if (Current_scenario) break;  // do nothing in tests
+  if (Current_scenario) {
+    // do nothing in tests
+    products.resize(1);
+    products.at(0).push_back(0);
+    break;
+  }
   string contents = slurp("lesson/"+filename);
   products.resize(1);
   if (contents.empty())

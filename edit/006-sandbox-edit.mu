@@ -63,8 +63,7 @@ recipe foo [
 ]
 
 after <global-touch> [
-  # right side of screen and below sandbox editor? pop appropriate sandbox
-  # contents back into sandbox editor provided it's empty
+  # below sandbox editor? pop appropriate sandbox contents back into sandbox editor
   {
     sandbox-left-margin:number <- get *current-sandbox, left:offset
     click-column:number <- get *t, column:offset
@@ -77,7 +76,7 @@ after <global-touch> [
     below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
     break-unless below-sandbox-editor?
     empty-sandbox-editor?:boolean <- empty-editor? current-sandbox
-    break-unless empty-sandbox-editor?  # make the user hit F4 before editing a new sandbox
+    break-unless empty-sandbox-editor?  # don't clobber existing contents
     # identify the sandbox to edit and remove it from the sandbox list
     sandbox:address:sandbox-data <- extract-sandbox env, click-row
     text:address:array:character <- get *sandbox, data:offset
@@ -139,9 +138,7 @@ scenario sandbox-with-print-can-be-edited [
   assume-console [
     press F4
   ]
-  run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  ]
+  event-loop screen:address, console:address, 3:address:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .

@@ -1,85 +1,6 @@
 ## clicking on sandbox results to 'fix' them and turn sandboxes into tests
 
-scenario sandbox-click-on-result-toggles-color-to-green [
-  $close-trace  # trace too long
-  assume-screen 40/width, 10/height
-  # basic recipe
-  1:address:array:character <- new [ 
-recipe foo [
-  add 2, 2
-]]
-  # run it
-  2:address:array:character <- new [foo]
-  assume-console [
-    press F4
-  ]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-  event-loop screen:address, console:address, 3:address:programming-environment-data
-  screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  add 2, 2          ┊                  x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
-  ]
-  # click on the '4' in the result
-  assume-console [
-    left-click 5, 21
-  ]
-  run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  ]
-  # color toggles to green
-  screen-should-contain-in-color 2/green, [
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                     4                  .
-    .                                        .
-    .                                        .
-  ]
-  # cursor should remain unmoved
-  run [
-    print-character screen:address, 9251/␣/cursor
-  ]
-  screen-should-contain [
-    .                     run (F4)           .
-    .␣                   ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  add 2, 2          ┊                  x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
-  ]
-  # now change the second arg of the 'add'
-  # then rerun
-  assume-console [
-    left-click 3, 11  # cursor to end of line
-    press backspace
-    type [3]
-    press F4
-  ]
-  run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  ]
-  # result turns red
-  screen-should-contain-in-color 1/red, [
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                     5                  .
-    .                                        .
-    .                                        .
-  ]
-]
+# todo: perform test from edit/ by faking file system
 
 # clicks on sandbox responses save it as 'expected'
 after <global-touch> [
@@ -103,7 +24,7 @@ after <global-touch> [
     save-sandboxes env
     hide-screen screen
     screen <- render-sandbox-side screen, env, 1/clear
-    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, current-sandbox
     # no change in cursor
     show-screen screen
     loop +next-event:label
