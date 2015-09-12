@@ -1,5 +1,5 @@
 parse: instruction: new
-parse:   ingredient: {name: "get 1234:number, foo:offset", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "x:number <- copy 34\nget x:number, foo:offset", properties: [_: "literal-string"]}
 parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
 parse: instruction: run-interactive
 parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"]}
@@ -14,7 +14,8 @@ after-brace: run-interactive ...
 after-brace: copy ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: main
- 101 run: 1:address:array:character <- new [get 1234:number, foo:offset]
+ 101 run: 1:address:array:character <- new [x:number <- copy 34
+get x:number, foo:offset]
 9999 mem: storing 1000 in location 1
  101 run: 2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
 9999 mem: location 1 is 1000
@@ -22,14 +23,18 @@ parse: instruction: local-scope
 parse: instruction: next-ingredient
 parse:   product: {name: "screen", properties: ["screen": "address"]}
 parse: instruction: $start-tracking-products
+parse: instruction: copy
+parse:   ingredient: {name: "34", properties: ["34": "literal"]}
+parse:   product: {name: "x", properties: ["x": "number"]}
 parse: instruction: get
-parse:   ingredient: {name: "1234", properties: ["1234": "number"]}
+parse:   ingredient: {name: "x", properties: ["x": "number"]}
 parse:   ingredient: {name: "foo", properties: ["foo": "offset"]}
 parse: instruction: $stop-tracking-products
 parse: instruction: reply
 parse:   ingredient: {name: "screen", properties: ["screen": ]}
 9999 new: location -> location
 name: assign screen 1
+name: assign x 2
 warn: unknown element foo in container number
 
 name: element foo of type number is at offset -1
@@ -37,56 +42,57 @@ after-brace: recipe interactive
 after-brace: local-scope ...
 after-brace: next-ingredient ...
 after-brace: $start-tracking-products ...
+after-brace: copy ...
 after-brace: get ...
 after-brace: $stop-tracking-products ...
 after-brace: reply ...
 9999 mem: storing 0 in location 2
-9999 mem: storing 1028 in location 3
+9999 mem: storing 1045 in location 3
  101 run: 10:array:character <- copy 3:address:array:character/lookup
-9999 mem: location 3 is 1028
-9999 mem: location 1028 is 40
-9999 mem: location 1029 is 117
-9999 mem: location 1030 is 110
-9999 mem: location 1031 is 107
-9999 mem: location 1032 is 110
-9999 mem: location 1033 is 111
-9999 mem: location 1034 is 119
-9999 mem: location 1035 is 110
-9999 mem: location 1036 is 32
-9999 mem: location 1037 is 101
-9999 mem: location 1038 is 108
-9999 mem: location 1039 is 101
-9999 mem: location 1040 is 109
-9999 mem: location 1041 is 101
-9999 mem: location 1042 is 110
-9999 mem: location 1043 is 116
-9999 mem: location 1044 is 32
-9999 mem: location 1045 is 102
-9999 mem: location 1046 is 111
-9999 mem: location 1047 is 111
-9999 mem: location 1048 is 32
-9999 mem: location 1049 is 105
-9999 mem: location 1050 is 110
-9999 mem: location 1051 is 32
-9999 mem: location 1052 is 99
-9999 mem: location 1053 is 111
-9999 mem: location 1054 is 110
-9999 mem: location 1055 is 116
-9999 mem: location 1056 is 97
-9999 mem: location 1057 is 105
-9999 mem: location 1058 is 110
-9999 mem: location 1059 is 101
-9999 mem: location 1060 is 114
+9999 mem: location 3 is 1045
+9999 mem: location 1045 is 40
+9999 mem: location 1046 is 117
+9999 mem: location 1047 is 110
+9999 mem: location 1048 is 107
+9999 mem: location 1049 is 110
+9999 mem: location 1050 is 111
+9999 mem: location 1051 is 119
+9999 mem: location 1052 is 110
+9999 mem: location 1053 is 32
+9999 mem: location 1054 is 101
+9999 mem: location 1055 is 108
+9999 mem: location 1056 is 101
+9999 mem: location 1057 is 109
+9999 mem: location 1058 is 101
+9999 mem: location 1059 is 110
+9999 mem: location 1060 is 116
 9999 mem: location 1061 is 32
-9999 mem: location 1062 is 110
-9999 mem: location 1063 is 117
-9999 mem: location 1064 is 109
-9999 mem: location 1065 is 98
-9999 mem: location 1066 is 101
-9999 mem: location 1067 is 114
-9999 mem: location 1068 is 10
-9999 mem: location 3 is 1028
-9999 mem: location 3 is 1028
+9999 mem: location 1062 is 102
+9999 mem: location 1063 is 111
+9999 mem: location 1064 is 111
+9999 mem: location 1065 is 32
+9999 mem: location 1066 is 105
+9999 mem: location 1067 is 110
+9999 mem: location 1068 is 32
+9999 mem: location 1069 is 99
+9999 mem: location 1070 is 111
+9999 mem: location 1071 is 110
+9999 mem: location 1072 is 116
+9999 mem: location 1073 is 97
+9999 mem: location 1074 is 105
+9999 mem: location 1075 is 110
+9999 mem: location 1076 is 101
+9999 mem: location 1077 is 114
+9999 mem: location 1078 is 32
+9999 mem: location 1079 is 110
+9999 mem: location 1080 is 117
+9999 mem: location 1081 is 109
+9999 mem: location 1082 is 98
+9999 mem: location 1083 is 101
+9999 mem: location 1084 is 114
+9999 mem: location 1085 is 10
+9999 mem: location 3 is 1045
+9999 mem: location 3 is 1045
 9999 mem: storing 40 in location 10
 9999 mem: storing 117 in location 11
 9999 mem: storing 110 in location 12
