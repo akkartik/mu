@@ -201,6 +201,7 @@ struct lease_tracer {
 :(before "End Test Setup")
 START_TRACING_UNTIL_END_OF_SCOPE
 
+:(before "End Includes")
 #define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 
 :(before "End Tracing")
