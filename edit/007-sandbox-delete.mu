@@ -14,9 +14,7 @@ scenario deleting-sandboxes [
     type [add 2, 2]
     press F4
   ]
-  run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  ]
+  event-loop screen:address, console:address, 3:address:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .

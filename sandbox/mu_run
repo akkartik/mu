@@ -1,0 +1,15 @@
+#!/usr/bin/zsh
+
+export ALREADY_FOCUSED=0
+tmux list-panes |grep "^1.*active" -q && export ALREADY_FOCUSED=1
+if [[ $ALREADY_FOCUSED -eq 0 ]]
+then
+  tmux select-pane -t 1
+fi
+
+tmux send-keys 'F4'
+
+if [[ $ALREADY_FOCUSED -eq 0 ]]
+then
+  tmux last-pane
+fi
