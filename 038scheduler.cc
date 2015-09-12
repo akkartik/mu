@@ -106,6 +106,7 @@ string current_routine_label() {
 for (long long int i = 0; i < SIZE(Routines); ++i)
   delete Routines.at(i);
 Routines.clear();
+Current_routine = NULL;
 
 //: special case for the very first routine
 :(replace{} "void run_main(int argc, char* argv[])")
@@ -260,6 +261,30 @@ recipe f1 [
 ]
 +schedule: f1
 -run: idle
+
+//:: Errors in a routine cause it to terminate.
+
+:(scenario scheduler_terminates_routines_after_errors)
+% Hide_warnings = true;
+% Scheduling_interval = 2;
+recipe f1 [
+  start-running f2:recipe
+  1:number <- copy 0
+  2:number <- copy 0
+]
+recipe f2 [
+  # divide by 0 twice
+  3:number <- divide-with-remainder 4, 0
+  4:number <- divide-with-remainder 4, 0
+]
+# f2 should stop after first divide by 0
++warn: f2: divide by zero in '3:number <- divide-with-remainder 4, 0'
+-warn: f2: divide by zero in '4:number <- divide-with-remainder 4, 0'
+
+:(after "operator<<(ostream& os, unused end)")
+  if (Trace_stream->curr_layer == "warn" && Current_routine) {
+    Current_routine->state = COMPLETED;
+  }
 
 //:: Routines are marked completed when their parent completes.
 

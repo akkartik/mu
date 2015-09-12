@@ -78,6 +78,9 @@ bool run_interactive(long long int address) {
     Trace_stream->collect_layers.insert("warn");
     Trace_stream->collect_layers.insert("app");
   }
+  // don't kill the current routine on parse errors
+  routine* save_current_routine = Current_routine;
+  Current_routine = NULL;
   // call run(string) but without the scheduling
   load(string("recipe interactive [\n") +
           "local-scope\n" +
@@ -88,6 +91,7 @@ bool run_interactive(long long int address) {
           "reply screen\n" +
        "]\n");
   transform_all();
+  Current_routine = save_current_routine;
   if (trace_count("warn") > 0) return false;
   // now call 'sandbox' which will run 'interactive' in a separate routine,
   // and wait for it
@@ -209,9 +213,9 @@ recipe main [
 recipe main [
   # try to interactively add 2 and 2
   1:address:array:character <- new [
-    100:address:array:character <- new [a]
-    101:address:array:character <- new [b]
-    102:address:array:character <- string-append 100:address:array:character, 101:address:array:character
+    x:address:array:character <- new [a]
+    y:address:array:character <- new [b]
+    z:address:array:character <- string-append x:address:array:character, y:address:array:character
   ]
   2:address:array:character <- run-interactive 1:address:array:character
   10:array:character <- copy 2:address:array:character/lookup
@@ -223,7 +227,8 @@ recipe main [
 :(scenario "run_interactive_returns_warnings")
 recipe main [
   # run a command that generates a warning
-  1:address:array:character <- new [get 1234:number, foo:offset]
+  1:address:array:character <- new [x:number <- copy 34
+get x:number, foo:offset]
   2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
   10:array:character <- copy 3:address:array:character/lookup
 ]
@@ -232,6 +237,7 @@ recipe main [
 +mem: storing 110 in location 12
 +mem: storing 107 in location 13
 +mem: storing 110 in location 14
+# ...
 
 :(before "End Globals")
 string Most_recent_products;
