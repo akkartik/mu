@@ -442,7 +442,7 @@ recipe render-sandbox-side [
   row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
   clear-line-delimited screen, column, right
   row <- add row, 1
-  # draw solid line after recipes (you'll see why in later layers)
+  # draw solid line after code (you'll see why in later layers)
   draw-horizontal screen, row, left, right, 9473/horizontal
   row <- add row, 1
   clear-screen-from screen, row, left, left, right

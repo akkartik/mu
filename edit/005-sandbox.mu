@@ -96,8 +96,6 @@ scenario run-and-show-results [
   ]
 ]
 
-# hook into event-loop recipe: read non-unicode keypress from k, process it if
-# necessary, then go to next level
 after <global-keypress> [
   # F4? load all code and run all sandboxes.
   {
