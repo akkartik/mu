@@ -78,7 +78,7 @@ bool is_equal(char* s, const char* lit) {
 // yadda-yadda. Instead use this macro below to perform an unsafe cast to
 // signed. We'll just give up immediately if a container's every too large.
 :(before "End Includes")
-#define SIZE(X) (assert(X.size() < (1LL<<(sizeof(long long int)*8-2))), static_cast<long long int>(X.size()))
+#define SIZE(X) (assert((X).size() < (1LL<<(sizeof(long long int)*8-2))), static_cast<long long int>((X).size()))
 //
 // 5. Integer overflow is still impossible to guard against. Maybe after
 // reading http://www.cs.utah.edu/~regehr/papers/overflow12.pdf

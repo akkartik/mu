@@ -278,7 +278,7 @@ bool trace_doesnt_contain(string layer, string line) {
 }
 
 bool trace_doesnt_contain(string expected) {
-  vector<string> tmp = split(expected, ": ");
+  vector<string> tmp = split_first(expected, ": ");
   return trace_doesnt_contain(tmp.at(0), tmp.at(1));
 }
 
@@ -295,9 +295,18 @@ vector<string> split(string s, string delim) {
       break;
     }
     result.push_back(string(s, begin, end-begin));
-    begin = SIZE(end+delim);
+    begin = end+SIZE(delim);
     end = s.find(delim, begin);
   }
+  return result;
+}
+
+vector<string> split_first(string s, string delim) {
+  vector<string> result;
+  size_t end=s.find(delim);
+  result.push_back(string(s, 0, end));
+  if (end != string::npos)
+    result.push_back(string(s, end+SIZE(delim), string::npos));
   return result;
 }
 
