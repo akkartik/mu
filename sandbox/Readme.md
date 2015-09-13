@@ -1,10 +1,14 @@
 Variant of edit that runs just the sandbox.
 
 Suitable for running inside split panes atop tmux so you can run vim or some
-other editor with mu.
+other editor with mu. For example, here's mu running alongside vim atop tmux:
+
+<img alt='tmux+vim example' src='../html/tmux-vim-sandbox.png'>
 
 To set this up:
+
   a) copy the lines in tmux.conf into $HOME/.tmux.conf
+
   b) copy the file `mu_run` somewhere in your $PATH
 
 Now when you start tmux, split it into two vertical panes, run `mu sandbox` on
