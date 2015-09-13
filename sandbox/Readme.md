@@ -1,7 +1,8 @@
 Variant of [the mu programming environment](../edit) that runs just the sandbox.
 
-Suitable for running inside split panes atop tmux so you can run vim or some
-other editor with mu. For example, here's mu running alongside vim atop tmux:
+Suitable for people who want to run their favorite terminal-based editor with
+mu. Just run editor and sandbox inside split panes atop tmux. For example,
+here's mu running alongside vim:
 
 <img alt='tmux+vim example' src='../html/tmux-vim-sandbox.png'>
 
