@@ -7,9 +7,9 @@ other editor with mu. For example, here's mu running alongside vim atop tmux:
 
 To set this up:
 
-  a) copy the lines in tmux.conf into $HOME/.tmux.conf
+  a) copy the lines in tmux.conf into `$HOME/.tmux.conf`.
 
-  b) copy the file `mu_run` somewhere in your $PATH
+  b) copy the file `mu_run` somewhere in your `$PATH`.
 
 Now when you start tmux, split it into two vertical panes, run `mu sandbox` on
 the right pane and your editor on the left. You should be able to hit F4 in
