@@ -1,4 +1,4 @@
-Variant of edit that runs just the sandbox.
+Variant of [the mu programming environment](../edit) that runs just the sandbox.
 
 Suitable for running inside split panes atop tmux so you can run vim or some
 other editor with mu. For example, here's mu running alongside vim atop tmux:
