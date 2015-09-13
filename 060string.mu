@@ -591,62 +591,60 @@ recipe space? [
   c:character <- next-ingredient
   # most common case first
   result:boolean <- equal c, 32/space
-  jump-if result +reply:label
+  reply-if result, result
   result <- equal c, 10/newline
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 9/tab
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 13/carriage-return
-  jump-if result, +reply:label
+  reply-if result, result
   # remaining uncommon cases in sorted order
   # http://unicode.org code-points in unicode-set Z and Pattern_White_Space
   result <- equal c, 11/ctrl-k
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 12/ctrl-l
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 133/ctrl-0085
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 160/no-break-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 5760/ogham-space-mark
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8192/en-quad
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8193/em-quad
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8194/en-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8195/em-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8196/three-per-em-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8197/four-per-em-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8198/six-per-em-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8199/figure-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8200/punctuation-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8201/thin-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8202/hair-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8206/left-to-right
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8207/right-to-left
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8232/line-separator
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8233/paragraph-separator
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8239/narrow-no-break-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 8287/medium-mathematical-space
-  jump-if result, +reply:label
+  reply-if result, result
   result <- equal c, 12288/ideographic-space
-  jump-if result, +reply:label
-  +reply
   reply result
 ]
 
