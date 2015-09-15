@@ -99,6 +99,3 @@ bool exists(const string& filename) {
   struct stat dummy;
   return 0 == stat(filename.c_str(), &dummy);
 }
-
-:(before "End Includes")
-#include<sys/stat.h>
