@@ -263,11 +263,11 @@ void check_memory(const string& s) {
       check_type(lhs, in);
       continue;
     }
-    int address = to_integer(lhs);
+    long long int address = to_integer(lhs);
     skip_whitespace_and_comments(in);
     string _assign;  in >> _assign;  assert(_assign == "<-");
     skip_whitespace_and_comments(in);
-    int value = 0;  in >> value;
+    double value = 0;  in >> value;
     if (locations_checked.find(address) != locations_checked.end())
       raise << "duplicate expectation for location " << address << '\n' << end();
     trace(Primitive_recipe_depth, "run") << "checking location " << address << end();
