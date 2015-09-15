@@ -100,13 +100,13 @@ string to_string(const vector<double>& in) {
   if (in.empty()) return "[]";
   ostringstream out;
   if (SIZE(in) == 1) {
-    out << in.at(0);
+    out << no_scientific(in.at(0));
     return out.str();
   }
   out << "[";
   for (long long int i = 0; i < SIZE(in); ++i) {
     if (i > 0) out << ", ";
-    out << in.at(i);
+    out << no_scientific(in.at(i));
   }
   out << "]";
   return out.str();

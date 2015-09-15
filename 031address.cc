@@ -64,7 +64,7 @@ reagent lookup_memory(reagent x) {
     return result;
   }
   result.set_value(Memory[x.value]);
-  trace(Primitive_recipe_depth, "mem") << "location " << x.value << " is " << result.value << end();
+  trace(Primitive_recipe_depth, "mem") << "location " << x.value << " is " << no_scientific(result.value) << end();
 
   // populate types
   copy(++x.types.begin(), x.types.end(), inserter(result.types, result.types.begin()));
@@ -147,7 +147,7 @@ Recipe_ordinal["$dump"] = _DUMP;
 :(before "End Primitive Recipe Implementations")
 case _DUMP: {
   reagent after_canonize = canonize(current_instruction().ingredients.at(0));
-  cerr << current_recipe_name() << ": " << current_instruction().ingredients.at(0).name << ' ' << current_instruction().ingredients.at(0).value << " => " << after_canonize.value << " => " << Memory[after_canonize.value] << '\n';
+  cerr << current_recipe_name() << ": " << current_instruction().ingredients.at(0).name << ' ' << no_scientific(current_instruction().ingredients.at(0).value) << " => " << no_scientific(after_canonize.value) << " => " << no_scientific(Memory[after_canonize.value]) << '\n';
   break;
 }
 
@@ -162,7 +162,7 @@ Recipe_ordinal["$foo"] = _FOO;
 :(before "End Primitive Recipe Implementations")
 case _FOO: {
   if (current_instruction().ingredients.empty()) {
-    if (foo != -1) cerr << foo << ": " << Memory[foo] << '\n';
+    if (foo != -1) cerr << foo << ": " << no_scientific(Memory[foo]) << '\n';
     else cerr << '\n';
   }
   else {

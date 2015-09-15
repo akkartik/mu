@@ -274,11 +274,11 @@ void check_memory(const string& s) {
     if (Memory[address] != value) {
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n' << end();
+        raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << no_scientific(value) << " but saw " << no_scientific(Memory[address]) << '\n' << end();
       }
       else {
         // just testing scenario support
-        raise << "expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n' << end();
+        raise << "expected location " << address << " to contain " << no_scientific(value) << " but saw " << no_scientific(Memory[address]) << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -313,9 +313,9 @@ void check_string(long long int address, const string& literal) {
   trace(Primitive_recipe_depth, "run") << "checking string length at " << address << end();
   if (Memory[address] != SIZE(literal)) {
     if (Current_scenario && !Scenario_testing_scenario)
-      raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n' << end();
+      raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(Memory[address]) << '\n' << end();
     else
-      raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n' << end();
+      raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(Memory[address]) << '\n' << end();
     if (!Scenario_testing_scenario) {
       Passed = false;
       ++Num_failures;
@@ -328,11 +328,11 @@ void check_string(long long int address, const string& literal) {
     if (Memory[address+i] != literal.at(i)) {
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n' << end();
+        raise << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(Memory[address+i]) << '\n' << end();
       }
       else {
         // just testing scenario support
-        raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n' << end();
+        raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(Memory[address+i]) << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;

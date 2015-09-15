@@ -76,7 +76,7 @@ string print_mu(const reagent& r, const vector<double>& data) {
   // End print Special-cases(reagent r, data)
   ostringstream out;
   for (long long i = 0; i < SIZE(data); ++i) {
-    out << data.at(i) << ' ';
+    out << no_scientific(data.at(i)) << ' ';
   }
   return out.str();
 }
@@ -215,7 +215,7 @@ case _PRINT: {
       for (long long int j = 0; j < SIZE(ingredients.at(i)); ++j) {
         trace(Primitive_recipe_depth, "run") << "$print: " << ingredients.at(i).at(j) << end();
         if (j > 0) cout << " ";
-        cout << ingredients.at(i).at(j);
+        cout << no_scientific(ingredients.at(i).at(j));
       }
     }
   }

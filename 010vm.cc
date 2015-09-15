@@ -287,9 +287,55 @@ vector<string> property(const reagent& r, const string& name) {
 
 void dump_memory() {
   for (map<long long int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
-    cout << p->first << ": " << p->second << '\n';
+    cout << p->first << ": " << no_scientific(p->second) << '\n';
   }
 }
+
+:(before "End Types")
+struct no_scientific {
+  double x;
+  explicit no_scientific(double y) :x(y) {}
+};
+
+:(code)
+ostream& operator<<(ostream& os, no_scientific x) {
+  if (!isfinite(x.x)) {
+    // Infinity or NaN
+    os << x.x;
+    return os;
+  }
+  ostringstream tmp;
+  tmp << std::fixed << x.x;
+  os << trim_floating_point(tmp.str());
+  return os;
+}
+
+string trim_floating_point(const string& in) {
+  long long int len = SIZE(in);
+  while (len > 1) {
+    if (in.at(len-1) != '0') break;
+    --len;
+  }
+  if (in.at(len-1) == '.') --len;
+//?   cerr << in << ": " << in.substr(0, len) << '\n';
+  return in.substr(0, len);
+}
+
+void test_trim_floating_point() {
+  CHECK_EQ("0", trim_floating_point("000000000"));
+  CHECK_EQ("23.000001", trim_floating_point("23.000001"));
+  CHECK_EQ("23", trim_floating_point("23.000000"));
+  CHECK_EQ("23", trim_floating_point("23.0"));
+  CHECK_EQ("23", trim_floating_point("23."));
+  CHECK_EQ("23", trim_floating_point("23"));
+  CHECK_EQ("3", trim_floating_point("3.000000"));
+  CHECK_EQ("3", trim_floating_point("3.0"));
+  CHECK_EQ("3", trim_floating_point("3."));
+  CHECK_EQ("3", trim_floating_point("3"));
+  CHECK_EQ("1.5", trim_floating_point("1.5000"));
+}
+
 :(before "End Includes")
 #include<utility>
 using std::pair;
+#include<math.h>

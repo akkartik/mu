@@ -115,11 +115,11 @@ void transform_braces(const recipe_ordinal r) {
     inst.ingredients.push_back(target);
     // log computed target
     if (inst.name.find("-if") != string::npos)
-      trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << target.value << ":offset" << end();
+      trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
     else if (inst.name.find("-unless") != string::npos)
-      trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << target.value << ":offset" << end();
+      trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
     else
-      trace("after-brace") << "jump " << target.value << ":offset" << end();
+      trace("after-brace") << "jump " << no_scientific(target.value) << ":offset" << end();
   }
 }
 
