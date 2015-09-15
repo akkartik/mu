@@ -40,7 +40,7 @@ case WAIT_FOR_LOCATION: {
   Current_routine->state = WAITING;
   Current_routine->waiting_on_location = loc.value;
   Current_routine->old_value_of_waiting_location = Memory[loc.value];
-  trace(Primitive_recipe_depth, "run") << "waiting for location " << loc.value << " to change from " << Memory[loc.value] << end();
+  trace(Primitive_recipe_depth, "run") << "waiting for location " << loc.value << " to change from " << no_scientific(Memory[loc.value]) << end();
   break;
 }
 

@@ -204,7 +204,7 @@ long long int address(long long int offset, long long int base) {
   if (base == 0) return offset;  // raw
   if (offset >= static_cast<long long int>(Memory[base])) {
     // todo: test
-    raise << "location " << offset << " is out of bounds " << Memory[base] << " at " << base << '\n' << end();
+    raise << "location " << offset << " is out of bounds " << no_scientific(Memory[base]) << " at " << base << '\n' << end();
   }
   return base+1 + offset;
 }

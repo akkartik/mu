@@ -259,7 +259,7 @@ void track_most_recent_products(const instruction& instruction, const vector<vec
           cerr << read_mu_string(trace_contents("warn")) << '\n';
           cerr << SIZE(products.at(i)) << ": ";
           for (long long int j = 0; j < SIZE(products.at(i)); ++j)
-            cerr << products.at(i).at(j) << ' ';
+            cerr << no_scientific(products.at(i).at(j)) << ' ';
           cerr << '\n';
         }
         assert(scalar(products.at(i)));
@@ -269,7 +269,7 @@ void track_most_recent_products(const instruction& instruction, const vector<vec
       // End Record Product Special-cases
     }
     for (long long int j = 0; j < SIZE(products.at(i)); ++j)
-      out << products.at(i).at(j) << ' ';
+      out << no_scientific(products.at(i).at(j)) << ' ';
     out << '\n';
   }
   Most_recent_products = out.str();
@@ -293,7 +293,7 @@ string strip_comments(string in) {
 long long int stringified_value_of_location(long long int address) {
   // convert to string
   ostringstream out;
-  out << Memory[address];
+  out << no_scientific(Memory[address]);
   return new_mu_string(out.str());
 }
 

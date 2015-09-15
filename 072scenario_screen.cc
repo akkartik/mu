@@ -219,11 +219,11 @@ void check_screen(const string& expected_contents, const int color) {
         // contents match but color is off
         if (Current_scenario && !Scenario_testing_scenario) {
           // genuine test in a mu file
-          raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << Memory[addr] << ") to be in color " << color << " instead of " << Memory[addr+cell_color_offset] << "\n" << end();
+          raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(Memory[addr]) << ") to be in color " << color << " instead of " << no_scientific(Memory[addr+cell_color_offset]) << "\n" << end();
         }
         else {
           // just testing check_screen
-          raise << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << Memory[addr+cell_color_offset] << '\n' << end();
+          raise << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << no_scientific(Memory[addr+cell_color_offset]) << '\n' << end();
         }
         if (!Scenario_testing_scenario) {
           Passed = false;
@@ -247,12 +247,12 @@ void check_screen(const string& expected_contents, const int color) {
 
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << Memory[addr] << actual_pretty << '\n' << end();
+        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
         dump_screen();
       }
       else {
         // just testing check_screen
-        raise << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << Memory[addr] << actual_pretty << '\n' << end();
+        raise << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -334,7 +334,7 @@ void dump_screen() {
     cerr << '.';
     for (long long int col = 0; col < screen_width; ++col) {
       if (Memory[curr])
-        cerr << to_unicode(Memory[curr]);
+        cerr << to_unicode(static_cast<uint32_t>(Memory[curr]));
       else
         cerr << ' ';
       curr += /*size of screen-cell*/2;

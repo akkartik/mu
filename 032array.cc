@@ -156,7 +156,7 @@ case INDEX: {
   vector<double> offset_val(read_memory(offset));
   vector<type_ordinal> element_type = array_element(base.types);
   if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
-    raise << current_recipe_name() << ": invalid index " << offset_val.at(0) << '\n' << end();
+    raise << current_recipe_name() << ": invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
   }
   long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
@@ -251,7 +251,7 @@ case INDEX_ADDRESS: {
   vector<double> offset_val(read_memory(offset));
   vector<type_ordinal> element_type = array_element(base.types);
   if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
-    raise << current_recipe_name() << ": invalid index " << offset_val.at(0) << '\n' << end();
+    raise << current_recipe_name() << ": invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
   }
   long long int result = base_address + 1 + offset_val.at(0)*size_of(element_type);

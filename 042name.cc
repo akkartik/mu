@@ -209,7 +209,7 @@ if (inst.operation == Recipe_ordinal["get"]
     // since first non-address in base type must be a container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).types);
     inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
-    trace("name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << inst.ingredients.at(1).value << end();
+    trace("name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << no_scientific(inst.ingredients.at(1).value) << end();
   }
 }
 
@@ -248,6 +248,6 @@ if (inst.operation == Recipe_ordinal["maybe-convert"]) {
     // since first non-address in base type must be an exclusive container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).types);
     inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
-    trace("name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << inst.ingredients.at(1).value << end();
+    trace("name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << no_scientific(inst.ingredients.at(1).value) << end();
   }
 }
