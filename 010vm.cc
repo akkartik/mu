@@ -311,6 +311,7 @@ ostream& operator<<(ostream& os, no_scientific x) {
 }
 
 string trim_floating_point(const string& in) {
+  if (in.empty()) return "";
   long long int len = SIZE(in);
   while (len > 1) {
     if (in.at(len-1) != '0') break;
@@ -322,8 +323,10 @@ string trim_floating_point(const string& in) {
 }
 
 void test_trim_floating_point() {
+  CHECK_EQ("", trim_floating_point(""));
   CHECK_EQ("0", trim_floating_point("000000000"));
-  CHECK_EQ("23.000001", trim_floating_point("23.000001"));
+  CHECK_EQ("1.5", trim_floating_point("1.5000"));
+  CHECK_EQ("1.000001", trim_floating_point("1.000001"));
   CHECK_EQ("23", trim_floating_point("23.000000"));
   CHECK_EQ("23", trim_floating_point("23.0"));
   CHECK_EQ("23", trim_floating_point("23."));
@@ -332,7 +335,6 @@ void test_trim_floating_point() {
   CHECK_EQ("3", trim_floating_point("3.0"));
   CHECK_EQ("3", trim_floating_point("3."));
   CHECK_EQ("3", trim_floating_point("3"));
-  CHECK_EQ("1.5", trim_floating_point("1.5000"));
 }
 
 :(before "End Includes")
