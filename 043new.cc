@@ -348,6 +348,17 @@ long long int new_mu_string(const string& contents) {
   return result;
 }
 
+//: pass in commandline args as ingredients to main
+//: todo: test this
+
+:(after "Update main_routine")
+Current_routine = main_routine;
+for (long long int i = 1; i < argc; ++i) {
+  vector<double> arg;
+  arg.push_back(new_mu_string(argv[i]));
+  Current_routine->calls.front().ingredient_atoms.push_back(arg);
+}
+
 //: stash recognizes strings
 
 :(scenario stash_string)

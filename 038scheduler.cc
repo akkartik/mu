@@ -113,16 +113,9 @@ Current_routine = NULL;
 void run_main(int argc, char* argv[]) {
   recipe_ordinal r = Recipe_ordinal[string("main")];
   if (r) {
-    // pass in commandline args as ingredients to main
-    // todo: test this
-    routine* rr = new routine(r);
-    Current_routine = rr;
-    for (long long int i = 1; i < argc; ++i) {
-      vector<double> arg;
-      arg.push_back(new_mu_string(argv[i]));
-      Current_routine->calls.front().ingredient_atoms.push_back(arg);
-    }
-    run(rr);
+    routine* main_routine = new routine(r);
+    // Update main_routine
+    run(main_routine);
   }
 }
 
