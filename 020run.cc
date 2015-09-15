@@ -255,6 +255,7 @@ void load_all_permanently(string dir) {
 }
 :(before "End Includes")
 #include<dirent.h>
+#include<sys/stat.h>
 
 //:: Reading from memory, writing to memory.
 
