@@ -33,7 +33,7 @@ Type_ordinal["literal-string"] = 0;
 string slurp_quoted(istream& in) {
   ostringstream out;
   assert(!in.eof());  assert(in.peek() == '[');  out << static_cast<char>(in.get());  // slurp the '['
-  if (code_string(in, out))
+  if (is_code_string(in, out))
     slurp_quoted_comment_aware(in, out);
   else
     slurp_quoted_comment_oblivious(in, out);
@@ -42,7 +42,7 @@ string slurp_quoted(istream& in) {
 
 // A string is a code string if it contains a newline before any non-whitespace
 // todo: support comments before the newline. But that gets messy.
-bool code_string(istream& in, ostringstream& out) {
+bool is_code_string(istream& in, ostringstream& out) {
   while (!in.eof()) {
     char c = in.get();
     if (!isspace(c)) {
