@@ -128,7 +128,7 @@ bool next_instruction(istream& in, instruction* curr) {
   }
 
   if (p == words.end()) {
-    raise << "instruction prematurely ended with '<-'\n" << end() << end();
+    raise << "instruction prematurely ended with '<-'\n" << end();
     return false;
   }
   curr->name = *p;
@@ -136,7 +136,7 @@ bool next_instruction(istream& in, instruction* curr) {
     Recipe_ordinal[*p] = Next_recipe_ordinal++;
   }
   if (Recipe_ordinal[*p] == 0) {
-    raise << "Recipe " << *p << " has number 0, which is reserved for IDLE.\n" << end() << end();
+    raise << "Recipe " << *p << " has number 0, which is reserved for IDLE.\n" << end();
     return false;
   }
   curr->operation = Recipe_ordinal[*p];  ++p;
