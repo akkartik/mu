@@ -224,7 +224,7 @@ recipe! render-sandbox-side [
   row <- add row, 1
   draw-horizontal screen, row, left, right, 9473/horizontal-double
   sandbox:address:sandbox-data <- get *env, sandbox:offset
-  row, screen <- render-sandboxes screen, sandbox, left, right, row
+  row, screen <- render-sandboxes screen, sandbox, left, right, row, env
   clear-rest-of-screen screen, row, left, left, right
   reply screen/same-as-ingredient:0
 ]
@@ -236,6 +236,7 @@ recipe render-sandboxes [
   left:number <- next-ingredient
   right:number <- next-ingredient
   row:number <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
   reply-unless sandbox, row/same-as-ingredient:4, screen/same-as-ingredient:0
   screen-height:number <- screen-height screen
   at-bottom?:boolean <- greater-or-equal row, screen-height
