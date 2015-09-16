@@ -206,6 +206,7 @@ START_TRACING_UNTIL_END_OF_SCOPE
 
 :(before "End Tracing")
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {  // missing layer == anywhere
+  if (!Trace_stream) return false;
   vector<string> expected_lines = split(expected, "");
   long long int curr_expected_line = 0;
   while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
