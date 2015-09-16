@@ -12,14 +12,7 @@ recipe! update-recipes [
   in:address:array:character <- restore [recipes.mu]
   recipe-warnings:address:address:array:character <- get-address *env, recipe-warnings:offset
   *recipe-warnings <- reload in
-  # if recipe editor has errors, stop
-  {
-    break-unless *recipe-warnings
-    status:address:array:character <- new [errors found]
-    update-status screen, status, 1/red
-    reply 1/errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
-  }
-  reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
+  reply 0/show-recipe-warnings-in-sandboxes, env/same-as-ingredient:0, screen/same-as-ingredient:1
 ]
 
 before <render-components-end> [
@@ -59,6 +52,11 @@ after <render-sandbox-trace-done> [
     sandbox-warnings:address:array:character <- get *sandbox, warnings:offset
     break-unless sandbox-warnings
     *response-starting-row <- copy 0  # no response
+    {
+      break-unless env
+      recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+      row, screen <- render-string screen, recipe-warnings, left, right, 1/red, row
+    }
     row, screen <- render-string screen, sandbox-warnings, left, right, 1/red, row
     # don't try to print anything more for this sandbox
     jump +render-sandbox-end:label
