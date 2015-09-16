@@ -374,6 +374,13 @@ if (is_mu_string(r)) {
   return read_mu_string(data.at(0));
 }
 
+:(scenario unicode_string)
+recipe main [
+  x:address:array:character <- new [♠]
+  stash [foo:], x:address:array:character
+]
++app: foo: ♠
+
 //: Allocate more to routine when initializing a literal string
 :(scenario new_string_overflow)
 % Initial_memory_per_routine = 2;
@@ -410,8 +417,7 @@ string read_mu_string(long long int address) {
   if (size == 0) return "";
   ostringstream tmp;
   for (long long int curr = address+1; curr <= address+size; ++curr) {
-    // todo: unicode
-    tmp << (char)(int)Memory[curr];
+    tmp << to_unicode(static_cast<uint32_t>(Memory[curr]));
   }
   return tmp.str();
 }
