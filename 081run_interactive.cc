@@ -3,10 +3,12 @@
 
 :(scenario run_interactive_code)
 recipe main [
+  1:number/raw <- copy 0
   2:address:array:character <- new [1:number/raw <- copy 34]
   run-interactive 2:address:array:character
+  3:number/raw <- copy 1:number/raw
 ]
-+mem: storing 34 in location 1
++mem: storing 34 in location 3
 
 :(scenario run_interactive_empty)
 recipe main [
@@ -42,7 +44,7 @@ case RUN_INTERACTIVE: {
     products.at(2).push_back(0);
     products.at(3).push_back(trace_contents("app"));
     products.at(4).push_back(1);  // completed
-    cleanup_run_interactive();
+    run_code_end();
     break;  // done with this instruction
   }
   else {
@@ -52,6 +54,9 @@ case RUN_INTERACTIVE: {
 
 :(before "End Globals")
 bool Track_most_recent_products = false;
+:(before "End Tracing")
+trace_stream* Save_trace_stream = NULL;
+string Save_trace_file;
 :(before "End Setup")
 Track_most_recent_products = false;
 :(code)
@@ -70,14 +75,7 @@ bool run_interactive(long long int address) {
   if (command.empty()) return false;
   Recipe.erase(Recipe_ordinal["interactive"]);
   Name[Recipe_ordinal["interactive"]].clear();
-  // stuff to undo later, in cleanup_run_interactive()
-  Hide_warnings = true;
-  if (!Trace_stream) {
-    Trace_file = "";  // if there wasn't already a stream we don't want to save it
-    Trace_stream = new trace_stream;
-    Trace_stream->collect_layers.insert("warn");
-    Trace_stream->collect_layers.insert("app");
-  }
+  run_code_begin();
   // don't kill the current routine on parse errors
   routine* save_current_routine = Current_routine;
   Current_routine = NULL;
@@ -97,6 +95,28 @@ bool run_interactive(long long int address) {
   // and wait for it
   Current_routine->calls.push_front(call(Recipe_ordinal["sandbox"]));
   return true;
+}
+
+void run_code_begin() {
+  // stuff to undo later, in run_code_end()
+  Hide_warnings = true;
+  Disable_redefine_warnings = true;
+  Save_trace_stream = Trace_stream;
+  Save_trace_file = Trace_file;
+  Trace_file = "";
+  Trace_stream = new trace_stream;
+  Trace_stream->collect_layers.insert("warn");
+  Trace_stream->collect_layers.insert("app");
+}
+
+void run_code_end() {
+  Hide_warnings = false;
+  Disable_redefine_warnings = false;
+  delete Trace_stream;
+  Trace_stream = Save_trace_stream;
+  Save_trace_stream = NULL;
+  Trace_file = Save_trace_file;
+  Save_trace_file.clear();
 }
 
 :(before "End Load Recipes")
@@ -186,17 +206,8 @@ _CLEANUP_RUN_INTERACTIVE,
 Recipe_ordinal["$cleanup-run-interactive"] = _CLEANUP_RUN_INTERACTIVE;
 :(before "End Primitive Recipe Implementations")
 case _CLEANUP_RUN_INTERACTIVE: {
-  cleanup_run_interactive();
+  run_code_end();
   break;
-}
-
-:(code)
-void cleanup_run_interactive() {
-  Hide_warnings = false;
-  if (Trace_stream && Trace_stream->is_narrowly_collecting("warn")) {  // hack
-    delete Trace_stream;
-    Trace_stream = NULL;
-  }
 }
 
 :(scenario "run_interactive_returns_stringified_result")
@@ -323,6 +334,7 @@ void truncate(string& x) {
 
 //: simpler version of run-interactive: doesn't do any running, just loads
 //: recipes and reports warnings.
+
 :(before "End Primitive Recipe Declarations")
 RELOAD,
 :(before "End Primitive Recipe Numbers")
@@ -337,33 +349,35 @@ case RELOAD: {
     raise << current_recipe_name() << ": first ingredient of 'reload' should be a literal string, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
-  if (!Trace_stream) {
-    Trace_file = "";  // if there wasn't already a stream we don't want to save it
-    Trace_stream = new trace_stream;
-    Trace_stream->collect_layers.insert("warn");
-  }
-  Hide_warnings = true;
-  Disable_redefine_warnings = true;
   // clear any containers in advance
   for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
     Type_ordinal.erase(Type[recently_added_types.at(i)].name);
     Type.erase(recently_added_types.at(i));
   }
   string code = read_mu_string(ingredients.at(0).at(0));
+  run_code_begin();
+  routine* save_current_routine = Current_routine;
+  Current_routine = NULL;
   vector<recipe_ordinal> recipes_reloaded = load(code);
   for (long long int i = 0; i < SIZE(recipes_reloaded); ++i) {
     Name.erase(recipes_reloaded.at(i));
   }
   transform_all();
   Trace_stream->newline();  // flush trace
-  Disable_redefine_warnings = false;
-  Hide_warnings = false;
+  Current_routine = save_current_routine;
   products.resize(1);
   products.at(0).push_back(trace_contents("warn"));
-  // hack: assume collect_layers isn't set anywhere else
-  if (Trace_stream->is_narrowly_collecting("warn")) {
-    delete Trace_stream;
-    Trace_stream = NULL;
-  }
+  run_code_end();  // wait until we're done with the trace contents
   break;
 }
+
+:(scenario reload_continues_past_warning)
+recipe main [
+  local-scope
+  x:address:array:character <- new [recipe foo [
+  get 1234:number, foo:offset
+]]
+  reload x
+  1:number/raw <- copy 34
+]
++mem: storing 34 in location 1
