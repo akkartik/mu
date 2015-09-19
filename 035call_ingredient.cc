@@ -50,12 +50,24 @@ case NEXT_INGREDIENT: {
     ++Current_routine->calls.front().next_ingredient_to_process;
   }
   else {
+    if (SIZE(current_instruction().products) < 2)
+      raise << current_recipe_name() << ": no ingredient to save in " << current_instruction().products.at(0).original_string << '\n' << end();
     products.resize(2);
     products.at(0).push_back(0);  // todo: will fail noisily if we try to read a compound value
     products.at(1).push_back(0);
   }
   break;
 }
+
+:(scenario next_ingredient_warn_on_missing)
+% Hide_warnings = true;
+recipe main [
+  f
+]
+recipe f [
+  11:number <- next-ingredient
+]
++warn: f: no ingredient to save in 11:number
 
 :(scenario rewind_ingredients)
 recipe main [
