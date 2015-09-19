@@ -413,7 +413,7 @@ recipe string-replace [
   s:address:array:character <- next-ingredient
   oldc:character <- next-ingredient
   newc:character <- next-ingredient
-  from:number <- next-ingredient
+  from:number, _ <- next-ingredient  # default to 0
   len:number <- length *s
   i:number <- find-next s, oldc, from
   done?:boolean <- greater-or-equal i, len
