@@ -76,7 +76,7 @@ bool is_equal(char* s, const char* lit) {
 // Corollary: don't use the size() method on containers, since it returns an
 // unsigned and that'll cause warnings about mixing signed and unsigned,
 // yadda-yadda. Instead use this macro below to perform an unsafe cast to
-// signed. We'll just give up immediately if a container's every too large.
+// signed. We'll just give up immediately if a container's ever too large.
 :(before "End Includes")
 #define SIZE(X) (assert((X).size() < (1LL<<(sizeof(long long int)*8-2))), static_cast<long long int>((X).size()))
 //
