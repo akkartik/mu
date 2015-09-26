@@ -236,7 +236,7 @@ recipe render-sandboxes [
   left:number <- next-ingredient
   right:number <- next-ingredient
   row:number <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
+  env:address:programming-environment-data, _/optional <- next-ingredient
   reply-unless sandbox, row/same-as-ingredient:4, screen/same-as-ingredient:0
   screen-height:number <- screen-height screen
   at-bottom?:boolean <- greater-or-equal row, screen-height

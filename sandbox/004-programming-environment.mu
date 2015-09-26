@@ -276,7 +276,7 @@ recipe render-string [
     break-if was-at-left?
     row <- add row, 1
   }
-  move-cursor row, left
+  move-cursor screen, row, left
   reply row/same-as-ingredient:5, screen/same-as-ingredient:0
 ]
 
@@ -343,7 +343,7 @@ recipe render-code-string [
     break-if was-at-left?
     row <- add row, 1
   }
-  move-cursor row, left
+  move-cursor screen, row, left
   reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
