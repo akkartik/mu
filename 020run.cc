@@ -89,11 +89,11 @@ void run_current_routine()
         }
         for (long long int i = 0; i < SIZE(ingredients); ++i) {
           if (!is_mu_array(current_instruction().ingredients.at(i)) && is_mu_array(current_instruction().products.at(i))) {
-            raise << "can't copy " << current_instruction().ingredients.at(i).original_string << " to array " << current_instruction().products.at(i).original_string << "\n" << end();
+            raise << current_recipe_name() << ": can't copy " << current_instruction().ingredients.at(i).original_string << " to array " << current_instruction().products.at(i).original_string << "\n" << end();
             goto finish_instruction;
           }
           if (is_mu_array(current_instruction().ingredients.at(i)) && !is_mu_array(current_instruction().products.at(i))) {
-            raise << "can't copy array " << current_instruction().ingredients.at(i).original_string << " to " << current_instruction().products.at(i).original_string << "\n" << end();
+            raise << current_recipe_name() << ": can't copy array " << current_instruction().ingredients.at(i).original_string << " to " << current_instruction().products.at(i).original_string << "\n" << end();
             goto finish_instruction;
           }
         }
@@ -364,14 +364,14 @@ recipe main [
 recipe main [
   1:array:number <- copy 34
 ]
-+warn: can't copy 34 to array 1:array:number
++warn: main: can't copy 34 to array 1:array:number
 
 :(scenario write_scalar_to_array_disallowed_2)
 % Hide_warnings = true;
 recipe main [
   1:number, 2:array:number <- copy 34, 35
 ]
-+warn: can't copy 35 to array 2:array:number
++warn: main: can't copy 35 to array 2:array:number
 
 //: mu is robust to various combinations of commas and spaces. You just have
 //: to put spaces around the '<-'.
