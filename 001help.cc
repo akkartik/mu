@@ -11,6 +11,11 @@ if (argc <= 1 || is_equal(argv[1], "--help")) {
        << "  mu test\n"
        << "To load files and then run all tests:\n"
        << "  mu test file1.mu file2.mu ...\n"
+       << "To load all files with a numeric prefix in a directory:\n"
+       << "  mu directory1\n"
+       << "You can test directories just like files.\n"
+       << "To pass ingredients to a mu program, provide them after '--':\n"
+       << "  mu file_or_dir1 file_or_dir2 ... -- ingredient1 ingredient2 ...\n"
        ;
   return 0;
 }
