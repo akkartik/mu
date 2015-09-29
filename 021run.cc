@@ -299,11 +299,7 @@ bool is_dummy(const reagent& x) {
   return x.name == "_";
 }
 
-bool is_literal(const reagent& r) {
-  return SIZE(r.types) == 1 && r.types.at(0) == 0;
-}
-
-:(code)
+:(replace{} "void run(string form)")
 // helper for tests
 void run(string form) {
   vector<recipe_ordinal> tmp = load(form);
