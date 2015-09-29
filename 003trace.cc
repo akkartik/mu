@@ -205,7 +205,7 @@ START_TRACING_UNTIL_END_OF_SCOPE
 #define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 
 :(before "End Tracing")
-bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {  // missing layer == anywhere
+bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {
   if (!Trace_stream) return false;
   vector<string> expected_lines = split(expected, "");
   long long int curr_expected_line = 0;
