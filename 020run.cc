@@ -83,20 +83,6 @@ void run_current_routine()
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
       case COPY: {
-        if (SIZE(current_instruction().products) != SIZE(ingredients)) {
-          raise << "ingredients and products should match in '" << current_instruction().to_string() << "'\n" << end();
-          break;
-        }
-        for (long long int i = 0; i < SIZE(ingredients); ++i) {
-          if (!is_mu_array(current_instruction().ingredients.at(i)) && is_mu_array(current_instruction().products.at(i))) {
-            raise << current_recipe_name() << ": can't copy " << current_instruction().ingredients.at(i).original_string << " to array " << current_instruction().products.at(i).original_string << "\n" << end();
-            goto finish_instruction;
-          }
-          if (is_mu_array(current_instruction().ingredients.at(i)) && !is_mu_array(current_instruction().products.at(i))) {
-            raise << current_recipe_name() << ": can't copy array " << current_instruction().ingredients.at(i).original_string << " to " << current_instruction().products.at(i).original_string << "\n" << end();
-            goto finish_instruction;
-          }
-        }
         copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
         break;
       }
@@ -317,10 +303,6 @@ bool is_literal(const reagent& r) {
   return SIZE(r.types) == 1 && r.types.at(0) == 0;
 }
 
-bool is_mu_array(reagent r) {
-  return !r.types.empty() && r.types.at(0) == Type_ordinal["array"];
-}
-
 :(code)
 // helper for tests
 void run(string form) {
@@ -351,27 +333,6 @@ recipe main [
   0 <- copy 34
 ]
 -mem: storing 34 in location 0
-
-:(scenario copy_checks_reagent_count)
-% Hide_warnings = true;
-recipe main [
-  1:number <- copy 34, 35
-]
-+warn: ingredients and products should match in '1:number <- copy 34, 35'
-
-:(scenario write_scalar_to_array_disallowed)
-% Hide_warnings = true;
-recipe main [
-  1:array:number <- copy 34
-]
-+warn: main: can't copy 34 to array 1:array:number
-
-:(scenario write_scalar_to_array_disallowed_2)
-% Hide_warnings = true;
-recipe main [
-  1:number, 2:array:number <- copy 34, 35
-]
-+warn: main: can't copy 35 to array 2:array:number
 
 //: mu is robust to various combinations of commas and spaces. You just have
 //: to put spaces around the '<-'.

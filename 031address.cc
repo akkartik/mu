@@ -29,9 +29,6 @@ if (x.value == 0) {
   return;
 }
 
-:(after "bool is_mu_array(reagent r)")
-r = canonize(r);
-
 //: writes to address 0 always loudly fail
 :(scenario store_to_0_warns)
 % Hide_warnings = true;
@@ -69,7 +66,7 @@ reagent lookup_memory(reagent x) {
   // populate types
   copy(++x.types.begin(), x.types.end(), inserter(result.types, result.types.begin()));
 
-  // drop-one 'lookup'
+  // drop one 'lookup'
   long long int i = 0;
   long long int len = SIZE(x.properties);
   for (i = 0; i < len; ++i) {
