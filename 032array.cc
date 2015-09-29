@@ -332,31 +332,3 @@ case LENGTH: {
 recipe_ordinal r = current_instruction().operation;
 if (r == CREATE_ARRAY || r == INDEX || r == INDEX_ADDRESS || r == LENGTH)
   return false;
-
-:(code)
-bool is_mu_array(reagent r) {
-  if (is_literal(r)) return false;
-  while (has_property(r, "lookup")) {
-    if (r.types.empty()) {
-      raise << "can't lookup non-address: " << r.original_string << '\n' << end();
-      return false;
-    }
-    if (r.types.at(0) != Type_ordinal["address"]) {
-      raise << "can't lookup non-address: " << r.original_string << '\n' << end();
-      return false;
-    }
-    r.types.erase(r.types.begin());
-    drop_one_lookup(r);
-  }
-  return !r.types.empty() && r.types.at(0) == Type_ordinal["array"];
-}
-
-void drop_one_lookup(reagent& r) {
-  for (vector<pair<string, vector<string> > >::iterator p = r.properties.begin(); p != r.properties.end(); ++p) {
-    if (p->first == "lookup") {
-      r.properties.erase(p);
-      return;
-    }
-  }
-  assert(false);
-}

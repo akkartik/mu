@@ -57,3 +57,41 @@ recipe main [
   1:number, 2:array:number <- copy 34, 35
 ]
 +warn: main: can't copy 35 to array 2:array:number
+
+:(code)
+bool is_mu_array(reagent r) {
+  if (is_literal(r)) return false;
+  while (has_property(r, "lookup")) {
+    if (r.types.empty()) {
+      raise << "can't lookup non-address: " << r.original_string << '\n' << end();
+      return false;
+    }
+    if (r.types.at(0) != Type_ordinal["address"]) {
+      raise << "can't lookup non-address: " << r.original_string << '\n' << end();
+      return false;
+    }
+    r.types.erase(r.types.begin());
+    drop_one_lookup(r);
+  }
+  return !r.types.empty() && r.types.at(0) == Type_ordinal["array"];
+}
+
+void drop_one_lookup(reagent& r) {
+  for (vector<pair<string, vector<string> > >::iterator p = r.properties.begin(); p != r.properties.end(); ++p) {
+    if (p->first == "lookup") {
+      r.properties.erase(p);
+      return;
+    }
+  }
+  assert(false);
+}
+
+bool is_literal(const reagent& r) {
+  return SIZE(r.types) == 1 && r.types.at(0) == 0;
+}
+
+// helper for tests
+void run(string form) {
+  vector<recipe_ordinal> tmp = load(form);
+  transform_all();
+}
