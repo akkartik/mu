@@ -6,7 +6,7 @@
 //: every single time. You can't use the same name with multiple types in a
 //: single recipe.
 
-:(scenario transform_types_warns_on_reusing_name_with_different_type)
+:(scenario transform_warns_on_reusing_name_with_different_type)
 % Hide_warnings = true;
 recipe main [
   x:number <- copy 1
@@ -15,10 +15,10 @@ recipe main [
 +warn: x used with multiple types in main
 
 :(after "int main")
-  Transform.push_back(transform_types);
+  Transform.push_back(check_types_by_name);
 
 :(code)
-void transform_types(const recipe_ordinal r) {
+void check_types_by_name(const recipe_ordinal r) {
   map<string, vector<type_ordinal> > metadata;
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
@@ -45,7 +45,7 @@ void check_metadata(map<string, vector<type_ordinal> >& metadata, const reagent&
     raise << x.name << " used with multiple types in " << Recipe[r].name << '\n' << end();
 }
 
-:(scenario transform_types_fills_in_missing_types)
+:(scenario transform_fills_in_missing_types)
 recipe main [
   x:number <- copy 1
   y:number <- add x, 1
@@ -61,13 +61,13 @@ void deduce_missing_type(map<string, vector<type_ordinal> >& metadata, reagent& 
   x.properties.push_back(pair<string, vector<string> >("as-before", vector<string>()));
 }
 
-:(scenario transform_types_fills_in_missing_types_in_product)
+:(scenario transform_fills_in_missing_types_in_product)
 recipe main [
   x:number <- copy 1
   x <- copy 2
 ]
 
-:(scenario transform_types_fills_in_missing_types_in_product_and_ingredient)
+:(scenario transform_fills_in_missing_types_in_product_and_ingredient)
 recipe main [
   x:number <- copy 1
   x <- add x, 1
