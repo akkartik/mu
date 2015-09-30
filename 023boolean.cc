@@ -4,7 +4,7 @@
 AND,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["and"] = AND;
-:(before "End Primitive Recipe Type Checks")
+:(before "End Primitive Recipe Checks")
 case AND: {
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_scalar(inst.ingredients.at(i))) {
@@ -54,7 +54,7 @@ recipe main [
 OR,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["or"] = OR;
-:(before "End Primitive Recipe Type Checks")
+:(before "End Primitive Recipe Checks")
 case OR: {
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_scalar(inst.ingredients.at(i))) {
@@ -104,7 +104,7 @@ recipe main [
 NOT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["not"] = NOT;
-:(before "End Primitive Recipe Type Checks")
+:(before "End Primitive Recipe Checks")
 case NOT: {
   if (SIZE(inst.products) > SIZE(inst.ingredients)) {
     raise << Recipe[r].name << ": 'not' cannot have fewer ingredients than products in '" << inst.to_string() << "'\n" << end();

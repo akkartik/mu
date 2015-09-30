@@ -3,16 +3,16 @@
 //: recipes as we extend 'run' to support them.
 
 :(after "int main")
-  Transform.push_back(check_types_by_instruction);
+  Transform.push_back(check_instruction);
 
 :(code)
-void check_types_by_instruction(const recipe_ordinal r) {
+void check_instruction(const recipe_ordinal r) {
   if (Trace_stream && trace_count("warn") > 0) return;
   map<string, vector<type_ordinal> > metadata;
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
     switch (inst.operation) {
-      // Primitive Recipe Type Checks
+      // Primitive Recipe Checks
       case COPY: {
         if (SIZE(inst.products) != SIZE(inst.ingredients)) {
           raise << "ingredients and products should match in '" << inst.to_string() << "'\n" << end();
@@ -26,10 +26,10 @@ void check_types_by_instruction(const recipe_ordinal r) {
         }
         break;
       }
-      // End Primitive Recipe Type Checks
+      // End Primitive Recipe Checks
       default: {
-        // Defined Recipe Type Checks
-        // End Defined Recipe Type Checks
+        // Defined Recipe Checks
+        // End Defined Recipe Checks
       }
     }
     finish_checking_instruction:;
