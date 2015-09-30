@@ -90,6 +90,9 @@ reagent lookup_memory(reagent x) {
 :(after "bool is_mu_address(reagent r)")
   if (!canonize_type(r)) return false;
 
+:(after "bool is_mu_number(reagent r)")
+  if (!canonize_type(r)) return false;
+
 :(code)
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
