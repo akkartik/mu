@@ -47,8 +47,8 @@ recipe clear-screen [
       break-if done?
       curr:address:screen-cell <- index-address *buf, i
       curr-content:address:character <- get-address *curr, contents:offset
-      *curr-content <- copy [ ]
-      curr-color:address:character <- get-address *curr, color:offset
+      *curr-content <- copy 0/empty
+      curr-color:address:number <- get-address *curr, color:offset
       *curr-color <- copy 7/white
       i <- add i, 1
       loop
