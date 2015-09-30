@@ -4,6 +4,19 @@
 # (non-editable) sandboxes below the editor, showing the result and a maybe
 # few other things.
 
+recipe! main [
+  local-scope
+  open-console
+  initial-recipe:address:array:character <- restore [recipes.mu]
+  initial-sandbox:address:array:character <- new []
+  hide-screen 0/screen
+  env:address:programming-environment-data <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
+  env <- restore-sandboxes env
+  render-all 0/screen, env
+  event-loop 0/screen, 0/console, env
+  # never gets here
+]
+
 container programming-environment-data [
   sandbox:address:sandbox-data  # list of sandboxes, from top to bottom
 ]
