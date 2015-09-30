@@ -4,7 +4,7 @@
 ADD,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["add"] = ADD;
-:(before "End Primitive Recipe Type Checks")
+:(before "End Primitive Recipe Checks")
 case ADD: {
   // primary goal of these checks is to forbid address arithmetic
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
@@ -72,7 +72,7 @@ recipe main [
 SUBTRACT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["subtract"] = SUBTRACT;
-:(before "End Primitive Recipe Type Checks")
+:(before "End Primitive Recipe Checks")
 case SUBTRACT: {
   if (inst.ingredients.empty()) {
     raise << Recipe[r].name << ": 'subtract' has no ingredients\n" << end();
@@ -129,7 +129,7 @@ recipe main [
 MULTIPLY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["multiply"] = MULTIPLY;
-:(before "End Primitive Recipe Type Checks")
+:(before "End Primitive Recipe Checks")
 case MULTIPLY: {
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
@@ -182,7 +182,7 @@ recipe main [
 DIVIDE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["divide"] = DIVIDE;
-:(before "End Primitive Recipe Type Checks")
+:(before "End Primitive Recipe Checks")
 case DIVIDE: {
   if (inst.ingredients.empty()) {
     raise << Recipe[r].name << ": 'divide' has no ingredients\n" << end();
@@ -240,7 +240,7 @@ recipe main [
 DIVIDE_WITH_REMAINDER,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["divide-with-remainder"] = DIVIDE_WITH_REMAINDER;
-:(before "End Primitive Recipe Type Checks")
+:(before "End Primitive Recipe Checks")
 case DIVIDE_WITH_REMAINDER: {
   if (SIZE(inst.ingredients) != 2) {
     raise << current_recipe_name() << ": 'divide-with-remainder' requires exactly two ingredients, but got '" << current_instruction().to_string() << "'\n" << end();
