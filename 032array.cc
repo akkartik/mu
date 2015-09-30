@@ -78,7 +78,7 @@ recipe main [
   2:number <- copy 14
   3:number <- copy 15
   4:number <- copy 16
-  5:address:array:number <- copy 1  # unsafe
+  5:address:array:number <- copy 1/raw
   6:array:number <- copy *5:address:array:number
 ]
 +mem: storing 3 in location 6
@@ -180,7 +180,7 @@ recipe main [
   2:number <- copy 14
   3:number <- copy 15
   4:number <- copy 16
-  5:address:array:number <- copy 1
+  5:address:array:number <- copy 1/raw
   6:number <- index *5:address:array:number, 1
 ]
 +mem: storing 15 in location 6

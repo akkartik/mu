@@ -9,8 +9,8 @@ recipe main [
   10:number <- copy 5
   20:number <- copy 5
   # actual start of this recipe
-  global-space:address:array:location <- copy 20
-  default-space:address:array:location <- copy 10
+  global-space:address:array:location <- copy 20/raw
+  default-space:address:array:location <- copy 10/raw
   1:number <- copy 23
   1:number/space:global <- copy 24
 ]

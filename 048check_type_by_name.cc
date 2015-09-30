@@ -80,7 +80,7 @@ recipe main [
   x <- copy 1
   x:number <- copy 2
 ]
-+warn: missing type in 'x <- copy 1'
++warn: missing type for x in 'x <- copy 1'
 
 :(scenario typo_in_address_type_warns)
 % Hide_warnings = true;

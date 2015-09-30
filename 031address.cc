@@ -3,7 +3,7 @@
 
 :(scenario copy_indirect)
 recipe main [
-  1:address:number <- copy 2
+  1:address:number <- copy 2/raw
   2:number <- copy 34
   # This loads location 1 as an address and looks up *that* location.
   3:number <- copy 1:address:number/lookup
@@ -17,7 +17,7 @@ x = canonize(x);
 //: 'lookup' property
 :(scenario store_indirect)
 recipe main [
-  1:address:number <- copy 2
+  1:address:number <- copy 2/raw
   1:address:number/lookup <- copy 34
 ]
 +mem: storing 34 in location 2
@@ -80,6 +80,51 @@ reagent lookup_memory(reagent x) {
   return result;
 }
 
+:(after "bool types_match(reagent lhs, reagent rhs)")
+if (!canonize_type(lhs)) return false;
+if (!canonize_type(rhs)) return false;
+
+:(replace{} "bool is_mu_array(reagent r)")
+bool is_mu_array(reagent r) {
+  if (is_literal(r)) return false;
+  if (!canonize_type(r)) return false;
+  return !r.types.empty() && r.types.at(0) == Type_ordinal["array"];
+}
+
+:(replace{} "bool is_mu_address(reagent r)")
+bool is_mu_address(reagent r) {
+  if (is_literal(r)) return false;
+  if (!canonize_type(r)) return false;
+  return !r.types.empty() && r.types.at(0) == Type_ordinal["address"];
+}
+
+:(code)
+bool canonize_type(reagent& r) {
+  while (has_property(r, "lookup")) {
+    if (r.types.empty()) {
+      raise << "can't lookup non-address: " << r.original_string << '\n' << end();
+      return false;
+    }
+    if (r.types.at(0) != Type_ordinal["address"]) {
+      raise << "can't lookup non-address: " << r.original_string << '\n' << end();
+      return false;
+    }
+    r.types.erase(r.types.begin());
+    drop_one_lookup(r);
+  }
+  return true;
+}
+
+void drop_one_lookup(reagent& r) {
+  for (vector<pair<string, vector<string> > >::iterator p = r.properties.begin(); p != r.properties.end(); ++p) {
+    if (p->first == "lookup") {
+      r.properties.erase(p);
+      return;
+    }
+  }
+  assert(false);
+}
+
 //:: 'get' can read from container address
 :(scenario get_indirect)
 recipe main [
@@ -119,7 +164,7 @@ base = canonize(base);
 
 :(scenario lookup_abbreviation)
 recipe main [
-  1:address:number <- copy 2
+  1:address:number <- copy 2/raw
   2:number <- copy 34
   3:number <- copy *1:address:number
 ]

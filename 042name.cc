@@ -66,7 +66,7 @@ void transform_names(const recipe_ordinal r) {
 
 bool disqualified(/*mutable*/ reagent& x, const instruction& inst) {
   if (x.types.empty()) {
-    raise << "missing type in '" << inst.to_string() << "'\n" << end();
+    raise << "missing type for " << x.original_string << " in '" << inst.to_string() << "'\n" << end();
     return true;
   }
   if (is_raw(x)) return true;
@@ -114,13 +114,6 @@ bool is_named_location(const reagent& x) {
   if (is_raw(x)) return false;
   if (is_special_name(x.name)) return false;
   return !is_integer(x.name);
-}
-
-bool is_raw(const reagent& r) {
-  for (long long int i = /*skip value+type*/1; i < SIZE(r.properties); ++i) {
-    if (r.properties.at(i).first == "raw") return true;
-  }
-  return false;
 }
 
 bool is_special_name(const string& s) {
@@ -217,8 +210,8 @@ if (inst.operation == Recipe_ordinal["get"]
 :(scenarios transform)
 :(scenario transform_names_handles_containers)
 recipe main [
-  a:point <- copy 0
-  b:number <- copy 0
+  a:point <- copy 0/raw
+  b:number <- copy 0/raw
 ]
 +name: assign a 1
 +name: assign b 3

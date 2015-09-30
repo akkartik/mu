@@ -271,6 +271,7 @@ void write_memory(reagent x, vector<double> data) {
     return;
   }
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
+    if (base+offset == 0) continue;
     trace(Primitive_recipe_depth, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << base+offset << end();
     Memory[base+offset] = data.at(offset);
   }
@@ -299,7 +300,10 @@ bool is_dummy(const reagent& x) {
   return x.name == "_";
 }
 
-:(replace{} "void run(string form)")
+bool is_literal(const reagent& r) {
+  return SIZE(r.types) == 1 && r.types.at(0) == 0;
+}
+
 // helper for tests
 void run(string form) {
   vector<recipe_ordinal> tmp = load(form);
@@ -325,8 +329,9 @@ recipe main [
 +run: _ <- copy 0
 
 :(scenario write_to_0_disallowed)
+% Hide_warnings = true;
 recipe main [
-  0 <- copy 34
+  0:number <- copy 34
 ]
 -mem: storing 34 in location 0
 

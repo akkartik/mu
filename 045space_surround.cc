@@ -9,8 +9,8 @@
 recipe main [
   10:number <- copy 5  # pretend array
   20:number <- copy 5  # pretend array
-  default-space:address:array:location <- copy 10
-  0:address:array:location/names:dummy <- copy 20  # later layers will explain the /names: property
+  default-space:address:array:location <- copy 10/raw
+  0:address:array:location/names:dummy <- copy 20/raw  # later layers will explain the /names: property
   1:number <- copy 32
   1:number/space:1 <- copy 33
 ]

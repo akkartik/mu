@@ -402,7 +402,7 @@ recipe main [
 :(scenario run_allows_type_definition_after_use)
 % Hide_warnings = true;
 recipe main [
-  1:bar <- copy 0
+  1:bar <- copy 0/raw
 ]
 
 container bar [
