@@ -97,3 +97,12 @@ bool is_mu_address(reagent r) {
   if (is_literal(r)) return false;
   return !r.types.empty() && r.types.at(0) == Type_ordinal["address"];
 }
+
+bool is_mu_number(reagent r) {
+  if (is_literal(r))
+    return r.properties.at(0).second.at(0) == "literal-number"
+        || r.properties.at(0).second.at(0) == "literal";
+  if (r.types.empty()) return false;
+  if (r.types.at(0) == Type_ordinal["character"]) return true;  // permit arithmetic on unicode code points
+  return !r.types.empty() && r.types.at(0) == Type_ordinal["number"];
+}
