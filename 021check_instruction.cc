@@ -109,7 +109,7 @@ bool is_mu_number(reagent r) {
 
 bool is_mu_scalar(reagent r) {
   if (is_literal(r))
-    return r.properties.at(0).second.at(0) != "literal-string";
+    return r.properties.at(0).second.empty() || r.properties.at(0).second.at(0) != "literal-string";
   if (is_mu_array(r)) return false;
   return size_of(r) == 1;
 }
