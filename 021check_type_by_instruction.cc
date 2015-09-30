@@ -104,5 +104,12 @@ bool is_mu_number(reagent r) {
         || r.properties.at(0).second.at(0) == "literal";
   if (r.types.empty()) return false;
   if (r.types.at(0) == Type_ordinal["character"]) return true;  // permit arithmetic on unicode code points
-  return !r.types.empty() && r.types.at(0) == Type_ordinal["number"];
+  return r.types.at(0) == Type_ordinal["number"];
+}
+
+bool is_mu_scalar(reagent r) {
+  if (is_literal(r))
+    return r.properties.at(0).second.at(0) != "literal-string";
+  if (is_mu_array(r)) return false;
+  return size_of(r) == 1;
 }
