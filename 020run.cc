@@ -91,7 +91,6 @@ void run_current_routine()
         cout << "not a primitive op: " << current_instruction().operation << '\n';
       }
     }
-    finish_instruction:
     if (SIZE(products) < SIZE(current_instruction().products)) {
       raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << current_instruction().to_string() << end();
     }

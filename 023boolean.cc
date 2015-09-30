@@ -4,16 +4,21 @@
 AND,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["and"] = AND;
+:(before "End Primitive Recipe Type Checks")
+case AND: {
+  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+    if (!is_mu_scalar(inst.ingredients.at(i))) {
+      raise << Recipe[r].name << ": 'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      goto finish_checking_instruction;
+    }
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case AND: {
   bool result = true;
-  for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    if (!scalar(ingredients.at(i))) {
-      raise << current_recipe_name() << ": 'and' requires boolean ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
-      goto finish_instruction;
-    }
+  for (long long int i = 0; i < SIZE(ingredients); ++i)
     result = result && ingredients.at(i).at(0);
-  }
   products.resize(1);
   products.at(0).push_back(result);
   break;
@@ -49,16 +54,21 @@ recipe main [
 OR,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["or"] = OR;
+:(before "End Primitive Recipe Type Checks")
+case OR: {
+  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+    if (!is_mu_scalar(inst.ingredients.at(i))) {
+      raise << Recipe[r].name << ": 'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      goto finish_checking_instruction;
+    }
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case OR: {
   bool result = false;
-  for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    if (!scalar(ingredients.at(i))) {
-      raise << current_recipe_name() << ": 'or' requires boolean ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
-      goto finish_instruction;
-    }
+  for (long long int i = 0; i < SIZE(ingredients); ++i)
     result = result || ingredients.at(i).at(0);
-  }
   products.resize(1);
   products.at(0).push_back(result);
   break;
@@ -94,14 +104,24 @@ recipe main [
 NOT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["not"] = NOT;
+:(before "End Primitive Recipe Type Checks")
+case NOT: {
+  if (SIZE(inst.products) > SIZE(inst.ingredients)) {
+    raise << Recipe[r].name << ": 'not' cannot have fewer ingredients than products in '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+    if (!is_mu_scalar(inst.ingredients.at(i))) {
+      raise << Recipe[r].name << ": 'not' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      goto finish_checking_instruction;
+    }
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case NOT: {
   products.resize(SIZE(ingredients));
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    if (!scalar(ingredients.at(i))) {
-      raise << current_recipe_name() << ": 'not' requires boolean ingredients, but got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
-      goto finish_instruction;
-    }
     products.at(i).push_back(!ingredients.at(i).at(0));
   }
   break;

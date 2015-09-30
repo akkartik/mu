@@ -6,6 +6,7 @@ ADD,
 Recipe_ordinal["add"] = ADD;
 :(before "End Primitive Recipe Type Checks")
 case ADD: {
+  // primary goal of these checks is to forbid address arithmetic
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << Recipe[r].name << ": 'add' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
@@ -78,7 +79,7 @@ case SUBTRACT: {
     break;
   }
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-    if (is_raw(inst.ingredients.at(i))) continue;  // offsets in tests
+    if (is_raw(inst.ingredients.at(i))) continue;  // permit address offset computations in tests
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << Recipe[r].name << ": 'subtract' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
