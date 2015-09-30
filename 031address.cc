@@ -81,22 +81,14 @@ reagent lookup_memory(reagent x) {
 }
 
 :(after "bool types_match(reagent lhs, reagent rhs)")
-if (!canonize_type(lhs)) return false;
-if (!canonize_type(rhs)) return false;
+  if (!canonize_type(lhs)) return false;
+  if (!canonize_type(rhs)) return false;
 
-:(replace{} "bool is_mu_array(reagent r)")
-bool is_mu_array(reagent r) {
-  if (is_literal(r)) return false;
+:(after "bool is_mu_array(reagent r)")
   if (!canonize_type(r)) return false;
-  return !r.types.empty() && r.types.at(0) == Type_ordinal["array"];
-}
 
-:(replace{} "bool is_mu_address(reagent r)")
-bool is_mu_address(reagent r) {
-  if (is_literal(r)) return false;
+:(after "bool is_mu_address(reagent r)")
   if (!canonize_type(r)) return false;
-  return !r.types.empty() && r.types.at(0) == Type_ordinal["address"];
-}
 
 :(code)
 bool canonize_type(reagent& r) {
