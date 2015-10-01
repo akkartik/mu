@@ -32,7 +32,7 @@ global_space = 0;
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "global-space") {
     if (!scalar(data))
-      raise << current_recipe_name() << ": 'global-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
+      raise << maybe(current_recipe_name()) << "'global-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
     if (Current_routine->global_space)
       raise << "routine already has a global-space; you can't over-write your globals" << end();
     Current_routine->global_space = data.at(0);

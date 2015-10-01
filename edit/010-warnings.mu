@@ -96,7 +96,7 @@ recipe foo [
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  get 123:number, foo:offset                      ┊                                                 .
     .]                                                 ┊                                                 .
-    .unknown element foo in container number           ┊                                                 .
+    .foo: unknown element foo in container number      ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -106,7 +106,7 @@ recipe foo [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
-    .unknown element foo in container number                                                             .
+    .foo: unknown element foo in container number                                                        .
     .                                                                                                    .
   ]
 ]
@@ -132,7 +132,7 @@ recipe foo [
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x <- copy 0                                     ┊                                                 .
     .]                                                 ┊                                                 .
-    .missing type for x in 'x <- copy 0'               ┊                                                 .
+    .foo: missing type for x in 'x <- copy 0'          ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -250,7 +250,7 @@ recipe foo [
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x:number <- copy y:number                       ┊                                                 .
     .]                                                 ┊                                                 .
-    .use before set: y in foo                          ┊                                                 .
+    .foo: use before set: y                            ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -267,7 +267,7 @@ recipe foo [
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x:number <- copy y:number                       ┊                                                 .
     .]                                                 ┊                                                 .
-    .use before set: y in foo                          ┊                                                 .
+    .foo: use before set: y                            ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]

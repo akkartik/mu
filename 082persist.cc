@@ -9,7 +9,7 @@ Recipe_ordinal["restore"] = RESTORE;
 :(before "End Primitive Recipe Implementations")
 case RESTORE: {
   if (SIZE(ingredients) != 1) {
-    raise << current_recipe_name() << ": 'restore' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+    raise << maybe(current_recipe_name()) << "'restore' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
   }
   string filename;
@@ -20,7 +20,7 @@ case RESTORE: {
     filename = read_mu_string(ingredients.at(0).at(0));
   }
   else {
-    raise << current_recipe_name() << ": first ingredient of 'restore' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
+    raise << maybe(current_recipe_name()) << "first ingredient of 'restore' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
     break;
   }
   if (Current_scenario) {
@@ -62,7 +62,7 @@ Recipe_ordinal["save"] = SAVE;
 :(before "End Primitive Recipe Implementations")
 case SAVE: {
   if (SIZE(ingredients) != 2) {
-    raise << current_recipe_name() << ": 'save' requires exactly two ingredients, but got " << current_instruction().to_string() << '\n' << end();
+    raise << maybe(current_recipe_name()) << "'save' requires exactly two ingredients, but got " << current_instruction().to_string() << '\n' << end();
     break;
   }
   if (Current_scenario) break;  // do nothing in tests
@@ -74,11 +74,11 @@ case SAVE: {
     filename = read_mu_string(ingredients.at(0).at(0));
   }
   else {
-    raise << current_recipe_name() << ": first ingredient of 'save' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
+    raise << maybe(current_recipe_name()) << "first ingredient of 'save' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
     break;
   }
   if (!scalar(ingredients.at(1))) {
-    raise << current_recipe_name() << ": second ingredient of 'save' should be an address:array:character, but got " << current_instruction().ingredients.at(1).to_string() << '\n' << end();
+    raise << maybe(current_recipe_name()) << "second ingredient of 'save' should be an address:array:character, but got " << current_instruction().ingredients.at(1).to_string() << '\n' << end();
     break;
   }
   ofstream fout(("lesson/"+filename).c_str());

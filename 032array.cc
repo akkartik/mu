@@ -102,7 +102,7 @@ if (x.types.at(0) == Type_ordinal["array"]) return false;
 :(before "End size_of(reagent) Cases")
 if (r.types.at(0) == Type_ordinal["array"]) {
   if (SIZE(r.types) == 1) {
-    raise << current_recipe_name() << ": '" << r.original_string << "' is an array of what?\n" << end();
+    raise << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
     return 1;
   }
   // skip the 'array' type to get at the element type
@@ -139,7 +139,7 @@ Recipe_ordinal["index"] = INDEX;
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
   if (SIZE(current_instruction().ingredients) != 2) {
-    raise << current_recipe_name() << ": 'index' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "'index' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   reagent base = canonize(current_instruction().ingredients.at(0));
@@ -149,14 +149,14 @@ case INDEX: {
   }
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   reagent offset = canonize(current_instruction().ingredients.at(1));
   vector<double> offset_val(read_memory(offset));
   vector<type_ordinal> element_type = array_element(base.types);
   if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
-    raise << current_recipe_name() << ": invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
+    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
   }
   long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
@@ -234,7 +234,7 @@ Recipe_ordinal["index-address"] = INDEX_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
   if (SIZE(current_instruction().ingredients) != 2) {
-    raise << current_recipe_name() << ": 'index-address' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "'index-address' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   reagent base = canonize(current_instruction().ingredients.at(0));
@@ -244,14 +244,14 @@ case INDEX_ADDRESS: {
   }
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   reagent offset = canonize(current_instruction().ingredients.at(1));
   vector<double> offset_val(read_memory(offset));
   vector<type_ordinal> element_type = array_element(base.types);
   if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
-    raise << current_recipe_name() << ": invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
+    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
   }
   long long int result = base_address + 1 + offset_val.at(0)*size_of(element_type);
@@ -309,7 +309,7 @@ Recipe_ordinal["length"] = LENGTH;
 :(before "End Primitive Recipe Implementations")
 case LENGTH: {
   if (SIZE(current_instruction().ingredients) != 1) {
-    raise << current_recipe_name() << ": 'length' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "'length' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   reagent x = canonize(current_instruction().ingredients.at(0));
@@ -318,7 +318,7 @@ case LENGTH: {
     break;
   }
   if (x.value == 0) {
-    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   products.resize(1);

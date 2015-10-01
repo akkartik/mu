@@ -13,15 +13,15 @@ Recipe_ordinal["trace"] = TRACE;
 :(before "End Primitive Recipe Checks")
 case TRACE: {
   if (SIZE(inst.ingredients) < 3) {
-    raise << Recipe[r].name << ": 'trace' takes three or more ingredients rather than '" << inst.to_string() << "'\n" << end();
+    raise << maybe(Recipe[r].name) << "'trace' takes three or more ingredients rather than '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << Recipe[r].name << ": first ingredient of 'trace' should be a number (depth), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(Recipe[r].name) << "first ingredient of 'trace' should be a number (depth), but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise << Recipe[r].name << ": second ingredient of 'trace' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(Recipe[r].name) << "second ingredient of 'trace' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -182,15 +182,15 @@ Recipe_ordinal["assert"] = ASSERT;
 :(before "End Primitive Recipe Checks")
 case ASSERT: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << Recipe[r].name << ": 'assert' takes exactly two ingredients rather than '" << inst.to_string() << "'\n" << end();
+    raise << maybe(Recipe[r].name) << "'assert' takes exactly two ingredients rather than '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise << Recipe[r].name << ": 'assert' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(Recipe[r].name) << "'assert' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise << Recipe[r].name << ": 'assert' requires a literal string for its second ingredient, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(Recipe[r].name) << "'assert' requires a literal string for its second ingredient, but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -247,7 +247,7 @@ Recipe_ordinal["$system"] = _SYSTEM;
 :(before "End Primitive Recipe Checks")
 case _SYSTEM: {
   if (inst.ingredients.empty()) {
-    raise << Recipe[r].name << ": '$system' requires exactly one ingredient, but got none\n" << end();
+    raise << maybe(Recipe[r].name) << "'$system' requires exactly one ingredient, but got none\n" << end();
     break;
   }
   break;

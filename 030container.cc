@@ -125,13 +125,13 @@ Recipe_ordinal["get"] = GET;
 :(before "End Primitive Recipe Implementations")
 case GET: {
   if (SIZE(ingredients) != 2) {
-    raise << current_recipe_name() << ": 'get' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "'get' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   reagent base = current_instruction().ingredients.at(0);
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   if (base.types.empty() || Type[base.types.at(0)].kind != container) {
@@ -140,7 +140,7 @@ case GET: {
   }
   type_ordinal base_type = base.types.at(0);
   if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": second ingredient of 'get' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "second ingredient of 'get' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
     break;
   }
   assert(scalar(ingredients.at(1)));
@@ -151,7 +151,7 @@ case GET: {
   }
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src << end();
   if (offset < 0 || offset >= SIZE(Type[base_type].elements)) {
-    raise << current_recipe_name() << ": invalid offset " << offset << " for " << Type[base_type].name << '\n' << end();
+    raise << maybe(current_recipe_name()) << "invalid offset " << offset << " for " << Type[base_type].name << '\n' << end();
     break;
   }
   type_ordinal src_type = Type[base_type].elements.at(offset).at(0);
@@ -211,7 +211,7 @@ case GET_ADDRESS: {
   reagent base = current_instruction().ingredients.at(0);
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   if (base.types.empty() || Type[base.types.at(0)].kind != container) {
@@ -220,7 +220,7 @@ case GET_ADDRESS: {
   }
   type_ordinal base_type = base.types.at(0);
   if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": second ingredient of 'get-address' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "second ingredient of 'get-address' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
     break;
   }
   assert(scalar(ingredients.at(1)));

@@ -191,13 +191,13 @@ struct raw_string_stream {
 void check_screen(const string& expected_contents, const int color) {
   assert(!Current_routine->calls.front().default_space);  // not supported
   long long int screen_location = Memory[SCREEN];
-  int data_offset = find_element_name(Type_ordinal["screen"], "data");
+  int data_offset = find_element_name(Type_ordinal["screen"], "data", "");
   assert(data_offset >= 0);
   long long int screen_data_location = screen_location+data_offset;  // type: address:array:character
   long long int screen_data_start = Memory[screen_data_location];  // type: array:character
-  int width_offset = find_element_name(Type_ordinal["screen"], "num-columns");
+  int width_offset = find_element_name(Type_ordinal["screen"], "num-columns", "");
   long long int screen_width = Memory[screen_location+width_offset];
-  int height_offset = find_element_name(Type_ordinal["screen"], "num-rows");
+  int height_offset = find_element_name(Type_ordinal["screen"], "num-rows", "");
   long long int screen_height = Memory[screen_location+height_offset];
   raw_string_stream cursor(expected_contents);
   // todo: too-long expected_contents should fail
@@ -245,14 +245,16 @@ void check_screen(const string& expected_contents, const int color) {
         actual_pretty[0] = ' ', actual_pretty[1] = '(', actual_pretty[2] = '\'', actual_pretty[3] = static_cast<unsigned char>(Memory[addr]), actual_pretty[4] = '\'', actual_pretty[5] = ')', actual_pretty[6] = '\0';
       }
 
+      ostringstream color_phrase;
+      if (color != -1) color_phrase << " in color " << color;
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
+        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
         dump_screen();
       }
       else {
         // just testing check_screen
-        raise << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
+        raise << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -320,11 +322,11 @@ case _DUMP_SCREEN: {
 void dump_screen() {
   assert(!Current_routine->calls.front().default_space);  // not supported
   long long int screen_location = Memory[SCREEN];
-  int width_offset = find_element_name(Type_ordinal["screen"], "num-columns");
+  int width_offset = find_element_name(Type_ordinal["screen"], "num-columns", "");
   long long int screen_width = Memory[screen_location+width_offset];
-  int height_offset = find_element_name(Type_ordinal["screen"], "num-rows");
+  int height_offset = find_element_name(Type_ordinal["screen"], "num-rows", "");
   long long int screen_height = Memory[screen_location+height_offset];
-  int data_offset = find_element_name(Type_ordinal["screen"], "data");
+  int data_offset = find_element_name(Type_ordinal["screen"], "data", "");
   assert(data_offset >= 0);
   long long int screen_data_location = screen_location+data_offset;  // type: address:array:character
   long long int screen_data_start = Memory[screen_data_location];  // type: array:character

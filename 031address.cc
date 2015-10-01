@@ -52,12 +52,12 @@ reagent lookup_memory(reagent x) {
   static const type_ordinal ADDRESS = Type_ordinal["address"];
   reagent result;
   if (x.types.empty() || x.types.at(0) != ADDRESS) {
-    raise << current_recipe_name() << ": tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
     return result;
   }
   // compute value
   if (x.value == 0) {
-    raise << current_recipe_name() << ": tried to /lookup 0\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
     return result;
   }
   result.set_value(Memory[x.value]);
@@ -184,7 +184,7 @@ Recipe_ordinal["$dump"] = _DUMP;
 :(before "End Primitive Recipe Implementations")
 case _DUMP: {
   reagent after_canonize = canonize(current_instruction().ingredients.at(0));
-  cerr << current_recipe_name() << ": " << current_instruction().ingredients.at(0).name << ' ' << no_scientific(current_instruction().ingredients.at(0).value) << " => " << no_scientific(after_canonize.value) << " => " << no_scientific(Memory[after_canonize.value]) << '\n';
+  cerr << maybe(current_recipe_name()) << "" << current_instruction().ingredients.at(0).name << ' ' << no_scientific(current_instruction().ingredients.at(0).value) << " => " << no_scientific(after_canonize.value) << " => " << no_scientific(Memory[after_canonize.value]) << '\n';
   break;
 }
 

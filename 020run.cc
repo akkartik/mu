@@ -266,7 +266,7 @@ void write_memory(reagent x, vector<double> data) {
   if (is_literal(x)) return;
   long long int base = x.value;
   if (size_mismatch(x, data)) {
-    raise << current_recipe_name() << ": size mismatch in storing to " << x.original_string << " (" << size_of(x.types) << " vs " << SIZE(data) << ") at '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.types) << " vs " << SIZE(data) << ") at '" << current_instruction().to_string() << "'\n" << end();
     return;
   }
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
@@ -301,6 +301,11 @@ bool is_dummy(const reagent& x) {
 
 bool is_literal(const reagent& r) {
   return SIZE(r.types) == 1 && r.types.at(0) == 0;
+}
+
+// hook to suppress inserting recipe name into warnings
+string maybe(string s) {
+  return s + ": ";
 }
 
 // helper for tests
