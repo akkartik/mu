@@ -1,6 +1,6 @@
-//: Introduce a new transform to check types in instructions before we start
-//: running them. It'll be extensible, so that we can add type checks for new
-//: recipes as we extend 'run' to support them.
+//: Introduce a new transform to perform various checks in instructions before
+//: we start running them. It'll be extensible, so that we can add checks for
+//: new recipes as we extend 'run' to support them.
 
 :(after "int main")
   Transform.push_back(check_instruction);
