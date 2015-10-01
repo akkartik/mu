@@ -17,31 +17,37 @@ recipe main [
 CREATE_ARRAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["create-array"] = CREATE_ARRAY;
-:(before "End Primitive Recipe Implementations")
+:(before "End Primitive Recipe Checks")
 case CREATE_ARRAY: {
-  if (current_instruction().products.empty()) {
-    raise << current_recipe_name () << ": 'create-array' needs one product and no ingredients but got '" << current_instruction().to_string() << '\n' << end();
+  if (inst.products.empty()) {
+    raise << maybe(Recipe[r].name) << "'create-array' needs one product and no ingredients but got '" << inst.to_string() << '\n' << end();
     break;
   }
-  reagent product = canonize(current_instruction().products.at(0));
+  reagent product = inst.products.at(0);
+  canonize_type(product);
   if (!is_mu_array(product)) {
-    raise << current_recipe_name () << ": 'create-array' cannot create non-array " << product.original_string << '\n' << end();
+    raise << maybe(Recipe[r].name) << "'create-array' cannot create non-array " << product.original_string << '\n' << end();
     break;
   }
-  long long int base_address = product.value;
   if (SIZE(product.types) == 1) {
-    raise << current_recipe_name () << ": create array of what? " << current_instruction().to_string() << '\n' << end();
+    raise << maybe(Recipe[r].name) << "create array of what? " << inst.to_string() << '\n' << end();
     break;
   }
   // 'create-array' will need to check properties rather than types
   if (SIZE(product.properties.at(0).second) <= 2) {
-    raise << current_recipe_name () << ": create array of what size? " << current_instruction().to_string() << '\n' << end();
+    raise << maybe(Recipe[r].name) << "create array of what size? " << inst.to_string() << '\n' << end();
     break;
   }
   if (!is_integer(product.properties.at(0).second.at(2))) {
-    raise << current_recipe_name () << ": 'create-array' product should specify size of array after its element type, but got " << product.properties.at(0).second.at(2) << '\n' << end();
+    raise << maybe(Recipe[r].name) << "'create-array' product should specify size of array after its element type, but got " << product.properties.at(0).second.at(2) << '\n' << end();
     break;
   }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case CREATE_ARRAY: {
+  reagent product = canonize(current_instruction().products.at(0));
+  long long int base_address = product.value;
   long long int array_size= to_integer(product.properties.at(0).second.at(2));
   // initialize array size, so that size_of will work
   Memory[base_address] = array_size;  // in array elements
@@ -136,17 +142,23 @@ recipe main [
 INDEX,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["index"] = INDEX;
+:(before "End Primitive Recipe Checks")
+case INDEX: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(Recipe[r].name) << "'index' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  reagent base = inst.ingredients.at(0);
+  canonize_type(base);
+  if (!is_mu_array(base)) {
+    raise << maybe(Recipe[r].name) << "'index' on a non-array " << base.original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
-  if (SIZE(current_instruction().ingredients) != 2) {
-    raise << maybe(current_recipe_name()) << "'index' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
-    break;
-  }
   reagent base = canonize(current_instruction().ingredients.at(0));
-  if (!is_mu_array(base)) {
-    raise << current_recipe_name () << ": 'index' on a non-array " << base.original_string << '\n' << end();
-    break;
-  }
   long long int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
@@ -231,17 +243,23 @@ recipe main [
 INDEX_ADDRESS,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["index-address"] = INDEX_ADDRESS;
+:(before "End Primitive Recipe Checks")
+case INDEX_ADDRESS: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(Recipe[r].name) << "'index-address' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  reagent base = inst.ingredients.at(0);
+  canonize_type(base);
+  if (!is_mu_array(base)) {
+    raise << current_recipe_name () << "'index-address' on a non-array " << base.original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
-  if (SIZE(current_instruction().ingredients) != 2) {
-    raise << maybe(current_recipe_name()) << "'index-address' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
-    break;
-  }
   reagent base = canonize(current_instruction().ingredients.at(0));
-  if (!is_mu_array(base)) {
-    raise << current_recipe_name () << ": 'index-address' on a non-array " << base.original_string << '\n' << end();
-    break;
-  }
   long long int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
@@ -306,17 +324,23 @@ recipe main [
 LENGTH,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["length"] = LENGTH;
-:(before "End Primitive Recipe Implementations")
+:(before "End Primitive Recipe Checks")
 case LENGTH: {
-  if (SIZE(current_instruction().ingredients) != 1) {
-    raise << maybe(current_recipe_name()) << "'length' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(Recipe[r].name) << "'length' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
-  reagent x = canonize(current_instruction().ingredients.at(0));
+  reagent x = inst.ingredients.at(0);
+  canonize_type(x);
   if (!is_mu_array(x)) {
     raise << "tried to calculate length of non-array " << x.original_string << '\n' << end();
     break;
   }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case LENGTH: {
+  reagent x = canonize(current_instruction().ingredients.at(0));
   if (x.value == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
