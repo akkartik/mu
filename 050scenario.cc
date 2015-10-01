@@ -560,16 +560,16 @@ Recipe_ordinal["check-trace-count-for-label"] = CHECK_TRACE_COUNT_FOR_LABEL;
 case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (!Passed) break;
   if (SIZE(current_instruction().ingredients) != 2) {
-    raise << current_recipe_name() << ": 'check-trace-for-label' requires exactly two ingredients, but got '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "'check-trace-for-label' requires exactly two ingredients, but got '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   if (!scalar(ingredients.at(0))) {
-    raise << current_recipe_name() << ": first ingredient of 'check-trace-for-label' should be a number (count), but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "first ingredient of 'check-trace-for-label' should be a number (count), but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   long long int expected_count = ingredients.at(0).at(0);
   if (!is_literal_string(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": second ingredient of 'check-trace-for-label' should be a literal string (label), but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "second ingredient of 'check-trace-for-label' should be a literal string (label), but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
     break;
   }
   string label = current_instruction().ingredients.at(1).name;
@@ -577,13 +577,13 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (count != expected_count) {
     if (Current_scenario && !Scenario_testing_scenario) {
       // genuine test in a mu file
-      raise << "\nF - " << Current_scenario->name << ": " << current_recipe_name() << ": expected " << expected_count << " lines in trace with label " << label << " in trace: ";
+      raise << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label " << label << " in trace: ";
       DUMP(label);
       raise;
     }
     else {
       // just testing scenario support
-      raise << current_recipe_name() << ": expected " << expected_count << " lines in trace with label " << label << " in trace\n" << end();
+      raise << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label " << label << " in trace\n" << end();
     }
     if (!Scenario_testing_scenario) {
       Passed = false;

@@ -38,7 +38,7 @@ Recipe_ordinal["next-ingredient"] = NEXT_INGREDIENT;
 :(before "End Primitive Recipe Implementations")
 case NEXT_INGREDIENT: {
   if (!ingredients.empty()) {
-    raise << current_recipe_name() << ": 'next-ingredient' didn't expect any ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "'next-ingredient' didn't expect any ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   assert(!Current_routine->calls.empty());
@@ -51,7 +51,7 @@ case NEXT_INGREDIENT: {
   }
   else {
     if (SIZE(current_instruction().products) < 2)
-      raise << current_recipe_name() << ": no ingredient to save in " << current_instruction().products.at(0).original_string << '\n' << end();
+      raise << maybe(current_recipe_name()) << "no ingredient to save in " << current_instruction().products.at(0).original_string << '\n' << end();
     products.resize(2);
     products.at(0).push_back(0);  // todo: will fail noisily if we try to read a compound value
     products.at(1).push_back(0);
@@ -112,11 +112,11 @@ Recipe_ordinal["ingredient"] = INGREDIENT;
 :(before "End Primitive Recipe Implementations")
 case INGREDIENT: {
   if (SIZE(ingredients) != 1) {
-    raise << current_recipe_name() << ": 'ingredient' expects exactly one ingredient, but got '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "'ingredient' expects exactly one ingredient, but got '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   if (!is_literal(current_instruction().ingredients.at(0))) {
-    raise << current_recipe_name() << ": 'ingredient' expects a literal ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "'ingredient' expects a literal ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   assert(scalar(ingredients.at(0)));

@@ -29,11 +29,11 @@ Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
   if (SIZE(ingredients) != 1) {
-    raise << current_recipe_name() << ": 'run-interactive' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+    raise << maybe(current_recipe_name()) << "'run-interactive' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
   }
   if (!scalar(ingredients.at(0))) {
-    raise << current_recipe_name() << ": first ingredient of 'run-interactive' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
+    raise << maybe(current_recipe_name()) << "first ingredient of 'run-interactive' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
     break;
   }
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
@@ -139,6 +139,10 @@ load(string(
 "]\n");
 transform_all();
 recently_added_recipes.clear();
+
+//: adjust warnings in the sandbox
+:(after "string maybe(string s)")
+  if (s == "interactive") return "";
 
 :(scenario run_interactive_comments)
 recipe main [
@@ -342,11 +346,11 @@ Recipe_ordinal["reload"] = RELOAD;
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
   if (SIZE(ingredients) != 1) {
-    raise << current_recipe_name() << ": 'reload' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+    raise << maybe(current_recipe_name()) << "'reload' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
     break;
   }
   if (!scalar(ingredients.at(0))) {
-    raise << current_recipe_name() << ": first ingredient of 'reload' should be a literal string, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "first ingredient of 'reload' should be a literal string, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   // clear any containers in advance

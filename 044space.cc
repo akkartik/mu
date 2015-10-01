@@ -138,7 +138,7 @@ if (curr.name == "new-default-space") {
   }
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "number-of-locals") {
-    raise << current_recipe_name() << ": can't write to special name 'number-of-locals'\n" << end();
+    raise << maybe(current_recipe_name()) << "can't write to special name 'number-of-locals'\n" << end();
     return;
   }
 
@@ -212,7 +212,7 @@ long long int address(long long int offset, long long int base) {
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "default-space") {
     if (!scalar(data))
-      raise << current_recipe_name() << ": 'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
+      raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
     Current_routine->calls.front().default_space = data.at(0);
     return;
   }

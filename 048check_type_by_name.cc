@@ -12,7 +12,7 @@ recipe main [
   x:number <- copy 1
   x:boolean <- copy 1
 ]
-+warn: x used with multiple types in main
++warn: main: x used with multiple types
 
 :(after "int main")
   Transform.push_back(check_types_by_name);
@@ -42,7 +42,7 @@ void check_metadata(map<string, vector<type_ordinal> >& metadata, const reagent&
   if (metadata.find(x.name) == metadata.end())
     metadata[x.name] = x.types;
   if (metadata[x.name] != x.types)
-    raise << x.name << " used with multiple types in " << Recipe[r].name << '\n' << end();
+    raise << maybe(Recipe[r].name) << "" << x.name << " used with multiple types\n" << end();
 }
 
 :(scenario transform_fills_in_missing_types)
@@ -80,7 +80,7 @@ recipe main [
   x <- copy 1
   x:number <- copy 2
 ]
-+warn: missing type for x in 'x <- copy 1'
++warn: main: missing type for x in 'x <- copy 1'
 
 :(scenario typo_in_address_type_warns)
 % Hide_warnings = true;

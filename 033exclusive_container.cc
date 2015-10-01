@@ -84,13 +84,13 @@ Recipe_ordinal["maybe-convert"] = MAYBE_CONVERT;
 :(before "End Primitive Recipe Implementations")
 case MAYBE_CONVERT: {
   if (SIZE(ingredients) != 2) {
-    raise << current_recipe_name() << ": 'maybe-convert' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "'maybe-convert' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise << current_recipe_name() << ": tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   if (base.types.empty() || Type[base.types.at(0)].kind != exclusive_container) {
@@ -98,7 +98,7 @@ case MAYBE_CONVERT: {
     break;
   }
   if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": second ingredient of 'maybe-convert' should have type 'variant', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
     break;
   }
   long long int tag = current_instruction().ingredients.at(1).value;

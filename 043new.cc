@@ -34,13 +34,13 @@ if (inst.operation == Recipe_ordinal["new"]) {
   // End NEW Transform Special-cases
   // first arg must be of type 'type'
   if (inst.ingredients.empty())
-    raise << Recipe[r].name << ": 'new' expects one or two ingredients\n" << end();
+    raise << maybe(Recipe[r].name) << "'new' expects one or two ingredients\n" << end();
   if (inst.ingredients.at(0).properties.empty()
       || inst.ingredients.at(0).properties.at(0).second.empty()
       || inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
-    raise << Recipe[r].name << ": first ingredient of 'new' should be a type, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << inst.ingredients.at(0).original_string << '\n' << end();
   if (Type_ordinal.find(inst.ingredients.at(0).name) == Type_ordinal.end())
-    raise << Recipe[r].name << ": unknown type " << inst.ingredients.at(0).name << '\n' << end();
+    raise << maybe(Recipe[r].name) << "unknown type " << inst.ingredients.at(0).name << '\n' << end();
   inst.ingredients.at(0).set_value(Type_ordinal[inst.ingredients.at(0).name]);
   trace(Primitive_recipe_depth, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).name << end();
   end_new_transform:;
@@ -56,11 +56,11 @@ Recipe_ordinal["new"] = NEW;
 :(before "End Primitive Recipe Implementations")
 case NEW: {
   if (ingredients.empty() || SIZE(ingredients) > 2) {
-    raise << current_recipe_name() << ": 'new' requires one or two ingredients, but got " << current_instruction().to_string() << '\n' << end();
+    raise << maybe(current_recipe_name()) << "'new' requires one or two ingredients, but got " << current_instruction().to_string() << '\n' << end();
     break;
   }
   if (!scalar(ingredients.at(0))) {
-    raise << current_recipe_name() << ": first ingredient of 'new' should be a type, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "first ingredient of 'new' should be a type, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   // compute the space we need
@@ -216,17 +216,17 @@ Recipe_ordinal["abandon"] = ABANDON;
 :(before "End Primitive Recipe Implementations")
 case ABANDON: {
   if (SIZE(ingredients) != 1) {
-    raise << current_recipe_name() << ": 'abandon' requires one ingredient, but got '" << current_instruction().to_string() << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "'abandon' requires one ingredient, but got '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   if (!scalar(ingredients.at(0))) {
-    raise << current_recipe_name() << ": first ingredient of 'abandon' should be an address, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "first ingredient of 'abandon' should be an address, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   long long int address = ingredients.at(0).at(0);
   reagent types = canonize(current_instruction().ingredients.at(0));
   if (types.types.empty() || types.types.at(0) != Type_ordinal["address"]) {
-    raise << current_recipe_name() << ": first ingredient of 'abandon' should be an address, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "first ingredient of 'abandon' should be an address, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   reagent target_type = lookup_memory(types);
@@ -253,7 +253,7 @@ if (Free_list[size]) {
   Free_list[size] = Memory[result];
   for (long long int curr = result+1; curr < result+size; ++curr) {
     if (Memory[curr] != 0) {
-      raise << current_recipe_name() << ": memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
+      raise << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
       break;  // always fatal
     }
   }

@@ -43,7 +43,7 @@ void transform_braces(const recipe_ordinal r) {
   for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
     const instruction& inst = Recipe[r].steps.at(index);
     if (inst.label == "{") {
-      trace("brace") << Recipe[r].name << ": push (open, " << index << ")" << end();
+      trace("brace") << maybe(Recipe[r].name) << "push (open, " << index << ")" << end();
       braces.push_back(pair<int,long long int>(OPEN, index));
     }
     if (inst.label == "}") {
@@ -132,7 +132,7 @@ long long int matching_brace(long long int index, const list<pair<int, long long
     stacksize += (p->first ? 1 : -1);
     if (stacksize == 0) return p->second;
   }
-  raise << Recipe[r].name << ": unbalanced '{'\n" << end();
+  raise << maybe(Recipe[r].name) << "unbalanced '{'\n" << end();
   return SIZE(Recipe[r].steps);  // exit current routine
 }
 

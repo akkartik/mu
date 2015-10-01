@@ -43,12 +43,12 @@ Recipe_ordinal["call"] = CALL;
 :(before "End Primitive Recipe Implementations")
 case CALL: {
   if (ingredients.empty()) {
-    raise << current_recipe_name() << ": 'call' requires at least one ingredient (the recipe to call)\n" << end();
+    raise << maybe(current_recipe_name()) << "'call' requires at least one ingredient (the recipe to call)\n" << end();
     break;
   }
   // Begin Call
   if (!scalar(ingredients.at(0))) {
-    raise << current_recipe_name() << ": first ingredient of 'call' should be a recipe, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(current_recipe_name()) << "first ingredient of 'call' should be a recipe, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   // todo: when we start doing type checking this will be a prime point of

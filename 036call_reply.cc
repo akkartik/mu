@@ -37,14 +37,14 @@ case REPLY: {
     if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
       vector<string> tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
       if (SIZE(tmp) != 1) {
-        raise << current_recipe_name() << ": 'same-as-ingredient' metadata should take exactly one value in " << reply_inst.to_string() << '\n' << end();
+        raise << maybe(current_recipe_name()) << "'same-as-ingredient' metadata should take exactly one value in " << reply_inst.to_string() << '\n' << end();
         goto finish_reply;
       }
       long long int ingredient_index = to_integer(tmp.at(0));
       if (ingredient_index >= SIZE(caller_instruction.ingredients))
-        raise << current_recipe_name() << ": 'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
+        raise << maybe(current_recipe_name()) << "'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
       if (!is_dummy(caller_instruction.products.at(i)) && caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
-        raise << current_recipe_name() << ": 'same-as-ingredient' product from call to " << callee << " must be " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
+        raise << maybe(current_recipe_name()) << "'same-as-ingredient' product from call to " << callee << " must be " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
     }
   }
   // End Reply
