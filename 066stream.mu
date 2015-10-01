@@ -36,7 +36,7 @@ recipe read-line [
 recipe end-of-stream? [
   local-scope
   in:address:stream <- next-ingredient
-  idx:address:number <- get *in, index:offset
+  idx:number <- get *in, index:offset
   s:address:array:character <- get *in, data:offset
   len:number <- length *s
   result:boolean <- greater-or-equal idx, len

@@ -10,21 +10,25 @@ recipe main [
 TRACE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["trace"] = TRACE;
+:(before "End Primitive Recipe Checks")
+case TRACE: {
+  if (SIZE(inst.ingredients) < 3) {
+    raise << Recipe[r].name << ": 'trace' takes three or more ingredients rather than '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise << Recipe[r].name << ": first ingredient of 'trace' should be a number (depth), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  if (!is_literal_string(inst.ingredients.at(1))) {
+    raise << Recipe[r].name << ": second ingredient of 'trace' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case TRACE: {
-  if (SIZE(current_instruction().ingredients) < 3) {
-    raise << current_recipe_name() << ": 'trace' takes three or more ingredients rather than '" << current_instruction().to_string() << "'\n" << end();
-    break;
-  }
-  if (!scalar(ingredients.at(0))) {
-    raise << current_recipe_name() << ": first ingredient of 'trace' should be a number (depth), but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   long long int depth = ingredients.at(0).at(0);
-  if (!is_literal_string(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": second ingredient of 'trace' should be a literal string (label), but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
-    break;
-  }
   string label = current_instruction().ingredients.at(1).name;
   ostringstream out;
   for (long long int i = 2; i < SIZE(current_instruction().ingredients); ++i) {
@@ -175,20 +179,24 @@ recipe main [
 ASSERT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["assert"] = ASSERT;
+:(before "End Primitive Recipe Checks")
+case ASSERT: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << Recipe[r].name << ": 'assert' takes exactly two ingredients rather than '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  if (!is_mu_scalar(inst.ingredients.at(0))) {
+    raise << Recipe[r].name << ": 'assert' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  if (!is_literal_string(inst.ingredients.at(1))) {
+    raise << Recipe[r].name << ": 'assert' requires a literal string for its second ingredient, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case ASSERT: {
-  if (SIZE(ingredients) != 2) {
-    raise << current_recipe_name() << ": 'assert' takes exactly two ingredients rather than '" << current_instruction().to_string() << "'\n" << end();
-    break;
-  }
-  if (!scalar(ingredients.at(0))) {
-    raise << current_recipe_name() << ": 'assert' requires a boolean for its first ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
-  if (!scalar(ingredients.at(1))) {
-    raise << current_recipe_name() << ": 'assert' requires a literal string for its second ingredient, but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
-    break;
-  }
   if (!ingredients.at(0).at(0)) {
     raise << current_instruction().ingredients.at(1).name << '\n' << end();
   }
@@ -236,12 +244,16 @@ case _EXIT: {
 _SYSTEM,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$system"] = _SYSTEM;
-:(before "End Primitive Recipe Implementations")
+:(before "End Primitive Recipe Checks")
 case _SYSTEM: {
-  if (current_instruction().ingredients.empty()) {
-    raise << current_recipe_name() << ": '$system' requires exactly one ingredient, but got none\n" << end();
+  if (inst.ingredients.empty()) {
+    raise << Recipe[r].name << ": '$system' requires exactly one ingredient, but got none\n" << end();
     break;
   }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case _SYSTEM: {
   int status = system(current_instruction().ingredients.at(0).name.c_str());
   products.resize(1);
   products.at(0).push_back(status);
