@@ -17,7 +17,7 @@ case ADD: {
     raise << Recipe[r].name << ": 'add' yields exactly one product in '" << inst.to_string() << "'\n" << end();
     break;
   }
-  if (!inst.products.empty() && !is_mu_number(inst.products.at(0))) {
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
     raise << Recipe[r].name << ": 'add' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     break;
   }
@@ -89,7 +89,7 @@ case SUBTRACT: {
     raise << Recipe[r].name << ": 'subtract' yields exactly one product in '" << inst.to_string() << "'\n" << end();
     break;
   }
-  if (!inst.products.empty() && !is_mu_number(inst.products.at(0))) {
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
     raise << Recipe[r].name << ": 'subtract' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     break;
   }
@@ -141,7 +141,7 @@ case MULTIPLY: {
     raise << Recipe[r].name << ": 'multiply' yields exactly one product in '" << inst.to_string() << "'\n" << end();
     break;
   }
-  if (!inst.products.empty() && !is_mu_number(inst.products.at(0))) {
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
     raise << Recipe[r].name << ": 'multiply' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     break;
   }
@@ -198,7 +198,7 @@ case DIVIDE: {
     raise << Recipe[r].name << ": 'divide' yields exactly one product in '" << inst.to_string() << "'\n" << end();
     break;
   }
-  if (!inst.products.empty() && !is_mu_number(inst.products.at(0))) {
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
     raise << Recipe[r].name << ": 'divide' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     break;
   }
@@ -255,7 +255,7 @@ case DIVIDE_WITH_REMAINDER: {
     break;
   }
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
-    if (!is_mu_number(inst.products.at(i))) {
+    if (!is_dummy(inst.products.at(i)) && !is_mu_number(inst.products.at(i))) {
       raise << Recipe[r].name << ": 'divide-with-remainder' should yield a number, but got " << inst.products.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
