@@ -97,6 +97,8 @@ recipe foo [
     .  get 123:number, foo:offset                      ┊                                                 .
     .]                                                 ┊                                                 .
     .foo: unknown element foo in container number      ┊                                                 .
+    .foo: first ingredient of 'get' should be a contai↩┊                                                 .
+    .ner, but got 123:number                           ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -107,6 +109,8 @@ recipe foo [
     .                                                                                                    .
     .                                                                                                    .
     .foo: unknown element foo in container number                                                        .
+    .foo: first ingredient of 'get' should be a contai                                                   .
+    .ner, but got 123:number                                                                             .
     .                                                                                                    .
   ]
 ]
@@ -133,6 +137,7 @@ recipe foo [
     .  x <- copy 0                                     ┊                                                 .
     .]                                                 ┊                                                 .
     .foo: missing type for x in 'x <- copy 0'          ┊                                                 .
+    .foo: can't copy 0 to x; types don't match         ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -184,14 +189,15 @@ recipe foo [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
+    .  errors found                                                                   run (F4)           .
+    .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  x:address:point <- new point:type               ┊                                                x.
-    .  get x:address:point, 1:offset                   ┊foo                                              .
-    .]                                                 ┊foo: first ingredient of 'get' should be a conta↩.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊iner, but got x:address:point                    .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  x:address:point <- new point:type               ┊                                                 .
+    .  get x:address:point, 1:offset                   ┊                                                 .
+    .]                                                 ┊                                                 .
+    .foo: first ingredient of 'get' should be a contai↩┊                                                 .
+    .ner, but got x:address:point                      ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
 ]
@@ -223,6 +229,8 @@ recipe foo [
     .]                                                 ┊                                                 .
     .foo: expected ingredient 1 of 'get' to have type ↩┊                                                 .
     .'offset'; got x:number                            ┊                                                 .
+    .foo: second ingredient of 'get' should have type ↩┊                                                 .
+    .'offset', but got x:number                        ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -296,6 +304,8 @@ scenario run-instruction-and-print-warnings [
     .                                                  ┊                                                x.
     .                                                  ┊get 1234:number, foo:offset                      .
     .                                                  ┊unknown element foo in container number          .
+    .                                                  ┊first ingredient of 'get' should be a container,↩.
+    .                                                  ┊ but got 1234:number                             .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
@@ -316,6 +326,8 @@ scenario run-instruction-and-print-warnings [
     .                                                                                                    .
     .                                                                                                    .
     .                                                   unknown element foo in container number          .
+    .                                                   first ingredient of 'get' should be a container, .
+    .                                                    but got 1234:number                             .
     .                                                                                                    .
   ]
   screen-should-contain-in-color 245/grey, [
@@ -324,6 +336,8 @@ scenario run-instruction-and-print-warnings [
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
     .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
+    .                                                  ┊                                                ↩.
     .                                                  ┊                                                 .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
@@ -354,6 +368,8 @@ scenario run-instruction-and-print-warnings-only-once [
     .                                                  ┊                                                x.
     .                                                  ┊get 1234:number, foo:offset                      .
     .                                                  ┊unknown element foo in container number          .
+    .                                                  ┊first ingredient of 'get' should be a container,↩.
+    .                                                  ┊ but got 1234:number                             .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]

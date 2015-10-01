@@ -139,7 +139,9 @@ recipe main [
 ]
 +mem: storing 34 in location 4
 
-:(after "reagent base = " following "case GET:")
+:(after "Update GET base in Check")
+if (!canonize_type(base)) break;
+:(after "Update GET base in Run")
 base = canonize(base);
 
 :(scenario get_address_indirect)
@@ -152,7 +154,9 @@ recipe main [
 ]
 +mem: storing 2 in location 4
 
-:(after "reagent base = " following "case GET_ADDRESS:")
+:(after "Update GET_ADDRESS base in Check")
+if (!canonize_type(base)) break;
+:(after "Update GET_ADDRESS base in Run")
 base = canonize(base);
 
 //:: abbreviation for '/lookup': a prefix '*'
