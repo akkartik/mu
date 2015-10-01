@@ -81,24 +81,30 @@ recipe main [
 MAYBE_CONVERT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["maybe-convert"] = MAYBE_CONVERT;
-:(before "End Primitive Recipe Implementations")
+:(before "End Primitive Recipe Checks")
 case MAYBE_CONVERT: {
-  if (SIZE(ingredients) != 2) {
-    raise << maybe(current_recipe_name()) << "'maybe-convert' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(Recipe[r].name) << "'maybe-convert' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
+  reagent base = inst.ingredients.at(0);
+  canonize_type(base);
+  if (base.types.empty() || Type[base.types.at(0)].kind != exclusive_container) {
+    raise << current_recipe_name () << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
+    break;
+  }
+  if (!is_literal(inst.ingredients.at(1))) {
+    raise << maybe(Recipe[r].name) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case MAYBE_CONVERT: {
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
-    break;
-  }
-  if (base.types.empty() || Type[base.types.at(0)].kind != exclusive_container) {
-    raise << current_recipe_name () << ": first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
-    break;
-  }
-  if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << maybe(current_recipe_name()) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
     break;
   }
   long long int tag = current_instruction().ingredients.at(1).value;
