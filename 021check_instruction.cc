@@ -1,6 +1,12 @@
 //: Introduce a new transform to perform various checks in instructions before
 //: we start running them. It'll be extensible, so that we can add checks for
 //: new recipes as we extend 'run' to support them.
+//:
+//: Doing checking in a separate part complicates things, because the values
+//: of variables in memory and the processor (current_recipe_name,
+//: current_instruction) aren't available at checking time. If I had a more
+//: sophisticated layer system I'd introduce the simpler version first and
+//: transform it in a separate layer or set of layers.
 
 :(after "int main")
   Transform.push_back(check_instruction);
