@@ -26,13 +26,13 @@ recipe main [
 +mem: storing 34 in location 3
 +mem: storing 35 in location 4
 
-//: trying to copy to a differently-sized destination will fail
+//: trying to copy to a differently-typed destination will fail
 :(scenario copy_checks_size)
 % Hide_warnings = true;
 recipe main [
   2:point <- copy 1:number
 ]
-+warn: main: size mismatch in storing to 2:point (2 vs 1) at '2:point <- copy 1:number'
++warn: main: can't copy 1:number to 2:point; types don't match
 
 :(before "End Mu Types Initialization")
 // A more complex container, containing another container as one of its
@@ -122,38 +122,50 @@ recipe main [
 GET,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["get"] = GET;
-:(before "End Primitive Recipe Implementations")
+:(before "End Primitive Recipe Checks")
 case GET: {
-  if (SIZE(ingredients) != 2) {
-    raise << maybe(current_recipe_name()) << "'get' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(Recipe[r].name) << "'get' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
+  reagent base = inst.ingredients.at(0);
+  // Update GET base in Check
+  if (base.types.empty() || Type[base.types.at(0)].kind != container) {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  type_ordinal base_type = base.types.at(0);
+  reagent offset = inst.ingredients.at(1);
+  if (!is_literal(offset) || !is_mu_scalar(offset)) {
+    raise << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  if (is_integer(offset.name)) {  // later layers permit non-integer offsets
+    long long int offset_value = to_integer(offset.name);
+    if (offset_value < 0 || offset_value >= SIZE(Type[base_type].elements)) {
+      raise << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
+      break;
+    }
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case GET: {
   reagent base = current_instruction().ingredients.at(0);
+  // Update GET base in Run
   long long int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
-  if (base.types.empty() || Type[base.types.at(0)].kind != container) {
-    raise << current_recipe_name () << ": first ingredient of 'get' should be a container, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   type_ordinal base_type = base.types.at(0);
-  if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << maybe(current_recipe_name()) << "second ingredient of 'get' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
-    break;
-  }
-  assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
+  if (offset < 0 || offset >= SIZE(Type[base_type].elements)) break;
   long long int src = base_address;
   for (long long int i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements.at(i));
   }
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src << end();
-  if (offset < 0 || offset >= SIZE(Type[base_type].elements)) {
-    raise << maybe(current_recipe_name()) << "invalid offset " << offset << " for " << Type[base_type].name << '\n' << end();
-    break;
-  }
   type_ordinal src_type = Type[base_type].elements.at(offset).at(0);
   trace(Primitive_recipe_depth, "run") << "its type is " << Type[src_type].name << end();
   reagent tmp;
@@ -206,29 +218,44 @@ recipe main [
 GET_ADDRESS,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["get-address"] = GET_ADDRESS;
+:(before "End Primitive Recipe Checks")
+case GET_ADDRESS: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(Recipe[r].name) << "'get-address' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  reagent base = inst.ingredients.at(0);
+  // Update GET_ADDRESS base in Check
+  if (base.types.empty() || Type[base.types.at(0)].kind != container) {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  type_ordinal base_type = base.types.at(0);
+  reagent offset = inst.ingredients.at(1);
+  if (!is_literal(offset) || !is_mu_scalar(offset)) {
+    raise << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  if (is_integer(offset.name)) {  // later layers permit non-integer offsets
+    long long int offset_value = to_integer(offset.name);
+    if (offset_value < 0 || offset_value >= SIZE(Type[base_type].elements)) {
+      raise << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
+      break;
+    }
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case GET_ADDRESS: {
   reagent base = current_instruction().ingredients.at(0);
+  // Update GET_ADDRESS base in Run
   long long int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
-  if (base.types.empty() || Type[base.types.at(0)].kind != container) {
-    raise << current_recipe_name () << ": first ingredient of 'get-address' should be a container, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   type_ordinal base_type = base.types.at(0);
-  if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << maybe(current_recipe_name()) << "second ingredient of 'get-address' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
-    break;
-  }
-  assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
-  if (offset < 0 || offset >= SIZE(Type[base_type].elements)) {
-    raise << "invalid offset " << offset << " for " << Type[base_type].name << '\n' << end();
-    break;
-  }
   long long int result = base_address;
   for (long long int i = 0; i < offset; ++i) {
     result += size_of(Type[base_type].elements.at(i));
@@ -247,7 +274,7 @@ recipe main [
   14:number <- copy 36
   get-address 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
 ]
-+warn: invalid offset 2 for point-number
++warn: main: invalid offset 2 for point-number
 
 :(scenario get_address_out_of_bounds_2)
 % Hide_warnings = true;
@@ -257,7 +284,7 @@ recipe main [
   14:number <- copy 36
   get-address 12:point-number/raw, -1:offset
 ]
-+warn: invalid offset -1 for point-number
++warn: main: invalid offset -1 for point-number
 
 //:: Allow containers to be defined in mu code.
 

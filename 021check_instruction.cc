@@ -7,7 +7,6 @@
 
 :(code)
 void check_instruction(const recipe_ordinal r) {
-  if (Trace_stream && trace_count("warn") > 0) return;
   map<string, vector<type_ordinal> > metadata;
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
