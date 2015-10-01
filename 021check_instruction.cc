@@ -16,6 +16,7 @@ void check_instruction(const recipe_ordinal r) {
   map<string, vector<type_ordinal> > metadata;
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
+    if (inst.is_label) continue;
     switch (inst.operation) {
       // Primitive Recipe Checks
       case COPY: {
