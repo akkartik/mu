@@ -53,16 +53,21 @@ if (inst.operation == Recipe_ordinal["new"]) {
 NEW,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["new"] = NEW;
+:(before "End Primitive Recipe Checks")
+case NEW: {
+  if (inst.ingredients.empty() || SIZE(inst.ingredients) > 2) {
+    raise << maybe(Recipe[r].name) << "'new' requires one or two ingredients, but got " << inst.to_string() << '\n' << end();
+    break;
+  }
+  reagent type = inst.ingredients.at(0);
+  if (!is_mu_scalar(type) && !is_literal(type)) {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case NEW: {
-  if (ingredients.empty() || SIZE(ingredients) > 2) {
-    raise << maybe(current_recipe_name()) << "'new' requires one or two ingredients, but got " << current_instruction().to_string() << '\n' << end();
-    break;
-  }
-  if (!scalar(ingredients.at(0))) {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'new' should be a type, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   // compute the space we need
   long long int size = 0;
   long long int array_length = 0;
@@ -213,22 +218,24 @@ Free_list.clear();
 ABANDON,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["abandon"] = ABANDON;
+:(before "End Primitive Recipe Checks")
+case ABANDON: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(Recipe[r].name) << "'abandon' requires one ingredient, but got '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  reagent types = inst.ingredients.at(0);
+  canonize_type(types);
+  if (types.types.empty() || types.types.at(0) != Type_ordinal["address"]) {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'abandon' should be an address, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case ABANDON: {
-  if (SIZE(ingredients) != 1) {
-    raise << maybe(current_recipe_name()) << "'abandon' requires one ingredient, but got '" << current_instruction().to_string() << "'\n" << end();
-    break;
-  }
-  if (!scalar(ingredients.at(0))) {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'abandon' should be an address, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   long long int address = ingredients.at(0).at(0);
   reagent types = canonize(current_instruction().ingredients.at(0));
-  if (types.types.empty() || types.types.at(0) != Type_ordinal["address"]) {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'abandon' should be an address, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   reagent target_type = lookup_memory(types);
   abandon(address, size_of(target_type));
   break;
@@ -317,12 +324,12 @@ recipe main [
   }
 
 :(after "case NEW" following "Primitive Recipe Implementations")
-if (is_literal(current_instruction().ingredients.at(0))
-    && current_instruction().ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
-  products.resize(1);
-  products.at(0).push_back(new_mu_string(current_instruction().ingredients.at(0).name));
-  break;
-}
+  if (is_literal(current_instruction().ingredients.at(0))
+      && current_instruction().ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
+    products.resize(1);
+    products.at(0).push_back(new_mu_string(current_instruction().ingredients.at(0).name));
+    break;
+  }
 
 :(code)
 long long int new_mu_string(const string& contents) {

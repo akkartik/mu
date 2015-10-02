@@ -2,6 +2,10 @@
 RANDOM,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["random"] = RANDOM;
+:(before "End Primitive Recipe Checks")
+case RANDOM: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case RANDOM: {
   // todo: limited range of numbers, might be imperfectly random
@@ -15,6 +19,10 @@ case RANDOM: {
 MAKE_RANDOM_NONDETERMINISTIC,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["make-random-nondeterministic"] = MAKE_RANDOM_NONDETERMINISTIC;
+:(before "End Primitive Recipe Checks")
+case MAKE_RANDOM_NONDETERMINISTIC: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case MAKE_RANDOM_NONDETERMINISTIC: {
   srand(time(NULL));
@@ -25,16 +33,20 @@ case MAKE_RANDOM_NONDETERMINISTIC: {
 ROUND,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["round"] = ROUND;
+:(before "End Primitive Recipe Checks")
+case ROUND: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(Recipe[r].name) << "'round' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    break;
+  }
+  if (!is_mu_scalar(inst.ingredients.at(0))) {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'round' should be a number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case ROUND: {
-  if (SIZE(ingredients) != 1) {
-    raise << maybe(current_recipe_name()) << "'round' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
-    break;
-  }
-  if (!scalar(ingredients.at(0))) {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'round' should be a number, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   products.resize(1);
   products.at(0).push_back(rint(ingredients.at(0).at(0)));
   break;

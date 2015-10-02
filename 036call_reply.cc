@@ -16,6 +16,10 @@ recipe f [
 REPLY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["reply"] = REPLY;
+:(before "End Primitive Recipe Checks")
+case REPLY: {
+  break;  // continue to process rest of *caller* instruction
+}
 :(before "End Primitive Recipe Implementations")
 case REPLY: {
   // Starting Reply

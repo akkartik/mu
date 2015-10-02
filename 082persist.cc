@@ -6,22 +6,33 @@
 RESTORE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["restore"] = RESTORE;
-:(before "End Primitive Recipe Implementations")
+:(before "End Primitive Recipe Checks")
 case RESTORE: {
-  if (SIZE(ingredients) != 1) {
-    raise << maybe(current_recipe_name()) << "'restore' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(Recipe[r].name) << "'restore' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
+  string filename;
+  if (is_literal_string(inst.ingredients.at(0))) {
+    ;
+  }
+  else if (is_mu_string(inst.ingredients.at(0))) {
+    ;
+  }
+  else {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'restore' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case RESTORE: {
   string filename;
   if (is_literal_string(current_instruction().ingredients.at(0))) {
     filename = current_instruction().ingredients.at(0).name;
   }
   else if (is_mu_string(current_instruction().ingredients.at(0))) {
     filename = read_mu_string(ingredients.at(0).at(0));
-  }
-  else {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'restore' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
-    break;
   }
   if (Current_scenario) {
     // do nothing in tests
@@ -59,12 +70,30 @@ string slurp(const string& filename) {
 SAVE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["save"] = SAVE;
-:(before "End Primitive Recipe Implementations")
+:(before "End Primitive Recipe Checks")
 case SAVE: {
-  if (SIZE(ingredients) != 2) {
-    raise << maybe(current_recipe_name()) << "'save' requires exactly two ingredients, but got " << current_instruction().to_string() << '\n' << end();
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(Recipe[r].name) << "'save' requires exactly two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
+  if (is_literal_string(inst.ingredients.at(0))) {
+    ;
+  }
+  else if (is_mu_string(inst.ingredients.at(0))) {
+    ;
+  }
+  else {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'save' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
+    break;
+  }
+  if (!is_mu_scalar(inst.ingredients.at(1))) {
+    raise << maybe(Recipe[r].name) << "second ingredient of 'save' should be an address:array:character, but got " << inst.ingredients.at(1).to_string() << '\n' << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case SAVE: {
   if (Current_scenario) break;  // do nothing in tests
   string filename;
   if (is_literal_string(current_instruction().ingredients.at(0))) {
@@ -72,14 +101,6 @@ case SAVE: {
   }
   else if (is_mu_string(current_instruction().ingredients.at(0))) {
     filename = read_mu_string(ingredients.at(0).at(0));
-  }
-  else {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'save' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
-    break;
-  }
-  if (!scalar(ingredients.at(1))) {
-    raise << maybe(current_recipe_name()) << "second ingredient of 'save' should be an address:array:character, but got " << current_instruction().ingredients.at(1).to_string() << '\n' << end();
-    break;
   }
   ofstream fout(("lesson/"+filename).c_str());
   string contents = read_mu_string(ingredients.at(1).at(0));

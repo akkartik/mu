@@ -154,6 +154,10 @@ if (curr.name == "assume-screen") {
 SCREEN_SHOULD_CONTAIN,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["screen-should-contain"] = SCREEN_SHOULD_CONTAIN;
+:(before "End Primitive Recipe Checks")
+case SCREEN_SHOULD_CONTAIN: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case SCREEN_SHOULD_CONTAIN: {
   if (!Passed) break;
@@ -165,6 +169,10 @@ case SCREEN_SHOULD_CONTAIN: {
 SCREEN_SHOULD_CONTAIN_IN_COLOR,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["screen-should-contain-in-color"] = SCREEN_SHOULD_CONTAIN_IN_COLOR;
+:(before "End Primitive Recipe Checks")
+case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
   if (!Passed) break;
@@ -312,6 +320,10 @@ void raw_string_stream::skip_whitespace_and_comments() {
 _DUMP_SCREEN,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$dump-screen"] = _DUMP_SCREEN;
+:(before "End Primitive Recipe Checks")
+case _DUMP_SCREEN: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _DUMP_SCREEN: {
   dump_screen();

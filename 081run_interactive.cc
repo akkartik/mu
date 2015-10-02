@@ -26,16 +26,20 @@ recipe main [
 RUN_INTERACTIVE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
+:(before "End Primitive Recipe Checks")
+case RUN_INTERACTIVE: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(Recipe[r].name) << "'run-interactive' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    break;
+  }
+  if (!is_mu_scalar(inst.ingredients.at(0))) {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'run-interactive' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
-  if (SIZE(ingredients) != 1) {
-    raise << maybe(current_recipe_name()) << "'run-interactive' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
-    break;
-  }
-  if (!scalar(ingredients.at(0))) {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'run-interactive' should be a string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
-    break;
-  }
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
   if (!new_code_pushed_to_stack) {
     products.resize(5);
@@ -166,6 +170,10 @@ recipe main [
 _START_TRACKING_PRODUCTS,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$start-tracking-products"] = _START_TRACKING_PRODUCTS;
+:(before "End Primitive Recipe Checks")
+case _START_TRACKING_PRODUCTS: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _START_TRACKING_PRODUCTS: {
   Track_most_recent_products = true;
@@ -176,6 +184,10 @@ case _START_TRACKING_PRODUCTS: {
 _STOP_TRACKING_PRODUCTS,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$stop-tracking-products"] = _STOP_TRACKING_PRODUCTS;
+:(before "End Primitive Recipe Checks")
+case _STOP_TRACKING_PRODUCTS: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _STOP_TRACKING_PRODUCTS: {
   Track_most_recent_products = false;
@@ -186,6 +198,10 @@ case _STOP_TRACKING_PRODUCTS: {
 _MOST_RECENT_PRODUCTS,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$most-recent-products"] = _MOST_RECENT_PRODUCTS;
+:(before "End Primitive Recipe Checks")
+case _MOST_RECENT_PRODUCTS: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _MOST_RECENT_PRODUCTS: {
   products.resize(1);
@@ -197,6 +213,10 @@ case _MOST_RECENT_PRODUCTS: {
 SAVE_TRACE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["save-trace"] = SAVE_TRACE;
+:(before "End Primitive Recipe Checks")
+case SAVE_TRACE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case SAVE_TRACE: {
   products.resize(1);
@@ -208,6 +228,10 @@ case SAVE_TRACE: {
 _CLEANUP_RUN_INTERACTIVE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$cleanup-run-interactive"] = _CLEANUP_RUN_INTERACTIVE;
+:(before "End Primitive Recipe Checks")
+case _CLEANUP_RUN_INTERACTIVE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _CLEANUP_RUN_INTERACTIVE: {
   run_code_end();
@@ -343,16 +367,20 @@ void truncate(string& x) {
 RELOAD,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["reload"] = RELOAD;
+:(before "End Primitive Recipe Checks")
+case RELOAD: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(Recipe[r].name) << "'reload' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    break;
+  }
+  if (!is_mu_scalar(inst.ingredients.at(0))) {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'reload' should be a literal string, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
-  if (SIZE(ingredients) != 1) {
-    raise << maybe(current_recipe_name()) << "'reload' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
-    break;
-  }
-  if (!scalar(ingredients.at(0))) {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'reload' should be a literal string, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   // clear any containers in advance
   for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
     Type_ordinal.erase(Type[recently_added_types.at(i)].name);

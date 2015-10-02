@@ -2,6 +2,10 @@
 _BROWSE_TRACE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$browse-trace"] = _BROWSE_TRACE;
+:(before "End Primitive Recipe Checks")
+case _BROWSE_TRACE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _BROWSE_TRACE: {
   start_trace_browser();

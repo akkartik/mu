@@ -35,12 +35,16 @@ for (long long int i = 0; i < SIZE(ingredients); ++i) {
 NEXT_INGREDIENT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["next-ingredient"] = NEXT_INGREDIENT;
-:(before "End Primitive Recipe Implementations")
+:(before "End Primitive Recipe Checks")
 case NEXT_INGREDIENT: {
-  if (!ingredients.empty()) {
-    raise << maybe(current_recipe_name()) << "'next-ingredient' didn't expect any ingredients in '" << current_instruction().to_string() << "'\n" << end();
+  if (!inst.ingredients.empty()) {
+    raise << maybe(Recipe[r].name) << "'next-ingredient' didn't expect any ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case NEXT_INGREDIENT: {
   assert(!Current_routine->calls.empty());
   if (Current_routine->calls.front().next_ingredient_to_process < SIZE(Current_routine->calls.front().ingredient_atoms)) {
     products.push_back(
@@ -88,6 +92,10 @@ recipe f [
 REWIND_INGREDIENTS,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["rewind-ingredients"] = REWIND_INGREDIENTS;
+:(before "End Primitive Recipe Checks")
+case REWIND_INGREDIENTS: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case REWIND_INGREDIENTS: {
   Current_routine->calls.front().next_ingredient_to_process = 0;
@@ -109,17 +117,20 @@ recipe f [
 INGREDIENT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["ingredient"] = INGREDIENT;
+:(before "End Primitive Recipe Checks")
+case INGREDIENT: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(Recipe[r].name) << "'ingredient' expects exactly one ingredient, but got '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  if (!is_literal(inst.ingredients.at(0)) && !is_mu_scalar(inst.ingredients.at(0))) {
+    raise << maybe(Recipe[r].name) << "'ingredient' expects a literal ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case INGREDIENT: {
-  if (SIZE(ingredients) != 1) {
-    raise << maybe(current_recipe_name()) << "'ingredient' expects exactly one ingredient, but got '" << current_instruction().to_string() << "'\n" << end();
-    break;
-  }
-  if (!is_literal(current_instruction().ingredients.at(0))) {
-    raise << maybe(current_recipe_name()) << "'ingredient' expects a literal ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
-  assert(scalar(ingredients.at(0)));
   if (static_cast<long long int>(ingredients.at(0).at(0)) < SIZE(Current_routine->calls.front().ingredient_atoms)) {
     Current_routine->calls.front().next_ingredient_to_process = ingredients.at(0).at(0);
     products.push_back(
