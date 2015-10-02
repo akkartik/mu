@@ -141,6 +141,8 @@ recipe main [
 
 :(after "Update GET base in Check")
 if (!canonize_type(base)) break;
+:(after "Update GET product in Check")
+if (!canonize_type(product)) break;
 :(after "Update GET base in Run")
 base = canonize(base);
 

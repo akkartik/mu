@@ -1,7 +1,7 @@
 # A doubly linked list permits bidirectional traversal.
 
 container duplex-list [
-  value:location
+  value:character
   next:address:duplex-list
   prev:address:duplex-list
 ]
@@ -27,7 +27,7 @@ recipe first-duplex [
   local-scope
   in:address:duplex-list <- next-ingredient
   reply-unless in, 0
-  result:location <- get *in, value:offset
+  result:character <- get *in, value:offset
   reply result
 ]
 
@@ -410,11 +410,11 @@ scenario remove-range [
     2:address:duplex-list <- next-duplex 2:address:duplex-list
     remove-duplex-between 2:address:duplex-list, 0
     # now check the list
-    4:number <- get *1:address:duplex-list, value:offset
+    4:character <- get *1:address:duplex-list, value:offset
     5:address:duplex-list <- next-duplex 1:address:duplex-list
-    6:number <- get *5:address:duplex-list, value:offset
+    6:character <- get *5:address:duplex-list, value:offset
     7:address:duplex-list <- next-duplex 5:address:duplex-list
-    8:number <- get *7:address:duplex-list, value:offset
+    8:character <- get *7:address:duplex-list, value:offset
     9:address:duplex-list <- next-duplex 7:address:duplex-list
   ]
   memory-should-contain [
@@ -445,11 +445,11 @@ scenario remove-range-to-end [
     3:address:duplex-list <- next-duplex 3:address:duplex-list
     remove-duplex-between 2:address:duplex-list, 3:address:duplex-list
     # now check the list
-    4:number <- get *1:address:duplex-list, value:offset
+    4:character <- get *1:address:duplex-list, value:offset
     5:address:duplex-list <- next-duplex 1:address:duplex-list
-    6:number <- get *5:address:duplex-list, value:offset
+    6:character <- get *5:address:duplex-list, value:offset
     7:address:duplex-list <- next-duplex 5:address:duplex-list
-    8:number <- get *7:address:duplex-list, value:offset
+    8:character <- get *7:address:duplex-list, value:offset
     9:address:duplex-list <- next-duplex 7:address:duplex-list
   ]
   memory-should-contain [
@@ -471,9 +471,9 @@ scenario remove-range-empty [
     2:address:duplex-list <- next-duplex 1:address:duplex-list
     remove-duplex-between 1:address:duplex-list, 2:address:duplex-list
     # now check the list
-    4:number <- get *1:address:duplex-list, value:offset
+    4:character <- get *1:address:duplex-list, value:offset
     5:address:duplex-list <- next-duplex 1:address:duplex-list
-    6:number <- get *5:address:duplex-list, value:offset
+    6:character <- get *5:address:duplex-list, value:offset
     7:address:duplex-list <- next-duplex 5:address:duplex-list
   ]
   memory-should-contain [
