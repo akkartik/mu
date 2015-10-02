@@ -160,7 +160,7 @@ case GET: {
   }
   type_ordinal base_type = base.types.at(0);
   long long int offset = ingredients.at(1).at(0);
-  if (offset < 0 || offset >= SIZE(Type[base_type].elements)) break;
+  if (offset < 0 || offset >= SIZE(Type[base_type].elements)) break;  // copied from Check above
   long long int src = base_address;
   for (long long int i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements.at(i));
@@ -256,6 +256,7 @@ case GET_ADDRESS: {
   }
   type_ordinal base_type = base.types.at(0);
   long long int offset = ingredients.at(1).at(0);
+  if (offset < 0 || offset >= SIZE(Type[base_type].elements)) break;  // copied from Check above
   long long int result = base_address;
   for (long long int i = 0; i < offset; ++i) {
     result += size_of(Type[base_type].elements.at(i));
@@ -505,6 +506,10 @@ void check_container_field_types() {
 MERGE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["merge"] = MERGE;
+:(before "End Primitive Recipe Checks")
+case MERGE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case MERGE: {
   products.resize(1);

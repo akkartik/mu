@@ -77,15 +77,16 @@ inline const instruction& current_instruction() {
   return Recipe[Current_routine->calls.front().running_recipe].steps.at(Current_routine->calls.front().running_step_index);
 }
 
+:(after "Defined Recipe Checks")
+// not a primitive; check that it's present in the book of recipes
+if (Recipe.find(inst.operation) == Recipe.end()) {
+  raise << maybe(Recipe[r].name) << "undefined operation in '" << inst.to_string() << "'\n" << end();
+  break;
+}
 :(replace{} "default:" following "End Primitive Recipe Implementations")
 default: {
-  // not a primitive; try to look up the book of recipes
-  if (Recipe.find(current_instruction().operation) == Recipe.end()) {
-    raise << maybe(current_recipe_name()) << "undefined operation in '" << current_instruction().to_string() << "'\n" << end();
-    // stop running this instruction immediately
-    ++current_step_index();
-    continue;
-  }
+  if (Recipe.find(current_instruction().operation) == Recipe.end()) break;  // duplicate from Checks
+  // not a primitive; look up the book of recipes
   Current_routine->calls.push_front(call(current_instruction().operation));
   call_housekeeping:
   ++Callstack_depth;
