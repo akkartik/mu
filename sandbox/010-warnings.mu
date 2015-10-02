@@ -80,8 +80,8 @@ scenario run-instruction-and-print-warnings [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                 x.
     .get 1:address:point, 1:offset                     .
-    .interactive: first ingredient of 'get' should be ↩.
-    .a container, but got 1:address:point              .
+    .first ingredient of 'get' should be a container, ↩.
+    .but got 1:address:point                           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -91,8 +91,8 @@ scenario run-instruction-and-print-warnings [
     .                                                  .
     .                                                  .
     .                                                  .
-    .interactive: first ingredient of 'get' should be  .
-    .a container, but got 1:address:point              .
+    .first ingredient of 'get' should be a container,  .
+    .but got 1:address:point                           .
     .                                                  .
     .                                                  .
   ]
@@ -120,6 +120,8 @@ scenario run-instruction-and-print-warnings-only-once [
     .                                                 x.
     .get 1234:number, foo:offset                       .
     .unknown element foo in container number           .
+    .first ingredient of 'get' should be a container, ↩.
+    .but got 1234:number                               .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -174,7 +176,7 @@ foo 4, 0]
     .                                                 x.
     .stash [abc]                                       .
     .foo 4, 0                                          .
-    .interactive: undefined operation in 'foo 4, 0'    .
+    .undefined operation in 'foo 4, 0'                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -194,7 +196,7 @@ foo 4, 0]
     .stash [abc]                                       .
     .foo 4, 0                                          .
     .abc                                               .
-    .interactive: undefined operation in 'foo 4, 0'    .
+    .undefined operation in 'foo 4, 0'                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
