@@ -26,7 +26,7 @@ parse:   ingredient: {name: "13", properties: ["13": "literal"]}
 parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
 parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    # delete 16 onwards\n    # first pointer: to the third element\n    2:address:duplex-list <- next-duplex 1:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    remove-duplex-between 2:address:duplex-list, 0\n    # now check the list\n    4:number <- get *1:address:duplex-list, value:offset\n    5:address:duplex-list <- next-duplex 1:address:duplex-list\n    6:number <- get *5:address:duplex-list, value:offset\n    7:address:duplex-list <- next-duplex 5:address:duplex-list\n    8:number <- get *7:address:duplex-list, value:offset\n    9:address:duplex-list <- next-duplex 7:address:duplex-list\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    # delete 16 onwards\n    # first pointer: to the third element\n    2:address:duplex-list <- next-duplex 1:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    remove-duplex-between 2:address:duplex-list, 0\n    # now check the list\n    4:character <- get *1:address:duplex-list, value:offset\n    5:address:duplex-list <- next-duplex 1:address:duplex-list\n    6:character <- get *5:address:duplex-list, value:offset\n    7:address:duplex-list <- next-duplex 5:address:duplex-list\n    8:character <- get *7:address:duplex-list, value:offset\n    9:address:duplex-list <- next-duplex 7:address:duplex-list\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    4 <- 13\n    6 <- 14\n    8 <- 15\n    9 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-remove-range
@@ -363,11 +363,11 @@ schedule: scenario-remove-range
     2:address:duplex-list <- next-duplex 2:address:duplex-list
     remove-duplex-between 2:address:duplex-list, 0
     # now check the list
-    4:number <- get *1:address:duplex-list, value:offset
+    4:character <- get *1:address:duplex-list, value:offset
     5:address:duplex-list <- next-duplex 1:address:duplex-list
-    6:number <- get *5:address:duplex-list, value:offset
+    6:character <- get *5:address:duplex-list, value:offset
     7:address:duplex-list <- next-duplex 5:address:duplex-list
-    8:number <- get *7:address:duplex-list, value:offset
+    8:character <- get *7:address:duplex-list, value:offset
     9:address:duplex-list <- next-duplex 7:address:duplex-list
   ]
 parse: instruction: next-duplex
@@ -382,21 +382,21 @@ parse:   ingredient: {name: "0", properties: ["0": "literal"]}
 parse: instruction: get
 parse:   ingredient: {name: "1", properties: ["*1": "address":"duplex-list", "lookup": ]}
 parse:   ingredient: {name: "value", properties: ["value": "offset"]}
-parse:   product: {name: "4", properties: ["4": "number"]}
+parse:   product: {name: "4", properties: ["4": "character"]}
 parse: instruction: next-duplex
 parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
 parse:   product: {name: "5", properties: ["5": "address":"duplex-list"]}
 parse: instruction: get
 parse:   ingredient: {name: "5", properties: ["*5": "address":"duplex-list", "lookup": ]}
 parse:   ingredient: {name: "value", properties: ["value": "offset"]}
-parse:   product: {name: "6", properties: ["6": "number"]}
+parse:   product: {name: "6", properties: ["6": "character"]}
 parse: instruction: next-duplex
 parse:   ingredient: {name: "5", properties: ["5": "address":"duplex-list"]}
 parse:   product: {name: "7", properties: ["7": "address":"duplex-list"]}
 parse: instruction: get
 parse:   ingredient: {name: "7", properties: ["*7": "address":"duplex-list", "lookup": ]}
 parse:   ingredient: {name: "value", properties: ["value": "offset"]}
-parse:   product: {name: "8", properties: ["8": "number"]}
+parse:   product: {name: "8", properties: ["8": "character"]}
 parse: instruction: next-duplex
 parse:   ingredient: {name: "7", properties: ["7": "address":"duplex-list"]}
 parse:   product: {name: "9", properties: ["9": "address":"duplex-list"]}
@@ -510,14 +510,14 @@ after-brace: next-duplex ...
 9999 run: jump-if fell through
  102 run: reply start
 9999 mem: location 1032 is 1017
- 101 run: 4:number <- get *1:address:duplex-list, value:offset
+ 101 run: 4:character <- get *1:address:duplex-list, value:offset
 9999 mem: location 1 is 1023
 9999 mem: location 1023 is 13
 9999 mem: location 1024 is 1020
 9999 mem: location 1025 is 0
 9999 mem: location 1 is 1023
 9999 run: address to copy is 1023
-9999 run: its type is number
+9999 run: its type is character
 9999 mem: location 1023 is 13
 9999 mem: storing 13 in location 4
  101 run: 5:address:duplex-list <- next-duplex 1:address:duplex-list
@@ -543,14 +543,14 @@ after-brace: next-duplex ...
 9999 mem: location 1029 is 1020
 9999 run: result 0 is 1020
 9999 mem: storing 1020 in location 5
- 101 run: 6:number <- get *5:address:duplex-list, value:offset
+ 101 run: 6:character <- get *5:address:duplex-list, value:offset
 9999 mem: location 5 is 1020
 9999 mem: location 1020 is 14
 9999 mem: location 1021 is 1017
 9999 mem: location 1022 is 1023
 9999 mem: location 5 is 1020
 9999 run: address to copy is 1020
-9999 run: its type is number
+9999 run: its type is character
 9999 mem: location 1020 is 14
 9999 mem: storing 14 in location 6
  101 run: 7:address:duplex-list <- next-duplex 5:address:duplex-list
@@ -576,14 +576,14 @@ after-brace: next-duplex ...
 9999 mem: location 1029 is 1017
 9999 run: result 0 is 1017
 9999 mem: storing 1017 in location 7
- 101 run: 8:number <- get *7:address:duplex-list, value:offset
+ 101 run: 8:character <- get *7:address:duplex-list, value:offset
 9999 mem: location 7 is 1017
 9999 mem: location 1017 is 15
 9999 mem: location 1018 is 0
 9999 mem: location 1019 is 1020
 9999 mem: location 7 is 1017
 9999 run: address to copy is 1017
-9999 run: its type is number
+9999 run: its type is character
 9999 mem: location 1017 is 15
 9999 mem: storing 15 in location 8
  101 run: 9:address:duplex-list <- next-duplex 7:address:duplex-list

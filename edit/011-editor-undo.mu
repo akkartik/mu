@@ -155,7 +155,7 @@ before <insert-character-end> [
     *after-row <- copy *cursor-row
     after-column:address:number <- get-address *typing, after-column:offset
     *after-column <- copy *cursor-column
-    after-top:address:number <- get-address *typing, after-top-of-screen:offset
+    after-top:address:address:duplex-list:character <- get-address *typing, after-top-of-screen:offset
     *after-top <- get *editor, top-of-screen:offset
     break +done-adding-insert-operation:label
   }
@@ -211,7 +211,7 @@ after <handle-undo> [
     remove-duplex-between *before-cursor, end
     *cursor-row <- get *typing, before-row:offset
     *cursor-column <- get *typing, before-column:offset
-    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    top:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     *top <- get *typing, before-top-of-screen:offset
   }
 ]
@@ -407,7 +407,7 @@ after <handle-redo> [
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     *cursor-row <- get *typing, after-row:offset
     *cursor-column <- get *typing, after-column:offset
-    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    top:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     *top <- get *typing, after-top-of-screen:offset
   }
 ]
@@ -725,7 +725,7 @@ before <move-cursor-end> [
     *after-row <- copy after-cursor-row
     after-column:address:number <- get-address *move, after-column:offset
     *after-column <- copy after-cursor-column
-    after-top:address:number <- get-address *move, after-top-of-screen:offset
+    after-top:address:address:duplex-list:character <- get-address *move, after-top-of-screen:offset
     *after-top <- get *editor, top-of-screen:offset
     break +done-adding-move-operation:label
   }
@@ -1516,7 +1516,7 @@ after <handle-redo> [
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     *cursor-row <- get *move, after-row:offset
     *cursor-column <- get *move, after-column:offset
-    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    top:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     *top <- get *move, after-top-of-screen:offset
   }
 ]
@@ -1615,7 +1615,7 @@ before <backspace-character-end> [
       *after-row <- copy *cursor-row
       after-column:address:number <- get-address *deletion, after-column:offset
       *after-column <- copy *cursor-column
-      after-top:address:number <- get-address *deletion, after-top-of-screen:offset
+      after-top:address:address:duplex-list:character <- get-address *deletion, after-top-of-screen:offset
       *after-top <- get *editor, top-of-screen:offset
       break +done-adding-backspace-operation:label
     }
@@ -1642,7 +1642,7 @@ after <handle-undo> [
     *before-cursor <- copy old-cursor
     *cursor-row <- get *deletion, before-row:offset
     *cursor-column <- get *deletion, before-column:offset
-    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    top:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     *top <- get *deletion, before-top-of-screen:offset
   }
 ]
@@ -1657,7 +1657,7 @@ after <handle-redo> [
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     *cursor-row <- get *deletion, after-row:offset
     *cursor-column <- get *deletion, after-column:offset
-    top:address:address:duplex-list <- get *editor, top-of-screen:offset
+    top:address:address:duplex-list <- get-address *editor, top-of-screen:offset
     *top <- get *deletion, after-top-of-screen:offset
   }
 ]
@@ -1836,7 +1836,7 @@ before <delete-character-end> [
       *after-row <- copy *cursor-row
       after-column:address:number <- get-address *deletion, after-column:offset
       *after-column <- copy *cursor-column
-      after-top:address:number <- get-address *deletion, after-top-of-screen:offset
+      after-top:address:address:duplex-list:character <- get-address *deletion, after-top-of-screen:offset
       *after-top <- get *editor, top-of-screen:offset
       break +done-adding-delete-operation:label
     }

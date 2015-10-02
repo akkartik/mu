@@ -140,12 +140,23 @@ case GET: {
     raise << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
+  long long int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
-    long long int offset_value = to_integer(offset.name);
+    offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(Type[base_type].elements)) {
       raise << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
       break;
     }
+  }
+  else {
+    offset_value = offset.value;
+  }
+  reagent product = inst.products.at(0);
+  // Update GET product in Check
+  reagent element;
+  element.types = Type[base_type].elements.at(offset_value);
+  if (!types_match(product, element)) {
+    raise << maybe(Recipe[r].name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
   }
   break;
 }
@@ -173,6 +184,16 @@ case GET: {
   tmp.types.push_back(src_type);
   products.push_back(read_memory(tmp));
   break;
+}
+
+:(code)
+string dump_types(const reagent& x) {
+  ostringstream out;
+  for (long long int i = 0; i < SIZE(x.types); ++i) {
+    if (i > 0) out << ':';
+    out << Type[x.types.at(i)].name;
+  }
+  return out.str();
 }
 
 :(scenario get_handles_nested_container_elements)
@@ -213,6 +234,16 @@ recipe main [
   get 12:point-number/raw, -1:offset
 ]
 +warn: main: invalid offset -1 for point-number
+
+:(scenario get_product_type_mismatch)
+% Hide_warnings = true;
+recipe main [
+  12:number <- copy 34
+  13:number <- copy 35
+  14:number <- copy 36
+  15:address:number <- get 12:point-number/raw, 1:offset
+]
++warn: main: 'get' 1:offset (1) on point-number can't be saved in 15:address:number; type should be number
 
 :(before "End Primitive Recipe Declarations")
 GET_ADDRESS,
