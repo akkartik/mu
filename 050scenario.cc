@@ -189,6 +189,10 @@ recipe main [
 RUN,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["run"] = RUN;
+:(before "End Primitive Recipe Checks")
+case RUN: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case RUN: {
   ostringstream tmp;
@@ -243,6 +247,10 @@ recipe main [
 MEMORY_SHOULD_CONTAIN,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["memory-should-contain"] = MEMORY_SHOULD_CONTAIN;
+:(before "End Primitive Recipe Checks")
+case MEMORY_SHOULD_CONTAIN: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case MEMORY_SHOULD_CONTAIN: {
   if (!Passed) break;
@@ -404,6 +412,10 @@ recipe main [
 TRACE_SHOULD_CONTAIN,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["trace-should-contain"] = TRACE_SHOULD_CONTAIN;
+:(before "End Primitive Recipe Checks")
+case TRACE_SHOULD_CONTAIN: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case TRACE_SHOULD_CONTAIN: {
   if (!Passed) break;
@@ -496,6 +508,10 @@ recipe main [
 TRACE_SHOULD_NOT_CONTAIN,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["trace-should-not-contain"] = TRACE_SHOULD_NOT_CONTAIN;
+:(before "End Primitive Recipe Checks")
+case TRACE_SHOULD_NOT_CONTAIN: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case TRACE_SHOULD_NOT_CONTAIN: {
   if (!Passed) break;
@@ -556,22 +572,26 @@ recipe main [
 CHECK_TRACE_COUNT_FOR_LABEL,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["check-trace-count-for-label"] = CHECK_TRACE_COUNT_FOR_LABEL;
+:(before "End Primitive Recipe Checks")
+case CHECK_TRACE_COUNT_FOR_LABEL: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(Recipe[r].name) << "'check-trace-for-label' requires exactly two ingredients, but got '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  if (!is_mu_scalar(inst.ingredients.at(0))) {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'check-trace-for-label' should be a number (count), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  if (!is_literal_string(inst.ingredients.at(1))) {
+    raise << maybe(Recipe[r].name) << "second ingredient of 'check-trace-for-label' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (!Passed) break;
-  if (SIZE(current_instruction().ingredients) != 2) {
-    raise << maybe(current_recipe_name()) << "'check-trace-for-label' requires exactly two ingredients, but got '" << current_instruction().to_string() << "'\n" << end();
-    break;
-  }
-  if (!scalar(ingredients.at(0))) {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'check-trace-for-label' should be a number (count), but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   long long int expected_count = ingredients.at(0).at(0);
-  if (!is_literal_string(current_instruction().ingredients.at(1))) {
-    raise << maybe(current_recipe_name()) << "second ingredient of 'check-trace-for-label' should be a literal string (label), but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
-    break;
-  }
   string label = current_instruction().ingredients.at(1).name;
   long long int count = trace_count(label);
   if (count != expected_count) {

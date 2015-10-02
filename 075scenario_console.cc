@@ -38,12 +38,14 @@ Name[r]["console"] = CONSOLE;
 :(before "End is_special_name Cases")
 if (s == "console") return true;
 
-//: Unlike assume-keyboard, assume-console is easiest to implement as just a
-//: primitive recipe.
 :(before "End Primitive Recipe Declarations")
 ASSUME_CONSOLE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["assume-console"] = ASSUME_CONSOLE;
+:(before "End Primitive Recipe Checks")
+case ASSUME_CONSOLE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case ASSUME_CONSOLE: {
   // create a temporary recipe just for parsing; it won't contain valid instructions
@@ -225,6 +227,10 @@ scenario events-in-scenario [
 REPLACE_IN_CONSOLE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["replace-in-console"] = REPLACE_IN_CONSOLE;
+:(before "End Primitive Recipe Checks")
+case REPLACE_IN_CONSOLE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case REPLACE_IN_CONSOLE: {
   assert(scalar(ingredients.at(0)));

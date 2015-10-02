@@ -10,6 +10,10 @@ bool Autodisplay = true;
 OPEN_CONSOLE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["open-console"] = OPEN_CONSOLE;
+:(before "End Primitive Recipe Checks")
+case OPEN_CONSOLE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case OPEN_CONSOLE: {
   tb_init();
@@ -28,6 +32,10 @@ case OPEN_CONSOLE: {
 CLOSE_CONSOLE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["close-console"] = CLOSE_CONSOLE;
+:(before "End Primitive Recipe Checks")
+case CLOSE_CONSOLE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case CLOSE_CONSOLE: {
   tb_shutdown();
@@ -41,6 +49,10 @@ tb_shutdown();
 CLEAR_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["clear-display"] = CLEAR_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case CLEAR_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case CLEAR_DISPLAY: {
   tb_clear();
@@ -52,6 +64,10 @@ case CLEAR_DISPLAY: {
 SYNC_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["sync-display"] = SYNC_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case SYNC_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case SYNC_DISPLAY: {
   tb_sync();
@@ -62,6 +78,10 @@ case SYNC_DISPLAY: {
 CLEAR_LINE_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["clear-line-on-display"] = CLEAR_LINE_ON_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case CLEAR_LINE_ON_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case CLEAR_LINE_ON_DISPLAY: {
   long long int width = tb_width();
@@ -77,6 +97,10 @@ case CLEAR_LINE_ON_DISPLAY: {
 PRINT_CHARACTER_TO_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["print-character-to-display"] = PRINT_CHARACTER_TO_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case PRINT_CHARACTER_TO_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case PRINT_CHARACTER_TO_DISPLAY: {
   int h=tb_height(), w=tb_width();
@@ -139,6 +163,10 @@ case PRINT_CHARACTER_TO_DISPLAY: {
 CURSOR_POSITION_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["cursor-position-on-display"] = CURSOR_POSITION_ON_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case CURSOR_POSITION_ON_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case CURSOR_POSITION_ON_DISPLAY: {
   products.resize(2);
@@ -151,21 +179,25 @@ case CURSOR_POSITION_ON_DISPLAY: {
 MOVE_CURSOR_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case MOVE_CURSOR_ON_DISPLAY: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(Recipe[r].name) << "'move-cursor-on-display' requires two ingredients, but got " << inst.to_string() << '\n' << end();
+    break;
+  }
+  if (!is_mu_scalar(inst.ingredients.at(0))) {
+    raise << maybe(Recipe[r].name) << "first ingredient of 'move-cursor-on-display' should be a row number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  if (!is_mu_scalar(inst.ingredients.at(1))) {
+    raise << maybe(Recipe[r].name) << "second ingredient of 'move-cursor-on-display' should be a column number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_ON_DISPLAY: {
-  if (SIZE(ingredients) != 2) {
-    raise << maybe(current_recipe_name()) << "'move-cursor-on-display' requires two ingredients, but got " << current_instruction().to_string() << '\n' << end();
-    break;
-  }
-  if (!scalar(ingredients.at(0))) {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'move-cursor-on-display' should be a row number, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   Display_row = ingredients.at(0).at(0);
-  if (!scalar(ingredients.at(1))) {
-    raise << maybe(current_recipe_name()) << "second ingredient of 'move-cursor-on-display' should be a column number, but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
-    break;
-  }
   Display_column = ingredients.at(1).at(0);
   tb_set_cursor(Display_column, Display_row);
   if (Autodisplay) tb_present();
@@ -176,6 +208,10 @@ case MOVE_CURSOR_ON_DISPLAY: {
 MOVE_CURSOR_DOWN_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["move-cursor-down-on-display"] = MOVE_CURSOR_DOWN_ON_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case MOVE_CURSOR_DOWN_ON_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_DOWN_ON_DISPLAY: {
   int h=tb_height();
@@ -192,6 +228,10 @@ case MOVE_CURSOR_DOWN_ON_DISPLAY: {
 MOVE_CURSOR_UP_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["move-cursor-up-on-display"] = MOVE_CURSOR_UP_ON_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case MOVE_CURSOR_UP_ON_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_UP_ON_DISPLAY: {
   if (Display_row > 0) {
@@ -206,6 +246,10 @@ case MOVE_CURSOR_UP_ON_DISPLAY: {
 MOVE_CURSOR_RIGHT_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["move-cursor-right-on-display"] = MOVE_CURSOR_RIGHT_ON_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
   int w=tb_width();
@@ -222,6 +266,10 @@ case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
 MOVE_CURSOR_LEFT_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["move-cursor-left-on-display"] = MOVE_CURSOR_LEFT_ON_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case MOVE_CURSOR_LEFT_ON_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_LEFT_ON_DISPLAY: {
   if (Display_column > 0) {
@@ -236,6 +284,10 @@ case MOVE_CURSOR_LEFT_ON_DISPLAY: {
 DISPLAY_WIDTH,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["display-width"] = DISPLAY_WIDTH;
+:(before "End Primitive Recipe Checks")
+case DISPLAY_WIDTH: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case DISPLAY_WIDTH: {
   products.resize(1);
@@ -247,6 +299,10 @@ case DISPLAY_WIDTH: {
 DISPLAY_HEIGHT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["display-height"] = DISPLAY_HEIGHT;
+:(before "End Primitive Recipe Checks")
+case DISPLAY_HEIGHT: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case DISPLAY_HEIGHT: {
   products.resize(1);
@@ -258,6 +314,10 @@ case DISPLAY_HEIGHT: {
 HIDE_CURSOR_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["hide-cursor-on-display"] = HIDE_CURSOR_ON_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case HIDE_CURSOR_ON_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case HIDE_CURSOR_ON_DISPLAY: {
   tb_set_cursor(TB_HIDE_CURSOR, TB_HIDE_CURSOR);
@@ -268,6 +328,10 @@ case HIDE_CURSOR_ON_DISPLAY: {
 SHOW_CURSOR_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["show-cursor-on-display"] = SHOW_CURSOR_ON_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case SHOW_CURSOR_ON_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case SHOW_CURSOR_ON_DISPLAY: {
   tb_set_cursor(Display_row, Display_column);
@@ -278,6 +342,10 @@ case SHOW_CURSOR_ON_DISPLAY: {
 HIDE_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["hide-display"] = HIDE_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case HIDE_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case HIDE_DISPLAY: {
   Autodisplay = false;
@@ -288,6 +356,10 @@ case HIDE_DISPLAY: {
 SHOW_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["show-display"] = SHOW_DISPLAY;
+:(before "End Primitive Recipe Checks")
+case SHOW_DISPLAY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case SHOW_DISPLAY: {
   Autodisplay = true;
@@ -301,6 +373,10 @@ case SHOW_DISPLAY: {
 WAIT_FOR_SOME_INTERACTION,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["wait-for-some-interaction"] = WAIT_FOR_SOME_INTERACTION;
+:(before "End Primitive Recipe Checks")
+case WAIT_FOR_SOME_INTERACTION: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_SOME_INTERACTION: {
   tb_event event;
@@ -312,6 +388,10 @@ case WAIT_FOR_SOME_INTERACTION: {
 CHECK_FOR_INTERACTION,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["check-for-interaction"] = CHECK_FOR_INTERACTION;
+:(before "End Primitive Recipe Checks")
+case CHECK_FOR_INTERACTION: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case CHECK_FOR_INTERACTION: {
   products.resize(2);  // result and status
@@ -375,6 +455,10 @@ case CHECK_FOR_INTERACTION: {
 INTERACTIONS_LEFT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["interactions-left?"] = INTERACTIONS_LEFT;
+:(before "End Primitive Recipe Checks")
+case INTERACTIONS_LEFT: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case INTERACTIONS_LEFT: {
   products.resize(1);
@@ -388,6 +472,10 @@ case INTERACTIONS_LEFT: {
 CLEAR_DISPLAY_FROM,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["clear-display-from"] = CLEAR_DISPLAY_FROM;
+:(before "End Primitive Recipe Checks")
+case CLEAR_DISPLAY_FROM: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case CLEAR_DISPLAY_FROM: {
   // todo: error checking

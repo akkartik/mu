@@ -44,6 +44,10 @@ case TRACE: {
 STASH,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["stash"] = STASH;
+:(before "End Primitive Recipe Checks")
+case STASH: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case STASH: {
   ostringstream out;
@@ -89,6 +93,10 @@ string print_mu(const reagent& r, const vector<double>& data) {
 HIDE_WARNINGS,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["hide-warnings"] = HIDE_WARNINGS;
+:(before "End Primitive Recipe Checks")
+case HIDE_WARNINGS: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case HIDE_WARNINGS: {
   Hide_warnings = true;
@@ -99,6 +107,10 @@ case HIDE_WARNINGS: {
 SHOW_WARNINGS,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["show-warnings"] = SHOW_WARNINGS;
+:(before "End Primitive Recipe Checks")
+case SHOW_WARNINGS: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case SHOW_WARNINGS: {
   Hide_warnings = false;
@@ -109,6 +121,10 @@ case SHOW_WARNINGS: {
 _START_TRACING,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$start-tracing"] = _START_TRACING;
+:(before "End Primitive Recipe Checks")
+case _START_TRACING: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _START_TRACING: {
   if (current_instruction().ingredients.empty())
@@ -122,6 +138,10 @@ case _START_TRACING: {
 _STOP_TRACING,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$stop-tracing"] = _STOP_TRACING;
+:(before "End Primitive Recipe Checks")
+case _STOP_TRACING: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _STOP_TRACING: {
   Trace_stream->dump_layer = "";
@@ -132,6 +152,10 @@ case _STOP_TRACING: {
 _CLOSE_TRACE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$close-trace"] = _CLOSE_TRACE;
+:(before "End Primitive Recipe Checks")
+case _CLOSE_TRACE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _CLOSE_TRACE: {
   if (Trace_stream) {
@@ -145,6 +169,10 @@ case _CLOSE_TRACE: {
 _DUMP_TRACE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$dump-trace"] = _DUMP_TRACE;
+:(before "End Primitive Recipe Checks")
+case _DUMP_TRACE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _DUMP_TRACE: {
   if (ingredients.empty()) {
@@ -160,6 +188,10 @@ case _DUMP_TRACE: {
 _CLEAR_TRACE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$clear-trace"] = _CLEAR_TRACE;
+:(before "End Primitive Recipe Checks")
+case _CLEAR_TRACE: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _CLEAR_TRACE: {
   CLEAR_TRACE;
@@ -209,6 +241,10 @@ case ASSERT: {
 _PRINT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$print"] = _PRINT;
+:(before "End Primitive Recipe Checks")
+case _PRINT: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _PRINT: {
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
@@ -234,6 +270,10 @@ case _PRINT: {
 _EXIT,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$exit"] = _EXIT;
+:(before "End Primitive Recipe Checks")
+case _EXIT: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _EXIT: {
   exit(0);
@@ -266,6 +306,10 @@ case _SYSTEM: {
 _DUMP_MEMORY,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$dump-memory"] = _DUMP_MEMORY;
+:(before "End Primitive Recipe Checks")
+case _DUMP_MEMORY: {
+  break;
+}
 :(before "End Primitive Recipe Implementations")
 case _DUMP_MEMORY: {
   dump_memory();
