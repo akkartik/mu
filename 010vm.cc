@@ -291,6 +291,15 @@ void dump_memory() {
   }
 }
 
+void dump_recipe(const string& recipe_name) {
+  const recipe& r = Recipe[Recipe_ordinal[recipe_name]];
+  cout << "recipe " << r.name << " [\n";
+  for (long long int i = 0; i < SIZE(r.steps); ++i) {
+    cout << "  " << r.steps.at(i).to_string() << '\n';
+  }
+  cout << "]\n";
+}
+
 :(before "End Types")
 struct no_scientific {
   double x;
