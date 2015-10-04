@@ -151,6 +151,7 @@ if (argc > 1) {
     argc--;
   }
   transform_all();
+//?   dump_recipe("handle-keyboard-event"),  exit(0);
   if (Run_tests) Recipe.erase(Recipe_ordinal[string("main")]);
 }
 
