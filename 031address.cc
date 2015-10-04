@@ -190,7 +190,7 @@ Recipe_ordinal["$dump"] = _DUMP;
 :(before "End Primitive Recipe Implementations")
 case _DUMP: {
   reagent after_canonize = canonize(current_instruction().ingredients.at(0));
-  cerr << maybe(current_recipe_name()) << "" << current_instruction().ingredients.at(0).name << ' ' << no_scientific(current_instruction().ingredients.at(0).value) << " => " << no_scientific(after_canonize.value) << " => " << no_scientific(Memory[after_canonize.value]) << '\n';
+  cerr << maybe(current_recipe_name()) << current_instruction().ingredients.at(0).name << ' ' << no_scientific(current_instruction().ingredients.at(0).value) << " => " << no_scientific(after_canonize.value) << " => " << no_scientific(Memory[after_canonize.value]) << '\n';
   break;
 }
 
