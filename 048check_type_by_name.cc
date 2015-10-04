@@ -42,7 +42,7 @@ void check_metadata(map<string, vector<type_ordinal> >& metadata, const reagent&
   if (metadata.find(x.name) == metadata.end())
     metadata[x.name] = x.types;
   if (metadata[x.name] != x.types)
-    raise << maybe(Recipe[r].name) << "" << x.name << " used with multiple types\n" << end();
+    raise << maybe(Recipe[r].name) << x.name << " used with multiple types\n" << end();
 }
 
 :(scenario transform_fills_in_missing_types)
