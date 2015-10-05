@@ -156,48 +156,4 @@ loop
   ]
 ]
 
-scenario sandbox-with-warnings-shows-trace [
-  $close-trace  # trace too long
-  assume-screen 50/width, 10/height
-  # generate a stash and a warning
-  1:address:array:character <- new [stash [abc]
-foo 4, 0]
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
-  # run
-  assume-console [
-    press F4
-  ]
-  event-loop screen:address, console:address, 2:address:programming-environment-data
-  # screen prints error message
-  screen-should-contain [
-    .                               run (F4)           .
-    .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
-    .stash [abc]                                       .
-    .foo 4, 0                                          .
-    .undefined operation in 'foo 4, 0'                 .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
-  ]
-  # click on the call in the sandbox
-  assume-console [
-    left-click 4, 25
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
-  ]
-  # screen should expand trace
-  screen-should-contain [
-    .                               run (F4)           .
-    .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
-    .stash [abc]                                       .
-    .foo 4, 0                                          .
-    .abc                                               .
-    .undefined operation in 'foo 4, 0'                 .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
-  ]
-]
+# todo: scenario sandbox-with-warnings-shows-trace from edit/
