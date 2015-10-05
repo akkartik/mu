@@ -267,12 +267,24 @@ case GET_ADDRESS: {
     raise << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
+  long long int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
-    long long int offset_value = to_integer(offset.name);
+    offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(Type[base_type].elements)) {
       raise << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
       break;
     }
+  }
+  else {
+    offset_value = offset.value;
+  }
+  reagent product = inst.products.at(0);
+  canonize_type(product);
+  reagent element;
+  element.types = Type[base_type].elements.at(offset_value);
+  element.types.insert(element.types.begin(), Type_ordinal["address"]);
+  if (!types_match(product, element)) {
+    raise << maybe(Recipe[r].name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
   }
   break;
 }
@@ -317,6 +329,16 @@ recipe main [
   get-address 12:point-number/raw, -1:offset
 ]
 +warn: main: invalid offset -1 for point-number
+
+:(scenario get_address_product_type_mismatch)
+% Hide_warnings = true;
+recipe main [
+  12:number <- copy 34
+  13:number <- copy 35
+  14:number <- copy 36
+  15:number <- get-address 12:point-number/raw, 1:offset
+]
++warn: main: 'get-address' 1:offset (1) on point-number can't be saved in 15:number; type should be address:number
 
 //:: Allow containers to be defined in mu code.
 
