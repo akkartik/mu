@@ -85,7 +85,11 @@ if (Recipe.find(inst.operation) == Recipe.end()) {
 }
 :(replace{} "default:" following "End Primitive Recipe Implementations")
 default: {
-  if (Recipe.find(current_instruction().operation) == Recipe.end()) break;  // duplicate from Checks
+  if (Recipe.find(current_instruction().operation) == Recipe.end()) {  // duplicate from Checks
+    // stop running this instruction immediately
+    ++current_step_index();
+    continue;
+  }
   // not a primitive; look up the book of recipes
   Current_routine->calls.push_front(call(current_instruction().operation));
   call_housekeeping:
