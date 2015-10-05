@@ -28,7 +28,7 @@ container console [
 recipe new-fake-console [
   local-scope
   result:address:console <- new console:type
-  buf:address:address:array:character <- get-address *result, data:offset
+  buf:address:address:array:event <- get-address *result, data:offset
   *buf <- next-ingredient
   idx:address:number <- get-address *result, index:offset
   *idx <- copy 0

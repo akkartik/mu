@@ -6,13 +6,13 @@ container duplex-list [
   prev:address:duplex-list
 ]
 
-# result:address:duplex-list <- push-duplex x:location, in:address:duplex-list
+# result:address:duplex-list <- push-duplex x:character , in:address:duplex-list
 recipe push-duplex [
   local-scope
-  x:location <- next-ingredient
+  x:character <- next-ingredient
   in:address:duplex-list <- next-ingredient
   result:address:duplex-list <- new duplex-list:type
-  val:address:location <- get-address *result, value:offset
+  val:address:character <- get-address *result, value:offset
   *val <- copy x
   next:address:address:duplex-list <- get-address *result, next:offset
   *next <- copy in
@@ -91,14 +91,14 @@ scenario duplex-list-handling [
   ]
 ]
 
-# l:address:duplex-list <- insert-duplex x:location, in:address:duplex-list
+# l:address:duplex-list <- insert-duplex x:character, in:address:duplex-list
 # Inserts 'x' after 'in'. Returns some pointer into the list.
 recipe insert-duplex [
   local-scope
-  x:location <- next-ingredient
+  x:character <- next-ingredient
   in:address:duplex-list <- next-ingredient
   new-node:address:duplex-list <- new duplex-list:type
-  val:address:location <- get-address *new-node, value:offset
+  val:address:character <- get-address *new-node, value:offset
   *val <- copy x
   next-node:address:duplex-list <- get *in, next:offset
   # in.next = new-node

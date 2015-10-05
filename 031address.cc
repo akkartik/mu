@@ -152,7 +152,7 @@ recipe main [
   1:number <- copy 2
   2:number <- copy 34
   3:number <- copy 35
-  4:number <- get-address 1:address:point/lookup, 0:offset
+  4:address:number <- get-address 1:address:point/lookup, 0:offset
 ]
 +mem: storing 2 in location 4
 
