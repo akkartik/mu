@@ -118,37 +118,6 @@ case SHOW_WARNINGS: {
 }
 
 :(before "End Primitive Recipe Declarations")
-_START_TRACING,
-:(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$start-tracing"] = _START_TRACING;
-:(before "End Primitive Recipe Checks")
-case _START_TRACING: {
-  break;
-}
-:(before "End Primitive Recipe Implementations")
-case _START_TRACING: {
-  if (current_instruction().ingredients.empty())
-    Trace_stream->dump_layer = "all";
-  else
-    Trace_stream->dump_layer = current_instruction().ingredients.at(0).name;
-  break;
-}
-
-:(before "End Primitive Recipe Declarations")
-_STOP_TRACING,
-:(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$stop-tracing"] = _STOP_TRACING;
-:(before "End Primitive Recipe Checks")
-case _STOP_TRACING: {
-  break;
-}
-:(before "End Primitive Recipe Implementations")
-case _STOP_TRACING: {
-  Trace_stream->dump_layer = "";
-  break;
-}
-
-:(before "End Primitive Recipe Declarations")
 _CLOSE_TRACE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["$close-trace"] = _CLOSE_TRACE;

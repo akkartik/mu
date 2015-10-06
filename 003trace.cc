@@ -101,7 +101,6 @@ struct trace_stream {
   ostringstream* curr_stream;
   string curr_layer;
   int curr_depth;
-  string dump_layer;
   set<string> collect_layers;  // if not empty, ignore all absent layers
   ofstream null_stream;  // never opens a file, so writes silently fail
   trace_stream() :curr_stream(NULL), curr_depth(0) {}
@@ -133,8 +132,7 @@ struct trace_stream {
     string curr_contents = curr_stream->str();
     if (curr_contents.empty()) return;
     past_lines.push_back(trace_line(curr_depth, trim(curr_layer), curr_contents));  // preserve indent in contents
-    if (curr_layer == dump_layer || curr_layer == "dump" || dump_layer == "all" ||
-        (!Hide_warnings && curr_layer == "warn"))
+    if (!Hide_warnings && curr_layer == "warn")
       cerr << curr_layer << ": " << curr_contents << '\n';
     delete curr_stream;
     curr_stream = NULL;
