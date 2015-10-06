@@ -95,6 +95,7 @@ if (t.kind == container) {
       raise << "container " << t.name << " can't include itself as a member\n" << end();
       return 0;
     }
+    // End size_of(type) Container Cases
     result += size_of(t.elements.at(i));
   }
   return result;
@@ -391,20 +392,22 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   }
   trace("parse") << "type number: " << Type_ordinal[name] << end();
   skip_bracket(in, "'container' must begin with '['");
-  type_info& t = Type[Type_ordinal[name]];
+  type_info& info = Type[Type_ordinal[name]];
   recently_added_types.push_back(Type_ordinal[name]);
-  t.name = name;
-  t.kind = kind;
+  info.name = name;
+  info.kind = kind;
   while (!in.eof()) {
     skip_whitespace_and_comments(in);
     string element = next_word(in);
     if (element == "]") break;
+    // End insert_container Special Definitions(element)
     istringstream inner(element);
-    t.element_names.push_back(slurp_until(inner, ':'));
-    trace("parse") << "  element name: " << t.element_names.back() << end();
+    info.element_names.push_back(slurp_until(inner, ':'));
+    trace("parse") << "  element name: " << info.element_names.back() << end();
     vector<type_ordinal> types;
     while (!inner.eof()) {
       string type_name = slurp_until(inner, ':');
+      // End insert_container Special Uses(type_name)
       if (Type_ordinal.find(type_name) == Type_ordinal.end()
           // types can contain integers, like for array sizes
           && !is_integer(type_name)) {
@@ -413,10 +416,10 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
       types.push_back(Type_ordinal[type_name]);
       trace("parse") << "  type: " << types.back() << end();
     }
-    t.elements.push_back(types);
+    info.elements.push_back(types);
   }
-  assert(SIZE(t.elements) == SIZE(t.element_names));
-  t.size = SIZE(t.elements);
+  assert(SIZE(info.elements) == SIZE(info.element_names));
+  info.size = SIZE(info.elements);
 }
 
 void skip_bracket(istream& in, string message) {
@@ -554,8 +557,9 @@ void check_container_field_types() {
     for (long long int i = 0; i < SIZE(info.elements); ++i) {
       for (long long int j = 0; j < SIZE(info.elements.at(i)); ++j) {
         if (info.elements.at(i).at(j) == 0) continue;
-        if (Type.find(info.elements.at(i).at(j)) == Type.end())
-          raise << "unknown type for field " << info.element_names.at(i) << " in " << info.name << '\n' << end();
+        if (Type.find(info.elements.at(i).at(j)) != Type.end()) continue;
+        // End Container Type Checks
+        raise << "unknown type for field " << info.element_names.at(i) << " in " << info.name << '\n' << end();
       }
     }
   }
@@ -591,3 +595,68 @@ recipe main [
 ]
 +mem: storing 3 in location 1
 +mem: storing 4 in location 2
+
+//:: Container definitions can contain type parameters.
+
+:(scenario size_of_generic_container)
+container foo [
+  t <- next-type
+  x:t
+  y:number
+]
+recipe main [
+  1:foo:number <- merge 12, 13
+  3:foo:point <- merge 14, 15, 16
+]
++mem: storing 12 in location 1
++mem: storing 13 in location 2
++mem: storing 14 in location 3
++mem: storing 15 in location 4
++mem: storing 16 in location 5
+
+:(before "End Globals")
+// We'll use large type ordinals to mean "the following type of the variable".
+const int FINAL_TYPE_ORDINAL = 900;
+:(before "End Test Run Initialization")
+assert(Next_type_ordinal < FINAL_TYPE_ORDINAL);
+
+:(before "End type_info Fields")
+map<string, type_ordinal> ingredient_names;
+
+:(after "End insert_container Special Definitions(element)")
+// check for type ingredients
+if (element.find(':') == string::npos) {
+  // no type; we're defining a generic variable
+  if (next_word(in) != "<-") {
+    raise << "Element " << element << " of container " << name << " doesn't provide a type.\n" << end();
+    break;
+  }
+  if (next_word(in) != "next-type") {
+    raise << "Type " << element << " of container " << name << " must be defined using 'next-type'\n" << end();
+    break;
+  }
+  type_ordinal next_type_ordinal = SIZE(info.ingredient_names);
+  info.ingredient_names[element] = FINAL_TYPE_ORDINAL + next_type_ordinal;
+  continue;
+}
+
+:(before "End insert_container Special Uses(type_name)")
+// check for use of type ingredients
+if (info.ingredient_names.find(type_name) != info.ingredient_names.end()) {
+  types.push_back(info.ingredient_names[type_name]);
+  trace("parse") << "  type: " << types.back() << end();
+  continue;
+}
+
+:(before "End Container Type Checks")
+if (info.elements.at(i).at(j) >= FINAL_TYPE_ORDINAL
+    && (info.elements.at(i).at(j) - FINAL_TYPE_ORDINAL) < SIZE(info.ingredient_names)) continue;
+
+:(before "End size_of(type) Container Cases")
+if (t.elements.at(i).at(0) >= FINAL_TYPE_ORDINAL) {
+  vector<long long int> subtype;
+  subtype.push_back(types.at(1+t.elements.at(i).at(0)-FINAL_TYPE_ORDINAL));
+  // todo: generics inside generics
+  result += size_of(subtype);
+  continue;
+}
