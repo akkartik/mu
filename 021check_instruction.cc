@@ -88,10 +88,7 @@ bool types_match(reagent lhs, reagent rhs) {
 }
 
 bool is_raw(const reagent& r) {
-  for (long long int i = /*skip value+type*/1; i < SIZE(r.properties); ++i) {
-    if (r.properties.at(i).first == "raw") return true;
-  }
-  return false;
+  return has_property(r, "raw");
 }
 
 bool is_mu_array(reagent r) {
