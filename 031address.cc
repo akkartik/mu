@@ -158,6 +158,8 @@ recipe main [
 
 :(after "Update GET_ADDRESS base in Check")
 if (!canonize_type(base)) break;
+:(after "Update GET_ADDRESS product in Check")
+if (!canonize_type(base)) break;
 :(after "Update GET_ADDRESS base in Run")
 base = canonize(base);
 
