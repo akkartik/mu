@@ -176,6 +176,7 @@ case GET: {
   if (offset < 0 || offset >= SIZE(Type[base_type].elements)) break;  // copied from Check above
   long long int src = base_address;
   for (long long int i = 0; i < offset; ++i) {
+    // End GET field Cases
     src += size_of(Type[base_type].elements.at(i));
   }
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src << end();
@@ -305,6 +306,7 @@ case GET_ADDRESS: {
   if (offset < 0 || offset >= SIZE(Type[base_type].elements)) break;  // copied from Check above
   long long int result = base_address;
   for (long long int i = 0; i < offset; ++i) {
+    // End GET_ADDRESS field Cases
     result += size_of(Type[base_type].elements.at(i));
   }
   trace(Primitive_recipe_depth, "run") << "address to copy is " << result << end();
@@ -654,9 +656,52 @@ if (info.elements.at(i).at(j) >= FINAL_TYPE_ORDINAL
 
 :(before "End size_of(type) Container Cases")
 if (t.elements.at(i).at(0) >= FINAL_TYPE_ORDINAL) {
-  vector<long long int> subtype;
-  subtype.push_back(types.at(1+t.elements.at(i).at(0)-FINAL_TYPE_ORDINAL));
+  result += size_of_ingredient(t, i, types);
+  continue;
+}
+
+:(code)
+// generic version of size_of
+long long int size_of_ingredient(const type_info& container_info, long long int element_index, vector<type_ordinal> full_type) {
   // todo: generics inside generics
-  result += size_of(subtype);
+  vector<long long int> subtype;
+  subtype.push_back(full_type.at(/*hack: assumes container is at index 0*/1
+                                 + container_info.elements.at(element_index).at(0)-FINAL_TYPE_ORDINAL));
+  return size_of(subtype);
+}
+
+:(scenario get_on_generic_container)
+container foo [
+  t <- next-type
+  x:t
+  y:number
+]
+recipe main [
+  1:foo:point <- merge 14, 15, 16
+  2:number <- get 1:foo:point, 1:offset
+]
++mem: storing 16 in location 2
+
+:(before "End GET field Cases")
+if (Type[base_type].elements.at(i).at(0) >= FINAL_TYPE_ORDINAL) {
+  src += size_of_ingredient(Type[base_type], i, base.types);
+  continue;
+}
+
+:(scenario get_address_on_generic_container)
+container foo [
+  t <- next-type
+  x:t
+  y:number
+]
+recipe main [
+  10:foo:point <- merge 14, 15, 16
+  1:address:number <- get-address 10:foo:point, 1:offset
+]
++mem: storing 12 in location 1
+
+:(before "End GET_ADDRESS field Cases")
+if (Type[base_type].elements.at(i).at(0) >= FINAL_TYPE_ORDINAL) {
+  result += size_of_ingredient(Type[base_type], i, base.types);
   continue;
 }
