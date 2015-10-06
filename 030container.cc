@@ -280,7 +280,7 @@ case GET_ADDRESS: {
     offset_value = offset.value;
   }
   reagent product = inst.products.at(0);
-  canonize_type(product);
+  // Update GET_ADDRESS product in Check
   reagent element;
   element.types = Type[base_type].elements.at(offset_value);
   element.types.insert(element.types.begin(), Type_ordinal["address"]);
