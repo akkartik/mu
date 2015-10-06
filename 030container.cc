@@ -157,6 +157,7 @@ case GET: {
   element.types = Type[base_type].elements.at(offset_value);
   if (!types_match(product, element)) {
     raise << maybe(Recipe[r].name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    break;
   }
   break;
 }
@@ -285,6 +286,7 @@ case GET_ADDRESS: {
   element.types.insert(element.types.begin(), Type_ordinal["address"]);
   if (!types_match(product, element)) {
     raise << maybe(Recipe[r].name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    break;
   }
   break;
 }
