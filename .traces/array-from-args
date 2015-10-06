@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:location <- new-array 0, 1, 2\n    2:array:location <- copy *1:address:array:location\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character <- new-array 0, 1, 2\n    2:array:character <- copy *1:address:array:character\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 3  # array length\n    3 <- 0\n    4 <- 1\n    5 <- 2\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-array-from-args
@@ -8,27 +8,27 @@ after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: scenario-array-from-args
  101 run: run [
-    1:address:array:location <- new-array 0, 1, 2
-    2:array:location <- copy *1:address:array:location
+    1:address:array:character <- new-array 0, 1, 2
+    2:array:character <- copy *1:address:array:character
   ]
 parse: instruction: new-array
 parse:   ingredient: {name: "0", properties: ["0": "literal"]}
 parse:   ingredient: {name: "1", properties: ["1": "literal"]}
 parse:   ingredient: {name: "2", properties: ["2": "literal"]}
-parse:   product: {name: "1", properties: ["1": "address":"array":"location"]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
 parse: instruction: copy
-parse:   ingredient: {name: "1", properties: ["*1": "address":"array":"location", "lookup": ]}
-parse:   product: {name: "2", properties: ["2": "array":"location"]}
+parse:   ingredient: {name: "1", properties: ["*1": "address":"array":"character", "lookup": ]}
+parse:   product: {name: "2", properties: ["2": "array":"character"]}
 after-brace: recipe run1001
 after-brace: new-array ...
 after-brace: copy ...
- 101 run: 1:address:array:location <- new-array 0, 1, 2
+ 101 run: 1:address:array:character <- new-array 0, 1, 2
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
 9999 mem: new alloc: 1000
  102 run: capacity:number <- copy 0
 9999 mem: storing 0 in location 1002
- 102 run: curr-value:location, exists?:boolean <- next-ingredient 
+ 102 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1003
 9999 mem: storing 1 in location 1004
  102 run: break-unless exists?, 
@@ -39,7 +39,7 @@ after-brace: copy ...
 9999 mem: storing 1 in location 1002
  102 run: loop 
 9999 run: jumping to instruction 3
- 102 run: curr-value:location, exists?:boolean <- next-ingredient 
+ 102 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 1 in location 1003
 9999 mem: storing 1 in location 1004
  102 run: break-unless exists?, 
@@ -50,7 +50,7 @@ after-brace: copy ...
 9999 mem: storing 2 in location 1002
  102 run: loop 
 9999 run: jumping to instruction 3
- 102 run: curr-value:location, exists?:boolean <- next-ingredient 
+ 102 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 2 in location 1003
 9999 mem: storing 1 in location 1004
  102 run: break-unless exists?, 
@@ -61,13 +61,13 @@ after-brace: copy ...
 9999 mem: storing 3 in location 1002
  102 run: loop 
 9999 run: jumping to instruction 3
- 102 run: curr-value:location, exists?:boolean <- next-ingredient 
+ 102 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1003
 9999 mem: storing 0 in location 1004
  102 run: break-unless exists?, 
 9999 mem: location 1004 is 0
 9999 run: jumping to instruction 7
- 102 run: result:address:array:location <- new location:type, capacity
+ 102 run: result:address:array:character <- new character:type, capacity
 9999 mem: location 1002 is 3
 9999 mem: array size is 3
 9999 mem: new alloc: 1009
@@ -82,12 +82,12 @@ after-brace: copy ...
  102 run: break-if done?, 
 9999 mem: location 1007 is 0
 9999 run: jump-if fell through
- 102 run: curr-value:location, exists?:boolean <- next-ingredient 
+ 102 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1003
 9999 mem: storing 1 in location 1004
  102 run: assert exists?, [error in rewinding ingredients to new-array]
 9999 mem: location 1004 is 1
- 102 run: tmp:address:location <- index-address *result, i
+ 102 run: tmp:address:character <- index-address *result, i
 9999 mem: location 1005 is 1009
 9999 mem: location 1006 is 0
 9999 mem: storing 1010 in location 1008
@@ -107,12 +107,12 @@ after-brace: copy ...
  102 run: break-if done?, 
 9999 mem: location 1007 is 0
 9999 run: jump-if fell through
- 102 run: curr-value:location, exists?:boolean <- next-ingredient 
+ 102 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 1 in location 1003
 9999 mem: storing 1 in location 1004
  102 run: assert exists?, [error in rewinding ingredients to new-array]
 9999 mem: location 1004 is 1
- 102 run: tmp:address:location <- index-address *result, i
+ 102 run: tmp:address:character <- index-address *result, i
 9999 mem: location 1005 is 1009
 9999 mem: location 1006 is 1
 9999 mem: storing 1011 in location 1008
@@ -132,12 +132,12 @@ after-brace: copy ...
  102 run: break-if done?, 
 9999 mem: location 1007 is 0
 9999 run: jump-if fell through
- 102 run: curr-value:location, exists?:boolean <- next-ingredient 
+ 102 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 2 in location 1003
 9999 mem: storing 1 in location 1004
  102 run: assert exists?, [error in rewinding ingredients to new-array]
 9999 mem: location 1004 is 1
- 102 run: tmp:address:location <- index-address *result, i
+ 102 run: tmp:address:character <- index-address *result, i
 9999 mem: location 1005 is 1009
 9999 mem: location 1006 is 2
 9999 mem: storing 1012 in location 1008
@@ -161,7 +161,7 @@ after-brace: copy ...
 9999 mem: location 1005 is 1009
 9999 run: result 0 is 1009
 9999 mem: storing 1009 in location 1
- 101 run: 2:array:location <- copy *1:address:array:location
+ 101 run: 2:array:character <- copy *1:address:array:character
 9999 mem: location 1 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 0
