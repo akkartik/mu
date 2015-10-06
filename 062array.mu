@@ -1,7 +1,7 @@
 scenario array-from-args [
   run [
-    1:address:array:location <- new-array 0, 1, 2
-    2:array:location <- copy *1:address:array:location
+    1:address:array:character <- new-array 0, 1, 2
+    2:array:character <- copy *1:address:array:character
   ]
   memory-should-contain [
     2 <- 3  # array length
@@ -17,21 +17,21 @@ recipe new-array [
   capacity:number <- copy 0
   {
     # while read curr-value
-    curr-value:location, exists?:boolean <- next-ingredient
+    curr-value:character, exists?:boolean <- next-ingredient
     break-unless exists?
     capacity <- add capacity, 1
     loop
   }
-  result:address:array:location <- new location:type, capacity
+  result:address:array:character <- new character:type, capacity
   rewind-ingredients
   i:number <- copy 0
   {
     # while read curr-value
     done?:boolean <- greater-or-equal i, capacity
     break-if done?
-    curr-value:location, exists?:boolean <- next-ingredient
+    curr-value:character, exists?:boolean <- next-ingredient
     assert exists?, [error in rewinding ingredients to new-array]
-    tmp:address:location <- index-address *result, i
+    tmp:address:character <- index-address *result, i
     *tmp <- copy curr-value
     i <- add i, 1
     loop
