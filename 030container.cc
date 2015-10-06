@@ -618,7 +618,7 @@ recipe main [
 
 :(before "End Globals")
 // We'll use large type ordinals to mean "the following type of the variable".
-const int FINAL_TYPE_ORDINAL = 900;
+const int FINAL_TYPE_ORDINAL = 2000;
 :(before "End Test Run Initialization")
 assert(Next_type_ordinal < FINAL_TYPE_ORDINAL);
 
@@ -705,3 +705,19 @@ if (Type[base_type].elements.at(i).at(0) >= FINAL_TYPE_ORDINAL) {
   result += size_of_ingredient(Type[base_type], i, base.types);
   continue;
 }
+
+:(scenario get_on_generic_container_inside_generic_container)
+container foo [
+  t <- next-type
+  x:t
+  y:number
+]
+container bar [
+  x:foo:point
+  y:number
+]
+recipe main [
+  1:bar <- merge 14, 15, 16, 17
+  2:number <- get 1:bar, 1:offset
+]
++mem: storing 17 in location 2
