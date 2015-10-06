@@ -419,6 +419,12 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   t.size = SIZE(t.elements);
 }
 
+void skip_bracket(istream& in, string message) {
+  skip_whitespace_and_comments(in);
+  if (in.get() != '[')
+    raise << message << '\n' << end();
+}
+
 :(scenarios run)
 :(scenario container_define_twice)
 container foo [
@@ -585,12 +591,3 @@ recipe main [
 ]
 +mem: storing 3 in location 1
 +mem: storing 4 in location 2
-
-//:: helpers
-
-:(code)
-void skip_bracket(istream& in, string message) {
-  skip_whitespace_and_comments(in);
-  if (in.get() != '[')
-    raise << message << '\n' << end();
-}
