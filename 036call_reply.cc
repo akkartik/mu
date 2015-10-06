@@ -30,12 +30,22 @@ case REPLY: {
   // just in case 'main' returns a value, drop it for now
   if (Current_routine->calls.empty()) goto stop_running_current_routine;
   const instruction& caller_instruction = current_instruction();
+  // check types with the caller
+  if (SIZE(caller_instruction.products) > SIZE(ingredients)) {
+    raise << "too few values replied from " << callee << '\n' << end();
+    break;
+  }
+  for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
+    if (has_property(caller_instruction.products.at(i), "skiptypecheck")) continue;  // todo: drop this once we have generic containers
+    if (!types_match(caller_instruction.products.at(i), reply_inst.ingredients.at(i))) {
+      raise << maybe(callee) << "reply ingredient " << reply_inst.ingredients.at(i).original_string << " can't be saved in " << caller_instruction.products.at(i).original_string << '\n' << end();
+      goto finish_reply;
+    }
+  }
   // make reply products available to caller
   copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
   // check that any reply ingredients with /same-as-ingredient connect up
   // the corresponding ingredient and product in the caller.
-  if (SIZE(caller_instruction.products) > SIZE(ingredients))
-    raise << "too few values replied from " << callee << '\n' << end();
   for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
     trace(Primitive_recipe_depth, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
     if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
@@ -64,11 +74,24 @@ recipe main [
 recipe f [
   12:number <- next-ingredient
   13:number <- copy 35
-  reply 12:point/raw  # unsafe
+  reply 12:point/raw
 ]
 +run: result 0 is [2, 35]
 +mem: storing 2 in location 3
 +mem: storing 35 in location 4
+
+:(scenario reply_type_mismatch)
+% Hide_warnings = true;
+recipe main [
+  3:number <- f 2
+]
+recipe f [
+  12:number <- next-ingredient
+  13:number <- copy 35
+  14:point <- copy 12:point/raw
+  reply 14:point
+]
++warn: f: reply ingredient 14:point can't be saved in 3:number
 
 //: In mu we'd like to assume that any instruction doesn't modify its
 //: ingredients unless they're also products. The /same-as-ingredient inside
@@ -82,8 +105,8 @@ recipe main [
   2:number <- test1 1:number  # call with different ingredient and product
 ]
 recipe test1 [
-  10:address:number <- next-ingredient
-  reply 10:address:number/same-as-ingredient:0
+  10:number <- next-ingredient
+  reply 10:number/same-as-ingredient:0
 ]
 +warn: main: 'same-as-ingredient' product from call to test1 must be 1:number rather than 2:number
 

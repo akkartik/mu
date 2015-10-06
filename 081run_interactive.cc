@@ -86,7 +86,7 @@ bool run_interactive(long long int address) {
   // call run(string) but without the scheduling
   load(string("recipe interactive [\n") +
           "local-scope\n" +
-          "screen:address <- next-ingredient\n" +
+          "screen:address:screen <- next-ingredient\n" +
           "$start-tracking-products\n" +
           command + "\n" +
           "$stop-tracking-products\n" +
@@ -129,8 +129,8 @@ load(string(
 "]\n" +
 "recipe sandbox [\n" +
   "local-scope\n" +
-  "screen:address/shared <- new-fake-screen 30, 5\n" +
-  "r:number/routine_id <- start-running interactive:recipe, screen:address\n" +
+  "screen:address:screen/shared <- new-fake-screen 30, 5\n" +
+  "r:number/routine_id <- start-running interactive:recipe, screen\n" +
   "limit-time r, 100000/instructions\n" +
   "wait-for-routine r\n" +
   "sandbox-state:number <- routine-state r/routine_id\n" +

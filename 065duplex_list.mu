@@ -59,19 +59,19 @@ scenario duplex-list-handling [
     3:address:duplex-list <- push-duplex 4, 3:address:duplex-list
     3:address:duplex-list <- push-duplex 5, 3:address:duplex-list
     4:address:duplex-list <- copy 3:address:duplex-list
-    5:number <- first-duplex 4:address:duplex-list
+    5:character <- first-duplex 4:address:duplex-list
     4:address:duplex-list <- next-duplex 4:address:duplex-list
-    6:number <- first-duplex 4:address:duplex-list
+    6:character <- first-duplex 4:address:duplex-list
     4:address:duplex-list <- next-duplex 4:address:duplex-list
-    7:number <- first-duplex 4:address:duplex-list
+    7:character <- first-duplex 4:address:duplex-list
     8:address:duplex-list <- next-duplex 4:address:duplex-list
-    9:number <- first-duplex 8:address:duplex-list
+    9:character <- first-duplex 8:address:duplex-list
     10:address:duplex-list <- next-duplex 8:address:duplex-list
     11:address:duplex-list <- prev-duplex 8:address:duplex-list
     4:address:duplex-list <- prev-duplex 4:address:duplex-list
-    12:number <- first-duplex 4:address:duplex-list
+    12:character <- first-duplex 4:address:duplex-list
     4:address:duplex-list <- prev-duplex 4:address:duplex-list
-    13:number <- first-duplex 4:address:duplex-list
+    13:character <- first-duplex 4:address:duplex-list
     14:boolean <- equal 3:address:duplex-list, 4:address:duplex-list
   ]
   memory-should-contain [
@@ -128,19 +128,19 @@ scenario inserting-into-duplex-list [
     2:address:duplex-list <- insert-duplex 6, 2:address:duplex-list
     # check structure like before
     2:address:duplex-list <- copy 1:address:duplex-list
-    3:number <- first-duplex 2:address:duplex-list
+    3:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    4:number <- first-duplex 2:address:duplex-list
+    4:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    5:number <- first-duplex 2:address:duplex-list
+    5:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    6:number <- first-duplex 2:address:duplex-list
+    6:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    7:number <- first-duplex 2:address:duplex-list
+    7:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    8:number <- first-duplex 2:address:duplex-list
+    8:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    9:number <- first-duplex 2:address:duplex-list
+    9:character <- first-duplex 2:address:duplex-list
     10:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
   ]
   memory-should-contain [
@@ -166,19 +166,19 @@ scenario inserting-at-end-of-duplex-list [
     2:address:duplex-list <- insert-duplex 6, 2:address:duplex-list
     # check structure like before
     2:address:duplex-list <- copy 1:address:duplex-list
-    3:number <- first-duplex 2:address:duplex-list
+    3:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    4:number <- first-duplex 2:address:duplex-list
+    4:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    5:number <- first-duplex 2:address:duplex-list
+    5:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    6:number <- first-duplex 2:address:duplex-list
+    6:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    7:number <- first-duplex 2:address:duplex-list
+    7:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    8:number <- first-duplex 2:address:duplex-list
+    8:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    9:number <- first-duplex 2:address:duplex-list
+    9:character <- first-duplex 2:address:duplex-list
     10:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
   ]
   memory-should-contain [
@@ -202,19 +202,19 @@ scenario inserting-after-start-of-duplex-list [
     2:address:duplex-list <- insert-duplex 6, 1:address:duplex-list
     # check structure like before
     2:address:duplex-list <- copy 1:address:duplex-list
-    3:number <- first-duplex 2:address:duplex-list
+    3:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    4:number <- first-duplex 2:address:duplex-list
+    4:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    5:number <- first-duplex 2:address:duplex-list
+    5:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    6:number <- first-duplex 2:address:duplex-list
+    6:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    7:number <- first-duplex 2:address:duplex-list
+    7:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    8:number <- first-duplex 2:address:duplex-list
+    8:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    9:number <- first-duplex 2:address:duplex-list
+    9:character <- first-duplex 2:address:duplex-list
     10:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
   ]
   memory-should-contain [
@@ -276,12 +276,12 @@ scenario removing-from-duplex-list [
     3:boolean <- equal 2:address:duplex-list, 0
     # check structure like before
     2:address:duplex-list <- copy 1:address:duplex-list
-    4:number <- first-duplex 2:address:duplex-list
+    4:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    5:number <- first-duplex 2:address:duplex-list
+    5:character <- first-duplex 2:address:duplex-list
     6:address:duplex-list <- next-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    7:number <- first-duplex 2:address:duplex-list
+    7:character <- first-duplex 2:address:duplex-list
     8:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
   ]
   memory-should-contain [
@@ -304,12 +304,12 @@ scenario removing-from-start-of-duplex-list [
     1:address:duplex-list <- remove-duplex 1:address:duplex-list
     # check structure like before
     2:address:duplex-list <- copy 1:address:duplex-list
-    3:number <- first-duplex 2:address:duplex-list
+    3:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    4:number <- first-duplex 2:address:duplex-list
+    4:character <- first-duplex 2:address:duplex-list
     5:address:duplex-list <- next-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    6:number <- first-duplex 2:address:duplex-list
+    6:character <- first-duplex 2:address:duplex-list
     7:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
   ]
   memory-should-contain [
@@ -334,12 +334,12 @@ scenario removing-from-end-of-duplex-list [
     3:boolean <- equal 2:address:duplex-list, 0
     # check structure like before
     2:address:duplex-list <- copy 1:address:duplex-list
-    4:number <- first-duplex 2:address:duplex-list
+    4:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    5:number <- first-duplex 2:address:duplex-list
+    5:character <- first-duplex 2:address:duplex-list
     6:address:duplex-list <- next-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    7:number <- first-duplex 2:address:duplex-list
+    7:character <- first-duplex 2:address:duplex-list
     8:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
   ]
   memory-should-contain [

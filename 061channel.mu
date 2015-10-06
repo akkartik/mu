@@ -12,7 +12,7 @@ scenario channel [
   run [
     1:address:channel <- new-channel 3/capacity
     1:address:channel <- write 1:address:channel, 34
-    2:number, 1:address:channel <- read 1:address:channel
+    2:character, 1:address:channel <- read 1:address:channel
   ]
   memory-should-contain [
     2 <- 34
@@ -28,7 +28,7 @@ container channel [
   # A circular buffer contains values from index first-full up to (but not
   # including) index first-empty. The reader always modifies it at first-full,
   # while the writer always modifies it at first-empty.
-  data:address:array:location
+  data:address:array:character
 ]
 
 # result:address:channel <- new-channel capacity:number
@@ -45,16 +45,16 @@ recipe new-channel [
   # result.data = new location[ingredient+1]
   capacity:number <- next-ingredient
   capacity <- add capacity, 1  # unused slot for 'full?' below
-  dest:address:address:array:location <- get-address *result, data:offset
-  *dest <- new location:type, capacity
+  dest:address:address:array:character <- get-address *result, data:offset
+  *dest <- new character:type, capacity
   reply result
 ]
 
-# chan <- write chan:address:channel, val:location
+# chan <- write chan:address:channel, val:character
 recipe write [
   local-scope
   chan:address:channel <- next-ingredient
-  val:location <- next-ingredient
+  val:character <- next-ingredient
   {
     # block if chan is full
     full:boolean <- channel-full? chan
@@ -63,9 +63,9 @@ recipe write [
     wait-for-location *full-address
   }
   # store val
-  circular-buffer:address:array:location <- get *chan, data:offset
+  circular-buffer:address:array:character <- get *chan, data:offset
   free:address:number <- get-address *chan, first-free:offset
-  dest:address:location <- index-address *circular-buffer, *free
+  dest:address:character <- index-address *circular-buffer, *free
   *dest <- copy val
   # mark its slot as filled
   *free <- add *free, 1
@@ -79,7 +79,7 @@ recipe write [
   reply chan/same-as-ingredient:0
 ]
 
-# result:location, chan <- read chan:address:channel
+# result:character, chan <- read chan:address:channel
 recipe read [
   local-scope
   chan:address:channel <- next-ingredient
@@ -92,8 +92,8 @@ recipe read [
   }
   # read result
   full:address:number <- get-address *chan, first-full:offset
-  circular-buffer:address:array:location <- get *chan, data:offset
-  result:location <- index *circular-buffer, *full
+  circular-buffer:address:array:character <- get *chan, data:offset
+  result:character <- index *circular-buffer, *full
   # mark its slot as empty
   *full <- add *full, 1
   {
@@ -219,7 +219,7 @@ recipe channel-full? [
 recipe channel-capacity [
   local-scope
   chan:address:channel <- next-ingredient
-  q:address:array:location <- get *chan, data:offset
+  q:address:array:character <- get *chan, data:offset
   result:number <- length *q
   reply result
 ]

@@ -128,7 +128,7 @@ scenario sandbox-with-print-can-be-edited [
   $close-trace  # trace too long
   assume-screen 50/width, 20/height
   # run a print instruction
-  1:address:array:character <- new [print-integer screen:address, 4]
+  1:address:array:character <- new [print-integer screen, 4]
   2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
   # run the sandbox
   assume-console [
@@ -142,7 +142,7 @@ scenario sandbox-with-print-can-be-edited [
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                 x.
-    .print-integer screen:address, 4                   .
+    .print-integer screen, 4                           .
     .screen:                                           .
     .  .4                             .                .
     .  .                              .                .
@@ -168,7 +168,7 @@ scenario sandbox-with-print-can-be-edited [
   ]
   screen-should-contain [
     .                               run (F4)           .
-    .print-integer screen:address, 4                   .
+    .print-integer screen, 4                           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
     .                                                  .
