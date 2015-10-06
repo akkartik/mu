@@ -99,53 +99,53 @@ struct trace_stream {
   vector<trace_line> past_lines;
   // accumulator for current line
   ostringstream* curr_stream;
-  string curr_layer;
+  string curr_label;
   int curr_depth;
   set<string> collect_layers;  // if not empty, ignore all absent layers
   ofstream null_stream;  // never opens a file, so writes silently fail
   trace_stream() :curr_stream(NULL), curr_depth(0) {}
   ~trace_stream() { if (curr_stream) delete curr_stream; }
 
-  ostream& stream(string layer) {
-    return stream(0, layer);
+  ostream& stream(string label) {
+    return stream(0, label);
   }
 
-  ostream& stream(int depth, string layer) {
-    if (!is_collecting(layer)) return null_stream;
+  ostream& stream(int depth, string label) {
+    if (!is_collecting(label)) return null_stream;
     curr_stream = new ostringstream;
-    curr_layer = layer;
+    curr_label = label;
     curr_depth = depth;
     return *curr_stream;
   }
 
-  bool is_collecting(const string& layer) {
-    return collect_layers.empty() || collect_layers.find(layer) != collect_layers.end();
+  bool is_collecting(const string& label) {
+    return collect_layers.empty() || collect_layers.find(label) != collect_layers.end();
   }
 
-  bool is_narrowly_collecting(const string& layer) {
-    return collect_layers.find(layer) != collect_layers.end();
+  bool is_narrowly_collecting(const string& label) {
+    return collect_layers.find(label) != collect_layers.end();
   }
 
-  // be sure to call this before messing with curr_stream or curr_layer
+  // be sure to call this before messing with curr_stream or curr_label
   void newline() {
     if (!curr_stream) return;
     string curr_contents = curr_stream->str();
     if (curr_contents.empty()) return;
-    past_lines.push_back(trace_line(curr_depth, trim(curr_layer), curr_contents));  // preserve indent in contents
-    if (!Hide_warnings && curr_layer == "warn")
-      cerr << curr_layer << ": " << curr_contents << '\n';
+    past_lines.push_back(trace_line(curr_depth, trim(curr_label), curr_contents));  // preserve indent in contents
+    if (!Hide_warnings && curr_label == "warn")
+      cerr << curr_label << ": " << curr_contents << '\n';
     delete curr_stream;
     curr_stream = NULL;
-    curr_layer.clear();
+    curr_label.clear();
     curr_depth = 0;
   }
 
   // Useful for debugging.
-  string readable_contents(string layer) {  // missing layer = everything
+  string readable_contents(string label) {  // missing label = everything
     ostringstream output;
-    layer = trim(layer);
+    label = trim(label);
     for (vector<trace_line>::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
-      if (layer.empty() || layer == p->label) {
+      if (label.empty() || label == p->label) {
         if (p->depth)
           output << std::setw(4) << p->depth << ' ';
         output << p->label << ": " << p->contents << '\n';
@@ -174,7 +174,7 @@ ostream& operator<<(ostream& os, unused end) {
 
 #define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream;
 
-#define DUMP(layer)  if (Trace_stream) cerr << Trace_stream->readable_contents(layer);
+#define DUMP(label)  if (Trace_stream) cerr << Trace_stream->readable_contents(label);
 
 // All scenarios save their traces in the repo, just like code. This gives
 // future readers more meat when they try to make sense of a new project.
@@ -210,10 +210,10 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
     ++curr_expected_line;
   if (curr_expected_line == SIZE(expected_lines)) return true;
-  string layer, contents;
-  split_layer_contents(expected_lines.at(curr_expected_line), &layer, &contents);
+  string label, contents;
+  split_label_contents(expected_lines.at(curr_expected_line), &label, &contents);
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (layer != p->label)
+    if (label != p->label)
       continue;
 
     if (contents != trim(p->contents))
@@ -223,39 +223,39 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
     while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
     if (curr_expected_line == SIZE(expected_lines)) return true;
-    split_layer_contents(expected_lines.at(curr_expected_line), &layer, &contents);
+    split_label_contents(expected_lines.at(curr_expected_line), &label, &contents);
   }
 
   ++Num_failures;
   cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << contents << "] in trace:\n";
-  DUMP(layer);
+  DUMP(label);
   Passed = false;
   return false;
 }
 
-void split_layer_contents(const string& s, string* layer, string* contents) {
+void split_label_contents(const string& s, string* label, string* contents) {
   static const string delim(": ");
   size_t pos = s.find(delim);
   if (pos == string::npos) {
-    *layer = "";
+    *label = "";
     *contents = trim(s);
   }
   else {
-    *layer = trim(s.substr(0, pos));
+    *label = trim(s.substr(0, pos));
     *contents = trim(s.substr(pos+SIZE(delim)));
   }
 }
 
 
 
-int trace_count(string layer) {
-  return trace_count(layer, "");
+int trace_count(string label) {
+  return trace_count(label, "");
 }
 
-int trace_count(string layer, string line) {
+int trace_count(string label, string line) {
   long result = 0;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (layer == p->label) {
+    if (label == p->label) {
       if (line == "" || line == trim(p->contents))
         ++result;
     }
@@ -273,8 +273,8 @@ int trace_count(string layer, string line) {
     return; \
   }
 
-bool trace_doesnt_contain(string layer, string line) {
-  return trace_count(layer, line) == 0;
+bool trace_doesnt_contain(string label, string line) {
+  return trace_count(label, line) == 0;
 }
 
 bool trace_doesnt_contain(string expected) {

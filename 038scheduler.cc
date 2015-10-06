@@ -275,7 +275,7 @@ recipe f2 [
 -warn: f2: divide by zero in '4:number <- divide-with-remainder 4, 0'
 
 :(after "operator<<(ostream& os, unused end)")
-  if (Trace_stream && Trace_stream->curr_layer == "warn" && Current_routine) {
+  if (Trace_stream && Trace_stream->curr_label == "warn" && Current_routine) {
     Current_routine->state = COMPLETED;
   }
 
