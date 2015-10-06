@@ -21,9 +21,10 @@ parse:   product: {name: "7", properties: ["7": "number"]}
 parse: instruction: copy
 parse:   ingredient: {name: "1", properties: ["1": "literal", "raw": ]}
 parse:   product: {name: "8", properties: ["8": "address":"array":"point"]}
-parse: instruction: index
+parse: instruction: index-address
 parse:   ingredient: {name: "8", properties: ["*8": "address":"array":"point", "lookup": ]}
-parse:   ingredient: {name: "-1", properties: ["-1": "literal"]}
+parse:   ingredient: {name: "0", properties: ["0": "literal"]}
+parse:   product: {name: "9", properties: ["9": "address":"number"]}
 after-brace: recipe main
 after-brace: create-array ...
 after-brace: copy ...
@@ -33,7 +34,9 @@ after-brace: copy ...
 after-brace: copy ...
 after-brace: copy ...
 after-brace: copy ...
-after-brace: index ...
+after-brace: index-address ...
+warn: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be address:point
+
 9999 new: routine allocated memory from 1000 to 101000
 schedule: main
  101 run: 1:array:point:3 <- create-array 
@@ -54,7 +57,6 @@ run: creating array of size 7
 9999 mem: storing 16 in location 7
  101 run: 8:address:array:point <- copy 1/raw
 9999 mem: storing 1 in location 8
- 101 run: index *8:address:array:point, -1
+ 101 run: 9:address:number <- index-address *8:address:array:point, 0
 9999 mem: location 8 is 1
-warn: main: invalid index -1
-
+9999 mem: storing 2 in location 9

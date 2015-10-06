@@ -154,6 +154,15 @@ case INDEX: {
     raise << maybe(Recipe[r].name) << "'index' on a non-array " << base.original_string << '\n' << end();
     break;
   }
+  if (inst.products.empty()) break;
+  reagent product = inst.products.at(0);
+  canonize_type(product);
+  reagent element;
+  element.types = array_element(base.types);
+  if (!types_match(product, element)) {
+    raise << maybe(Recipe[r].name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -222,10 +231,25 @@ recipe main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1
+  8:address:array:point <- copy 1/raw
   index *8:address:array:point, -1
 ]
 +warn: main: invalid index -1
+
+:(scenario index_product_type_mismatch)
+% Hide_warnings = true;
+recipe main [
+  1:array:point:3 <- create-array
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:number <- copy 14
+  6:number <- copy 15
+  7:number <- copy 16
+  8:address:array:point <- copy 1/raw
+  9:number <- index *8:address:array:point, 0
+]
++warn: main: 'index' on *8:address:array:point can't be saved in 9:number; type should be point
 
 //:: To write to elements of containers, you need their address.
 
@@ -235,7 +259,7 @@ recipe main [
   2:number <- copy 14
   3:number <- copy 15
   4:number <- copy 16
-  5:number <- index-address 1:array:number, 0
+  5:address:number <- index-address 1:array:number, 0
 ]
 +mem: storing 2 in location 5
 
@@ -253,6 +277,16 @@ case INDEX_ADDRESS: {
   canonize_type(base);
   if (!is_mu_array(base)) {
     raise << current_recipe_name () << "'index-address' on a non-array " << base.original_string << '\n' << end();
+    break;
+  }
+  if (inst.products.empty()) break;
+  reagent product = inst.products.at(0);
+  canonize_type(product);
+  reagent element;
+  element.types = array_element(base.types);
+  element.types.insert(element.types.begin(), Type_ordinal["address"]);
+  if (!types_match(product, element)) {
+    raise << maybe(Recipe[r].name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
   }
   break;
@@ -303,10 +337,25 @@ recipe main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1  # unsafe
+  8:address:array:point <- copy 1/raw
   index-address *8:address:array:point, -1
 ]
 +warn: main: invalid index -1
+
+:(scenario index_address_product_type_mismatch)
+% Hide_warnings = true;
+recipe main [
+  1:array:point:3 <- create-array
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:number <- copy 14
+  6:number <- copy 15
+  7:number <- copy 16
+  8:address:array:point <- copy 1/raw
+  9:address:number <- index-address *8:address:array:point, 0
+]
++warn: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be address:point
 
 //:: compute the length of an array
 
