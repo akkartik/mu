@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:channel <- new-channel 3/capacity\n    1:address:channel <- write 1:address:channel, 34\n    2:number, 1:address:channel <- read 1:address:channel\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:channel <- new-channel 3/capacity\n    1:address:channel <- write 1:address:channel, 34\n    2:character, 1:address:channel <- read 1:address:channel\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 34\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-channel
@@ -10,7 +10,7 @@ schedule: scenario-channel
  101 run: run [
     1:address:channel <- new-channel 3/capacity
     1:address:channel <- write 1:address:channel, 34
-    2:number, 1:address:channel <- read 1:address:channel
+    2:character, 1:address:channel <- read 1:address:channel
   ]
 parse: instruction: new-channel
 parse:   ingredient: {name: "3", properties: ["3": "literal", "capacity": ]}
@@ -21,7 +21,7 @@ parse:   ingredient: {name: "34", properties: ["34": "literal"]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 parse: instruction: read
 parse:   ingredient: {name: "1", properties: ["1": "address":"channel"]}
-parse:   product: {name: "2", properties: ["2": "number"]}
+parse:   product: {name: "2", properties: ["2": "character"]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 after-brace: recipe run1001
 after-brace: new-channel ...
@@ -61,7 +61,7 @@ after-brace: read ...
  102 run: capacity <- add capacity, 1
 9999 mem: location 1005 is 3
 9999 mem: storing 4 in location 1005
- 102 run: dest:address:address:array:location <- get-address *result, data:offset
+ 102 run: dest:address:address:array:character <- get-address *result, data:offset
 9999 mem: location 1002 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -69,7 +69,7 @@ after-brace: read ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1009
 9999 mem: storing 1009 in location 1006
- 102 run: *dest <- new location:type, capacity
+ 102 run: *dest <- new character:type, capacity
 9999 mem: location 1005 is 4
 9999 mem: array size is 4
 9999 mem: new alloc: 1010
@@ -86,7 +86,7 @@ after-brace: read ...
 9999 mem: new alloc: 1015
  102 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1017
- 102 run: val:location <- next-ingredient 
+ 102 run: val:character <- next-ingredient 
 9999 mem: storing 34 in location 1018
  102 run: full:boolean <- channel-full? chan
 9999 mem: location 1017 is 1007
@@ -115,7 +115,7 @@ after-brace: read ...
 9999 mem: new alloc: 1034
  104 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1036
- 104 run: q:address:array:location <- get *chan, data:offset
+ 104 run: q:address:array:character <- get *chan, data:offset
 9999 mem: location 1036 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -160,7 +160,7 @@ after-brace: read ...
  102 run: break-unless full, 
 9999 mem: location 1019 is 0
 9999 run: jumping to instruction 8
- 102 run: circular-buffer:address:array:location <- get *chan, data:offset
+ 102 run: circular-buffer:address:array:character <- get *chan, data:offset
 9999 mem: location 1017 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -178,7 +178,7 @@ after-brace: read ...
 9999 mem: location 1017 is 1007
 9999 run: address to copy is 1008
 9999 mem: storing 1008 in location 1022
- 102 run: dest:address:location <- index-address *circular-buffer, *free
+ 102 run: dest:address:character <- index-address *circular-buffer, *free
 9999 mem: location 1021 is 1010
 9999 mem: location 1022 is 1008
 9999 mem: location 1008 is 0
@@ -207,7 +207,7 @@ after-brace: read ...
 9999 mem: location 1017 is 1007
 9999 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
- 101 run: 2:number, 1:address:channel <- read 1:address:channel
+ 101 run: 2:character, 1:address:channel <- read 1:address:channel
 9999 mem: location 1 is 1007
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -260,7 +260,7 @@ after-brace: read ...
 9999 mem: location 1041 is 1007
 9999 run: address to copy is 1007
 9999 mem: storing 1007 in location 1044
- 102 run: circular-buffer:address:array:location <- get *chan, data:offset
+ 102 run: circular-buffer:address:array:character <- get *chan, data:offset
 9999 mem: location 1041 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 1
@@ -270,12 +270,12 @@ after-brace: read ...
 9999 run: its type is address
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1045
- 102 run: result:location <- index *circular-buffer, *full
+ 102 run: result:character <- index *circular-buffer, *full
 9999 mem: location 1045 is 1010
 9999 mem: location 1044 is 1007
 9999 mem: location 1007 is 0
 9999 run: address to copy is 1011
-9999 run: its type is number
+9999 run: its type is character
 9999 mem: location 1011 is 34
 9999 mem: storing 34 in location 1046
  102 run: *full <- add *full, 1

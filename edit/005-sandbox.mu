@@ -458,7 +458,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   # left editor is empty
   1:address:array:character <- new []
   # right editor contains an instruction
-  2:address:array:character <- new [print-integer screen:address, 4]
+  2:address:array:character <- new [print-integer screen, 4]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editor
   assume-console [
@@ -473,7 +473,7 @@ scenario run-instruction-manages-screen-per-sandbox [
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
-    .                                                  ┊print-integer screen:address, 4                  .
+    .                                                  ┊print-integer screen, 4                          .
     .                                                  ┊screen:                                          .
     .                                                  ┊  .4                             .               .
     .                                                  ┊  .                              .               .

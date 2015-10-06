@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0  # 1 points to head of list\n    1:address:duplex-list <- push-duplex 3, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 4, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 5, 1:address:duplex-list\n    2:address:duplex-list <- next-duplex 1:address:duplex-list  # 2 points at second element\n    2:address:duplex-list <- remove-duplex 2:address:duplex-list\n    3:boolean <- equal 2:address:duplex-list, 0\n    # check structure like before\n    2:address:duplex-list <- copy 1:address:duplex-list\n    4:number <- first-duplex 2:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    5:number <- first-duplex 2:address:duplex-list\n    6:address:duplex-list <- next-duplex 2:address:duplex-list\n    2:address:duplex-list <- prev-duplex 2:address:duplex-list\n    7:number <- first-duplex 2:address:duplex-list\n    8:boolean <- equal 1:address:duplex-list, 2:address:duplex-list\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0  # 1 points to head of list\n    1:address:duplex-list <- push-duplex 3, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 4, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 5, 1:address:duplex-list\n    2:address:duplex-list <- next-duplex 1:address:duplex-list  # 2 points at second element\n    2:address:duplex-list <- remove-duplex 2:address:duplex-list\n    3:boolean <- equal 2:address:duplex-list, 0\n    # check structure like before\n    2:address:duplex-list <- copy 1:address:duplex-list\n    4:character <- first-duplex 2:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    5:character <- first-duplex 2:address:duplex-list\n    6:address:duplex-list <- next-duplex 2:address:duplex-list\n    2:address:duplex-list <- prev-duplex 2:address:duplex-list\n    7:character <- first-duplex 2:address:duplex-list\n    8:boolean <- equal 1:address:duplex-list, 2:address:duplex-list\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3 <- 0  # remove returned non-null\n    4 <- 5  # scanning next, skipping deleted element\n    5 <- 3\n    6 <- 0  # no more elements\n    7 <- 5  # prev of final element\n    8 <- 1  # list back at start\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-removing-from-duplex-list
@@ -17,12 +17,12 @@ schedule: scenario-removing-from-duplex-list
     3:boolean <- equal 2:address:duplex-list, 0
     # check structure like before
     2:address:duplex-list <- copy 1:address:duplex-list
-    4:number <- first-duplex 2:address:duplex-list
+    4:character <- first-duplex 2:address:duplex-list
     2:address:duplex-list <- next-duplex 2:address:duplex-list
-    5:number <- first-duplex 2:address:duplex-list
+    5:character <- first-duplex 2:address:duplex-list
     6:address:duplex-list <- next-duplex 2:address:duplex-list
     2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    7:number <- first-duplex 2:address:duplex-list
+    7:character <- first-duplex 2:address:duplex-list
     8:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
   ]
 parse: instruction: copy
@@ -55,13 +55,13 @@ parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
 parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
 parse: instruction: first-duplex
 parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
-parse:   product: {name: "4", properties: ["4": "number"]}
+parse:   product: {name: "4", properties: ["4": "character"]}
 parse: instruction: next-duplex
 parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
 parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
 parse: instruction: first-duplex
 parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
-parse:   product: {name: "5", properties: ["5": "number"]}
+parse:   product: {name: "5", properties: ["5": "character"]}
 parse: instruction: next-duplex
 parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
 parse:   product: {name: "6", properties: ["6": "address":"duplex-list"]}
@@ -70,7 +70,7 @@ parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
 parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
 parse: instruction: first-duplex
 parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
-parse:   product: {name: "7", properties: ["7": "number"]}
+parse:   product: {name: "7", properties: ["7": "character"]}
 parse: instruction: equal
 parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
 parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
@@ -360,7 +360,7 @@ after-brace: equal ...
  101 run: 2:address:duplex-list <- copy 1:address:duplex-list
 9999 mem: location 1 is 1014
 9999 mem: storing 1014 in location 2
- 101 run: 4:number <- first-duplex 2:address:duplex-list
+ 101 run: 4:character <- first-duplex 2:address:duplex-list
 9999 mem: location 2 is 1014
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -406,7 +406,7 @@ after-brace: equal ...
 9999 mem: location 1020 is 1008
 9999 run: result 0 is 1008
 9999 mem: storing 1008 in location 2
- 101 run: 5:number <- first-duplex 2:address:duplex-list
+ 101 run: 5:character <- first-duplex 2:address:duplex-list
 9999 mem: location 2 is 1008
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
@@ -475,7 +475,7 @@ after-brace: equal ...
 9999 mem: location 1020 is 1014
 9999 run: result 0 is 1014
 9999 mem: storing 1014 in location 2
- 101 run: 7:number <- first-duplex 2:address:duplex-list
+ 101 run: 7:character <- first-duplex 2:address:duplex-list
 9999 mem: location 2 is 1014
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3

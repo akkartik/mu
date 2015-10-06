@@ -614,7 +614,7 @@ recipe show-screen [
 
 recipe print-string [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   s:address:array:character <- next-ingredient
   color:number, color-found?:boolean <- next-ingredient
   {

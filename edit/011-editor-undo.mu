@@ -67,10 +67,10 @@ after <handle-special-character> [
     break-unless undo?
     undo:address:address:list <- get-address *editor, undo:offset
     break-unless *undo
-    op:address:operation <- first *undo
+    op:address:operation/skiptypecheck <- first *undo
     *undo <- rest *undo
     redo:address:address:list <- get-address *editor, redo:offset
-    *redo <- push op, *redo
+    *redo/skiptypecheck <- push op, *redo
     <handle-undo>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
@@ -83,10 +83,10 @@ after <handle-special-character> [
     break-unless redo?
     redo:address:address:list <- get-address *editor, redo:offset
     break-unless *redo
-    op:address:operation <- first *redo
+    op:address:operation/skiptypecheck <- first *redo
     *redo <- rest *redo
     undo:address:address:list <- get-address *editor, undo:offset
-    *undo <- push op, *undo
+    *undo/skiptypecheck <- push op, *undo
     <handle-redo>
     reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
@@ -144,7 +144,7 @@ before <insert-character-end> [
   {
     # if previous operation was an insert, coalesce this operation with it
     break-unless *undo
-    op:address:operation <- first *undo
+    op:address:operation/skiptypecheck <- first *undo
     typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
     previous-coalesce-tag:number <- get *typing, tag:offset
@@ -194,7 +194,7 @@ recipe add-operation [
   editor:address:editor-data <- next-ingredient
   op:address:operation <- next-ingredient
   undo:address:address:list:address:operation <- get-address *editor, undo:offset
-  *undo <- push op *undo
+  *undo/skiptypecheck <- push op *undo
   redo:address:address:list:address:operation <- get-address *editor, redo:offset
   *redo <- copy 0
   reply editor/same-as-ingredient:0
@@ -715,7 +715,7 @@ before <move-cursor-end> [
     # tag, coalesce with it
     undo:address:address:list <- get-address *editor, undo:offset
     break-unless *undo
-    op:address:operation <- first *undo
+    op:address:operation/skiptypecheck <- first *undo
     move:address:move-operation <- maybe-convert *op, move:variant
     break-unless move
     previous-coalesce-tag:number <- get *move, tag:offset
@@ -1600,7 +1600,7 @@ before <backspace-character-end> [
     {
       # if previous operation was an insert, coalesce this operation with it
       break-unless *undo
-      op:address:operation <- first *undo
+      op:address:operation/skiptypecheck <- first *undo
       deletion:address:delete-operation <- maybe-convert *op, delete:variant
       break-unless deletion
       previous-coalesce-tag:number <- get *deletion, tag:offset
@@ -1822,7 +1822,7 @@ before <delete-character-end> [
     {
       # if previous operation was an insert, coalesce this operation with it
       break-unless *undo
-      op:address:operation <- first *undo
+      op:address:operation/skiptypecheck <- first *undo
       deletion:address:delete-operation <- maybe-convert *op, delete:variant
       break-unless deletion
       previous-coalesce-tag:number <- get *deletion, tag:offset

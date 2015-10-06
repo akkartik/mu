@@ -132,7 +132,7 @@ scenario sandbox-with-print-can-be-edited [
   # left editor is empty
   1:address:array:character <- new []
   # right editor contains an instruction
-  2:address:array:character <- new [print-integer screen:address, 4]
+  2:address:array:character <- new [print-integer screen, 4]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the sandbox
   assume-console [
@@ -144,7 +144,7 @@ scenario sandbox-with-print-can-be-edited [
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
-    .                                                  ┊print-integer screen:address, 4                  .
+    .                                                  ┊print-integer screen, 4                          .
     .                                                  ┊screen:                                          .
     .                                                  ┊  .4                             .               .
     .                                                  ┊  .                              .               .
@@ -163,7 +163,7 @@ scenario sandbox-with-print-can-be-edited [
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊print-integer screen:address, 4                  .
+    .                                                  ┊print-integer screen, 4                          .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
     .                                                  ┊                                                 .
