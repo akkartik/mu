@@ -27,6 +27,7 @@ recipe main [
 
 //:: first disable name conversion for 'default-space'
 :(scenario convert_names_passes_default_space)
+% Hide_errors = true;
 recipe main [
   default-space:number, x:number <- copy 0, 1
 ]
@@ -211,8 +212,13 @@ long long int address(long long int offset, long long int base) {
 
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "default-space") {
-    if (!scalar(data))
+    if (!scalar(data)
+        || SIZE(x.types) != 3
+        || x.types.at(0) != Type_ordinal["address"]
+        || x.types.at(1) != Type_ordinal["array"]
+        || x.types.at(2) != Type_ordinal["location"]) {
       raise_error << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
+    }
     Current_routine->calls.front().default_space = data.at(0);
     return;
   }

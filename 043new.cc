@@ -35,9 +35,7 @@ if (inst.operation == Recipe_ordinal["new"]) {
   // first arg must be of type 'type'
   if (inst.ingredients.empty())
     raise_error << maybe(Recipe[r].name) << "'new' expects one or two ingredients\n" << end();
-  if (inst.ingredients.at(0).properties.empty()
-      || inst.ingredients.at(0).properties.at(0).second.empty()
-      || inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
+  if (!is_mu_type_literal(inst.ingredients.at(0)))
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << inst.ingredients.at(0).original_string << '\n' << end();
   if (Type_ordinal.find(inst.ingredients.at(0).name) == Type_ordinal.end())
     raise_error << maybe(Recipe[r].name) << "unknown type " << inst.ingredients.at(0).name << '\n' << end();
@@ -59,8 +57,9 @@ case NEW: {
     raise_error << maybe(Recipe[r].name) << "'new' requires one or two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
+  // End NEW Checks
   reagent type = inst.ingredients.at(0);
-  if (!is_mu_scalar(type) && !is_literal(type)) {
+  if (!is_mu_type_literal(type)) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
     break;
   }
@@ -323,9 +322,10 @@ recipe main [
     goto end_new_transform;
   }
 
+:(before "End NEW Checks")
+if (is_literal_string(inst.ingredients.at(0))) break;
 :(after "case NEW" following "Primitive Recipe Implementations")
-  if (is_literal(current_instruction().ingredients.at(0))
-      && current_instruction().ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
+  if (is_literal_string(current_instruction().ingredients.at(0))) {
     products.resize(1);
     products.at(0).push_back(new_mu_string(current_instruction().ingredients.at(0).name));
     break;
@@ -427,4 +427,8 @@ string read_mu_string(long long int address) {
     tmp << to_unicode(static_cast<uint32_t>(Memory[curr]));
   }
   return tmp.str();
+}
+
+bool is_mu_type_literal(reagent r) {
+  return is_literal(r) && !r.properties.empty() && !r.properties.at(0).second.empty() && r.properties.at(0).second.at(0) == "type";
 }

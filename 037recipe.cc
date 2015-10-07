@@ -46,7 +46,7 @@ case CALL: {
     raise_error << maybe(Recipe[r].name) << "'call' requires at least one ingredient (the recipe to call)\n" << end();
     break;
   }
-  if (!is_mu_scalar(inst.ingredients.at(0))) {
+  if (!is_mu_recipe(inst.ingredients.at(0))) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'call' should be a recipe, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
@@ -58,4 +58,13 @@ case CALL: {
   Current_routine->calls.push_front(call(ingredients.at(0).at(0)));
   ingredients.erase(ingredients.begin());  // drop the callee
   goto call_housekeeping;
+}
+
+:(code)
+bool is_mu_recipe(reagent r) {
+  if (r.types.empty()) return false;
+  if (r.types.at(0) == Type_ordinal["recipe"]) return true;
+  if (r.types.at(0) == Type_ordinal["recipe-ordinal"]) return true;
+  // End is_mu_recipe Cases
+  return false;
 }
