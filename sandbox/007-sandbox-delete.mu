@@ -1,7 +1,7 @@
 ## deleting sandboxes
 
 scenario deleting-sandboxes [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
   1:address:array:character <- new []
   2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character

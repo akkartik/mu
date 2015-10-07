@@ -54,7 +54,7 @@ case STASH: {
   for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
     out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
   }
-  trace(1, "app") << out.str() << end();
+  trace(2, "app") << out.str() << end();
   break;
 }
 
@@ -118,18 +118,17 @@ case SHOW_ERRORS: {
 }
 
 :(before "End Primitive Recipe Declarations")
-_CLOSE_TRACE,
+TRACE_UNTIL,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$close-trace"] = _CLOSE_TRACE;
+Recipe_ordinal["trace-until"] = TRACE_UNTIL;
 :(before "End Primitive Recipe Checks")
-case _CLOSE_TRACE: {
+case TRACE_UNTIL: {
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case _CLOSE_TRACE: {
+case TRACE_UNTIL: {
   if (Trace_stream) {
-    delete Trace_stream;
-    Trace_stream = NULL;
+    Trace_stream->collect_depth = ingredients.at(0).at(0);
   }
   break;
 }

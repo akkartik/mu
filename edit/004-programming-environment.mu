@@ -216,7 +216,7 @@ recipe resize [
 ]
 
 scenario point-at-multiple-editors [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]
@@ -242,7 +242,7 @@ scenario point-at-multiple-editors [
 ]
 
 scenario edit-multiple-editors [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]
@@ -286,7 +286,7 @@ scenario edit-multiple-editors [
 ]
 
 scenario multiple-editors-cover-only-their-own-areas [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 60/width, 10/height
   run [
     1:address:array:character <- new [abc]
@@ -305,7 +305,7 @@ scenario multiple-editors-cover-only-their-own-areas [
 ]
 
 scenario editor-in-focus-keeps-cursor [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
@@ -342,7 +342,7 @@ scenario editor-in-focus-keeps-cursor [
 ]
 
 scenario backspace-in-sandbox-editor-joins-lines [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize sandbox side with two lines
   1:address:array:character <- new []
@@ -630,7 +630,7 @@ after <global-type> [
 # ctrl-x - maximize/unmaximize the side with focus
 
 scenario maximize-side [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]

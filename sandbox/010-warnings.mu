@@ -64,7 +64,7 @@ after <render-sandbox-trace-done> [
 ]
 
 scenario run-instruction-and-print-warnings [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
   1:address:array:character <- new [get 1:address:point, 1:offset]
   2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
@@ -99,7 +99,7 @@ scenario run-instruction-and-print-warnings [
 ]
 
 scenario run-instruction-and-print-warnings-only-once [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # editor contains an illegal instruction
   1:address:array:character <- new [get 1234:number, foo:offset]
@@ -128,7 +128,7 @@ scenario run-instruction-and-print-warnings-only-once [
 ]
 
 scenario sandbox-can-handle-infinite-loop [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # editor contains an infinite loop
   1:address:array:character <- new [{

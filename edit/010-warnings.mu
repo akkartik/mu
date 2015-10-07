@@ -76,7 +76,7 @@ after <render-sandbox-trace-done> [
 ]
 
 scenario run-shows-warnings-in-get [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   1:address:array:character <- new [ 
 recipe foo [
@@ -116,7 +116,7 @@ recipe foo [
 ]
 
 scenario run-shows-missing-type-warnings [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   1:address:array:character <- new [ 
 recipe foo [
@@ -144,7 +144,7 @@ recipe foo [
 ]
 
 scenario run-shows-unbalanced-bracket-warnings [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   # recipe is incomplete (unbalanced '[')
   1:address:array:character <- new [ 
@@ -173,7 +173,7 @@ recipe foo «
 ]
 
 scenario run-shows-get-on-non-container-warnings [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   1:address:array:character <- new [ 
 recipe foo [
@@ -203,7 +203,7 @@ recipe foo [
 ]
 
 scenario run-shows-non-literal-get-argument-warnings [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   1:address:array:character <- new [ 
 recipe foo [
@@ -237,7 +237,7 @@ recipe foo [
 ]
 
 scenario run-shows-warnings-everytime [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   # try to run a file with an error
   assume-screen 100/width, 15/height
   1:address:array:character <- new [ 
@@ -282,7 +282,7 @@ recipe foo [
 ]
 
 scenario run-instruction-and-print-warnings [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # left editor is empty
   1:address:array:character <- new []
@@ -345,7 +345,7 @@ scenario run-instruction-and-print-warnings [
 ]
 
 scenario run-instruction-and-print-warnings-only-once [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # left editor is empty
   1:address:array:character <- new []
@@ -376,7 +376,7 @@ scenario run-instruction-and-print-warnings-only-once [
 ]
 
 scenario sandbox-can-handle-infinite-loop [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 20/height
   # left editor is empty
   1:address:array:character <- new [recipe foo [
@@ -407,7 +407,7 @@ scenario sandbox-can-handle-infinite-loop [
 ]
 
 scenario sandbox-with-warnings-shows-trace [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # generate a stash and a warning
   1:address:array:character <- new [recipe foo [

@@ -89,6 +89,11 @@ struct trace_line {
   trace_line(int d, string l, string c) :depth(d), label(l), contents(c) {}
 };
 
+:(before "End Globals")
+const int Max_depth = 9999;
+const int Error_depth = 0;  // definitely always print the error that caused death
+const int Warning_depth = 1;
+const int App_depth = 2;  // temporarily where all mu code will trace to
 :(before "End Tracing")
 bool Hide_errors = false;
 bool Hide_warnings = false;
@@ -103,29 +108,21 @@ struct trace_stream {
   ostringstream* curr_stream;
   string curr_label;
   int curr_depth;
-  set<string> collect_layers;  // if not empty, ignore all absent layers
+  int collect_depth;
   ofstream null_stream;  // never opens a file, so writes silently fail
-  trace_stream() :curr_stream(NULL), curr_depth(0) {}
+  trace_stream() :curr_stream(NULL), curr_depth(0), collect_depth(Max_depth) {}
   ~trace_stream() { if (curr_stream) delete curr_stream; }
 
   ostream& stream(string label) {
-    return stream(0, label);
+    return stream(Max_depth, label);
   }
 
   ostream& stream(int depth, string label) {
-    if (!is_collecting(label)) return null_stream;
+    if (depth > collect_depth) return null_stream;
     curr_stream = new ostringstream;
     curr_label = label;
     curr_depth = depth;
     return *curr_stream;
-  }
-
-  bool is_collecting(const string& label) {
-    return collect_layers.empty() || collect_layers.find(label) != collect_layers.end();
-  }
-
-  bool is_narrowly_collecting(const string& label) {
-    return collect_layers.find(label) != collect_layers.end();
   }
 
   // be sure to call this before messing with curr_stream or curr_label
@@ -141,7 +138,7 @@ struct trace_stream {
     delete curr_stream;
     curr_stream = NULL;
     curr_label.clear();
-    curr_depth = 0;
+    curr_depth = Max_depth;
   }
 
   // Useful for debugging.
@@ -166,8 +163,8 @@ trace_stream* Trace_stream = NULL;
 #define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
 // Errors and warnings should go straight to cerr by default since calls to trace() have
 // some unfriendly constraints (they delay printing, they can't nest)
-#define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream("warn"))
-#define raise_error  ((!Trace_stream || !Hide_errors) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream("error"))
+#define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Warning_depth, "warn"))
+#define raise_error  ((!Trace_stream || !Hide_errors) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
 
 :(before "End Types")
 struct end {};

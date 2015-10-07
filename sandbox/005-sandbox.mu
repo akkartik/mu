@@ -21,7 +21,7 @@ container sandbox-data [
 ]
 
 scenario run-and-show-results [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
   # sandbox editor contains an instruction without storing outputs
   1:address:array:character <- new [divide-with-remainder 11, 3]
@@ -388,7 +388,7 @@ recipe render-screen [
 ]
 
 scenario run-instruction-manages-screen-per-sandbox [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # editor contains an instruction
   1:address:array:character <- new [print-integer screen, 4]

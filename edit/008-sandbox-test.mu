@@ -1,7 +1,7 @@
 ## clicking on sandbox results to 'fix' them and turn sandboxes into tests
 
 scenario sandbox-click-on-result-toggles-color-to-green [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 40/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
