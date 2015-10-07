@@ -359,9 +359,7 @@ using std::ofstream;
 :(before "End Globals")
 //: In future layers we'll use the depth field as follows:
 //:
-//: Mu 'applications' will be able to use depths 1-99 as they like.
-//: Depth 100 will be for scheduling (more on that later).
-const int Scheduling_depth = 100;
+//: Mu 'applications' will be able to use depths 1-100 as they like.
 //: Primitive statements will occupy 101-9998
 const int Initial_callstack_depth = 101;
 const int Max_callstack_depth = 9998;
