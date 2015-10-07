@@ -34,7 +34,7 @@ container sandbox-data [
 ]
 
 scenario run-and-show-results [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   # recipe editor is empty
   1:address:array:character <- new []
@@ -404,7 +404,7 @@ recipe render-screen [
 ]
 
 scenario run-updates-results [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 12/height
   # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
   1:address:array:character <- new [ 
@@ -453,7 +453,7 @@ z:number <- add 2, 2
 ]
 
 scenario run-instruction-manages-screen-per-sandbox [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 100/width, 20/height
   # left editor is empty
   1:address:array:character <- new []

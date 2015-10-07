@@ -1,7 +1,7 @@
 ## editing sandboxes after they've been created
 
 scenario clicking-on-a-sandbox-moves-it-to-editor [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 40/width, 10/height
   # run something
   1:address:array:character <- new [add 2, 2]
@@ -125,7 +125,7 @@ recipe extract-sandbox [
 ]
 
 scenario sandbox-with-print-can-be-edited [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # run a print instruction
   1:address:array:character <- new [print-integer screen, 4]

@@ -46,7 +46,7 @@ case RUN_INTERACTIVE: {
     products.at(0).push_back(0);
     products.at(1).push_back(trace_error_warning_contents());
     products.at(2).push_back(0);
-    products.at(3).push_back(trace_contents("app"));
+    products.at(3).push_back(trace_app_contents());
     products.at(4).push_back(1);  // completed
     run_code_end();
     break;  // done with this instruction
@@ -110,9 +110,7 @@ void run_code_begin() {
   Save_trace_file = Trace_file;
   Trace_file = "";
   Trace_stream = new trace_stream;
-  Trace_stream->collect_layers.insert("error");
-  Trace_stream->collect_layers.insert("warn");
-  Trace_stream->collect_layers.insert("app");
+  Trace_stream->collect_depth = App_depth;
 }
 
 void run_code_end() {
@@ -159,15 +157,6 @@ add 2, 2]
   3:array:character <- copy *2:address:array:character
 ]
 +mem: storing 52 in location 4
-
-:(scenario run_interactive_just_comments_without_trace)
-recipe main [
-  $close-trace
-  1:address:array:character <- new [# ab
-]
-  2:address:array:character <- run-interactive 1:address:array:character
-  3:array:character <- copy *2:address:array:character
-]
 
 :(before "End Primitive Recipe Declarations")
 _START_TRACKING_PRODUCTS,
@@ -238,7 +227,7 @@ case SAVE_TRACE: {
 :(before "End Primitive Recipe Implementations")
 case SAVE_TRACE: {
   products.resize(1);
-  products.at(0).push_back(trace_contents(current_instruction().ingredients.at(0).name));
+  products.at(0).push_back(trace_app_contents());
   break;
 }
 
@@ -358,7 +347,7 @@ long long int trace_error_warning_contents() {
   if (!Trace_stream) return 0;
   ostringstream out;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (p->label != "warn" && p->label != "error") continue;
+    if (p->depth > Warning_depth) continue;
     out << p->contents;
     if (*--p->contents.end() != '\n') out << '\n';
   }
@@ -368,17 +357,16 @@ long long int trace_error_warning_contents() {
   return new_mu_string(result);
 }
 
-long long int trace_contents(const string& layer) {
+long long int trace_app_contents() {
   if (!Trace_stream) return 0;
-  if (trace_count(layer) <= 0) return 0;
   ostringstream out;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (p->label != layer) continue;
+    if (p->depth != App_depth) continue;
     out << p->contents;
     if (*--p->contents.end() != '\n') out << '\n';
   }
   string result = out.str();
-  assert(!result.empty());
+  if (result.empty()) return 0;
   truncate(result);
   return new_mu_string(result);
 }

@@ -1,7 +1,7 @@
 ## clicking on the code typed into a sandbox toggles its trace
 
 scenario sandbox-click-on-code-toggles-app-trace [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 40/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
@@ -74,7 +74,7 @@ recipe foo [
 ]
 
 scenario sandbox-shows-app-trace-and-result [
-  $close-trace  # trace too long
+  trace-until 100/app  # trace too long
   assume-screen 40/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
