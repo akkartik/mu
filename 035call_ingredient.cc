@@ -56,8 +56,13 @@ case NEXT_INGREDIENT: {
   else {
     if (SIZE(current_instruction().products) < 2)
       raise << maybe(current_recipe_name()) << "no ingredient to save in " << current_instruction().products.at(0).original_string << '\n' << end();
+    if (current_instruction().products.empty()) break;
     products.resize(2);
-    products.at(0).push_back(0);  // todo: will fail noisily if we try to read a compound value
+    // pad the first product with sufficient zeros to match its type
+    long long int size = size_of(current_instruction().products.at(0));
+    for (long long int i = 0; i < size; ++i) {
+      products.at(0).push_back(0);
+    }
     products.at(1).push_back(0);
   }
   break;
