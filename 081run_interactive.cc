@@ -12,10 +12,11 @@ recipe main [
 
 :(scenario run_interactive_empty)
 recipe main [
-  1:address:array:character <- run-interactive 0
+  1:address:array:character <- copy 0/raw
+  2:address:array:character <- run-interactive 1:address:array:character
 ]
 # result is null
-+mem: storing 0 in location 1
++mem: storing 0 in location 2
 
 //: run code in 'interactive mode', i.e. with errors+warnings off and return:
 //:   stringified output in case we want to print it to screen
@@ -32,7 +33,7 @@ case RUN_INTERACTIVE: {
     raise_error << maybe(Recipe[r].name) << "'run-interactive' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
-  if (!is_mu_scalar(inst.ingredients.at(0))) {
+  if (!is_mu_string(inst.ingredients.at(0))) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'run-interactive' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
     break;
   }
@@ -138,7 +139,7 @@ load(string(
   "completed?:boolean <- equal sandbox-state, 1/completed\n" +
   "output:address:array:character <- $most-recent-products\n" +
   "warnings:address:array:character <- save-errors-warnings\n" +
-  "stashes:address:array:character <- save-trace [app]\n" +
+  "stashes:address:array:character <- save-app-trace\n" +
   "$cleanup-run-interactive\n" +
   "reply output, warnings, screen, stashes, completed?\n" +
 "]\n");
@@ -217,15 +218,15 @@ case SAVE_ERRORS_WARNINGS: {
 }
 
 :(before "End Primitive Recipe Declarations")
-SAVE_TRACE,
+SAVE_APP_TRACE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["save-trace"] = SAVE_TRACE;
+Recipe_ordinal["save-app-trace"] = SAVE_APP_TRACE;
 :(before "End Primitive Recipe Checks")
-case SAVE_TRACE: {
+case SAVE_APP_TRACE: {
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case SAVE_TRACE: {
+case SAVE_APP_TRACE: {
   products.resize(1);
   products.at(0).push_back(trace_app_contents());
   break;
@@ -393,8 +394,8 @@ case RELOAD: {
     raise_error << maybe(Recipe[r].name) << "'reload' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
-  if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'reload' should be a literal string, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+  if (!is_mu_string(inst.ingredients.at(0))) {
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'reload' should be a string, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;
