@@ -16,7 +16,7 @@ Type[point].elements.push_back(i);
 
 //: Tests in this layer often explicitly setup memory before reading it as a
 //: container. Don't do this in general. I'm tagging exceptions with /raw to
-//: avoid warnings.
+//: avoid errors.
 :(scenario copy_multiple_locations)
 recipe main [
   1:number <- copy 34
@@ -28,11 +28,11 @@ recipe main [
 
 //: trying to copy to a differently-typed destination will fail
 :(scenario copy_checks_size)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   2:point <- copy 1:number
 ]
-+warn: main: can't copy 1:number to 2:point; types don't match
++error: main: can't copy 1:number to 2:point; types don't match
 
 :(before "End Mu Types Initialization")
 // A more complex container, containing another container as one of its
@@ -92,7 +92,7 @@ if (t.kind == container) {
   for (long long int i = 0; i < SIZE(t.elements); ++i) {
     // todo: strengthen assertion to disallow mutual type recursion
     if (types.at(0) == t.elements.at(i).at(0)) {
-      raise << "container " << t.name << " can't include itself as a member\n" << end();
+      raise_error << "container " << t.name << " can't include itself as a member\n" << end();
       return 0;
     }
     // End size_of(type) Container Cases
@@ -126,26 +126,26 @@ Recipe_ordinal["get"] = GET;
 :(before "End Primitive Recipe Checks")
 case GET: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(Recipe[r].name) << "'get' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'get' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
   // Update GET base in Check
   if (base.types.empty() || Type[base.types.at(0)].kind != container) {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.types.at(0);
   reagent offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
-    raise << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   long long int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(Type[base_type].elements)) {
-      raise << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
+      raise_error << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
       break;
     }
   }
@@ -157,7 +157,7 @@ case GET: {
   reagent element;
   element.types = Type[base_type].elements.at(offset_value);
   if (!types_match(product, element)) {
-    raise << maybe(Recipe[r].name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
   }
   break;
@@ -168,7 +168,7 @@ case GET: {
   // Update GET base in Run
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.types.at(0);
@@ -219,34 +219,34 @@ recipe main [
 +mem: storing 13 in location 15
 
 :(scenario get_out_of_bounds)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
   get 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
 ]
-+warn: main: invalid offset 2 for point-number
++error: main: invalid offset 2 for point-number
 
 :(scenario get_out_of_bounds_2)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
   get 12:point-number/raw, -1:offset
 ]
-+warn: main: invalid offset -1 for point-number
++error: main: invalid offset -1 for point-number
 
 :(scenario get_product_type_mismatch)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
   15:address:number <- get 12:point-number/raw, 1:offset
 ]
-+warn: main: 'get' 1:offset (1) on point-number can't be saved in 15:address:number; type should be number
++error: main: 'get' 1:offset (1) on point-number can't be saved in 15:address:number; type should be number
 
 :(before "End Primitive Recipe Declarations")
 GET_ADDRESS,
@@ -255,26 +255,26 @@ Recipe_ordinal["get-address"] = GET_ADDRESS;
 :(before "End Primitive Recipe Checks")
 case GET_ADDRESS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(Recipe[r].name) << "'get-address' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'get-address' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
   // Update GET_ADDRESS base in Check
   if (base.types.empty() || Type[base.types.at(0)].kind != container) {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.types.at(0);
   reagent offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
-    raise << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   long long int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(Type[base_type].elements)) {
-      raise << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
+      raise_error << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
       break;
     }
   }
@@ -287,7 +287,7 @@ case GET_ADDRESS: {
   element.types = Type[base_type].elements.at(offset_value);
   element.types.insert(element.types.begin(), Type_ordinal["address"]);
   if (!types_match(product, element)) {
-    raise << maybe(Recipe[r].name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
   }
   break;
@@ -298,7 +298,7 @@ case GET_ADDRESS: {
   // Update GET_ADDRESS base in Run
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.types.at(0);
@@ -316,34 +316,34 @@ case GET_ADDRESS: {
 }
 
 :(scenario get_address_out_of_bounds)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
   get-address 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
 ]
-+warn: main: invalid offset 2 for point-number
++error: main: invalid offset 2 for point-number
 
 :(scenario get_address_out_of_bounds_2)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
   get-address 12:point-number/raw, -1:offset
 ]
-+warn: main: invalid offset -1 for point-number
++error: main: invalid offset -1 for point-number
 
 :(scenario get_address_product_type_mismatch)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
   15:number <- get-address 12:point-number/raw, 1:offset
 ]
-+warn: main: 'get-address' 1:offset (1) on point-number can't be saved in 15:number; type should be address:number
++error: main: 'get-address' 1:offset (1) on point-number can't be saved in 15:number; type should be address:number
 
 //:: Allow containers to be defined in mu code.
 
@@ -427,7 +427,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
 void skip_bracket(istream& in, string message) {
   skip_whitespace_and_comments(in);
   if (in.get() != '[')
-    raise << message << '\n' << end();
+    raise_error << message << '\n' << end();
 }
 
 :(scenarios run)
@@ -482,19 +482,19 @@ assert(Next_type_ordinal < 1000);
 :(before "End Setup")
 Next_type_ordinal = 1000;
 
-//:: Allow container definitions anywhere in the codebase, but warn if you
-//:: can't find a definition.
+//:: Allow container definitions anywhere in the codebase, but complain if you
+//:: can't find a definition at the end.
 
-:(scenario run_warns_on_unknown_types)
-% Hide_warnings = true;
+:(scenario run_complains_on_unknown_types)
+% Hide_errors = true;
 recipe main [
   # integer is not a type
   1:integer <- copy 0
 ]
-+warn: unknown type: integer
++error: unknown type: integer
 
 :(scenario run_allows_type_definition_after_use)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:bar <- copy 0/raw
 ]
@@ -502,8 +502,8 @@ recipe main [
 container bar [
   x:number
 ]
--warn: unknown type: bar
-$warn: 0
+-error: unknown type: bar
+$error: 0
 
 :(after "int main")
   Transform.push_back(check_invalid_types);
@@ -525,17 +525,17 @@ void check_invalid_types(const reagent& r) {
   for (long long int i = 0; i < SIZE(r.types); ++i) {
     if (r.types.at(i) == 0) continue;
     if (Type.find(r.types.at(i)) == Type.end())
-      raise << "unknown type: " << r.properties.at(0).second.at(i) << '\n' << end();
+      raise_error << "unknown type: " << r.properties.at(0).second.at(i) << '\n' << end();
   }
 }
 
 :(scenario container_unknown_field)
-% Hide_warnings = true;
+% Hide_errors = true;
 container foo [
   x:number
   y:bar
 ]
-+warn: unknown type for field y in foo
++error: unknown type for field y in foo
 
 :(scenario read_container_with_bracket_in_comment)
 container foo [
@@ -561,7 +561,7 @@ void check_container_field_types() {
         if (info.elements.at(i).at(j) == 0) continue;
         if (Type.find(info.elements.at(i).at(j)) != Type.end()) continue;
         // End Container Type Checks
-        raise << "unknown type for field " << info.element_names.at(i) << " in " << info.name << '\n' << end();
+        raise_error << "unknown type for field " << info.element_names.at(i) << " in " << info.name << '\n' << end();
       }
     }
   }
@@ -630,11 +630,11 @@ map<string, type_ordinal> ingredient_names;
 if (element.find(':') == string::npos) {
   // no type; we're defining a generic variable
   if (next_word(in) != "<-") {
-    raise << "Element " << element << " of container " << name << " doesn't provide a type.\n" << end();
+    raise_error << "Element " << element << " of container " << name << " doesn't provide a type.\n" << end();
     break;
   }
   if (next_word(in) != "next-type") {
-    raise << "Type " << element << " of container " << name << " must be defined using 'next-type'\n" << end();
+    raise_error << "Type " << element << " of container " << name << " must be defined using 'next-type'\n" << end();
     break;
   }
   type_ordinal next_type_ordinal = SIZE(info.ingredient_names);

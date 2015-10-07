@@ -32,13 +32,13 @@ case REPLY: {
   const instruction& caller_instruction = current_instruction();
   // check types with the caller
   if (SIZE(caller_instruction.products) > SIZE(ingredients)) {
-    raise << "too few values replied from " << callee << '\n' << end();
+    raise_error << "too few values replied from " << callee << '\n' << end();
     break;
   }
   for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
     if (has_property(caller_instruction.products.at(i), "skiptypecheck")) continue;  // todo: drop this once we have generic containers
     if (!types_match(caller_instruction.products.at(i), reply_inst.ingredients.at(i))) {
-      raise << maybe(callee) << "reply ingredient " << reply_inst.ingredients.at(i).original_string << " can't be saved in " << caller_instruction.products.at(i).original_string << '\n' << end();
+      raise_error << maybe(callee) << "reply ingredient " << reply_inst.ingredients.at(i).original_string << " can't be saved in " << caller_instruction.products.at(i).original_string << '\n' << end();
       goto finish_reply;
     }
   }
@@ -51,14 +51,14 @@ case REPLY: {
     if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
       vector<string> tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
       if (SIZE(tmp) != 1) {
-        raise << maybe(current_recipe_name()) << "'same-as-ingredient' metadata should take exactly one value in " << reply_inst.to_string() << '\n' << end();
+        raise_error << maybe(current_recipe_name()) << "'same-as-ingredient' metadata should take exactly one value in " << reply_inst.to_string() << '\n' << end();
         goto finish_reply;
       }
       long long int ingredient_index = to_integer(tmp.at(0));
       if (ingredient_index >= SIZE(caller_instruction.ingredients))
-        raise << maybe(current_recipe_name()) << "'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
+        raise_error << maybe(current_recipe_name()) << "'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
       if (!is_dummy(caller_instruction.products.at(i)) && caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
-        raise << maybe(current_recipe_name()) << "'same-as-ingredient' product from call to " << callee << " must be " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
+        raise_error << maybe(current_recipe_name()) << "'same-as-ingredient' product from call to " << callee << " must be " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
     }
   }
   // End Reply
@@ -81,7 +81,7 @@ recipe f [
 +mem: storing 35 in location 4
 
 :(scenario reply_type_mismatch)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   3:number <- f 2
 ]
@@ -91,7 +91,7 @@ recipe f [
   14:point <- copy 12:point/raw
   reply 14:point
 ]
-+warn: f: reply ingredient 14:point can't be saved in 3:number
++error: f: reply ingredient 14:point can't be saved in 3:number
 
 //: In mu we'd like to assume that any instruction doesn't modify its
 //: ingredients unless they're also products. The /same-as-ingredient inside
@@ -99,7 +99,7 @@ recipe f [
 //: 'ingredient-products' (sometimes called in-out parameters in other languages).
 
 :(scenario reply_same_as_ingredient)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:number <- copy 0
   2:number <- test1 1:number  # call with different ingredient and product
@@ -108,10 +108,10 @@ recipe test1 [
   10:number <- next-ingredient
   reply 10:number/same-as-ingredient:0
 ]
-+warn: main: 'same-as-ingredient' product from call to test1 must be 1:number rather than 2:number
++error: main: 'same-as-ingredient' product from call to test1 must be 1:number rather than 2:number
 
 :(scenario reply_same_as_ingredient_dummy)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:number <- copy 0
   _ <- test1 1:number  # call with different ingredient and product
@@ -120,7 +120,7 @@ recipe test1 [
   10:address:number <- next-ingredient
   reply 10:address:number/same-as-ingredient:0
 ]
-$warn: 0
+$error: 0
 
 :(code)
 string to_string(const vector<double>& in) {
@@ -182,7 +182,7 @@ if (curr.name == "reply-if") {
     curr.ingredients.swap(results);
   }
   else {
-    raise << "'reply-if' never yields any products\n" << end();
+    raise_error << "'reply-if' never yields any products\n" << end();
   }
 }
 // rewrite `reply-unless a, b, c, ...` to
@@ -205,6 +205,6 @@ if (curr.name == "reply-unless") {
     curr.ingredients.swap(results);
   }
   else {
-    raise << "'reply-unless' never yields any products\n" << end();
+    raise_error << "'reply-unless' never yields any products\n" << end();
   }
 }

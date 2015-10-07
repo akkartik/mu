@@ -64,7 +64,7 @@ void run_current_routine()
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string() << end();
     if (Memory[0] != 0) {
-      raise << "something wrote to location 0; this should never happen\n" << end();
+      raise_error << "something wrote to location 0; this should never happen\n" << end();
       Memory[0] = 0;
     }
     // Read all ingredients from memory.
@@ -92,7 +92,7 @@ void run_current_routine()
       }
     }
     if (SIZE(products) < SIZE(current_instruction().products)) {
-      raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << current_instruction().to_string() << '\n' << end();
+      raise_error << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << current_instruction().to_string() << '\n' << end();
     }
     else {
       for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
@@ -210,7 +210,7 @@ void load_permanently(string filename) {
   ifstream fin(filename.c_str());
   fin.peek();
   if (!fin) {
-    raise << "no such file " << filename << '\n' << end();
+    raise_error << "no such file " << filename << '\n' << end();
     return;
   }
   fin >> std::noskipws;
@@ -267,7 +267,7 @@ void write_memory(reagent x, vector<double> data) {
   if (is_literal(x)) return;
   long long int base = x.value;
   if (size_mismatch(x, data)) {
-    raise << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.types) << " vs " << SIZE(data) << ") at '" << current_instruction().to_string() << "'\n" << end();
+    raise_error << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.types) << " vs " << SIZE(data) << ") at '" << current_instruction().to_string() << "'\n" << end();
     return;
   }
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
@@ -304,7 +304,7 @@ bool is_literal(const reagent& r) {
   return SIZE(r.types) == 1 && r.types.at(0) == 0;
 }
 
-// hook to suppress inserting recipe name into warnings
+// hook to suppress inserting recipe name into errors and warnings (for later layers)
 string maybe(string s) {
   return s + ": ";
 }
@@ -334,7 +334,7 @@ recipe main [
 +run: _ <- copy 0
 
 :(scenario write_to_0_disallowed)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   0:number <- copy 34
 ]

@@ -23,7 +23,7 @@ Type[tmp].element_names.push_back("p");
 
 //: Tests in this layer often explicitly setup memory before reading it as an
 //: array. Don't do this in general. I'm tagging exceptions with /raw to
-//: avoid warnings.
+//: avoid errors.
 :(scenario copy_exclusive_container)
 # Copying exclusive containers copies all their contents and an extra location for the tag.
 recipe main [
@@ -84,17 +84,17 @@ Recipe_ordinal["maybe-convert"] = MAYBE_CONVERT;
 :(before "End Primitive Recipe Checks")
 case MAYBE_CONVERT: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(Recipe[r].name) << "'maybe-convert' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'maybe-convert' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
   canonize_type(base);
   if (base.types.empty() || Type[base.types.at(0)].kind != exclusive_container) {
-    raise << current_recipe_name () << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
+    raise_error << current_recipe_name () << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1))) {
-    raise << maybe(Recipe[r].name) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -104,7 +104,7 @@ case MAYBE_CONVERT: {
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
+    raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   long long int tag = current_instruction().ingredients.at(1).value;

@@ -10,12 +10,13 @@ recipe main [
 +mem: storing 0 in location 1
 
 :(scenarios transform)
-:(scenario transform_names_warns)
-% Hide_warnings = true;
+:(scenario transform_names_fails_on_use_before_define)
+% Hide_errors = true;
 recipe main [
   x:number <- copy y:number
 ]
-+warn: main: use before set: y
++error: main: use before set: y
+# todo: detect conditional defines
 
 :(after "int main")
   Transform.push_back(transform_names);
@@ -44,7 +45,7 @@ void transform_names(const recipe_ordinal r) {
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
       if (disqualified(inst.ingredients.at(in), inst, Recipe[r].name)) continue;
       if (!already_transformed(inst.ingredients.at(in), names)) {
-        raise << maybe(Recipe[r].name) << "use before set: " << inst.ingredients.at(in).name << '\n' << end();
+        raise_error << maybe(Recipe[r].name) << "use before set: " << inst.ingredients.at(in).name << '\n' << end();
       }
       inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
     }
@@ -61,12 +62,12 @@ void transform_names(const recipe_ordinal r) {
     }
   }
   if (names_used && numeric_locations_used)
-    raise << maybe(Recipe[r].name) << "mixing variable names and numeric addresses\n" << end();
+    raise_error << maybe(Recipe[r].name) << "mixing variable names and numeric addresses\n" << end();
 }
 
 bool disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
   if (x.types.empty()) {
-    raise << maybe(recipe_name) << "missing type for " << x.original_string << " in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(recipe_name) << "missing type for " << x.original_string << " in '" << inst.to_string() << "'\n" << end();
     return true;
   }
   if (is_raw(x)) return true;
@@ -89,7 +90,7 @@ type_ordinal skip_addresses(const vector<type_ordinal>& types, const string& rec
   for (long long int i = 0; i < SIZE(types); ++i) {
     if (types.at(i) != Type_ordinal["address"]) return types.at(i);
   }
-  raise << maybe(recipe_name) << "expected a container" << '\n' << end();
+  raise_error << maybe(recipe_name) << "expected a container" << '\n' << end();
   return -1;
 }
 
@@ -98,7 +99,7 @@ int find_element_name(const type_ordinal t, const string& name, const string& re
   for (long long int i = 0; i < SIZE(container.element_names); ++i) {
     if (container.element_names.at(i) == name) return i;
   }
-  raise << maybe(recipe_name) << "unknown element " << name << " in container " << Type[t].name << '\n' << end();
+  raise_error << maybe(recipe_name) << "unknown element " << name << " in container " << Type[t].name << '\n' << end();
   return -1;
 }
 
@@ -134,44 +135,44 @@ recipe main [
 //: an escape hatch to suppress name conversion that we'll use later
 :(scenarios run)
 :(scenario transform_names_passes_raw)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   x:number/raw <- copy 0
 ]
 -name: assign x 1
-+warn: can't write to location 0 in 'x:number/raw <- copy 0'
++error: can't write to location 0 in 'x:number/raw <- copy 0'
 
 :(scenarios transform)
-:(scenario transform_names_warns_when_mixing_names_and_numeric_locations)
-% Hide_warnings = true;
+:(scenario transform_names_fails_when_mixing_names_and_numeric_locations)
+% Hide_errors = true;
 recipe main [
   x:number <- copy 1:number
 ]
-+warn: main: mixing variable names and numeric addresses
++error: main: mixing variable names and numeric addresses
 
-:(scenario transform_names_warns_when_mixing_names_and_numeric_locations_2)
-% Hide_warnings = true;
+:(scenario transform_names_fails_when_mixing_names_and_numeric_locations_2)
+% Hide_errors = true;
 recipe main [
   x:number <- copy 1
   1:number <- copy x:number
 ]
-+warn: main: mixing variable names and numeric addresses
++error: main: mixing variable names and numeric addresses
 
-:(scenario transform_names_does_not_warn_when_mixing_names_and_raw_locations)
-% Hide_warnings = true;
+:(scenario transform_names_does_not_fail_when_mixing_names_and_raw_locations)
+% Hide_errors = true;
 recipe main [
   x:number <- copy 1:number/raw
 ]
--warn: main: mixing variable names and numeric addresses
-$warn: 0
+-error: main: mixing variable names and numeric addresses
+$error: 0
 
-:(scenario transform_names_does_not_warn_when_mixing_names_and_literals)
-% Hide_warnings = true;
+:(scenario transform_names_does_not_fail_when_mixing_names_and_literals)
+% Hide_errors = true;
 recipe main [
   x:number <- copy 1
 ]
--warn: main: mixing variable names and numeric addresses
-$warn: 0
+-error: main: mixing variable names and numeric addresses
+$error: 0
 
 //:: Support element names for containers in 'get' and 'get-address'.
 
@@ -193,11 +194,11 @@ recipe main [
 if (inst.operation == Recipe_ordinal["get"]
     || inst.operation == Recipe_ordinal["get-address"]) {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(Recipe[r].name) << "exactly 2 ingredients expected in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "exactly 2 ingredients expected in '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1)))
-    raise << maybe(Recipe[r].name) << "expected ingredient 1 of " << (inst.operation == Recipe_ordinal["get"] ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "expected ingredient 1 of " << (inst.operation == Recipe_ordinal["get"] ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be a container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).types, Recipe[r].name);
@@ -233,7 +234,7 @@ recipe main [
 // convert variant names of exclusive containers
 if (inst.operation == Recipe_ordinal["maybe-convert"]) {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(Recipe[r].name) << "exactly 2 ingredients expected in '" << current_instruction().to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "exactly 2 ingredients expected in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   assert(is_literal(inst.ingredients.at(1)));

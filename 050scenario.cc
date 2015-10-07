@@ -75,7 +75,7 @@ scenario parse_scenario(istream& in) {
   scenario result;
   result.name = next_word(in);
   if (Scenario_names.find(result.name) != Scenario_names.end())
-    raise << "duplicate scenario name: " << result.name << '\n' << end();
+    raise_error << "duplicate scenario name: " << result.name << '\n' << end();
   Scenario_names.insert(result.name);
   skip_whitespace_and_comments(in);
   assert(in.peek() == '[');
@@ -224,7 +224,7 @@ recipe main [
 +mem: storing 13 in location 1
 +mem: storing 13 in location 2
 
-//: 'memory-should-contain' raises warnings if specific locations aren't as expected
+//: 'memory-should-contain' raises errors if specific locations aren't as expected
 //: Also includes some special support for checking strings.
 
 :(before "End Globals")
@@ -234,14 +234,14 @@ Scenario_testing_scenario = false;
 
 :(scenario memory_check)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   memory-should-contain [
     1 <- 13
   ]
 ]
 +run: checking location 1
-+warn: expected location 1 to contain 13 but saw 0
++error: expected location 1 to contain 13 but saw 0
 
 :(before "End Primitive Recipe Declarations")
 MEMORY_SHOULD_CONTAIN,
@@ -277,16 +277,16 @@ void check_memory(const string& s) {
     skip_whitespace_and_comments(in);
     double value = 0;  in >> value;
     if (locations_checked.find(address) != locations_checked.end())
-      raise << "duplicate expectation for location " << address << '\n' << end();
+      raise_error << "duplicate expectation for location " << address << '\n' << end();
     trace(Primitive_recipe_depth, "run") << "checking location " << address << end();
     if (Memory[address] != value) {
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << no_scientific(value) << " but saw " << no_scientific(Memory[address]) << '\n' << end();
+        raise_error << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << no_scientific(value) << " but saw " << no_scientific(Memory[address]) << '\n' << end();
       }
       else {
         // just testing scenario support
-        raise << "expected location " << address << " to contain " << no_scientific(value) << " but saw " << no_scientific(Memory[address]) << '\n' << end();
+        raise_error << "expected location " << address << " to contain " << no_scientific(value) << " but saw " << no_scientific(Memory[address]) << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -314,16 +314,16 @@ void check_type(const string& lhs, istream& in) {
     check_string(address, literal);
     return;
   }
-  raise << "don't know how to check memory for " << lhs << '\n' << end();
+  raise_error << "don't know how to check memory for " << lhs << '\n' << end();
 }
 
 void check_string(long long int address, const string& literal) {
   trace(Primitive_recipe_depth, "run") << "checking string length at " << address << end();
   if (Memory[address] != SIZE(literal)) {
     if (Current_scenario && !Scenario_testing_scenario)
-      raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(Memory[address]) << '\n' << end();
+      raise_error << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(Memory[address]) << '\n' << end();
     else
-      raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(Memory[address]) << '\n' << end();
+      raise_error << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(Memory[address]) << '\n' << end();
     if (!Scenario_testing_scenario) {
       Passed = false;
       ++Num_failures;
@@ -336,11 +336,11 @@ void check_string(long long int address, const string& literal) {
     if (Memory[address+i] != literal.at(i)) {
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(Memory[address+i]) << '\n' << end();
+        raise_error << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(Memory[address+i]) << '\n' << end();
       }
       else {
         // just testing scenario support
-        raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(Memory[address+i]) << '\n' << end();
+        raise_error << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(Memory[address+i]) << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -353,18 +353,18 @@ void check_string(long long int address, const string& literal) {
 
 :(scenario memory_check_multiple)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   memory-should-contain [
     1 <- 0
     1 <- 0
   ]
 ]
-+warn: duplicate expectation for location 1
++error: duplicate expectation for location 1
 
 :(scenario memory_check_string_length)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:number <- copy 3
   2:number <- copy 97  # 'a'
@@ -374,7 +374,7 @@ recipe main [
     1:string <- [ab]
   ]
 ]
-+warn: expected location 1 to contain length 2 of string [ab] but saw 3
++error: expected location 1 to contain length 2 of string [ab] but saw 3
 
 :(scenario memory_check_string)
 recipe main [
@@ -397,16 +397,16 @@ recipe main [
 // that the lines are present *and* in the specified sequence. (There can be
 // other lines in between.)
 
-:(scenario trace_check_warns_on_failure)
+:(scenario trace_check_fails)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   trace-should-contain [
     a: b
     a: d
   ]
 ]
-+warn: missing [b] in trace with label a
++error: missing [b] in trace with label a
 
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_CONTAIN,
@@ -424,7 +424,7 @@ case TRACE_SHOULD_CONTAIN: {
 }
 
 :(code)
-// simplified version of check_trace_contents() that emits warnings rather
+// simplified version of check_trace_contents() that emits errors rather
 // than just printing to stderr
 bool check_trace(const string& expected) {
   Trace_stream->newline();
@@ -441,8 +441,8 @@ bool check_trace(const string& expected) {
     }
   }
 
-  raise << "missing [" << expected_lines.at(curr_expected_line).contents << "] "
-        << "in trace with label " << expected_lines.at(curr_expected_line).label << '\n' << end();
+  raise_error << "missing [" << expected_lines.at(curr_expected_line).contents << "] "
+              << "in trace with label " << expected_lines.at(curr_expected_line).label << '\n' << end();
   Passed = false;
   return false;
 }
@@ -459,9 +459,9 @@ vector<trace_line> parse_trace(const string& expected) {
   return result;
 }
 
-:(scenario trace_check_warns_on_failure_in_later_line)
+:(scenario trace_check_fails_in_nonfirst_line)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   run [
     trace 1, [a], [b]
@@ -471,11 +471,11 @@ recipe main [
     a: d
   ]
 ]
-+warn: missing [d] in trace with label a
++error: missing [d] in trace with label a
 
 :(scenario trace_check_passes_silently)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   run [
     trace 1, [a], [b]
@@ -484,16 +484,16 @@ recipe main [
     a: b
   ]
 ]
--warn: missing [b] in trace with label a
-$warn: 0
+-error: missing [b] in trace with label a
+$error: 0
 
 //: 'trace-should-not-contain' is like the '-' lines in our scenarios so far
 //: Each trace line is separately checked for absense. Order is *not*
 //: important, so you can't say things like "B should not exist after A."
 
-:(scenario trace_negative_check_warns_on_failure)
+:(scenario trace_negative_check_fails)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   run [
     trace 1, [a], [b]
@@ -502,7 +502,7 @@ recipe main [
     a: b
   ]
 ]
-+warn: unexpected [b] in trace with label a
++error: unexpected [b] in trace with label a
 
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_NOT_CONTAIN,
@@ -520,14 +520,14 @@ case TRACE_SHOULD_NOT_CONTAIN: {
 }
 
 :(code)
-// simplified version of check_trace_contents() that emits warnings rather
+// simplified version of check_trace_contents() that emits errors rather
 // than just printing to stderr
 bool check_trace_missing(const string& in) {
   Trace_stream->newline();
   vector<trace_line> lines = parse_trace(in);
   for (long long int i = 0; i < SIZE(lines); ++i) {
     if (trace_count(lines.at(i).label, lines.at(i).contents) != 0) {
-      raise << "unexpected [" << lines.at(i).contents << "] in trace with label " << lines.at(i).label << '\n' << end();
+      raise_error << "unexpected [" << lines.at(i).contents << "] in trace with label " << lines.at(i).label << '\n' << end();
       Passed = false;
       return false;
     }
@@ -537,18 +537,18 @@ bool check_trace_missing(const string& in) {
 
 :(scenario trace_negative_check_passes_silently)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   trace-should-not-contain [
     a: b
   ]
 ]
--warn: unexpected [b] in trace with label a
-$warn: 0
+-error: unexpected [b] in trace with label a
+$error: 0
 
-:(scenario trace_negative_check_warns_on_any_unexpected_line)
+:(scenario trace_negative_check_fails_on_any_unexpected_line)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   run [
     trace 1, [a], [d]
@@ -558,7 +558,7 @@ recipe main [
     a: d
   ]
 ]
-+warn: unexpected [d] in trace with label a
++error: unexpected [d] in trace with label a
 
 :(scenario trace_count_check)
 recipe main [
@@ -575,15 +575,15 @@ Recipe_ordinal["check-trace-count-for-label"] = CHECK_TRACE_COUNT_FOR_LABEL;
 :(before "End Primitive Recipe Checks")
 case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(Recipe[r].name) << "'check-trace-for-label' requires exactly two ingredients, but got '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'check-trace-for-label' requires exactly two ingredients, but got '" << inst.to_string() << "'\n" << end();
     break;
   }
-  if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'check-trace-for-label' should be a number (count), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'check-trace-for-label' should be a number (count), but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise << maybe(Recipe[r].name) << "second ingredient of 'check-trace-for-label' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "second ingredient of 'check-trace-for-label' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -597,13 +597,13 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (count != expected_count) {
     if (Current_scenario && !Scenario_testing_scenario) {
       // genuine test in a mu file
-      raise << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label " << label << " in trace: ";
+      raise_error << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label " << label << " in trace: ";
       DUMP(label);
-      raise;
+      raise_error;
     }
     else {
       // just testing scenario support
-      raise << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label " << label << " in trace\n" << end();
+      raise_error << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label " << label << " in trace\n" << end();
     }
     if (!Scenario_testing_scenario) {
       Passed = false;
@@ -615,14 +615,14 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
 
 :(scenario trace_count_check_2)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   run [
     trace 1, [a], [foo]
   ]
   check-trace-count-for-label 2, [a]
 ]
-+warn: main: expected 2 lines in trace with label a in trace
++error: main: expected 2 lines in trace with label a in trace
 
 //: Minor detail: ignore 'system' calls in scenarios, since anything we do
 //: with them is by definition impossible to test through mu.

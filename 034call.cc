@@ -80,7 +80,7 @@ inline const instruction& current_instruction() {
 :(after "Defined Recipe Checks")
 // not a primitive; check that it's present in the book of recipes
 if (Recipe.find(inst.operation) == Recipe.end()) {
-  raise << maybe(Recipe[r].name) << "undefined operation in '" << inst.to_string() << "'\n" << end();
+  raise_error << maybe(Recipe[r].name) << "undefined operation in '" << inst.to_string() << "'\n" << end();
   break;
 }
 :(replace{} "default:" following "End Primitive Recipe Implementations")
@@ -98,19 +98,19 @@ default: {
   continue;  // not done with caller; don't increment current_step_index()
 }
 
-:(scenario calling_undefined_recipe_warns)
-% Hide_warnings = true;
+:(scenario calling_undefined_recipe_fails)
+% Hide_errors = true;
 recipe main [
   foo
 ]
-+warn: main: undefined operation in 'foo '
++error: main: undefined operation in 'foo '
 
 :(scenario calling_undefined_recipe_handles_missing_result)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   x:number <- foo
 ]
-+warn: main: undefined operation in 'x:number <- foo '
++error: main: undefined operation in 'x:number <- foo '
 
 //:: finally, we need to fix the termination conditions for the run loop
 
@@ -133,7 +133,7 @@ while (current_step_index() >= SIZE(Current_routine->steps())) {
   Current_routine->calls.pop_front();
   if (Current_routine->calls.empty()) return;
   // Complete Call Fallthrough
-  // todo: no products returned warning
+  // todo: fail if no products returned
   ++current_step_index();
 }
 

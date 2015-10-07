@@ -31,10 +31,15 @@ long long int global_space;
 global_space = 0;
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "global-space") {
-    if (!scalar(data))
-      raise << maybe(current_recipe_name()) << "'global-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
+    if (!scalar(data)
+        || SIZE(x.types) != 3
+        || x.types.at(0) != Type_ordinal["address"]
+        || x.types.at(1) != Type_ordinal["array"]
+        || x.types.at(2) != Type_ordinal["location"]) {
+      raise_error << maybe(current_recipe_name()) << "'global-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
+    }
     if (Current_routine->global_space)
-      raise << "routine already has a global-space; you can't over-write your globals" << end();
+      raise_error << "routine already has a global-space; you can't over-write your globals" << end();
     Current_routine->global_space = data.at(0);
     return;
   }
@@ -43,7 +48,7 @@ global_space = 0;
 :(after "long long int space_base(const reagent& x)")
   if (is_global(x)) {
     if (!Current_routine->global_space)
-      raise << "routine has no global space\n" << end();
+      raise_error << "routine has no global space\n" << end();
     return Current_routine->global_space;
   }
 
@@ -51,14 +56,14 @@ global_space = 0;
 //: don't want to make them too comfortable to use.
 
 :(scenario global_space_with_names)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   global-space:address:array:location <- new location:type, 10
   x:number <- copy 23
   1:number/space:global <- copy 24
 ]
-# don't warn that we're mixing numeric addresses and names
-$warn: 0
+# don't complain about mixing numeric addresses and names
+$error: 0
 
 :(after "bool is_numeric_location(const reagent& x)")
   if (is_global(x)) return false;

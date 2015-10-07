@@ -9,7 +9,7 @@ Recipe_ordinal["restore"] = RESTORE;
 :(before "End Primitive Recipe Checks")
 case RESTORE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(Recipe[r].name) << "'restore' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "'restore' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
   string filename;
@@ -20,7 +20,7 @@ case RESTORE: {
     ;
   }
   else {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'restore' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'restore' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
     break;
   }
   break;
@@ -73,7 +73,7 @@ Recipe_ordinal["save"] = SAVE;
 :(before "End Primitive Recipe Checks")
 case SAVE: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(Recipe[r].name) << "'save' requires exactly two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "'save' requires exactly two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
   if (is_literal_string(inst.ingredients.at(0))) {
@@ -83,11 +83,11 @@ case SAVE: {
     ;
   }
   else {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'save' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'save' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
     break;
   }
-  if (!is_mu_scalar(inst.ingredients.at(1))) {
-    raise << maybe(Recipe[r].name) << "second ingredient of 'save' should be an address:array:character, but got " << inst.ingredients.at(1).to_string() << '\n' << end();
+  if (!is_mu_string(inst.ingredients.at(1))) {
+    raise_error << maybe(Recipe[r].name) << "second ingredient of 'save' should be an address:array:character, but got " << inst.ingredients.at(1).to_string() << '\n' << end();
     break;
   }
   break;
@@ -111,7 +111,7 @@ case SAVE: {
   // explicitly say '--all' for git 1.9
   int status = system("cd lesson; git add --all .; git diff HEAD --exit-code >/dev/null || git commit -a -m . >/dev/null");
   if (status != 0)
-    raise << "error in commit: contents " << contents << '\n' << end();
+    raise_error << "error in commit: contents " << contents << '\n' << end();
   break;
 }
 

@@ -74,7 +74,7 @@ case ASSUME_CONSOLE: {
       else if (Key.find(key) != Key.end())
         Memory[Current_routine->alloc+1] = Key[key];
       else
-        raise << "assume-console: can't press " << key << '\n' << end();
+        raise_error << "assume-console: can't press " << key << '\n' << end();
       if (Memory[Current_routine->alloc+1] < 256)
         // these keys are in ascii
         Memory[Current_routine->alloc] = /*tag for 'text' variant of 'event' exclusive-container*/0;
@@ -235,7 +235,7 @@ case REPLACE_IN_CONSOLE: {
 case REPLACE_IN_CONSOLE: {
   assert(scalar(ingredients.at(0)));
   if (!Memory[CONSOLE]) {
-    raise << "console not initialized\n" << end();
+    raise_error << "console not initialized\n" << end();
     break;
   }
   long long int console_data = Memory[Memory[CONSOLE]+1];

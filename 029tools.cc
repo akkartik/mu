@@ -13,15 +13,15 @@ Recipe_ordinal["trace"] = TRACE;
 :(before "End Primitive Recipe Checks")
 case TRACE: {
   if (SIZE(inst.ingredients) < 3) {
-    raise << maybe(Recipe[r].name) << "'trace' takes three or more ingredients rather than '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'trace' takes three or more ingredients rather than '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'trace' should be a number (depth), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'trace' should be a number (depth), but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise << maybe(Recipe[r].name) << "second ingredient of 'trace' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "second ingredient of 'trace' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -90,30 +90,30 @@ string print_mu(const reagent& r, const vector<double>& data) {
 }
 
 :(before "End Primitive Recipe Declarations")
-HIDE_WARNINGS,
+HIDE_ERRORS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["hide-warnings"] = HIDE_WARNINGS;
+Recipe_ordinal["hide-errors"] = HIDE_ERRORS;
 :(before "End Primitive Recipe Checks")
-case HIDE_WARNINGS: {
+case HIDE_ERRORS: {
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case HIDE_WARNINGS: {
-  Hide_warnings = true;
+case HIDE_ERRORS: {
+  Hide_errors = true;
   break;
 }
 
 :(before "End Primitive Recipe Declarations")
-SHOW_WARNINGS,
+SHOW_ERRORS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["show-warnings"] = SHOW_WARNINGS;
+Recipe_ordinal["show-errors"] = SHOW_ERRORS;
 :(before "End Primitive Recipe Checks")
-case SHOW_WARNINGS: {
+case SHOW_ERRORS: {
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case SHOW_WARNINGS: {
-  Hide_warnings = false;
+case SHOW_ERRORS: {
+  Hide_errors = false;
   break;
 }
 
@@ -170,11 +170,11 @@ case _CLEAR_TRACE: {
 //: assert: perform sanity checks at runtime
 
 :(scenario assert)
-% Hide_warnings = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.
+% Hide_errors = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.
 recipe main [
   assert 0, [this is an assert in mu]
 ]
-+warn: this is an assert in mu
++error: this is an assert in mu
 
 :(before "End Primitive Recipe Declarations")
 ASSERT,
@@ -183,15 +183,15 @@ Recipe_ordinal["assert"] = ASSERT;
 :(before "End Primitive Recipe Checks")
 case ASSERT: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(Recipe[r].name) << "'assert' takes exactly two ingredients rather than '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'assert' takes exactly two ingredients rather than '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise << maybe(Recipe[r].name) << "'assert' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "'assert' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise << maybe(Recipe[r].name) << "'assert' requires a literal string for its second ingredient, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "'assert' requires a literal string for its second ingredient, but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -199,7 +199,7 @@ case ASSERT: {
 :(before "End Primitive Recipe Implementations")
 case ASSERT: {
   if (!ingredients.at(0).at(0)) {
-    raise << current_instruction().ingredients.at(1).name << '\n' << end();
+    raise_error << current_instruction().ingredients.at(1).name << '\n' << end();
   }
   break;
 }
@@ -255,8 +255,8 @@ _SYSTEM,
 Recipe_ordinal["$system"] = _SYSTEM;
 :(before "End Primitive Recipe Checks")
 case _SYSTEM: {
-  if (inst.ingredients.empty()) {
-    raise << maybe(Recipe[r].name) << "'$system' requires exactly one ingredient, but got none\n" << end();
+  if (SIZE(inst.ingredients) != 1) {
+    raise_error << maybe(Recipe[r].name) << "'$system' requires exactly one ingredient, but got none\n" << end();
     break;
   }
   break;

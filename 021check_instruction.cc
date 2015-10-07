@@ -21,12 +21,12 @@ void check_instruction(const recipe_ordinal r) {
       // Primitive Recipe Checks
       case COPY: {
         if (SIZE(inst.products) != SIZE(inst.ingredients)) {
-          raise << "ingredients and products should match in '" << inst.to_string() << "'\n" << end();
+          raise_error << "ingredients and products should match in '" << inst.to_string() << "'\n" << end();
           break;
         }
         for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
           if (!types_match(inst.products.at(i), inst.ingredients.at(i))) {
-            raise << maybe(Recipe[r].name) << "can't copy " << inst.ingredients.at(i).original_string << " to " << inst.products.at(i).original_string << "; types don't match\n" << end();
+            raise_error << maybe(Recipe[r].name) << "can't copy " << inst.ingredients.at(i).original_string << " to " << inst.products.at(i).original_string << "; types don't match\n" << end();
             goto finish_checking_instruction;
           }
         }
@@ -43,32 +43,32 @@ void check_instruction(const recipe_ordinal r) {
 }
 
 :(scenario copy_checks_reagent_count)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:number <- copy 34, 35
 ]
-+warn: ingredients and products should match in '1:number <- copy 34, 35'
++error: ingredients and products should match in '1:number <- copy 34, 35'
 
 :(scenario write_scalar_to_array_disallowed)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:array:number <- copy 34
 ]
-+warn: main: can't copy 34 to 1:array:number; types don't match
++error: main: can't copy 34 to 1:array:number; types don't match
 
 :(scenario write_scalar_to_array_disallowed_2)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:number, 2:array:number <- copy 34, 35
 ]
-+warn: main: can't copy 35 to 2:array:number; types don't match
++error: main: can't copy 35 to 2:array:number; types don't match
 
 :(scenario write_scalar_to_address_disallowed)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:address:number <- copy 34
 ]
-+warn: main: can't copy 34 to 1:address:number; types don't match
++error: main: can't copy 34 to 1:address:number; types don't match
 
 :(code)
 bool types_match(reagent lhs, reagent rhs) {

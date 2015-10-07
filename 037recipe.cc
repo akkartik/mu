@@ -43,11 +43,11 @@ Recipe_ordinal["call"] = CALL;
 :(before "End Primitive Recipe Checks")
 case CALL: {
   if (inst.ingredients.empty()) {
-    raise << maybe(Recipe[r].name) << "'call' requires at least one ingredient (the recipe to call)\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'call' requires at least one ingredient (the recipe to call)\n" << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'call' should be a recipe, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'call' should be a recipe, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;

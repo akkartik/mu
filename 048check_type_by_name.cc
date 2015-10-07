@@ -6,13 +6,13 @@
 //: every single time. You can't use the same name with multiple types in a
 //: single recipe.
 
-:(scenario transform_warns_on_reusing_name_with_different_type)
-% Hide_warnings = true;
+:(scenario transform_fails_on_reusing_name_with_different_type)
+% Hide_errors = true;
 recipe main [
   x:number <- copy 1
   x:boolean <- copy 1
 ]
-+warn: main: x used with multiple types
++error: main: x used with multiple types
 
 :(after "int main")
   Transform.push_back(check_types_by_name);
@@ -38,11 +38,11 @@ void check_metadata(map<string, vector<type_ordinal> >& metadata, const reagent&
   if (is_raw(x)) return;
   // if you use raw locations you're probably doing something unsafe
   if (is_integer(x.name)) return;
-  if (x.types.empty()) return;  // will throw a more precise warning elsewhere
+  if (x.types.empty()) return;  // will throw a more precise error elsewhere
   if (metadata.find(x.name) == metadata.end())
     metadata[x.name] = x.types;
   if (metadata[x.name] != x.types)
-    raise << maybe(Recipe[r].name) << x.name << " used with multiple types\n" << end();
+    raise_error << maybe(Recipe[r].name) << x.name << " used with multiple types\n" << end();
 }
 
 :(scenario transform_fills_in_missing_types)
@@ -74,18 +74,18 @@ recipe main [
 ]
 +mem: storing 2 in location 1
 
-:(scenario transform_warns_on_missing_types_in_first_mention)
-% Hide_warnings = true;
+:(scenario transform_fails_on_missing_types_in_first_mention)
+% Hide_errors = true;
 recipe main [
   x <- copy 1
   x:number <- copy 2
 ]
-+warn: main: missing type for x in 'x <- copy 1'
++error: main: missing type for x in 'x <- copy 1'
 
-:(scenario typo_in_address_type_warns)
-% Hide_warnings = true;
+:(scenario typo_in_address_type_fails)
+% Hide_errors = true;
 recipe main [
   y:address:charcter <- new character:type
   *y <- copy 67
 ]
-+warn: unknown type: charcter
++error: unknown type: charcter

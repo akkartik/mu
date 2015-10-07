@@ -68,7 +68,7 @@ scenario screen-in-scenario-color [
 
 :(scenario screen_in_scenario_error)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 scenario screen-in-scenario-error [
   assume-screen 5/width, 3/height
   run [
@@ -81,11 +81,11 @@ scenario screen-in-scenario-error [
     .     .
   ]
 ]
-+warn: expected screen location (0, 0) to contain 98 ('b') instead of 97 ('a')
++error: expected screen location (0, 0) to contain 98 ('b') instead of 97 ('a')
 
 :(scenario screen_in_scenario_color_error)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 # screen-should-contain can check unicode characters in the fake screen
 scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
@@ -99,21 +99,21 @@ scenario screen-in-scenario-color [
     .     .
   ]
 ]
-+warn: expected screen location (0, 0) to be in color 2 instead of 1
++error: expected screen location (0, 0) to be in color 2 instead of 1
 
 //: allow naming just for 'screen'
 :(before "End is_special_name Cases")
 if (s == "screen") return true;
 
 :(scenarios run)
-:(scenario convert_names_does_not_warn_when_mixing_special_names_and_numeric_locations)
+:(scenario convert_names_does_not_fail_when_mixing_special_names_and_numeric_locations)
 % Scenario_testing_scenario = true;
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   screen:number <- copy 1:number
 ]
--warn: mixing variable names and numeric addresses in main
-$warn: 0
+-error: mixing variable names and numeric addresses in main
+$error: 0
 :(scenarios run_mu_scenario)
 
 :(before "End Globals")
@@ -227,11 +227,11 @@ void check_screen(const string& expected_contents, const int color) {
         // contents match but color is off
         if (Current_scenario && !Scenario_testing_scenario) {
           // genuine test in a mu file
-          raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(Memory[addr]) << ") to be in color " << color << " instead of " << no_scientific(Memory[addr+cell_color_offset]) << "\n" << end();
+          raise_error << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(Memory[addr]) << ") to be in color " << color << " instead of " << no_scientific(Memory[addr+cell_color_offset]) << "\n" << end();
         }
         else {
           // just testing check_screen
-          raise << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << no_scientific(Memory[addr+cell_color_offset]) << '\n' << end();
+          raise_error << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << no_scientific(Memory[addr+cell_color_offset]) << '\n' << end();
         }
         if (!Scenario_testing_scenario) {
           Passed = false;
@@ -241,7 +241,7 @@ void check_screen(const string& expected_contents, const int color) {
       }
 
       // really a mismatch
-      // can't print multi-byte unicode characters in warnings just yet. not very useful for debugging anyway.
+      // can't print multi-byte unicode characters in errors just yet. not very useful for debugging anyway.
       char expected_pretty[10] = {0};
       if (curr < 256 && !iscntrl(curr)) {
         // " ('<curr>')"
@@ -257,12 +257,12 @@ void check_screen(const string& expected_contents, const int color) {
       if (color != -1) color_phrase << " in color " << color;
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
+        raise_error << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
         dump_screen();
       }
       else {
         // just testing check_screen
-        raise << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
+        raise_error << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -281,7 +281,7 @@ raw_string_stream::raw_string_stream(const string& backing) :index(0), max(SIZE(
 bool raw_string_stream::at_end() const {
   if (index >= max) return true;
   if (tb_utf8_char_length(buf[index]) > max-index) {
-    raise << "unicode string seems corrupted at index "<< index << " character " << static_cast<int>(buf[index]) << '\n' << end();
+    raise_error << "unicode string seems corrupted at index "<< index << " character " << static_cast<int>(buf[index]) << '\n' << end();
     return true;
   }
   return false;

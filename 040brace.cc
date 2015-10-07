@@ -76,7 +76,7 @@ void transform_braces(const recipe_ordinal r) {
     // check for errors
     if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
       if (inst.ingredients.empty()) {
-        raise << inst.name << " expects 1 or 2 ingredients, but got none\n" << end();
+        raise_error << inst.name << " expects 1 or 2 ingredients, but got none\n" << end();
         continue;
       }
     }
@@ -107,7 +107,7 @@ void transform_braces(const recipe_ordinal r) {
     target.types.push_back(Type_ordinal["offset"]);
     target.set_value(0);
     if (open_braces.empty())
-      raise << inst.name << " needs a '{' before\n" << end();
+      raise_error << inst.name << " needs a '{' before\n" << end();
     else if (inst.name.find("loop") != string::npos)
       target.set_value(open_braces.top()-index);
     else  // break instruction
@@ -132,7 +132,7 @@ long long int matching_brace(long long int index, const list<pair<int, long long
     stacksize += (p->first ? 1 : -1);
     if (stacksize == 0) return p->second;
   }
-  raise << maybe(Recipe[r].name) << "unbalanced '{'\n" << end();
+  raise_error << maybe(Recipe[r].name) << "unbalanced '{'\n" << end();
   return SIZE(Recipe[r].steps);  // exit current routine
 }
 
@@ -279,7 +279,7 @@ recipe main [
 +after-brace: jump 2:offset
 
 :(scenario break_label)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:number <- copy 0
   {
@@ -361,18 +361,18 @@ recipe test-factorial [
 ]
 +mem: location 2 is 120
 
-:(scenario break_outside_braces_warns)
-% Hide_warnings = true;
+:(scenario break_outside_braces_fails)
+% Hide_errors = true;
 recipe main [
   break
 ]
-+warn: break needs a '{' before
++error: break needs a '{' before
 
-:(scenario break_conditional_without_ingredient_warns)
-% Hide_warnings = true;
+:(scenario break_conditional_without_ingredient_fails)
+% Hide_errors = true;
 recipe main [
   {
     break-if
   }
 ]
-+warn: break-if expects 1 or 2 ingredients, but got none
++error: break-if expects 1 or 2 ingredients, but got none

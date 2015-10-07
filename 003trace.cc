@@ -81,8 +81,10 @@
 // End Tracing  // hack to ensure most code in this layer comes before anything else
 
 :(before "End Tracing")
+bool Hide_errors = false;
 bool Hide_warnings = false;
 :(before "End Setup")
+Hide_errors = false;
 Hide_warnings = false;
 
 :(before "End Types")
@@ -132,7 +134,9 @@ struct trace_stream {
     string curr_contents = curr_stream->str();
     if (curr_contents.empty()) return;
     past_lines.push_back(trace_line(curr_depth, trim(curr_label), curr_contents));  // preserve indent in contents
-    if (!Hide_warnings && curr_label == "warn")
+    if (!Hide_errors && curr_label == "error")
+      cerr << curr_label << ": " << curr_contents << '\n';
+    else if (!Hide_warnings && curr_label == "warn")
       cerr << curr_label << ": " << curr_contents << '\n';
     delete curr_stream;
     curr_stream = NULL;
@@ -160,9 +164,10 @@ trace_stream* Trace_stream = NULL;
 
 // Top-level helper. IMPORTANT: can't nest.
 #define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
-// Warnings should go straight to cerr by default since calls to trace() have
+// Errors and warnings should go straight to cerr by default since calls to trace() have
 // some unfriendly constraints (they delay printing, they can't nest)
 #define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream("warn"))
+#define raise_error  ((!Trace_stream || !Hide_errors) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream("error"))
 
 :(before "End Types")
 struct end {};
@@ -263,12 +268,12 @@ int trace_count(string label, string line) {
   return result;
 }
 
-#define CHECK_TRACE_WARNS()  CHECK(trace_count("warn") > 0)
-#define CHECK_TRACE_DOESNT_WARN() \
-  if (trace_count("warn") > 0) { \
+#define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count("error") > 0)
+#define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \
+  if (trace_count("error") > 0) { \
     ++Num_failures; \
-    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected warnings\n"; \
-    DUMP("warn"); \
+    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected errors\n"; \
+    DUMP("error"); \
     Passed = false; \
     return; \
   }

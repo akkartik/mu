@@ -42,7 +42,7 @@ long long int space_index(const reagent& x) {
   for (long long int i = /*skip name:type*/1; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == "space") {
       if (SIZE(x.properties.at(i).second) != 1)
-        raise << maybe(current_recipe_name()) << "/space metadata should take exactly one value in " << x.original_string << '\n' << end();
+        raise_error << maybe(current_recipe_name()) << "/space metadata should take exactly one value in " << x.original_string << '\n' << end();
       return to_integer(x.properties.at(i).second.at(0));
     }
   }

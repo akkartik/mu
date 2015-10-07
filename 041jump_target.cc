@@ -31,7 +31,7 @@ void transform_labels(const recipe_ordinal r) {
         offset[inst.label] = i;
       }
       else {
-        raise << maybe(Recipe[r].name) << "duplicate label '" << inst.label << "'" << end();
+        raise_error << maybe(Recipe[r].name) << "duplicate label '" << inst.label << "'" << end();
         // have all jumps skip some random but noticeable and deterministic amount of code
         offset[inst.label] = 9999;
       }
@@ -60,19 +60,19 @@ void transform_labels(const recipe_ordinal r) {
 :(code)
 void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, const long long int current_offset, const recipe_ordinal r) {
   if (!is_literal(x)) {
-    raise << maybe(Recipe[r].name) << "jump target must be offset or label but is " << x.original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "jump target must be offset or label but is " << x.original_string << '\n' << end();
     x.set_value(0);  // no jump by default
     return;
   }
   assert(!x.initialized);
   if (is_integer(x.name)) return;  // non-labels will be handled like other number operands
   if (!is_jump_target(x.name)) {
-    raise << maybe(Recipe[r].name) << "can't jump to label " << x.name << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "can't jump to label " << x.name << '\n' << end();
     x.set_value(0);  // no jump by default
     return;
   }
   if (offset.find(x.name) == offset.end()) {
-    raise << maybe(Recipe[r].name) << "can't find label " << x.name << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "can't find label " << x.name << '\n' << end();
     x.set_value(0);  // no jump by default
     return;
   }
@@ -133,18 +133,18 @@ recipe main [
 +mem: storing 0 in location 5
 -mem: storing 0 in location 4
 
-:(scenario recipe_warns_on_duplicate_jump_target)
-% Hide_warnings = true;
+:(scenario recipe_fails_on_duplicate_jump_target)
+% Hide_errors = true;
 recipe main [
   +label
   1:number <- copy 0
   +label
   2:number <- copy 0
 ]
-+warn: main: duplicate label '+label'
++error: main: duplicate label '+label'
 
 :(scenario jump_ignores_nontarget_label)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   # first a few lines of padding to exercise the offset computation
   1:number <- copy 0
@@ -155,4 +155,4 @@ recipe main [
   $target
   5:number <- copy 0
 ]
-+warn: main: can't jump to label $target
++error: main: can't jump to label $target

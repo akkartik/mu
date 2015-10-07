@@ -59,11 +59,11 @@ void test_trace_count_ignores_trailing_whitespace() {
 // pending: DUMP tests
 // pending: readable_contents() adds newline if necessary.
 // pending: raise also prints to stderr.
-// pending: raise doesn't print to stderr if Hide_warnings is set.
-// pending: raise doesn't have to be saved if Hide_warnings is set, just printed.
+// pending: raise doesn't print to stderr if Hide_errors is set.
+// pending: raise doesn't have to be saved if Hide_errors is set, just printed.
 // pending: raise prints to stderr if Trace_stream is NULL.
-// pending: raise prints to stderr if Trace_stream is NULL even if Hide_warnings is set.
-// pending: raise << ... die() doesn't die if Hide_warnings is set.
+// pending: raise prints to stderr if Trace_stream is NULL even if Hide_errors is set.
+// pending: raise << ... die() doesn't die if Hide_errors is set.
 
 
 

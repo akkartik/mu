@@ -22,9 +22,9 @@ case OPEN_CONSOLE: {
   long long int height = tb_height();
   if (width > 222 || height > 222) tb_shutdown();
   if (width > 222)
-    raise << "sorry, mu doesn't support windows wider than 222 characters. Please resize your window.\n" << end();
+    raise_error << "sorry, mu doesn't support windows wider than 222 characters. Please resize your window.\n" << end();
   if (height > 222)
-    raise << "sorry, mu doesn't support windows taller than 222 characters. Please resize your window.\n" << end();
+    raise_error << "sorry, mu doesn't support windows taller than 222 characters. Please resize your window.\n" << end();
   break;
 }
 
@@ -99,6 +99,26 @@ PRINT_CHARACTER_TO_DISPLAY,
 Recipe_ordinal["print-character-to-display"] = PRINT_CHARACTER_TO_DISPLAY;
 :(before "End Primitive Recipe Checks")
 case PRINT_CHARACTER_TO_DISPLAY: {
+  if (inst.ingredients.empty()) {
+    raise_error << maybe(Recipe[r].name) << "'print-character-to-display' requires at least one ingredient, but got " << inst.to_string() << '\n' << end();
+    break;
+  }
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'print-character-to-display' should be a character, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  if (SIZE(inst.ingredients) > 1) {
+    if (!is_mu_number(inst.ingredients.at(1))) {
+      raise_error << maybe(Recipe[r].name) << "second ingredient of 'print-character-to-display' should be a foreground color number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+      break;
+    }
+  }
+  if (SIZE(inst.ingredients) > 2) {
+    if (!is_mu_number(inst.ingredients.at(2))) {
+      raise_error << maybe(Recipe[r].name) << "third ingredient of 'print-character-to-display' should be a background color number, but got " << inst.ingredients.at(2).original_string << '\n' << end();
+      break;
+    }
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -106,29 +126,13 @@ case PRINT_CHARACTER_TO_DISPLAY: {
   int h=tb_height(), w=tb_width();
   long long int height = (h >= 0) ? h : 0;
   long long int width = (w >= 0) ? w : 0;
-  if (ingredients.empty()) {
-    raise << maybe(current_recipe_name()) << "'print-character-to-display' requires at least one ingredient, but got " << current_instruction().to_string() << '\n' << end();
-    break;
-  }
-  if (!scalar(ingredients.at(0))) {
-    raise << maybe(current_recipe_name()) << "first ingredient of 'print-character-to-display' should be a character, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    break;
-  }
   long long int c = ingredients.at(0).at(0);
   int color = TB_BLACK;
   if (SIZE(ingredients) > 1) {
-    if (!scalar(ingredients.at(1))) {
-      raise << maybe(current_recipe_name()) << "second ingredient of 'print-character-to-display' should be a foreground color number, but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
-      break;
-    }
     color = ingredients.at(1).at(0);
   }
   int bg_color = TB_BLACK;
   if (SIZE(ingredients) > 2) {
-    if (!scalar(ingredients.at(2))) {
-      raise << maybe(current_recipe_name()) << "third ingredient of 'print-character-to-display' should be a background color number, but got " << current_instruction().ingredients.at(2).original_string << '\n' << end();
-      break;
-    }
     bg_color = ingredients.at(2).at(0);
     if (bg_color == 0) bg_color = TB_BLACK;
   }
@@ -182,15 +186,15 @@ Recipe_ordinal["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
 :(before "End Primitive Recipe Checks")
 case MOVE_CURSOR_ON_DISPLAY: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(Recipe[r].name) << "'move-cursor-on-display' requires two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "'move-cursor-on-display' requires two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
-  if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'move-cursor-on-display' should be a row number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'move-cursor-on-display' should be a row number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
-  if (!is_mu_scalar(inst.ingredients.at(1))) {
-    raise << maybe(Recipe[r].name) << "second ingredient of 'move-cursor-on-display' should be a column number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+  if (!is_mu_number(inst.ingredients.at(1))) {
+    raise_error << maybe(Recipe[r].name) << "second ingredient of 'move-cursor-on-display' should be a column number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
