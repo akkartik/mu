@@ -39,7 +39,7 @@ else if (command == "before") {
   if (is_waypoint(label))
     Before_fragments[label].steps.insert(Before_fragments[label].steps.end(), tmp.steps.begin(), tmp.steps.end());
   else
-    raise << "can't tangle before label " << label << '\n' << end();
+    raise_error << "can't tangle before label " << label << '\n' << end();
 }
 else if (command == "after") {
   string label = next_word(in);
@@ -47,7 +47,7 @@ else if (command == "after") {
   if (is_waypoint(label))
     After_fragments[label].steps.insert(After_fragments[label].steps.begin(), tmp.steps.begin(), tmp.steps.end());
   else
-    raise << "can't tangle after label " << label << '\n' << end();
+    raise_error << "can't tangle after label " << label << '\n' << end();
 }
 
 //: after all recipes are loaded, insert fragments at appropriate labels.
@@ -130,7 +130,7 @@ bool is_waypoint(string label) {
   return *label.begin() == '<' && *label.rbegin() == '>';
 }
 
-//: warn about unapplied fragments
+//: complain about unapplied fragments
 :(before "End Globals")
 bool Transform_check_insert_fragments_Ran = false;
 :(before "End One-time Setup")
@@ -141,11 +141,11 @@ void check_insert_fragments(unused recipe_ordinal) {
   Transform_check_insert_fragments_Ran = true;
   for (map<string, recipe>::iterator p = Before_fragments.begin(); p != Before_fragments.end(); ++p) {
     if (Fragments_used.find(p->first) == Fragments_used.end())
-      raise << "could not locate insert before " << p->first << '\n' << end();
+      raise_error << "could not locate insert before " << p->first << '\n' << end();
   }
   for (map<string, recipe>::iterator p = After_fragments.begin(); p != After_fragments.end(); ++p) {
     if (Fragments_used.find(p->first) == Fragments_used.end())
-      raise << "could not locate insert after " << p->first << '\n' << end();
+      raise_error << "could not locate insert after " << p->first << '\n' << end();
   }
 }
 
@@ -170,7 +170,7 @@ after <label1> [
 $mem: 4
 
 :(scenario tangle_ignores_jump_target)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:number <- copy 0
   +label1
@@ -179,7 +179,7 @@ recipe main [
 before +label1 [
   2:number <- copy 0
 ]
-+warn: can't tangle before label +label1
++error: can't tangle before label +label1
 +mem: storing 0 in location 1
 +mem: storing 0 in location 4
 # label1

@@ -25,19 +25,19 @@ recipe main [
 :(before "long long int base = x.value" following "void write_memory(reagent x, vector<double> data)")
 x = canonize(x);
 if (x.value == 0) {
-  raise << "can't write to location 0 in '" << current_instruction().to_string() << "'\n" << end();
+  raise_error << "can't write to location 0 in '" << current_instruction().to_string() << "'\n" << end();
   return;
 }
 
 //: writes to address 0 always loudly fail
-:(scenario store_to_0_warns)
-% Hide_warnings = true;
+:(scenario store_to_0_fails)
+% Hide_errors = true;
 recipe main [
   1:address:number <- copy 0
   1:address:number/lookup <- copy 34
 ]
 -mem: storing 34 in location 0
-+warn: can't write to location 0 in '1:address:number/lookup <- copy 34'
++error: can't write to location 0 in '1:address:number/lookup <- copy 34'
 
 :(code)
 reagent canonize(reagent x) {
@@ -52,12 +52,12 @@ reagent lookup_memory(reagent x) {
   static const type_ordinal ADDRESS = Type_ordinal["address"];
   reagent result;
   if (x.types.empty() || x.types.at(0) != ADDRESS) {
-    raise << maybe(current_recipe_name()) << "tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
+    raise_error << maybe(current_recipe_name()) << "tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
     return result;
   }
   // compute value
   if (x.value == 0) {
-    raise << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
+    raise_error << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
     return result;
   }
   result.set_value(Memory[x.value]);
@@ -97,11 +97,11 @@ reagent lookup_memory(reagent x) {
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
     if (r.types.empty()) {
-      raise << "can't lookup non-address: " << r.original_string << '\n' << end();
+      raise_error << "can't lookup non-address: " << r.original_string << '\n' << end();
       return false;
     }
     if (r.types.at(0) != Type_ordinal["address"]) {
-      raise << "can't lookup non-address: " << r.original_string << '\n' << end();
+      raise_error << "can't lookup non-address: " << r.original_string << '\n' << end();
       return false;
     }
     r.types.erase(r.types.begin());
@@ -180,7 +180,7 @@ recipe main [
     properties.push_back(pair<string, vector<string> >("lookup", vector<string>()));
   }
   if (name.empty())
-    raise << "illegal name " << original_string << '\n' << end();
+    raise_error << "illegal name " << original_string << '\n' << end();
 }
 
 //:: helpers for debugging

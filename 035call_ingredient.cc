@@ -38,7 +38,7 @@ Recipe_ordinal["next-ingredient"] = NEXT_INGREDIENT;
 :(before "End Primitive Recipe Checks")
 case NEXT_INGREDIENT: {
   if (!inst.ingredients.empty()) {
-    raise << maybe(Recipe[r].name) << "'next-ingredient' didn't expect any ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'next-ingredient' didn't expect any ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   break;
@@ -55,7 +55,7 @@ case NEXT_INGREDIENT: {
   }
   else {
     if (SIZE(current_instruction().products) < 2)
-      raise << maybe(current_recipe_name()) << "no ingredient to save in " << current_instruction().products.at(0).original_string << '\n' << end();
+      raise_error << maybe(current_recipe_name()) << "no ingredient to save in " << current_instruction().products.at(0).original_string << '\n' << end();
     if (current_instruction().products.empty()) break;
     products.resize(2);
     // pad the first product with sufficient zeros to match its type
@@ -68,15 +68,15 @@ case NEXT_INGREDIENT: {
   break;
 }
 
-:(scenario next_ingredient_warn_on_missing)
-% Hide_warnings = true;
+:(scenario next_ingredient_fail_on_missing)
+% Hide_errors = true;
 recipe main [
   f
 ]
 recipe f [
   11:number <- next-ingredient
 ]
-+warn: f: no ingredient to save in 11:number
++error: f: no ingredient to save in 11:number
 
 :(scenario rewind_ingredients)
 recipe main [
@@ -125,11 +125,11 @@ Recipe_ordinal["ingredient"] = INGREDIENT;
 :(before "End Primitive Recipe Checks")
 case INGREDIENT: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(Recipe[r].name) << "'ingredient' expects exactly one ingredient, but got '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'ingredient' expects exactly one ingredient, but got '" << inst.to_string() << "'\n" << end();
     break;
   }
-  if (!is_literal(inst.ingredients.at(0)) && !is_mu_scalar(inst.ingredients.at(0))) {
-    raise << maybe(Recipe[r].name) << "'ingredient' expects a literal ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+  if (!is_literal(inst.ingredients.at(0)) && !is_mu_number(inst.ingredients.at(0))) {
+    raise_error << maybe(Recipe[r].name) << "'ingredient' expects a literal ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;

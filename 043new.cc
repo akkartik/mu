@@ -34,13 +34,13 @@ if (inst.operation == Recipe_ordinal["new"]) {
   // End NEW Transform Special-cases
   // first arg must be of type 'type'
   if (inst.ingredients.empty())
-    raise << maybe(Recipe[r].name) << "'new' expects one or two ingredients\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'new' expects one or two ingredients\n" << end();
   if (inst.ingredients.at(0).properties.empty()
       || inst.ingredients.at(0).properties.at(0).second.empty()
       || inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
-    raise << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << inst.ingredients.at(0).original_string << '\n' << end();
   if (Type_ordinal.find(inst.ingredients.at(0).name) == Type_ordinal.end())
-    raise << maybe(Recipe[r].name) << "unknown type " << inst.ingredients.at(0).name << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "unknown type " << inst.ingredients.at(0).name << '\n' << end();
   inst.ingredients.at(0).set_value(Type_ordinal[inst.ingredients.at(0).name]);
   trace(Primitive_recipe_depth, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).name << end();
   end_new_transform:;
@@ -56,12 +56,12 @@ Recipe_ordinal["new"] = NEW;
 :(before "End Primitive Recipe Checks")
 case NEW: {
   if (inst.ingredients.empty() || SIZE(inst.ingredients) > 2) {
-    raise << maybe(Recipe[r].name) << "'new' requires one or two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "'new' requires one or two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
   reagent type = inst.ingredients.at(0);
   if (!is_mu_scalar(type) && !is_literal(type)) {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
     break;
   }
   break;
@@ -221,13 +221,13 @@ Recipe_ordinal["abandon"] = ABANDON;
 :(before "End Primitive Recipe Checks")
 case ABANDON: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(Recipe[r].name) << "'abandon' requires one ingredient, but got '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'abandon' requires one ingredient, but got '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent types = inst.ingredients.at(0);
   canonize_type(types);
   if (types.types.empty() || types.types.at(0) != Type_ordinal["address"]) {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'abandon' should be an address, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'abandon' should be an address, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -260,7 +260,7 @@ if (Free_list[size]) {
   Free_list[size] = Memory[result];
   for (long long int curr = result+1; curr < result+size; ++curr) {
     if (Memory[curr] != 0) {
-      raise << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
+      raise_error << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
       break;  // always fatal
     }
   }

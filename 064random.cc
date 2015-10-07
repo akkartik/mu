@@ -36,11 +36,11 @@ Recipe_ordinal["round"] = ROUND;
 :(before "End Primitive Recipe Checks")
 case ROUND: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(Recipe[r].name) << "'round' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "'round' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
-  if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise << maybe(Recipe[r].name) << "first ingredient of 'round' should be a number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'round' should be a number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;

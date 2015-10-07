@@ -34,7 +34,7 @@ vector<recipe_ordinal> load(istream& in) {
     }
     // End Command Handlers
     else {
-      raise << "unknown top-level command: " << command << '\n' << end();
+      raise_error << "unknown top-level command: " << command << '\n' << end();
     }
   }
   return result;
@@ -43,7 +43,7 @@ vector<recipe_ordinal> load(istream& in) {
 long long int slurp_recipe(istream& in) {
   string recipe_name = next_word(in);
   if (recipe_name.empty())
-    raise << "empty recipe name\n" << end();
+    raise_error << "empty recipe name\n" << end();
   if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
     Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
   }
@@ -63,7 +63,7 @@ recipe slurp_body(istream& in) {
   recipe result;
   skip_whitespace(in);
   if (in.get() != '[')
-    raise << "recipe body must begin with '['\n" << end();
+    raise_error << "recipe body must begin with '['\n" << end();
   skip_whitespace_and_comments(in);
   instruction curr;
   while (next_instruction(in, &curr)) {
@@ -77,17 +77,17 @@ bool next_instruction(istream& in, instruction* curr) {
   in >> std::noskipws;
   curr->clear();
   if (in.eof()) {
-    raise << "0: unbalanced '[' for recipe\n" << end();
+    raise_error << "0: unbalanced '[' for recipe\n" << end();
     return false;
   }
   skip_whitespace(in);
   if (in.eof()) {
-    raise << "1: unbalanced '[' for recipe\n" << end();
+    raise_error << "1: unbalanced '[' for recipe\n" << end();
     return false;
   }
   skip_whitespace_and_comments(in);
   if (in.eof()) {
-    raise << "2: unbalanced '[' for recipe\n" << end();
+    raise_error << "2: unbalanced '[' for recipe\n" << end();
     return false;
   }
 
@@ -95,7 +95,7 @@ bool next_instruction(istream& in, instruction* curr) {
   while (in.peek() != '\n' && !in.eof()) {
     skip_whitespace(in);
     if (in.eof()) {
-      raise << "3: unbalanced '[' for recipe\n" << end();
+      raise_error << "3: unbalanced '[' for recipe\n" << end();
       return false;
     }
     string word = next_word(in);
@@ -112,7 +112,7 @@ bool next_instruction(istream& in, instruction* curr) {
     curr->label = words.at(0);
     trace("parse") << "label: " << curr->label << end();
     if (in.eof()) {
-      raise << "7: unbalanced '[' for recipe\n" << end();
+      raise_error << "7: unbalanced '[' for recipe\n" << end();
       return false;
     }
     return true;
@@ -128,7 +128,7 @@ bool next_instruction(istream& in, instruction* curr) {
   }
 
   if (p == words.end()) {
-    raise << "instruction prematurely ended with '<-'\n" << end();
+    raise_error << "instruction prematurely ended with '<-'\n" << end();
     return false;
   }
   curr->name = *p;
@@ -136,7 +136,7 @@ bool next_instruction(istream& in, instruction* curr) {
     Recipe_ordinal[*p] = Next_recipe_ordinal++;
   }
   if (Recipe_ordinal[*p] == 0) {
-    raise << "Recipe " << *p << " has number 0, which is reserved for IDLE.\n" << end();
+    raise_error << "Recipe " << *p << " has number 0, which is reserved for IDLE.\n" << end();
     return false;
   }
   curr->operation = Recipe_ordinal[*p];  ++p;
@@ -154,7 +154,7 @@ bool next_instruction(istream& in, instruction* curr) {
     trace("parse") << "  product: " << p->to_string() << end();
   }
   if (in.eof()) {
-    raise << "9: unbalanced '[' for recipe\n" << end();
+    raise_error << "9: unbalanced '[' for recipe\n" << end();
     return false;
   }
   return true;

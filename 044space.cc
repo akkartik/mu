@@ -52,7 +52,7 @@ reagent absolutize(reagent x) {
   if (is_raw(x) || is_dummy(x)) return x;
   if (x.name == "default-space") return x;
   if (!x.initialized) {
-    raise << current_instruction().to_string() << ": reagent not initialized: " << x.original_string << '\n' << end();
+    raise_error << current_instruction().to_string() << ": reagent not initialized: " << x.original_string << '\n' << end();
     return x;
   }
   reagent r = x;
@@ -133,12 +133,12 @@ if (curr.name == "new-default-space") {
     vector<double> result;
     result.push_back(Name[Recipe_ordinal[current_recipe_name()]][""]);
     if (result.back() == 0)
-      raise << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names\n" << end();
+      raise_error << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names\n" << end();
     return result;
   }
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "number-of-locals") {
-    raise << maybe(current_recipe_name()) << "can't write to special name 'number-of-locals'\n" << end();
+    raise_error << maybe(current_recipe_name()) << "can't write to special name 'number-of-locals'\n" << end();
     return;
   }
 
@@ -185,11 +185,11 @@ void try_reclaim_locals() {
 void rewrite_default_space_instruction(instruction& curr) {
   curr.operation = Recipe_ordinal["new"];
   if (!curr.ingredients.empty())
-    raise << "new-default-space can't take any ingredients\n" << end();
+    raise_error << "new-default-space can't take any ingredients\n" << end();
   curr.ingredients.push_back(reagent("location:type"));
   curr.ingredients.push_back(reagent("number-of-locals:literal"));
   if (!curr.products.empty())
-    raise << "new-default-space can't take any results\n" << end();
+    raise_error << "new-default-space can't take any results\n" << end();
   curr.products.push_back(reagent("default-space:address:array:location"));
 }
 
@@ -204,7 +204,7 @@ long long int address(long long int offset, long long int base) {
   if (base == 0) return offset;  // raw
   if (offset >= static_cast<long long int>(Memory[base])) {
     // todo: test
-    raise << "location " << offset << " is out of bounds " << no_scientific(Memory[base]) << " at " << base << '\n' << end();
+    raise_error << "location " << offset << " is out of bounds " << no_scientific(Memory[base]) << " at " << base << '\n' << end();
   }
   return base+1 + offset;
 }
@@ -212,7 +212,7 @@ long long int address(long long int offset, long long int base) {
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "default-space") {
     if (!scalar(data))
-      raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
+      raise_error << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
     Current_routine->calls.front().default_space = data.at(0);
     return;
   }
