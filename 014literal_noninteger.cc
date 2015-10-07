@@ -20,7 +20,7 @@ if (is_noninteger(s)) {
 :(code)
 bool is_noninteger(const string& s) {
   return s.find_first_not_of("0123456789-.") == string::npos
-      && s.find('.') != string::npos;
+      && std::count(s.begin(), s.end(), '.') == 1;
 }
 
 double to_double(string n) {
@@ -29,4 +29,11 @@ double to_double(string n) {
   double result = strtod(n.c_str(), &end);
   assert(*end == '\0');
   return result;
+}
+
+void test_is_noninteger() {
+  CHECK(!is_noninteger("1234"));
+  CHECK(!is_noninteger("1a2"));
+  CHECK(is_noninteger("234.0"));
+  CHECK(!is_noninteger("..."));
 }
