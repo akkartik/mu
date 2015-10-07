@@ -80,13 +80,6 @@
 :(before "int main")
 // End Tracing  // hack to ensure most code in this layer comes before anything else
 
-:(before "End Tracing")
-bool Hide_errors = false;
-bool Hide_warnings = false;
-:(before "End Setup")
-Hide_errors = false;
-Hide_warnings = false;
-
 :(before "End Types")
 struct trace_line {
   int depth;  // optional field just to help browse traces later
@@ -95,6 +88,13 @@ struct trace_line {
   trace_line(string l, string c) :depth(0), label(l), contents(c) {}
   trace_line(int d, string l, string c) :depth(d), label(l), contents(c) {}
 };
+
+:(before "End Tracing")
+bool Hide_errors = false;
+bool Hide_warnings = false;
+:(before "End Setup")
+Hide_errors = false;
+Hide_warnings = false;
 
 :(before "End Tracing")
 struct trace_stream {
