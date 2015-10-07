@@ -134,7 +134,7 @@ if (curr.name == "new-default-space") {
     vector<double> result;
     result.push_back(Name[Recipe_ordinal[current_recipe_name()]][""]);
     if (result.back() == 0)
-      raise_error << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names\n" << end();
+      raise_error << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names?\n" << end();
     return result;
   }
 :(after "void write_memory(reagent x, vector<double> data)")
