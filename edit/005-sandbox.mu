@@ -177,7 +177,7 @@ recipe update-recipes [
   screen:address <- next-ingredient
   recipes:address:editor-data <- get *env, recipes:offset
   in:address:array:character <- editor-contents recipes
-  save [recipes.mu], in
+  save [recipes.mu], in  # newlayer: persistence
   reload in
   reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
 ]
