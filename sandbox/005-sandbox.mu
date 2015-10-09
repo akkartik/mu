@@ -160,7 +160,7 @@ recipe update-recipes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
   screen:address <- next-ingredient
-  in:address:array:character <- restore [recipes.mu]
+  in:address:array:character <- restore [recipes.mu]  # newlayer: persistence
   reload in
   reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
 ]
