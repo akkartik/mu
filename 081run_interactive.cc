@@ -286,6 +286,17 @@ get x:number, foo:offset]
 +mem: storing 110 in location 14
 # ...
 
+:(scenario run_interactive_with_comment)
+recipe main [
+  # 2 instructions, with a comment after the first
+  1:address:array:number <- new [a:number <- copy 0  # abc
+b:number <- copy 0
+]
+  2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
+]
+# no errors
++mem: storing 0 in location 3
+
 :(before "End Globals")
 string Most_recent_products;
 :(before "End Setup")
@@ -330,7 +341,7 @@ string strip_comments(string in) {
       result << in.at(i);
     }
     else {
-      while (i < SIZE(in) && in.at(i) != '\n')
+      while (i+1 < SIZE(in) && in.at(i+1) != '\n')
         ++i;
     }
   }
