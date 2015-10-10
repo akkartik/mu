@@ -147,7 +147,7 @@ recipe run-sandboxes [
   curr:address:sandbox-data <- get *env, sandbox:offset
   {
     break-unless curr
-    update-sandbox curr
+    update-sandbox curr, env
     curr <- get *curr, next-sandbox:offset
     loop
   }

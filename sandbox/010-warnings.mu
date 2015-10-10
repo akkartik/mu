@@ -12,6 +12,12 @@ recipe! update-recipes [
   in:address:array:character <- restore [recipes.mu]
   recipe-warnings:address:address:array:character <- get-address *env, recipe-warnings:offset
   *recipe-warnings <- reload in
+  # if recipe editor has errors, stop
+  {
+    break-unless *recipe-warnings
+    status:address:array:character <- new [errors found]
+    update-status screen, status, 1/red
+  }
   reply 0/show-recipe-warnings-in-sandboxes, env/same-as-ingredient:0, screen/same-as-ingredient:1
 ]
 
@@ -32,11 +38,18 @@ container sandbox-data [
 recipe! update-sandbox [
   local-scope
   sandbox:address:sandbox-data <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
   data:address:array:character <- get *sandbox, data:offset
   response:address:address:array:character <- get-address *sandbox, response:offset
   warnings:address:address:array:character <- get-address *sandbox, warnings:offset
   trace:address:address:array:character <- get-address *sandbox, trace:offset
   fake-screen:address:address:screen <- get-address *sandbox, screen:offset
+  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+  {
+    break-unless recipe-warnings
+    *warnings <- copy recipe-warnings
+    reply
+  }
   *response, *warnings, *fake-screen, *trace, completed?:boolean <- run-interactive data
   {
     break-if *warnings
@@ -97,6 +110,8 @@ scenario run-instruction-and-print-warnings [
     .                                                  .
   ]
 ]
+
+# todo: print warnings in file even if you can't run a sandbox
 
 scenario run-instruction-and-print-warnings-only-once [
   trace-until 100/app  # trace too long
