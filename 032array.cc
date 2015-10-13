@@ -276,7 +276,7 @@ case INDEX_ADDRESS: {
   reagent base = inst.ingredients.at(0);
   canonize_type(base);
   if (!is_mu_array(base)) {
-    raise_error << current_recipe_name () << "'index-address' on a non-array " << base.original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "'index-address' on a non-array " << base.original_string << '\n' << end();
     break;
   }
   if (inst.products.empty()) break;

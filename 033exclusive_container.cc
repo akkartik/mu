@@ -90,7 +90,7 @@ case MAYBE_CONVERT: {
   reagent base = inst.ingredients.at(0);
   canonize_type(base);
   if (base.types.empty() || Type[base.types.at(0)].kind != exclusive_container) {
-    raise_error << current_recipe_name () << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1))) {

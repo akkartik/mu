@@ -234,7 +234,7 @@ recipe main [
 // convert variant names of exclusive containers
 if (inst.operation == Recipe_ordinal["maybe-convert"]) {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "exactly 2 ingredients expected in '" << current_instruction().to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "exactly 2 ingredients expected in '" << inst.to_string() << "'\n" << end();
     break;
   }
   assert(is_literal(inst.ingredients.at(1)));
