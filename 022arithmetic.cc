@@ -243,11 +243,11 @@ Recipe_ordinal["divide-with-remainder"] = DIVIDE_WITH_REMAINDER;
 :(before "End Primitive Recipe Checks")
 case DIVIDE_WITH_REMAINDER: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(current_recipe_name()) << "'divide-with-remainder' requires exactly two ingredients, but got '" << current_instruction().to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'divide-with-remainder' requires exactly two ingredients, but got '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0)) || !is_mu_number(inst.ingredients.at(1))) {
-    raise_error << maybe(current_recipe_name()) << "'divide-with-remainder' requires number ingredients, but got '" << current_instruction().to_string() << "'\n" << end();
+    raise_error << maybe(Recipe[r].name) << "'divide-with-remainder' requires number ingredients, but got '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (SIZE(inst.products) > 2) {
