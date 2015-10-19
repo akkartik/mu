@@ -25,7 +25,11 @@ case REPLY: {
   // Starting Reply
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
   const string& callee = current_recipe_name();
-  --Callstack_depth;
+  if (Trace_stream) {
+    trace("trace") << "reply: decrementing callstack depth from " << Trace_stream->callstack_depth << end();
+    --Trace_stream->callstack_depth;
+    assert(Trace_stream->callstack_depth >= 0);
+  }
   Current_routine->calls.pop_front();
   // just in case 'main' returns a value, drop it for now
   if (Current_routine->calls.empty()) goto stop_running_current_routine;

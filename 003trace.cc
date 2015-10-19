@@ -108,9 +108,10 @@ struct trace_stream {
   ostringstream* curr_stream;
   string curr_label;
   int curr_depth;
+  int callstack_depth;
   int collect_depth;
   ofstream null_stream;  // never opens a file, so writes silently fail
-  trace_stream() :curr_stream(NULL), curr_depth(0), collect_depth(Max_depth) {}
+  trace_stream() :curr_stream(NULL), curr_depth(Max_depth), callstack_depth(0), collect_depth(Max_depth) {}
   ~trace_stream() { if (curr_stream) delete curr_stream; }
 
   ostream& stream(string label) {
@@ -147,9 +148,7 @@ struct trace_stream {
     label = trim(label);
     for (vector<trace_line>::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
       if (label.empty() || label == p->label) {
-        if (p->depth)
-          output << std::setw(4) << p->depth << ' ';
-        output << p->label << ": " << p->contents << '\n';
+        output << std::setw(4) << p->depth << ' ' << p->label << ": " << p->contents << '\n';
       }
     return output.str();
   }
@@ -359,15 +358,12 @@ using std::ofstream;
 :(before "End Globals")
 //: In future layers we'll use the depth field as follows:
 //:
-//: Mu 'applications' will be able to use depths 1-100 as they like.
+//: Errors will be depth 0.
+//: Warnings will be depth 1.
+//: Mu 'applications' will be able to use depths 2-100 as they like.
 //: Primitive statements will occupy 101-9998
 const int Initial_callstack_depth = 101;
 const int Max_callstack_depth = 9998;
-//: (ignore this until the call layer)
-:(before "End Globals")
-int Callstack_depth = 0;
-:(before "End Setup")
-Callstack_depth = 0;
 //: Finally, details of primitive mu statements will occupy depth 9999 (more on that later as well)
 :(before "End Globals")
 const int Primitive_recipe_depth = 9999;
