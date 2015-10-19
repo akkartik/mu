@@ -166,6 +166,24 @@ case _CLEAR_TRACE: {
   break;
 }
 
+:(before "End Primitive Recipe Declarations")
+_SAVE_TRACE,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$save-trace"] = _SAVE_TRACE;
+:(before "End Primitive Recipe Checks")
+case _SAVE_TRACE: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case _SAVE_TRACE: {
+  if (!Trace_file.empty()) {
+    ofstream fout((Trace_dir+Trace_file).c_str());
+    fout << Trace_stream->readable_contents("");
+    fout.close();
+  }
+  break;
+}
+
 //: assert: perform sanity checks at runtime
 
 :(scenario assert)
@@ -267,8 +285,6 @@ case _SYSTEM: {
   products.at(0).push_back(status);
   break;
 }
-
-//:: helpers for debugging
 
 :(before "End Primitive Recipe Declarations")
 _DUMP_MEMORY,

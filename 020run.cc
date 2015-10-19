@@ -162,7 +162,6 @@ if (!Run_tests) {
   setup();
 //?   Trace_file = "interactive";
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
-//?   Trace_stream->collect_layers.insert("app");
   run_main(argc, argv);
   teardown();
 }
