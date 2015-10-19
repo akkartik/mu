@@ -5,9 +5,10 @@
 9999 after-brace: recipe scenario-string-split-empty
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-string-split-empty
- 101 run: run [
+ 102 run: run [
     1:address:array:character <- new []
     2:address:array:address:array:character <- split 1:address:array:character, 47/slash
     3:number <- length *2:address:array:address:array:character
@@ -26,38 +27,43 @@
 9999 after-brace: new ...
 9999 after-brace: split ...
 9999 after-brace: length ...
- 101 run: 1:address:array:character <- new []
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: 1:address:array:character <- new []
 9999 mem: storing 1000 in location 1
- 101 run: 2:address:array:address:array:character <- split 1:address:array:character, 47/slash
+ 103 run: 2:address:array:address:array:character <- split 1:address:array:character, 47/slash
 9999 mem: location 1 is 1000
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 13
 9999 mem: new alloc: 1001
- 102 run: s:address:array:character <- next-ingredient 
+ 104 run: s:address:array:character <- next-ingredient 
 9999 mem: storing 1000 in location 1003
- 102 run: delim:character <- next-ingredient 
+ 104 run: delim:character <- next-ingredient 
 9999 mem: storing 47 in location 1004
- 102 run: len:number <- length *s
+ 104 run: len:number <- length *s
 9999 mem: location 1003 is 1000
 9999 mem: storing 0 in location 1005
- 102 run: empty?:boolean <- equal len, 0
+ 104 run: empty?:boolean <- equal len, 0
 9999 mem: location 1005 is 0
 9999 mem: storing 1 in location 1006
- 102 run: break-unless empty?, 
+ 104 run: break-unless empty?, 
 9999 mem: location 1006 is 1
 9999 run: jump-unless fell through
- 102 run: result:address:array:address:array:character <- new location:type, 0
+ 104 run: result:address:array:address:array:character <- new location:type, 0
 9999 mem: array size is 0
 9999 mem: new alloc: 1015
 9999 mem: storing 1015 in location 1007
- 102 run: reply result
+ 104 run: reply result
 9999 mem: location 1007 is 1015
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1015
 9999 mem: storing 1015 in location 2
- 101 run: 3:number <- length *2:address:array:address:array:character
+ 103 run: 3:number <- length *2:address:array:address:array:character
 9999 mem: location 2 is 1015
 9999 mem: storing 0 in location 3
- 100 run: memory-should-contain [
+9999 trace: fall-through: exiting run1001; decrementing callstack depth from 2
+ 102 run: memory-should-contain [
     3 <- 0  # empty result
   ]
 9999 run: checking location 3
+9999 trace: fall-through: exiting scenario-string-split-empty; decrementing callstack depth from 1

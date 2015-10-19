@@ -55,6 +55,11 @@ case CALL: {
 :(before "End Primitive Recipe Implementations")
 case CALL: {
   // Begin Call
+  if (Trace_stream) {
+    ++Trace_stream->callstack_depth;
+    trace("trace") << "indirect 'call': incrementing callstack depth to " << Trace_stream->callstack_depth << end();
+    assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
+  }
   Current_routine->calls.push_front(call(ingredients.at(0).at(0)));
   ingredients.erase(ingredients.begin());  // drop the callee
   goto call_housekeeping;

@@ -5,9 +5,10 @@
 9999 after-brace: recipe scenario-replace-all-characters
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-replace-all-characters
- 101 run: run [
+ 102 run: run [
     1:address:array:character/raw <- new [banana]
     1:address:array:character/raw <- string-replace 1:address:array:character/raw, 97/a, 122/z
     2:array:character/raw <- copy *1:address:array:character/raw
@@ -27,274 +28,71 @@
 9999 after-brace: new ...
 9999 after-brace: string-replace ...
 9999 after-brace: copy ...
- 101 run: 1:address:array:character/raw <- new [banana]
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: 1:address:array:character/raw <- new [banana]
 9999 mem: storing 1000 in location 1
- 101 run: 1:address:array:character/raw <- string-replace 1:address:array:character/raw, 97/a, 122/z
+ 103 run: 1:address:array:character/raw <- string-replace 1:address:array:character/raw, 97/a, 122/z
 9999 mem: location 1 is 1000
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
 9999 mem: new alloc: 1007
- 102 run: s:address:array:character <- next-ingredient 
+ 104 run: s:address:array:character <- next-ingredient 
 9999 mem: storing 1000 in location 1009
- 102 run: oldc:character <- next-ingredient 
+ 104 run: oldc:character <- next-ingredient 
 9999 mem: storing 97 in location 1010
- 102 run: newc:character <- next-ingredient 
+ 104 run: newc:character <- next-ingredient 
 9999 mem: storing 122 in location 1011
- 102 run: from:number, _ <- next-ingredient 
+ 104 run: from:number, _ <- next-ingredient 
 9999 mem: storing 0 in location 1012
- 102 run: len:number <- length *s
+ 104 run: len:number <- length *s
 9999 mem: location 1009 is 1000
 9999 mem: storing 6 in location 1013
- 102 run: i:number <- find-next s, oldc, from
+ 104 run: i:number <- find-next s, oldc, from
 9999 mem: location 1009 is 1000
 9999 mem: location 1010 is 97
 9999 mem: location 1012 is 0
- 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 4
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
 9999 mem: new alloc: 1017
- 103 run: text:address:array:character <- next-ingredient 
+ 105 run: text:address:array:character <- next-ingredient 
 9999 mem: storing 1000 in location 1019
- 103 run: pattern:character <- next-ingredient 
+ 105 run: pattern:character <- next-ingredient 
 9999 mem: storing 97 in location 1020
- 103 run: idx:number <- next-ingredient 
+ 105 run: idx:number <- next-ingredient 
 9999 mem: storing 0 in location 1021
- 103 run: len:number <- length *text
+ 105 run: len:number <- length *text
 9999 mem: location 1019 is 1000
 9999 mem: storing 6 in location 1022
- 103 run: eof?:boolean <- greater-or-equal idx, len
+ 105 run: eof?:boolean <- greater-or-equal idx, len
 9999 mem: location 1021 is 0
 9999 mem: location 1022 is 6
 9999 mem: storing 0 in location 1023
- 103 run: break-if eof?, 
+ 105 run: break-if eof?, 
 9999 mem: location 1023 is 0
 9999 run: jump-if fell through
- 103 run: curr:character <- index *text, idx
+ 105 run: curr:character <- index *text, idx
 9999 mem: location 1019 is 1000
 9999 mem: location 1021 is 0
 9999 run: address to copy is 1001
 9999 run: its type is character
 9999 mem: location 1001 is 98
 9999 mem: storing 98 in location 1024
- 103 run: found?:boolean <- equal curr, pattern
-9999 mem: location 1024 is 98
-9999 mem: location 1020 is 97
-9999 mem: storing 0 in location 1025
- 103 run: break-if found?, 
-9999 mem: location 1025 is 0
-9999 run: jump-if fell through
- 103 run: idx <- add idx, 1
-9999 mem: location 1021 is 0
-9999 mem: storing 1 in location 1021
- 103 run: loop 
-9999 run: jumping to instruction 6
- 103 run: eof?:boolean <- greater-or-equal idx, len
-9999 mem: location 1021 is 1
-9999 mem: location 1022 is 6
-9999 mem: storing 0 in location 1023
- 103 run: break-if eof?, 
-9999 mem: location 1023 is 0
-9999 run: jump-if fell through
- 103 run: curr:character <- index *text, idx
-9999 mem: location 1019 is 1000
-9999 mem: location 1021 is 1
-9999 run: address to copy is 1002
-9999 run: its type is character
-9999 mem: location 1002 is 97
-9999 mem: storing 97 in location 1024
- 103 run: found?:boolean <- equal curr, pattern
-9999 mem: location 1024 is 97
-9999 mem: location 1020 is 97
-9999 mem: storing 1 in location 1025
- 103 run: break-if found?, 
-9999 mem: location 1025 is 1
-9999 run: jumping to instruction 13
- 103 run: reply idx
-9999 mem: location 1021 is 1
-9999 run: result 0 is 1
-9999 mem: storing 1 in location 1014
- 102 run: done?:boolean <- greater-or-equal i, len
-9999 mem: location 1014 is 1
-9999 mem: location 1013 is 6
-9999 mem: storing 0 in location 1015
- 102 run: jump-unless done?, 1:offset
-9999 mem: location 1015 is 0
-9999 run: jumping to instruction 10
- 102 run: dest:address:character <- index-address *s, i
-9999 mem: location 1009 is 1000
-9999 mem: location 1014 is 1
-9999 mem: storing 1002 in location 1016
- 102 run: *dest <- copy newc
-9999 mem: location 1011 is 122
-9999 mem: location 1016 is 1002
-9999 mem: storing 122 in location 1002
- 102 run: i <- add i, 1
-9999 mem: location 1014 is 1
-9999 mem: storing 2 in location 1014
- 102 run: s <- string-replace s, oldc, newc, i
-9999 mem: location 1009 is 1000
-9999 mem: location 1010 is 97
-9999 mem: location 1011 is 122
-9999 mem: location 1014 is 2
- 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 9
-9999 mem: new alloc: 1026
- 103 run: s:address:array:character <- next-ingredient 
-9999 mem: storing 1000 in location 1028
- 103 run: oldc:character <- next-ingredient 
-9999 mem: storing 97 in location 1029
- 103 run: newc:character <- next-ingredient 
-9999 mem: storing 122 in location 1030
- 103 run: from:number, _ <- next-ingredient 
-9999 mem: storing 2 in location 1031
- 103 run: len:number <- length *s
-9999 mem: location 1028 is 1000
-9999 mem: storing 6 in location 1032
- 103 run: i:number <- find-next s, oldc, from
-9999 mem: location 1028 is 1000
-9999 mem: location 1029 is 97
-9999 mem: location 1031 is 2
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 8
- 104 run: text:address:array:character <- next-ingredient 
-9999 mem: storing 1000 in location 1019
- 104 run: pattern:character <- next-ingredient 
-9999 mem: storing 97 in location 1020
- 104 run: idx:number <- next-ingredient 
-9999 mem: storing 2 in location 1021
- 104 run: len:number <- length *text
-9999 mem: location 1019 is 1000
-9999 mem: storing 6 in location 1022
- 104 run: eof?:boolean <- greater-or-equal idx, len
-9999 mem: location 1021 is 2
-9999 mem: location 1022 is 6
-9999 mem: storing 0 in location 1023
- 104 run: break-if eof?, 
-9999 mem: location 1023 is 0
-9999 run: jump-if fell through
- 104 run: curr:character <- index *text, idx
-9999 mem: location 1019 is 1000
-9999 mem: location 1021 is 2
-9999 run: address to copy is 1003
-9999 run: its type is character
-9999 mem: location 1003 is 110
-9999 mem: storing 110 in location 1024
- 104 run: found?:boolean <- equal curr, pattern
-9999 mem: location 1024 is 110
-9999 mem: location 1020 is 97
-9999 mem: storing 0 in location 1025
- 104 run: break-if found?, 
-9999 mem: location 1025 is 0
-9999 run: jump-if fell through
- 104 run: idx <- add idx, 1
-9999 mem: location 1021 is 2
-9999 mem: storing 3 in location 1021
- 104 run: loop 
-9999 run: jumping to instruction 6
- 104 run: eof?:boolean <- greater-or-equal idx, len
-9999 mem: location 1021 is 3
-9999 mem: location 1022 is 6
-9999 mem: storing 0 in location 1023
- 104 run: break-if eof?, 
-9999 mem: location 1023 is 0
-9999 run: jump-if fell through
- 104 run: curr:character <- index *text, idx
-9999 mem: location 1019 is 1000
-9999 mem: location 1021 is 3
-9999 run: address to copy is 1004
-9999 run: its type is character
-9999 mem: location 1004 is 97
-9999 mem: storing 97 in location 1024
- 104 run: found?:boolean <- equal curr, pattern
-9999 mem: location 1024 is 97
-9999 mem: location 1020 is 97
-9999 mem: storing 1 in location 1025
- 104 run: break-if found?, 
-9999 mem: location 1025 is 1
-9999 run: jumping to instruction 13
- 104 run: reply idx
-9999 mem: location 1021 is 3
-9999 run: result 0 is 3
-9999 mem: storing 3 in location 1033
- 103 run: done?:boolean <- greater-or-equal i, len
-9999 mem: location 1033 is 3
-9999 mem: location 1032 is 6
-9999 mem: storing 0 in location 1034
- 103 run: jump-unless done?, 1:offset
-9999 mem: location 1034 is 0
-9999 run: jumping to instruction 10
- 103 run: dest:address:character <- index-address *s, i
-9999 mem: location 1028 is 1000
-9999 mem: location 1033 is 3
-9999 mem: storing 1004 in location 1035
- 103 run: *dest <- copy newc
-9999 mem: location 1030 is 122
-9999 mem: location 1035 is 1004
-9999 mem: storing 122 in location 1004
- 103 run: i <- add i, 1
-9999 mem: location 1033 is 3
-9999 mem: storing 4 in location 1033
- 103 run: s <- string-replace s, oldc, newc, i
-9999 mem: location 1028 is 1000
-9999 mem: location 1029 is 97
-9999 mem: location 1030 is 122
-9999 mem: location 1033 is 4
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 9
-9999 mem: new alloc: 1036
- 104 run: s:address:array:character <- next-ingredient 
-9999 mem: storing 1000 in location 1038
- 104 run: oldc:character <- next-ingredient 
-9999 mem: storing 97 in location 1039
- 104 run: newc:character <- next-ingredient 
-9999 mem: storing 122 in location 1040
- 104 run: from:number, _ <- next-ingredient 
-9999 mem: storing 4 in location 1041
- 104 run: len:number <- length *s
-9999 mem: location 1038 is 1000
-9999 mem: storing 6 in location 1042
- 104 run: i:number <- find-next s, oldc, from
-9999 mem: location 1038 is 1000
-9999 mem: location 1039 is 97
-9999 mem: location 1041 is 4
- 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-9999 mem: array size is 8
- 105 run: text:address:array:character <- next-ingredient 
-9999 mem: storing 1000 in location 1019
- 105 run: pattern:character <- next-ingredient 
-9999 mem: storing 97 in location 1020
- 105 run: idx:number <- next-ingredient 
-9999 mem: storing 4 in location 1021
- 105 run: len:number <- length *text
-9999 mem: location 1019 is 1000
-9999 mem: storing 6 in location 1022
- 105 run: eof?:boolean <- greater-or-equal idx, len
-9999 mem: location 1021 is 4
-9999 mem: location 1022 is 6
-9999 mem: storing 0 in location 1023
- 105 run: break-if eof?, 
-9999 mem: location 1023 is 0
-9999 run: jump-if fell through
- 105 run: curr:character <- index *text, idx
-9999 mem: location 1019 is 1000
-9999 mem: location 1021 is 4
-9999 run: address to copy is 1005
-9999 run: its type is character
-9999 mem: location 1005 is 110
-9999 mem: storing 110 in location 1024
  105 run: found?:boolean <- equal curr, pattern
-9999 mem: location 1024 is 110
+9999 mem: location 1024 is 98
 9999 mem: location 1020 is 97
 9999 mem: storing 0 in location 1025
  105 run: break-if found?, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
  105 run: idx <- add idx, 1
-9999 mem: location 1021 is 4
-9999 mem: storing 5 in location 1021
+9999 mem: location 1021 is 0
+9999 mem: storing 1 in location 1021
  105 run: loop 
 9999 run: jumping to instruction 6
  105 run: eof?:boolean <- greater-or-equal idx, len
-9999 mem: location 1021 is 5
+9999 mem: location 1021 is 1
 9999 mem: location 1022 is 6
 9999 mem: storing 0 in location 1023
  105 run: break-if eof?, 
@@ -302,10 +100,10 @@
 9999 run: jump-if fell through
  105 run: curr:character <- index *text, idx
 9999 mem: location 1019 is 1000
-9999 mem: location 1021 is 5
-9999 run: address to copy is 1006
+9999 mem: location 1021 is 1
+9999 run: address to copy is 1002
 9999 run: its type is character
-9999 mem: location 1006 is 97
+9999 mem: location 1002 is 97
 9999 mem: storing 97 in location 1024
  105 run: found?:boolean <- equal curr, pattern
 9999 mem: location 1024 is 97
@@ -315,50 +113,53 @@
 9999 mem: location 1025 is 1
 9999 run: jumping to instruction 13
  105 run: reply idx
-9999 mem: location 1021 is 5
-9999 run: result 0 is 5
-9999 mem: storing 5 in location 1043
+9999 mem: location 1021 is 1
+9999 trace: reply: decrementing callstack depth from 4
+9999 run: result 0 is 1
+9999 mem: storing 1 in location 1014
  104 run: done?:boolean <- greater-or-equal i, len
-9999 mem: location 1043 is 5
-9999 mem: location 1042 is 6
-9999 mem: storing 0 in location 1044
+9999 mem: location 1014 is 1
+9999 mem: location 1013 is 6
+9999 mem: storing 0 in location 1015
  104 run: jump-unless done?, 1:offset
-9999 mem: location 1044 is 0
+9999 mem: location 1015 is 0
 9999 run: jumping to instruction 10
  104 run: dest:address:character <- index-address *s, i
-9999 mem: location 1038 is 1000
-9999 mem: location 1043 is 5
-9999 mem: storing 1006 in location 1045
+9999 mem: location 1009 is 1000
+9999 mem: location 1014 is 1
+9999 mem: storing 1002 in location 1016
  104 run: *dest <- copy newc
-9999 mem: location 1040 is 122
-9999 mem: location 1045 is 1006
-9999 mem: storing 122 in location 1006
+9999 mem: location 1011 is 122
+9999 mem: location 1016 is 1002
+9999 mem: storing 122 in location 1002
  104 run: i <- add i, 1
-9999 mem: location 1043 is 5
-9999 mem: storing 6 in location 1043
+9999 mem: location 1014 is 1
+9999 mem: storing 2 in location 1014
  104 run: s <- string-replace s, oldc, newc, i
-9999 mem: location 1038 is 1000
-9999 mem: location 1039 is 97
-9999 mem: location 1040 is 122
-9999 mem: location 1043 is 6
+9999 mem: location 1009 is 1000
+9999 mem: location 1010 is 97
+9999 mem: location 1011 is 122
+9999 mem: location 1014 is 2
+9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
-9999 mem: new alloc: 1046
+9999 mem: new alloc: 1026
  105 run: s:address:array:character <- next-ingredient 
-9999 mem: storing 1000 in location 1048
+9999 mem: storing 1000 in location 1028
  105 run: oldc:character <- next-ingredient 
-9999 mem: storing 97 in location 1049
+9999 mem: storing 97 in location 1029
  105 run: newc:character <- next-ingredient 
-9999 mem: storing 122 in location 1050
+9999 mem: storing 122 in location 1030
  105 run: from:number, _ <- next-ingredient 
-9999 mem: storing 6 in location 1051
+9999 mem: storing 2 in location 1031
  105 run: len:number <- length *s
-9999 mem: location 1048 is 1000
-9999 mem: storing 6 in location 1052
+9999 mem: location 1028 is 1000
+9999 mem: storing 6 in location 1032
  105 run: i:number <- find-next s, oldc, from
-9999 mem: location 1048 is 1000
-9999 mem: location 1049 is 97
-9999 mem: location 1051 is 6
+9999 mem: location 1028 is 1000
+9999 mem: location 1029 is 97
+9999 mem: location 1031 is 2
+9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
  106 run: text:address:array:character <- next-ingredient 
@@ -366,45 +167,262 @@
  106 run: pattern:character <- next-ingredient 
 9999 mem: storing 97 in location 1020
  106 run: idx:number <- next-ingredient 
-9999 mem: storing 6 in location 1021
+9999 mem: storing 2 in location 1021
  106 run: len:number <- length *text
 9999 mem: location 1019 is 1000
 9999 mem: storing 6 in location 1022
  106 run: eof?:boolean <- greater-or-equal idx, len
+9999 mem: location 1021 is 2
+9999 mem: location 1022 is 6
+9999 mem: storing 0 in location 1023
+ 106 run: break-if eof?, 
+9999 mem: location 1023 is 0
+9999 run: jump-if fell through
+ 106 run: curr:character <- index *text, idx
+9999 mem: location 1019 is 1000
+9999 mem: location 1021 is 2
+9999 run: address to copy is 1003
+9999 run: its type is character
+9999 mem: location 1003 is 110
+9999 mem: storing 110 in location 1024
+ 106 run: found?:boolean <- equal curr, pattern
+9999 mem: location 1024 is 110
+9999 mem: location 1020 is 97
+9999 mem: storing 0 in location 1025
+ 106 run: break-if found?, 
+9999 mem: location 1025 is 0
+9999 run: jump-if fell through
+ 106 run: idx <- add idx, 1
+9999 mem: location 1021 is 2
+9999 mem: storing 3 in location 1021
+ 106 run: loop 
+9999 run: jumping to instruction 6
+ 106 run: eof?:boolean <- greater-or-equal idx, len
+9999 mem: location 1021 is 3
+9999 mem: location 1022 is 6
+9999 mem: storing 0 in location 1023
+ 106 run: break-if eof?, 
+9999 mem: location 1023 is 0
+9999 run: jump-if fell through
+ 106 run: curr:character <- index *text, idx
+9999 mem: location 1019 is 1000
+9999 mem: location 1021 is 3
+9999 run: address to copy is 1004
+9999 run: its type is character
+9999 mem: location 1004 is 97
+9999 mem: storing 97 in location 1024
+ 106 run: found?:boolean <- equal curr, pattern
+9999 mem: location 1024 is 97
+9999 mem: location 1020 is 97
+9999 mem: storing 1 in location 1025
+ 106 run: break-if found?, 
+9999 mem: location 1025 is 1
+9999 run: jumping to instruction 13
+ 106 run: reply idx
+9999 mem: location 1021 is 3
+9999 trace: reply: decrementing callstack depth from 5
+9999 run: result 0 is 3
+9999 mem: storing 3 in location 1033
+ 105 run: done?:boolean <- greater-or-equal i, len
+9999 mem: location 1033 is 3
+9999 mem: location 1032 is 6
+9999 mem: storing 0 in location 1034
+ 105 run: jump-unless done?, 1:offset
+9999 mem: location 1034 is 0
+9999 run: jumping to instruction 10
+ 105 run: dest:address:character <- index-address *s, i
+9999 mem: location 1028 is 1000
+9999 mem: location 1033 is 3
+9999 mem: storing 1004 in location 1035
+ 105 run: *dest <- copy newc
+9999 mem: location 1030 is 122
+9999 mem: location 1035 is 1004
+9999 mem: storing 122 in location 1004
+ 105 run: i <- add i, 1
+9999 mem: location 1033 is 3
+9999 mem: storing 4 in location 1033
+ 105 run: s <- string-replace s, oldc, newc, i
+9999 mem: location 1028 is 1000
+9999 mem: location 1029 is 97
+9999 mem: location 1030 is 122
+9999 mem: location 1033 is 4
+9999 trace: incrementing callstack depth to 5
+ 106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 9
+9999 mem: new alloc: 1036
+ 106 run: s:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1038
+ 106 run: oldc:character <- next-ingredient 
+9999 mem: storing 97 in location 1039
+ 106 run: newc:character <- next-ingredient 
+9999 mem: storing 122 in location 1040
+ 106 run: from:number, _ <- next-ingredient 
+9999 mem: storing 4 in location 1041
+ 106 run: len:number <- length *s
+9999 mem: location 1038 is 1000
+9999 mem: storing 6 in location 1042
+ 106 run: i:number <- find-next s, oldc, from
+9999 mem: location 1038 is 1000
+9999 mem: location 1039 is 97
+9999 mem: location 1041 is 4
+9999 trace: incrementing callstack depth to 6
+ 107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 8
+ 107 run: text:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1019
+ 107 run: pattern:character <- next-ingredient 
+9999 mem: storing 97 in location 1020
+ 107 run: idx:number <- next-ingredient 
+9999 mem: storing 4 in location 1021
+ 107 run: len:number <- length *text
+9999 mem: location 1019 is 1000
+9999 mem: storing 6 in location 1022
+ 107 run: eof?:boolean <- greater-or-equal idx, len
+9999 mem: location 1021 is 4
+9999 mem: location 1022 is 6
+9999 mem: storing 0 in location 1023
+ 107 run: break-if eof?, 
+9999 mem: location 1023 is 0
+9999 run: jump-if fell through
+ 107 run: curr:character <- index *text, idx
+9999 mem: location 1019 is 1000
+9999 mem: location 1021 is 4
+9999 run: address to copy is 1005
+9999 run: its type is character
+9999 mem: location 1005 is 110
+9999 mem: storing 110 in location 1024
+ 107 run: found?:boolean <- equal curr, pattern
+9999 mem: location 1024 is 110
+9999 mem: location 1020 is 97
+9999 mem: storing 0 in location 1025
+ 107 run: break-if found?, 
+9999 mem: location 1025 is 0
+9999 run: jump-if fell through
+ 107 run: idx <- add idx, 1
+9999 mem: location 1021 is 4
+9999 mem: storing 5 in location 1021
+ 107 run: loop 
+9999 run: jumping to instruction 6
+ 107 run: eof?:boolean <- greater-or-equal idx, len
+9999 mem: location 1021 is 5
+9999 mem: location 1022 is 6
+9999 mem: storing 0 in location 1023
+ 107 run: break-if eof?, 
+9999 mem: location 1023 is 0
+9999 run: jump-if fell through
+ 107 run: curr:character <- index *text, idx
+9999 mem: location 1019 is 1000
+9999 mem: location 1021 is 5
+9999 run: address to copy is 1006
+9999 run: its type is character
+9999 mem: location 1006 is 97
+9999 mem: storing 97 in location 1024
+ 107 run: found?:boolean <- equal curr, pattern
+9999 mem: location 1024 is 97
+9999 mem: location 1020 is 97
+9999 mem: storing 1 in location 1025
+ 107 run: break-if found?, 
+9999 mem: location 1025 is 1
+9999 run: jumping to instruction 13
+ 107 run: reply idx
+9999 mem: location 1021 is 5
+9999 trace: reply: decrementing callstack depth from 6
+9999 run: result 0 is 5
+9999 mem: storing 5 in location 1043
+ 106 run: done?:boolean <- greater-or-equal i, len
+9999 mem: location 1043 is 5
+9999 mem: location 1042 is 6
+9999 mem: storing 0 in location 1044
+ 106 run: jump-unless done?, 1:offset
+9999 mem: location 1044 is 0
+9999 run: jumping to instruction 10
+ 106 run: dest:address:character <- index-address *s, i
+9999 mem: location 1038 is 1000
+9999 mem: location 1043 is 5
+9999 mem: storing 1006 in location 1045
+ 106 run: *dest <- copy newc
+9999 mem: location 1040 is 122
+9999 mem: location 1045 is 1006
+9999 mem: storing 122 in location 1006
+ 106 run: i <- add i, 1
+9999 mem: location 1043 is 5
+9999 mem: storing 6 in location 1043
+ 106 run: s <- string-replace s, oldc, newc, i
+9999 mem: location 1038 is 1000
+9999 mem: location 1039 is 97
+9999 mem: location 1040 is 122
+9999 mem: location 1043 is 6
+9999 trace: incrementing callstack depth to 6
+ 107 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 9
+9999 mem: new alloc: 1046
+ 107 run: s:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1048
+ 107 run: oldc:character <- next-ingredient 
+9999 mem: storing 97 in location 1049
+ 107 run: newc:character <- next-ingredient 
+9999 mem: storing 122 in location 1050
+ 107 run: from:number, _ <- next-ingredient 
+9999 mem: storing 6 in location 1051
+ 107 run: len:number <- length *s
+9999 mem: location 1048 is 1000
+9999 mem: storing 6 in location 1052
+ 107 run: i:number <- find-next s, oldc, from
+9999 mem: location 1048 is 1000
+9999 mem: location 1049 is 97
+9999 mem: location 1051 is 6
+9999 trace: incrementing callstack depth to 7
+ 108 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 mem: array size is 8
+ 108 run: text:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1019
+ 108 run: pattern:character <- next-ingredient 
+9999 mem: storing 97 in location 1020
+ 108 run: idx:number <- next-ingredient 
+9999 mem: storing 6 in location 1021
+ 108 run: len:number <- length *text
+9999 mem: location 1019 is 1000
+9999 mem: storing 6 in location 1022
+ 108 run: eof?:boolean <- greater-or-equal idx, len
 9999 mem: location 1021 is 6
 9999 mem: location 1022 is 6
 9999 mem: storing 1 in location 1023
- 106 run: break-if eof?, 
+ 108 run: break-if eof?, 
 9999 mem: location 1023 is 1
 9999 run: jumping to instruction 13
- 106 run: reply idx
+ 108 run: reply idx
 9999 mem: location 1021 is 6
+9999 trace: reply: decrementing callstack depth from 7
 9999 run: result 0 is 6
 9999 mem: storing 6 in location 1053
- 105 run: done?:boolean <- greater-or-equal i, len
+ 107 run: done?:boolean <- greater-or-equal i, len
 9999 mem: location 1053 is 6
 9999 mem: location 1052 is 6
 9999 mem: storing 1 in location 1054
- 105 run: jump-unless done?, 1:offset
+ 107 run: jump-unless done?, 1:offset
 9999 mem: location 1054 is 1
 9999 run: jump-unless fell through
- 105 run: reply s/same-as-ingredient:0
+ 107 run: reply s/same-as-ingredient:0
 9999 mem: location 1048 is 1000
+9999 trace: reply: decrementing callstack depth from 6
 9999 run: result 0 is 1000
 9999 mem: storing 1000 in location 1038
- 104 run: reply s/same-as-ingredient:0
+ 106 run: reply s/same-as-ingredient:0
 9999 mem: location 1038 is 1000
+9999 trace: reply: decrementing callstack depth from 5
 9999 run: result 0 is 1000
 9999 mem: storing 1000 in location 1028
- 103 run: reply s/same-as-ingredient:0
+ 105 run: reply s/same-as-ingredient:0
 9999 mem: location 1028 is 1000
+9999 trace: reply: decrementing callstack depth from 4
 9999 run: result 0 is 1000
 9999 mem: storing 1000 in location 1009
- 102 run: reply s/same-as-ingredient:0
+ 104 run: reply s/same-as-ingredient:0
 9999 mem: location 1009 is 1000
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1000
 9999 mem: storing 1000 in location 1
- 101 run: 2:array:character/raw <- copy *1:address:array:character/raw
+ 103 run: 2:array:character/raw <- copy *1:address:array:character/raw
 9999 mem: location 1 is 1000
 9999 mem: location 1000 is 6
 9999 mem: location 1001 is 98
@@ -420,7 +438,8 @@
 9999 mem: storing 122 in location 6
 9999 mem: storing 110 in location 7
 9999 mem: storing 122 in location 8
- 100 run: memory-should-contain [
+9999 trace: fall-through: exiting run1001; decrementing callstack depth from 2
+ 102 run: memory-should-contain [
     2:string <- [bznznz]
   ]
 9999 run: checking string length at 2
@@ -430,3 +449,4 @@
 9999 run: checking location 6
 9999 run: checking location 7
 9999 run: checking location 8
+9999 trace: fall-through: exiting scenario-replace-all-characters; decrementing callstack depth from 1

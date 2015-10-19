@@ -200,6 +200,11 @@ case RUN: {
   vector<recipe_ordinal> tmp_recipe = load(tmp.str());
   bind_special_scenario_names(tmp_recipe.at(0));
   transform_all();
+  if (Trace_stream) {
+    ++Trace_stream->callstack_depth;
+    trace("trace") << "run: incrementing callstack depth to " << Trace_stream->callstack_depth << end();
+    assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
+  }
   Current_routine->calls.push_front(call(tmp_recipe.at(0)));
   continue;  // not done with caller; don't increment current_step_index()
 }

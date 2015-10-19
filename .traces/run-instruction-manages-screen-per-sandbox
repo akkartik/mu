@@ -29,9 +29,10 @@
 9999 after-brace: assume-console ...
 9999 after-brace: run ...
 9999 after-brace: screen-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-run-instruction-manages-screen-per-sandbox
- 101 run: trace-until 100/app
+ 102 run: trace-until 100/app
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -198,7 +199,6 @@
   90 print-character: 46 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: screen <- render-all screen, env
   10 app: render all 
   11 app: render top menu 
   90 print-character: 32 
@@ -2715,9 +2715,6 @@
   90 print-character: 32 
   90 print-character: 32 
   11 app: render status 
- 100 run: break-if error?, 
- 100 run: status:address:array:character <- new [            ]
- 100 run: screen <- update-status screen, status, 245/grey
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -2730,23 +2727,3 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
- 100 run: loop +next-event:label
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
-  98 run: screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                x.
-    .                                                  ┊print-integer screen, 4                          .
-    .                                                  ┊screen:                                          .
-    .                                                  ┊  .4                             .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊  .                              .               .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
-  ]

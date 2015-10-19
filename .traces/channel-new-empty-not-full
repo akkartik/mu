@@ -5,9 +5,10 @@
 9999 after-brace: recipe scenario-channel-new-empty-not-full
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-channel-new-empty-not-full
- 101 run: run [
+ 102 run: run [
     1:address:channel <- new-channel 3/capacity
     2:boolean <- channel-empty? 1:address:channel
     3:boolean <- channel-full? 1:address:channel
@@ -25,14 +26,16 @@
 9999 after-brace: new-channel ...
 9999 after-brace: channel-empty? ...
 9999 after-brace: channel-full? ...
- 101 run: 1:address:channel <- new-channel 3/capacity
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: 1:address:channel <- new-channel 3/capacity
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
- 102 run: result:address:channel <- new channel:type
+ 104 run: result:address:channel <- new channel:type
 9999 mem: new alloc: 1007
 9999 mem: storing 1007 in location 1002
- 102 run: full:address:number <- get-address *result, first-full:offset
+ 104 run: full:address:number <- get-address *result, first-full:offset
 9999 mem: location 1002 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -40,10 +43,10 @@
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1007
 9999 mem: storing 1007 in location 1003
- 102 run: *full <- copy 0
+ 104 run: *full <- copy 0
 9999 mem: location 1003 is 1007
 9999 mem: storing 0 in location 1007
- 102 run: free:address:number <- get-address *result, first-free:offset
+ 104 run: free:address:number <- get-address *result, first-free:offset
 9999 mem: location 1002 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -51,15 +54,15 @@
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1008
 9999 mem: storing 1008 in location 1004
- 102 run: *free <- copy 0
+ 104 run: *free <- copy 0
 9999 mem: location 1004 is 1008
 9999 mem: storing 0 in location 1008
- 102 run: capacity:number <- next-ingredient 
+ 104 run: capacity:number <- next-ingredient 
 9999 mem: storing 3 in location 1005
- 102 run: capacity <- add capacity, 1
+ 104 run: capacity <- add capacity, 1
 9999 mem: location 1005 is 3
 9999 mem: storing 4 in location 1005
- 102 run: dest:address:address:array:character <- get-address *result, data:offset
+ 104 run: dest:address:address:array:character <- get-address *result, data:offset
 9999 mem: location 1002 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -67,24 +70,26 @@
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1009
 9999 mem: storing 1009 in location 1006
- 102 run: *dest <- new character:type, capacity
+ 104 run: *dest <- new character:type, capacity
 9999 mem: location 1005 is 4
 9999 mem: array size is 4
 9999 mem: new alloc: 1010
 9999 mem: location 1006 is 1009
 9999 mem: storing 1010 in location 1009
- 102 run: reply result
+ 104 run: reply result
 9999 mem: location 1002 is 1007
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
- 101 run: 2:boolean <- channel-empty? 1:address:channel
+ 103 run: 2:boolean <- channel-empty? 1:address:channel
 9999 mem: location 1 is 1007
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 5
 9999 mem: new alloc: 1015
- 102 run: chan:address:channel <- next-ingredient 
+ 104 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1017
- 102 run: full:number <- get *chan, first-full:offset
+ 104 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1017 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -94,7 +99,7 @@
 9999 run: its type is number
 9999 mem: location 1007 is 0
 9999 mem: storing 0 in location 1018
- 102 run: free:number <- get *chan, first-free:offset
+ 104 run: free:number <- get *chan, first-free:offset
 9999 mem: location 1017 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -104,22 +109,24 @@
 9999 run: its type is number
 9999 mem: location 1008 is 0
 9999 mem: storing 0 in location 1019
- 102 run: result:boolean <- equal full, free
+ 104 run: result:boolean <- equal full, free
 9999 mem: location 1018 is 0
 9999 mem: location 1019 is 0
 9999 mem: storing 1 in location 1020
- 102 run: reply result
+ 104 run: reply result
 9999 mem: location 1020 is 1
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 2
- 101 run: 3:boolean <- channel-full? 1:address:channel
+ 103 run: 3:boolean <- channel-full? 1:address:channel
 9999 mem: location 1 is 1007
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1021
- 102 run: chan:address:channel <- next-ingredient 
+ 104 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1023
- 102 run: tmp:number <- get *chan, first-free:offset
+ 104 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1023 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -129,17 +136,18 @@
 9999 run: its type is number
 9999 mem: location 1008 is 0
 9999 mem: storing 0 in location 1024
- 102 run: tmp <- add tmp, 1
+ 104 run: tmp <- add tmp, 1
 9999 mem: location 1024 is 0
 9999 mem: storing 1 in location 1024
- 102 run: len:number <- channel-capacity chan
+ 104 run: len:number <- channel-capacity chan
 9999 mem: location 1023 is 1007
- 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 4
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 4
 9999 mem: new alloc: 1029
- 103 run: chan:address:channel <- next-ingredient 
+ 105 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1031
- 103 run: q:address:array:character <- get *chan, data:offset
+ 105 run: q:address:array:character <- get *chan, data:offset
 9999 mem: location 1031 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -149,21 +157,22 @@
 9999 run: its type is address
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1032
- 103 run: result:number <- length *q
+ 105 run: result:number <- length *q
 9999 mem: location 1032 is 1010
 9999 mem: storing 4 in location 1033
- 103 run: reply result
+ 105 run: reply result
 9999 mem: location 1033 is 4
+9999 trace: reply: decrementing callstack depth from 4
 9999 run: result 0 is 4
 9999 mem: storing 4 in location 1025
- 102 run: at-end?:boolean <- greater-or-equal tmp, len
+ 104 run: at-end?:boolean <- greater-or-equal tmp, len
 9999 mem: location 1024 is 1
 9999 mem: location 1025 is 4
 9999 mem: storing 0 in location 1026
- 102 run: break-unless at-end?, 
+ 104 run: break-unless at-end?, 
 9999 mem: location 1026 is 0
 9999 run: jumping to instruction 9
- 102 run: full:number <- get *chan, first-full:offset
+ 104 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1023 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -173,17 +182,20 @@
 9999 run: its type is number
 9999 mem: location 1007 is 0
 9999 mem: storing 0 in location 1027
- 102 run: result:boolean <- equal full, tmp
+ 104 run: result:boolean <- equal full, tmp
 9999 mem: location 1027 is 0
 9999 mem: location 1024 is 1
 9999 mem: storing 0 in location 1028
- 102 run: reply result
+ 104 run: reply result
 9999 mem: location 1028 is 0
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 3
- 100 run: memory-should-contain [
+9999 trace: fall-through: exiting run1001; decrementing callstack depth from 2
+ 102 run: memory-should-contain [
     2 <- 1  # empty?
     3 <- 0  # full?
   ]
 9999 run: checking location 2
 9999 run: checking location 3
+9999 trace: fall-through: exiting scenario-channel-new-empty-not-full; decrementing callstack depth from 1

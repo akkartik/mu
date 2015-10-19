@@ -5,9 +5,10 @@
 9999 after-brace: recipe scenario-string-find-next-invalid-index
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-string-find-next-invalid-index
- 101 run: run [
+ 102 run: run [
     1:address:array:character <- new [abc]
     2:number <- find-next 1:address:array:character, 47/slash, 4/start-index
   ]
@@ -22,34 +23,39 @@
 9999 after-brace: recipe run1001
 9999 after-brace: new ...
 9999 after-brace: find-next ...
- 101 run: 1:address:array:character <- new [abc]
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: 1:address:array:character <- new [abc]
 9999 mem: storing 1000 in location 1
- 101 run: 2:number <- find-next 1:address:array:character, 47/slash, 4/start-index
+ 103 run: 2:number <- find-next 1:address:array:character, 47/slash, 4/start-index
 9999 mem: location 1 is 1000
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
 9999 mem: new alloc: 1004
- 102 run: text:address:array:character <- next-ingredient 
+ 104 run: text:address:array:character <- next-ingredient 
 9999 mem: storing 1000 in location 1006
- 102 run: pattern:character <- next-ingredient 
+ 104 run: pattern:character <- next-ingredient 
 9999 mem: storing 47 in location 1007
- 102 run: idx:number <- next-ingredient 
+ 104 run: idx:number <- next-ingredient 
 9999 mem: storing 4 in location 1008
- 102 run: len:number <- length *text
+ 104 run: len:number <- length *text
 9999 mem: location 1006 is 1000
 9999 mem: storing 3 in location 1009
- 102 run: eof?:boolean <- greater-or-equal idx, len
+ 104 run: eof?:boolean <- greater-or-equal idx, len
 9999 mem: location 1008 is 4
 9999 mem: location 1009 is 3
 9999 mem: storing 1 in location 1010
- 102 run: break-if eof?, 
+ 104 run: break-if eof?, 
 9999 mem: location 1010 is 1
 9999 run: jumping to instruction 13
- 102 run: reply idx
+ 104 run: reply idx
 9999 mem: location 1008 is 4
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 4
 9999 mem: storing 4 in location 2
- 100 run: memory-should-contain [
+9999 trace: fall-through: exiting run1001; decrementing callstack depth from 2
+ 102 run: memory-should-contain [
     2 <- 4  # no change
   ]
 9999 run: checking location 2
+9999 trace: fall-through: exiting scenario-string-find-next-invalid-index; decrementing callstack depth from 1

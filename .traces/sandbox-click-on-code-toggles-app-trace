@@ -53,9 +53,10 @@
 9999 after-brace: assume-console ...
 9999 after-brace: run ...
 9999 after-brace: screen-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-sandbox-click-on-code-toggles-app-trace
- 101 run: trace-until 100/app
+ 102 run: trace-until 100/app
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -193,7 +194,6 @@
   90 print-character: 46 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: screen <- render-all screen, env
   10 app: render all 
   11 app: render top menu 
   90 print-character: 32 
@@ -711,9 +711,6 @@
   90 print-character: 32 
   90 print-character: 32 
   11 app: render status 
- 100 run: break-if error?, 
- 100 run: status:address:array:character <- new [            ]
- 100 run: screen <- update-status screen, status, 245/grey
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -726,68 +723,7 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
- 100 run: loop +next-event:label
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
-  99 run: screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
-  ]
-  99 run: assume-console [
-    left-click 4, 21
-  ]
-  99 run: run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-    print-character screen:address, 9251/␣/cursor
-  ]
-  99 run: event-loop screen:address, console:address, 3:address:programming-environment-data
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: console:address <- next-ingredient 
- 100 run: env:address:programming-environment-data <- next-ingredient 
- 100 run: recipes:address:editor-data <- get *env, recipes:offset
- 100 run: current-sandbox:address:editor-data <- get *env, current-sandbox:offset
- 100 run: sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
- 100 run: render-all-on-no-more-events?:boolean <- copy 0/false
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
- 100 run: trace 10, [app], [next-event]
   10 app: next-event 
- 100 run: maximized?:address:boolean <- get-address *env, maximized?:offset
- 100 run: break-unless *maximized?, 
- 100 run: k:address:number <- maybe-convert e:event, keycode:variant
- 100 run: break-unless k, 
- 100 run: c:address:character <- maybe-convert e:event, text:variant
- 100 run: break-unless c, 
- 100 run: t:address:touch-event <- maybe-convert e:event, touch:variant
- 100 run: break-unless t, 
- 100 run: touch-type:number <- get *t, type:offset
- 100 run: is-left-click?:boolean <- equal touch-type, 65513/mouse-left
- 100 run: loop-unless is-left-click?, +next-event:label
- 100 run: sandbox-left-margin:number <- get *current-sandbox, left:offset
- 100 run: click-column:number <- get *t, column:offset
- 100 run: on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
- 100 run: break-unless on-sandbox-side?, 
- 100 run: first-sandbox:address:sandbox-data <- get *env, sandbox:offset
- 100 run: break-unless first-sandbox, 
- 100 run: first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
- 100 run: click-row:number <- get *t, row:offset
- 100 run: below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
- 100 run: break-unless below-sandbox-editor?, 
- 100 run: sandbox:address:sandbox-data <- find-click-in-sandbox-code env, click-row
- 100 run: break-unless sandbox, 
- 100 run: x:address:boolean <- get-address *sandbox, display-trace?:offset
- 100 run: *x <- not *x
- 100 run: hide-screen screen
- 100 run: screen <- render-sandbox-side screen, env, 1/clear
   11 app: render sandbox side 
   90 print-character: 32 
   90 print-character: 32 
@@ -1097,164 +1033,9 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
- 100 run: show-screen screen
- 100 run: loop +next-event:label
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
-  99 run: print-character screen:address, 9251/␣/cursor
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: sc:address:screen <- next-ingredient 
- 100 run: c:character <- next-ingredient 
- 100 run: color:number, color-found?:boolean <- next-ingredient 
- 100 run: break-if color-found?, 
- 100 run: color <- copy 7/white
- 100 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
- 100 run: break-if bg-color-found?, 
- 100 run: bg-color <- copy 0/black
- 100 run: trace 90, [print-character], c
   90 print-character: 9251 
- 100 run: break-unless sc, 
- 100 run: width:number <- get *sc, num-columns:offset
- 100 run: height:number <- get *sc, num-rows:offset
- 100 run: row:address:number <- get-address *sc, cursor-row:offset
- 100 run: legal?:boolean <- greater-or-equal *row, 0
- 100 run: jump-if legal?, 1:offset
- 100 run: legal? <- lesser-than *row, height
- 100 run: jump-if legal?, 1:offset
- 100 run: column:address:number <- get-address *sc, cursor-column:offset
- 100 run: legal? <- greater-or-equal *column, 0
- 100 run: jump-if legal?, 1:offset
- 100 run: legal? <- lesser-than *column, width
- 100 run: jump-if legal?, 1:offset
- 100 run: newline?:boolean <- equal c, 10/newline
- 100 run: break-unless newline?, 
- 100 run: index:number <- multiply *row, width
- 100 run: index <- add index, *column
- 100 run: buf:address:array:screen-cell <- get *sc, data:offset
- 100 run: len:number <- length *buf
- 100 run: backspace?:boolean <- equal c, 8
- 100 run: break-unless backspace?, 
- 100 run: cursor:address:screen-cell <- index-address *buf, index
- 100 run: cursor-contents:address:character <- get-address *cursor, contents:offset
- 100 run: *cursor-contents <- copy c
- 100 run: cursor-color:address:number <- get-address *cursor, color:offset
- 100 run: *cursor-color <- copy color
- 100 run: right:number <- subtract width, 1
- 100 run: at-right?:boolean <- greater-or-equal *column, right
- 100 run: break-if at-right?, 
- 100 run: *column <- add *column, 1
- 100 run: reply sc/same-as-ingredient:0
-  98 run: screen-should-contain [
-    .                     run (F4)           .
-    .␣                   ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
-  ]
-  98 run: screen-should-contain-in-color 245/grey, [
-    .                                        .
-    .                    ┊                   .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                  x.
-    .                    ┊                   .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
-  ]
-  98 run: assume-console [
-    left-click 4, 25
-  ]
-  98 run: run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-    print-character screen:address, 9251/␣/cursor
-  ]
-  98 run: event-loop screen:address, console:address, 3:address:programming-environment-data
-  99 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-  99 run: screen:address <- next-ingredient 
-  99 run: console:address <- next-ingredient 
-  99 run: env:address:programming-environment-data <- next-ingredient 
-  99 run: recipes:address:editor-data <- get *env, recipes:offset
-  99 run: current-sandbox:address:editor-data <- get *env, current-sandbox:offset
-  99 run: sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
-  99 run: render-all-on-no-more-events?:boolean <- copy 0/false
-  99 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: x:address:console <- next-ingredient 
- 100 run: break-unless x, 
- 100 run: idx:address:number <- get-address *x, index:offset
- 100 run: buf:address:array:event <- get *x, data:offset
- 100 run: max:number <- length *buf
- 100 run: done?:boolean <- greater-or-equal *idx, max
- 100 run: break-unless done?, 
- 100 run: result:event <- index *buf, *idx
- 100 run: *idx <- add *idx, 1
- 100 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
-  99 run: loop-unless found?, 
-  99 run: break-if quit?, 
-  99 run: trace 10, [app], [next-event]
   10 app: next-event 
-  99 run: maximized?:address:boolean <- get-address *env, maximized?:offset
-  99 run: break-unless *maximized?, 
-  99 run: k:address:number <- maybe-convert e:event, keycode:variant
-  99 run: break-unless k, 
-  99 run: c:address:character <- maybe-convert e:event, text:variant
-  99 run: break-unless c, 
-  99 run: t:address:touch-event <- maybe-convert e:event, touch:variant
-  99 run: break-unless t, 
-  99 run: touch-type:number <- get *t, type:offset
-  99 run: is-left-click?:boolean <- equal touch-type, 65513/mouse-left
-  99 run: loop-unless is-left-click?, +next-event:label
-  99 run: sandbox-left-margin:number <- get *current-sandbox, left:offset
-  99 run: click-column:number <- get *t, column:offset
-  99 run: on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
-  99 run: break-unless on-sandbox-side?, 
-  99 run: first-sandbox:address:sandbox-data <- get *env, sandbox:offset
-  99 run: break-unless first-sandbox, 
-  99 run: first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
-  99 run: click-row:number <- get *t, row:offset
-  99 run: below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
-  99 run: break-unless below-sandbox-editor?, 
-  99 run: sandbox:address:sandbox-data <- find-click-in-sandbox-code env, click-row
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: env:address:programming-environment-data <- next-ingredient 
- 100 run: click-row:number <- next-ingredient 
- 100 run: sandbox:address:sandbox-data <- get *env, sandbox:offset
- 100 run: start:number <- get *sandbox, starting-row-on-screen:offset
- 100 run: clicked-on-sandboxes?:boolean <- greater-or-equal click-row, start
- 100 run: assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
- 100 run: next-sandbox:address:sandbox-data <- get *sandbox, next-sandbox:offset
- 100 run: break-unless next-sandbox, 
- 100 run: code-ending-row:number <- get *sandbox, code-ending-row-on-screen:offset
- 100 run: click-above-response?:boolean <- lesser-than click-row, code-ending-row
- 100 run: start:number <- get *sandbox, starting-row-on-screen:offset
- 100 run: click-below-menu?:boolean <- greater-than click-row, start
- 100 run: click-on-sandbox-code?:boolean <- and click-above-response?, click-below-menu?
- 100 run: break-if click-on-sandbox-code?, 
- 100 run: reply sandbox
-  99 run: break-unless sandbox, 
-  99 run: x:address:boolean <- get-address *sandbox, display-trace?:offset
-  99 run: *x <- not *x
-  99 run: hide-screen screen
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: break-unless screen, 
- 100 run: reply screen
-  99 run: screen <- render-sandbox-side screen, env, 1/clear
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: env:address:programming-environment-data <- next-ingredient 
- 100 run: trace 11, [app], [render sandbox side]
   11 app: render sandbox side 
- 100 run: current-sandbox:address:editor-data <- get *env, current-sandbox:offset
- 100 run: left:number <- get *current-sandbox, left:offset
- 100 run: right:number <- get *current-sandbox, right:offset
- 100 run: row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
- 100 run: clear-screen-from screen, row, column, left, right
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -1426,8 +1207,6 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: row <- add row, 1
- 100 run: draw-horizontal screen, row, left, right, 9473/horizontal-double
   90 print-character: 9473 
   90 print-character: 9473 
   90 print-character: 9473 
@@ -1447,8 +1226,6 @@
   90 print-character: 9473 
   90 print-character: 9473 
   90 print-character: 9473 
- 100 run: sandbox:address:sandbox-data <- get *env, sandbox:offset
- 100 run: row, screen <- render-sandboxes screen, sandbox, left, right, row
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -1526,92 +1303,8 @@
   90 print-character: 9473 
   90 print-character: 9473 
   90 print-character: 9473 
- 100 run: clear-rest-of-screen screen, row, left, left, right
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: reply screen/same-as-ingredient:0
-  99 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: recipes:address:editor-data <- next-ingredient 
- 100 run: current-sandbox:address:editor-data <- next-ingredient 
- 100 run: sandbox-in-focus?:boolean <- next-ingredient 
- 100 run: break-if sandbox-in-focus?, 
- 100 run: cursor-row:number <- get *recipes, cursor-row:offset
- 100 run: cursor-column:number <- get *recipes, cursor-column:offset
- 100 run: break-unless sandbox-in-focus?, 
- 100 run: screen <- move-cursor screen, cursor-row, cursor-column
- 100 run: reply screen/same-as-ingredient:0
-  99 run: show-screen screen
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: break-unless screen, 
- 100 run: reply screen
-  99 run: loop +next-event:label
-  99 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: x:address:console <- next-ingredient 
- 100 run: break-unless x, 
- 100 run: idx:address:number <- get-address *x, index:offset
- 100 run: buf:address:array:event <- get *x, data:offset
- 100 run: max:number <- length *buf
- 100 run: done?:boolean <- greater-or-equal *idx, max
- 100 run: break-unless done?, 
- 100 run: dummy:address:event <- new event:type
- 100 run: reply *dummy, x/same-as-ingredient:0, 1/found, 1/quit
-  99 run: loop-unless found?, 
-  99 run: break-if quit?, 
-  98 run: print-character screen:address, 9251/␣/cursor
-  99 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-  99 run: sc:address:screen <- next-ingredient 
-  99 run: c:character <- next-ingredient 
-  99 run: color:number, color-found?:boolean <- next-ingredient 
-  99 run: break-if color-found?, 
-  99 run: color <- copy 7/white
-  99 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
-  99 run: break-if bg-color-found?, 
-  99 run: bg-color <- copy 0/black
-  99 run: trace 90, [print-character], c
   90 print-character: 9251 
-  99 run: break-unless sc, 
-  99 run: width:number <- get *sc, num-columns:offset
-  99 run: height:number <- get *sc, num-rows:offset
-  99 run: row:address:number <- get-address *sc, cursor-row:offset
-  99 run: legal?:boolean <- greater-or-equal *row, 0
-  99 run: jump-if legal?, 1:offset
-  99 run: legal? <- lesser-than *row, height
-  99 run: jump-if legal?, 1:offset
-  99 run: column:address:number <- get-address *sc, cursor-column:offset
-  99 run: legal? <- greater-or-equal *column, 0
-  99 run: jump-if legal?, 1:offset
-  99 run: legal? <- lesser-than *column, width
-  99 run: jump-if legal?, 1:offset
-  99 run: newline?:boolean <- equal c, 10/newline
-  99 run: break-unless newline?, 
-  99 run: index:number <- multiply *row, width
-  99 run: index <- add index, *column
-  99 run: buf:address:array:screen-cell <- get *sc, data:offset
-  99 run: len:number <- length *buf
-  99 run: backspace?:boolean <- equal c, 8
-  99 run: break-unless backspace?, 
-  99 run: cursor:address:screen-cell <- index-address *buf, index
-  99 run: cursor-contents:address:character <- get-address *cursor, contents:offset
-  99 run: *cursor-contents <- copy c
-  99 run: cursor-color:address:number <- get-address *cursor, color:offset
-  99 run: *cursor-color <- copy color
-  99 run: right:number <- subtract width, 1
-  99 run: at-right?:boolean <- greater-or-equal *column, right
-  99 run: break-if at-right?, 
-  99 run: *column <- add *column, 1
-  99 run: reply sc/same-as-ingredient:0
-  97 run: screen-should-contain [
-    .                     run (F4)           .
-    .␣                   ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
-  ]

@@ -5,9 +5,10 @@
 9999 after-brace: recipe main
 9999 after-brace: run ...
 9999 after-brace: trace-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: main
- 101 run: run [
+ 102 run: run [
     trace 1, [a], [b]
   ]
 9999 parse: instruction: trace
@@ -16,8 +17,11 @@
 9999 parse:   ingredient: {name: "b", properties: [_: "literal-string"]}
 9999 after-brace: recipe run1000
 9999 after-brace: trace ...
- 101 run: trace 1, [a], [b]
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: trace 1, [a], [b]
    1 a: b 
- 100 run: trace-should-contain [
+9999 trace: fall-through: exiting run1000; decrementing callstack depth from 2
+ 102 run: trace-should-contain [
     a: b
   ]
+9999 trace: fall-through: exiting main; decrementing callstack depth from 1

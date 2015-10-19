@@ -5,9 +5,10 @@
 9999 after-brace: recipe scenario-string-equal-identical
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-string-equal-identical
- 101 run: run [
+ 102 run: run [
     default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abc]
@@ -35,152 +36,157 @@
 9999 after-brace: new ...
 9999 after-brace: new ...
 9999 after-brace: string-equal ...
- 101 run: default-space:address:array:location <- new location:type, 30
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: default-space:address:array:location <- new location:type, 30
 9999 mem: array size is 30
 9999 mem: new alloc: 1000
- 101 run: x:address:array:character <- new [abc]
+ 103 run: x:address:array:character <- new [abc]
 9999 mem: storing 1031 in location 1002
- 101 run: y:address:array:character <- new [abc]
+ 103 run: y:address:array:character <- new [abc]
 9999 mem: storing 1035 in location 1003
- 101 run: 3:boolean/raw <- string-equal x, y
+ 103 run: 3:boolean/raw <- string-equal x, y
 9999 mem: location 1002 is 1031
 9999 mem: location 1003 is 1035
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 11
 9999 mem: new alloc: 1039
- 102 run: a:address:array:character <- next-ingredient 
+ 104 run: a:address:array:character <- next-ingredient 
 9999 mem: storing 1031 in location 1041
- 102 run: a-len:number <- length *a
+ 104 run: a-len:number <- length *a
 9999 mem: location 1041 is 1031
 9999 mem: storing 3 in location 1042
- 102 run: b:address:array:character <- next-ingredient 
+ 104 run: b:address:array:character <- next-ingredient 
 9999 mem: storing 1035 in location 1043
- 102 run: b-len:number <- length *b
+ 104 run: b-len:number <- length *b
 9999 mem: location 1043 is 1035
 9999 mem: storing 3 in location 1044
- 102 run: trace 99, [string-equal], [comparing lengths]
+ 104 run: trace 99, [string-equal], [comparing lengths]
   99 string-equal: comparing lengths 
- 102 run: length-equal?:boolean <- equal a-len, b-len
+ 104 run: length-equal?:boolean <- equal a-len, b-len
 9999 mem: location 1042 is 3
 9999 mem: location 1044 is 3
 9999 mem: storing 1 in location 1045
- 102 run: break-if length-equal?, 
+ 104 run: break-if length-equal?, 
 9999 mem: location 1045 is 1
 9999 run: jumping to instruction 10
- 102 run: trace 99, [string-equal], [comparing characters]
+ 104 run: trace 99, [string-equal], [comparing characters]
   99 string-equal: comparing characters 
- 102 run: i:number <- copy 0
+ 104 run: i:number <- copy 0
 9999 mem: storing 0 in location 1046
- 102 run: done?:boolean <- greater-or-equal i, a-len
+ 104 run: done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1046 is 0
 9999 mem: location 1042 is 3
 9999 mem: storing 0 in location 1047
- 102 run: break-if done?, 
+ 104 run: break-if done?, 
 9999 mem: location 1047 is 0
 9999 run: jump-if fell through
- 102 run: a2:character <- index *a, i
+ 104 run: a2:character <- index *a, i
 9999 mem: location 1041 is 1031
 9999 mem: location 1046 is 0
 9999 run: address to copy is 1032
 9999 run: its type is character
 9999 mem: location 1032 is 97
 9999 mem: storing 97 in location 1048
- 102 run: b2:character <- index *b, i
+ 104 run: b2:character <- index *b, i
 9999 mem: location 1043 is 1035
 9999 mem: location 1046 is 0
 9999 run: address to copy is 1036
 9999 run: its type is character
 9999 mem: location 1036 is 97
 9999 mem: storing 97 in location 1049
- 102 run: chars-match?:boolean <- equal a2, b2
+ 104 run: chars-match?:boolean <- equal a2, b2
 9999 mem: location 1048 is 97
 9999 mem: location 1049 is 97
 9999 mem: storing 1 in location 1050
- 102 run: break-if chars-match?, 
+ 104 run: break-if chars-match?, 
 9999 mem: location 1050 is 1
 9999 run: jumping to instruction 22
- 102 run: i <- add i, 1
+ 104 run: i <- add i, 1
 9999 mem: location 1046 is 0
 9999 mem: storing 1 in location 1046
- 102 run: loop 
+ 104 run: loop 
 9999 run: jumping to instruction 14
- 102 run: done?:boolean <- greater-or-equal i, a-len
+ 104 run: done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1046 is 1
 9999 mem: location 1042 is 3
 9999 mem: storing 0 in location 1047
- 102 run: break-if done?, 
+ 104 run: break-if done?, 
 9999 mem: location 1047 is 0
 9999 run: jump-if fell through
- 102 run: a2:character <- index *a, i
+ 104 run: a2:character <- index *a, i
 9999 mem: location 1041 is 1031
 9999 mem: location 1046 is 1
 9999 run: address to copy is 1033
 9999 run: its type is character
 9999 mem: location 1033 is 98
 9999 mem: storing 98 in location 1048
- 102 run: b2:character <- index *b, i
+ 104 run: b2:character <- index *b, i
 9999 mem: location 1043 is 1035
 9999 mem: location 1046 is 1
 9999 run: address to copy is 1037
 9999 run: its type is character
 9999 mem: location 1037 is 98
 9999 mem: storing 98 in location 1049
- 102 run: chars-match?:boolean <- equal a2, b2
+ 104 run: chars-match?:boolean <- equal a2, b2
 9999 mem: location 1048 is 98
 9999 mem: location 1049 is 98
 9999 mem: storing 1 in location 1050
- 102 run: break-if chars-match?, 
+ 104 run: break-if chars-match?, 
 9999 mem: location 1050 is 1
 9999 run: jumping to instruction 22
- 102 run: i <- add i, 1
+ 104 run: i <- add i, 1
 9999 mem: location 1046 is 1
 9999 mem: storing 2 in location 1046
- 102 run: loop 
+ 104 run: loop 
 9999 run: jumping to instruction 14
- 102 run: done?:boolean <- greater-or-equal i, a-len
+ 104 run: done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1046 is 2
 9999 mem: location 1042 is 3
 9999 mem: storing 0 in location 1047
- 102 run: break-if done?, 
+ 104 run: break-if done?, 
 9999 mem: location 1047 is 0
 9999 run: jump-if fell through
- 102 run: a2:character <- index *a, i
+ 104 run: a2:character <- index *a, i
 9999 mem: location 1041 is 1031
 9999 mem: location 1046 is 2
 9999 run: address to copy is 1034
 9999 run: its type is character
 9999 mem: location 1034 is 99
 9999 mem: storing 99 in location 1048
- 102 run: b2:character <- index *b, i
+ 104 run: b2:character <- index *b, i
 9999 mem: location 1043 is 1035
 9999 mem: location 1046 is 2
 9999 run: address to copy is 1038
 9999 run: its type is character
 9999 mem: location 1038 is 99
 9999 mem: storing 99 in location 1049
- 102 run: chars-match?:boolean <- equal a2, b2
+ 104 run: chars-match?:boolean <- equal a2, b2
 9999 mem: location 1048 is 99
 9999 mem: location 1049 is 99
 9999 mem: storing 1 in location 1050
- 102 run: break-if chars-match?, 
+ 104 run: break-if chars-match?, 
 9999 mem: location 1050 is 1
 9999 run: jumping to instruction 22
- 102 run: i <- add i, 1
+ 104 run: i <- add i, 1
 9999 mem: location 1046 is 2
 9999 mem: storing 3 in location 1046
- 102 run: loop 
+ 104 run: loop 
 9999 run: jumping to instruction 14
- 102 run: done?:boolean <- greater-or-equal i, a-len
+ 104 run: done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1046 is 3
 9999 mem: location 1042 is 3
 9999 mem: storing 1 in location 1047
- 102 run: break-if done?, 
+ 104 run: break-if done?, 
 9999 mem: location 1047 is 1
 9999 run: jumping to instruction 25
- 102 run: reply 1
+ 104 run: reply 1
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 3
- 100 run: memory-should-contain [
+9999 trace: fall-through: exiting run1001; decrementing callstack depth from 2
+ 102 run: memory-should-contain [
     3 <- 1  # abc == abc
   ]
 9999 run: checking location 3
+9999 trace: fall-through: exiting scenario-string-equal-identical; decrementing callstack depth from 1

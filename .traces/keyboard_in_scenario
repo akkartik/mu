@@ -8,14 +8,15 @@
 9999 after-brace: assume-console ...
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-keyboard-in-scenario
- 101 run: assume-console [
+ 102 run: assume-console [
     type [abc]
   ]
 9999 parse: instruction: type
 9999 parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
- 101 run: run [
+ 102 run: run [
     1:character, console:address, 2:boolean <- read-key console:address
     3:character, console:address, 4:boolean <- read-key console:address
     5:character, console:address, 6:boolean <- read-key console:address
@@ -47,31 +48,34 @@
 9999 after-brace: read-key ...
 9999 after-brace: read-key ...
 9999 after-brace: read-key ...
- 101 run: 1:character, console:address, 2:boolean <- read-key console:address
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: 1:character, console:address, 2:boolean <- read-key console:address
 9999 mem: location 901 is 1013
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
 9999 mem: new alloc: 1015
- 102 run: console:address <- next-ingredient 
+ 104 run: console:address <- next-ingredient 
 9999 mem: storing 1013 in location 1017
- 102 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
+ 104 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1017 is 1013
- 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 4
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
 9999 mem: new alloc: 1025
- 103 run: x:address:console <- next-ingredient 
+ 105 run: x:address:console <- next-ingredient 
 9999 mem: storing 1013 in location 1027
- 103 run: break-unless x, 
+ 105 run: break-unless x, 
 9999 mem: location 1027 is 1013
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address *x, index:offset
+ 105 run: idx:address:number <- get-address *x, index:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 0
 9999 mem: location 1014 is 1000
 9999 mem: location 1027 is 1013
 9999 run: address to copy is 1013
 9999 mem: storing 1013 in location 1028
- 103 run: buf:address:array:event <- get *x, data:offset
+ 105 run: buf:address:array:event <- get *x, data:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 0
 9999 mem: location 1014 is 1000
@@ -80,18 +84,18 @@
 9999 run: its type is address
 9999 mem: location 1014 is 1000
 9999 mem: storing 1000 in location 1029
- 103 run: max:number <- length *buf
+ 105 run: max:number <- length *buf
 9999 mem: location 1029 is 1000
 9999 mem: storing 3 in location 1030
- 103 run: done?:boolean <- greater-or-equal *idx, max
+ 105 run: done?:boolean <- greater-or-equal *idx, max
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 0
 9999 mem: location 1030 is 3
 9999 mem: storing 0 in location 1031
- 103 run: break-unless done?, 
+ 105 run: break-unless done?, 
 9999 mem: location 1031 is 0
 9999 run: jumping to instruction 12
- 103 run: result:event <- index *buf, *idx
+ 105 run: result:event <- index *buf, *idx
 9999 mem: location 1029 is 1000
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 0
@@ -105,17 +109,18 @@
 9999 mem: storing 97 in location 1034
 9999 mem: storing 0 in location 1035
 9999 mem: storing 0 in location 1036
- 103 run: *idx <- add *idx, 1
+ 105 run: *idx <- add *idx, 1
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 0
 9999 mem: location 1028 is 1013
 9999 mem: storing 1 in location 1013
- 103 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
+ 105 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1033 is 0
 9999 mem: location 1034 is 97
 9999 mem: location 1035 is 0
 9999 mem: location 1036 is 0
 9999 mem: location 1027 is 1013
+9999 trace: reply: decrementing callstack depth from 4
 9999 run: result 0 is [0, 97, 0, 0]
 9999 run: result 1 is 1013
 9999 run: result 2 is 1
@@ -127,54 +132,57 @@
 9999 mem: storing 1013 in location 1017
 9999 mem: storing 1 in location 1022
 9999 mem: storing 0 in location 1023
- 102 run: jump-unless quit?, 1:offset
+ 104 run: jump-unless quit?, 1:offset
 9999 mem: location 1023 is 0
 9999 run: jumping to instruction 5
- 102 run: jump-if found?, 1:offset
+ 104 run: jump-if found?, 1:offset
 9999 mem: location 1022 is 1
 9999 run: jumping to instruction 7
- 102 run: c:address:character <- maybe-convert x, text:variant
+ 104 run: c:address:character <- maybe-convert x, text:variant
 9999 mem: location 1018 is 0
 9999 mem: location 1019 is 97
 9999 mem: location 1020 is 0
 9999 mem: location 1021 is 0
 9999 mem: storing 1019 in location 1024
- 102 run: jump-if c, 1:offset
+ 104 run: jump-if c, 1:offset
 9999 mem: location 1024 is 1019
 9999 run: jumping to instruction 10
- 102 run: reply *c, console/same-as-ingredient:0, 1/found, 0/quit
+ 104 run: reply *c, console/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1024 is 1019
 9999 mem: location 1019 is 97
 9999 mem: location 1017 is 1013
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 97
 9999 run: result 1 is 1013
 9999 run: result 2 is 1
 9999 mem: storing 97 in location 1
 9999 mem: storing 1013 in location 901
 9999 mem: storing 1 in location 2
- 101 run: 3:character, console:address, 4:boolean <- read-key console:address
+ 103 run: 3:character, console:address, 4:boolean <- read-key console:address
 9999 mem: location 901 is 1013
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
- 102 run: console:address <- next-ingredient 
+ 104 run: console:address <- next-ingredient 
 9999 mem: storing 1013 in location 1017
- 102 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
+ 104 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1017 is 1013
- 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 4
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
- 103 run: x:address:console <- next-ingredient 
+ 105 run: x:address:console <- next-ingredient 
 9999 mem: storing 1013 in location 1027
- 103 run: break-unless x, 
+ 105 run: break-unless x, 
 9999 mem: location 1027 is 1013
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address *x, index:offset
+ 105 run: idx:address:number <- get-address *x, index:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 1
 9999 mem: location 1014 is 1000
 9999 mem: location 1027 is 1013
 9999 run: address to copy is 1013
 9999 mem: storing 1013 in location 1028
- 103 run: buf:address:array:event <- get *x, data:offset
+ 105 run: buf:address:array:event <- get *x, data:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 1
 9999 mem: location 1014 is 1000
@@ -183,18 +191,18 @@
 9999 run: its type is address
 9999 mem: location 1014 is 1000
 9999 mem: storing 1000 in location 1029
- 103 run: max:number <- length *buf
+ 105 run: max:number <- length *buf
 9999 mem: location 1029 is 1000
 9999 mem: storing 3 in location 1030
- 103 run: done?:boolean <- greater-or-equal *idx, max
+ 105 run: done?:boolean <- greater-or-equal *idx, max
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 1
 9999 mem: location 1030 is 3
 9999 mem: storing 0 in location 1031
- 103 run: break-unless done?, 
+ 105 run: break-unless done?, 
 9999 mem: location 1031 is 0
 9999 run: jumping to instruction 12
- 103 run: result:event <- index *buf, *idx
+ 105 run: result:event <- index *buf, *idx
 9999 mem: location 1029 is 1000
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 1
@@ -208,17 +216,18 @@
 9999 mem: storing 98 in location 1034
 9999 mem: storing 0 in location 1035
 9999 mem: storing 0 in location 1036
- 103 run: *idx <- add *idx, 1
+ 105 run: *idx <- add *idx, 1
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 1
 9999 mem: location 1028 is 1013
 9999 mem: storing 2 in location 1013
- 103 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
+ 105 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1033 is 0
 9999 mem: location 1034 is 98
 9999 mem: location 1035 is 0
 9999 mem: location 1036 is 0
 9999 mem: location 1027 is 1013
+9999 trace: reply: decrementing callstack depth from 4
 9999 run: result 0 is [0, 98, 0, 0]
 9999 run: result 1 is 1013
 9999 run: result 2 is 1
@@ -230,54 +239,57 @@
 9999 mem: storing 1013 in location 1017
 9999 mem: storing 1 in location 1022
 9999 mem: storing 0 in location 1023
- 102 run: jump-unless quit?, 1:offset
+ 104 run: jump-unless quit?, 1:offset
 9999 mem: location 1023 is 0
 9999 run: jumping to instruction 5
- 102 run: jump-if found?, 1:offset
+ 104 run: jump-if found?, 1:offset
 9999 mem: location 1022 is 1
 9999 run: jumping to instruction 7
- 102 run: c:address:character <- maybe-convert x, text:variant
+ 104 run: c:address:character <- maybe-convert x, text:variant
 9999 mem: location 1018 is 0
 9999 mem: location 1019 is 98
 9999 mem: location 1020 is 0
 9999 mem: location 1021 is 0
 9999 mem: storing 1019 in location 1024
- 102 run: jump-if c, 1:offset
+ 104 run: jump-if c, 1:offset
 9999 mem: location 1024 is 1019
 9999 run: jumping to instruction 10
- 102 run: reply *c, console/same-as-ingredient:0, 1/found, 0/quit
+ 104 run: reply *c, console/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1024 is 1019
 9999 mem: location 1019 is 98
 9999 mem: location 1017 is 1013
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 98
 9999 run: result 1 is 1013
 9999 run: result 2 is 1
 9999 mem: storing 98 in location 3
 9999 mem: storing 1013 in location 901
 9999 mem: storing 1 in location 4
- 101 run: 5:character, console:address, 6:boolean <- read-key console:address
+ 103 run: 5:character, console:address, 6:boolean <- read-key console:address
 9999 mem: location 901 is 1013
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
- 102 run: console:address <- next-ingredient 
+ 104 run: console:address <- next-ingredient 
 9999 mem: storing 1013 in location 1017
- 102 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
+ 104 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1017 is 1013
- 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 4
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
- 103 run: x:address:console <- next-ingredient 
+ 105 run: x:address:console <- next-ingredient 
 9999 mem: storing 1013 in location 1027
- 103 run: break-unless x, 
+ 105 run: break-unless x, 
 9999 mem: location 1027 is 1013
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address *x, index:offset
+ 105 run: idx:address:number <- get-address *x, index:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 2
 9999 mem: location 1014 is 1000
 9999 mem: location 1027 is 1013
 9999 run: address to copy is 1013
 9999 mem: storing 1013 in location 1028
- 103 run: buf:address:array:event <- get *x, data:offset
+ 105 run: buf:address:array:event <- get *x, data:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 2
 9999 mem: location 1014 is 1000
@@ -286,18 +298,18 @@
 9999 run: its type is address
 9999 mem: location 1014 is 1000
 9999 mem: storing 1000 in location 1029
- 103 run: max:number <- length *buf
+ 105 run: max:number <- length *buf
 9999 mem: location 1029 is 1000
 9999 mem: storing 3 in location 1030
- 103 run: done?:boolean <- greater-or-equal *idx, max
+ 105 run: done?:boolean <- greater-or-equal *idx, max
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 2
 9999 mem: location 1030 is 3
 9999 mem: storing 0 in location 1031
- 103 run: break-unless done?, 
+ 105 run: break-unless done?, 
 9999 mem: location 1031 is 0
 9999 run: jumping to instruction 12
- 103 run: result:event <- index *buf, *idx
+ 105 run: result:event <- index *buf, *idx
 9999 mem: location 1029 is 1000
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 2
@@ -311,17 +323,18 @@
 9999 mem: storing 99 in location 1034
 9999 mem: storing 0 in location 1035
 9999 mem: storing 0 in location 1036
- 103 run: *idx <- add *idx, 1
+ 105 run: *idx <- add *idx, 1
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 2
 9999 mem: location 1028 is 1013
 9999 mem: storing 3 in location 1013
- 103 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
+ 105 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1033 is 0
 9999 mem: location 1034 is 99
 9999 mem: location 1035 is 0
 9999 mem: location 1036 is 0
 9999 mem: location 1027 is 1013
+9999 trace: reply: decrementing callstack depth from 4
 9999 run: result 0 is [0, 99, 0, 0]
 9999 run: result 1 is 1013
 9999 run: result 2 is 1
@@ -333,54 +346,57 @@
 9999 mem: storing 1013 in location 1017
 9999 mem: storing 1 in location 1022
 9999 mem: storing 0 in location 1023
- 102 run: jump-unless quit?, 1:offset
+ 104 run: jump-unless quit?, 1:offset
 9999 mem: location 1023 is 0
 9999 run: jumping to instruction 5
- 102 run: jump-if found?, 1:offset
+ 104 run: jump-if found?, 1:offset
 9999 mem: location 1022 is 1
 9999 run: jumping to instruction 7
- 102 run: c:address:character <- maybe-convert x, text:variant
+ 104 run: c:address:character <- maybe-convert x, text:variant
 9999 mem: location 1018 is 0
 9999 mem: location 1019 is 99
 9999 mem: location 1020 is 0
 9999 mem: location 1021 is 0
 9999 mem: storing 1019 in location 1024
- 102 run: jump-if c, 1:offset
+ 104 run: jump-if c, 1:offset
 9999 mem: location 1024 is 1019
 9999 run: jumping to instruction 10
- 102 run: reply *c, console/same-as-ingredient:0, 1/found, 0/quit
+ 104 run: reply *c, console/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1024 is 1019
 9999 mem: location 1019 is 99
 9999 mem: location 1017 is 1013
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 99
 9999 run: result 1 is 1013
 9999 run: result 2 is 1
 9999 mem: storing 99 in location 5
 9999 mem: storing 1013 in location 901
 9999 mem: storing 1 in location 6
- 101 run: 7:character, console:address, 8:boolean, 9:boolean <- read-key console:address
+ 103 run: 7:character, console:address, 8:boolean, 9:boolean <- read-key console:address
 9999 mem: location 901 is 1013
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
- 102 run: console:address <- next-ingredient 
+ 104 run: console:address <- next-ingredient 
 9999 mem: storing 1013 in location 1017
- 102 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
+ 104 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1017 is 1013
- 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 4
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
- 103 run: x:address:console <- next-ingredient 
+ 105 run: x:address:console <- next-ingredient 
 9999 mem: storing 1013 in location 1027
- 103 run: break-unless x, 
+ 105 run: break-unless x, 
 9999 mem: location 1027 is 1013
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address *x, index:offset
+ 105 run: idx:address:number <- get-address *x, index:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1014 is 1000
 9999 mem: location 1027 is 1013
 9999 run: address to copy is 1013
 9999 mem: storing 1013 in location 1028
- 103 run: buf:address:array:event <- get *x, data:offset
+ 105 run: buf:address:array:event <- get *x, data:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1014 is 1000
@@ -389,27 +405,28 @@
 9999 run: its type is address
 9999 mem: location 1014 is 1000
 9999 mem: storing 1000 in location 1029
- 103 run: max:number <- length *buf
+ 105 run: max:number <- length *buf
 9999 mem: location 1029 is 1000
 9999 mem: storing 3 in location 1030
- 103 run: done?:boolean <- greater-or-equal *idx, max
+ 105 run: done?:boolean <- greater-or-equal *idx, max
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1030 is 3
 9999 mem: storing 1 in location 1031
- 103 run: break-unless done?, 
+ 105 run: break-unless done?, 
 9999 mem: location 1031 is 1
 9999 run: jump-unless fell through
- 103 run: dummy:address:event <- new event:type
+ 105 run: dummy:address:event <- new event:type
 9999 mem: new alloc: 1038
 9999 mem: storing 1038 in location 1032
- 103 run: reply *dummy, x/same-as-ingredient:0, 1/found, 1/quit
+ 105 run: reply *dummy, x/same-as-ingredient:0, 1/found, 1/quit
 9999 mem: location 1032 is 1038
 9999 mem: location 1038 is 0
 9999 mem: location 1039 is 0
 9999 mem: location 1040 is 0
 9999 mem: location 1041 is 0
 9999 mem: location 1027 is 1013
+9999 trace: reply: decrementing callstack depth from 4
 9999 run: result 0 is [0, 0, 0, 0]
 9999 run: result 1 is 1013
 9999 run: result 2 is 1
@@ -421,13 +438,14 @@
 9999 mem: storing 1013 in location 1017
 9999 mem: storing 1 in location 1022
 9999 mem: storing 1 in location 1023
- 102 run: jump-unless quit?, 1:offset
+ 104 run: jump-unless quit?, 1:offset
 9999 mem: location 1023 is 1
 9999 run: jump-unless fell through
- 102 run: reply 0, console/same-as-ingredient:0, found?, quit?
+ 104 run: reply 0, console/same-as-ingredient:0, found?, quit?
 9999 mem: location 1017 is 1013
 9999 mem: location 1022 is 1
 9999 mem: location 1023 is 1
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 0
 9999 run: result 1 is 1013
 9999 run: result 2 is 1
@@ -436,7 +454,8 @@
 9999 mem: storing 1013 in location 901
 9999 mem: storing 1 in location 8
 9999 mem: storing 1 in location 9
- 100 run: memory-should-contain [
+9999 trace: fall-through: exiting run1002; decrementing callstack depth from 2
+ 102 run: memory-should-contain [
     1 <- 97  # 'a'
     2 <- 1
     3 <- 98  # 'b'
@@ -456,3 +475,4 @@
 9999 run: checking location 7
 9999 run: checking location 8
 9999 run: checking location 9
+9999 trace: fall-through: exiting scenario-keyboard-in-scenario; decrementing callstack depth from 1

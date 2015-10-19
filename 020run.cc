@@ -62,7 +62,7 @@ void run_current_routine()
     // Running One Instruction
 //?     Instructions_running[current_recipe_name()]++;
     if (current_instruction().is_label) { ++current_step_index(); continue; }
-    trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string() << end();
+    trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << current_instruction().to_string() << end();
     if (Memory[0] != 0) {
       raise_error << "something wrote to location 0; this should never happen\n" << end();
       Memory[0] = 0;

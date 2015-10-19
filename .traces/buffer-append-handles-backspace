@@ -5,9 +5,10 @@
 9999 after-brace: recipe scenario-buffer-append-handles-backspace
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-buffer-append-handles-backspace
- 101 run: run [
+ 102 run: run [
     local-scope
     x:address:buffer <- new-buffer 3
     x <- buffer-append x, 97  # 'a'
@@ -49,77 +50,82 @@
 9999 after-brace: buffer-append ...
 9999 after-brace: buffer-to-array ...
 9999 after-brace: copy ...
- 101 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1000
- 101 run: x:address:buffer <- new-buffer 3
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 103 run: x:address:buffer <- new-buffer 3
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1004
- 102 run: result:address:buffer <- new buffer:type
+ 104 run: result:address:buffer <- new buffer:type
 9999 mem: new alloc: 1011
 9999 mem: storing 1011 in location 1006
- 102 run: len:address:number <- get-address *result, length:offset
+ 104 run: len:address:number <- get-address *result, length:offset
 9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1012 is 0
 9999 mem: location 1006 is 1011
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1007
- 102 run: *len:address:number <- copy 0
+ 104 run: *len:address:number <- copy 0
 9999 mem: location 1007 is 1011
 9999 mem: storing 0 in location 1011
- 102 run: s:address:address:array:character <- get-address *result, data:offset
+ 104 run: s:address:address:array:character <- get-address *result, data:offset
 9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1012 is 0
 9999 mem: location 1006 is 1011
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1008
- 102 run: capacity:number, found?:boolean <- next-ingredient 
+ 104 run: capacity:number, found?:boolean <- next-ingredient 
 9999 mem: storing 3 in location 1009
 9999 mem: storing 1 in location 1010
- 102 run: assert found?, [new-buffer must get a capacity argument]
+ 104 run: assert found?, [new-buffer must get a capacity argument]
 9999 mem: location 1010 is 1
- 102 run: *s <- new character:type, capacity
+ 104 run: *s <- new character:type, capacity
 9999 mem: location 1009 is 3
 9999 mem: array size is 3
 9999 mem: new alloc: 1013
 9999 mem: location 1008 is 1012
 9999 mem: storing 1013 in location 1012
- 102 run: reply result
+ 104 run: reply result
 9999 mem: location 1006 is 1011
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: x <- buffer-append x, 97
+ 103 run: x <- buffer-append x, 97
 9999 mem: location 1002 is 1011
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
 9999 mem: new alloc: 1017
- 102 run: in:address:buffer <- next-ingredient 
+ 104 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1011 in location 1019
- 102 run: c:character <- next-ingredient 
+ 104 run: c:character <- next-ingredient 
 9999 mem: storing 97 in location 1020
- 102 run: len:address:number <- get-address *in, length:offset
+ 104 run: len:address:number <- get-address *in, length:offset
 9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1012 is 1013
 9999 mem: location 1019 is 1011
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1021
- 102 run: backspace?:boolean <- equal c, 8/backspace
+ 104 run: backspace?:boolean <- equal c, 8/backspace
 9999 mem: location 1020 is 97
 9999 mem: storing 0 in location 1022
- 102 run: break-unless backspace?, 
+ 104 run: break-unless backspace?, 
 9999 mem: location 1022 is 0
 9999 run: jumping to instruction 12
- 102 run: full?:boolean <- buffer-full? in
+ 104 run: full?:boolean <- buffer-full? in
 9999 mem: location 1019 is 1011
- 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 4
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
- 103 run: in:address:buffer <- next-ingredient 
+ 105 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1011 in location 1006
- 103 run: len:number <- get *in, length:offset
+ 105 run: len:number <- get *in, length:offset
 9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1012 is 1013
@@ -128,7 +134,7 @@
 9999 run: its type is number
 9999 mem: location 1011 is 0
 9999 mem: storing 0 in location 1007
- 103 run: s:address:array:character <- get *in, data:offset
+ 105 run: s:address:array:character <- get *in, data:offset
 9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1012 is 1013
@@ -137,21 +143,22 @@
 9999 run: its type is address
 9999 mem: location 1012 is 1013
 9999 mem: storing 1013 in location 1008
- 103 run: capacity:number <- length *s
+ 105 run: capacity:number <- length *s
 9999 mem: location 1008 is 1013
 9999 mem: storing 3 in location 1009
- 103 run: result:boolean <- greater-or-equal len, capacity
+ 105 run: result:boolean <- greater-or-equal len, capacity
 9999 mem: location 1007 is 0
 9999 mem: location 1009 is 3
 9999 mem: storing 0 in location 1010
- 103 run: reply result
+ 105 run: reply result
 9999 mem: location 1010 is 0
+9999 trace: reply: decrementing callstack depth from 4
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1024
- 102 run: break-unless full?, 
+ 104 run: break-unless full?, 
 9999 mem: location 1024 is 0
 9999 run: jumping to instruction 17
- 102 run: s:address:array:character <- get *in, data:offset
+ 104 run: s:address:array:character <- get *in, data:offset
 9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1012 is 1013
@@ -160,52 +167,55 @@
 9999 run: its type is address
 9999 mem: location 1012 is 1013
 9999 mem: storing 1013 in location 1025
- 102 run: dest:address:character <- index-address *s, *len
+ 104 run: dest:address:character <- index-address *s, *len
 9999 mem: location 1025 is 1013
 9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1014 in location 1026
- 102 run: *dest <- copy c
+ 104 run: *dest <- copy c
 9999 mem: location 1020 is 97
 9999 mem: location 1026 is 1014
 9999 mem: storing 97 in location 1014
- 102 run: *len <- add *len, 1
+ 104 run: *len <- add *len, 1
 9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1021 is 1011
 9999 mem: storing 1 in location 1011
- 102 run: reply in/same-as-ingredient:0
+ 104 run: reply in/same-as-ingredient:0
 9999 mem: location 1019 is 1011
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: x <- buffer-append x, 98
+ 103 run: x <- buffer-append x, 98
 9999 mem: location 1002 is 1011
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
- 102 run: in:address:buffer <- next-ingredient 
+ 104 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1011 in location 1019
- 102 run: c:character <- next-ingredient 
+ 104 run: c:character <- next-ingredient 
 9999 mem: storing 98 in location 1020
- 102 run: len:address:number <- get-address *in, length:offset
+ 104 run: len:address:number <- get-address *in, length:offset
 9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
 9999 mem: location 1019 is 1011
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1021
- 102 run: backspace?:boolean <- equal c, 8/backspace
+ 104 run: backspace?:boolean <- equal c, 8/backspace
 9999 mem: location 1020 is 98
 9999 mem: storing 0 in location 1022
- 102 run: break-unless backspace?, 
+ 104 run: break-unless backspace?, 
 9999 mem: location 1022 is 0
 9999 run: jumping to instruction 12
- 102 run: full?:boolean <- buffer-full? in
+ 104 run: full?:boolean <- buffer-full? in
 9999 mem: location 1019 is 1011
- 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 4
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
- 103 run: in:address:buffer <- next-ingredient 
+ 105 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1011 in location 1006
- 103 run: len:number <- get *in, length:offset
+ 105 run: len:number <- get *in, length:offset
 9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
@@ -214,7 +224,7 @@
 9999 run: its type is number
 9999 mem: location 1011 is 1
 9999 mem: storing 1 in location 1007
- 103 run: s:address:array:character <- get *in, data:offset
+ 105 run: s:address:array:character <- get *in, data:offset
 9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
@@ -223,21 +233,22 @@
 9999 run: its type is address
 9999 mem: location 1012 is 1013
 9999 mem: storing 1013 in location 1008
- 103 run: capacity:number <- length *s
+ 105 run: capacity:number <- length *s
 9999 mem: location 1008 is 1013
 9999 mem: storing 3 in location 1009
- 103 run: result:boolean <- greater-or-equal len, capacity
+ 105 run: result:boolean <- greater-or-equal len, capacity
 9999 mem: location 1007 is 1
 9999 mem: location 1009 is 3
 9999 mem: storing 0 in location 1010
- 103 run: reply result
+ 105 run: reply result
 9999 mem: location 1010 is 0
+9999 trace: reply: decrementing callstack depth from 4
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1024
- 102 run: break-unless full?, 
+ 104 run: break-unless full?, 
 9999 mem: location 1024 is 0
 9999 run: jumping to instruction 17
- 102 run: s:address:array:character <- get *in, data:offset
+ 104 run: s:address:array:character <- get *in, data:offset
 9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
@@ -246,71 +257,75 @@
 9999 run: its type is address
 9999 mem: location 1012 is 1013
 9999 mem: storing 1013 in location 1025
- 102 run: dest:address:character <- index-address *s, *len
+ 104 run: dest:address:character <- index-address *s, *len
 9999 mem: location 1025 is 1013
 9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 1
 9999 mem: storing 1015 in location 1026
- 102 run: *dest <- copy c
+ 104 run: *dest <- copy c
 9999 mem: location 1020 is 98
 9999 mem: location 1026 is 1015
 9999 mem: storing 98 in location 1015
- 102 run: *len <- add *len, 1
+ 104 run: *len <- add *len, 1
 9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1021 is 1011
 9999 mem: storing 2 in location 1011
- 102 run: reply in/same-as-ingredient:0
+ 104 run: reply in/same-as-ingredient:0
 9999 mem: location 1019 is 1011
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: x <- buffer-append x, 8/backspace
+ 103 run: x <- buffer-append x, 8/backspace
 9999 mem: location 1002 is 1011
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
- 102 run: in:address:buffer <- next-ingredient 
+ 104 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1011 in location 1019
- 102 run: c:character <- next-ingredient 
+ 104 run: c:character <- next-ingredient 
 9999 mem: storing 8 in location 1020
- 102 run: len:address:number <- get-address *in, length:offset
+ 104 run: len:address:number <- get-address *in, length:offset
 9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 2
 9999 mem: location 1012 is 1013
 9999 mem: location 1019 is 1011
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1021
- 102 run: backspace?:boolean <- equal c, 8/backspace
+ 104 run: backspace?:boolean <- equal c, 8/backspace
 9999 mem: location 1020 is 8
 9999 mem: storing 1 in location 1022
- 102 run: break-unless backspace?, 
+ 104 run: break-unless backspace?, 
 9999 mem: location 1022 is 1
 9999 run: jump-unless fell through
- 102 run: empty?:boolean <- lesser-or-equal *len, 0
+ 104 run: empty?:boolean <- lesser-or-equal *len, 0
 9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 2
 9999 mem: storing 0 in location 1023
- 102 run: jump-unless empty?, 1:offset
+ 104 run: jump-unless empty?, 1:offset
 9999 mem: location 1023 is 0
 9999 run: jumping to instruction 10
- 102 run: *len <- subtract *len, 1
+ 104 run: *len <- subtract *len, 1
 9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 2
 9999 mem: location 1021 is 1011
 9999 mem: storing 1 in location 1011
- 102 run: reply in/same-as-ingredient:0
+ 104 run: reply in/same-as-ingredient:0
 9999 mem: location 1019 is 1011
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: s:address:array:character <- buffer-to-array x
+ 103 run: s:address:array:character <- buffer-to-array x
 9999 mem: location 1002 is 1011
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
- 102 run: in:address:buffer <- next-ingredient 
+ 104 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1011 in location 1019
- 102 run: break-if in, 
+ 104 run: break-if in, 
 9999 mem: location 1019 is 1011
 9999 run: jumping to instruction 5
- 102 run: len:number <- get *in, length:offset
+ 104 run: len:number <- get *in, length:offset
 9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
@@ -319,7 +334,7 @@
 9999 run: its type is number
 9999 mem: location 1011 is 1
 9999 mem: storing 1 in location 1020
- 102 run: s:address:array:character <- get *in, data:offset
+ 104 run: s:address:array:character <- get *in, data:offset
 9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
@@ -328,58 +343,60 @@
 9999 run: its type is address
 9999 mem: location 1012 is 1013
 9999 mem: storing 1013 in location 1021
- 102 run: result:address:array:character <- new character:type, len
+ 104 run: result:address:array:character <- new character:type, len
 9999 mem: location 1020 is 1
 9999 mem: array size is 1
 9999 mem: new alloc: 1027
 9999 mem: storing 1027 in location 1022
- 102 run: i:number <- copy 0
+ 104 run: i:number <- copy 0
 9999 mem: storing 0 in location 1023
- 102 run: done?:boolean <- greater-or-equal i, len
+ 104 run: done?:boolean <- greater-or-equal i, len
 9999 mem: location 1023 is 0
 9999 mem: location 1020 is 1
 9999 mem: storing 0 in location 1024
- 102 run: break-if done?, 
+ 104 run: break-if done?, 
 9999 mem: location 1024 is 0
 9999 run: jump-if fell through
- 102 run: src:character <- index *s, i
+ 104 run: src:character <- index *s, i
 9999 mem: location 1021 is 1013
 9999 mem: location 1023 is 0
 9999 run: address to copy is 1014
 9999 run: its type is character
 9999 mem: location 1014 is 97
 9999 mem: storing 97 in location 1025
- 102 run: dest:address:character <- index-address *result, i
+ 104 run: dest:address:character <- index-address *result, i
 9999 mem: location 1022 is 1027
 9999 mem: location 1023 is 0
 9999 mem: storing 1028 in location 1026
- 102 run: *dest <- copy src
+ 104 run: *dest <- copy src
 9999 mem: location 1025 is 97
 9999 mem: location 1026 is 1028
 9999 mem: storing 97 in location 1028
- 102 run: i <- add i, 1
+ 104 run: i <- add i, 1
 9999 mem: location 1023 is 0
 9999 mem: storing 1 in location 1023
- 102 run: loop 
+ 104 run: loop 
 9999 run: jumping to instruction 11
- 102 run: done?:boolean <- greater-or-equal i, len
+ 104 run: done?:boolean <- greater-or-equal i, len
 9999 mem: location 1023 is 1
 9999 mem: location 1020 is 1
 9999 mem: storing 1 in location 1024
- 102 run: break-if done?, 
+ 104 run: break-if done?, 
 9999 mem: location 1024 is 1
 9999 run: jumping to instruction 18
- 102 run: reply result
+ 104 run: reply result
 9999 mem: location 1022 is 1027
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1027
 9999 mem: storing 1027 in location 1003
- 101 run: 1:array:character/raw <- copy *s
+ 103 run: 1:array:character/raw <- copy *s
 9999 mem: location 1003 is 1027
 9999 mem: location 1027 is 1
 9999 mem: location 1028 is 97
 9999 mem: storing 1 in location 1
 9999 mem: storing 97 in location 2
- 100 run: memory-should-contain [
+9999 trace: fall-through: exiting run1001; decrementing callstack depth from 2
+ 102 run: memory-should-contain [
     1 <- 1   # length
     2 <- 97  # contents
     3 <- 0
@@ -387,3 +404,4 @@
 9999 run: checking location 1
 9999 run: checking location 2
 9999 run: checking location 3
+9999 trace: fall-through: exiting scenario-buffer-append-handles-backspace; decrementing callstack depth from 1

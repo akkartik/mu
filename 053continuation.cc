@@ -53,6 +53,11 @@ case CONTINUE_FROM: {
 :(before "End Primitive Recipe Implementations")
 case CONTINUE_FROM: {
   long long int c = ingredients.at(0).at(0);
+  if (Trace_stream) {
+    Trace_stream->callstack_depth += SIZE(Continuation[c]);
+    trace("trace") << "continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
+    assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
+  }
   Current_routine->calls = Continuation[c];  // deep copy; calls have no pointers
   continue;  // skip rest of this instruction
 }
@@ -186,6 +191,11 @@ case CREATE_DELIMITED_CONTINUATION: {
 }
 :(before "End Primitive Recipe Implementations")
 case CREATE_DELIMITED_CONTINUATION: {
+  if (Trace_stream) {
+    ++Trace_stream->callstack_depth;
+    trace("trace") << "delimited continuation; incrementing callstack depth to " << Trace_stream->callstack_depth << end();
+    assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
+  }
   Current_routine->calls.front().is_reset = true;
   Current_routine->calls.push_front(call(Recipe_ordinal[current_instruction().ingredients.at(0).name]));
   ingredients.erase(ingredients.begin());  // drop the callee
@@ -225,7 +235,10 @@ case REPLY_DELIMITED_CONTINUATION: {
   }
   Delimited_continuation[Next_delimited_continuation_id] = call_stack(Current_routine->calls.begin(), reset);
   while (Current_routine->calls.begin() != reset) {
-    --Callstack_depth;
+    if (Trace_stream) {
+      --Trace_stream->callstack_depth;
+      assert(Trace_stream->callstack_depth >= 0);
+    }
     Current_routine->calls.pop_front();
   }
   // return it as the result of the 'reset' call
@@ -255,6 +268,11 @@ call_stack::iterator find_reset(call_stack& c) {
     const call_stack& new_calls = Delimited_continuation[ingredients.at(0).at(0)];
     for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p)
       Current_routine->calls.push_front(*p);
+    if (Trace_stream) {
+      Trace_stream->callstack_depth += SIZE(new_calls);
+      trace("trace") << "calling delimited continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
+      assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
+    }
     ++current_step_index();  // skip past the reply-delimited-continuation
     ingredients.erase(ingredients.begin());  // drop the callee
     goto call_housekeeping;

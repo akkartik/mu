@@ -162,7 +162,7 @@ case _CLEAR_TRACE: {
 }
 :(before "End Primitive Recipe Implementations")
 case _CLEAR_TRACE: {
-  CLEAR_TRACE;
+  if (Trace_stream) Trace_stream->past_lines.clear();
   break;
 }
 

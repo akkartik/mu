@@ -5,9 +5,10 @@
 9999 after-brace: recipe scenario-removing-from-singleton-list
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-removing-from-singleton-list
- 101 run: run [
+ 102 run: run [
     1:address:duplex-list <- copy 0  # 1 points to singleton list
     1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
     2:address:duplex-list <- remove-duplex 1:address:duplex-list
@@ -40,21 +41,23 @@
 9999 after-brace: remove-duplex ...
 9999 after-brace: get ...
 9999 after-brace: get ...
- 101 run: 1:address:duplex-list <- copy 0
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: 1:address:duplex-list <- copy 0
 9999 mem: storing 0 in location 1
- 101 run: 1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
+ 103 run: 1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
 9999 mem: location 1 is 0
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1000
- 102 run: x:character <- next-ingredient 
+ 104 run: x:character <- next-ingredient 
 9999 mem: storing 3 in location 1002
- 102 run: in:address:duplex-list <- next-ingredient 
+ 104 run: in:address:duplex-list <- next-ingredient 
 9999 mem: storing 0 in location 1003
- 102 run: result:address:duplex-list <- new duplex-list:type
+ 104 run: result:address:duplex-list <- new duplex-list:type
 9999 mem: new alloc: 1008
 9999 mem: storing 1008 in location 1004
- 102 run: val:address:character <- get-address *result, value:offset
+ 104 run: val:address:character <- get-address *result, value:offset
 9999 mem: location 1004 is 1008
 9999 mem: location 1008 is 0
 9999 mem: location 1009 is 0
@@ -62,11 +65,11 @@
 9999 mem: location 1004 is 1008
 9999 run: address to copy is 1008
 9999 mem: storing 1008 in location 1005
- 102 run: *val <- copy x
+ 104 run: *val <- copy x
 9999 mem: location 1002 is 3
 9999 mem: location 1005 is 1008
 9999 mem: storing 3 in location 1008
- 102 run: next:address:address:duplex-list <- get-address *result, next:offset
+ 104 run: next:address:address:duplex-list <- get-address *result, next:offset
 9999 mem: location 1004 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -74,28 +77,30 @@
 9999 mem: location 1004 is 1008
 9999 run: address to copy is 1009
 9999 mem: storing 1009 in location 1006
- 102 run: *next <- copy in
+ 104 run: *next <- copy in
 9999 mem: location 1003 is 0
 9999 mem: location 1006 is 1009
 9999 mem: storing 0 in location 1009
- 102 run: jump-if in, 1:offset
+ 104 run: jump-if in, 1:offset
 9999 mem: location 1003 is 0
 9999 run: jump-if fell through
- 102 run: reply result
+ 104 run: reply result
 9999 mem: location 1004 is 1008
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1008
 9999 mem: storing 1008 in location 1
- 101 run: 2:address:duplex-list <- remove-duplex 1:address:duplex-list
+ 103 run: 2:address:duplex-list <- remove-duplex 1:address:duplex-list
 9999 mem: location 1 is 1008
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 5
 9999 mem: new alloc: 1011
- 102 run: in:address:duplex-list <- next-ingredient 
+ 104 run: in:address:duplex-list <- next-ingredient 
 9999 mem: storing 1008 in location 1013
- 102 run: jump-if in, 1:offset
+ 104 run: jump-if in, 1:offset
 9999 mem: location 1013 is 1008
 9999 run: jumping to instruction 4
- 102 run: next-node:address:duplex-list <- get *in, next:offset
+ 104 run: next-node:address:duplex-list <- get *in, next:offset
 9999 mem: location 1013 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -105,7 +110,7 @@
 9999 run: its type is address
 9999 mem: location 1009 is 0
 9999 mem: storing 0 in location 1014
- 102 run: prev-node:address:duplex-list <- get *in, prev:offset
+ 104 run: prev-node:address:duplex-list <- get *in, prev:offset
 9999 mem: location 1013 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -115,7 +120,7 @@
 9999 run: its type is address
 9999 mem: location 1010 is 0
 9999 mem: storing 0 in location 1015
- 102 run: x:address:address:duplex-list <- get-address *in, next:offset
+ 104 run: x:address:address:duplex-list <- get-address *in, next:offset
 9999 mem: location 1013 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -123,10 +128,10 @@
 9999 mem: location 1013 is 1008
 9999 run: address to copy is 1009
 9999 mem: storing 1009 in location 1016
- 102 run: *x <- copy 0
+ 104 run: *x <- copy 0
 9999 mem: location 1016 is 1009
 9999 mem: storing 0 in location 1009
- 102 run: x <- get-address *in, prev:offset
+ 104 run: x <- get-address *in, prev:offset
 9999 mem: location 1013 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -134,20 +139,21 @@
 9999 mem: location 1013 is 1008
 9999 run: address to copy is 1010
 9999 mem: storing 1010 in location 1016
- 102 run: *x <- copy 0
+ 104 run: *x <- copy 0
 9999 mem: location 1016 is 1010
 9999 mem: storing 0 in location 1010
- 102 run: break-unless next-node, 
+ 104 run: break-unless next-node, 
 9999 mem: location 1014 is 0
 9999 run: jumping to instruction 14
- 102 run: break-unless prev-node, 
+ 104 run: break-unless prev-node, 
 9999 mem: location 1015 is 0
 9999 run: jumping to instruction 20
- 102 run: reply next-node
+ 104 run: reply next-node
 9999 mem: location 1014 is 0
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 2
- 101 run: 3:address:duplex-list <- get *1:address:duplex-list, next:offset
+ 103 run: 3:address:duplex-list <- get *1:address:duplex-list, next:offset
 9999 mem: location 1 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -157,7 +163,7 @@
 9999 run: its type is address
 9999 mem: location 1009 is 0
 9999 mem: storing 0 in location 3
- 101 run: 4:address:duplex-list <- get *1:address:duplex-list, prev:offset
+ 103 run: 4:address:duplex-list <- get *1:address:duplex-list, prev:offset
 9999 mem: location 1 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -167,7 +173,8 @@
 9999 run: its type is address
 9999 mem: location 1010 is 0
 9999 mem: storing 0 in location 4
- 100 run: memory-should-contain [
+9999 trace: fall-through: exiting run1001; decrementing callstack depth from 2
+ 102 run: memory-should-contain [
     2 <- 0  # remove returned null
     3 <- 0  # removed node is also detached
     4 <- 0
@@ -175,3 +182,4 @@
 9999 run: checking location 2
 9999 run: checking location 3
 9999 run: checking location 4
+9999 trace: fall-through: exiting scenario-removing-from-singleton-list; decrementing callstack depth from 1

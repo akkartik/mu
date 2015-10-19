@@ -5,9 +5,10 @@
 9999 after-brace: recipe scenario-match-at-empty-against-empty
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-match-at-empty-against-empty
- 101 run: run [
+ 102 run: run [
     1:address:array:character <- new []
     3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
   ]
@@ -22,50 +23,55 @@
 9999 after-brace: recipe run1001
 9999 after-brace: new ...
 9999 after-brace: match-at ...
- 101 run: 1:address:array:character <- new []
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: 1:address:array:character <- new []
 9999 mem: storing 1000 in location 1
- 101 run: 3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
+ 103 run: 3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
 9999 mem: location 1 is 1000
 9999 mem: location 1 is 1000
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
 9999 mem: new alloc: 1001
- 102 run: text:address:array:character <- next-ingredient 
+ 104 run: text:address:array:character <- next-ingredient 
 9999 mem: storing 1000 in location 1003
- 102 run: pattern:address:array:character <- next-ingredient 
+ 104 run: pattern:address:array:character <- next-ingredient 
 9999 mem: storing 1000 in location 1004
- 102 run: idx:number <- next-ingredient 
+ 104 run: idx:number <- next-ingredient 
 9999 mem: storing 0 in location 1005
- 102 run: pattern-len:number <- length *pattern
+ 104 run: pattern-len:number <- length *pattern
 9999 mem: location 1004 is 1000
 9999 mem: storing 0 in location 1006
- 102 run: x:number <- length *text
+ 104 run: x:number <- length *text
 9999 mem: location 1003 is 1000
 9999 mem: storing 0 in location 1007
- 102 run: x <- subtract x, pattern-len
+ 104 run: x <- subtract x, pattern-len
 9999 mem: location 1007 is 0
 9999 mem: location 1006 is 0
 9999 mem: storing 0 in location 1007
- 102 run: enough-room?:boolean <- lesser-or-equal idx, x
+ 104 run: enough-room?:boolean <- lesser-or-equal idx, x
 9999 mem: location 1005 is 0
 9999 mem: location 1007 is 0
 9999 mem: storing 1 in location 1008
- 102 run: break-if enough-room?, 
+ 104 run: break-if enough-room?, 
 9999 mem: location 1008 is 1
 9999 run: jumping to instruction 11
- 102 run: pattern-idx:number <- copy 0
+ 104 run: pattern-idx:number <- copy 0
 9999 mem: storing 0 in location 1009
- 102 run: done?:boolean <- greater-or-equal pattern-idx, pattern-len
+ 104 run: done?:boolean <- greater-or-equal pattern-idx, pattern-len
 9999 mem: location 1009 is 0
 9999 mem: location 1006 is 0
 9999 mem: storing 1 in location 1010
- 102 run: break-if done?, 
+ 104 run: break-if done?, 
 9999 mem: location 1010 is 1
 9999 run: jumping to instruction 26
- 102 run: reply 1/found
+ 104 run: reply 1/found
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 3
- 100 run: memory-should-contain [
+9999 trace: fall-through: exiting run1001; decrementing callstack depth from 2
+ 102 run: memory-should-contain [
     3 <- 1  # matches because pattern is also empty
   ]
 9999 run: checking location 3
+9999 trace: fall-through: exiting scenario-match-at-empty-against-empty; decrementing callstack depth from 1

@@ -40,9 +40,10 @@
 9999 after-brace: assume-console ...
 9999 after-brace: run ...
 9999 after-brace: screen-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-sandbox-shows-app-trace-and-result
- 101 run: trace-until 100/app
+ 102 run: trace-until 100/app
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -200,7 +201,6 @@
   90 print-character: 46 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: screen <- render-all screen, env
   10 app: render all 
   11 app: render top menu 
   90 print-character: 32 
@@ -736,9 +736,6 @@
   90 print-character: 32 
   90 print-character: 32 
   11 app: render status 
- 100 run: break-if error?, 
- 100 run: status:address:array:character <- new [            ]
- 100 run: screen <- update-status screen, status, 245/grey
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -751,68 +748,7 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
- 100 run: loop +next-event:label
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
-  99 run: screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
-    .  add 2, 2          ┊foo                .
-    .]                   ┊4                  .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
-  ]
-  99 run: assume-console [
-    left-click 4, 21
-  ]
-  99 run: run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  ]
-  99 run: event-loop screen:address, console:address, 3:address:programming-environment-data
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: console:address <- next-ingredient 
- 100 run: env:address:programming-environment-data <- next-ingredient 
- 100 run: recipes:address:editor-data <- get *env, recipes:offset
- 100 run: current-sandbox:address:editor-data <- get *env, current-sandbox:offset
- 100 run: sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
- 100 run: render-all-on-no-more-events?:boolean <- copy 0/false
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
- 100 run: trace 10, [app], [next-event]
   10 app: next-event 
- 100 run: maximized?:address:boolean <- get-address *env, maximized?:offset
- 100 run: break-unless *maximized?, 
- 100 run: k:address:number <- maybe-convert e:event, keycode:variant
- 100 run: break-unless k, 
- 100 run: c:address:character <- maybe-convert e:event, text:variant
- 100 run: break-unless c, 
- 100 run: t:address:touch-event <- maybe-convert e:event, touch:variant
- 100 run: break-unless t, 
- 100 run: touch-type:number <- get *t, type:offset
- 100 run: is-left-click?:boolean <- equal touch-type, 65513/mouse-left
- 100 run: loop-unless is-left-click?, +next-event:label
- 100 run: sandbox-left-margin:number <- get *current-sandbox, left:offset
- 100 run: click-column:number <- get *t, column:offset
- 100 run: on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
- 100 run: break-unless on-sandbox-side?, 
- 100 run: first-sandbox:address:sandbox-data <- get *env, sandbox:offset
- 100 run: break-unless first-sandbox, 
- 100 run: first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
- 100 run: click-row:number <- get *t, row:offset
- 100 run: below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
- 100 run: break-unless below-sandbox-editor?, 
- 100 run: sandbox:address:sandbox-data <- find-click-in-sandbox-code env, click-row
- 100 run: break-unless sandbox, 
- 100 run: x:address:boolean <- get-address *sandbox, display-trace?:offset
- 100 run: *x <- not *x
- 100 run: hide-screen screen
- 100 run: screen <- render-sandbox-side screen, env, 1/clear
   11 app: render sandbox side 
   90 print-character: 32 
   90 print-character: 32 
@@ -1140,20 +1076,3 @@
   90 print-character: 9473 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
- 100 run: show-screen screen
- 100 run: loop +next-event:label
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
-  98 run: screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
-    .  add 2, 2          ┊foo                .
-    .]                   ┊abc                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
-  ]

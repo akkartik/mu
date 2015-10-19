@@ -40,9 +40,10 @@
 9999 after-brace: assume-console ...
 9999 after-brace: run ...
 9999 after-brace: screen-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-run-updates-results
- 101 run: trace-until 100/app
+ 102 run: trace-until 100/app
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -332,7 +333,6 @@
   90 print-character: 46 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: screen <- render-all screen, env
   10 app: render all 
   11 app: render top menu 
   90 print-character: 32 
@@ -1850,9 +1850,6 @@
   90 print-character: 32 
   90 print-character: 32 
   11 app: render status 
- 100 run: break-if error?, 
- 100 run: status:address:array:character <- new [            ]
- 100 run: screen <- update-status screen, status, 245/grey
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -1865,158 +1862,16 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
- 100 run: loop +next-event:label
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
-  99 run: screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .z:number <- add 2, 2                              ┊                                                x.
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
-  ]
-  99 run: assume-console [
-    left-click 3, 28  # one past the value of the second arg
-    press backspace
-    type [3]
-    press F4
-  ]
-  99 run: run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  ]
-  99 run: event-loop screen:address, console:address, 3:address:programming-environment-data
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: console:address <- next-ingredient 
- 100 run: env:address:programming-environment-data <- next-ingredient 
- 100 run: recipes:address:editor-data <- get *env, recipes:offset
- 100 run: current-sandbox:address:editor-data <- get *env, current-sandbox:offset
- 100 run: sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
- 100 run: render-all-on-no-more-events?:boolean <- copy 0/false
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
- 100 run: trace 10, [app], [next-event]
   10 app: next-event 
- 100 run: maximized?:address:boolean <- get-address *env, maximized?:offset
- 100 run: break-unless *maximized?, 
- 100 run: k:address:number <- maybe-convert e:event, keycode:variant
- 100 run: break-unless k, 
- 100 run: c:address:character <- maybe-convert e:event, text:variant
- 100 run: break-unless c, 
- 100 run: t:address:touch-event <- maybe-convert e:event, touch:variant
- 100 run: break-unless t, 
- 100 run: touch-type:number <- get *t, type:offset
- 100 run: is-left-click?:boolean <- equal touch-type, 65513/mouse-left
- 100 run: loop-unless is-left-click?, +next-event:label
- 100 run: sandbox-left-margin:number <- get *current-sandbox, left:offset
- 100 run: click-column:number <- get *t, column:offset
- 100 run: on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
- 100 run: break-unless on-sandbox-side?, 
- 100 run: sandbox-left-margin:number <- get *current-sandbox, left:offset
- 100 run: click-column:number <- get *t, column:offset
- 100 run: on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
- 100 run: break-unless on-sandbox-side?, 
- 100 run: was-delete?:boolean <- delete-sandbox *t, env
- 100 run: break-unless was-delete?, 
- 100 run: sandbox-left-margin:number <- get *current-sandbox, left:offset
- 100 run: click-column:number <- get *t, column:offset
- 100 run: on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
- 100 run: break-unless on-sandbox-side?, 
- 100 run: _ <- move-cursor-in-editor screen, recipes, *t
- 100 run: *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
- 100 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
- 100 run: loop +next-event:label
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
- 100 run: trace 10, [app], [next-event]
   10 app: next-event 
- 100 run: maximized?:address:boolean <- get-address *env, maximized?:offset
- 100 run: break-unless *maximized?, 
- 100 run: k:address:number <- maybe-convert e:event, keycode:variant
- 100 run: break-unless k, 
- 100 run: c:address:character <- maybe-convert e:event, text:variant
- 100 run: break-unless c, 
- 100 run: maximize?:boolean <- equal *c, 24/ctrl-x
- 100 run: break-unless maximize?, 
- 100 run: switch-side?:boolean <- equal *c, 14/ctrl-n
- 100 run: break-unless switch-side?, 
- 100 run: redraw-screen?:boolean <- equal *c, 12/ctrl-l
- 100 run: break-unless redraw-screen?, 
- 100 run: t:address:touch-event <- maybe-convert e:event, touch:variant
- 100 run: break-unless t, 
- 100 run: r:address:resize-event <- maybe-convert e:event, resize:variant
- 100 run: break-unless r, 
- 100 run: hide-screen screen
- 100 run: break-if *sandbox-in-focus?, 
- 100 run: screen, recipes, render?:boolean <- handle-keyboard-event screen, recipes, e:event
   10 app: handle-keyboard-event: special character 
   10 app: delete-before-cursor 
   10 app: decrementing cursor column 
   90 print-character: 32 
- 100 run: more-events?:boolean <- has-more-events? console
- 100 run: break-unless more-events?, 
- 100 run: break-if more-events?, 
- 100 run: break-unless render-all-on-no-more-events?, 
- 100 run: break-unless render?, 
- 100 run: break-unless *sandbox-in-focus?, 
- 100 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
- 100 run: show-screen screen
- 100 run: loop 
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
- 100 run: trace 10, [app], [next-event]
   10 app: next-event 
- 100 run: maximized?:address:boolean <- get-address *env, maximized?:offset
- 100 run: break-unless *maximized?, 
- 100 run: k:address:number <- maybe-convert e:event, keycode:variant
- 100 run: break-unless k, 
- 100 run: c:address:character <- maybe-convert e:event, text:variant
- 100 run: break-unless c, 
- 100 run: maximize?:boolean <- equal *c, 24/ctrl-x
- 100 run: break-unless maximize?, 
- 100 run: switch-side?:boolean <- equal *c, 14/ctrl-n
- 100 run: break-unless switch-side?, 
- 100 run: redraw-screen?:boolean <- equal *c, 12/ctrl-l
- 100 run: break-unless redraw-screen?, 
- 100 run: t:address:touch-event <- maybe-convert e:event, touch:variant
- 100 run: break-unless t, 
- 100 run: r:address:resize-event <- maybe-convert e:event, resize:variant
- 100 run: break-unless r, 
- 100 run: hide-screen screen
- 100 run: break-if *sandbox-in-focus?, 
- 100 run: screen, recipes, render?:boolean <- handle-keyboard-event screen, recipes, e:event
   10 app: handle-keyboard-event: special character 
   90 print-character: 51 
- 100 run: more-events?:boolean <- has-more-events? console
- 100 run: break-unless more-events?, 
- 100 run: break-if more-events?, 
- 100 run: break-unless render-all-on-no-more-events?, 
- 100 run: break-unless render?, 
- 100 run: break-unless *sandbox-in-focus?, 
- 100 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
- 100 run: show-screen screen
- 100 run: loop 
- 100 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
- 100 run: loop-unless found?, 
- 100 run: break-if quit?, 
- 100 run: trace 10, [app], [next-event]
   10 app: next-event 
- 100 run: maximized?:address:boolean <- get-address *env, maximized?:offset
- 100 run: break-unless *maximized?, 
- 100 run: k:address:number <- maybe-convert e:event, keycode:variant
- 100 run: break-unless k, 
- 100 run: do-run?:boolean <- equal *k, 65532/F4
- 100 run: break-unless do-run?, 
- 100 run: status:address:array:character <- new [running...  ]
- 100 run: screen <- update-status screen, status, 245/grey
   90 print-character: 114 
   90 print-character: 117 
   90 print-character: 110 
@@ -2029,860 +1884,132 @@
   90 print-character: 46 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: error?:boolean, env, screen <- run-sandboxes env, screen
- 100 run: break-if *warnings, 
- 100 run: break-if completed?:boolean, 
-  99 run: curr <- get *curr, next-sandbox:offset
-  99 run: loop 
-  99 run: break-unless curr, 
-  99 run: reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
-  98 run: screen <- render-all screen, env
-  99 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-  99 run: screen:address <- next-ingredient 
-  99 run: env:address:programming-environment-data <- next-ingredient 
-  99 run: trace 10, [app], [render all]
   10 app: render all 
-  99 run: hide-screen screen
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: break-unless screen, 
- 100 run: reply screen
-  99 run: trace 11, [app], [render top menu]
   11 app: render top menu 
-  99 run: width:number <- screen-width screen
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: sc:address:screen <- next-ingredient 
- 100 run: break-unless sc, 
- 100 run: width:number <- get *sc, num-columns:offset
- 100 run: reply width
-  99 run: draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: row:number <- next-ingredient 
- 100 run: x:number <- next-ingredient 
- 100 run: right:number <- next-ingredient 
- 100 run: style:character, style-found?:boolean <- next-ingredient 
- 100 run: break-if style-found?, 
- 100 run: color:number, color-found?:boolean <- next-ingredient 
- 100 run: break-if color-found?, 
- 100 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
- 100 run: break-if bg-color-found?, 
- 100 run: screen <- move-cursor screen, row, x
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
- 100 run: print-character screen, style, color, bg-color
-  90 print-character: 32 
- 100 run: x <- add x, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-or-equal x, right
- 100 run: break-unless continue?, 
-  99 run: button-start:number <- subtract width, 20
-  99 run: button-on-screen?:boolean <- greater-or-equal button-start, 0
-  99 run: assert button-on-screen?, [screen too narrow for menu]
-  99 run: screen <- move-cursor screen, 0/row, button-start
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: sc:address:screen <- next-ingredient 
- 100 run: new-row:number <- next-ingredient 
- 100 run: new-column:number <- next-ingredient 
- 100 run: break-unless sc, 
- 100 run: row:address:number <- get-address *sc, cursor-row:offset
- 100 run: *row <- copy new-row
- 100 run: column:address:number <- get-address *sc, cursor-column:offset
- 100 run: *column <- copy new-column
- 100 run: reply sc/same-as-ingredient:0
-  99 run: run-button:address:array:character <- new [ run (F4) ]
-  99 run: print-string screen, run-button, 255/white, 161/reddish
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address:screen <- next-ingredient 
- 100 run: s:address:array:character <- next-ingredient 
- 100 run: color:number, color-found?:boolean <- next-ingredient 
- 100 run: break-if color-found?, 
- 100 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
- 100 run: break-if bg-color-found?, 
- 100 run: len:number <- length *s
- 100 run: i:number <- copy 0
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
-  90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
   90 print-character: 114 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 117 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 110 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 40 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 70 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 52 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 41 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: reply screen/same-as-ingredient:0
-  99 run: trace 11, [app], [render divider]
   11 app: render divider 
-  99 run: divider:number, _ <- divide-with-remainder width, 2
-  99 run: height:number <- screen-height screen
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: sc:address:screen <- next-ingredient 
- 100 run: break-unless sc, 
- 100 run: height:number <- get *sc, num-rows:offset
- 100 run: reply height
-  99 run: draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: col:number <- next-ingredient 
- 100 run: y:number <- next-ingredient 
- 100 run: bottom:number <- next-ingredient 
- 100 run: style:character, style-found?:boolean <- next-ingredient 
- 100 run: break-if style-found?, 
- 100 run: color:number, color-found?:boolean <- next-ingredient 
- 100 run: break-if color-found?, 
- 100 run: color <- copy 245/grey
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
- 100 run: screen <- move-cursor screen, y, col
- 100 run: print-character screen, style, color
   90 print-character: 9482 
- 100 run: y <- add y, 1
- 100 run: loop 
- 100 run: continue?:boolean <- lesser-than y, bottom
- 100 run: break-unless continue?, 
-  99 run: screen <- render-recipes screen, env
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: env:address:programming-environment-data <- next-ingredient 
- 100 run: trace 11, [app], [render recipes]
   11 app: render recipes 
- 100 run: recipes:address:editor-data <- get *env, recipes:offset
- 100 run: left:number <- get *recipes, left:offset
- 100 run: right:number <- get *recipes, right:offset
- 100 run: row:number, column:number, screen <- render screen, recipes
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -3034,7 +2161,6 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 93 
- 100 run: clear-line-delimited screen, column, right
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -3084,10 +2210,6 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: row <- add row, 1
- 100 run: recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
- 100 run: break-unless recipe-warnings, 
- 100 run: draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   90 print-character: 9480 
   90 print-character: 9480 
   90 print-character: 9480 
@@ -3138,8 +2260,6 @@
   90 print-character: 9480 
   90 print-character: 9480 
   90 print-character: 9480 
- 100 run: row <- add row, 1
- 100 run: clear-screen-from screen, row, left, left, right
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -3440,18 +2560,7 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: reply screen/same-as-ingredient:0
-  99 run: screen <- render-sandbox-side screen, env
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: env:address:programming-environment-data <- next-ingredient 
- 100 run: trace 11, [app], [render sandbox side]
   11 app: render sandbox side 
- 100 run: current-sandbox:address:editor-data <- get *env, current-sandbox:offset
- 100 run: left:number <- get *current-sandbox, left:offset
- 100 run: right:number <- get *current-sandbox, right:offset
- 100 run: row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
- 100 run: clear-screen-from screen, row, column, left, right
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -3991,8 +3100,6 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: row <- add row, 1
- 100 run: draw-horizontal screen, row, left, right, 9473/horizontal-double
   90 print-character: 9473 
   90 print-character: 9473 
   90 print-character: 9473 
@@ -4042,8 +3149,6 @@
   90 print-character: 9473 
   90 print-character: 9473 
   90 print-character: 9473 
- 100 run: sandbox:address:sandbox-data <- get *env, sandbox:offset
- 100 run: row, screen <- render-sandboxes screen, sandbox, left, right, row
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -4290,197 +3395,21 @@
   90 print-character: 9473 
   90 print-character: 9473 
   90 print-character: 9473 
- 100 run: clear-rest-of-screen screen, row, left, left, right
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
- 100 run: reply screen/same-as-ingredient:0
-  99 run: trace 11, [app], [render status]
   11 app: render status 
-  99 run: recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
-  99 run: break-unless recipe-warnings, 
-  99 run: recipes:address:editor-data <- get *env, recipes:offset
-  99 run: current-sandbox:address:editor-data <- get *env, current-sandbox:offset
-  99 run: sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
-  99 run: screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: recipes:address:editor-data <- next-ingredient 
- 100 run: current-sandbox:address:editor-data <- next-ingredient 
- 100 run: sandbox-in-focus?:boolean <- next-ingredient 
- 100 run: break-if sandbox-in-focus?, 
- 100 run: cursor-row:number <- get *recipes, cursor-row:offset
- 100 run: cursor-column:number <- get *recipes, cursor-column:offset
- 100 run: break-unless sandbox-in-focus?, 
- 100 run: screen <- move-cursor screen, cursor-row, cursor-column
- 100 run: reply screen/same-as-ingredient:0
-  99 run: show-screen screen
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address <- next-ingredient 
- 100 run: break-unless screen, 
- 100 run: reply screen
-  99 run: reply screen/same-as-ingredient:0
-  98 run: break-if error?, 
-  98 run: status:address:array:character <- new [            ]
-  98 run: screen <- update-status screen, status, 245/grey
-  99 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-  99 run: screen:address <- next-ingredient 
-  99 run: msg:address:array:character <- next-ingredient 
-  99 run: color:number <- next-ingredient 
-  99 run: screen <- move-cursor screen, 0, 2
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: sc:address:screen <- next-ingredient 
- 100 run: new-row:number <- next-ingredient 
- 100 run: new-column:number <- next-ingredient 
- 100 run: break-unless sc, 
- 100 run: row:address:number <- get-address *sc, cursor-row:offset
- 100 run: *row <- copy new-row
- 100 run: column:address:number <- get-address *sc, cursor-column:offset
- 100 run: *column <- copy new-column
- 100 run: reply sc/same-as-ingredient:0
-  99 run: screen <- print-string screen, msg, color, 238/grey/background
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: screen:address:screen <- next-ingredient 
- 100 run: s:address:array:character <- next-ingredient 
- 100 run: color:number, color-found?:boolean <- next-ingredient 
- 100 run: break-if color-found?, 
- 100 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
- 100 run: break-if bg-color-found?, 
- 100 run: len:number <- length *s
- 100 run: i:number <- copy 0
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: c:character <- index *s, i
- 100 run: print-character screen, c, color, bg-color
   90 print-character: 32 
- 100 run: i <- add i, 1
- 100 run: loop 
- 100 run: done?:boolean <- greater-or-equal i, len
- 100 run: break-if done?, 
- 100 run: reply screen/same-as-ingredient:0
-  99 run: reply screen/same-as-ingredient:0
-  98 run: screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
-  99 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-  99 run: screen:address <- next-ingredient 
-  99 run: recipes:address:editor-data <- next-ingredient 
-  99 run: current-sandbox:address:editor-data <- next-ingredient 
-  99 run: sandbox-in-focus?:boolean <- next-ingredient 
-  99 run: break-if sandbox-in-focus?, 
-  99 run: cursor-row:number <- get *recipes, cursor-row:offset
-  99 run: cursor-column:number <- get *recipes, cursor-column:offset
-  99 run: break-unless sandbox-in-focus?, 
-  99 run: screen <- move-cursor screen, cursor-row, cursor-column
- 100 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
- 100 run: sc:address:screen <- next-ingredient 
- 100 run: new-row:number <- next-ingredient 
- 100 run: new-column:number <- next-ingredient 
- 100 run: break-unless sc, 
- 100 run: row:address:number <- get-address *sc, cursor-row:offset
- 100 run: *row <- copy new-row
- 100 run: column:address:number <- get-address *sc, cursor-column:offset
- 100 run: *column <- copy new-column
- 100 run: reply sc/same-as-ingredient:0
-  99 run: reply screen/same-as-ingredient:0
-  98 run: loop +next-event:label
-  98 run: e:event, console, found?:boolean, quit?:boolean <- read-event console
-  99 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
-  99 run: x:address:console <- next-ingredient 
-  99 run: break-unless x, 
-  99 run: idx:address:number <- get-address *x, index:offset
-  99 run: buf:address:array:event <- get *x, data:offset
-  99 run: max:number <- length *buf
-  99 run: done?:boolean <- greater-or-equal *idx, max
-  99 run: break-unless done?, 
-  99 run: dummy:address:event <- new event:type
-  99 run: reply *dummy, x/same-as-ingredient:0, 1/found, 1/quit
-  98 run: loop-unless found?, 
-  98 run: break-if quit?, 
-  96 run: screen-should-contain [
-    .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .z:number <- add 2, 3                              ┊                                                x.
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊5                                                .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
-  ]

@@ -5,9 +5,10 @@
 9999 after-brace: recipe scenario-match-at-inside-bounds-2
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-match-at-inside-bounds-2
- 101 run: run [
+ 102 run: run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [bc]
     3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
@@ -27,73 +28,78 @@
 9999 after-brace: new ...
 9999 after-brace: new ...
 9999 after-brace: match-at ...
- 101 run: 1:address:array:character <- new [abc]
+9999 trace: run: incrementing callstack depth to 2
+ 103 run: 1:address:array:character <- new [abc]
 9999 mem: storing 1000 in location 1
- 101 run: 2:address:array:character <- new [bc]
+ 103 run: 2:address:array:character <- new [bc]
 9999 mem: storing 1004 in location 2
- 101 run: 3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
+ 103 run: 3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
 9999 mem: location 1 is 1000
 9999 mem: location 2 is 1004
- 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
 9999 mem: new alloc: 1007
- 102 run: text:address:array:character <- next-ingredient 
+ 104 run: text:address:array:character <- next-ingredient 
 9999 mem: storing 1000 in location 1009
- 102 run: pattern:address:array:character <- next-ingredient 
+ 104 run: pattern:address:array:character <- next-ingredient 
 9999 mem: storing 1004 in location 1010
- 102 run: idx:number <- next-ingredient 
+ 104 run: idx:number <- next-ingredient 
 9999 mem: storing 0 in location 1011
- 102 run: pattern-len:number <- length *pattern
+ 104 run: pattern-len:number <- length *pattern
 9999 mem: location 1010 is 1004
 9999 mem: storing 2 in location 1012
- 102 run: x:number <- length *text
+ 104 run: x:number <- length *text
 9999 mem: location 1009 is 1000
 9999 mem: storing 3 in location 1013
- 102 run: x <- subtract x, pattern-len
+ 104 run: x <- subtract x, pattern-len
 9999 mem: location 1013 is 3
 9999 mem: location 1012 is 2
 9999 mem: storing 1 in location 1013
- 102 run: enough-room?:boolean <- lesser-or-equal idx, x
+ 104 run: enough-room?:boolean <- lesser-or-equal idx, x
 9999 mem: location 1011 is 0
 9999 mem: location 1013 is 1
 9999 mem: storing 1 in location 1014
- 102 run: break-if enough-room?, 
+ 104 run: break-if enough-room?, 
 9999 mem: location 1014 is 1
 9999 run: jumping to instruction 11
- 102 run: pattern-idx:number <- copy 0
+ 104 run: pattern-idx:number <- copy 0
 9999 mem: storing 0 in location 1015
- 102 run: done?:boolean <- greater-or-equal pattern-idx, pattern-len
+ 104 run: done?:boolean <- greater-or-equal pattern-idx, pattern-len
 9999 mem: location 1015 is 0
 9999 mem: location 1012 is 2
 9999 mem: storing 0 in location 1016
- 102 run: break-if done?, 
+ 104 run: break-if done?, 
 9999 mem: location 1016 is 0
 9999 run: jump-if fell through
- 102 run: c:character <- index *text, idx
+ 104 run: c:character <- index *text, idx
 9999 mem: location 1009 is 1000
 9999 mem: location 1011 is 0
 9999 run: address to copy is 1001
 9999 run: its type is character
 9999 mem: location 1001 is 97
 9999 mem: storing 97 in location 1017
- 102 run: exp:character <- index *pattern, pattern-idx
+ 104 run: exp:character <- index *pattern, pattern-idx
 9999 mem: location 1010 is 1004
 9999 mem: location 1015 is 0
 9999 run: address to copy is 1005
 9999 run: its type is character
 9999 mem: location 1005 is 98
 9999 mem: storing 98 in location 1018
- 102 run: match?:boolean <- equal c, exp
+ 104 run: match?:boolean <- equal c, exp
 9999 mem: location 1017 is 97
 9999 mem: location 1018 is 98
 9999 mem: storing 0 in location 1019
- 102 run: break-if match?, 
+ 104 run: break-if match?, 
 9999 mem: location 1019 is 0
 9999 run: jump-if fell through
- 102 run: reply 0/not-found
+ 104 run: reply 0/not-found
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 3
- 100 run: memory-should-contain [
+9999 trace: fall-through: exiting run1001; decrementing callstack depth from 2
+ 102 run: memory-should-contain [
     3 <- 0  # no match
   ]
 9999 run: checking location 3
+9999 trace: fall-through: exiting scenario-match-at-inside-bounds-2; decrementing callstack depth from 1

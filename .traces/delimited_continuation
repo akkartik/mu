@@ -57,87 +57,100 @@
 9999 after-brace: next-ingredient ...
 9999 after-brace: add ...
 9999 after-brace: reply ...
+9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: main
- 101 run: 1:continuation <- create-delimited-continuation f:recipe, 12
- 102 run: 11:number <- next-ingredient 
+ 102 run: 1:continuation <- create-delimited-continuation f:recipe, 12
+9999 trace: delimited continuation; incrementing callstack depth to 2
+ 103 run: 11:number <- next-ingredient 
 9999 mem: storing 12 in location 11
- 102 run: 12:number <- g 11:number
+ 103 run: 12:number <- g 11:number
 9999 mem: location 11 is 12
- 103 run: 21:number <- next-ingredient 
+9999 trace: incrementing callstack depth to 3
+ 104 run: 21:number <- next-ingredient 
 9999 mem: storing 12 in location 21
- 103 run: rewind-ingredients 
- 103 run: reply-delimited-continuation 
+ 104 run: rewind-ingredients 
+ 104 run: reply-delimited-continuation 
 9999 mem: storing 0 in location 1
- 101 run: 2:number <- copy 5
+ 102 run: 2:number <- copy 5
 9999 mem: storing 5 in location 2
- 101 run: 2:number <- call 1:continuation, 2:number
+ 102 run: 2:number <- call 1:continuation, 2:number
 9999 mem: location 1 is 0
 9999 mem: location 2 is 5
- 102 run: 22:number <- next-ingredient 
+9999 trace: calling delimited continuation; growing callstack depth to 3
+ 104 run: 22:number <- next-ingredient 
 9999 mem: storing 5 in location 22
- 102 run: 23:number <- add 22:number, 1
+ 104 run: 23:number <- add 22:number, 1
 9999 mem: location 22 is 5
 9999 mem: storing 6 in location 23
- 102 run: reply 23:number
+ 104 run: reply 23:number
 9999 mem: location 23 is 6
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 6
 9999 mem: storing 6 in location 12
- 101 run: reply 12:number
+ 103 run: reply 12:number
 9999 mem: location 12 is 6
+9999 trace: reply: decrementing callstack depth from 2
 9999 run: result 0 is 6
 9999 mem: storing 6 in location 2
- 100 run: 3:boolean <- greater-or-equal 2:number, 8
+ 102 run: 3:boolean <- greater-or-equal 2:number, 8
 9999 mem: location 2 is 6
 9999 mem: storing 0 in location 3
- 100 run: break-if 3:boolean, 
+ 102 run: break-if 3:boolean, 
 9999 mem: location 3 is 0
 9999 run: jump-if fell through
- 100 run: loop 
+ 102 run: loop 
 9999 run: jumping to instruction 3
- 100 run: 2:number <- call 1:continuation, 2:number
+ 102 run: 2:number <- call 1:continuation, 2:number
 9999 mem: location 1 is 0
 9999 mem: location 2 is 6
- 101 run: 22:number <- next-ingredient 
+9999 trace: calling delimited continuation; growing callstack depth to 3
+ 104 run: 22:number <- next-ingredient 
 9999 mem: storing 6 in location 22
- 101 run: 23:number <- add 22:number, 1
+ 104 run: 23:number <- add 22:number, 1
 9999 mem: location 22 is 6
 9999 mem: storing 7 in location 23
- 101 run: reply 23:number
+ 104 run: reply 23:number
 9999 mem: location 23 is 7
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 7
 9999 mem: storing 7 in location 12
- 100 run: reply 12:number
+ 103 run: reply 12:number
 9999 mem: location 12 is 7
+9999 trace: reply: decrementing callstack depth from 2
 9999 run: result 0 is 7
 9999 mem: storing 7 in location 2
-  99 run: 3:boolean <- greater-or-equal 2:number, 8
+ 102 run: 3:boolean <- greater-or-equal 2:number, 8
 9999 mem: location 2 is 7
 9999 mem: storing 0 in location 3
-  99 run: break-if 3:boolean, 
+ 102 run: break-if 3:boolean, 
 9999 mem: location 3 is 0
 9999 run: jump-if fell through
-  99 run: loop 
+ 102 run: loop 
 9999 run: jumping to instruction 3
-  99 run: 2:number <- call 1:continuation, 2:number
+ 102 run: 2:number <- call 1:continuation, 2:number
 9999 mem: location 1 is 0
 9999 mem: location 2 is 7
- 100 run: 22:number <- next-ingredient 
+9999 trace: calling delimited continuation; growing callstack depth to 3
+ 104 run: 22:number <- next-ingredient 
 9999 mem: storing 7 in location 22
- 100 run: 23:number <- add 22:number, 1
+ 104 run: 23:number <- add 22:number, 1
 9999 mem: location 22 is 7
 9999 mem: storing 8 in location 23
- 100 run: reply 23:number
+ 104 run: reply 23:number
 9999 mem: location 23 is 8
+9999 trace: reply: decrementing callstack depth from 3
 9999 run: result 0 is 8
 9999 mem: storing 8 in location 12
-  99 run: reply 12:number
+ 103 run: reply 12:number
 9999 mem: location 12 is 8
+9999 trace: reply: decrementing callstack depth from 2
 9999 run: result 0 is 8
 9999 mem: storing 8 in location 2
-  98 run: 3:boolean <- greater-or-equal 2:number, 8
+ 102 run: 3:boolean <- greater-or-equal 2:number, 8
 9999 mem: location 2 is 8
 9999 mem: storing 1 in location 3
-  98 run: break-if 3:boolean, 
+ 102 run: break-if 3:boolean, 
 9999 mem: location 3 is 1
 9999 run: jumping to instruction 7
+9999 trace: fall-through: exiting main; decrementing callstack depth from 1
