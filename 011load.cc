@@ -60,6 +60,7 @@ long long int slurp_recipe(istream& in) {
 }
 
 recipe slurp_body(istream& in) {
+  in >> std::noskipws;
   recipe result;
   skip_whitespace(in);
   if (in.get() != '[')
@@ -74,7 +75,6 @@ recipe slurp_body(istream& in) {
 }
 
 bool next_instruction(istream& in, instruction* curr) {
-  in >> std::noskipws;
   curr->clear();
   if (in.eof()) {
     raise_error << "0: unbalanced '[' for recipe\n" << end();
