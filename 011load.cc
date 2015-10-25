@@ -207,12 +207,6 @@ void skip_comment(istream& in) {
   }
 }
 
-void skip_comma(istream& in) {
-  skip_whitespace(in);
-  if (!in.eof() && in.peek() == ',') in.get();
-  skip_whitespace(in);
-}
-
 //: Warn if a recipe gets redefined, because large codebases can accidentally
 //: step on their own toes. But there'll be many occasions later where
 //: we'll want to disable the warnings.
