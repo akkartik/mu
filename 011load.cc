@@ -221,11 +221,8 @@ bool warn_on_redefine(const string& recipe_name) {
 }
 
 // for debugging
-:(before "End Globals")
-bool Show_rest_of_stream = false;
 :(code)
 void show_rest_of_stream(istream& in) {
-  if (!Show_rest_of_stream) return;
   cerr << '^';
   char c;
   while (in >> c) {

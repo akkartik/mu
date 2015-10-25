@@ -77,6 +77,7 @@ if (s.at(0) == '{') {
   in.get();  // skip '{'
   while (!in.eof()) {
     string key = next_dilated_word(in);
+    if (key.empty()) continue;
     string value = next_dilated_word(in);
     vector<string> values;
     values.push_back(value);
@@ -111,3 +112,9 @@ string next_dilated_word(istream& in) {
   }
   return result;
 }
+
+:(scenario dilated_reagent_with_s_expression)
+recipe main [
+  {1: number, foo: (bar (baz quux))} <- copy 34
+]
++parse:   product: {name: "1", properties: ["1": "number", "foo": "(bar (baz quux))"]}
