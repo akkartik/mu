@@ -109,7 +109,7 @@ if (s.at(0) == '[') {
   assert(*s.rbegin() == ']');
   // delete [] delimiters
   s.erase(0, 1);
-  s.erase(SIZE(s)-1);
+  strip_last(s);
   name = s;
   types.push_back(0);
   properties.push_back(pair<string, vector<string> >(name, vector<string>()));
@@ -143,6 +143,10 @@ size_t replace(string& str, const string& from, const string& to, size_t n) {
   if (result != string::npos)
     str.replace(result, from.length(), to);
   return result;
+}
+
+void strip_last(string& s) {
+  if (!s.empty()) s.erase(SIZE(s)-1);
 }
 
 :(scenario string_literal_nested)
