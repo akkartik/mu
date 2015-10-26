@@ -208,11 +208,11 @@ void dump_types(type_tree* type, ostringstream& out) {
     dump_types(type->left, out);
   else
     out << Type[type->value].name;
-  out << ":";
+  out << " : ";
   if (type->right)
     dump_types(type->right, out);
   else
-    out << ".<>";
+    out << " : <>";
   out << ">";
 }
 
@@ -362,7 +362,7 @@ recipe main [
   14:number <- copy 36
   15:number <- get-address 12:point-number/raw, 1:offset
 ]
-+error: main: 'get-address' 1:offset (1) on point-number can't be saved in 15:number; type should be <address:number>
++error: main: 'get-address' 1:offset (1) on point-number can't be saved in 15:number; type should be <address : number>
 
 //:: Allow containers to be defined in mu code.
 
