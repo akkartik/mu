@@ -68,7 +68,7 @@ struct property {
 };
 
 // Types can range from a simple type ordinal, to arbitrarily complex trees of
-// type ordinals.
+// type parameters, like (map (address array character) (list number))
 struct type_tree {
   type_ordinal value;
   type_tree* left;
@@ -92,7 +92,7 @@ Memory.clear();
 :(after "Types")
 // Mu types encode how the numbers stored in different parts of memory are
 // interpreted. A location tagged as a 'character' type will interpret the
-// number 97 as the letter 'a', while a different location of type 'number'
+// value 97 as the letter 'a', while a different location of type 'number'
 // would not.
 //
 // Unlike most computers today, mu stores types in a single big table, shared
