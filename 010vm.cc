@@ -79,7 +79,7 @@ struct type_tree {
   type_tree(type_ordinal v) :value(v), left(NULL), right(NULL) {}
   // intermediate: list of type ordinals
   type_tree(type_ordinal v, type_tree* r) :value(v), left(NULL), right(r) {}
-  // advanced: tree containing type ordinals in the leaves
+  // advanced: tree containing type ordinals
   type_tree(type_tree* l, type_tree* r) :value(0), left(l), right(r) {}
 };
 
