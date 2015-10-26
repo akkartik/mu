@@ -1,7 +1,7 @@
 9999 parse: instruction: run
-9999 parse:   ingredient: {name: "\n    1:address:channel/stdin <- new-channel 10/capacity\n    2:address:channel/buffered-stdin <- new-channel 10/capacity\n    3:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 3:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after init]\n    # buffer stdin into buffered-stdin, try to read from buffered-stdin\n    4:number/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin\n    wait-for-routine 4:number/buffer-routine\n    5:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 5:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]\n    # write 'a'\n    1:address:channel <- write 1:address:channel, 97/a\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    6:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 6:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a']\n    # write 'b'\n    1:address:channel <- write 1:address:channel, 98/b\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    7:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 7:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b']\n    # write newline\n    1:address:channel <- write 1:address:channel, 10/newline\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    8:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    9:boolean/completed? <- not 8:boolean\n    assert 9:boolean/completed?, [\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline]\n    trace 1, [test], [reached end]\n  ", properties: [_: "literal-string"]}
+9999 parse:   ingredient: {"\n    1:address:channel/stdin <- new-channel 10/capacity\n    2:address:channel/buffered-stdin <- new-channel 10/capacity\n    3:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 3:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after init]\n    # buffer stdin into buffered-stdin, try to read from buffered-stdin\n    4:number/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin\n    wait-for-routine 4:number/buffer-routine\n    5:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 5:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]\n    # write 'a'\n    1:address:channel <- write 1:address:channel, 97/a\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    6:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 6:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a']\n    # write 'b'\n    1:address:channel <- write 1:address:channel, 98/b\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    7:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 7:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b']\n    # write newline\n    1:address:channel <- write 1:address:channel, 10/newline\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    8:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    9:boolean/completed? <- not 8:boolean\n    assert 9:boolean/completed?, [\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline]\n    trace 1, [test], [reached end]\n  ": "literal-string"}
 9999 parse: instruction: trace-should-contain
-9999 parse:   ingredient: {name: "\n    test: reached end\n  ", properties: [_: "literal-string"]}
+9999 parse:   ingredient: {"\n    test: reached end\n  ": "literal-string"}
 9999 after-brace: recipe scenario-buffer-lines-blocks-until-newline
 9999 after-brace: run ...
 9999 after-brace: trace-should-contain ...
@@ -45,79 +45,79 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
     trace 1, [test], [reached end]
   ]
 9999 parse: instruction: new-channel
-9999 parse:   ingredient: {name: "10", properties: ["10": "literal", "capacity": ]}
-9999 parse:   product: {name: "1", properties: ["1": "address":"channel", "stdin": ]}
+9999 parse:   ingredient: {"10": "literal", "capacity": ""}
+9999 parse:   product: {"1": <"address" : "channel">, "stdin": ""}
 9999 parse: instruction: new-channel
-9999 parse:   ingredient: {name: "10", properties: ["10": "literal", "capacity": ]}
-9999 parse:   product: {name: "2", properties: ["2": "address":"channel", "buffered-stdin": ]}
+9999 parse:   ingredient: {"10": "literal", "capacity": ""}
+9999 parse:   product: {"2": <"address" : "channel">, "buffered-stdin": ""}
 9999 parse: instruction: channel-empty?
-9999 parse:   ingredient: {name: "2", properties: ["2": "address":"channel", "buffered-stdin": ]}
-9999 parse:   product: {name: "3", properties: ["3": "boolean"]}
+9999 parse:   ingredient: {"2": <"address" : "channel">, "buffered-stdin": ""}
+9999 parse:   product: {"3": "boolean"}
 9999 parse: instruction: assert
-9999 parse:   ingredient: {name: "3", properties: ["3": "boolean"]}
-9999 parse:   ingredient: {name: "\nF buffer-lines-blocks-until-newline: channel should be empty after init", properties: [_: "literal-string"]}
+9999 parse:   ingredient: {"3": "boolean"}
+9999 parse:   ingredient: {"\nF buffer-lines-blocks-until-newline: channel should be empty after init": "literal-string"}
 9999 parse: instruction: start-running
-9999 parse:   ingredient: {name: "buffer-lines", properties: ["buffer-lines": "recipe"]}
-9999 parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "stdin": ]}
-9999 parse:   ingredient: {name: "2", properties: ["2": "address":"channel", "buffered-stdin": ]}
-9999 parse:   product: {name: "4", properties: ["4": "number", "buffer-routine": ]}
+9999 parse:   ingredient: {"buffer-lines": "recipe"}
+9999 parse:   ingredient: {"1": <"address" : "channel">, "stdin": ""}
+9999 parse:   ingredient: {"2": <"address" : "channel">, "buffered-stdin": ""}
+9999 parse:   product: {"4": "number", "buffer-routine": ""}
 9999 parse: instruction: wait-for-routine
-9999 parse:   ingredient: {name: "4", properties: ["4": "number", "buffer-routine": ]}
+9999 parse:   ingredient: {"4": "number", "buffer-routine": ""}
 9999 parse: instruction: channel-empty?
-9999 parse:   ingredient: {name: "2", properties: ["2": "address":"channel", "buffered-stdin": ]}
-9999 parse:   product: {name: "5", properties: ["5": "boolean"]}
+9999 parse:   ingredient: {"2": <"address" : "channel">, "buffered-stdin": ""}
+9999 parse:   product: {"5": "boolean"}
 9999 parse: instruction: assert
-9999 parse:   ingredient: {name: "5", properties: ["5": "boolean"]}
-9999 parse:   ingredient: {name: "\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up", properties: [_: "literal-string"]}
+9999 parse:   ingredient: {"5": "boolean"}
+9999 parse:   ingredient: {"\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up": "literal-string"}
 9999 parse: instruction: write
-9999 parse:   ingredient: {name: "1", properties: ["1": "address":"channel"]}
-9999 parse:   ingredient: {name: "97", properties: ["97": "literal", "a": ]}
-9999 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
+9999 parse:   ingredient: {"1": <"address" : "channel">}
+9999 parse:   ingredient: {"97": "literal", "a": ""}
+9999 parse:   product: {"1": <"address" : "channel">}
 9999 parse: instruction: restart
-9999 parse:   ingredient: {name: "4", properties: ["4": "number", "buffer-routine": ]}
+9999 parse:   ingredient: {"4": "number", "buffer-routine": ""}
 9999 parse: instruction: wait-for-routine
-9999 parse:   ingredient: {name: "4", properties: ["4": "number", "buffer-routine": ]}
+9999 parse:   ingredient: {"4": "number", "buffer-routine": ""}
 9999 parse: instruction: channel-empty?
-9999 parse:   ingredient: {name: "2", properties: ["2": "address":"channel", "buffered-stdin": ]}
-9999 parse:   product: {name: "6", properties: ["6": "boolean"]}
+9999 parse:   ingredient: {"2": <"address" : "channel">, "buffered-stdin": ""}
+9999 parse:   product: {"6": "boolean"}
 9999 parse: instruction: assert
-9999 parse:   ingredient: {name: "6", properties: ["6": "boolean"]}
-9999 parse:   ingredient: {name: "\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a'", properties: [_: "literal-string"]}
+9999 parse:   ingredient: {"6": "boolean"}
+9999 parse:   ingredient: {"\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a'": "literal-string"}
 9999 parse: instruction: write
-9999 parse:   ingredient: {name: "1", properties: ["1": "address":"channel"]}
-9999 parse:   ingredient: {name: "98", properties: ["98": "literal", "b": ]}
-9999 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
+9999 parse:   ingredient: {"1": <"address" : "channel">}
+9999 parse:   ingredient: {"98": "literal", "b": ""}
+9999 parse:   product: {"1": <"address" : "channel">}
 9999 parse: instruction: restart
-9999 parse:   ingredient: {name: "4", properties: ["4": "number", "buffer-routine": ]}
+9999 parse:   ingredient: {"4": "number", "buffer-routine": ""}
 9999 parse: instruction: wait-for-routine
-9999 parse:   ingredient: {name: "4", properties: ["4": "number", "buffer-routine": ]}
+9999 parse:   ingredient: {"4": "number", "buffer-routine": ""}
 9999 parse: instruction: channel-empty?
-9999 parse:   ingredient: {name: "2", properties: ["2": "address":"channel", "buffered-stdin": ]}
-9999 parse:   product: {name: "7", properties: ["7": "boolean"]}
+9999 parse:   ingredient: {"2": <"address" : "channel">, "buffered-stdin": ""}
+9999 parse:   product: {"7": "boolean"}
 9999 parse: instruction: assert
-9999 parse:   ingredient: {name: "7", properties: ["7": "boolean"]}
-9999 parse:   ingredient: {name: "\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b'", properties: [_: "literal-string"]}
+9999 parse:   ingredient: {"7": "boolean"}
+9999 parse:   ingredient: {"\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b'": "literal-string"}
 9999 parse: instruction: write
-9999 parse:   ingredient: {name: "1", properties: ["1": "address":"channel"]}
-9999 parse:   ingredient: {name: "10", properties: ["10": "literal", "newline": ]}
-9999 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
+9999 parse:   ingredient: {"1": <"address" : "channel">}
+9999 parse:   ingredient: {"10": "literal", "newline": ""}
+9999 parse:   product: {"1": <"address" : "channel">}
 9999 parse: instruction: restart
-9999 parse:   ingredient: {name: "4", properties: ["4": "number", "buffer-routine": ]}
+9999 parse:   ingredient: {"4": "number", "buffer-routine": ""}
 9999 parse: instruction: wait-for-routine
-9999 parse:   ingredient: {name: "4", properties: ["4": "number", "buffer-routine": ]}
+9999 parse:   ingredient: {"4": "number", "buffer-routine": ""}
 9999 parse: instruction: channel-empty?
-9999 parse:   ingredient: {name: "2", properties: ["2": "address":"channel", "buffered-stdin": ]}
-9999 parse:   product: {name: "8", properties: ["8": "boolean"]}
+9999 parse:   ingredient: {"2": <"address" : "channel">, "buffered-stdin": ""}
+9999 parse:   product: {"8": "boolean"}
 9999 parse: instruction: not
-9999 parse:   ingredient: {name: "8", properties: ["8": "boolean"]}
-9999 parse:   product: {name: "9", properties: ["9": "boolean", "completed?": ]}
+9999 parse:   ingredient: {"8": "boolean"}
+9999 parse:   product: {"9": "boolean", "completed?": ""}
 9999 parse: instruction: assert
-9999 parse:   ingredient: {name: "9", properties: ["9": "boolean", "completed?": ]}
-9999 parse:   ingredient: {name: "\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline", properties: [_: "literal-string"]}
+9999 parse:   ingredient: {"9": "boolean", "completed?": ""}
+9999 parse:   ingredient: {"\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline": "literal-string"}
 9999 parse: instruction: trace
-9999 parse:   ingredient: {name: "1", properties: ["1": "literal"]}
-9999 parse:   ingredient: {name: "test", properties: [_: "literal-string"]}
-9999 parse:   ingredient: {name: "reached end", properties: [_: "literal-string"]}
+9999 parse:   ingredient: {"1": "literal"}
+9999 parse:   ingredient: {"test": "literal-string"}
+9999 parse:   ingredient: {"reached end": "literal-string"}
 9999 after-brace: recipe run1001
 9999 after-brace: new-channel ...
 9999 after-brace: new-channel ...

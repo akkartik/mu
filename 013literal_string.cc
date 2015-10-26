@@ -10,13 +10,13 @@
 recipe main [
   1:address:array:character <- copy [abc def]  # copy can't really take a string
 ]
-+parse:   ingredient: {name: "abc def", properties: [_: "literal-string"]}
++parse:   ingredient: {"abc def": "literal-string"}
 
 :(scenario string_literal_with_colons)
 recipe main [
   1:address:array:character <- copy [abc:def/ghi]
 ]
-+parse:   ingredient: {name: "abc:def/ghi", properties: [_: "literal-string"]}
++parse:   ingredient: {"abc:def/ghi": "literal-string"}
 
 :(before "End Mu Types Initialization")
 Type_ordinal["literal-string"] = 0;
@@ -117,10 +117,8 @@ if (s.at(0) == '[') {
   return;
 }
 
-//: Two tweaks to printing literal strings compared to other reagents:
-//:   a) Don't print the string twice in the representation, just put '_' in
-//:   the property list.
-//:   b) Escape newlines in the string to make it more friendly to trace().
+//: Unlike other reagents, escape newlines in literal strings to make them
+//: more friendly to trace().
 
 :(after "string reagent::to_string()")
   if (is_literal_string(*this))
@@ -135,7 +133,7 @@ string emit_literal_string(string name) {
   size_t pos = 0;
   while (pos != string::npos)
     pos = replace(name, "\n", "\\n", pos);
-  return "{name: \""+name+"\", properties: [_: \"literal-string\"]}";
+  return "{\""+name+"\": \"literal-string\"}";
 }
 
 size_t replace(string& str, const string& from, const string& to, size_t n) {
@@ -153,28 +151,28 @@ void strip_last(string& s) {
 recipe main [
   1:address:array:character <- copy [abc [def]]
 ]
-+parse:   ingredient: {name: "abc [def]", properties: [_: "literal-string"]}
++parse:   ingredient: {"abc [def]": "literal-string"}
 
 :(scenario string_literal_escaped)
 recipe main [
   1:address:array:character <- copy [abc \[def]
 ]
-+parse:   ingredient: {name: "abc [def", properties: [_: "literal-string"]}
++parse:   ingredient: {"abc [def": "literal-string"}
 
 :(scenario string_literal_escaped_comment_aware)
 recipe main [
   1:address:array:character <- copy [
 abc \\\[def]
 ]
-+parse:   ingredient: {name: "\nabc \[def", properties: [_: "literal-string"]}
++parse:   ingredient: {"\nabc \[def": "literal-string"}
 
 :(scenario string_literal_and_comment)
 recipe main [
   1:address:array:character <- copy [abc]  # comment
 ]
 +parse: instruction: copy
-+parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
-+parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
++parse:   ingredient: {"abc": "literal-string"}
++parse:   product: {"1": <"address" : "array" : "character">}
 # no other ingredients
 $parse: 3
 
@@ -183,7 +181,7 @@ recipe main [
   copy [abc
 def]
 ]
-+parse:   ingredient: {name: "abc\ndef", properties: [_: "literal-string"]}
++parse:   ingredient: {"abc\ndef": "literal-string"}
 
 :(scenario string_literal_can_skip_past_comments)
 recipe main [
@@ -192,10 +190,10 @@ recipe main [
     bar
   ]
 ]
-+parse:   ingredient: {name: "\n    # ']' inside comment\n    bar\n  ", properties: [_: "literal-string"]}
++parse:   ingredient: {"\n    # ']' inside comment\n    bar\n  ": "literal-string"}
 
 :(scenario string_literal_empty)
 recipe main [
   copy []
 ]
-+parse:   ingredient: {name: "", properties: [_: "literal-string"]}
++parse:   ingredient: {"": "literal-string"}

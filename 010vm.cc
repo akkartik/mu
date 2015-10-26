@@ -286,20 +286,28 @@ reagent::reagent() :value(0), initialized(false), type(NULL) {
 
 string reagent::to_string() const {
   ostringstream out;
-  out << "{name: \"" << name << "\"";
   if (!properties.empty()) {
-    out << ", properties: [";
+    out << "{";
     for (long long int i = 0; i < SIZE(properties); ++i) {
+      if (i > 0) out << ", ";
       out << "\"" << properties.at(i).first << "\": ";
+      if (properties.at(i).second.empty()) {
+        out << "\"\"";
+        continue;
+      }
+      if (SIZE(properties.at(i).second) == 1) {
+        out << "\"" << properties.at(i).second.at(0) << "\"";
+        continue;
+      }
+      out << "<";
       for (long long int j = 0; j < SIZE(properties.at(i).second); ++j) {
-        if (j > 0) out << ':';
+        if (j > 0) out << " : ";
         out << "\"" << properties.at(i).second.at(j) << "\"";
       }
-      if (i < SIZE(properties)-1) out << ", ";
-      else out << "]";
+      out << ">";
     }
+    out << "}";
   }
-  out << "}";
   return out.str();
 }
 
