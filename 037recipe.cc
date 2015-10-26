@@ -67,9 +67,9 @@ case CALL: {
 
 :(code)
 bool is_mu_recipe(reagent r) {
-  if (r.types.empty()) return false;
-  if (r.types.at(0) == Type_ordinal["recipe"]) return true;
-  if (r.types.at(0) == Type_ordinal["recipe-ordinal"]) return true;
+  if (!r.type) return false;
+  if (r.type->value == Type_ordinal["recipe"]) return true;
+  if (r.type->value == Type_ordinal["recipe-ordinal"]) return true;
   // End is_mu_recipe Cases
   return false;
 }

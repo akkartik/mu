@@ -46,10 +46,14 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
     for (long long int j = 0; j < SIZE(inst.products); ++j) {
       if (is_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
-      if (SIZE(inst.products.at(j).types) != 3
-          || inst.products.at(j).types.at(0) != Type_ordinal["address"]
-          || inst.products.at(j).types.at(1) != Type_ordinal["array"]
-          || inst.products.at(j).types.at(2) != Type_ordinal["location"]) {
+      type_tree* type = inst.products.at(j).type;
+      if (!type
+          || type->value != Type_ordinal["address"]
+          || !type->right
+          || type->right->value != Type_ordinal["array"]
+          || !type->right->right
+          || type->right->right->value != Type_ordinal["location"]
+          || type->right->right->right) {
         raise_error << "slot 0 should always have type address:array:location, but is " << inst.products.at(j).to_string() << '\n' << end();
         continue;
       }

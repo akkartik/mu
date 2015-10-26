@@ -46,24 +46,19 @@ long long int default_space;
 :(before "End call Constructor")
 default_space = 0;
 
-:(replace "reagent r = x" following "reagent canonize(reagent x)")
-reagent r = absolutize(x);
+:(before "End canonize(x) Special-cases")
+  absolutize(x);
 :(code)
-reagent absolutize(reagent x) {
-  if (is_raw(x) || is_dummy(x)) return x;
-  if (x.name == "default-space") return x;
+void absolutize(reagent& x) {
+  if (is_raw(x) || is_dummy(x)) return;
+  if (x.name == "default-space") return;
   if (!x.initialized) {
     raise_error << current_instruction().to_string() << ": reagent not initialized: " << x.original_string << '\n' << end();
-    return x;
   }
-  reagent r = x;
-  r.set_value(address(r.value, space_base(r)));
-  r.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
-  assert(is_raw(r));
-  return r;
+  x.set_value(address(x.value, space_base(x)));
+  x.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
+  assert(is_raw(x));
 }
-:(before "return result" following "reagent lookup_memory(reagent x)")
-result.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
 
 //:: fix 'get'
 
@@ -213,10 +208,13 @@ long long int address(long long int offset, long long int base) {
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "default-space") {
     if (!scalar(data)
-        || SIZE(x.types) != 3
-        || x.types.at(0) != Type_ordinal["address"]
-        || x.types.at(1) != Type_ordinal["array"]
-        || x.types.at(2) != Type_ordinal["location"]) {
+        || !x.type
+        || x.type->value != Type_ordinal["address"]
+        || !x.type->right
+        || x.type->right->value != Type_ordinal["array"]
+        || !x.type->right->right
+        || x.type->right->right->value != Type_ordinal["location"]
+        || x.type->right->right->right) {
       raise_error << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
     }
     Current_routine->calls.front().default_space = data.at(0);

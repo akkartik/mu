@@ -47,9 +47,10 @@ long long int slurp_recipe(istream& in) {
   if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
     Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
   }
-  if (warn_on_redefine(recipe_name)
-      && Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
-    raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
+  if (Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
+    if (warn_on_redefine(recipe_name))
+      raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
+    Recipe.erase(Recipe_ordinal[recipe_name]);
   }
   // todo: save user-defined recipes to mu's memory
   Recipe[Recipe_ordinal[recipe_name]] = slurp_body(in);

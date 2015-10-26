@@ -104,10 +104,10 @@ case ASSUME_CONSOLE: {
     }
   }
   assert(Current_routine->alloc == event_data_address+size);
-  // wrap the array of events in an event object
-  ensure_space(size_of_events());
+  // wrap the array of events in a console object
+  ensure_space(size_of_console());
   Memory[CONSOLE] = Current_routine->alloc;
-  Current_routine->alloc += size_of_events();
+  Current_routine->alloc += size_of_console();
   Memory[Memory[CONSOLE]+/*offset of 'data' in container 'events'*/1] = event_data_address;
   break;
 }
@@ -266,19 +266,19 @@ long long int size_of_event() {
   // memoize result if already computed
   static long long int result = 0;
   if (result) return result;
-  vector<type_ordinal> type;
-  type.push_back(Type_ordinal["event"]);
+  type_tree* type = new type_tree(Type_ordinal["event"]);
   result = size_of(type);
+  delete type;
   return result;
 }
 
-long long int size_of_events() {
+long long int size_of_console() {
   // memoize result if already computed
   static long long int result = 0;
   if (result) return result;
-  vector<type_ordinal> type;
   assert(Type_ordinal["console"]);
-  type.push_back(Type_ordinal["console"]);
+  type_tree* type = new type_tree(Type_ordinal["console"]);
   result = size_of(type);
+  delete type;
   return result;
 }

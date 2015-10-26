@@ -86,12 +86,12 @@ if (s.at(0) == '{') {
   }
   // structures for the first row of properties
   name = properties.at(0).first;
-  string type = properties.at(0).second.at(0);
-  if (Type_ordinal.find(type) == Type_ordinal.end()) {
+  string type_name = properties.at(0).second.at(0);
+  if (Type_ordinal.find(type_name) == Type_ordinal.end()) {
       // this type can't be an integer
-    Type_ordinal[type] = Next_type_ordinal++;
+    Type_ordinal[type_name] = Next_type_ordinal++;
   }
-  types.push_back(Type_ordinal[type]);
+  type = new type_tree(Type_ordinal[type_name]);
   return;
 }
 

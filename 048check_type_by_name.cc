@@ -19,7 +19,7 @@ recipe main [
 
 :(code)
 void check_types_by_name(const recipe_ordinal r) {
-  map<string, vector<type_ordinal> > metadata;
+  map<string, type_tree*> metadata;
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
@@ -33,15 +33,15 @@ void check_types_by_name(const recipe_ordinal r) {
   }
 }
 
-void check_metadata(map<string, vector<type_ordinal> >& metadata, const reagent& x, const recipe_ordinal r) {
+void check_metadata(map<string, type_tree*>& metadata, const reagent& x, const recipe_ordinal r) {
   if (is_literal(x)) return;
   if (is_raw(x)) return;
   // if you use raw locations you're probably doing something unsafe
   if (is_integer(x.name)) return;
-  if (x.types.empty()) return;  // will throw a more precise error elsewhere
+  if (!x.type) return;  // will throw a more precise error elsewhere
   if (metadata.find(x.name) == metadata.end())
-    metadata[x.name] = x.types;
-  if (metadata[x.name] != x.types)
+    metadata[x.name] = x.type;
+  if (!types_match(metadata[x.name], x.type))
     raise_error << maybe(Recipe[r].name) << x.name << " used with multiple types\n" << end();
 }
 
@@ -52,13 +52,12 @@ recipe main [
 ]
 
 :(code)
-void deduce_missing_type(map<string, vector<type_ordinal> >& metadata, reagent& x) {
-  if (!x.types.empty()) return;
+void deduce_missing_type(map<string, type_tree*>& metadata, reagent& x) {
+  if (x.type) return;
   if (metadata.find(x.name) == metadata.end()) return;
-  copy(metadata[x.name].begin(), metadata[x.name].end(), inserter(x.types, x.types.begin()));
+  x.type = new type_tree(*metadata[x.name]);
   assert(x.properties.at(0).second.empty());
-  x.properties.at(0).second.resize(metadata[x.name].size());
-  x.properties.push_back(pair<string, vector<string> >("as-before", vector<string>()));
+  x.properties.at(0).second.push_back("as-before");
 }
 
 :(scenario transform_fills_in_missing_types_in_product)
@@ -88,4 +87,4 @@ recipe main [
   y:address:charcter <- new character:type
   *y <- copy 67
 ]
-+error: unknown type: charcter
++error: main: unknown type in 'y:address:charcter <- new character:type'

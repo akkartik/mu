@@ -266,7 +266,7 @@ void write_memory(reagent x, vector<double> data) {
   if (is_literal(x)) return;
   long long int base = x.value;
   if (size_mismatch(x, data)) {
-    raise_error << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.types) << " vs " << SIZE(data) << ") at '" << current_instruction().to_string() << "'\n" << end();
+    raise_error << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << current_instruction().to_string() << "'\n" << end();
     return;
   }
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
@@ -278,18 +278,18 @@ void write_memory(reagent x, vector<double> data) {
 
 :(code)
 long long int size_of(const reagent& r) {
-  if (r.types.empty()) return 0;
+  if (r.type == NULL) return 0;
   // End size_of(reagent) Cases
-  return size_of(r.types);
+  return size_of(r.type);
 }
-long long int size_of(const vector<type_ordinal>& types) {
-  if (types.empty()) return 0;
-  // End size_of(types) Cases
+long long int size_of(const type_tree* type) {
+  if (type == NULL) return 0;
+  // End size_of(type) Cases
   return 1;
 }
 
 bool size_mismatch(const reagent& x, const vector<double>& data) {
-  if (x.types.empty()) return true;
+  if (x.type == NULL) return true;
   // End size_mismatch(x) Cases
 //?   if (size_of(x) != SIZE(data)) cerr << size_of(x) << " vs " << SIZE(data) << '\n';
   return size_of(x) != SIZE(data);
@@ -300,7 +300,10 @@ bool is_dummy(const reagent& x) {
 }
 
 bool is_literal(const reagent& r) {
-  return SIZE(r.types) == 1 && r.types.at(0) == 0;
+  if (!r.type) return false;
+  if (r.type->value == 0)
+    assert(!r.type->left && !r.type->right);
+  return r.type->value == 0;
 }
 
 // hook to suppress inserting recipe name into errors and warnings (for later layers)

@@ -66,7 +66,7 @@ void transform_names(const recipe_ordinal r) {
 }
 
 bool disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
-  if (x.types.empty()) {
+  if (!x.type) {
     raise_error << maybe(recipe_name) << "missing type for " << x.original_string << " in '" << inst.to_string() << "'\n" << end();
     return true;
   }
@@ -86,9 +86,10 @@ long long int lookup_name(const reagent& r, const recipe_ordinal default_recipe)
   return Name[default_recipe][r.name];
 }
 
-type_ordinal skip_addresses(const vector<type_ordinal>& types, const string& recipe_name) {
-  for (long long int i = 0; i < SIZE(types); ++i) {
-    if (types.at(i) != Type_ordinal["address"]) return types.at(i);
+type_ordinal skip_addresses(type_tree* type, const string& recipe_name) {
+  for (; type; type = type->right) {
+    if (type->value != Type_ordinal["address"])
+      return type->value;
   }
   raise_error << maybe(recipe_name) << "expected a container" << '\n' << end();
   return -1;
@@ -201,7 +202,7 @@ if (inst.operation == Recipe_ordinal["get"]
     raise_error << maybe(Recipe[r].name) << "expected ingredient 1 of " << (inst.operation == Recipe_ordinal["get"] ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be a container, we don't have to canonize
-    type_ordinal base_type = skip_addresses(inst.ingredients.at(0).types, Recipe[r].name);
+    type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type, Recipe[r].name);
     inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, Recipe[r].name));
     trace("name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << no_scientific(inst.ingredients.at(1).value) << end();
   }
@@ -240,7 +241,7 @@ if (inst.operation == Recipe_ordinal["maybe-convert"]) {
   assert(is_literal(inst.ingredients.at(1)));
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be an exclusive container, we don't have to canonize
-    type_ordinal base_type = skip_addresses(inst.ingredients.at(0).types, Recipe[r].name);
+    type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type, Recipe[r].name);
     inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, Recipe[r].name));
     trace("name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << no_scientific(inst.ingredients.at(1).value) << end();
   }
