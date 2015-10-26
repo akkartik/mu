@@ -6,7 +6,7 @@
 recipe main [
   {1: number, foo: bar} <- copy 34
 ]
-+parse:   product: {name: "1", properties: ["1": "number", "foo": "bar"]}
++parse:   product: {"1": "number", "foo": "bar"}
 
 //: First augment next_word to group balanced brackets together.
 
@@ -114,8 +114,8 @@ string next_dilated_word(istream& in) {
   return result;
 }
 
-:(scenario dilated_reagent_with_s_expression)
+:(scenario dilated_reagent_with_nested_brackets)
 recipe main [
   {1: number, foo: (bar (baz quux))} <- copy 34
 ]
-+parse:   product: {name: "1", properties: ["1": "number", "foo": "(bar (baz quux))"]}
++parse:   product: {"1": "number", "foo": "(bar (baz quux))"}
