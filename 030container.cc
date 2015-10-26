@@ -191,31 +191,6 @@ case GET: {
   break;
 }
 
-:(code)
-string dump_types(const reagent& x) {
-  ostringstream out;
-  dump_types(x.type, out);
-  return out.str();
-}
-
-void dump_types(type_tree* type, ostringstream& out) {
-  if (!type->left && !type->right) {
-    out << Type[type->value].name;
-    return;
-  }
-  out << "<";
-  if (type->left)
-    dump_types(type->left, out);
-  else
-    out << Type[type->value].name;
-  out << " : ";
-  if (type->right)
-    dump_types(type->right, out);
-  else
-    out << " : <>";
-  out << ">";
-}
-
 :(scenario get_handles_nested_container_elements)
 recipe main [
   12:number <- copy 34
