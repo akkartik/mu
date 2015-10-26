@@ -71,8 +71,7 @@ case NEW: {
   long long int size = 0;
   long long int array_length = 0;
   {
-    vector<type_ordinal> type;
-    type.push_back(current_instruction().ingredients.at(0).value);
+    type_tree* type = new type_tree(current_instruction().ingredients.at(0).value);
     if (SIZE(current_instruction().ingredients) > 1) {
       // array
       array_length = ingredients.at(1).at(0);
@@ -83,6 +82,7 @@ case NEW: {
       // scalar
       size = size_of(type);
     }
+    delete type;
   }
 //?   Total_alloc += size;
 //?   Num_alloc++;
@@ -225,7 +225,7 @@ case ABANDON: {
   }
   reagent types = inst.ingredients.at(0);
   canonize_type(types);
-  if (types.types.empty() || types.types.at(0) != Type_ordinal["address"]) {
+  if (!types.type || types.type->value != Type_ordinal["address"]) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'abandon' should be an address, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
@@ -234,9 +234,13 @@ case ABANDON: {
 :(before "End Primitive Recipe Implementations")
 case ABANDON: {
   long long int address = ingredients.at(0).at(0);
-  reagent types = canonize(current_instruction().ingredients.at(0));
-  reagent target_type = lookup_memory(types);
-  abandon(address, size_of(target_type));
+  reagent types = current_instruction().ingredients.at(0);
+  canonize(types);
+  // lookup_memory without drop_one_lookup {
+  types.set_value(Memory[types.value]);
+  drop_address_from_type(types);
+  // }
+  abandon(address, size_of(types));
   break;
 }
 
@@ -413,10 +417,13 @@ long long int unicode_length(const string& s) {
 }
 
 bool is_mu_string(const reagent& x) {
-  return SIZE(x.types) == 3
-      && x.types.at(0) == Type_ordinal["address"]
-      && x.types.at(1) == Type_ordinal["array"]
-      && x.types.at(2) == Type_ordinal["character"];
+  return x.type
+    && x.type->value == Type_ordinal["address"]
+    && x.type->right
+    && x.type->right->value == Type_ordinal["array"]
+    && x.type->right->right
+    && x.type->right->right->value == Type_ordinal["character"]
+    && x.type->right->right->right == NULL;
 }
 
 string read_mu_string(long long int address) {

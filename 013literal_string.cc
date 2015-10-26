@@ -111,7 +111,7 @@ if (s.at(0) == '[') {
   s.erase(0, 1);
   strip_last(s);
   name = s;
-  types.push_back(0);
+  type = new type_tree(0);
   properties.push_back(pair<string, vector<string> >(name, vector<string>()));
   properties.back().second.push_back("literal-string");
   return;

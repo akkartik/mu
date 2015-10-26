@@ -11,7 +11,7 @@ recipe main [
 +mem: storing 34 in location 3
 
 :(before "long long int base = x.value" following "vector<double> read_memory(reagent x)")
-x = canonize(x);
+canonize(x);
 
 //: similarly, write to addresses pointing at other locations using the
 //: 'lookup' property
@@ -23,7 +23,7 @@ recipe main [
 +mem: storing 34 in location 2
 
 :(before "long long int base = x.value" following "void write_memory(reagent x, vector<double> data)")
-x = canonize(x);
+canonize(x);
 if (x.value == 0) {
   raise_error << "can't write to location 0 in '" << current_instruction().to_string() << "'\n" << end();
   return;
@@ -40,44 +40,25 @@ recipe main [
 +error: can't write to location 0 in '1:address:number/lookup <- copy 34'
 
 :(code)
-reagent canonize(reagent x) {
-  if (is_literal(x)) return x;
-  reagent r = x;
-  while (has_property(r, "lookup"))
-    r = lookup_memory(r);
-  return r;
+void canonize(reagent& x) {
+  if (is_literal(x)) return;
+  // End canonize(x) Special-cases
+  while (has_property(x, "lookup"))
+    lookup_memory(x);
 }
 
-reagent lookup_memory(reagent x) {
-  static const type_ordinal ADDRESS = Type_ordinal["address"];
-  reagent result;
-  if (x.types.empty() || x.types.at(0) != ADDRESS) {
+void lookup_memory(reagent& x) {
+  if (!x.type || x.type->value != Type_ordinal["address"]) {
     raise_error << maybe(current_recipe_name()) << "tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
-    return result;
   }
   // compute value
   if (x.value == 0) {
     raise_error << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
-    return result;
   }
-  result.set_value(Memory[x.value]);
-  trace(Primitive_recipe_depth, "mem") << "location " << x.value << " is " << no_scientific(result.value) << end();
-
-  // populate types
-  copy(++x.types.begin(), x.types.end(), inserter(result.types, result.types.begin()));
-
-  // drop one 'lookup'
-  long long int i = 0;
-  long long int len = SIZE(x.properties);
-  for (i = 0; i < len; ++i) {
-    if (x.properties.at(i).first == "lookup") break;
-    result.properties.push_back(x.properties.at(i));
-  }
-  ++i;  // skip first lookup
-  for (; i < len; ++i) {
-    result.properties.push_back(x.properties.at(i));
-  }
-  return result;
+  trace(Primitive_recipe_depth, "mem") << "location " << x.value << " is " << no_scientific(Memory[x.value]) << end();
+  x.set_value(Memory[x.value]);
+  drop_address_from_type(x);
+  drop_one_lookup(x);
 }
 
 :(after "bool types_match(reagent lhs, reagent rhs)")
@@ -96,18 +77,21 @@ reagent lookup_memory(reagent x) {
 :(code)
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
-    if (r.types.empty()) {
+    if (!r.type || r.type->value != Type_ordinal["address"]) {
       raise_error << "can't lookup non-address: " << r.original_string << '\n' << end();
       return false;
     }
-    if (r.types.at(0) != Type_ordinal["address"]) {
-      raise_error << "can't lookup non-address: " << r.original_string << '\n' << end();
-      return false;
-    }
-    r.types.erase(r.types.begin());
+    drop_address_from_type(r);
     drop_one_lookup(r);
   }
   return true;
+}
+
+void drop_address_from_type(reagent& r) {
+  type_tree* tmp = r.type;
+  r.type = tmp->right;
+  tmp->right = NULL;
+  delete tmp;
 }
 
 void drop_one_lookup(reagent& r) {
@@ -144,7 +128,7 @@ if (!canonize_type(base)) break;
 :(after "Update GET product in Check")
 if (!canonize_type(product)) break;
 :(after "Update GET base in Run")
-base = canonize(base);
+canonize(base);
 
 :(scenario get_address_indirect)
 # 'get' can read from container address
@@ -161,7 +145,7 @@ if (!canonize_type(base)) break;
 :(after "Update GET_ADDRESS product in Check")
 if (!canonize_type(base)) break;
 :(after "Update GET_ADDRESS base in Run")
-base = canonize(base);
+canonize(base);
 
 //:: abbreviation for '/lookup': a prefix '*'
 
@@ -191,7 +175,8 @@ _DUMP,
 Recipe_ordinal["$dump"] = _DUMP;
 :(before "End Primitive Recipe Implementations")
 case _DUMP: {
-  reagent after_canonize = canonize(current_instruction().ingredients.at(0));
+  reagent after_canonize = current_instruction().ingredients.at(0);
+  canonize(after_canonize);
   cerr << maybe(current_recipe_name()) << current_instruction().ingredients.at(0).name << ' ' << no_scientific(current_instruction().ingredients.at(0).value) << " => " << no_scientific(after_canonize.value) << " => " << no_scientific(Memory[after_canonize.value]) << '\n';
   break;
 }
@@ -211,7 +196,9 @@ case _FOO: {
     else cerr << '\n';
   }
   else {
-    foo = canonize(current_instruction().ingredients.at(0)).value;
+    reagent tmp = current_instruction().ingredients.at(0);
+    canonize(tmp);
+    foo = tmp.value;
   }
   break;
 }

@@ -52,9 +52,12 @@ struct reagent {
   string name;
   double value;
   bool initialized;
-  vector<type_ordinal> types;
+  type_tree* type;
   reagent(string s);
   reagent();
+  ~reagent();
+  reagent(const reagent& old);
+  reagent& operator=(const reagent& old);
   void set_value(double v) { value = v; initialized = true; }
   string to_string() const;
 };
@@ -62,6 +65,22 @@ struct reagent {
 :(before "struct reagent")
 struct property {
   vector<string> values;
+};
+
+// Types can range from a simple type ordinal, to arbitrarily complex trees of
+// type ordinals.
+struct type_tree {
+  type_ordinal value;
+  type_tree* left;
+  type_tree* right;
+  ~type_tree();
+  type_tree(const type_tree& old);
+  // simple: type ordinal
+  type_tree(type_ordinal v) :value(v), left(NULL), right(NULL) {}
+  // intermediate: list of type ordinals
+  type_tree(type_ordinal v, type_tree* r) :value(v), left(NULL), right(r) {}
+  // advanced: tree containing type ordinals in the leaves
+  type_tree(type_tree* l, type_tree* r) :value(0), left(l), right(r) {}
 };
 
 :(before "End Globals")
@@ -105,8 +124,20 @@ void setup_types() {
   Type[array].name = "array";
   // End Mu Types Initialization
 }
+void teardown_types() {
+  // todo: why can't I just Type.clear()?
+  for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
+    if (!p->second.name.empty()) {
+      for (long long int i = 0; i < SIZE(p->second.elements); ++i) {
+        delete p->second.elements.at(i);
+      }
+    }
+  }
+  Type_ordinal.clear();
+}
 :(before "End One-time Setup")
 setup_types();
+atexit(teardown_types);
 
 :(before "End Types")
 // You can construct arbitrary new types. New types are either 'containers'
@@ -129,7 +160,7 @@ struct type_info {
   string name;
   kind_of_type kind;
   long long int size;  // only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)
-  vector<vector<type_ordinal> > elements;
+  vector<type_tree*> elements;
   vector<string> element_names;
   // End type_info Fields
   type_info() :kind(primitive), size(0) {}
@@ -179,7 +210,7 @@ instruction::instruction() :is_label(false), operation(IDLE) {
 void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
 
 // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
-reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
+reagent::reagent(string s) :original_string(s), value(0), initialized(false), type(NULL) {
   // Parsing reagent(string s)
   istringstream in(s);
   in >> std::noskipws;
@@ -193,8 +224,9 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
       values.push_back(slurp_until(row, ':'));
     properties.push_back(pair<string, vector<string> >(name, values));
   }
-  // structures for the first row of properties
+  // structures for the first row of properties: name and list of types
   name = properties.at(0).first;
+  type_tree** curr_type = &type;
   for (long long int i = 0; i < SIZE(properties.at(0).second); ++i) {
     string type = properties.at(0).second.at(i);
     if (Type_ordinal.find(type) == Type_ordinal.end()
@@ -202,20 +234,50 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
         && !is_integer(type)) {
       Type_ordinal[type] = Next_type_ordinal++;
     }
-    types.push_back(Type_ordinal[type]);
+    *curr_type = new type_tree(Type_ordinal[type]);
+    curr_type = &(*curr_type)->right;
   }
-  if (is_integer(name) && types.empty()) {
-    types.push_back(0);
+  if (is_integer(name) && type == NULL) {
+    type = new type_tree(0);
     properties.at(0).second.push_back("literal");
   }
-  if (name == "_" && types.empty()) {
-    types.push_back(0);
+  if (name == "_" && type == NULL) {
+    type = new type_tree(0);
     properties.at(0).second.push_back("dummy");
   }
   // End Parsing reagent
 }
 
-reagent::reagent() :value(0), initialized(false) {
+//: avoid memory leaks for the type tree
+
+reagent::reagent(const reagent& old) :original_string(old.original_string), properties(old.properties), name(old.name), value(old.value), initialized(old.initialized) {
+  type = old.type ? new type_tree(*old.type) : NULL;
+}
+
+type_tree::type_tree(const type_tree& old) :value(old.value) {
+  left = old.left ? new type_tree(*old.left) : NULL;
+  right = old.right ? new type_tree(*old.right) : NULL;
+}
+
+reagent& reagent::operator=(const reagent& old) {
+  original_string = old.original_string;
+  properties = old.properties;
+  name = old.name;
+  value = old.value;
+  initialized = old.initialized;
+  type = old.type? new type_tree(*old.type) : NULL;
+  return *this;
+}
+
+reagent::~reagent() {
+  delete type;
+}
+type_tree::~type_tree() {
+  delete left;
+  delete right;
+}
+
+reagent::reagent() :value(0), initialized(false), type(NULL) {
   // The first property is special, so ensure we always have it.
   // Other properties can be pushed back, but the first must always be
   // assigned to.

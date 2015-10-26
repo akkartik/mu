@@ -11,13 +11,9 @@ type_ordinal tmp = Type_ordinal["number-or-point"] = Next_type_ordinal++;
 Type[tmp].size = 2;
 Type[tmp].kind = exclusive_container;
 Type[tmp].name = "number-or-point";
-vector<type_ordinal> t1;
-t1.push_back(number);
-Type[tmp].elements.push_back(t1);
-vector<type_ordinal> t2;
-t2.push_back(point);
-Type[tmp].elements.push_back(t2);
+Type[tmp].elements.push_back(new type_tree(number));
 Type[tmp].element_names.push_back("i");
+Type[tmp].elements.push_back(new type_tree(point));
 Type[tmp].element_names.push_back("p");
 }
 
@@ -36,7 +32,7 @@ recipe main [
 +mem: storing 34 in location 5
 +mem: storing 35 in location 6
 
-:(before "End size_of(types) Cases")
+:(before "End size_of(type) Cases")
 if (t.kind == exclusive_container) {
   // size of an exclusive container is the size of its largest variant
   // (So like containers, it can't contain arrays.)
@@ -89,7 +85,7 @@ case MAYBE_CONVERT: {
   }
   reagent base = inst.ingredients.at(0);
   canonize_type(base);
-  if (base.types.empty() || Type[base.types.at(0)].kind != exclusive_container) {
+  if (!base.type || !base.type->value || Type[base.type->value].kind != exclusive_container) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
     break;
   }
@@ -101,7 +97,8 @@ case MAYBE_CONVERT: {
 }
 :(before "End Primitive Recipe Implementations")
 case MAYBE_CONVERT: {
-  reagent base = canonize(current_instruction().ingredients.at(0));
+  reagent base = current_instruction().ingredients.at(0);
+  canonize(base);
   long long int base_address = base.value;
   if (base_address == 0) {
     raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
@@ -160,9 +157,10 @@ recipe main [
 :(before "End size_mismatch(x) Cases")
 if (current_instruction().operation == MERGE
     && !current_instruction().products.empty()
-    && !current_instruction().products.at(0).types.empty()) {
-  reagent x = canonize(current_instruction().products.at(0));
-  if (Type[x.types.at(0)].kind == exclusive_container) {
+    && current_instruction().products.at(0).type) {
+  reagent x = current_instruction().products.at(0);
+  canonize(x);
+  if (Type[x.type->value].kind == exclusive_container) {
     return size_of(x) < SIZE(data);
   }
 }

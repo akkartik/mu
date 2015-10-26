@@ -104,7 +104,7 @@ void transform_braces(const recipe_ordinal r) {
     }
     // if implicit, compute target
     reagent target;
-    target.types.push_back(Type_ordinal["offset"]);
+    target.type = new type_tree(Type_ordinal["offset"]);
     target.set_value(0);
     if (open_braces.empty())
       raise_error << inst.name << " needs a '{' before\n" << end();

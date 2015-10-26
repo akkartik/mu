@@ -6,10 +6,10 @@ type_ordinal point = Type_ordinal["point"] = Next_type_ordinal++;
 Type[point].size = 2;
 Type[point].kind = container;
 Type[point].name = "point";
-vector<type_ordinal> i;
-i.push_back(number);
-Type[point].elements.push_back(i);
-Type[point].elements.push_back(i);
+Type[point].elements.push_back(new type_tree(number));
+Type[point].element_names.push_back("x");
+Type[point].elements.push_back(new type_tree(number));
+Type[point].element_names.push_back("y");
 
 //: Containers can be copied around with a single instruction just like
 //: numbers, no matter how large they are.
@@ -41,12 +41,10 @@ type_ordinal point_number = Type_ordinal["point-number"] = Next_type_ordinal++;
 Type[point_number].size = 2;
 Type[point_number].kind = container;
 Type[point_number].name = "point-number";
-vector<type_ordinal> p2;
-p2.push_back(point);
-Type[point_number].elements.push_back(p2);
-vector<type_ordinal> i2;
-i2.push_back(number);
-Type[point_number].elements.push_back(i2);
+Type[point_number].elements.push_back(new type_tree(point));
+Type[point_number].element_names.push_back("xy");
+Type[point_number].elements.push_back(new type_tree(number));
+Type[point_number].element_names.push_back("z");
 
 :(scenario copy_handles_nested_container_elements)
 recipe main [
@@ -84,14 +82,18 @@ recipe main [
 ]
 +mem: storing 0 in location 7
 
-:(before "End size_of(types) Cases")
-type_info t = Type[types.at(0)];
+:(before "End size_of(type) Cases")
+if (type->value == 0) {
+  assert(!type->left && !type->right);
+  return 1;
+}
+type_info t = Type[type->value];
 if (t.kind == container) {
   // size of a container is the sum of the sizes of its elements
   long long int result = 0;
   for (long long int i = 0; i < SIZE(t.elements); ++i) {
     // todo: strengthen assertion to disallow mutual type recursion
-    if (types.at(0) == t.elements.at(i).at(0)) {
+    if (t.elements.at(i)->value == type->value) {
       raise_error << "container " << t.name << " can't include itself as a member\n" << end();
       return 0;
     }
@@ -131,11 +133,11 @@ case GET: {
   }
   reagent base = inst.ingredients.at(0);
   // Update GET base in Check
-  if (base.types.empty() || Type[base.types.at(0)].kind != container) {
+  if (!base.type || !base.type->value || Type[base.type->value].kind != container) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
-  type_ordinal base_type = base.types.at(0);
+  type_ordinal base_type = base.type->value;
   reagent offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
     raise_error << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
@@ -155,7 +157,7 @@ case GET: {
   reagent product = inst.products.at(0);
   // Update GET product in Check
   reagent element;
-  element.types = Type[base_type].elements.at(offset_value);
+  element.type = new type_tree(*Type[base_type].elements.at(offset_value));
   if (!types_match(product, element)) {
     raise_error << maybe(Recipe[r].name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
@@ -171,7 +173,7 @@ case GET: {
     raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
-  type_ordinal base_type = base.types.at(0);
+  type_ordinal base_type = base.type->value;
   long long int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(Type[base_type].elements)) break;  // copied from Check above
   long long int src = base_address;
@@ -180,11 +182,11 @@ case GET: {
     src += size_of(Type[base_type].elements.at(i));
   }
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src << end();
-  type_ordinal src_type = Type[base_type].elements.at(offset).at(0);
+  type_ordinal src_type = Type[base_type].elements.at(offset)->value;
   trace(Primitive_recipe_depth, "run") << "its type is " << Type[src_type].name << end();
   reagent tmp;
   tmp.set_value(src);
-  tmp.types.push_back(src_type);
+  tmp.type = new type_tree(src_type);
   products.push_back(read_memory(tmp));
   break;
 }
@@ -192,11 +194,26 @@ case GET: {
 :(code)
 string dump_types(const reagent& x) {
   ostringstream out;
-  for (long long int i = 0; i < SIZE(x.types); ++i) {
-    if (i > 0) out << ':';
-    out << Type[x.types.at(i)].name;
-  }
+  dump_types(x.type, out);
   return out.str();
+}
+
+void dump_types(type_tree* type, ostringstream& out) {
+  if (!type->left && !type->right) {
+    out << Type[type->value].name;
+    return;
+  }
+  out << "<";
+  if (type->left)
+    dump_types(type->left, out);
+  else
+    out << Type[type->value].name;
+  out << ":";
+  if (type->right)
+    dump_types(type->right, out);
+  else
+    out << ".<>";
+  out << ">";
 }
 
 :(scenario get_handles_nested_container_elements)
@@ -207,16 +224,6 @@ recipe main [
   15:number <- get 12:point-number/raw, 1:offset  # unsafe
 ]
 +mem: storing 36 in location 15
-
-//:: To write to elements of containers, you need their address.
-
-:(scenario get_address)
-recipe main [
-  12:number <- copy 34
-  13:number <- copy 35
-  15:address:number <- get-address 12:point/raw, 1:offset  # unsafe
-]
-+mem: storing 13 in location 15
 
 :(scenario get_out_of_bounds)
 % Hide_errors = true;
@@ -248,6 +255,16 @@ recipe main [
 ]
 +error: main: 'get' 1:offset (1) on point-number can't be saved in 15:address:number; type should be number
 
+//:: To write to elements of containers, you need their address.
+
+:(scenario get_address)
+recipe main [
+  12:number <- copy 34
+  13:number <- copy 35
+  15:address:number <- get-address 12:point/raw, 1:offset  # unsafe
+]
++mem: storing 13 in location 15
+
 :(before "End Primitive Recipe Declarations")
 GET_ADDRESS,
 :(before "End Primitive Recipe Numbers")
@@ -260,11 +277,11 @@ case GET_ADDRESS: {
   }
   reagent base = inst.ingredients.at(0);
   // Update GET_ADDRESS base in Check
-  if (base.types.empty() || Type[base.types.at(0)].kind != container) {
+  if (!base.type || Type[base.type->value].kind != container) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
-  type_ordinal base_type = base.types.at(0);
+  type_ordinal base_type = base.type->value;
   reagent offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
     raise_error << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
@@ -284,8 +301,10 @@ case GET_ADDRESS: {
   reagent product = inst.products.at(0);
   // Update GET_ADDRESS product in Check
   reagent element;
-  element.types = Type[base_type].elements.at(offset_value);
-  element.types.insert(element.types.begin(), Type_ordinal["address"]);
+  // same type as for GET..
+  element.type = new type_tree(*Type[base_type].elements.at(offset_value));
+  // ..except for an address at the start
+  element.type = new type_tree(Type_ordinal["address"], element.type);
   if (!types_match(product, element)) {
     raise_error << maybe(Recipe[r].name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
@@ -301,7 +320,7 @@ case GET_ADDRESS: {
     raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
-  type_ordinal base_type = base.types.at(0);
+  type_ordinal base_type = base.type->value;
   long long int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(Type[base_type].elements)) break;  // copied from Check above
   long long int result = base_address;
@@ -343,7 +362,7 @@ recipe main [
   14:number <- copy 36
   15:number <- get-address 12:point-number/raw, 1:offset
 ]
-+error: main: 'get-address' 1:offset (1) on point-number can't be saved in 15:number; type should be address:number
++error: main: 'get-address' 1:offset (1) on point-number can't be saved in 15:number; type should be <address:number>
 
 //:: Allow containers to be defined in mu code.
 
@@ -406,6 +425,8 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     istringstream inner(element);
     info.element_names.push_back(slurp_until(inner, ':'));
     trace("parse") << "  element name: " << info.element_names.back() << end();
+    type_tree* new_type = NULL;
+    type_tree** curr_type = &new_type;
     vector<type_ordinal> types;
     while (!inner.eof()) {
       string type_name = slurp_until(inner, ':');
@@ -415,10 +436,11 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
           && !is_integer(type_name)) {
         Type_ordinal[type_name] = Next_type_ordinal++;
       }
-      types.push_back(Type_ordinal[type_name]);
-      trace("parse") << "  type: " << types.back() << end();
+      *curr_type = new type_tree(Type_ordinal[type_name]);
+      trace("parse") << "  type: " << Type_ordinal[type_name] << end();
+      curr_type = &(*curr_type)->right;
     }
-    info.elements.push_back(types);
+    info.elements.push_back(new_type);
   }
   assert(SIZE(info.elements) == SIZE(info.element_names));
   info.size = SIZE(info.elements);
@@ -457,6 +479,10 @@ recently_added_types.clear();
 :(before "End Setup")  //: for tests
 for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
   Type_ordinal.erase(Type[recently_added_types.at(i)].name);
+  // todo: why do I explicitly need to provide this?
+  for (long long int j = 0; j < SIZE(Type.at(recently_added_types.at(i)).elements); ++j) {
+    delete Type.at(recently_added_types.at(i)).elements.at(j);
+  }
   Type.erase(recently_added_types.at(i));
 }
 recently_added_types.clear();
@@ -491,7 +517,7 @@ recipe main [
   # integer is not a type
   1:integer <- copy 0
 ]
-+error: unknown type: integer
++error: main: unknown type in '1:integer <- copy 0'
 
 :(scenario run_allows_type_definition_after_use)
 % Hide_errors = true;
@@ -513,20 +539,21 @@ void check_invalid_types(const recipe_ordinal r) {
   for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
     const instruction& inst = Recipe[r].steps.at(index);
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-      check_invalid_types(inst.ingredients.at(i));
+      check_invalid_types(inst.ingredients.at(i).type, maybe(Recipe[r].name), "'"+inst.to_string()+"'");
     }
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
-      check_invalid_types(inst.products.at(i));
+      check_invalid_types(inst.products.at(i).type, maybe(Recipe[r].name), "'"+inst.to_string()+"'");
     }
   }
 }
 
-void check_invalid_types(const reagent& r) {
-  for (long long int i = 0; i < SIZE(r.types); ++i) {
-    if (r.types.at(i) == 0) continue;
-    if (Type.find(r.types.at(i)) == Type.end())
-      raise_error << "unknown type: " << r.properties.at(0).second.at(i) << '\n' << end();
+void check_invalid_types(const type_tree* type, const string& block, const string& name) {
+  if (!type) return;  // will throw a more precise error elsewhere
+  if (type->value && Type.find(type->value) == Type.end()) {
+    raise_error << block << "unknown type in " << name << '\n' << end();
   }
+  if (type->left) check_invalid_types(type->left, block, name);
+  if (type->right) check_invalid_types(type->right, block, name);
 }
 
 :(scenario container_unknown_field)
@@ -535,7 +562,7 @@ container foo [
   x:number
   y:bar
 ]
-+error: unknown type for field y in foo
++error: foo: unknown type in y
 
 :(scenario read_container_with_bracket_in_comment)
 container foo [
@@ -557,12 +584,7 @@ void check_container_field_types() {
   for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
     const type_info& info = p->second;
     for (long long int i = 0; i < SIZE(info.elements); ++i) {
-      for (long long int j = 0; j < SIZE(info.elements.at(i)); ++j) {
-        if (info.elements.at(i).at(j) == 0) continue;
-        if (Type.find(info.elements.at(i).at(j)) != Type.end()) continue;
-        // End Container Type Checks
-        raise_error << "unknown type for field " << info.element_names.at(i) << " in " << info.name << '\n' << end();
-      }
+      check_invalid_types(info.elements.at(i), maybe(info.name), info.element_names.at(i));
     }
   }
 }

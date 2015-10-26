@@ -80,11 +80,16 @@ bool types_match(reagent lhs, reagent rhs) {
   // allow writing 0 to any address
   if (rhs.name == "0" && is_mu_address(lhs)) return true;
   if (is_literal(rhs)) return !is_mu_array(lhs) && !is_mu_address(lhs) && size_of(rhs) == size_of(lhs);
-  // more refined types can always be copied to less refined ones
-  if (SIZE(lhs.types) > SIZE(rhs.types)) return false;
-  if (SIZE(lhs.types) == SIZE(rhs.types)) return lhs.types == rhs.types;
-  rhs.types.resize(SIZE(lhs.types));
-  return lhs.types == rhs.types;
+  if (!lhs.type) return !rhs.type;
+  return types_match(lhs.type, rhs.type);
+}
+
+// two types match if the second begins like the first
+// (trees perform the same check recursively on each subtree)
+bool types_match(type_tree* lhs, type_tree* rhs) {
+  if (!lhs) return true;
+  if (lhs->value != rhs->value) return false;
+  return types_match(lhs->left, rhs->left) && types_match(lhs->right, rhs->right);
 }
 
 bool is_raw(const reagent& r) {
@@ -92,25 +97,28 @@ bool is_raw(const reagent& r) {
 }
 
 bool is_mu_array(reagent r) {
+  if (!r.type) return false;
   if (is_literal(r)) return false;
-  return !r.types.empty() && r.types.at(0) == Type_ordinal["array"];
+  return r.type->value == Type_ordinal["array"];
 }
 
 bool is_mu_address(reagent r) {
+  if (!r.type) return false;
   if (is_literal(r)) return false;
-  return !r.types.empty() && r.types.at(0) == Type_ordinal["address"];
+  return r.type->value == Type_ordinal["address"];
 }
 
 bool is_mu_number(reagent r) {
+  if (!r.type) return false;
   if (is_literal(r))
     return r.properties.at(0).second.at(0) == "literal-number"
         || r.properties.at(0).second.at(0) == "literal";
-  if (r.types.empty()) return false;
-  if (r.types.at(0) == Type_ordinal["character"]) return true;  // permit arithmetic on unicode code points
-  return r.types.at(0) == Type_ordinal["number"];
+  if (r.type->value == Type_ordinal["character"]) return true;  // permit arithmetic on unicode code points
+  return r.type->value == Type_ordinal["number"];
 }
 
 bool is_mu_scalar(reagent r) {
+  if (!r.type) return false;
   if (is_literal(r))
     return r.properties.at(0).second.empty() || r.properties.at(0).second.at(0) != "literal-string";
   if (is_mu_array(r)) return false;

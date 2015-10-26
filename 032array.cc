@@ -29,7 +29,7 @@ case CREATE_ARRAY: {
     raise_error << maybe(Recipe[r].name) << "'create-array' cannot create non-array " << product.original_string << '\n' << end();
     break;
   }
-  if (SIZE(product.types) == 1) {
+  if (!product.type->right) {
     raise_error << maybe(Recipe[r].name) << "create array of what? " << inst.to_string() << '\n' << end();
     break;
   }
@@ -46,7 +46,8 @@ case CREATE_ARRAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case CREATE_ARRAY: {
-  reagent product = canonize(current_instruction().products.at(0));
+  reagent product = current_instruction().products.at(0);
+  canonize(product);
   long long int base_address = product.value;
   long long int array_size= to_integer(product.properties.at(0).second.at(2));
   // initialize array size, so that size_of will work
@@ -104,15 +105,15 @@ recipe main [
 
 //: disable the size mismatch check since the destination array need not be initialized
 :(before "End size_mismatch(x) Cases")
-if (x.types.at(0) == Type_ordinal["array"]) return false;
+if (x.type && x.type->value == Type_ordinal["array"]) return false;
 :(before "End size_of(reagent) Cases")
-if (r.types.at(0) == Type_ordinal["array"]) {
-  if (SIZE(r.types) == 1) {
+if (r.type && r.type->value == Type_ordinal["array"]) {
+  if (!r.type->right) {
     raise_error << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
     return 1;
   }
   // skip the 'array' type to get at the element type
-  return 1 + Memory[r.value]*size_of(array_element(r.types));
+  return 1 + Memory[r.value]*size_of(array_element(r.type));
 }
 
 //:: To access elements of an array, use 'index'
@@ -158,7 +159,7 @@ case INDEX: {
   reagent product = inst.products.at(0);
   canonize_type(product);
   reagent element;
-  element.types = array_element(base.types);
+  element.type = new type_tree(*array_element(base.type));
   if (!types_match(product, element)) {
     raise_error << maybe(Recipe[r].name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
@@ -167,32 +168,34 @@ case INDEX: {
 }
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
-  reagent base = canonize(current_instruction().ingredients.at(0));
+  reagent base = current_instruction().ingredients.at(0);
+  canonize(base);
   long long int base_address = base.value;
   if (base_address == 0) {
     raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
-  reagent offset = canonize(current_instruction().ingredients.at(1));
+  reagent offset = current_instruction().ingredients.at(1);
+  canonize(offset);
   vector<double> offset_val(read_memory(offset));
-  vector<type_ordinal> element_type = array_element(base.types);
+  type_tree* element_type = array_element(base.type);
   if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
     raise_error << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
   }
   long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src << end();
-  trace(Primitive_recipe_depth, "run") << "its type is " << Type[element_type.at(0)].name << end();
+  trace(Primitive_recipe_depth, "run") << "its type is " << Type[element_type->value].name << end();
   reagent tmp;
   tmp.set_value(src);
-  copy(element_type.begin(), element_type.end(), inserter(tmp.types, tmp.types.begin()));
+  tmp.type = new type_tree(*element_type);
   products.push_back(read_memory(tmp));
   break;
 }
 
 :(code)
-vector<type_ordinal> array_element(const vector<type_ordinal>& types) {
-  return vector<type_ordinal>(++types.begin(), types.end());
+type_tree* array_element(const type_tree* type) {
+  return type->right;
 }
 
 :(scenario index_indirect)
@@ -283,8 +286,8 @@ case INDEX_ADDRESS: {
   reagent product = inst.products.at(0);
   canonize_type(product);
   reagent element;
-  element.types = array_element(base.types);
-  element.types.insert(element.types.begin(), Type_ordinal["address"]);
+  element.type = new type_tree(*array_element(base.type));
+  element.type = new type_tree(Type_ordinal["address"], element.type);
   if (!types_match(product, element)) {
     raise_error << maybe(Recipe[r].name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
@@ -293,15 +296,17 @@ case INDEX_ADDRESS: {
 }
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
-  reagent base = canonize(current_instruction().ingredients.at(0));
+  reagent base = current_instruction().ingredients.at(0);
+  canonize(base);
   long long int base_address = base.value;
   if (base_address == 0) {
     raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
-  reagent offset = canonize(current_instruction().ingredients.at(1));
+  reagent offset = current_instruction().ingredients.at(1);
+  canonize(offset);
   vector<double> offset_val(read_memory(offset));
-  vector<type_ordinal> element_type = array_element(base.types);
+  type_tree* element_type = array_element(base.type);
   if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
     raise_error << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
@@ -355,7 +360,7 @@ recipe main [
   8:address:array:point <- copy 1/raw
   9:address:number <- index-address *8:address:array:point, 0
 ]
-+error: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be address:point
++error: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be <address:point>
 
 //:: compute the length of an array
 
@@ -389,7 +394,8 @@ case LENGTH: {
 }
 :(before "End Primitive Recipe Implementations")
 case LENGTH: {
-  reagent x = canonize(current_instruction().ingredients.at(0));
+  reagent x = current_instruction().ingredients.at(0);
+  canonize(x);
   if (x.value == 0) {
     raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;

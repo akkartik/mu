@@ -64,8 +64,8 @@ case CONTINUE_FROM: {
 
 :(code)
 bool is_mu_continuation(const reagent& x) {
-  if (x.types.empty()) return false;
-  return x.types.at(0) == Type_ordinal["continuation"];
+  if (!x.type) return false;
+  return x.type->value == Type_ordinal["continuation"];
 }
 
 :(scenario continuation)
@@ -279,4 +279,4 @@ call_stack::iterator find_reset(call_stack& c) {
   }
 
 :(before "End is_mu_recipe Cases")
-if (r.types.at(0) == Type_ordinal["continuation"]) return true;
+if (r.type && r.type->value == Type_ordinal["continuation"]) return true;

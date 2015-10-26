@@ -40,7 +40,8 @@ case WAIT_FOR_LOCATION: {
 }
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_LOCATION: {
-  reagent loc = canonize(current_instruction().ingredients.at(0));
+  reagent loc = current_instruction().ingredients.at(0);
+  canonize(loc);
   Current_routine->state = WAITING;
   Current_routine->waiting_on_location = loc.value;
   Current_routine->old_value_of_waiting_location = Memory[loc.value];
