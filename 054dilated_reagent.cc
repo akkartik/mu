@@ -79,6 +79,7 @@ if (s.at(0) == '{') {
   while (!in.eof()) {
     string key = next_dilated_word(in);
     if (key.empty()) continue;
+    if (key == "}") continue;
     string value = next_dilated_word(in);
     properties.push_back(pair<string, string_tree*>(key, new string_tree(value)));
   }
@@ -97,17 +98,8 @@ if (s.at(0) == '{') {
 string next_dilated_word(istream& in) {
   while (in.peek() == ',') in.get();
   string result = next_word(in);
-  while (true) {
-    if (result.empty())
-      return result;
-    else if (*result.rbegin() == ':')
-      strip_last(result);
-    // if the word doesn't start with a bracket, next_word() was from previous
-    // layers when reading it, and therefore oblivious about brackets
-    else if (*result.begin() != '{' && *result.rbegin() == '}')
-      strip_last(result);
-    else
-      break;
+  while (!result.empty() && *result.rbegin() == ':') {
+    strip_last(result);
   }
   return result;
 }
