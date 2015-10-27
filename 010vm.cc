@@ -366,7 +366,7 @@ void dump_property(const string_tree* property, ostringstream& out) {
   if (property->right)
     dump_property(property->right, out);
   else
-    out << " : <>";
+    out << "<>";
   out << ">";
 }
 
