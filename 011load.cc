@@ -162,8 +162,9 @@ bool next_instruction(istream& in, instruction* curr) {
 }
 
 string next_word(istream& in) {
-  ostringstream out;
   skip_whitespace(in);
+  // End next_word Special-cases
+  ostringstream out;
   slurp_word(in, out);
   skip_whitespace(in);
   skip_comment(in);
