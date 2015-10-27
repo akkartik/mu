@@ -53,12 +53,12 @@ case REPLY: {
   for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
     trace(Primitive_recipe_depth, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
     if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
-      vector<string> tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
-      if (SIZE(tmp) != 1) {
+      string_tree* tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
+      if (!tmp || tmp->right) {
         raise_error << maybe(current_recipe_name()) << "'same-as-ingredient' metadata should take exactly one value in " << reply_inst.to_string() << '\n' << end();
         goto finish_reply;
       }
-      long long int ingredient_index = to_integer(tmp.at(0));
+      long long int ingredient_index = to_integer(tmp->value);
       if (ingredient_index >= SIZE(caller_instruction.ingredients))
         raise_error << maybe(current_recipe_name()) << "'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
       if (!is_dummy(caller_instruction.products.at(i)) && caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)

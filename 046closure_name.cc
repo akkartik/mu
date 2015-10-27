@@ -57,13 +57,13 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
         raise_error << "slot 0 should always have type address:array:location, but is " << inst.products.at(j).to_string() << '\n' << end();
         continue;
       }
-      vector<string> s = property(inst.products.at(j), "names");
-      if (s.empty()) {
+      string_tree* s = property(inst.products.at(j), "names");
+      if (!s) {
         raise_error << "slot 0 requires a /names property in recipe " << Recipe[r].name << end();
         continue;
       }
-      if (SIZE(s) > 1) raise_error << "slot 0 should have a single value in /names, but got " << inst.products.at(j).to_string() << '\n' << end();
-      string surrounding_recipe_name = s.at(0);
+      if (s->right) raise_error << "slot 0 should have a single value in /names, but got " << inst.products.at(j).to_string() << '\n' << end();
+      const string& surrounding_recipe_name = s->value;
       if (Surrounding_space.find(r) != Surrounding_space.end()
           && Surrounding_space[r] != Recipe_ordinal[surrounding_recipe_name]) {
         raise_error << "recipe " << Recipe[r].name << " can have only one 'surrounding' recipe but has " << Recipe[Surrounding_space[r]].name << " and " << surrounding_recipe_name << '\n' << end();
@@ -84,9 +84,9 @@ long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe)
     if (Name[default_recipe].empty()) raise_error << "name not found: " << x.name << '\n' << end();
     return Name[default_recipe][x.name];
   }
-  vector<string> p = property(x, "space");
-  if (SIZE(p) != 1) raise_error << "/space property should have exactly one (non-negative integer) value\n" << end();
-  long long int n = to_integer(p.at(0));
+  string_tree* p = property(x, "space");
+  if (!p || p->right) raise_error << "/space property should have exactly one (non-negative integer) value\n" << end();
+  long long int n = to_integer(p->value);
   assert(n >= 0);
   recipe_ordinal surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
   set<recipe_ordinal> done;
@@ -127,12 +127,12 @@ recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n
 :(replace{} "bool already_transformed(const reagent& r, const map<string, long long int>& names)")
 bool already_transformed(const reagent& r, const map<string, long long int>& names) {
   if (has_property(r, "space")) {
-    vector<string> p = property(r, "space");
-    if (SIZE(p) != 1) {
+    string_tree* p = property(r, "space");
+    if (!p || p->right) {
       raise_error << "/space property should have exactly one (non-negative integer) value in " << r.original_string << '\n' << end();
       return false;
     }
-    if (p.at(0) != "0") return true;
+    if (p->value != "0") return true;
   }
   return names.find(r.name) != names.end();
 }

@@ -56,7 +56,7 @@ void absolutize(reagent& x) {
     raise_error << current_instruction().to_string() << ": reagent not initialized: " << x.original_string << '\n' << end();
   }
   x.set_value(address(x.value, space_base(x)));
-  x.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
+  x.properties.push_back(pair<string, string_tree*>("raw", NULL));
   assert(is_raw(x));
 }
 
@@ -77,7 +77,7 @@ recipe main [
 +mem: storing 35 in location 9
 
 :(after "reagent tmp" following "case GET:")
-tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
+tmp.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
 //:: fix 'index'
 
@@ -97,7 +97,7 @@ recipe main [
 +mem: storing 35 in location 9
 
 :(after "reagent tmp" following "case INDEX:")
-tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
+tmp.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
 //:: convenience operation to automatically deduce the amount of space to
 //:: allocate in a default space with names

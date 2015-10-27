@@ -77,7 +77,7 @@ $error: 0
 bool is_global(const reagent& x) {
   for (long long int i = /*skip name:type*/1; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == "space")
-      return !x.properties.at(i).second.empty() && x.properties.at(i).second.at(0) == "global";
+      return x.properties.at(i).second && x.properties.at(i).second->value == "global";
   }
   return false;
 }

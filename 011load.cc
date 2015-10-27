@@ -186,12 +186,6 @@ void slurp_word(istream& in, ostream& out) {
   }
 }
 
-void skip_whitespace(istream& in) {
-  while (!in.eof() && isspace(in.peek()) && in.peek() != '\n') {
-    in.get();
-  }
-}
-
 void skip_whitespace_and_comments(istream& in) {
   while (true) {
     if (in.eof()) break;
@@ -246,6 +240,7 @@ for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
 // Clear Other State For recently_added_recipes
 recently_added_recipes.clear();
 
+:(code)
 :(scenario parse_comment_outside_recipe)
 # this comment will be dropped by the tangler, so we need a dummy recipe to stop that
 recipe f1 [ ]
@@ -350,7 +345,7 @@ recipe main [
 recipe main [
   1:number:address/lookup <- copy 23
 ]
-+parse:   product: {"1": <"number" : "address">, "lookup": ""}
++parse:   product: {"1": <"number" : "address">, "lookup": <>}
 
 //: this test we can't represent with a scenario
 :(code)

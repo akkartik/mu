@@ -80,13 +80,11 @@ if (s.at(0) == '{') {
     string key = next_dilated_word(in);
     if (key.empty()) continue;
     string value = next_dilated_word(in);
-    vector<string> values;
-    values.push_back(value);
-    properties.push_back(pair<string, vector<string> >(key, values));
+    properties.push_back(pair<string, string_tree*>(key, new string_tree(value)));
   }
   // structures for the first row of properties
   name = properties.at(0).first;
-  string type_name = properties.at(0).second.at(0);
+  string type_name = properties.at(0).second->value;
   if (Type_ordinal.find(type_name) == Type_ordinal.end()) {
       // this type can't be an integer
     Type_ordinal[type_name] = Next_type_ordinal++;

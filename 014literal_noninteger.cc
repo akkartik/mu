@@ -11,8 +11,7 @@ recipe main [
 if (is_noninteger(s)) {
   name = s;
   type = new type_tree(0);
-  properties.push_back(pair<string, vector<string> >(name, vector<string>()));
-  properties.back().second.push_back("literal-number");
+  properties.push_back(pair<string, string_tree*>(name, new string_tree("literal-number")));
   set_value(to_double(s));
   return;
 }

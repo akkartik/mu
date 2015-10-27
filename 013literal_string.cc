@@ -112,8 +112,7 @@ if (s.at(0) == '[') {
   strip_last(s);
   name = s;
   type = new type_tree(0);
-  properties.push_back(pair<string, vector<string> >(name, vector<string>()));
-  properties.back().second.push_back("literal-string");
+  properties.push_back(pair<string, string_tree*>(name, new string_tree("literal-string")));
   return;
 }
 
@@ -126,7 +125,7 @@ if (s.at(0) == '[') {
 
 :(code)
 bool is_literal_string(const reagent& x) {
-  return !x.properties.at(0).second.empty() && x.properties.at(0).second.at(0) == "literal-string";
+  return x.properties.at(0).second && x.properties.at(0).second->value == "literal-string";
 }
 
 string emit_literal_string(string name) {
@@ -172,7 +171,7 @@ recipe main [
 ]
 +parse: instruction: copy
 +parse:   ingredient: {"abc": "literal-string"}
-+parse:   product: {"1": <"address" : "array" : "character">}
++parse:   product: {"1": <"address" : <"array" : "character">>}
 # no other ingredients
 $parse: 3
 

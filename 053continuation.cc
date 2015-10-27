@@ -258,8 +258,8 @@ call_stack::iterator find_reset(call_stack& c) {
 //: overload 'call' for continuations
 :(after "Begin Call")
   if (!current_instruction().ingredients.at(0).properties.empty()
-      && !current_instruction().ingredients.at(0).properties.at(0).second.empty()
-      && current_instruction().ingredients.at(0).properties.at(0).second.at(0) == "continuation") {
+      && current_instruction().ingredients.at(0).properties.at(0).second
+      && current_instruction().ingredients.at(0).properties.at(0).second->value == "continuation") {
     // copy multiple calls on to current call stack
     assert(scalar(ingredients.at(0)));
     if (Delimited_continuation.find(ingredients.at(0).at(0)) == Delimited_continuation.end()) {

@@ -319,8 +319,8 @@ recipe main [
 :(before "End NEW Transform Special-cases")
   if (!inst.ingredients.empty()
       && !inst.ingredients.at(0).properties.empty()
-      && !inst.ingredients.at(0).properties.at(0).second.empty()
-      && inst.ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
+      && inst.ingredients.at(0).properties.at(0).second
+      && inst.ingredients.at(0).properties.at(0).second->value == "literal-string") {
     // skip transform
     inst.ingredients.at(0).initialized = true;
     goto end_new_transform;
@@ -437,5 +437,5 @@ string read_mu_string(long long int address) {
 }
 
 bool is_mu_type_literal(reagent r) {
-  return is_literal(r) && !r.properties.empty() && !r.properties.at(0).second.empty() && r.properties.at(0).second.at(0) == "type";
+  return is_literal(r) && !r.properties.empty() && r.properties.at(0).second && r.properties.at(0).second->value == "type";
 }

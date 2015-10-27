@@ -119,7 +119,7 @@ void append_fragment(vector<instruction>& base, const vector<instruction>& patch
     for (long long int j = 0; j < SIZE(inst.ingredients); ++j) {
       reagent& x = inst.ingredients.at(j);
       if (!is_literal(x)) continue;
-      if (x.properties.at(0).second.at(0) == "label" && jump_targets.find(x.name) != jump_targets.end())
+      if (x.properties.at(0).second->value == "label" && jump_targets.find(x.name) != jump_targets.end())
         x.name = prefix+x.name;
     }
     base.push_back(inst);

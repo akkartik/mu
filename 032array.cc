@@ -34,12 +34,12 @@ case CREATE_ARRAY: {
     break;
   }
   // 'create-array' will need to check properties rather than types
-  if (SIZE(product.properties.at(0).second) <= 2) {
+  if (!product.properties.at(0).second || !product.properties.at(0).second->right || !product.properties.at(0).second->right->right) {
     raise_error << maybe(Recipe[r].name) << "create array of what size? " << inst.to_string() << '\n' << end();
     break;
   }
-  if (!is_integer(product.properties.at(0).second.at(2))) {
-    raise_error << maybe(Recipe[r].name) << "'create-array' product should specify size of array after its element type, but got " << product.properties.at(0).second.at(2) << '\n' << end();
+  if (!is_integer(product.properties.at(0).second->right->right->value)) {
+    raise_error << maybe(Recipe[r].name) << "'create-array' product should specify size of array after its element type, but got " << product.properties.at(0).second->right->right->value << '\n' << end();
     break;
   }
   break;
@@ -49,7 +49,7 @@ case CREATE_ARRAY: {
   reagent product = current_instruction().products.at(0);
   canonize(product);
   long long int base_address = product.value;
-  long long int array_size= to_integer(product.properties.at(0).second.at(2));
+  long long int array_size = to_integer(product.properties.at(0).second->right->right->value);
   // initialize array size, so that size_of will work
   Memory[base_address] = array_size;  // in array elements
   long long int size = size_of(product);  // in locations

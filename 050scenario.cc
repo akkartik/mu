@@ -305,7 +305,7 @@ void check_memory(const string& s) {
 
 void check_type(const string& lhs, istream& in) {
   reagent x(lhs);
-  if (x.properties.at(0).second.at(0) == "string") {
+  if (x.properties.at(0).second->value == "string") {
     x.set_value(to_integer(x.name));
     skip_whitespace_and_comments(in);
     string _assign = next_word(in);
