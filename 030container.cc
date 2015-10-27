@@ -4,7 +4,7 @@
 //: We'll use this container as a running example, with two number elements.
 type_ordinal point = Type_ordinal["point"] = Next_type_ordinal++;
 Type[point].size = 2;
-Type[point].kind = container;
+Type[point].kind = CONTAINER;
 Type[point].name = "point";
 Type[point].elements.push_back(new type_tree(number));
 Type[point].element_names.push_back("x");
@@ -39,7 +39,7 @@ recipe main [
 // elements.
 type_ordinal point_number = Type_ordinal["point-number"] = Next_type_ordinal++;
 Type[point_number].size = 2;
-Type[point_number].kind = container;
+Type[point_number].kind = CONTAINER;
 Type[point_number].name = "point-number";
 Type[point_number].elements.push_back(new type_tree(point));
 Type[point_number].element_names.push_back("xy");
@@ -88,7 +88,7 @@ if (type->value == 0) {
   return 1;
 }
 type_info t = Type[type->value];
-if (t.kind == container) {
+if (t.kind == CONTAINER) {
   // size of a container is the sum of the sizes of its elements
   long long int result = 0;
   for (long long int i = 0; i < SIZE(t.elements); ++i) {
@@ -133,7 +133,7 @@ case GET: {
   }
   reagent base = inst.ingredients.at(0);
   // Update GET base in Check
-  if (!base.type || !base.type->value || Type[base.type->value].kind != container) {
+  if (!base.type || !base.type->value || Type[base.type->value].kind != CONTAINER) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
@@ -252,7 +252,7 @@ case GET_ADDRESS: {
   }
   reagent base = inst.ingredients.at(0);
   // Update GET_ADDRESS base in Check
-  if (!base.type || Type[base.type->value].kind != container) {
+  if (!base.type || Type[base.type->value].kind != CONTAINER) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
@@ -374,7 +374,7 @@ container bar [
 
 :(before "End Command Handlers")
 else if (command == "container") {
-  insert_container(command, container, in);
+  insert_container(command, CONTAINER, in);
 }
 
 :(code)
