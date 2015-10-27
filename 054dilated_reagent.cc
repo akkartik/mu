@@ -13,7 +13,7 @@ recipe main [
 :(before "End next_word Special-cases")
   if (in.peek() == '(')
     return slurp_balanced_bracket(in);
-  // curlies are like parens, but don't mess up labels
+  // treat curlies mostly like parens, but don't mess up labels
   if (start_of_dilated_reagent(in))
     return slurp_balanced_bracket(in);
 
@@ -26,12 +26,9 @@ bool start_of_dilated_reagent(istream& in) {
   if (in.peek() != '{') return false;
   in.get();  // slurp '{'
   skip_whitespace(in);
-  if (in.peek() == '\n') {
-    in.putback('{');
-    return false;
-  }
+  char next = in.peek();
   in.putback('{');
-  return true;
+  return next != '\n';
 }
 
 // Assume the first letter is an open bracket, and read everything until the
@@ -77,10 +74,11 @@ if (s.at(0) == '{') {
   in >> std::noskipws;
   in.get();  // skip '{'
   while (!in.eof()) {
-    string key = next_dilated_word(in);
+    string key = slurp_key(in);
     if (key.empty()) continue;
     if (key == "}") continue;
-    string value = next_dilated_word(in);
+    string value = next_word(in);
+    // End Parsing Reagent Property(value)
     properties.push_back(pair<string, string_tree*>(key, new string_tree(value)));
   }
   // structures for the first row of properties
@@ -95,8 +93,7 @@ if (s.at(0) == '{') {
 }
 
 :(code)
-string next_dilated_word(istream& in) {
-  while (in.peek() == ',') in.get();
+string slurp_key(istream& in) {
   string result = next_word(in);
   while (!result.empty() && *result.rbegin() == ':') {
     strip_last(result);
