@@ -122,7 +122,6 @@ bool next_instruction(istream& in, instruction* curr) {
   vector<string>::iterator p = words.begin();
   if (find(words.begin(), words.end(), "<-") != words.end()) {
     for (; *p != "<-"; ++p) {
-      if (*p == ",") continue;
       curr->products.push_back(reagent(*p));
     }
     ++p;  // skip <-
@@ -143,7 +142,6 @@ bool next_instruction(istream& in, instruction* curr) {
   curr->operation = Recipe_ordinal[*p];  ++p;
 
   for (; p != words.end(); ++p) {
-    if (*p == ",") continue;
     curr->ingredients.push_back(reagent(*p));
   }
 
@@ -163,6 +161,7 @@ bool next_instruction(istream& in, instruction* curr) {
 
 string next_word(istream& in) {
   skip_whitespace(in);
+  skip_ignored_characters(in);
   // End next_word Special-cases
   ostringstream out;
   slurp_word(in, out);
@@ -171,20 +170,30 @@ string next_word(istream& in) {
   return out.str();
 }
 
+:(before "End Globals")
+// word boundaries
+string Terminators("(){}");
+string Ignore(",");  // meaningless except within [] strings
+:(code)
 void slurp_word(istream& in, ostream& out) {
-  static string terminators(",()[]{}");
   char c;
-  if (!in.eof() && terminators.find(in.peek()) != string::npos) {
+  if (!in.eof() && Terminators.find(in.peek()) != string::npos) {
     in >> c;
     out << c;
     return;
   }
   while (in >> c) {
-    if (isspace(c) || terminators.find(c) != string::npos) {
+    if (isspace(c) || Terminators.find(c) != string::npos || Ignore.find(c) != string::npos) {
       in.putback(c);
       break;
     }
     out << c;
+  }
+}
+
+void skip_ignored_characters(istream& in) {
+  while (isspace(in.peek()) || Ignore.find(in.peek()) != string::npos) {
+    in.get();
   }
 }
 
