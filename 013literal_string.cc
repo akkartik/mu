@@ -171,7 +171,7 @@ recipe main [
 ]
 +parse: instruction: copy
 +parse:   ingredient: {"abc": "literal-string"}
-+parse:   product: {"1": <"address" : <"array" : "character">>}
++parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
 # no other ingredients
 $parse: 3
 
