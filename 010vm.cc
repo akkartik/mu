@@ -348,7 +348,7 @@ string reagent::to_string() const {
   return out.str();
 }
 
-void dump_property(const string_tree* property, ostringstream& out) {
+void dump_property(const string_tree* property, ostream& out) {
   if (!property) {
     out << "<>";
     return;
@@ -376,7 +376,7 @@ string dump_types(const reagent& x) {
   return out.str();
 }
 
-void dump_types(type_tree* type, ostringstream& out) {
+void dump_types(type_tree* type, ostream& out) {
   if (!type->left && !type->right) {
     out << Type[type->value].name;
     return;

@@ -42,7 +42,7 @@ string slurp_quoted(istream& in) {
 
 // A string is a code string if it contains a newline before any non-whitespace
 // todo: support comments before the newline. But that gets messy.
-bool is_code_string(istream& in, ostringstream& out) {
+bool is_code_string(istream& in, ostream& out) {
   while (!in.eof()) {
     char c = in.get();
     if (!isspace(c)) {
@@ -59,7 +59,7 @@ bool is_code_string(istream& in, ostringstream& out) {
 
 // Read a regular string. Regular strings can only contain other regular
 // strings.
-void slurp_quoted_comment_oblivious(istream& in, ostringstream& out) {
+void slurp_quoted_comment_oblivious(istream& in, ostream& out) {
   int brace_depth = 1;
   while (!in.eof()) {
     char c = in.get();
@@ -79,7 +79,7 @@ void slurp_quoted_comment_oblivious(istream& in, ostringstream& out) {
 }
 
 // Read a code string. Code strings can contain either code or regular strings.
-void slurp_quoted_comment_aware(istream& in, ostringstream& out) {
+void slurp_quoted_comment_aware(istream& in, ostream& out) {
   char c;
   while (in >> c) {
     if (c == '\\') {
