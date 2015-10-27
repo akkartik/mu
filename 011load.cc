@@ -171,14 +171,15 @@ string next_word(istream& in) {
 }
 
 void slurp_word(istream& in, ostream& out) {
+  static string terminators(",()[]{}");
   char c;
-  if (!in.eof() && in.peek() == ',') {
+  if (!in.eof() && terminators.find(in.peek()) != string::npos) {
     in >> c;
     out << c;
     return;
   }
   while (in >> c) {
-    if (isspace(c) || c == ',') {
+    if (isspace(c) || terminators.find(c) != string::npos) {
       in.putback(c);
       break;
     }
