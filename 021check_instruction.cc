@@ -111,8 +111,8 @@ bool is_mu_address(reagent r) {
 bool is_mu_number(reagent r) {
   if (!r.type) return false;
   if (is_literal(r))
-    return r.properties.at(0).second.at(0) == "literal-number"
-        || r.properties.at(0).second.at(0) == "literal";
+    return r.properties.at(0).second->value == "literal-number"
+        || r.properties.at(0).second->value == "literal";
   if (r.type->value == Type_ordinal["character"]) return true;  // permit arithmetic on unicode code points
   return r.type->value == Type_ordinal["number"];
 }
@@ -120,7 +120,7 @@ bool is_mu_number(reagent r) {
 bool is_mu_scalar(reagent r) {
   if (!r.type) return false;
   if (is_literal(r))
-    return r.properties.at(0).second.empty() || r.properties.at(0).second.at(0) != "literal-string";
+    return !r.properties.at(0).second || r.properties.at(0).second->value != "literal-string";
   if (is_mu_array(r)) return false;
   return size_of(r) == 1;
 }

@@ -95,7 +95,7 @@ void drop_address_from_type(reagent& r) {
 }
 
 void drop_one_lookup(reagent& r) {
-  for (vector<pair<string, vector<string> > >::iterator p = r.properties.begin(); p != r.properties.end(); ++p) {
+  for (vector<pair<string, string_tree*> >::iterator p = r.properties.begin(); p != r.properties.end(); ++p) {
     if (p->first == "lookup") {
       r.properties.erase(p);
       return;
@@ -161,7 +161,7 @@ recipe main [
 {
   while (!name.empty() && name.at(0) == '*') {
     name.erase(0, 1);
-    properties.push_back(pair<string, vector<string> >("lookup", vector<string>()));
+    properties.push_back(pair<string, string_tree*>("lookup", NULL));
   }
   if (name.empty())
     raise_error << "illegal name " << original_string << '\n' << end();

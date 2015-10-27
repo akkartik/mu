@@ -56,8 +56,8 @@ void deduce_missing_type(map<string, type_tree*>& metadata, reagent& x) {
   if (x.type) return;
   if (metadata.find(x.name) == metadata.end()) return;
   x.type = new type_tree(*metadata[x.name]);
-  assert(x.properties.at(0).second.empty());
-  x.properties.at(0).second.push_back("as-before");
+  assert(!x.properties.at(0).second);
+  x.properties.at(0).second = new string_tree("as-before");
 }
 
 :(scenario transform_fills_in_missing_types_in_product)

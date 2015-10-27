@@ -48,7 +48,7 @@ struct instruction {
 // properties besides types, but we're getting ahead of ourselves.
 struct reagent {
   string original_string;
-  vector<pair<string, vector<string> > > properties;
+  vector<pair<string, string_tree*> > properties;
   string name;
   double value;
   bool initialized;
@@ -76,11 +76,25 @@ struct type_tree {
   ~type_tree();
   type_tree(const type_tree& old);
   // simple: type ordinal
-  type_tree(type_ordinal v) :value(v), left(NULL), right(NULL) {}
+  explicit type_tree(type_ordinal v) :value(v), left(NULL), right(NULL) {}
   // intermediate: list of type ordinals
   type_tree(type_ordinal v, type_tree* r) :value(v), left(NULL), right(r) {}
   // advanced: tree containing type ordinals
   type_tree(type_tree* l, type_tree* r) :value(0), left(l), right(r) {}
+};
+
+struct string_tree {
+  string value;
+  string_tree* left;
+  string_tree* right;
+  ~string_tree();
+  string_tree(const string_tree& old);
+  // simple: flat string
+  explicit string_tree(string v) :value(v), left(NULL), right(NULL) {}
+  // intermediate: list of strings
+  string_tree(string v, string_tree* r) :value(v), left(NULL), right(r) {}
+  // advanced: tree containing strings
+  string_tree(string_tree* l, string_tree* r) :left(l), right(r) {}
 };
 
 :(before "End Globals")
@@ -218,39 +232,59 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false), ty
   while (!in.eof()) {
     istringstream row(slurp_until(in, '/'));
     row >> std::noskipws;
-    string name = slurp_until(row, ':');
-    vector<string> values;
-    while (!row.eof())
-      values.push_back(slurp_until(row, ':'));
-    properties.push_back(pair<string, vector<string> >(name, values));
+    string key = slurp_until(row, ':');
+    string_tree* value = parse_property_list(row);
+    properties.push_back(pair<string, string_tree*>(key, value));
   }
   // structures for the first row of properties: name and list of types
   name = properties.at(0).first;
-  type_tree** curr_type = &type;
-  for (long long int i = 0; i < SIZE(properties.at(0).second); ++i) {
-    string type = properties.at(0).second.at(i);
-    if (Type_ordinal.find(type) == Type_ordinal.end()
-        // types can contain integers, like for array sizes
-        && !is_integer(type)) {
-      Type_ordinal[type] = Next_type_ordinal++;
-    }
-    *curr_type = new type_tree(Type_ordinal[type]);
-    curr_type = &(*curr_type)->right;
-  }
+  type = new_type_tree(properties.at(0).second);
   if (is_integer(name) && type == NULL) {
     type = new type_tree(0);
-    properties.at(0).second.push_back("literal");
+    assert(!properties.at(0).second);
+    properties.at(0).second = new string_tree("literal");
   }
   if (name == "_" && type == NULL) {
     type = new type_tree(0);
-    properties.at(0).second.push_back("dummy");
+    assert(!properties.at(0).second);
+    properties.at(0).second = new string_tree("dummy");
   }
   // End Parsing reagent
+}
+
+string_tree* parse_property_list(istream& in) {
+  skip_whitespace(in);
+  if (in.eof()) return NULL;
+  string_tree* result = new string_tree(slurp_until(in, ':'));
+  result->right = parse_property_list(in);
+  return result;
+}
+
+type_tree* new_type_tree(const string_tree* properties) {
+  if (!properties) return NULL;
+  type_tree* result = new type_tree(0);
+  if (!properties->value.empty()) {
+    const string& type_name = properties->value;
+    if (Type_ordinal.find(type_name) == Type_ordinal.end()
+        // types can contain integers, like for array sizes
+        && !is_integer(type_name)) {
+      Type_ordinal[type_name] = Next_type_ordinal++;
+    }
+    result->value = Type_ordinal[type_name];
+  }
+  result->left = new_type_tree(properties->left);
+  result->right = new_type_tree(properties->right);
+  return result;
 }
 
 //: avoid memory leaks for the type tree
 
 reagent::reagent(const reagent& old) :original_string(old.original_string), properties(old.properties), name(old.name), value(old.value), initialized(old.initialized) {
+  properties.clear();
+  for (long long int i = 0; i < SIZE(old.properties); ++i) {
+    properties.push_back(pair<string, string_tree*>(old.properties.at(i).first,
+                                                    old.properties.at(i).second ? new string_tree(*old.properties.at(i).second) : NULL));
+  }
   type = old.type ? new type_tree(*old.type) : NULL;
 }
 
@@ -259,20 +293,36 @@ type_tree::type_tree(const type_tree& old) :value(old.value) {
   right = old.right ? new type_tree(*old.right) : NULL;
 }
 
+string_tree::string_tree(const string_tree& old) {  // :value(old.value) {
+  value = old.value;
+  left = old.left ? new string_tree(*old.left) : NULL;
+  right = old.right ? new string_tree(*old.right) : NULL;
+}
+
 reagent& reagent::operator=(const reagent& old) {
   original_string = old.original_string;
-  properties = old.properties;
+  properties.clear();
+  for (long long int i = 0; i < SIZE(old.properties); ++i) {
+    properties.push_back(pair<string, string_tree*>(old.properties.at(i).first, old.properties.at(i).second ? new string_tree(*old.properties.at(i).second) : NULL));
+  }
   name = old.name;
   value = old.value;
   initialized = old.initialized;
-  type = old.type? new type_tree(*old.type) : NULL;
+  type = old.type ? new type_tree(*old.type) : NULL;
   return *this;
 }
 
 reagent::~reagent() {
+  for (long long int i = 0; i < SIZE(properties); ++i) {
+    if (properties.at(i).second) delete properties.at(i).second;
+  }
   delete type;
 }
 type_tree::~type_tree() {
+  delete left;
+  delete right;
+}
+string_tree::~string_tree() {
   delete left;
   delete right;
 }
@@ -281,7 +331,7 @@ reagent::reagent() :value(0), initialized(false), type(NULL) {
   // The first property is special, so ensure we always have it.
   // Other properties can be pushed back, but the first must always be
   // assigned to.
-  properties.push_back(pair<string, vector<string> >("", vector<string>()));
+  properties.push_back(pair<string, string_tree*>("", NULL));
 }
 
 string reagent::to_string() const {
@@ -291,24 +341,33 @@ string reagent::to_string() const {
     for (long long int i = 0; i < SIZE(properties); ++i) {
       if (i > 0) out << ", ";
       out << "\"" << properties.at(i).first << "\": ";
-      if (properties.at(i).second.empty()) {
-        out << "\"\"";
-        continue;
-      }
-      if (SIZE(properties.at(i).second) == 1) {
-        out << "\"" << properties.at(i).second.at(0) << "\"";
-        continue;
-      }
-      out << "<";
-      for (long long int j = 0; j < SIZE(properties.at(i).second); ++j) {
-        if (j > 0) out << " : ";
-        out << "\"" << properties.at(i).second.at(j) << "\"";
-      }
-      out << ">";
+      dump_property(properties.at(i).second, out);
     }
     out << "}";
   }
   return out.str();
+}
+
+void dump_property(const string_tree* property, ostringstream& out) {
+  if (!property) {
+    out << "<>";
+    return;
+  }
+  if (!property->left && !property->right) {
+    out << '"' << property->value << '"';
+    return;
+  }
+  out << "<";
+  if (property->left)
+    dump_property(property->left, out);
+  else
+    out << '"' << property->value << '"';
+  out << " : ";
+  if (property->right)
+    dump_property(property->right, out);
+  else
+    out << " : <>";
+  out << ">";
 }
 
 string dump_types(const reagent& x) {
@@ -371,12 +430,12 @@ bool has_property(reagent x, string name) {
   return false;
 }
 
-vector<string> property(const reagent& r, const string& name) {
+string_tree* property(const reagent& r, const string& name) {
   for (long long int p = /*skip name:type*/1; p != SIZE(r.properties); ++p) {
     if (r.properties.at(p).first == name)
       return r.properties.at(p).second;
   }
-  return vector<string>();
+  return NULL;
 }
 
 void dump_memory() {
@@ -392,6 +451,12 @@ void dump_recipe(const string& recipe_name) {
     cout << "  " << r.steps.at(i).to_string() << '\n';
   }
   cout << "]\n";
+}
+
+void skip_whitespace(istream& in) {
+  while (!in.eof() && isspace(in.peek()) && in.peek() != '\n') {
+    in.get();
+  }
 }
 
 :(before "End Types")
