@@ -77,9 +77,9 @@ if (s.at(0) == '{') {
     string key = slurp_key(in);
     if (key.empty()) continue;
     if (key == "}") continue;
-    string value = next_word(in);
+    string_tree* value = new string_tree(next_word(in));
     // End Parsing Reagent Property(value)
-    properties.push_back(pair<string, string_tree*>(key, new string_tree(value)));
+    properties.push_back(pair<string, string_tree*>(key, value));
   }
   // structures for the first row of properties
   name = properties.at(0).first;
@@ -100,9 +100,3 @@ string slurp_key(istream& in) {
   }
   return result;
 }
-
-:(scenario dilated_reagent_with_nested_brackets)
-recipe main [
-  {1: number, foo: (bar (baz quux))} <- copy 34
-]
-+parse:   product: {"1": "number", "foo": "(bar (baz quux))"}
