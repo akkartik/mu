@@ -353,18 +353,23 @@ void dump_property(const string_tree* property, ostream& out) {
     out << "<>";
     return;
   }
+  // abbreviate a single-node tree to just its contents
   if (!property->left && !property->right) {
     out << '"' << property->value << '"';
     return;
   }
+  dump_property_tree(property, out);
+}
+
+void dump_property_tree(const string_tree* property, ostream& out) {
   out << "<";
   if (property->left)
-    dump_property(property->left, out);
+    dump_property_tree(property->left, out);
   else
     out << '"' << property->value << '"';
   out << " : ";
   if (property->right)
-    dump_property(property->right, out);
+    dump_property_tree(property->right, out);
   else
     out << "<>";
   out << ">";
@@ -377,20 +382,25 @@ string dump_types(const reagent& x) {
 }
 
 void dump_types(type_tree* type, ostream& out) {
+  // abbreviate a single-node tree to just its contents
   if (!type->left && !type->right) {
     out << Type[type->value].name;
     return;
   }
+  dump_types_tree(type, out);
+}
+
+void dump_types_tree(type_tree* type, ostream& out) {
   out << "<";
   if (type->left)
-    dump_types(type->left, out);
+    dump_types_tree(type->left, out);
   else
     out << Type[type->value].name;
   out << " : ";
   if (type->right)
-    dump_types(type->right, out);
+    dump_types_tree(type->right, out);
   else
-    out << " : <>";
+    out << "<>";
   out << ">";
 }
 

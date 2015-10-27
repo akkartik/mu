@@ -30,18 +30,29 @@ string_tree* parse_string_tree(istream& in) {
     return NULL;
   }
   if (in.peek() != '(') {
-    return new string_tree(next_word(in));
+    string_tree* result = new string_tree(next_word(in));
+    return result;
   }
   in.get();  // skip '('
-  if (in.peek() == '(') {
-    string_tree* left = parse_string_tree(in);
-    string_tree* right = parse_string_tree(in);
-    return new string_tree(left, right);
+  string_tree* result = NULL;
+  string_tree** curr = &result;
+  while (in.peek() != ')') {
+    assert(!in.eof());
+    *curr = new string_tree("");
+    skip_whitespace(in);
+    skip_ignored_characters(in);
+    if (in.peek() == '(')
+      (*curr)->left = parse_string_tree(in);
+    else
+      (*curr)->value = next_word(in);
+    curr = &(*curr)->right;
   }
-  else {
-    string value = next_word(in);
-    string_tree* right = parse_string_tree(in);
-    string_tree* rest = parse_string_tree(in);
-    return new string_tree(value, new string_tree(right, rest));
-  }
+  in.get();  // skip ')'
+  return result;
 }
+
+:(scenario dilated_reagent_with_type_tree)
+recipe main [
+  {1: (map (address array character) (list number))} <- copy 34
+]
++parse:   product: {"1": <"map" : <<"address" : <"array" : <"character" : <>>>> : <<"list" : <"number" : <>>> : <>>>>}

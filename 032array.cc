@@ -360,7 +360,7 @@ recipe main [
   8:address:array:point <- copy 1/raw
   9:address:number <- index-address *8:address:array:point, 0
 ]
-+error: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be <address : point>
++error: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be <address : <point : <>>>
 
 //:: compute the length of an array
 
