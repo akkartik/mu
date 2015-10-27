@@ -9,7 +9,7 @@
 {
 type_ordinal tmp = Type_ordinal["number-or-point"] = Next_type_ordinal++;
 Type[tmp].size = 2;
-Type[tmp].kind = exclusive_container;
+Type[tmp].kind = EXCLUSIVE_CONTAINER;
 Type[tmp].name = "number-or-point";
 Type[tmp].elements.push_back(new type_tree(number));
 Type[tmp].element_names.push_back("i");
@@ -33,7 +33,7 @@ recipe main [
 +mem: storing 35 in location 6
 
 :(before "End size_of(type) Cases")
-if (t.kind == exclusive_container) {
+if (t.kind == EXCLUSIVE_CONTAINER) {
   // size of an exclusive container is the size of its largest variant
   // (So like containers, it can't contain arrays.)
   long long int result = 0;
@@ -85,7 +85,7 @@ case MAYBE_CONVERT: {
   }
   reagent base = inst.ingredients.at(0);
   canonize_type(base);
-  if (!base.type || !base.type->value || Type[base.type->value].kind != exclusive_container) {
+  if (!base.type || !base.type->value || Type[base.type->value].kind != EXCLUSIVE_CONTAINER) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
     break;
   }
@@ -132,7 +132,7 @@ exclusive-container foo [
 
 :(before "End Command Handlers")
 else if (command == "exclusive-container") {
-  insert_container(command, exclusive_container, in);
+  insert_container(command, EXCLUSIVE_CONTAINER, in);
 }
 
 //:: To construct exclusive containers out of variant types, use 'merge'.
@@ -160,7 +160,7 @@ if (current_instruction().operation == MERGE
     && current_instruction().products.at(0).type) {
   reagent x = current_instruction().products.at(0);
   canonize(x);
-  if (Type[x.type->value].kind == exclusive_container) {
+  if (Type[x.type->value].kind == EXCLUSIVE_CONTAINER) {
     return size_of(x) < SIZE(data);
   }
 }

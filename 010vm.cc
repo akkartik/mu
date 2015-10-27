@@ -165,9 +165,9 @@ atexit(teardown_types);
 // with different properties for each, that may require an exclusive container
 // whose variants are individual-account and joint-account containers.
 enum kind_of_type {
-  primitive,
-  container,
-  exclusive_container
+  PRIMITIVE,
+  CONTAINER,
+  EXCLUSIVE_CONTAINER
 };
 
 struct type_info {
@@ -177,7 +177,7 @@ struct type_info {
   vector<type_tree*> elements;
   vector<string> element_names;
   // End type_info Fields
-  type_info() :kind(primitive), size(0) {}
+  type_info() :kind(PRIMITIVE), size(0) {}
 };
 
 enum primitive_recipes {
