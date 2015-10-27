@@ -21,7 +21,7 @@ recipe main [
 :(before "End Mu Types Initialization")
 Type_ordinal["literal-string"] = 0;
 
-:(after "string next_word(istream& in)")
+:(before "End next_word Special-cases")
   if (in.peek() == '[') {
     string result = slurp_quoted(in);
     skip_whitespace(in);

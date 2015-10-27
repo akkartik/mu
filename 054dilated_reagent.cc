@@ -10,7 +10,7 @@ recipe main [
 
 //: First augment next_word to group balanced brackets together.
 
-:(after "string next_word(istream& in)")
+:(before "End next_word Special-cases")
   if (in.peek() == '(')
     return slurp_balanced_bracket(in);
   // curlies are like parens, but don't mess up labels
