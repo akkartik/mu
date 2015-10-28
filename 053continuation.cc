@@ -196,10 +196,12 @@ case CREATE_DELIMITED_CONTINUATION: {
     trace("trace") << "delimited continuation; incrementing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
+  const instruction& caller_instruction = current_instruction();
   Current_routine->calls.front().is_reset = true;
   Current_routine->calls.push_front(call(Recipe_ordinal[current_instruction().ingredients.at(0).name]));
   ingredients.erase(ingredients.begin());  // drop the callee
-  goto call_housekeeping;
+  finish_call_housekeeping(caller_instruction, ingredients);
+  continue;
 }
 
 //: save the slice of current call stack until the 'create-delimited-continuation'
@@ -266,6 +268,7 @@ call_stack::iterator find_reset(call_stack& c) {
       raise_error << maybe(current_recipe_name()) << "no such delimited continuation " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     }
     const call_stack& new_calls = Delimited_continuation[ingredients.at(0).at(0)];
+    const call& caller = (SIZE(new_calls) > 1) ? *++new_calls.rbegin() : Current_routine->calls.front();
     for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p)
       Current_routine->calls.push_front(*p);
     if (Trace_stream) {
@@ -275,8 +278,15 @@ call_stack::iterator find_reset(call_stack& c) {
     }
     ++current_step_index();  // skip past the reply-delimited-continuation
     ingredients.erase(ingredients.begin());  // drop the callee
-    goto call_housekeeping;
+    finish_call_housekeeping(to_instruction(caller), ingredients);
+    continue;
   }
+
+:(code)
+const instruction& to_instruction(const call& c) {
+  assert(Recipe.find(c.running_recipe) != Recipe.end());
+  return Recipe[c.running_recipe].steps.at(c.running_step_index);
+}
 
 :(before "End is_mu_recipe Cases")
 if (r.type && r.type->value == Type_ordinal["continuation"]) return true;
