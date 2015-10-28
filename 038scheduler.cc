@@ -202,7 +202,7 @@ recipe f2 [
 +schedule: f1
 +run: 2:number <- copy 0
 
-:(scenario start_running_takes_args)
+:(scenario start_running_takes_ingredients)
 recipe f1 [
   start-running f2:recipe, 3
   # wait for f2 to run
