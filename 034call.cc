@@ -64,22 +64,27 @@ routine::routine(recipe_ordinal r) {
   // End routine Constructor
 }
 
+:(code)
+inline call& current_call() {
+  return Current_routine->calls.front();
+}
+
 //:: now update routine's helpers
 
 :(replace{} "inline long long int& current_step_index()")
 inline long long int& current_step_index() {
   assert(!Current_routine->calls.empty());
-  return Current_routine->calls.front().running_step_index;
+  return current_call().running_step_index;
 }
 :(replace{} "inline const string& current_recipe_name()")
 inline const string& current_recipe_name() {
   assert(!Current_routine->calls.empty());
-  return Recipe[Current_routine->calls.front().running_recipe].name;
+  return Recipe[current_call().running_recipe].name;
 }
 :(replace{} "inline const instruction& current_instruction()")
 inline const instruction& current_instruction() {
   assert(!Current_routine->calls.empty());
-  return Recipe[Current_routine->calls.front().running_recipe].steps.at(Current_routine->calls.front().running_step_index);
+  return Recipe[current_call().running_recipe].steps.at(current_call().running_step_index);
 }
 
 :(after "Defined Recipe Checks")

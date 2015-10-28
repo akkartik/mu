@@ -29,8 +29,8 @@ next_ingredient_to_process = 0;
 
 :(before "End Call Housekeeping")
 for (long long int i = 0; i < SIZE(ingredients); ++i) {
-  Current_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
-  Current_routine->calls.front().ingredient_types.push_back(call_instruction.ingredients.at(i).type);
+  current_call().ingredient_atoms.push_back(ingredients.at(i));
+  current_call().ingredient_types.push_back(call_instruction.ingredients.at(i).type);
 }
 
 :(before "End Primitive Recipe Declarations")
@@ -48,12 +48,12 @@ case NEXT_INGREDIENT: {
 :(before "End Primitive Recipe Implementations")
 case NEXT_INGREDIENT: {
   assert(!Current_routine->calls.empty());
-  if (Current_routine->calls.front().next_ingredient_to_process < SIZE(Current_routine->calls.front().ingredient_atoms)) {
+  if (current_call().next_ingredient_to_process < SIZE(current_call().ingredient_atoms)) {
     products.push_back(
-        Current_routine->calls.front().ingredient_atoms.at(Current_routine->calls.front().next_ingredient_to_process));
+        current_call().ingredient_atoms.at(current_call().next_ingredient_to_process));
     assert(SIZE(products) == 1);  products.resize(2);  // push a new vector
     products.at(1).push_back(1);
-    ++Current_routine->calls.front().next_ingredient_to_process;
+    ++current_call().next_ingredient_to_process;
   }
   else {
     if (SIZE(current_instruction().products) < 2)
@@ -105,7 +105,7 @@ case REWIND_INGREDIENTS: {
 }
 :(before "End Primitive Recipe Implementations")
 case REWIND_INGREDIENTS: {
-  Current_routine->calls.front().next_ingredient_to_process = 0;
+  current_call().next_ingredient_to_process = 0;
   break;
 }
 
@@ -138,13 +138,13 @@ case INGREDIENT: {
 }
 :(before "End Primitive Recipe Implementations")
 case INGREDIENT: {
-  if (static_cast<long long int>(ingredients.at(0).at(0)) < SIZE(Current_routine->calls.front().ingredient_atoms)) {
-    Current_routine->calls.front().next_ingredient_to_process = ingredients.at(0).at(0);
+  if (static_cast<long long int>(ingredients.at(0).at(0)) < SIZE(current_call().ingredient_atoms)) {
+    current_call().next_ingredient_to_process = ingredients.at(0).at(0);
     products.push_back(
-        Current_routine->calls.front().ingredient_atoms.at(Current_routine->calls.front().next_ingredient_to_process));
+        current_call().ingredient_atoms.at(current_call().next_ingredient_to_process));
     assert(SIZE(products) == 1);  products.resize(2);  // push a new vector
     products.at(1).push_back(1);
-    ++Current_routine->calls.front().next_ingredient_to_process;
+    ++current_call().next_ingredient_to_process;
   }
   else {
     if (SIZE(current_instruction().products) > 1) {
