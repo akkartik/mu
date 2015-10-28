@@ -60,9 +60,11 @@ case CALL: {
     trace("trace") << "indirect 'call': incrementing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
+  const instruction& caller_instruction = current_instruction();
   Current_routine->calls.push_front(call(ingredients.at(0).at(0)));
   ingredients.erase(ingredients.begin());  // drop the callee
-  goto call_housekeeping;
+  finish_call_housekeeping(caller_instruction, ingredients);
+  continue;
 }
 
 :(code)
