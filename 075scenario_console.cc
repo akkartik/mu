@@ -11,10 +11,10 @@ scenario keyboard-in-scenario [
     type [abc]
   ]
   run [
-    1:character, console:address, 2:boolean <- read-key console:address
-    3:character, console:address, 4:boolean <- read-key console:address
-    5:character, console:address, 6:boolean <- read-key console:address
-    7:character, console:address, 8:boolean, 9:boolean <- read-key console:address
+    1:character, console:address:console, 2:boolean <- read-key console:address:console
+    3:character, console:address:console, 4:boolean <- read-key console:address:console
+    5:character, console:address:console, 6:boolean <- read-key console:address:console
+    7:character, console:address:console, 8:boolean, 9:boolean <- read-key console:address:console
   ]
   memory-should-contain [
     1 <- 97  # 'a'
@@ -182,15 +182,15 @@ scenario events-in-scenario [
   ]
   run [
     # 3 keyboard events; each event occupies 4 locations
-    1:event <- read-event console:address
-    5:event <- read-event console:address
-    9:event <- read-event console:address
+    1:event <- read-event console:address:console
+    5:event <- read-event console:address:console
+    9:event <- read-event console:address:console
     # mouse click
-    13:event <- read-event console:address
+    13:event <- read-event console:address:console
     # non-character keycode
-    17:event <- read-event console:address
+    17:event <- read-event console:address:console
     # final keyboard event
-    21:event <- read-event console:address
+    21:event <- read-event console:address:console
   ]
   memory-should-contain [
     1 <- 0  # 'text'

@@ -3,7 +3,7 @@
 scenario print-character-at-top-left-2 [
   assume-screen 3/width, 2/height
   run [
-    screen:address <- print-character screen:address, 97/a
+    screen:address:screen <- print-character screen:address:screen, 97/a
   ]
   screen-should-contain [
     .a  .
@@ -15,11 +15,11 @@ scenario clear-line-erases-printed-characters-2 [
   assume-screen 5/width, 3/height
   run [
     # print a character
-    screen:address <- print-character screen:address, 97/a
+    screen:address:screen <- print-character screen:address:screen, 97/a
     # move cursor to start of line
-    screen:address <- move-cursor screen:address, 0/row, 0/column
+    screen:address:screen <- move-cursor screen:address:screen, 0/row, 0/column
     # clear line
-    screen:address <- clear-line screen:address
+    screen:address:screen <- clear-line screen:address:screen
   ]
   screen-should-contain [
     .     .

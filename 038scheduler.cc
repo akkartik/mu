@@ -94,8 +94,8 @@ void skip_to_next_routine() {
 
 string current_routine_label() {
   ostringstream result;
-  call_stack calls = Current_routine->calls;
-  for (call_stack::iterator p = calls.begin(); p != calls.end(); ++p) {
+  const call_stack& calls = Current_routine->calls;
+  for (call_stack::const_iterator p = calls.begin(); p != calls.end(); ++p) {
     if (p != calls.begin()) result << '/';
     result << Recipe[p->running_recipe].name;
   }
@@ -161,8 +161,13 @@ case START_RUNNING: {
   routine* new_routine = new routine(ingredients.at(0).at(0));
   new_routine->parent_index = Current_routine_index;
   // populate ingredients
-  for (long long int i = 1; i < SIZE(current_instruction().ingredients); ++i)
+  for (long long int i = 1; i < SIZE(current_instruction().ingredients); ++i) {
     new_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
+    reagent ingredient = current_instruction().ingredients.at(i);
+    canonize_type(ingredient);
+    new_routine->calls.front().ingredient_types.push_back(ingredient.type);
+    ingredient.type = NULL;  // release long-lived pointer
+  }
   Routines.push_back(new_routine);
   products.resize(1);
   products.at(0).push_back(new_routine->id);
