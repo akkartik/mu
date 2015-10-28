@@ -192,7 +192,8 @@ void rewrite_default_space_instruction(instruction& curr) {
 //:: helpers
 
 :(code)
-long long int space_base(const reagent& x) {  // temporary
+long long int space_base(const reagent& x) {
+  // temporary stub; will be replaced in a later layer
   return current_call().default_space;
 }
 

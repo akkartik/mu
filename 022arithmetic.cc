@@ -314,11 +314,3 @@ recipe main [
 ]
 # integer division can't return floating-point infinity
 +error: main: divide by zero in '1:number <- divide-with-remainder 4, 0'
-
-:(code)
-inline bool scalar(const vector<long long int>& x) {
-  return SIZE(x) == 1;
-}
-inline bool scalar(const vector<double>& x) {
-  return SIZE(x) == 1;
-}

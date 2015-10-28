@@ -295,15 +295,22 @@ bool size_mismatch(const reagent& x, const vector<double>& data) {
   return size_of(x) != SIZE(data);
 }
 
-bool is_dummy(const reagent& x) {
+inline bool is_dummy(const reagent& x) {
   return x.name == "_";
 }
 
-bool is_literal(const reagent& r) {
+inline bool is_literal(const reagent& r) {
   if (!r.type) return false;
   if (r.type->value == 0)
     assert(!r.type->left && !r.type->right);
   return r.type->value == 0;
+}
+
+inline bool scalar(const vector<long long int>& x) {
+  return SIZE(x) == 1;
+}
+inline bool scalar(const vector<double>& x) {
+  return SIZE(x) == 1;
 }
 
 // hook to suppress inserting recipe name into errors and warnings (for later layers)
