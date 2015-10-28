@@ -22,7 +22,6 @@ recipe f [
 
 :(before "End call Fields")
 vector<vector<double> > ingredient_atoms;
-vector<type_tree*> ingredient_types;
 long long int next_ingredient_to_process;
 :(before "End call Constructor")
 next_ingredient_to_process = 0;
@@ -30,9 +29,6 @@ next_ingredient_to_process = 0;
 :(before "End Call Housekeeping")
 for (long long int i = 0; i < SIZE(ingredients); ++i) {
   Current_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
-  if (SIZE(Current_routine->calls) > 1)
-    Current_routine->calls.front().ingredient_types.push_back(call_instruction.ingredients.at(i).type);
-  // todo: else function is main and ingredient_type is string
 }
 
 :(before "End Primitive Recipe Declarations")

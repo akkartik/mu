@@ -1,18 +1,18 @@
 # example program: maintain multiple counters with isolated lexical scopes
 # (spaces)
 
-recipe new-counter n:number -> default-space:address:array:location [
-  default-space <- new location:type, 30
-  load-ingredients
-  reply
+recipe new-counter [
+  default-space:address:array:location <- new location:type, 30
+  n:number <- next-ingredient
+  reply default-space
 ]
 
-recipe increment-counter outer:address:array:location/names:new-counter, x:number -> n:number/space:1 [
+recipe increment-counter [
   local-scope
-  load-ingredients
-  0:address:array:location/names:new-counter <- copy outer  # setup outer space; it *must* come from 'new-counter'
+  0:address:array:location/names:new-counter <- next-ingredient  # setup outer space; it *must* come from 'new-counter'
+  x:number <- next-ingredient
   n:number/space:1 <- add n:number/space:1, x
-  reply n/space:1
+  reply n:number/space:1
 ]
 
 recipe main [
