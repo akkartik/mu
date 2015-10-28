@@ -90,6 +90,7 @@ if (Recipe.find(inst.operation) == Recipe.end()) {
 }
 :(replace{} "default:" following "End Primitive Recipe Implementations")
 default: {
+  const instruction& call_instruction = current_instruction();
   if (Recipe.find(current_instruction().operation) == Recipe.end()) {  // duplicate from Checks
     // stop running this instruction immediately
     ++current_step_index();
