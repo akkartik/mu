@@ -88,7 +88,7 @@ bool types_match(reagent lhs, reagent rhs) {
 // (trees perform the same check recursively on each subtree)
 bool types_match(type_tree* lhs, type_tree* rhs) {
   if (!lhs) return true;
-  if (!rhs || rhs->value == 0) {
+  if (rhs->value == 0) {
     if (lhs->value == Type_ordinal["array"]) return false;
     if (lhs->value == Type_ordinal["address"]) return false;
     return size_of(rhs) == size_of(lhs);
@@ -100,7 +100,7 @@ bool types_match(type_tree* lhs, type_tree* rhs) {
 // hacky version that allows 0 addresses
 bool types_match(const reagent lhs, const type_tree* rhs, const vector<double>& data) {
   if (is_dummy(lhs)) return true;
-  if (!rhs || rhs->value == 0) {
+  if (rhs->value == 0) {
     if (lhs.type->value == Type_ordinal["array"]) return false;
     if (lhs.type->value == Type_ordinal["address"]) return scalar(data) && data.at(0) == 0;
     return size_of(rhs) == size_of(lhs);
