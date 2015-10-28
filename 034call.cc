@@ -90,7 +90,6 @@ if (Recipe.find(inst.operation) == Recipe.end()) {
 }
 :(replace{} "default:" following "End Primitive Recipe Implementations")
 default: {
-  const instruction& call_instruction = current_instruction();
   if (Recipe.find(current_instruction().operation) == Recipe.end()) {  // duplicate from Checks
     // stop running this instruction immediately
     ++current_step_index();
@@ -103,12 +102,8 @@ default: {
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
   Current_routine->calls.push_front(call(current_instruction().operation));
-  finish_call_housekeeping(call_instruction, ingredients);
-  continue;  // not done with caller; don't increment current_step_index()
-}
-:(code)
-void finish_call_housekeeping(const instruction& call_instruction, const vector<vector<double> >& ingredients) {
   // End Call Housekeeping
+  continue;  // not done with caller; don't increment current_step_index()
 }
 
 :(scenario calling_undefined_recipe_fails)
