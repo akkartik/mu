@@ -174,7 +174,7 @@ void try_reclaim_locals() {
   if (Recipe[r].steps.empty()) return;
   const instruction& inst = Recipe[r].steps.at(0);
   if (inst.name != "local-scope") return;
-  abandon(Current_routine->calls.front().default_space,
+  abandon(current_call().default_space,
           /*array length*/1+/*number-of-locals*/Name[r][""]);
 }
 
@@ -192,8 +192,8 @@ void rewrite_default_space_instruction(instruction& curr) {
 //:: helpers
 
 :(code)
-long long int space_base(const reagent& x) {
-  return Current_routine->calls.front().default_space;
+long long int space_base(const reagent& x) {  // temporary
+  return current_call().default_space;
 }
 
 long long int address(long long int offset, long long int base) {
@@ -217,7 +217,7 @@ long long int address(long long int offset, long long int base) {
         || x.type->right->right->right) {
       raise_error << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
     }
-    Current_routine->calls.front().default_space = data.at(0);
+    current_call().default_space = data.at(0);
     return;
   }
 
@@ -231,6 +231,6 @@ recipe main [
 :(after "vector<double> read_memory(reagent x)")
   if (x.name == "default-space") {
     vector<double> result;
-    result.push_back(Current_routine->calls.front().default_space);
+    result.push_back(current_call().default_space);
     return result;
   }

@@ -197,7 +197,7 @@ struct raw_string_stream {
 
 :(code)
 void check_screen(const string& expected_contents, const int color) {
-  assert(!Current_routine->calls.front().default_space);  // not supported
+  assert(!current_call().default_space);  // not supported
   long long int screen_location = Memory[SCREEN];
   int data_offset = find_element_name(Type_ordinal["screen"], "data", "");
   assert(data_offset >= 0);
@@ -332,7 +332,7 @@ case _DUMP_SCREEN: {
 
 :(code)
 void dump_screen() {
-  assert(!Current_routine->calls.front().default_space);  // not supported
+  assert(!current_call().default_space);  // not supported
   long long int screen_location = Memory[SCREEN];
   int width_offset = find_element_name(Type_ordinal["screen"], "num-columns", "");
   long long int screen_width = Memory[screen_location+width_offset];

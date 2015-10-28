@@ -27,7 +27,7 @@ recipe main [
 
 :(replace{} "long long int space_base(const reagent& x)")
 long long int space_base(const reagent& x) {
-  return space_base(x, space_index(x), Current_routine->calls.front().default_space);
+  return space_base(x, space_index(x), current_call().default_space);
 }
 
 long long int space_base(const reagent& x, long long int space_index, long long int base) {

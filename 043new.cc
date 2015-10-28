@@ -367,7 +367,7 @@ Current_routine = main_routine;
 for (long long int i = 1; i < argc; ++i) {
   vector<double> arg;
   arg.push_back(new_mu_string(argv[i]));
-  Current_routine->calls.front().ingredient_atoms.push_back(arg);
+  current_call().ingredient_atoms.push_back(arg);
 }
 
 //: stash recognizes strings
