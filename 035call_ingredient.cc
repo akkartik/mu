@@ -30,7 +30,14 @@ next_ingredient_to_process = 0;
 :(before "End Call Housekeeping")
 for (long long int i = 0; i < SIZE(ingredients); ++i) {
   current_call().ingredient_atoms.push_back(ingredients.at(i));
-  current_call().ingredient_types.push_back(call_instruction.ingredients.at(i).type);
+  reagent ingredient = call_instruction.ingredients.at(i);
+  canonize_type(ingredient);
+  current_call().ingredient_types.push_back(ingredient.type);
+  ingredient.type = NULL;  // release long-lived pointer
+}
+:(before "End call Destructor")
+for (long long int i = 0; i < SIZE(ingredient_types); ++i) {
+  delete ingredient_types.at(i);
 }
 
 :(before "End Primitive Recipe Declarations")
@@ -49,6 +56,14 @@ case NEXT_INGREDIENT: {
 case NEXT_INGREDIENT: {
   assert(!Current_routine->calls.empty());
   if (current_call().next_ingredient_to_process < SIZE(current_call().ingredient_atoms)) {
+    reagent product = current_instruction().products.at(0);
+    canonize_type(product);
+    if (!types_match(product,
+                     current_call().ingredient_types.at(current_call().next_ingredient_to_process),
+                     current_call().ingredient_atoms.at(current_call().next_ingredient_to_process)
+                     )) {
+      raise_error << maybe(current_recipe_name()) << "wrong type for ingredient " << current_instruction().products.at(0).original_string << '\n' << end();
+    }
     products.push_back(
         current_call().ingredient_atoms.at(current_call().next_ingredient_to_process));
     assert(SIZE(products) == 1);  products.resize(2);  // push a new vector

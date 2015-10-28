@@ -63,7 +63,7 @@ recipe read-event [
 # newlines, tabs, ctrl-d..
 recipe read-key [
   local-scope
-  console:address <- next-ingredient
+  console:address:console <- next-ingredient
   x:event, console, found?:boolean, quit?:boolean <- read-event console
   reply-if quit?, 0, console/same-as-ingredient:0, found?, quit?
   reply-unless found?, 0, console/same-as-ingredient:0, found?, quit?
@@ -74,9 +74,9 @@ recipe read-key [
 
 recipe send-keys-to-channel [
   local-scope
-  console:address <- next-ingredient
+  console:address:console <- next-ingredient
   chan:address:channel <- next-ingredient
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   {
     c:character, console, found?:boolean, quit?:boolean <- read-key console
     loop-unless found?
@@ -91,7 +91,7 @@ recipe send-keys-to-channel [
 
 recipe wait-for-event [
   local-scope
-  console:address <- next-ingredient
+  console:address:console <- next-ingredient
   {
     _, console, found?:boolean <- read-event console
     loop-unless found?
@@ -102,7 +102,7 @@ recipe wait-for-event [
 # use this helper to skip rendering if there's lots of other events queued up
 recipe has-more-events? [
   local-scope
-  console:address <- next-ingredient
+  console:address:console <- next-ingredient
   {
     break-unless console
     # fake consoles should be plenty fast; never skip

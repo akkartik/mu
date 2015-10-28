@@ -2,7 +2,7 @@
 9999 parse:   ingredient: {"3": "literal", "width": <>}
 9999 parse:   ingredient: {"2": "literal", "height": <>}
 9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    screen:address <- print-character screen:address, 97/a\n  ": "literal-string"}
+9999 parse:   ingredient: {"\n    screen:address:screen <- print-character screen:address:screen, 97/a\n  ": "literal-string"}
 9999 parse: instruction: screen-should-contain
 9999 parse:   ingredient: {"\n    .a  .\n    .   .\n  ": "literal-string"}
 9999 after-brace: recipe scenario-print-character-at-top-left-2
@@ -12,7 +12,7 @@
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: scenario-print-character-at-top-left-2
- 102 run: screen:address <- new-fake-screen 3/width, 2/height
+ 102 run: screen:address:screen <- new-fake-screen 3/width, 2/height
 9999 trace: incrementing callstack depth to 2
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
@@ -380,16 +380,16 @@
 9999 run: result 0 is 1009
 9999 mem: storing 1009 in location 900
  102 run: run [
-    screen:address <- print-character screen:address, 97/a
+    screen:address:screen <- print-character screen:address:screen, 97/a
   ]
 9999 parse: instruction: print-character
-9999 parse:   ingredient: {"screen": "address"}
+9999 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
 9999 parse:   ingredient: {"97": "literal", "a": <>}
-9999 parse:   product: {"screen": "address"}
+9999 parse:   product: {"screen": <"address" : <"screen" : <>>>}
 9999 after-brace: recipe run1001
 9999 after-brace: print-character ...
 9999 trace: run: incrementing callstack depth to 2
- 103 run: screen:address <- print-character screen:address, 97/a
+ 103 run: screen:address:screen <- print-character screen:address:screen, 97/a
 9999 mem: location 900 is 1009
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal

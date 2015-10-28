@@ -524,7 +524,7 @@ recipe cursor-to-start-of-line [
 
 recipe cursor-to-next-line [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   screen <- cursor-down screen
   screen <- cursor-to-start-of-line screen
   reply screen/same-as-ingredient:0
@@ -560,7 +560,7 @@ recipe screen-height [
 
 recipe hide-cursor [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   # if x exists (not real display), do nothing
   {
     break-unless screen
@@ -573,7 +573,7 @@ recipe hide-cursor [
 
 recipe show-cursor [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   # if x exists (not real display), do nothing
   {
     break-unless screen
@@ -586,7 +586,7 @@ recipe show-cursor [
 
 recipe hide-screen [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   # if x exists (not real display), do nothing
   # todo: help test this
   {
@@ -600,7 +600,7 @@ recipe hide-screen [
 
 recipe show-screen [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   # if x exists (not real display), do nothing
   # todo: help test this
   {
@@ -663,7 +663,7 @@ scenario print-string-stops-at-right-margin [
 
 recipe print-integer [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   n:number <- next-ingredient
   color:number, color-found?:boolean <- next-ingredient
   {

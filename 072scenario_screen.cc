@@ -9,7 +9,7 @@
 scenario screen-in-scenario [
   assume-screen 5/width, 3/height
   run [
-    screen:address <- print-character screen:address, 97  # 'a'
+    screen:address:screen <- print-character screen:address:screen, 97  # 'a'
   ]
   screen-should-contain [
   #  01234
@@ -23,8 +23,8 @@ scenario screen-in-scenario [
 scenario screen-in-scenario-unicode-color [
   assume-screen 5/width, 3/height
   run [
-    screen:address <- print-character screen:address, 955/greek-small-lambda, 1/red
-    screen:address <- print-character screen:address, 97/a
+    screen:address:screen <- print-character screen:address:screen, 955/greek-small-lambda, 1/red
+    screen:address:screen <- print-character screen:address:screen, 97/a
   ]
   screen-should-contain [
   #  01234
@@ -39,8 +39,8 @@ scenario screen-in-scenario-unicode-color [
 scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
   run [
-    screen:address <- print-character screen:address, 955/greek-small-lambda, 1/red
-    screen:address <- print-character screen:address, 97/a, 7/white
+    screen:address:screen <- print-character screen:address:screen, 955/greek-small-lambda, 1/red
+    screen:address:screen <- print-character screen:address:screen, 97/a, 7/white
   ]
   # screen-should-contain shows everything
   screen-should-contain [
@@ -72,7 +72,7 @@ scenario screen-in-scenario-color [
 scenario screen-in-scenario-error [
   assume-screen 5/width, 3/height
   run [
-    screen:address <- print-character screen:address, 97  # 'a'
+    screen:address:screen <- print-character screen:address:screen, 97  # 'a'
   ]
   screen-should-contain [
   #  01234
@@ -90,7 +90,7 @@ scenario screen-in-scenario-error [
 scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
   run [
-    screen:address <- print-character screen:address, 97/a, 1/red
+    screen:address:screen <- print-character screen:address:screen, 97/a, 1/red
   ]
   screen-should-contain-in-color 2/green, [
   #  01234
@@ -139,13 +139,13 @@ Name[r]["screen"] = SCREEN;
 
 :(before "End Rewrite Instruction(curr)")
 // rewrite `assume-screen width, height` to
-// `screen:address <- new-fake-screen width, height`
+// `screen:address:screen <- new-fake-screen width, height`
 if (curr.name == "assume-screen") {
   curr.operation = Recipe_ordinal["new-fake-screen"];
   curr.name = "new-fake-screen";
   assert(curr.operation);
   assert(curr.products.empty());
-  curr.products.push_back(reagent("screen:address"));
+  curr.products.push_back(reagent("screen:address:screen"));
   curr.products.at(0).set_value(SCREEN);
 }
 

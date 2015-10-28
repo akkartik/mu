@@ -42,6 +42,9 @@ struct call {
     running_step_index = 0;
     // End call Constructor
   }
+  ~call() {
+    // End call Destructor
+  }
 };
 typedef list<call> call_stack;
 
@@ -84,7 +87,11 @@ inline const string& current_recipe_name() {
 :(replace{} "inline const instruction& current_instruction()")
 inline const instruction& current_instruction() {
   assert(!Current_routine->calls.empty());
-  return Recipe[current_call().running_recipe].steps.at(current_call().running_step_index);
+  return to_instruction(current_call());
+}
+:(code)
+inline const instruction& to_instruction(const call& call) {
+  return Recipe[call.running_recipe].steps.at(call.running_step_index);
 }
 
 :(after "Defined Recipe Checks")

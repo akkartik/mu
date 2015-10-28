@@ -34,7 +34,7 @@ scenario print-board-and-read-move [
 ]
   ]
   run [
-    screen:address, console:address <- chessboard screen:address, console:address
+    screen:address:screen, console:address:console <- chessboard screen:address:screen, console:address:console
     # icon for the cursor
     screen <- print-character screen, 9251/␣
   ]
@@ -68,8 +68,8 @@ scenario print-board-and-read-move [
 
 recipe chessboard [
   local-scope
-  screen:address <- next-ingredient
-  console:address <- next-ingredient
+  screen:address:screen <- next-ingredient
+  console:address:console <- next-ingredient
   board:address:array:address:array:character <- initial-position
   # hook up stdin
   stdin:address:channel <- new-channel 10/capacity
@@ -151,7 +151,7 @@ recipe new-file [
 
 recipe print-board [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   board:address:array:address:array:character <- next-ingredient
   row:number <- copy 7  # start printing from the top of the board
   # print each row
@@ -217,7 +217,7 @@ scenario printing-the-board [
   assume-screen 30/width, 12/height
   run [
     1:address:array:address:array:character/board <- initial-position
-    screen:address <- print-board screen:address, 1:address:array:address:array:character/board
+    screen:address:screen <- print-board screen:address:screen, 1:address:array:address:array:character/board
   ]
   screen-should-contain [
   #  012345678901234567890123456789
@@ -246,12 +246,12 @@ container move [
   to-rank:number
 ]
 
-# result:address:move, quit?:boolean, error?:boolean <- read-move stdin:address:channel, screen:address
+# result:address:move, quit?:boolean, error?:boolean <- read-move stdin:address:channel, screen:address:screen
 # prints only error messages to screen
 recipe read-move [
   local-scope
   stdin:address:channel <- next-ingredient
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
   reply-if quit?, 0/dummy, quit?, error?
   reply-if error?, 0/dummy, quit?, error?
@@ -278,12 +278,12 @@ recipe read-move [
   reply result, quit?, error?
 ]
 
-# file:number, quit:boolean, error:boolean <- read-file stdin:address:channel, screen:address
+# file:number, quit:boolean, error:boolean <- read-file stdin:address:channel, screen:address:screen
 # valid values for file: 0-7
 recipe read-file [
   local-scope
   stdin:address:channel <- next-ingredient
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   c:character, stdin <- read stdin
   {
     q-pressed?:boolean <- equal c, 81/Q
@@ -329,12 +329,12 @@ recipe read-file [
   reply file, 0/quit, 0/error
 ]
 
-# rank:number <- read-rank stdin:address:channel, screen:address
+# rank:number <- read-rank stdin:address:channel, screen:address:screen
 # valid values: 0-7, -1 (quit), -2 (error)
 recipe read-rank [
   local-scope
   stdin:address:channel <- next-ingredient
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   c:character, stdin <- read stdin
   {
     q-pressed?:boolean <- equal c, 8/Q
@@ -380,7 +380,7 @@ recipe expect-from-channel [
   local-scope
   stdin:address:channel <- next-ingredient
   expected:character <- next-ingredient
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   c:character, stdin <- read stdin
   {
     match?:boolean <- equal c, expected
@@ -396,7 +396,7 @@ scenario read-move-blocking [
   assume-screen 20/width, 2/height
   run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
+    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -468,7 +468,7 @@ scenario read-move-quit [
   assume-screen 20/width, 2/height
   run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
+    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -495,7 +495,7 @@ scenario read-move-illegal-file [
   assume-screen 20/width, 2/height
   run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
+    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -516,7 +516,7 @@ scenario read-move-illegal-rank [
   assume-screen 20/width, 2/height
   run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
+    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -538,7 +538,7 @@ scenario read-move-empty [
   assume-screen 20/width, 2/height
   run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
+    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -587,7 +587,7 @@ scenario making-a-move [
     7:address:number <- get-address *3:address:move, to-rank:offset
     *7:address:number <- copy 3/'4'
     2:address:array:address:array:character/board <- make-move 2:address:array:address:array:character/board, 3:address:move
-    screen:address <- print-board screen:address, 2:address:array:address:array:character/board
+    screen:address:screen <- print-board screen:address:screen, 2:address:array:address:array:character/board
   ]
   screen-should-contain [
   #  012345678901234567890123456789

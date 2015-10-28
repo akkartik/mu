@@ -88,8 +88,25 @@ bool types_match(reagent lhs, reagent rhs) {
 // (trees perform the same check recursively on each subtree)
 bool types_match(type_tree* lhs, type_tree* rhs) {
   if (!lhs) return true;
+  if (!rhs || rhs->value == 0) {
+    if (lhs->value == Type_ordinal["array"]) return false;
+    if (lhs->value == Type_ordinal["address"]) return false;
+    return size_of(rhs) == size_of(lhs);
+  }
   if (lhs->value != rhs->value) return false;
   return types_match(lhs->left, rhs->left) && types_match(lhs->right, rhs->right);
+}
+
+// hacky version that allows 0 addresses
+bool types_match(const reagent lhs, const type_tree* rhs, const vector<double>& data) {
+  if (is_dummy(lhs)) return true;
+  if (!rhs || rhs->value == 0) {
+    if (lhs.type->value == Type_ordinal["array"]) return false;
+    if (lhs.type->value == Type_ordinal["address"]) return scalar(data) && data.at(0) == 0;
+    return size_of(rhs) == size_of(lhs);
+  }
+  if (lhs.type->value != rhs->value) return false;
+  return types_match(lhs.type->left, rhs->left) && types_match(lhs.type->right, rhs->right);
 }
 
 bool is_raw(const reagent& r) {

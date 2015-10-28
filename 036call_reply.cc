@@ -115,14 +115,14 @@ recipe test1 [
 +error: main: 'same-as-ingredient' product from call to test1 must be 1:number rather than 2:number
 
 :(scenario reply_same_as_ingredient_dummy)
-% Hide_errors = true;
+# % Hide_errors = true;
 recipe main [
   1:number <- copy 0
   _ <- test1 1:number  # call with different ingredient and product
 ]
 recipe test1 [
-  10:address:number <- next-ingredient
-  reply 10:address:number/same-as-ingredient:0
+  10:number <- next-ingredient
+  reply 10:number/same-as-ingredient:0
 ]
 $error: 0
 

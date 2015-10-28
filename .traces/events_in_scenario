@@ -1,7 +1,7 @@
 9999 parse: instruction: assume-console
 9999 parse:   ingredient: {"\n    type [abc]\n    left-click 0, 1\n    press up-arrow\n    type [d]\n  ": "literal-string"}
 9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    # 3 keyboard events; each event occupies 4 locations\n    1:event <- read-event console:address\n    5:event <- read-event console:address\n    9:event <- read-event console:address\n    # mouse click\n    13:event <- read-event console:address\n    # non-character keycode\n    17:event <- read-event console:address\n    # final keyboard event\n    21:event <- read-event console:address\n  ": "literal-string"}
+9999 parse:   ingredient: {"\n    # 3 keyboard events; each event occupies 4 locations\n    1:event <- read-event console:address:console\n    5:event <- read-event console:address:console\n    9:event <- read-event console:address:console\n    # mouse click\n    13:event <- read-event console:address:console\n    # non-character keycode\n    17:event <- read-event console:address:console\n    # final keyboard event\n    21:event <- read-event console:address:console\n  ": "literal-string"}
 9999 parse: instruction: memory-should-contain
 9999 parse:   ingredient: {"\n    1 <- 0  # 'text'\n    2 <- 97  # 'a'\n    3 <- 0  # unused\n    4 <- 0  # unused\n    5 <- 0  # 'text'\n    6 <- 98  # 'b'\n    7 <- 0  # unused\n    8 <- 0  # unused\n    9 <- 0  # 'text'\n    10 <- 99  # 'c'\n    11 <- 0  # unused\n    12 <- 0  # unused\n    13 <- 2  # 'mouse'\n    14 <- 65513  # mouse click\n    15 <- 0  # row\n    16 <- 1  # column\n    17 <- 1  # 'keycode'\n    18 <- 65517  # up arrow\n    19 <- 0  # unused\n    20 <- 0  # unused\n    21 <- 0  # 'text'\n    22 <- 100  # 'd'\n    23 <- 0  # unused\n    24 <- 0  # unused\n    25 <- 0\n  ": "literal-string"}
 9999 after-brace: recipe scenario-events-in-scenario
@@ -28,33 +28,33 @@
 9999 parse:   ingredient: {"d": "literal-string"}
  102 run: run [
     # 3 keyboard events; each event occupies 4 locations
-    1:event <- read-event console:address
-    5:event <- read-event console:address
-    9:event <- read-event console:address
+    1:event <- read-event console:address:console
+    5:event <- read-event console:address:console
+    9:event <- read-event console:address:console
     # mouse click
-    13:event <- read-event console:address
+    13:event <- read-event console:address:console
     # non-character keycode
-    17:event <- read-event console:address
+    17:event <- read-event console:address:console
     # final keyboard event
-    21:event <- read-event console:address
+    21:event <- read-event console:address:console
   ]
 9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": "address"}
+9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
 9999 parse:   product: {"1": "event"}
 9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": "address"}
+9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
 9999 parse:   product: {"5": "event"}
 9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": "address"}
+9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
 9999 parse:   product: {"9": "event"}
 9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": "address"}
+9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
 9999 parse:   product: {"13": "event"}
 9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": "address"}
+9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
 9999 parse:   product: {"17": "event"}
 9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": "address"}
+9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
 9999 parse:   product: {"21": "event"}
 9999 after-brace: recipe run1003
 9999 after-brace: read-event ...
@@ -64,7 +64,7 @@
 9999 after-brace: read-event ...
 9999 after-brace: read-event ...
 9999 trace: run: incrementing callstack depth to 2
- 103 run: 1:event <- read-event console:address
+ 103 run: 1:event <- read-event console:address:console
 9999 mem: location 901 is 1025
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -133,7 +133,7 @@
 9999 mem: storing 97 in location 2
 9999 mem: storing 0 in location 3
 9999 mem: storing 0 in location 4
- 103 run: 5:event <- read-event console:address
+ 103 run: 5:event <- read-event console:address:console
 9999 mem: location 901 is 1025
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -201,7 +201,7 @@
 9999 mem: storing 98 in location 6
 9999 mem: storing 0 in location 7
 9999 mem: storing 0 in location 8
- 103 run: 9:event <- read-event console:address
+ 103 run: 9:event <- read-event console:address:console
 9999 mem: location 901 is 1025
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -269,7 +269,7 @@
 9999 mem: storing 99 in location 10
 9999 mem: storing 0 in location 11
 9999 mem: storing 0 in location 12
- 103 run: 13:event <- read-event console:address
+ 103 run: 13:event <- read-event console:address:console
 9999 mem: location 901 is 1025
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -337,7 +337,7 @@
 9999 mem: storing 65513 in location 14
 9999 mem: storing 0 in location 15
 9999 mem: storing 1 in location 16
- 103 run: 17:event <- read-event console:address
+ 103 run: 17:event <- read-event console:address:console
 9999 mem: location 901 is 1025
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -405,7 +405,7 @@
 9999 mem: storing 65517 in location 18
 9999 mem: storing 0 in location 19
 9999 mem: storing 0 in location 20
- 103 run: 21:event <- read-event console:address
+ 103 run: 21:event <- read-event console:address:console
 9999 mem: location 901 is 1025
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
