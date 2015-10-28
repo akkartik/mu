@@ -85,7 +85,7 @@ if (s.at(0) == '{') {
   name = properties.at(0).first;
   string type_name = properties.at(0).second->value;
   if (Type_ordinal.find(type_name) == Type_ordinal.end()) {
-      // this type can't be an integer
+      // this type can't be an integer literal
     Type_ordinal[type_name] = Next_type_ordinal++;
   }
   type = new type_tree(Type_ordinal[type_name]);
