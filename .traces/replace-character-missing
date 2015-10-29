@@ -1,7 +1,16 @@
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    1:address:array:character/raw <- new [abc]\n    1:address:array:character/raw <- string-replace 1:address:array:character/raw, 100/d, 122/z\n    2:array:character/raw <- copy *1:address:array:character/raw\n  ": "literal-string"}
-9999 parse: instruction: memory-should-contain
-9999 parse:   ingredient: {"\n    2:string <- [abc]\n  ": "literal-string"}
+9991 load: --- defining scenario-replace-character-missing
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    1:address:array:character/raw <- new [abc]\n    1:address:array:character/raw <- string-replace 1:address:array:character/raw, 100/d, 122/z\n    2:array:character/raw <- copy *1:address:array:character/raw\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    1:address:array:character/raw <- new [abc]
+    1:address:array:character/raw <- string-replace 1:address:array:character/raw, 100/d, 122/z
+    2:array:character/raw <- copy *1:address:array:character/raw
+  ]
+9993 parse: instruction: memory-should-contain
+9993 parse:   ingredient: {"\n    2:string <- [abc]\n  ": "literal-string"}
+9992 load: after rewriting: memory-should-contain [
+    2:string <- [abc]
+  ]
 9999 after-brace: recipe scenario-replace-character-missing
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
@@ -13,17 +22,21 @@
     1:address:array:character/raw <- string-replace 1:address:array:character/raw, 100/d, 122/z
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
-9999 parse: instruction: new
-9999 parse:   ingredient: {"abc": "literal-string"}
-9999 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
-9999 parse: instruction: string-replace
-9999 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
-9999 parse:   ingredient: {"100": "literal", "d": <>}
-9999 parse:   ingredient: {"122": "literal", "z": <>}
-9999 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
-9999 parse: instruction: copy
-9999 parse:   ingredient: {"*1": <"address" : <"array" : <"character" : <>>>>, "raw": <>, "lookup": <>}
-9999 parse:   product: {"2": <"array" : <"character" : <>>>, "raw": <>}
+9991 load: --- defining run1001
+9993 parse: instruction: new
+9993 parse:   ingredient: {"abc": "literal-string"}
+9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
+9992 load: after rewriting: 1:address:array:character/raw <- new [abc]
+9993 parse: instruction: string-replace
+9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
+9993 parse:   ingredient: {"100": "literal", "d": <>}
+9993 parse:   ingredient: {"122": "literal", "z": <>}
+9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
+9992 load: after rewriting: 1:address:array:character/raw <- string-replace 1:address:array:character/raw, 100/d, 122/z
+9993 parse: instruction: copy
+9993 parse:   ingredient: {"*1": <"address" : <"array" : <"character" : <>>>>, "raw": <>, "lookup": <>}
+9993 parse:   product: {"2": <"array" : <"character" : <>>>, "raw": <>}
+9992 load: after rewriting: 2:array:character/raw <- copy *1:address:array:character/raw
 9999 after-brace: recipe run1001
 9999 after-brace: new ...
 9999 after-brace: string-replace ...

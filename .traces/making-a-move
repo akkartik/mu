@@ -1,10 +1,40 @@
-9999 parse: instruction: assume-screen
-9999 parse:   ingredient: {"30": "literal", "width": <>}
-9999 parse:   ingredient: {"12": "literal", "height": <>}
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    2:address:array:address:array:character/board <- initial-position\n    3:address:move <- new move:type\n    4:address:number <- get-address *3:address:move, from-file:offset\n    *4:address:number <- copy 6/g\n    5:address:number <- get-address *3:address:move, from-rank:offset\n    *5:address:number <- copy 1/'2'\n    6:address:number <- get-address *3:address:move, to-file:offset\n    *6:address:number <- copy 6/g\n    7:address:number <- get-address *3:address:move, to-rank:offset\n    *7:address:number <- copy 3/'4'\n    2:address:array:address:array:character/board <- make-move 2:address:array:address:array:character/board, 3:address:move\n    screen:address:screen <- print-board screen:address:screen, 2:address:array:address:array:character/board\n  ": "literal-string"}
-9999 parse: instruction: screen-should-contain
-9999 parse:   ingredient: {"\n  #  012345678901234567890123456789\n    .8 | r n b q k b n r           .\n    .7 | p p p p p p p p           .\n    .6 |                           .\n    .5 |                           .\n    .4 |             P             .\n    .3 |                           .\n    .2 | P P P P P P   P           .\n    .1 | R N B Q K B N R           .\n    .  +----------------           .\n    .    a b c d e f g h           .\n    .                              .\n  ": "literal-string"}
+9991 load: --- defining scenario-making-a-move
+9993 parse: instruction: assume-screen
+9993 parse:   ingredient: {"30": "literal", "width": <>}
+9993 parse:   ingredient: {"12": "literal", "height": <>}
+9992 load: after rewriting: screen:address:screen <- new-fake-screen 30/width, 12/height
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    2:address:array:address:array:character/board <- initial-position\n    3:address:move <- new move:type\n    4:address:number <- get-address *3:address:move, from-file:offset\n    *4:address:number <- copy 6/g\n    5:address:number <- get-address *3:address:move, from-rank:offset\n    *5:address:number <- copy 1/'2'\n    6:address:number <- get-address *3:address:move, to-file:offset\n    *6:address:number <- copy 6/g\n    7:address:number <- get-address *3:address:move, to-rank:offset\n    *7:address:number <- copy 3/'4'\n    2:address:array:address:array:character/board <- make-move 2:address:array:address:array:character/board, 3:address:move\n    screen:address:screen <- print-board screen:address:screen, 2:address:array:address:array:character/board\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    2:address:array:address:array:character/board <- initial-position
+    3:address:move <- new move:type
+    4:address:number <- get-address *3:address:move, from-file:offset
+    *4:address:number <- copy 6/g
+    5:address:number <- get-address *3:address:move, from-rank:offset
+    *5:address:number <- copy 1/'2'
+    6:address:number <- get-address *3:address:move, to-file:offset
+    *6:address:number <- copy 6/g
+    7:address:number <- get-address *3:address:move, to-rank:offset
+    *7:address:number <- copy 3/'4'
+    2:address:array:address:array:character/board <- make-move 2:address:array:address:array:character/board, 3:address:move
+    screen:address:screen <- print-board screen:address:screen, 2:address:array:address:array:character/board
+  ]
+9993 parse: instruction: screen-should-contain
+9993 parse:   ingredient: {"\n  #  012345678901234567890123456789\n    .8 | r n b q k b n r           .\n    .7 | p p p p p p p p           .\n    .6 |                           .\n    .5 |                           .\n    .4 |             P             .\n    .3 |                           .\n    .2 | P P P P P P   P           .\n    .1 | R N B Q K B N R           .\n    .  +----------------           .\n    .    a b c d e f g h           .\n    .                              .\n  ": "literal-string"}
+9992 load: after rewriting: screen-should-contain [
+  #  012345678901234567890123456789
+    .8 | r n b q k b n r           .
+    .7 | p p p p p p p p           .
+    .6 |                           .
+    .5 |                           .
+    .4 |             P             .
+    .3 |                           .
+    .2 | P P P P P P   P           .
+    .1 | R N B Q K B N R           .
+    .  +----------------           .
+    .    a b c d e f g h           .
+    .                              .
+  ]
 9999 after-brace: recipe scenario-making-a-move
 9999 after-brace: new-fake-screen ...
 9999 after-brace: run ...
@@ -13143,47 +13173,60 @@
     2:address:array:address:array:character/board <- make-move 2:address:array:address:array:character/board, 3:address:move
     screen:address:screen <- print-board screen:address:screen, 2:address:array:address:array:character/board
   ]
-9999 parse: instruction: initial-position
-9999 parse:   product: {"2": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "board": <>}
-9999 parse: instruction: new
-9999 parse:   ingredient: {"move": "type"}
-9999 parse:   product: {"3": <"address" : <"move" : <>>>}
-9999 parse: instruction: get-address
-9999 parse:   ingredient: {"*3": <"address" : <"move" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"from-file": "offset"}
-9999 parse:   product: {"4": <"address" : <"number" : <>>>}
-9999 parse: instruction: copy
-9999 parse:   ingredient: {"6": "literal", "g": <>}
-9999 parse:   product: {"*4": <"address" : <"number" : <>>>, "lookup": <>}
-9999 parse: instruction: get-address
-9999 parse:   ingredient: {"*3": <"address" : <"move" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"from-rank": "offset"}
-9999 parse:   product: {"5": <"address" : <"number" : <>>>}
-9999 parse: instruction: copy
-9999 parse:   ingredient: {"1": "literal", "'2'": <>}
-9999 parse:   product: {"*5": <"address" : <"number" : <>>>, "lookup": <>}
-9999 parse: instruction: get-address
-9999 parse:   ingredient: {"*3": <"address" : <"move" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"to-file": "offset"}
-9999 parse:   product: {"6": <"address" : <"number" : <>>>}
-9999 parse: instruction: copy
-9999 parse:   ingredient: {"6": "literal", "g": <>}
-9999 parse:   product: {"*6": <"address" : <"number" : <>>>, "lookup": <>}
-9999 parse: instruction: get-address
-9999 parse:   ingredient: {"*3": <"address" : <"move" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"to-rank": "offset"}
-9999 parse:   product: {"7": <"address" : <"number" : <>>>}
-9999 parse: instruction: copy
-9999 parse:   ingredient: {"3": "literal", "'4'": <>}
-9999 parse:   product: {"*7": <"address" : <"number" : <>>>, "lookup": <>}
-9999 parse: instruction: make-move
-9999 parse:   ingredient: {"2": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "board": <>}
-9999 parse:   ingredient: {"3": <"address" : <"move" : <>>>}
-9999 parse:   product: {"2": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "board": <>}
-9999 parse: instruction: print-board
-9999 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9999 parse:   ingredient: {"2": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "board": <>}
-9999 parse:   product: {"screen": <"address" : <"screen" : <>>>}
+9991 load: --- defining run1001
+9993 parse: instruction: initial-position
+9993 parse:   product: {"2": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "board": <>}
+9992 load: after rewriting: 2:address:array:address:array:character/board <- initial-position 
+9993 parse: instruction: new
+9993 parse:   ingredient: {"move": "type"}
+9993 parse:   product: {"3": <"address" : <"move" : <>>>}
+9992 load: after rewriting: 3:address:move <- new move:type
+9993 parse: instruction: get-address
+9993 parse:   ingredient: {"*3": <"address" : <"move" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"from-file": "offset"}
+9993 parse:   product: {"4": <"address" : <"number" : <>>>}
+9992 load: after rewriting: 4:address:number <- get-address *3:address:move, from-file:offset
+9993 parse: instruction: copy
+9993 parse:   ingredient: {"6": "literal", "g": <>}
+9993 parse:   product: {"*4": <"address" : <"number" : <>>>, "lookup": <>}
+9992 load: after rewriting: *4:address:number <- copy 6/g
+9993 parse: instruction: get-address
+9993 parse:   ingredient: {"*3": <"address" : <"move" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"from-rank": "offset"}
+9993 parse:   product: {"5": <"address" : <"number" : <>>>}
+9992 load: after rewriting: 5:address:number <- get-address *3:address:move, from-rank:offset
+9993 parse: instruction: copy
+9993 parse:   ingredient: {"1": "literal", "'2'": <>}
+9993 parse:   product: {"*5": <"address" : <"number" : <>>>, "lookup": <>}
+9992 load: after rewriting: *5:address:number <- copy 1/'2'
+9993 parse: instruction: get-address
+9993 parse:   ingredient: {"*3": <"address" : <"move" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"to-file": "offset"}
+9993 parse:   product: {"6": <"address" : <"number" : <>>>}
+9992 load: after rewriting: 6:address:number <- get-address *3:address:move, to-file:offset
+9993 parse: instruction: copy
+9993 parse:   ingredient: {"6": "literal", "g": <>}
+9993 parse:   product: {"*6": <"address" : <"number" : <>>>, "lookup": <>}
+9992 load: after rewriting: *6:address:number <- copy 6/g
+9993 parse: instruction: get-address
+9993 parse:   ingredient: {"*3": <"address" : <"move" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"to-rank": "offset"}
+9993 parse:   product: {"7": <"address" : <"number" : <>>>}
+9992 load: after rewriting: 7:address:number <- get-address *3:address:move, to-rank:offset
+9993 parse: instruction: copy
+9993 parse:   ingredient: {"3": "literal", "'4'": <>}
+9993 parse:   product: {"*7": <"address" : <"number" : <>>>, "lookup": <>}
+9992 load: after rewriting: *7:address:number <- copy 3/'4'
+9993 parse: instruction: make-move
+9993 parse:   ingredient: {"2": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "board": <>}
+9993 parse:   ingredient: {"3": <"address" : <"move" : <>>>}
+9993 parse:   product: {"2": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "board": <>}
+9992 load: after rewriting: 2:address:array:address:array:character/board <- make-move 2:address:array:address:array:character/board, 3:address:move
+9993 parse: instruction: print-board
+9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
+9993 parse:   ingredient: {"2": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "board": <>}
+9993 parse:   product: {"screen": <"address" : <"screen" : <>>>}
+9992 load: after rewriting: screen:address:screen <- print-board screen:address:screen, 2:address:array:address:array:character/board
 9999 new: move -> move
 9999 name: element from-file of type move is at offset 0
 9999 name: element from-rank of type move is at offset 1

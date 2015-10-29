@@ -47,7 +47,9 @@ long long int slurp_recipe(istream& in) {
   if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
     Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
   }
+  trace(9991, "load") << "--- defining " << recipe_name << end();
   if (Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
+    trace(9991, "parse") << "already exists" << end();
     if (warn_on_redefine(recipe_name))
       raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
     Recipe.erase(Recipe_ordinal[recipe_name]);
@@ -69,6 +71,7 @@ void slurp_body(istream& in, recipe& result) {
   instruction curr;
   while (next_instruction(in, &curr)) {
     // End Rewrite Instruction(curr, recipe result)
+    trace(9992, "load") << "after rewriting: " << curr.to_string() << end();
     if (!curr.is_clear())
       result.steps.push_back(curr);
   }
@@ -110,7 +113,7 @@ bool next_instruction(istream& in, instruction* curr) {
   if (SIZE(words) == 1 && !isalnum(words.at(0).at(0)) && words.at(0).at(0) != '$') {
     curr->is_label = true;
     curr->label = words.at(0);
-    trace("parse") << "label: " << curr->label << end();
+    trace(9993, "parse") << "label: " << curr->label << end();
     if (in.eof()) {
       raise_error << "7: unbalanced '[' for recipe\n" << end();
       return false;
@@ -144,12 +147,12 @@ bool next_instruction(istream& in, instruction* curr) {
     curr->ingredients.push_back(reagent(*p));
   }
 
-  trace("parse") << "instruction: " << curr->name << end();
+  trace(9993, "parse") << "instruction: " << curr->name << end();
   for (vector<reagent>::iterator p = curr->ingredients.begin(); p != curr->ingredients.end(); ++p) {
-    trace("parse") << "  ingredient: " << p->to_string() << end();
+    trace(9993, "parse") << "  ingredient: " << p->to_string() << end();
   }
   for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p) {
-    trace("parse") << "  product: " << p->to_string() << end();
+    trace(9993, "parse") << "  product: " << p->to_string() << end();
   }
   if (in.eof()) {
     raise_error << "9: unbalanced '[' for recipe\n" << end();

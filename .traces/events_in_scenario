@@ -1,9 +1,55 @@
-9999 parse: instruction: assume-console
-9999 parse:   ingredient: {"\n    type [abc]\n    left-click 0, 1\n    press up-arrow\n    type [d]\n  ": "literal-string"}
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    # 3 keyboard events; each event occupies 4 locations\n    1:event <- read-event console:address:console\n    5:event <- read-event console:address:console\n    9:event <- read-event console:address:console\n    # mouse click\n    13:event <- read-event console:address:console\n    # non-character keycode\n    17:event <- read-event console:address:console\n    # final keyboard event\n    21:event <- read-event console:address:console\n  ": "literal-string"}
-9999 parse: instruction: memory-should-contain
-9999 parse:   ingredient: {"\n    1 <- 0  # 'text'\n    2 <- 97  # 'a'\n    3 <- 0  # unused\n    4 <- 0  # unused\n    5 <- 0  # 'text'\n    6 <- 98  # 'b'\n    7 <- 0  # unused\n    8 <- 0  # unused\n    9 <- 0  # 'text'\n    10 <- 99  # 'c'\n    11 <- 0  # unused\n    12 <- 0  # unused\n    13 <- 2  # 'mouse'\n    14 <- 65513  # mouse click\n    15 <- 0  # row\n    16 <- 1  # column\n    17 <- 1  # 'keycode'\n    18 <- 65517  # up arrow\n    19 <- 0  # unused\n    20 <- 0  # unused\n    21 <- 0  # 'text'\n    22 <- 100  # 'd'\n    23 <- 0  # unused\n    24 <- 0  # unused\n    25 <- 0\n  ": "literal-string"}
+9991 load: --- defining scenario-events-in-scenario
+9993 parse: instruction: assume-console
+9993 parse:   ingredient: {"\n    type [abc]\n    left-click 0, 1\n    press up-arrow\n    type [d]\n  ": "literal-string"}
+9992 load: after rewriting: assume-console [
+    type [abc]
+    left-click 0, 1
+    press up-arrow
+    type [d]
+  ]
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    # 3 keyboard events; each event occupies 4 locations\n    1:event <- read-event console:address:console\n    5:event <- read-event console:address:console\n    9:event <- read-event console:address:console\n    # mouse click\n    13:event <- read-event console:address:console\n    # non-character keycode\n    17:event <- read-event console:address:console\n    # final keyboard event\n    21:event <- read-event console:address:console\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    # 3 keyboard events; each event occupies 4 locations
+    1:event <- read-event console:address:console
+    5:event <- read-event console:address:console
+    9:event <- read-event console:address:console
+    # mouse click
+    13:event <- read-event console:address:console
+    # non-character keycode
+    17:event <- read-event console:address:console
+    # final keyboard event
+    21:event <- read-event console:address:console
+  ]
+9993 parse: instruction: memory-should-contain
+9993 parse:   ingredient: {"\n    1 <- 0  # 'text'\n    2 <- 97  # 'a'\n    3 <- 0  # unused\n    4 <- 0  # unused\n    5 <- 0  # 'text'\n    6 <- 98  # 'b'\n    7 <- 0  # unused\n    8 <- 0  # unused\n    9 <- 0  # 'text'\n    10 <- 99  # 'c'\n    11 <- 0  # unused\n    12 <- 0  # unused\n    13 <- 2  # 'mouse'\n    14 <- 65513  # mouse click\n    15 <- 0  # row\n    16 <- 1  # column\n    17 <- 1  # 'keycode'\n    18 <- 65517  # up arrow\n    19 <- 0  # unused\n    20 <- 0  # unused\n    21 <- 0  # 'text'\n    22 <- 100  # 'd'\n    23 <- 0  # unused\n    24 <- 0  # unused\n    25 <- 0\n  ": "literal-string"}
+9992 load: after rewriting: memory-should-contain [
+    1 <- 0  # 'text'
+    2 <- 97  # 'a'
+    3 <- 0  # unused
+    4 <- 0  # unused
+    5 <- 0  # 'text'
+    6 <- 98  # 'b'
+    7 <- 0  # unused
+    8 <- 0  # unused
+    9 <- 0  # 'text'
+    10 <- 99  # 'c'
+    11 <- 0  # unused
+    12 <- 0  # unused
+    13 <- 2  # 'mouse'
+    14 <- 65513  # mouse click
+    15 <- 0  # row
+    16 <- 1  # column
+    17 <- 1  # 'keycode'
+    18 <- 65517  # up arrow
+    19 <- 0  # unused
+    20 <- 0  # unused
+    21 <- 0  # 'text'
+    22 <- 100  # 'd'
+    23 <- 0  # unused
+    24 <- 0  # unused
+    25 <- 0
+  ]
 9999 after-brace: recipe scenario-events-in-scenario
 9999 after-brace: assume-console ...
 9999 after-brace: run ...
@@ -17,15 +63,19 @@
     press up-arrow
     type [d]
   ]
-9999 parse: instruction: type
-9999 parse:   ingredient: {"abc": "literal-string"}
-9999 parse: instruction: left-click
-9999 parse:   ingredient: {"0": "literal"}
-9999 parse:   ingredient: {"1": "literal"}
-9999 parse: instruction: press
-9999 parse:   ingredient: {"up-arrow": <>}
-9999 parse: instruction: type
-9999 parse:   ingredient: {"d": "literal-string"}
+9993 parse: instruction: type
+9993 parse:   ingredient: {"abc": "literal-string"}
+9992 load: after rewriting: type [abc]
+9993 parse: instruction: left-click
+9993 parse:   ingredient: {"0": "literal"}
+9993 parse:   ingredient: {"1": "literal"}
+9992 load: after rewriting: left-click 0, 1
+9993 parse: instruction: press
+9993 parse:   ingredient: {"up-arrow": <>}
+9992 load: after rewriting: press up-arrow
+9993 parse: instruction: type
+9993 parse:   ingredient: {"d": "literal-string"}
+9992 load: after rewriting: type [d]
  102 run: run [
     # 3 keyboard events; each event occupies 4 locations
     1:event <- read-event console:address:console
@@ -38,24 +88,31 @@
     # final keyboard event
     21:event <- read-event console:address:console
   ]
-9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
-9999 parse:   product: {"1": "event"}
-9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
-9999 parse:   product: {"5": "event"}
-9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
-9999 parse:   product: {"9": "event"}
-9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
-9999 parse:   product: {"13": "event"}
-9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
-9999 parse:   product: {"17": "event"}
-9999 parse: instruction: read-event
-9999 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
-9999 parse:   product: {"21": "event"}
+9991 load: --- defining run1003
+9993 parse: instruction: read-event
+9993 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
+9993 parse:   product: {"1": "event"}
+9992 load: after rewriting: 1:event <- read-event console:address:console
+9993 parse: instruction: read-event
+9993 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
+9993 parse:   product: {"5": "event"}
+9992 load: after rewriting: 5:event <- read-event console:address:console
+9993 parse: instruction: read-event
+9993 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
+9993 parse:   product: {"9": "event"}
+9992 load: after rewriting: 9:event <- read-event console:address:console
+9993 parse: instruction: read-event
+9993 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
+9993 parse:   product: {"13": "event"}
+9992 load: after rewriting: 13:event <- read-event console:address:console
+9993 parse: instruction: read-event
+9993 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
+9993 parse:   product: {"17": "event"}
+9992 load: after rewriting: 17:event <- read-event console:address:console
+9993 parse: instruction: read-event
+9993 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
+9993 parse:   product: {"21": "event"}
+9992 load: after rewriting: 21:event <- read-event console:address:console
 9999 after-brace: recipe run1003
 9999 after-brace: read-event ...
 9999 after-brace: read-event ...

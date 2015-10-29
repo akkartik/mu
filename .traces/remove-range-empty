@@ -1,18 +1,38 @@
-9999 parse: instruction: copy
-9999 parse:   ingredient: {"0": "literal"}
-9999 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
-9999 parse: instruction: push-duplex
-9999 parse:   ingredient: {"14": "literal"}
-9999 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
-9999 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
-9999 parse: instruction: push-duplex
-9999 parse:   ingredient: {"13": "literal"}
-9999 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
-9999 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    # delete 16 onwards\n    # first pointer: to the third element\n    2:address:duplex-list <- next-duplex 1:address:duplex-list\n    remove-duplex-between 1:address:duplex-list, 2:address:duplex-list\n    # now check the list\n    4:character <- get *1:address:duplex-list, value:offset\n    5:address:duplex-list <- next-duplex 1:address:duplex-list\n    6:character <- get *5:address:duplex-list, value:offset\n    7:address:duplex-list <- next-duplex 5:address:duplex-list\n  ": "literal-string"}
-9999 parse: instruction: memory-should-contain
-9999 parse:   ingredient: {"\n    4 <- 13\n    6 <- 14\n    7 <- 0\n  ": "literal-string"}
+9991 load: --- defining scenario-remove-range-empty
+9993 parse: instruction: copy
+9993 parse:   ingredient: {"0": "literal"}
+9993 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
+9992 load: after rewriting: 1:address:duplex-list <- copy 0
+9993 parse: instruction: push-duplex
+9993 parse:   ingredient: {"14": "literal"}
+9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
+9993 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
+9992 load: after rewriting: 1:address:duplex-list <- push-duplex 14, 1:address:duplex-list
+9993 parse: instruction: push-duplex
+9993 parse:   ingredient: {"13": "literal"}
+9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
+9993 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
+9992 load: after rewriting: 1:address:duplex-list <- push-duplex 13, 1:address:duplex-list
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    # delete 16 onwards\n    # first pointer: to the third element\n    2:address:duplex-list <- next-duplex 1:address:duplex-list\n    remove-duplex-between 1:address:duplex-list, 2:address:duplex-list\n    # now check the list\n    4:character <- get *1:address:duplex-list, value:offset\n    5:address:duplex-list <- next-duplex 1:address:duplex-list\n    6:character <- get *5:address:duplex-list, value:offset\n    7:address:duplex-list <- next-duplex 5:address:duplex-list\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    # delete 16 onwards
+    # first pointer: to the third element
+    2:address:duplex-list <- next-duplex 1:address:duplex-list
+    remove-duplex-between 1:address:duplex-list, 2:address:duplex-list
+    # now check the list
+    4:character <- get *1:address:duplex-list, value:offset
+    5:address:duplex-list <- next-duplex 1:address:duplex-list
+    6:character <- get *5:address:duplex-list, value:offset
+    7:address:duplex-list <- next-duplex 5:address:duplex-list
+  ]
+9993 parse: instruction: memory-should-contain
+9993 parse:   ingredient: {"\n    4 <- 13\n    6 <- 14\n    7 <- 0\n  ": "literal-string"}
+9992 load: after rewriting: memory-should-contain [
+    4 <- 13
+    6 <- 14
+    7 <- 0
+  ]
 9999 after-brace: recipe scenario-remove-range-empty
 9999 after-brace: copy ...
 9999 after-brace: push-duplex ...
@@ -136,26 +156,33 @@
     6:character <- get *5:address:duplex-list, value:offset
     7:address:duplex-list <- next-duplex 5:address:duplex-list
   ]
-9999 parse: instruction: next-duplex
-9999 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
-9999 parse:   product: {"2": <"address" : <"duplex-list" : <>>>}
-9999 parse: instruction: remove-duplex-between
-9999 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
-9999 parse:   ingredient: {"2": <"address" : <"duplex-list" : <>>>}
-9999 parse: instruction: get
-9999 parse:   ingredient: {"*1": <"address" : <"duplex-list" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"value": "offset"}
-9999 parse:   product: {"4": "character"}
-9999 parse: instruction: next-duplex
-9999 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
-9999 parse:   product: {"5": <"address" : <"duplex-list" : <>>>}
-9999 parse: instruction: get
-9999 parse:   ingredient: {"*5": <"address" : <"duplex-list" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"value": "offset"}
-9999 parse:   product: {"6": "character"}
-9999 parse: instruction: next-duplex
-9999 parse:   ingredient: {"5": <"address" : <"duplex-list" : <>>>}
-9999 parse:   product: {"7": <"address" : <"duplex-list" : <>>>}
+9991 load: --- defining run1001
+9993 parse: instruction: next-duplex
+9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
+9993 parse:   product: {"2": <"address" : <"duplex-list" : <>>>}
+9992 load: after rewriting: 2:address:duplex-list <- next-duplex 1:address:duplex-list
+9993 parse: instruction: remove-duplex-between
+9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
+9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <>>>}
+9992 load: after rewriting: remove-duplex-between 1:address:duplex-list, 2:address:duplex-list
+9993 parse: instruction: get
+9993 parse:   ingredient: {"*1": <"address" : <"duplex-list" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"value": "offset"}
+9993 parse:   product: {"4": "character"}
+9992 load: after rewriting: 4:character <- get *1:address:duplex-list, value:offset
+9993 parse: instruction: next-duplex
+9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
+9993 parse:   product: {"5": <"address" : <"duplex-list" : <>>>}
+9992 load: after rewriting: 5:address:duplex-list <- next-duplex 1:address:duplex-list
+9993 parse: instruction: get
+9993 parse:   ingredient: {"*5": <"address" : <"duplex-list" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"value": "offset"}
+9993 parse:   product: {"6": "character"}
+9992 load: after rewriting: 6:character <- get *5:address:duplex-list, value:offset
+9993 parse: instruction: next-duplex
+9993 parse:   ingredient: {"5": <"address" : <"duplex-list" : <>>>}
+9993 parse:   product: {"7": <"address" : <"duplex-list" : <>>>}
+9992 load: after rewriting: 7:address:duplex-list <- next-duplex 5:address:duplex-list
 9999 name: element value of type duplex-list is at offset 0
 9999 name: element value of type duplex-list is at offset 0
 9999 after-brace: recipe run1001

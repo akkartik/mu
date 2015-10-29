@@ -1,7 +1,16 @@
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    1:address:array:character <- new [abc]\n    2:address:array:character <- new [ab]\n    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0\n  ": "literal-string"}
-9999 parse: instruction: memory-should-contain
-9999 parse:   ingredient: {"\n    3 <- 1  # match found\n  ": "literal-string"}
+9991 load: --- defining scenario-match-at-checks-substring-at-index
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    1:address:array:character <- new [abc]\n    2:address:array:character <- new [ab]\n    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- new [ab]
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
+  ]
+9993 parse: instruction: memory-should-contain
+9993 parse:   ingredient: {"\n    3 <- 1  # match found\n  ": "literal-string"}
+9992 load: after rewriting: memory-should-contain [
+    3 <- 1  # match found
+  ]
 9999 after-brace: recipe scenario-match-at-checks-substring-at-index
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
@@ -13,17 +22,21 @@
     2:address:array:character <- new [ab]
     3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
   ]
-9999 parse: instruction: new
-9999 parse:   ingredient: {"abc": "literal-string"}
-9999 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9999 parse: instruction: new
-9999 parse:   ingredient: {"ab": "literal-string"}
-9999 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>}
-9999 parse: instruction: match-at
-9999 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
-9999 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>}
-9999 parse:   ingredient: {"0": "literal"}
-9999 parse:   product: {"3": "boolean"}
+9991 load: --- defining run1001
+9993 parse: instruction: new
+9993 parse:   ingredient: {"abc": "literal-string"}
+9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
+9992 load: after rewriting: 1:address:array:character <- new [abc]
+9993 parse: instruction: new
+9993 parse:   ingredient: {"ab": "literal-string"}
+9993 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>}
+9992 load: after rewriting: 2:address:array:character <- new [ab]
+9993 parse: instruction: match-at
+9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
+9993 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>}
+9993 parse:   ingredient: {"0": "literal"}
+9993 parse:   product: {"3": "boolean"}
+9992 load: after rewriting: 3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
 9999 after-brace: recipe run1001
 9999 after-brace: new ...
 9999 after-brace: new ...

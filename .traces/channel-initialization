@@ -1,7 +1,17 @@
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    1:address:channel <- new-channel 3/capacity\n    2:number <- get *1:address:channel, first-full:offset\n    3:number <- get *1:address:channel, first-free:offset\n  ": "literal-string"}
-9999 parse: instruction: memory-should-contain
-9999 parse:   ingredient: {"\n    2 <- 0  # first-full\n    3 <- 0  # first-free\n  ": "literal-string"}
+9991 load: --- defining scenario-channel-initialization
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    1:address:channel <- new-channel 3/capacity\n    2:number <- get *1:address:channel, first-full:offset\n    3:number <- get *1:address:channel, first-free:offset\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    1:address:channel <- new-channel 3/capacity
+    2:number <- get *1:address:channel, first-full:offset
+    3:number <- get *1:address:channel, first-free:offset
+  ]
+9993 parse: instruction: memory-should-contain
+9993 parse:   ingredient: {"\n    2 <- 0  # first-full\n    3 <- 0  # first-free\n  ": "literal-string"}
+9992 load: after rewriting: memory-should-contain [
+    2 <- 0  # first-full
+    3 <- 0  # first-free
+  ]
 9999 after-brace: recipe scenario-channel-initialization
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
@@ -13,17 +23,21 @@
     2:number <- get *1:address:channel, first-full:offset
     3:number <- get *1:address:channel, first-free:offset
   ]
-9999 parse: instruction: new-channel
-9999 parse:   ingredient: {"3": "literal", "capacity": <>}
-9999 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9999 parse: instruction: get
-9999 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"first-full": "offset"}
-9999 parse:   product: {"2": "number"}
-9999 parse: instruction: get
-9999 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"first-free": "offset"}
-9999 parse:   product: {"3": "number"}
+9991 load: --- defining run1001
+9993 parse: instruction: new-channel
+9993 parse:   ingredient: {"3": "literal", "capacity": <>}
+9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
+9992 load: after rewriting: 1:address:channel <- new-channel 3/capacity
+9993 parse: instruction: get
+9993 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"first-full": "offset"}
+9993 parse:   product: {"2": "number"}
+9992 load: after rewriting: 2:number <- get *1:address:channel, first-full:offset
+9993 parse: instruction: get
+9993 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"first-free": "offset"}
+9993 parse:   product: {"3": "number"}
+9992 load: after rewriting: 3:number <- get *1:address:channel, first-free:offset
 9999 name: element first-full of type channel is at offset 0
 9999 name: element first-free of type channel is at offset 1
 9999 after-brace: recipe run1001

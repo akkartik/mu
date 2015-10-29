@@ -1,7 +1,30 @@
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    # channel with just 1 slot\n    1:address:channel <- new-channel 1/capacity\n    # write and read a value\n    1:address:channel <- write 1:address:channel, 34\n    _, 1:address:channel <- read 1:address:channel\n    # first-free will now be 1\n    2:number <- get *1:address:channel, first-free:offset\n    3:number <- get *1:address:channel, first-free:offset\n    # write second value, verify that first-free wraps\n    1:address:channel <- write 1:address:channel, 34\n    4:number <- get *1:address:channel, first-free:offset\n    # read second value, verify that first-full wraps\n    _, 1:address:channel <- read 1:address:channel\n    5:number <- get *1:address:channel, first-full:offset\n  ": "literal-string"}
-9999 parse: instruction: memory-should-contain
-9999 parse:   ingredient: {"\n    2 <- 1  # first-free after first write\n    3 <- 1  # first-full after first read\n    4 <- 0  # first-free after second write, wrapped\n    5 <- 0  # first-full after second read, wrapped\n  ": "literal-string"}
+9991 load: --- defining scenario-channel-wrap
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    # channel with just 1 slot\n    1:address:channel <- new-channel 1/capacity\n    # write and read a value\n    1:address:channel <- write 1:address:channel, 34\n    _, 1:address:channel <- read 1:address:channel\n    # first-free will now be 1\n    2:number <- get *1:address:channel, first-free:offset\n    3:number <- get *1:address:channel, first-free:offset\n    # write second value, verify that first-free wraps\n    1:address:channel <- write 1:address:channel, 34\n    4:number <- get *1:address:channel, first-free:offset\n    # read second value, verify that first-full wraps\n    _, 1:address:channel <- read 1:address:channel\n    5:number <- get *1:address:channel, first-full:offset\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    # channel with just 1 slot
+    1:address:channel <- new-channel 1/capacity
+    # write and read a value
+    1:address:channel <- write 1:address:channel, 34
+    _, 1:address:channel <- read 1:address:channel
+    # first-free will now be 1
+    2:number <- get *1:address:channel, first-free:offset
+    3:number <- get *1:address:channel, first-free:offset
+    # write second value, verify that first-free wraps
+    1:address:channel <- write 1:address:channel, 34
+    4:number <- get *1:address:channel, first-free:offset
+    # read second value, verify that first-full wraps
+    _, 1:address:channel <- read 1:address:channel
+    5:number <- get *1:address:channel, first-full:offset
+  ]
+9993 parse: instruction: memory-should-contain
+9993 parse:   ingredient: {"\n    2 <- 1  # first-free after first write\n    3 <- 1  # first-full after first read\n    4 <- 0  # first-free after second write, wrapped\n    5 <- 0  # first-full after second read, wrapped\n  ": "literal-string"}
+9992 load: after rewriting: memory-should-contain [
+    2 <- 1  # first-free after first write
+    3 <- 1  # first-full after first read
+    4 <- 0  # first-free after second write, wrapped
+    5 <- 0  # first-full after second read, wrapped
+  ]
 9999 after-brace: recipe scenario-channel-wrap
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
@@ -24,41 +47,51 @@
     _, 1:address:channel <- read 1:address:channel
     5:number <- get *1:address:channel, first-full:offset
   ]
-9999 parse: instruction: new-channel
-9999 parse:   ingredient: {"1": "literal", "capacity": <>}
-9999 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9999 parse: instruction: write
-9999 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
-9999 parse:   ingredient: {"34": "literal"}
-9999 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9999 parse: instruction: read
-9999 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
-9999 parse:   product: {"_": "dummy"}
-9999 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9999 parse: instruction: get
-9999 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"first-free": "offset"}
-9999 parse:   product: {"2": "number"}
-9999 parse: instruction: get
-9999 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"first-free": "offset"}
-9999 parse:   product: {"3": "number"}
-9999 parse: instruction: write
-9999 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
-9999 parse:   ingredient: {"34": "literal"}
-9999 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9999 parse: instruction: get
-9999 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"first-free": "offset"}
-9999 parse:   product: {"4": "number"}
-9999 parse: instruction: read
-9999 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
-9999 parse:   product: {"_": "dummy"}
-9999 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9999 parse: instruction: get
-9999 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
-9999 parse:   ingredient: {"first-full": "offset"}
-9999 parse:   product: {"5": "number"}
+9991 load: --- defining run1001
+9993 parse: instruction: new-channel
+9993 parse:   ingredient: {"1": "literal", "capacity": <>}
+9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
+9992 load: after rewriting: 1:address:channel <- new-channel 1/capacity
+9993 parse: instruction: write
+9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   ingredient: {"34": "literal"}
+9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
+9992 load: after rewriting: 1:address:channel <- write 1:address:channel, 34
+9993 parse: instruction: read
+9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   product: {"_": "dummy"}
+9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
+9992 load: after rewriting: _, 1:address:channel <- read 1:address:channel
+9993 parse: instruction: get
+9993 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"first-free": "offset"}
+9993 parse:   product: {"2": "number"}
+9992 load: after rewriting: 2:number <- get *1:address:channel, first-free:offset
+9993 parse: instruction: get
+9993 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"first-free": "offset"}
+9993 parse:   product: {"3": "number"}
+9992 load: after rewriting: 3:number <- get *1:address:channel, first-free:offset
+9993 parse: instruction: write
+9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   ingredient: {"34": "literal"}
+9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
+9992 load: after rewriting: 1:address:channel <- write 1:address:channel, 34
+9993 parse: instruction: get
+9993 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"first-free": "offset"}
+9993 parse:   product: {"4": "number"}
+9992 load: after rewriting: 4:number <- get *1:address:channel, first-free:offset
+9993 parse: instruction: read
+9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   product: {"_": "dummy"}
+9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
+9992 load: after rewriting: _, 1:address:channel <- read 1:address:channel
+9993 parse: instruction: get
+9993 parse:   ingredient: {"*1": <"address" : <"channel" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"first-full": "offset"}
+9993 parse:   product: {"5": "number"}
+9992 load: after rewriting: 5:number <- get *1:address:channel, first-full:offset
 9999 name: element first-free of type channel is at offset 1
 9999 name: element first-free of type channel is at offset 1
 9999 name: element first-free of type channel is at offset 1

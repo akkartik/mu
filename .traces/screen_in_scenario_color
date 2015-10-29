@@ -1,16 +1,40 @@
-9999 parse: instruction: assume-screen
-9999 parse:   ingredient: {"5": "literal", "width": <>}
-9999 parse:   ingredient: {"3": "literal", "height": <>}
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    screen:address:screen <- print-character screen:address:screen, 955/greek-small-lambda, 1/red\n    screen:address:screen <- print-character screen:address:screen, 97/a, 7/white\n  ": "literal-string"}
-9999 parse: instruction: screen-should-contain
-9999 parse:   ingredient: {"\n  #  01234\n    .λa   .\n    .     .\n    .     .\n  ": "literal-string"}
-9999 parse: instruction: screen-should-contain-in-color
-9999 parse:   ingredient: {"7": "literal", "white": <>}
-9999 parse:   ingredient: {"\n  #  01234\n    . a   .\n    .     .\n    .     .\n  ": "literal-string"}
-9999 parse: instruction: screen-should-contain-in-color
-9999 parse:   ingredient: {"1": "literal", "red": <>}
-9999 parse:   ingredient: {"\n  #  01234\n    .λ    .\n    .     .\n    .     .\n  ": "literal-string"}
+9991 load: --- defining scenario-screen-in-scenario-color
+9993 parse: instruction: assume-screen
+9993 parse:   ingredient: {"5": "literal", "width": <>}
+9993 parse:   ingredient: {"3": "literal", "height": <>}
+9992 load: after rewriting: screen:address:screen <- new-fake-screen 5/width, 3/height
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    screen:address:screen <- print-character screen:address:screen, 955/greek-small-lambda, 1/red\n    screen:address:screen <- print-character screen:address:screen, 97/a, 7/white\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    screen:address:screen <- print-character screen:address:screen, 955/greek-small-lambda, 1/red
+    screen:address:screen <- print-character screen:address:screen, 97/a, 7/white
+  ]
+9993 parse: instruction: screen-should-contain
+9993 parse:   ingredient: {"\n  #  01234\n    .λa   .\n    .     .\n    .     .\n  ": "literal-string"}
+9992 load: after rewriting: screen-should-contain [
+  #  01234
+    .λa   .
+    .     .
+    .     .
+  ]
+9993 parse: instruction: screen-should-contain-in-color
+9993 parse:   ingredient: {"7": "literal", "white": <>}
+9993 parse:   ingredient: {"\n  #  01234\n    . a   .\n    .     .\n    .     .\n  ": "literal-string"}
+9992 load: after rewriting: screen-should-contain-in-color 7/white, [
+  #  01234
+    . a   .
+    .     .
+    .     .
+  ]
+9993 parse: instruction: screen-should-contain-in-color
+9993 parse:   ingredient: {"1": "literal", "red": <>}
+9993 parse:   ingredient: {"\n  #  01234\n    .λ    .\n    .     .\n    .     .\n  ": "literal-string"}
+9992 load: after rewriting: screen-should-contain-in-color 1/red, [
+  #  01234
+    .λ    .
+    .     .
+    .     .
+  ]
 9999 after-brace: recipe scenario-screen-in-scenario-color
 9999 after-brace: new-fake-screen ...
 9999 after-brace: run ...
@@ -715,16 +739,19 @@
     screen:address:screen <- print-character screen:address:screen, 955/greek-small-lambda, 1/red
     screen:address:screen <- print-character screen:address:screen, 97/a, 7/white
   ]
-9999 parse: instruction: print-character
-9999 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9999 parse:   ingredient: {"955": "literal", "greek-small-lambda": <>}
-9999 parse:   ingredient: {"1": "literal", "red": <>}
-9999 parse:   product: {"screen": <"address" : <"screen" : <>>>}
-9999 parse: instruction: print-character
-9999 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9999 parse:   ingredient: {"97": "literal", "a": <>}
-9999 parse:   ingredient: {"7": "literal", "white": <>}
-9999 parse:   product: {"screen": <"address" : <"screen" : <>>>}
+9991 load: --- defining run1001
+9993 parse: instruction: print-character
+9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
+9993 parse:   ingredient: {"955": "literal", "greek-small-lambda": <>}
+9993 parse:   ingredient: {"1": "literal", "red": <>}
+9993 parse:   product: {"screen": <"address" : <"screen" : <>>>}
+9992 load: after rewriting: screen:address:screen <- print-character screen:address:screen, 955/greek-small-lambda, 1/red
+9993 parse: instruction: print-character
+9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
+9993 parse:   ingredient: {"97": "literal", "a": <>}
+9993 parse:   ingredient: {"7": "literal", "white": <>}
+9993 parse:   product: {"screen": <"address" : <"screen" : <>>>}
+9992 load: after rewriting: screen:address:screen <- print-character screen:address:screen, 97/a, 7/white
 9999 after-brace: recipe run1001
 9999 after-brace: print-character ...
 9999 after-brace: print-character ...

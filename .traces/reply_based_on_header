@@ -1,14 +1,24 @@
-9999 parse: instruction: add2
-9999 parse:   ingredient: {"3": "literal"}
-9999 parse:   ingredient: {"5": "literal"}
-9999 parse:   product: {"1": "number", "raw": <>}
-9999 parse: instruction: local-scope
-9999 parse: instruction: load-ingredients
-9999 parse: instruction: add
-9999 parse:   ingredient: {"x": <>}
-9999 parse:   ingredient: {"y": <>}
-9999 parse:   product: {"z": "number"}
-9999 parse: instruction: reply
+9991 load: --- defining main
+9993 parse: instruction: add2
+9993 parse:   ingredient: {"3": "literal"}
+9993 parse:   ingredient: {"5": "literal"}
+9993 parse:   product: {"1": "number", "raw": <>}
+9992 load: after rewriting: 1:number/raw <- add2 3, 5
+9991 load: --- defining add2
+9999 parse: header ingredient: x:number
+9999 parse: header ingredient: y:number
+9999 parse: header product: z:number
+9993 parse: instruction: local-scope
+9992 load: after rewriting: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9993 parse: instruction: load-ingredients
+9992 load: after rewriting: next-ingredient 
+9993 parse: instruction: add
+9993 parse:   ingredient: {"x": <>}
+9993 parse:   ingredient: {"y": <>}
+9993 parse:   product: {"z": "number"}
+9992 load: after rewriting: z:number <- add x, y
+9993 parse: instruction: reply
+9992 load: after rewriting: reply z:number
 9999 new: location -> location
 9999 name: assign x 1
 9999 name: assign y 2
@@ -21,6 +31,7 @@
 9999 after-brace: next-ingredient ...
 9999 after-brace: add ...
 9999 after-brace: reply ...
+9999 transform: checking reply instructions against header for add2
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9999 schedule: main

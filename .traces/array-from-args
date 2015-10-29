@@ -1,7 +1,18 @@
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    1:address:array:character <- new-array 0, 1, 2\n    2:array:character <- copy *1:address:array:character\n  ": "literal-string"}
-9999 parse: instruction: memory-should-contain
-9999 parse:   ingredient: {"\n    2 <- 3  # array length\n    3 <- 0\n    4 <- 1\n    5 <- 2\n  ": "literal-string"}
+9991 load: --- defining scenario-array-from-args
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    1:address:array:character <- new-array 0, 1, 2\n    2:array:character <- copy *1:address:array:character\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    1:address:array:character <- new-array 0, 1, 2
+    2:array:character <- copy *1:address:array:character
+  ]
+9993 parse: instruction: memory-should-contain
+9993 parse:   ingredient: {"\n    2 <- 3  # array length\n    3 <- 0\n    4 <- 1\n    5 <- 2\n  ": "literal-string"}
+9992 load: after rewriting: memory-should-contain [
+    2 <- 3  # array length
+    3 <- 0
+    4 <- 1
+    5 <- 2
+  ]
 9999 after-brace: recipe scenario-array-from-args
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
@@ -12,14 +23,17 @@
     1:address:array:character <- new-array 0, 1, 2
     2:array:character <- copy *1:address:array:character
   ]
-9999 parse: instruction: new-array
-9999 parse:   ingredient: {"0": "literal"}
-9999 parse:   ingredient: {"1": "literal"}
-9999 parse:   ingredient: {"2": "literal"}
-9999 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9999 parse: instruction: copy
-9999 parse:   ingredient: {"*1": <"address" : <"array" : <"character" : <>>>>, "lookup": <>}
-9999 parse:   product: {"2": <"array" : <"character" : <>>>}
+9991 load: --- defining run1001
+9993 parse: instruction: new-array
+9993 parse:   ingredient: {"0": "literal"}
+9993 parse:   ingredient: {"1": "literal"}
+9993 parse:   ingredient: {"2": "literal"}
+9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
+9992 load: after rewriting: 1:address:array:character <- new-array 0, 1, 2
+9993 parse: instruction: copy
+9993 parse:   ingredient: {"*1": <"address" : <"array" : <"character" : <>>>>, "lookup": <>}
+9993 parse:   product: {"2": <"array" : <"character" : <>>>}
+9992 load: after rewriting: 2:array:character <- copy *1:address:array:character
 9999 after-brace: recipe run1001
 9999 after-brace: new-array ...
 9999 after-brace: copy ...

@@ -1,14 +1,50 @@
-9999 parse: instruction: trace-until
-9999 parse:   ingredient: {"100": "literal", "app": <>}
-9999 parse: instruction: assume-screen
-9999 parse:   ingredient: {"120": "literal", "width": <>}
-9999 parse:   ingredient: {"20": "literal", "height": <>}
-9999 parse: instruction: assume-console
-9999 parse:   ingredient: {"\n    type [a2-a4\n]\n  ": "literal-string"}
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    screen:address:screen, console:address:console <- chessboard screen:address:screen, console:address:console\n    # icon for the cursor\n    screen <- print-character screen, 9251/␣\n  ": "literal-string"}
-9999 parse: instruction: screen-should-contain
-9999 parse:   ingredient: {"\n  #            1         2         3         4         5         6         7         8         9         10        11\n  #  012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\n    .Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.         .\n    .                                                                                                                        .\n    .8 | r n b q k b n r                                                                                                     .\n    .7 | p p p p p p p p                                                                                                     .\n    .6 |                                                                                                                     .\n    .5 |                                                                                                                     .\n    .4 | P                                                                                                                   .\n    .3 |                                                                                                                     .\n    .2 |   P P P P P P P                                                                                                     .\n    .1 | R N B Q K B N R                                                                                                     .\n    .  +----------------                                                                                                     .\n    .    a b c d e f g h                                                                                                     .\n    .                                                                                                                        .\n    .Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.                               .\n    .                                                                                                                        .\n    .Hit 'q' to exit.                                                                                                        .\n    .                                                                                                                        .\n    .move: ␣                                                                                                                 .\n    .                                                                                                                        .\n    .                                                                                                                        .\n  ": "literal-string"}
+9991 load: --- defining scenario-print-board-and-read-move
+9993 parse: instruction: trace-until
+9993 parse:   ingredient: {"100": "literal", "app": <>}
+9992 load: after rewriting: trace-until 100/app
+9993 parse: instruction: assume-screen
+9993 parse:   ingredient: {"120": "literal", "width": <>}
+9993 parse:   ingredient: {"20": "literal", "height": <>}
+9992 load: after rewriting: screen:address:screen <- new-fake-screen 120/width, 20/height
+9993 parse: instruction: assume-console
+9993 parse:   ingredient: {"\n    type [a2-a4\n]\n  ": "literal-string"}
+9992 load: after rewriting: assume-console [
+    type [a2-a4
+]
+  ]
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    screen:address:screen, console:address:console <- chessboard screen:address:screen, console:address:console\n    # icon for the cursor\n    screen <- print-character screen, 9251/␣\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    screen:address:screen, console:address:console <- chessboard screen:address:screen, console:address:console
+    # icon for the cursor
+    screen <- print-character screen, 9251/␣
+  ]
+9993 parse: instruction: screen-should-contain
+9993 parse:   ingredient: {"\n  #            1         2         3         4         5         6         7         8         9         10        11\n  #  012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\n    .Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.         .\n    .                                                                                                                        .\n    .8 | r n b q k b n r                                                                                                     .\n    .7 | p p p p p p p p                                                                                                     .\n    .6 |                                                                                                                     .\n    .5 |                                                                                                                     .\n    .4 | P                                                                                                                   .\n    .3 |                                                                                                                     .\n    .2 |   P P P P P P P                                                                                                     .\n    .1 | R N B Q K B N R                                                                                                     .\n    .  +----------------                                                                                                     .\n    .    a b c d e f g h                                                                                                     .\n    .                                                                                                                        .\n    .Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.                               .\n    .                                                                                                                        .\n    .Hit 'q' to exit.                                                                                                        .\n    .                                                                                                                        .\n    .move: ␣                                                                                                                 .\n    .                                                                                                                        .\n    .                                                                                                                        .\n  ": "literal-string"}
+9992 load: after rewriting: screen-should-contain [
+  #            1         2         3         4         5         6         7         8         9         10        11
+  #  012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+    .Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.         .
+    .                                                                                                                        .
+    .8 | r n b q k b n r                                                                                                     .
+    .7 | p p p p p p p p                                                                                                     .
+    .6 |                                                                                                                     .
+    .5 |                                                                                                                     .
+    .4 | P                                                                                                                   .
+    .3 |                                                                                                                     .
+    .2 |   P P P P P P P                                                                                                     .
+    .1 | R N B Q K B N R                                                                                                     .
+    .  +----------------                                                                                                     .
+    .    a b c d e f g h                                                                                                     .
+    .                                                                                                                        .
+    .Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.                               .
+    .                                                                                                                        .
+    .Hit 'q' to exit.                                                                                                        .
+    .                                                                                                                        .
+    .move: ␣                                                                                                                 .
+    .                                                                                                                        .
+    .                                                                                                                        .
+  ]
 9999 after-brace: recipe scenario-print-board-and-read-move
 9999 after-brace: trace-until ...
 9999 after-brace: new-fake-screen ...

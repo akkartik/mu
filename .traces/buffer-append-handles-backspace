@@ -1,7 +1,22 @@
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    local-scope\n    x:address:buffer <- new-buffer 3\n    x <- buffer-append x, 97  # 'a'\n    x <- buffer-append x, 98  # 'b'\n    x <- buffer-append x, 8/backspace\n    s:address:array:character <- buffer-to-array x\n    1:array:character/raw <- copy *s\n  ": "literal-string"}
-9999 parse: instruction: memory-should-contain
-9999 parse:   ingredient: {"\n    1 <- 1   # length\n    2 <- 97  # contents\n    3 <- 0\n  ": "literal-string"}
+9991 load: --- defining scenario-buffer-append-handles-backspace
+9993 parse: instruction: run
+9993 parse:   ingredient: {"\n    local-scope\n    x:address:buffer <- new-buffer 3\n    x <- buffer-append x, 97  # 'a'\n    x <- buffer-append x, 98  # 'b'\n    x <- buffer-append x, 8/backspace\n    s:address:array:character <- buffer-to-array x\n    1:array:character/raw <- copy *s\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    local-scope
+    x:address:buffer <- new-buffer 3
+    x <- buffer-append x, 97  # 'a'
+    x <- buffer-append x, 98  # 'b'
+    x <- buffer-append x, 8/backspace
+    s:address:array:character <- buffer-to-array x
+    1:array:character/raw <- copy *s
+  ]
+9993 parse: instruction: memory-should-contain
+9993 parse:   ingredient: {"\n    1 <- 1   # length\n    2 <- 97  # contents\n    3 <- 0\n  ": "literal-string"}
+9992 load: after rewriting: memory-should-contain [
+    1 <- 1   # length
+    2 <- 97  # contents
+    3 <- 0
+  ]
 9999 after-brace: recipe scenario-buffer-append-handles-backspace
 9999 after-brace: run ...
 9999 after-brace: memory-should-contain ...
@@ -17,28 +32,36 @@
     s:address:array:character <- buffer-to-array x
     1:array:character/raw <- copy *s
   ]
-9999 parse: instruction: local-scope
-9999 parse: instruction: new-buffer
-9999 parse:   ingredient: {"3": "literal"}
-9999 parse:   product: {"x": <"address" : <"buffer" : <>>>}
-9999 parse: instruction: buffer-append
-9999 parse:   ingredient: {"x": <>}
-9999 parse:   ingredient: {"97": "literal"}
-9999 parse:   product: {"x": <>}
-9999 parse: instruction: buffer-append
-9999 parse:   ingredient: {"x": <>}
-9999 parse:   ingredient: {"98": "literal"}
-9999 parse:   product: {"x": <>}
-9999 parse: instruction: buffer-append
-9999 parse:   ingredient: {"x": <>}
-9999 parse:   ingredient: {"8": "literal", "backspace": <>}
-9999 parse:   product: {"x": <>}
-9999 parse: instruction: buffer-to-array
-9999 parse:   ingredient: {"x": <>}
-9999 parse:   product: {"s": <"address" : <"array" : <"character" : <>>>>}
-9999 parse: instruction: copy
-9999 parse:   ingredient: {"*s": <>, "lookup": <>}
-9999 parse:   product: {"1": <"array" : <"character" : <>>>, "raw": <>}
+9991 load: --- defining run1001
+9993 parse: instruction: local-scope
+9992 load: after rewriting: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+9993 parse: instruction: new-buffer
+9993 parse:   ingredient: {"3": "literal"}
+9993 parse:   product: {"x": <"address" : <"buffer" : <>>>}
+9992 load: after rewriting: x:address:buffer <- new-buffer 3
+9993 parse: instruction: buffer-append
+9993 parse:   ingredient: {"x": <>}
+9993 parse:   ingredient: {"97": "literal"}
+9993 parse:   product: {"x": <>}
+9992 load: after rewriting: x <- buffer-append x, 97
+9993 parse: instruction: buffer-append
+9993 parse:   ingredient: {"x": <>}
+9993 parse:   ingredient: {"98": "literal"}
+9993 parse:   product: {"x": <>}
+9992 load: after rewriting: x <- buffer-append x, 98
+9993 parse: instruction: buffer-append
+9993 parse:   ingredient: {"x": <>}
+9993 parse:   ingredient: {"8": "literal", "backspace": <>}
+9993 parse:   product: {"x": <>}
+9992 load: after rewriting: x <- buffer-append x, 8/backspace
+9993 parse: instruction: buffer-to-array
+9993 parse:   ingredient: {"x": <>}
+9993 parse:   product: {"s": <"address" : <"array" : <"character" : <>>>>}
+9992 load: after rewriting: s:address:array:character <- buffer-to-array x
+9993 parse: instruction: copy
+9993 parse:   ingredient: {"*s": <>, "lookup": <>}
+9993 parse:   product: {"1": <"array" : <"character" : <>>>, "raw": <>}
+9992 load: after rewriting: 1:array:character/raw <- copy *s
 9999 new: location -> location
 9999 name: assign x 1
 9999 name: assign s 2
