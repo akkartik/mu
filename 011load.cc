@@ -52,27 +52,26 @@ long long int slurp_recipe(istream& in) {
       raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
     Recipe.erase(Recipe_ordinal[recipe_name]);
   }
-  // todo: save user-defined recipes to mu's memory
-  Recipe[Recipe_ordinal[recipe_name]] = slurp_body(in);
-  Recipe[Recipe_ordinal[recipe_name]].name = recipe_name;
+  recipe& result = Recipe[Recipe_ordinal[recipe_name]];
+  result.name = recipe_name;
+  slurp_body(in, result);
   // track added recipes because we may need to undo them in tests; see below
   recently_added_recipes.push_back(Recipe_ordinal[recipe_name]);
   return Recipe_ordinal[recipe_name];
 }
 
-recipe slurp_body(istream& in) {
+void slurp_body(istream& in, recipe& result) {
   in >> std::noskipws;
-  recipe result;
   skip_whitespace(in);
   if (in.get() != '[')
     raise_error << "recipe body must begin with '['\n" << end();
   skip_whitespace_and_comments(in);
   instruction curr;
   while (next_instruction(in, &curr)) {
-    // End Rewrite Instruction(curr)
-    result.steps.push_back(curr);
+    // End Rewrite Instruction(curr, recipe result)
+    if (!curr.is_clear())
+      result.steps.push_back(curr);
   }
-  return result;
 }
 
 bool next_instruction(istream& in, instruction* curr) {

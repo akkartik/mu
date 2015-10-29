@@ -38,6 +38,7 @@ struct instruction {
   // End instruction Fields
   instruction();
   void clear();
+  bool is_clear();
   string to_string() const;
 };
 
@@ -222,6 +223,7 @@ instruction::instruction() :is_label(false), operation(IDLE) {
   // End instruction Constructor
 }
 void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
+bool instruction::is_clear() { return !is_label && operation == IDLE; }
 
 // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
 reagent::reagent(string s) :original_string(s), value(0), initialized(false), type(NULL) {
