@@ -25,7 +25,7 @@ has_header = false;
 :(before "End recipe Refinements")
 skip_whitespace(in);
 if (in.peek() != '[') {
-  trace(9999, "parse") << "recipe has a header; parsing";
+  trace(9999, "parse") << "recipe has a header; parsing" << end();
   load_recipe_header(in, result);
 }
 
