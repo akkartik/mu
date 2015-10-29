@@ -184,8 +184,8 @@ case INDEX: {
     break;
   }
   long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
-  trace(Primitive_recipe_depth, "run") << "address to copy is " << src << end();
-  trace(Primitive_recipe_depth, "run") << "its type is " << Type[element_type->value].name << end();
+  trace(9998, "run") << "address to copy is " << src << end();
+  trace(9998, "run") << "its type is " << Type[element_type->value].name << end();
   reagent tmp;
   tmp.set_value(src);
   tmp.type = new type_tree(*element_type);
