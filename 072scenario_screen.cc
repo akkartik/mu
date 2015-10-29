@@ -137,7 +137,7 @@ const long long int SCREEN = Next_predefined_global_for_scenarios++;
 :(before "End Special Scenario Variable Names(r)")
 Name[r]["screen"] = SCREEN;
 
-:(before "End Rewrite Instruction(curr)")
+:(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite `assume-screen width, height` to
 // `screen:address:screen <- new-fake-screen width, height`
 if (curr.name == "assume-screen") {

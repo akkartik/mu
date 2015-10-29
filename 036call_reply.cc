@@ -165,7 +165,7 @@ recipe test1 [
 ]
 +mem: storing 34 in location 1
 
-:(before "End Rewrite Instruction(curr)")
+:(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite `reply-if a, b, c, ...` to
 //   ```
 //   jump-unless a, 1:offset

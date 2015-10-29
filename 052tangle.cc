@@ -35,7 +35,8 @@ Fragments_used.clear();
 :(before "End Command Handlers")
 else if (command == "before") {
   string label = next_word(in);
-  recipe tmp = slurp_body(in);
+  recipe tmp;
+  slurp_body(in, tmp);
   if (is_waypoint(label))
     Before_fragments[label].steps.insert(Before_fragments[label].steps.end(), tmp.steps.begin(), tmp.steps.end());
   else
@@ -43,7 +44,8 @@ else if (command == "before") {
 }
 else if (command == "after") {
   string label = next_word(in);
-  recipe tmp = slurp_body(in);
+  recipe tmp;
+  slurp_body(in, tmp);
   if (is_waypoint(label))
     After_fragments[label].steps.insert(After_fragments[label].steps.begin(), tmp.steps.begin(), tmp.steps.end());
   else

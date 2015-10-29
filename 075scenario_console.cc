@@ -50,7 +50,8 @@ case ASSUME_CONSOLE: {
 case ASSUME_CONSOLE: {
   // create a temporary recipe just for parsing; it won't contain valid instructions
   istringstream in("[" + current_instruction().ingredients.at(0).name + "]");
-  recipe r = slurp_body(in);
+  recipe r;
+  slurp_body(in, r);
   long long int num_events = count_events(r);
   // initialize the events like in new-fake-console
   long long int size = num_events*size_of_event() + /*space for length*/1;

@@ -117,7 +117,7 @@ if (x.name == "number-of-locals")
 :(before "End is_special_name Cases")
 if (s == "number-of-locals") return true;
 
-:(before "End Rewrite Instruction(curr)")
+:(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite `new-default-space` to
 //   `default-space:address:array:location <- new location:type, number-of-locals:literal`
 // where N is Name[recipe][""]
@@ -162,7 +162,7 @@ try_reclaim_locals();
 
 //: now 'local-scope' is identical to 'new-default-space' except that we'll
 //: reclaim the default-space when the routine exits
-:(before "End Rewrite Instruction(curr)")
+:(before "End Rewrite Instruction(curr, recipe result)")
 if (curr.name == "local-scope") {
   rewrite_default_space_instruction(curr);
 }
