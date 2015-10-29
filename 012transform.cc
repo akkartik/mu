@@ -5,7 +5,8 @@
 
 :(before "End recipe Fields")
 long long int transformed_until;
-  recipe() :transformed_until(-1) {}
+:(before "End recipe Constructor")
+transformed_until = -1;
 
 :(before "End Types")
 typedef void (*transform_fn)(recipe_ordinal);

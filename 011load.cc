@@ -41,25 +41,26 @@ vector<recipe_ordinal> load(istream& in) {
 }
 
 long long int slurp_recipe(istream& in) {
-  string recipe_name = next_word(in);
-  if (recipe_name.empty())
-    raise_error << "empty recipe name\n" << end();
-  if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
-    Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
+  recipe result;
+  result.name = next_word(in);
+  // End recipe Refinements
+  if (result.name.empty())
+    raise_error << "empty result.name\n" << end();
+  trace(9991, "parse") << "--- defining " << result.name << end();
+  if (Recipe_ordinal.find(result.name) == Recipe_ordinal.end()) {
+    Recipe_ordinal[result.name] = Next_recipe_ordinal++;
   }
-  trace(9991, "parse") << "--- defining " << recipe_name << end();
-  if (Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
+  if (Recipe.find(Recipe_ordinal[result.name]) != Recipe.end()) {
     trace(9991, "parse") << "already exists" << end();
-    if (warn_on_redefine(recipe_name))
-      raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
-    Recipe.erase(Recipe_ordinal[recipe_name]);
+    if (warn_on_redefine(result.name))
+      raise << "redefining recipe " << Recipe[Recipe_ordinal[result.name]].name << "\n" << end();
+    Recipe.erase(Recipe_ordinal[result.name]);
   }
-  recipe& result = Recipe[Recipe_ordinal[recipe_name]];
-  result.name = recipe_name;
   slurp_body(in, result);
+  Recipe[Recipe_ordinal[result.name]] = result;
   // track added recipes because we may need to undo them in tests; see below
-  recently_added_recipes.push_back(Recipe_ordinal[recipe_name]);
-  return Recipe_ordinal[recipe_name];
+  recently_added_recipes.push_back(Recipe_ordinal[result.name]);
+  return Recipe_ordinal[result.name];
 }
 
 void slurp_body(istream& in, recipe& result) {
