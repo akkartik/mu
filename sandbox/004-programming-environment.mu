@@ -21,7 +21,7 @@ container programming-environment-data [
 
 recipe new-programming-environment [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   initial-sandbox-contents:address:array:character <- next-ingredient
   width:number <- screen-width screen
   height:number <- screen-height screen
@@ -43,8 +43,8 @@ recipe new-programming-environment [
 
 recipe event-loop [
   local-scope
-  screen:address <- next-ingredient
-  console:address <- next-ingredient
+  screen:address:screen <- next-ingredient
+  console:address:console <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   # if we fall behind we'll stop updating the screen, but then we have to
@@ -142,7 +142,7 @@ recipe event-loop [
 
 recipe resize [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   clear-screen screen  # update screen dimensions
   width:number <- screen-width screen
@@ -160,7 +160,7 @@ recipe resize [
 
 recipe render-all [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   trace 10, [app], [render all]
   hide-screen screen
@@ -188,7 +188,7 @@ recipe render-all [
 # replaced in a later layer
 recipe render-sandbox-side [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
@@ -205,7 +205,7 @@ recipe render-sandbox-side [
 
 recipe update-cursor [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   current-sandbox:address:editor-data <- next-ingredient
   cursor-row:number <- get *current-sandbox, cursor-row:offset
   cursor-column:number <- get *current-sandbox, cursor-column:offset
@@ -213,12 +213,12 @@ recipe update-cursor [
   reply screen/same-as-ingredient:0
 ]
 
-# row, screen <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
+# row, screen <- render-string screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number
 # print a string 's' to 'editor' in 'color' starting at 'row'
 # clear rest of last line, move cursor to next line
 recipe render-string [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   s:address:array:character <- next-ingredient
   left:number <- next-ingredient
   right:number <- next-ingredient
@@ -280,11 +280,11 @@ recipe render-string [
   reply row/same-as-ingredient:5, screen/same-as-ingredient:0
 ]
 
-# row, screen <- render-code-string screen:address, s:address:array:character, left:number, right:number, row:number
+# row, screen <- render-code-string screen:address:screen, s:address:array:character, left:number, right:number, row:number
 # like 'render-string' but with colorization for comments like in the editor
 recipe render-code-string [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   s:address:array:character <- next-ingredient
   left:number <- next-ingredient
   right:number <- next-ingredient

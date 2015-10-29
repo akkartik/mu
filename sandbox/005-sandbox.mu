@@ -25,13 +25,13 @@ scenario run-and-show-results [
   assume-screen 50/width, 15/height
   # sandbox editor contains an instruction without storing outputs
   1:address:array:character <- new [divide-with-remainder 11, 3]
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   # run the code in the editors
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # check that screen prints the results
   screen-should-contain [
@@ -74,7 +74,7 @@ scenario run-and-show-results [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # check that screen prints both sandboxes
   screen-should-contain [
@@ -117,7 +117,7 @@ after <global-keypress> [
 recipe run-sandboxes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   stop?:boolean, env, screen <- update-recipes env, screen
   reply-if stop?, 1/errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
   # check contents of editor
@@ -159,7 +159,7 @@ recipe run-sandboxes [
 recipe update-recipes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   in:address:array:character <- restore [recipes.mu]  # newlayer: persistence
   reload in
   reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
@@ -177,7 +177,7 @@ recipe update-sandbox [
 
 recipe update-status [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   msg:address:array:character <- next-ingredient
   color:number <- next-ingredient
   screen <- move-cursor screen, 0, 2
@@ -213,7 +213,7 @@ recipe save-sandboxes [
 
 recipe! render-sandbox-side [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   trace 11, [app], [render sandbox side]
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
@@ -231,7 +231,7 @@ recipe! render-sandbox-side [
 
 recipe render-sandboxes [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   sandbox:address:sandbox-data <- next-ingredient
   left:number <- next-ingredient
   right:number <- next-ingredient
@@ -261,7 +261,7 @@ recipe render-sandboxes [
   sandbox-response:address:array:character <- get *sandbox, response:offset
   <render-sandbox-results>
   {
-    sandbox-screen:address <- get *sandbox, screen:offset
+    sandbox-screen:address:screen <- get *sandbox, screen:offset
     empty-screen?:boolean <- fake-screen-is-empty? sandbox-screen
     break-if empty-screen?
     row, screen <- render-screen screen, sandbox-screen, left, right, row
@@ -315,12 +315,12 @@ recipe restore-sandboxes [
   reply env/same-as-ingredient:0
 ]
 
-# row, screen <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
+# row, screen <- render-screen screen:address:screen, sandbox-screen:address:screen, left:number, right:number, row:number
 # print the fake sandbox screen to 'screen' with appropriate delimiters
 # leave cursor at start of next line
 recipe render-screen [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   s:address:screen <- next-ingredient
   left:number <- next-ingredient
   right:number <- next-ingredient
@@ -392,13 +392,13 @@ scenario run-instruction-manages-screen-per-sandbox [
   assume-screen 50/width, 20/height
   # editor contains an instruction
   1:address:array:character <- new [print-integer screen, 4]
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   # run the code in the editor
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # check that it prints a little toy screen
   screen-should-contain [
@@ -441,13 +441,13 @@ recipe editor-contents [
 scenario editor-provides-edited-contents [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
   assume-console [
     left-click 1, 2
     type [def]
   ]
   run [
-    editor-event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
     3:address:array:character <- editor-contents 2:address:editor-data
     4:array:character <- copy *3:address:array:character
   ]

@@ -8,7 +8,7 @@ container programming-environment-data [
 recipe! update-recipes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   in:address:array:character <- restore [recipes.mu]
   recipe-warnings:address:address:array:character <- get-address *env, recipe-warnings:offset
   *recipe-warnings <- reload in
@@ -80,12 +80,12 @@ scenario run-instruction-and-print-warnings [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
   1:address:array:character <- new [get 1:address:point, 1:offset]
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -118,14 +118,14 @@ scenario run-instruction-and-print-warnings-only-once [
   assume-screen 50/width, 10/height
   # editor contains an illegal instruction
   1:address:array:character <- new [get 1234:number, foo:offset]
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   # run the code in the editors multiple times
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # check that screen prints error message just once
   screen-should-contain [
@@ -149,13 +149,13 @@ scenario sandbox-can-handle-infinite-loop [
   1:address:array:character <- new [{
 loop
 }]
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   # run the sandbox
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   screen-should-contain [
     .                               run (F4)           .

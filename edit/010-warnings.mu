@@ -8,7 +8,7 @@ container programming-environment-data [
 recipe! update-recipes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   recipes:address:editor-data <- get *env, recipes:offset
   in:address:array:character <- editor-contents recipes
   save [recipes.mu], in
@@ -83,12 +83,12 @@ recipe foo [
   get 123:number, foo:offset
 ]]
   2:address:array:character <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -123,12 +123,12 @@ recipe foo [
   x <- copy 0
 ]]
   2:address:array:character <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -153,12 +153,12 @@ recipe foo «
 ]
   string-replace 1:address:array:character, 171/«, 91  # '['
   2:address:array:character <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -181,12 +181,12 @@ recipe foo [
   get x:address:point, 1:offset
 ]]
   2:address:array:character <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -212,12 +212,12 @@ recipe foo [
   get *y:address:point, x:number
 ]]
   2:address:array:character <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -245,12 +245,12 @@ recipe foo [
   x:number <- copy y:number
 ]]
   2:address:array:character <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -267,7 +267,7 @@ recipe foo [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -288,13 +288,13 @@ scenario run-instruction-and-print-warnings [
   1:address:array:character <- new []
   # right editor contains an illegal instruction
   2:address:array:character <- new [get 1234:number, foo:offset]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   # run the code in the editors
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # check that screen prints error message in red
   screen-should-contain [
@@ -351,14 +351,14 @@ scenario run-instruction-and-print-warnings-only-once [
   1:address:array:character <- new []
   # right editor contains an illegal instruction
   2:address:array:character <- new [get 1234:number, foo:offset]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   # run the code in the editors multiple times
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # check that screen prints error message just once
   screen-should-contain [
@@ -386,13 +386,13 @@ scenario sandbox-can-handle-infinite-loop [
 ]]
   # right editor contains an instruction
   2:address:array:character <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   # run the sandbox
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -419,12 +419,12 @@ _, c:number <- divide-with-remainder a, b
 reply b
 ]]
   2:address:array:character <- new [foo 4, 0]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   # run
   assume-console [
     press F4
   ]
-  event-loop screen:address, console:address, 3:address:programming-environment-data
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   # screen prints error message
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -440,7 +440,7 @@ reply b
     left-click 4, 55
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # screen should expand trace
   screen-should-contain [

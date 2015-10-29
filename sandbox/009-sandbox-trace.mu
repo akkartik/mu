@@ -8,8 +8,8 @@ scenario sandbox-click-on-code-toggles-app-trace [
   assume-console [
     press F4
   ]
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
-  event-loop screen:address, console:address, 2:address:programming-environment-data
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
     .                                        .
@@ -24,8 +24,8 @@ scenario sandbox-click-on-code-toggles-app-trace [
     left-click 4, 21
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
-    print-character screen:address, 9251/␣/cursor
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
+    print-character screen:address:screen, 9251/␣/cursor
   ]
   # trace now printed and cursor shouldn't have budged
   screen-should-contain [
@@ -53,8 +53,8 @@ scenario sandbox-click-on-code-toggles-app-trace [
     left-click 4, 25
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
-    print-character screen:address, 9251/␣/cursor
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
+    print-character screen:address:screen, 9251/␣/cursor
   ]
   # trace hidden again
   screen-should-contain [
@@ -77,8 +77,8 @@ add 2, 2]
   assume-console [
     press F4
   ]
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
-  event-loop screen:address, console:address, 2:address:programming-environment-data
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
     .                                        .
@@ -95,7 +95,7 @@ add 2, 2]
     left-click 4, 21
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # trace now printed above result
   screen-should-contain [

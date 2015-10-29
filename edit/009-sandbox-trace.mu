@@ -13,8 +13,8 @@ recipe foo [
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-  event-loop screen:address, console:address, 3:address:programming-environment-data
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
     .                    ┊                   .
@@ -29,8 +29,8 @@ recipe foo [
     left-click 4, 21
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-    print-character screen:address, 9251/␣/cursor
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    print-character screen:address:screen, 9251/␣/cursor
   ]
   # trace now printed and cursor shouldn't have budged
   screen-should-contain [
@@ -58,8 +58,8 @@ recipe foo [
     left-click 4, 25
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-    print-character screen:address, 9251/␣/cursor
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    print-character screen:address:screen, 9251/␣/cursor
   ]
   # trace hidden again
   screen-should-contain [
@@ -87,8 +87,8 @@ recipe foo [
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-  event-loop screen:address, console:address, 3:address:programming-environment-data
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
     .                    ┊                   .
@@ -104,7 +104,7 @@ recipe foo [
     left-click 4, 21
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # trace now printed above result
   screen-should-contain [

@@ -8,8 +8,8 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
   assume-console [
     press F4
   ]
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
-  event-loop screen:address, console:address, 2:address:programming-environment-data
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
     .                                        .
@@ -27,7 +27,7 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
     left-click 3, 0
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # it pops back into editor
   screen-should-contain [
@@ -47,7 +47,7 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
     type [0]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   screen-should-contain [
     .                     run (F4)           .
@@ -129,13 +129,13 @@ scenario sandbox-with-print-can-be-edited [
   assume-screen 50/width, 20/height
   # run a print instruction
   1:address:array:character <- new [print-integer screen, 4]
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   # run the sandbox
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -164,7 +164,7 @@ scenario sandbox-with-print-can-be-edited [
     left-click 3, 70
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   screen-should-contain [
     .                               run (F4)           .

@@ -13,8 +13,8 @@ recipe foo [
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-  event-loop screen:address, console:address, 3:address:programming-environment-data
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
     .                    ┊                   .
@@ -30,7 +30,7 @@ recipe foo [
     left-click 5, 21
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # color toggles to green
   screen-should-contain-in-color 2/green, [
@@ -45,7 +45,7 @@ recipe foo [
   ]
   # cursor should remain unmoved
   run [
-    print-character screen:address, 9251/␣/cursor
+    print-character screen:address:screen, 9251/␣/cursor
   ]
   screen-should-contain [
     .                     run (F4)           .
@@ -66,7 +66,7 @@ recipe foo [
     press F4
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # result turns red
   screen-should-contain-in-color 1/red, [

@@ -23,7 +23,7 @@ container programming-environment-data [
 
 recipe new-programming-environment [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   initial-recipe-contents:address:array:character <- next-ingredient
   initial-sandbox-contents:address:array:character <- next-ingredient
   width:number <- screen-width screen
@@ -53,8 +53,8 @@ recipe new-programming-environment [
 
 recipe event-loop [
   local-scope
-  screen:address <- next-ingredient
-  console:address <- next-ingredient
+  screen:address:screen <- next-ingredient
+  console:address:console <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   recipes:address:editor-data <- get *env, recipes:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
@@ -187,7 +187,7 @@ recipe event-loop [
 
 recipe resize [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   clear-screen screen  # update screen dimensions
   width:number <- screen-width screen
@@ -221,7 +221,7 @@ scenario point-at-multiple-editors [
   # initialize both halves of screen
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   # focus on both sides
   assume-console [
     left-click 1, 1
@@ -229,7 +229,7 @@ scenario point-at-multiple-editors [
   ]
   # check cursor column in each
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
     4:address:editor-data <- get *3:address:programming-environment-data, recipes:offset
     5:number <- get *4:address:editor-data, cursor-column:offset
     6:address:editor-data <- get *3:address:programming-environment-data, current-sandbox:offset
@@ -247,7 +247,7 @@ scenario edit-multiple-editors [
   # initialize both halves of screen
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   render-all screen, 3:address:programming-environment-data
   # type one letter in each of them
   assume-console [
@@ -257,7 +257,7 @@ scenario edit-multiple-editors [
     type [1]
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
     4:address:editor-data <- get *3:address:programming-environment-data, recipes:offset
     5:number <- get *4:address:editor-data, cursor-column:offset
     6:address:editor-data <- get *3:address:programming-environment-data, current-sandbox:offset
@@ -275,7 +275,7 @@ scenario edit-multiple-editors [
   ]
   # show the cursor at the right window
   run [
-    print-character screen:address, 9251/␣/cursor
+    print-character screen:address:screen, 9251/␣/cursor
   ]
   screen-should-contain [
     .           run (F4)           .
@@ -291,7 +291,7 @@ scenario multiple-editors-cover-only-their-own-areas [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [def]
-    3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+    3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
     render-all screen, 3:address:programming-environment-data
   ]
   # divider isn't messed up
@@ -309,13 +309,13 @@ scenario editor-in-focus-keeps-cursor [
   assume-screen 30/width, 5/height
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   render-all screen, 3:address:programming-environment-data
   # initialize programming environment and highlight cursor
   assume-console []
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-    print-character screen:address, 9251/␣/cursor
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    print-character screen:address:screen, 9251/␣/cursor
   ]
   # is cursor at the right place?
   screen-should-contain [
@@ -329,8 +329,8 @@ scenario editor-in-focus-keeps-cursor [
     type [z]
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-    print-character screen:address, 9251/␣/cursor
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    print-character screen:address:screen, 9251/␣/cursor
   ]
   # cursor should still be right
   screen-should-contain [
@@ -348,7 +348,7 @@ scenario backspace-in-sandbox-editor-joins-lines [
   1:address:array:character <- new []
   2:address:array:character <- new [abc
 def]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   render-all screen, 3:address:programming-environment-data
   screen-should-contain [
     .           run (F4)           .
@@ -363,8 +363,8 @@ def]
     press backspace
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-    print-character screen:address, 9251/␣/cursor
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    print-character screen:address:screen, 9251/␣/cursor
   ]
   # cursor moves to end of old line
   screen-should-contain [
@@ -377,7 +377,7 @@ def]
 
 recipe render-all [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   trace 10, [app], [render all]
   hide-screen screen
@@ -412,7 +412,7 @@ recipe render-all [
 
 recipe render-recipes [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   trace 11, [app], [render recipes]
   recipes:address:editor-data <- get *env, recipes:offset
@@ -433,7 +433,7 @@ recipe render-recipes [
 # replaced in a later layer
 recipe render-sandbox-side [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
@@ -450,7 +450,7 @@ recipe render-sandbox-side [
 
 recipe update-cursor [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   recipes:address:editor-data <- next-ingredient
   current-sandbox:address:editor-data <- next-ingredient
   sandbox-in-focus?:boolean <- next-ingredient
@@ -468,12 +468,12 @@ recipe update-cursor [
   reply screen/same-as-ingredient:0
 ]
 
-# row, screen <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
+# row, screen <- render-string screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number
 # print a string 's' to 'editor' in 'color' starting at 'row'
 # clear rest of last line, move cursor to next line
 recipe render-string [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   s:address:array:character <- next-ingredient
   left:number <- next-ingredient
   right:number <- next-ingredient
@@ -535,11 +535,11 @@ recipe render-string [
   reply row/same-as-ingredient:5, screen/same-as-ingredient:0
 ]
 
-# row, screen <- render-code-string screen:address, s:address:array:character, left:number, right:number, row:number
+# row, screen <- render-code-string screen:address:screen, s:address:array:character, left:number, right:number, row:number
 # like 'render-string' but with colorization for comments like in the editor
 recipe render-code-string [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   s:address:array:character <- next-ingredient
   left:number <- next-ingredient
   right:number <- next-ingredient
@@ -635,7 +635,7 @@ scenario maximize-side [
   # initialize both halves of screen
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   screen <- render-all screen, 3:address:programming-environment-data
   screen-should-contain [
     .           run (F4)           .
@@ -648,7 +648,7 @@ scenario maximize-side [
     press ctrl-x
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # only left side visible
   screen-should-contain [
@@ -662,7 +662,7 @@ scenario maximize-side [
     press ctrl-x
   ]
   run [
-    event-loop screen:address, console:address, 3:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   screen-should-contain [
     .           run (F4)           .
@@ -698,8 +698,8 @@ after <global-type> [
 
 recipe maximize [
   local-scope
-  screen:address <- next-ingredient
-  console:address <- next-ingredient
+  screen:address:screen <- next-ingredient
+  console:address:console <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   hide-screen screen
   # maximize one of the sides
@@ -759,7 +759,7 @@ after <handle-event> [
 
 recipe draw-vertical [
   local-scope
-  screen:address <- next-ingredient
+  screen:address:screen <- next-ingredient
   col:number <- next-ingredient
   y:number <- next-ingredient
   bottom:number <- next-ingredient
