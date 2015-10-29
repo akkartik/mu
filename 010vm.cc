@@ -20,6 +20,7 @@ struct recipe {
   string name;
   vector<instruction> steps;
   // End recipe Fields
+  recipe();
 };
 
 :(before "struct recipe")
@@ -219,6 +220,10 @@ Next_recipe_ordinal = 1000;  // consistent new numbers for each test
 //:: Helpers
 
 :(code)
+recipe::recipe() {
+  // End recipe Constructor
+}
+
 instruction::instruction() :is_label(false), operation(IDLE) {
   // End instruction Constructor
 }

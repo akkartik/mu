@@ -16,10 +16,13 @@ recipe add2 x:number, y:number -> z:number [
 //: When loading recipes save any header.
 
 :(before "End recipe Fields")
+bool has_header;
 vector<reagent> ingredients;
 vector<reagent> products;
+:(before "End recipe Constructor")
+has_header = false;
 
-:(before "slurp_body(in, result);" following "long long int slurp_recipe(istream& in)")
+:(before "End recipe Refinements")
 skip_whitespace(in);
 if (in.peek() != '[') {
   trace(9999, "parse") << "recipe has a header; parsing";
@@ -28,6 +31,7 @@ if (in.peek() != '[') {
 
 :(code)
 void load_recipe_header(istream& in, recipe& result) {
+  result.has_header = true;
   while (in.peek() != '[') {
     string s = next_word(in);
     if (s == "->") break;
@@ -41,6 +45,7 @@ void load_recipe_header(istream& in, recipe& result) {
     trace(9999, "parse") << "header product: " << result.products.back().original_string << end();
     skip_whitespace(in);
   }
+  // End Load Recipe Header(result)
 }
 
 //: Now rewrite 'load-ingredients' to instructions to create all reagents in
