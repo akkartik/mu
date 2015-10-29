@@ -134,8 +134,8 @@ inline bool routine::completed() const {
 
 //: Step 1: load all .mu files with numeric prefixes (in order)
 :(before "End Load Recipes")
-Trace_file = "interactive";
-START_TRACING_UNTIL_END_OF_SCOPE;
+//? Trace_file = "interactive";
+//? START_TRACING_UNTIL_END_OF_SCOPE;
 load_permanently("core.mu");
 transform_all();
 
