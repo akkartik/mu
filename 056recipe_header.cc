@@ -109,3 +109,33 @@ if (curr.name == "reply" && curr.ingredients.empty()) {
     curr.ingredients.push_back(result.products.at(i));
   }
 }
+
+:(scenario reply_on_fallthrough_based_on_header)
+recipe main [
+  1:number/raw <- add2 3, 5
+]
+recipe add2 x:number, y:number -> z:number [
+  local-scope
+  load-ingredients
+  z:number <- add x, y
+]
++mem: storing 8 in location 1
+
+:(after "int main")
+  Transform.push_back(deduce_fallthrough_reply);
+
+:(code)
+void deduce_fallthrough_reply(const recipe_ordinal r) {
+  recipe& rr = Recipe[r];
+  if (rr.products.empty()) return;
+  if (rr.steps.empty()) return;
+  if (rr.steps.at(SIZE(rr.steps)-1).operation != REPLY) {
+    instruction inst;
+    inst.operation = REPLY;
+    inst.name = "reply";
+    for (long long int i = 0; i < SIZE(rr.products); ++i) {
+      inst.ingredients.push_back(rr.products.at(i));
+    }
+    rr.steps.push_back(inst);
+  }
+}
