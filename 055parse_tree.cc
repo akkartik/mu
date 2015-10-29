@@ -1,3 +1,8 @@
+// So far instructions can only contain linear lists of properties. Now we add
+// support for more complex trees of properties in dilated reagents. This will
+// come in handy later for expressing complex types, like "a dictionary from
+// (address to array of charaters) to (list of numbers)".
+
 :(scenario dilated_reagent_with_nested_brackets)
 recipe main [
   {1: number, foo: (bar (baz quux))} <- copy 34
