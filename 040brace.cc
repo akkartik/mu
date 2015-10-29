@@ -27,9 +27,9 @@ recipe main [
     1:number <- copy 0
   }
 ]
-+after-brace: recipe main
-+after-brace: jump 1:offset
-+after-brace: copy ...
++transform: --- transform braces for recipe main
++transform: jump 1:offset
++transform: copy ...
 
 //: one-time setup
 :(after "int main")
@@ -40,19 +40,19 @@ void transform_braces(const recipe_ordinal r) {
   const int OPEN = 0, CLOSE = 1;
   // use signed integer for step index because we'll be doing arithmetic on it
   list<pair<int/*OPEN/CLOSE*/, /*step*/long long int> > braces;
+  trace(9991, "transform") << "--- transform braces for recipe " << Recipe[r].name << end();
   for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
     const instruction& inst = Recipe[r].steps.at(index);
     if (inst.label == "{") {
-      trace("brace") << maybe(Recipe[r].name) << "push (open, " << index << ")" << end();
+      trace(9993, "transform") << maybe(Recipe[r].name) << "push (open, " << index << ")" << end();
       braces.push_back(pair<int,long long int>(OPEN, index));
     }
     if (inst.label == "}") {
-      trace("brace") << "push (close, " << index << ")" << end();
+      trace(9993, "transform") << "push (close, " << index << ")" << end();
       braces.push_back(pair<int,long long int>(CLOSE, index));
     }
   }
   stack</*step*/long long int> open_braces;
-  trace("after-brace") << "recipe " << Recipe[r].name << end();
   for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
     instruction& inst = Recipe[r].steps.at(index);
     if (inst.label == "{") {
@@ -70,7 +70,7 @@ void transform_braces(const recipe_ordinal r) {
          && inst.operation != Recipe_ordinal["break"]
          && inst.operation != Recipe_ordinal["break-if"]
          && inst.operation != Recipe_ordinal["break-unless"]) {
-      trace("after-brace") << inst.name << " ..." << end();
+      trace(9991, "transform") << inst.name << " ..." << end();
       continue;
     }
     // check for errors
@@ -91,14 +91,14 @@ void transform_braces(const recipe_ordinal r) {
     if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
       // conditional branches check arg 1
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
-        trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset" << end();
+        trace(9991, "transform") << "jump " << inst.ingredients.at(1).name << ":offset" << end();
         continue;
       }
     }
     else {
       // unconditional branches check arg 0
       if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
-        trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset" << end();
+        trace(9991, "transform") << "jump " << inst.ingredients.at(0).name << ":offset" << end();
         continue;
       }
     }
@@ -115,11 +115,11 @@ void transform_braces(const recipe_ordinal r) {
     inst.ingredients.push_back(target);
     // log computed target
     if (inst.name.find("-if") != string::npos)
-      trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
+      trace(9991, "transform") << "jump-if " << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
     else if (inst.name.find("-unless") != string::npos)
-      trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
+      trace(9991, "transform") << "jump-unless " << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
     else
-      trace("after-brace") << "jump " << no_scientific(target.value) << ":offset" << end();
+      trace(9991, "transform") << "jump " << no_scientific(target.value) << ":offset" << end();
   }
 }
 
@@ -169,11 +169,11 @@ recipe main [
     loop
   }
 ]
-+after-brace: recipe main
-+after-brace: copy ...
-+after-brace: copy ...
-+after-brace: copy ...
-+after-brace: jump -2:offset
++transform: --- transform braces for recipe main
++transform: copy ...
++transform: copy ...
++transform: copy ...
++transform: jump -2:offset
 
 :(scenario break_empty_block)
 recipe main [
@@ -182,9 +182,9 @@ recipe main [
     break
   }
 ]
-+after-brace: recipe main
-+after-brace: copy ...
-+after-brace: jump 0:offset
++transform: --- transform braces for recipe main
++transform: copy ...
++transform: jump 0:offset
 
 :(scenario break_cascading)
 recipe main [
@@ -196,10 +196,10 @@ recipe main [
     break
   }
 ]
-+after-brace: recipe main
-+after-brace: copy ...
-+after-brace: jump 0:offset
-+after-brace: jump 0:offset
++transform: --- transform braces for recipe main
++transform: copy ...
++transform: jump 0:offset
++transform: jump 0:offset
 
 :(scenario break_cascading_2)
 recipe main [
@@ -213,12 +213,12 @@ recipe main [
     break
   }
 ]
-+after-brace: recipe main
-+after-brace: copy ...
-+after-brace: copy ...
-+after-brace: jump 1:offset
-+after-brace: copy ...
-+after-brace: jump 0:offset
++transform: --- transform braces for recipe main
++transform: copy ...
++transform: copy ...
++transform: jump 1:offset
++transform: copy ...
++transform: jump 0:offset
 
 :(scenario break_if)
 recipe main [
@@ -232,12 +232,12 @@ recipe main [
     break
   }
 ]
-+after-brace: recipe main
-+after-brace: copy ...
-+after-brace: copy ...
-+after-brace: jump-if 2, 1:offset
-+after-brace: copy ...
-+after-brace: jump 0:offset
++transform: --- transform braces for recipe main
++transform: copy ...
++transform: copy ...
++transform: jump-if 2, 1:offset
++transform: copy ...
++transform: jump 0:offset
 
 :(scenario break_nested)
 recipe main [
@@ -251,7 +251,7 @@ recipe main [
     4:number <- copy 0
   }
 ]
-+after-brace: jump 4:offset
++transform: jump 4:offset
 
 :(scenario break_nested_degenerate)
 recipe main [
@@ -264,7 +264,7 @@ recipe main [
     4:number <- copy 0
   }
 ]
-+after-brace: jump 3:offset
++transform: jump 3:offset
 
 :(scenario break_nested_degenerate_2)
 recipe main [
@@ -276,7 +276,7 @@ recipe main [
     }
   }
 ]
-+after-brace: jump 2:offset
++transform: jump 2:offset
 
 :(scenario break_label)
 % Hide_errors = true;
@@ -286,7 +286,7 @@ recipe main [
     break +foo:offset
   }
 ]
-+after-brace: jump +foo:offset
++transform: jump +foo:offset
 
 :(scenario break_unless)
 recipe main [
@@ -297,11 +297,11 @@ recipe main [
     3:number <- copy 0
   }
 ]
-+after-brace: recipe main
-+after-brace: copy ...
-+after-brace: copy ...
-+after-brace: jump-unless 2, 1:offset
-+after-brace: copy ...
++transform: --- transform braces for recipe main
++transform: copy ...
++transform: copy ...
++transform: jump-unless 2, 1:offset
++transform: copy ...
 
 :(scenario loop_unless)
 recipe main [
@@ -312,11 +312,11 @@ recipe main [
     3:number <- copy 0
   }
 ]
-+after-brace: recipe main
-+after-brace: copy ...
-+after-brace: copy ...
-+after-brace: jump-unless 2, -1:offset
-+after-brace: copy ...
++transform: --- transform braces for recipe main
++transform: copy ...
++transform: copy ...
++transform: jump-unless 2, -1:offset
++transform: copy ...
 
 :(scenario loop_nested)
 recipe main [
@@ -330,8 +330,8 @@ recipe main [
     5:number <- copy 0
   }
 ]
-+after-brace: recipe main
-+after-brace: jump-if 4, -5:offset
++transform: --- transform braces for recipe main
++transform: jump-if 4, -5:offset
 
 :(scenario loop_label)
 recipe main [
@@ -339,9 +339,9 @@ recipe main [
   +foo
   2:number <- copy 0
 ]
-+after-brace: recipe main
-+after-brace: copy ...
-+after-brace: copy ...
++transform: --- transform braces for recipe main
++transform: copy ...
++transform: copy ...
 
 //: test how things actually run
 :(scenarios run)

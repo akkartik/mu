@@ -56,7 +56,7 @@ for (long long int i = 0; i < SIZE(Routines); ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   if (Routines.at(i)->waiting_on_location &&
       Memory[Routines.at(i)->waiting_on_location] != Routines.at(i)->old_value_of_waiting_location) {
-    trace("schedule") << "waking up routine\n" << end();
+    trace(9999, "schedule") << "waking up routine\n" << end();
     Routines.at(i)->state = RUNNING;
     Routines.at(i)->waiting_on_location = Routines.at(i)->old_value_of_waiting_location = 0;
   }
@@ -128,7 +128,7 @@ for (long long int i = 0; i < SIZE(Routines); ++i) {
   assert(id != Routines.at(i)->id);  // routine can't wait on itself
   for (long long int j = 0; j < SIZE(Routines); ++j) {
     if (Routines.at(j)->id == id && Routines.at(j)->state != RUNNING) {
-      trace("schedule") << "waking up routine " << Routines.at(i)->id << end();
+      trace(9999, "schedule") << "waking up routine " << Routines.at(i)->id << end();
       Routines.at(i)->state = RUNNING;
       Routines.at(i)->waiting_on_routine = 0;
     }

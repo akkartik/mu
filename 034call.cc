@@ -60,7 +60,7 @@ struct routine {
 routine::routine(recipe_ordinal r) {
   if (Trace_stream) {
     ++Trace_stream->callstack_depth;
-    trace("trace") << "new routine; incrementing callstack depth to " << Trace_stream->callstack_depth << end();
+    trace(9999, "trace") << "new routine; incrementing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
   calls.push_front(call(r));
@@ -111,7 +111,7 @@ default: {
   // not a primitive; look up the book of recipes
   if (Trace_stream) {
     ++Trace_stream->callstack_depth;
-    trace("trace") << "incrementing callstack depth to " << Trace_stream->callstack_depth << end();
+    trace(9999, "trace") << "incrementing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
   Current_routine->calls.push_front(call(current_instruction().operation));
@@ -151,7 +151,7 @@ inline const vector<instruction>& routine::steps() const {
 while (current_step_index() >= SIZE(Current_routine->steps())) {
   // Falling Through End Of Recipe
   if (Trace_stream) {
-    trace("trace") << "fall-through: exiting " << current_recipe_name() << "; decrementing callstack depth from " << Trace_stream->callstack_depth << end();
+    trace(9999, "trace") << "fall-through: exiting " << current_recipe_name() << "; decrementing callstack depth from " << Trace_stream->callstack_depth << end();
     --Trace_stream->callstack_depth;
     assert(Trace_stream->callstack_depth >= 0);
   }

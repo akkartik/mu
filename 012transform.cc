@@ -15,11 +15,14 @@ vector<transform_fn> Transform;
 
 :(code)
 void transform_all() {
+  trace(9990, "transform") << "=== transform_all()" << end();
   for (long long int t = 0; t < SIZE(Transform); ++t) {
+//?     cerr << "transform " << t << '\n';
     for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
       recipe& r = p->second;
       if (r.steps.empty()) continue;
       if (r.transformed_until != t-1) continue;
+//?       cerr << "  recipe " << r.name << '\n';
       (*Transform.at(t))(/*recipe_ordinal*/p->first);
       r.transformed_until = t;
     }
@@ -29,6 +32,7 @@ void transform_all() {
 }
 
 void parse_int_reagents() {
+  trace(9991, "transform") << "--- parsing any uninitialized reagents as integers" << end();
   for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
     recipe& r = p->second;
     if (r.steps.empty()) continue;

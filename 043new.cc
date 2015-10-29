@@ -28,7 +28,7 @@ trace(Primitive_recipe_depth, "new") << "routine allocated memory from " << allo
 
 :(before "End Mu Types Initialization")
 Type_ordinal["type"] = 0;
-:(after "Per-recipe Transforms")
+:(before "End transform_names(inst) Special-cases")
 // replace type names with type_ordinals
 if (inst.operation == Recipe_ordinal["new"]) {
   // End NEW Transform Special-cases

@@ -26,7 +26,7 @@ case REPLY: {
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
   const string& callee = current_recipe_name();
   if (Trace_stream) {
-    trace("trace") << "reply: decrementing callstack depth from " << Trace_stream->callstack_depth << end();
+    trace(9999, "trace") << "reply: decrementing callstack depth from " << Trace_stream->callstack_depth << end();
     --Trace_stream->callstack_depth;
     assert(Trace_stream->callstack_depth >= 0);
   }
