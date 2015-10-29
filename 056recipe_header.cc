@@ -22,6 +22,7 @@ vector<reagent> products;
 :(before "slurp_body(in, result);" following "long long int slurp_recipe(istream& in)")
 skip_whitespace(in);
 if (in.peek() != '[') {
+  trace(9999, "parse") << "recipe has a header; parsing";
   load_recipe_header(in, result);
 }
 
@@ -31,11 +32,13 @@ void load_recipe_header(istream& in, recipe& result) {
     string s = next_word(in);
     if (s == "->") break;
     result.ingredients.push_back(reagent(s));
+    trace(9999, "parse") << "header ingredient: " << result.ingredients.back().original_string << end();
     skip_whitespace(in);
   }
   while (in.peek() != '[') {
     string s = next_word(in);
     result.products.push_back(reagent(s));
+    trace(9999, "parse") << "header product: " << result.products.back().original_string << end();
     skip_whitespace(in);
   }
 }
@@ -73,6 +76,7 @@ recipe add2 x:number, y:number -> z:number [
 void check_header_products(const recipe_ordinal r) {
   const recipe& rr = Recipe[r];
   if (rr.products.empty()) return;
+  trace("transform") << "checking reply instructions against header for " << rr.name << end();
   for (long long int i = 0; i < SIZE(rr.steps); ++i) {
     const instruction& inst = rr.steps.at(i);
     if (inst.operation != REPLY) continue;

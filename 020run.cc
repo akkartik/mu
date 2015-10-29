@@ -134,6 +134,8 @@ inline bool routine::completed() const {
 
 //: Step 1: load all .mu files with numeric prefixes (in order)
 :(before "End Load Recipes")
+Trace_file = "interactive";
+START_TRACING_UNTIL_END_OF_SCOPE;
 load_permanently("core.mu");
 transform_all();
 
@@ -213,6 +215,7 @@ void load_permanently(string filename) {
     return;
   }
   fin >> std::noskipws;
+  trace(9990, "load") << "=== " << filename << end();
   load(fin);
   fin.close();
   // freeze everything so it doesn't get cleared by tests
