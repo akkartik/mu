@@ -181,9 +181,9 @@ case GET: {
     // End GET field Cases
     src += size_of(Type[base_type].elements.at(i));
   }
-  trace(Primitive_recipe_depth, "run") << "address to copy is " << src << end();
+  trace(9998, "run") << "address to copy is " << src << end();
   type_ordinal src_type = Type[base_type].elements.at(offset)->value;
-  trace(Primitive_recipe_depth, "run") << "its type is " << Type[src_type].name << end();
+  trace(9998, "run") << "its type is " << Type[src_type].name << end();
   reagent tmp;
   tmp.set_value(src);
   tmp.type = new type_tree(src_type);
@@ -303,7 +303,7 @@ case GET_ADDRESS: {
     // End GET_ADDRESS field Cases
     result += size_of(Type[base_type].elements.at(i));
   }
-  trace(Primitive_recipe_depth, "run") << "address to copy is " << result << end();
+  trace(9998, "run") << "address to copy is " << result << end();
   products.resize(1);
   products.at(0).push_back(result);
   break;

@@ -235,7 +235,7 @@ case _PRINT: {
 case _PRINT: {
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
     if (is_literal(current_instruction().ingredients.at(i))) {
-      trace(Primitive_recipe_depth, "run") << "$print: " << current_instruction().ingredients.at(i).name << end();
+      trace(9998, "run") << "$print: " << current_instruction().ingredients.at(i).name << end();
       if (has_property(current_instruction().ingredients.at(i), "newline"))
         cout << '\n';
       else
@@ -243,7 +243,7 @@ case _PRINT: {
     }
     else {
       for (long long int j = 0; j < SIZE(ingredients.at(i)); ++j) {
-        trace(Primitive_recipe_depth, "run") << "$print: " << ingredients.at(i).at(j) << end();
+        trace(9998, "run") << "$print: " << ingredients.at(i).at(j) << end();
         if (j > 0) cout << " ";
         cout << no_scientific(ingredients.at(i).at(j));
       }

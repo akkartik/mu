@@ -283,7 +283,7 @@ void check_memory(const string& s) {
     double value = 0;  in >> value;
     if (locations_checked.find(address) != locations_checked.end())
       raise_error << "duplicate expectation for location " << address << '\n' << end();
-    trace(Primitive_recipe_depth, "run") << "checking location " << address << end();
+    trace(9999, "run") << "checking location " << address << end();
     if (Memory[address] != value) {
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
@@ -323,7 +323,7 @@ void check_type(const string& lhs, istream& in) {
 }
 
 void check_string(long long int address, const string& literal) {
-  trace(Primitive_recipe_depth, "run") << "checking string length at " << address << end();
+  trace(9999, "run") << "checking string length at " << address << end();
   if (Memory[address] != SIZE(literal)) {
     if (Current_scenario && !Scenario_testing_scenario)
       raise_error << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(Memory[address]) << '\n' << end();
@@ -337,7 +337,7 @@ void check_string(long long int address, const string& literal) {
   }
   ++address;  // now skip length
   for (long long int i = 0; i < SIZE(literal); ++i) {
-    trace(Primitive_recipe_depth, "run") << "checking location " << address+i << end();
+    trace(9999, "run") << "checking location " << address+i << end();
     if (Memory[address+i] != literal.at(i)) {
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file

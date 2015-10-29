@@ -51,7 +51,7 @@ case REPLY: {
   // check that any reply ingredients with /same-as-ingredient connect up
   // the corresponding ingredient and product in the caller.
   for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
-    trace(Primitive_recipe_depth, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
+    trace(9998, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
     if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
       string_tree* tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
       if (!tmp || tmp->right) {

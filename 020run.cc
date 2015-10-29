@@ -258,7 +258,7 @@ vector<double> read_memory(reagent x) {
   long long int size = size_of(x);
   for (long long int offset = 0; offset < size; ++offset) {
     double val = Memory[base+offset];
-    trace(Primitive_recipe_depth, "mem") << "location " << base+offset << " is " << no_scientific(val) << end();
+    trace(9999, "mem") << "location " << base+offset << " is " << no_scientific(val) << end();
     result.push_back(val);
   }
   return result;
@@ -274,7 +274,7 @@ void write_memory(reagent x, vector<double> data) {
   }
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
     if (base+offset == 0) continue;
-    trace(Primitive_recipe_depth, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << base+offset << end();
+    trace(9999, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << base+offset << end();
     Memory[base+offset] = data.at(offset);
   }
 }

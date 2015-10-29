@@ -55,7 +55,7 @@ void lookup_memory(reagent& x) {
   if (x.value == 0) {
     raise_error << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
   }
-  trace(Primitive_recipe_depth, "mem") << "location " << x.value << " is " << no_scientific(Memory[x.value]) << end();
+  trace(9999, "mem") << "location " << x.value << " is " << no_scientific(Memory[x.value]) << end();
   x.set_value(Memory[x.value]);
   drop_address_from_type(x);
   drop_one_lookup(x);

@@ -361,12 +361,10 @@ using std::ofstream;
 //: Errors will be depth 0.
 //: Warnings will be depth 1.
 //: Mu 'applications' will be able to use depths 2-100 as they like.
-//: Primitive statements will occupy 101-9998
+//: Primitive statements will occupy 101-9989
 const int Initial_callstack_depth = 101;
-const int Max_callstack_depth = 9998;
-//: Finally, details of primitive mu statements will occupy depth 9999 (more on that later as well)
-:(before "End Globals")
-const int Primitive_recipe_depth = 9999;
+const int Max_callstack_depth = 9989;
+//: Finally, details of primitive mu statements will occupy depth 9990-9999 (more on that later as well)
 //:
 //: This framework should help us hide some details at each level, mixing
 //: static ideas like layers with the dynamic notion of call-stack depth.

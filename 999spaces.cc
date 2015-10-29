@@ -27,8 +27,7 @@ assert(Next_recipe_ordinal == 1000);
 //:
 //: 0 - unused
 //: 1-100 - app-level trace statements in mu
-//: 101-9998 - call-stack statements (mostly label run)
+//: 101-9989 - call-stack statements (mostly label run)
 assert(Initial_callstack_depth == 101);
-assert(Max_callstack_depth == 9998);
-//: 9999 - intra-instruction lines (mostly label mem)
-assert(Primitive_recipe_depth == 9999);
+assert(Max_callstack_depth == 9989);
+//: 9990-9999 - intra-instruction lines (mostly label mem)
