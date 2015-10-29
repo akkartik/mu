@@ -100,7 +100,7 @@ bool run_interactive(long long int address) {
   // and wait for it
   if (Save_trace_stream) {
     ++Save_trace_stream->callstack_depth;
-    trace("trace") << "run-interactive: incrementing callstack depth to " << Save_trace_stream->callstack_depth << end();
+    trace(9999, "trace") << "run-interactive: incrementing callstack depth to " << Save_trace_stream->callstack_depth << end();
     assert(Save_trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
   Current_routine->calls.push_front(call(Recipe_ordinal["sandbox"]));

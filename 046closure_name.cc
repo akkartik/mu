@@ -26,7 +26,7 @@ recipe increment-counter [
   reply y:number/space:1
 ]
 
-+name: recipe increment-counter is surrounded by new-counter
++name: lexically surrounding space for recipe increment-counter comes from new-counter
 +mem: storing 5 in location 3
 
 //: To make this work, compute the recipe that provides names for the
@@ -40,6 +40,7 @@ map<recipe_ordinal, recipe_ordinal> Surrounding_space;
 
 :(code)
 void collect_surrounding_spaces(const recipe_ordinal r) {
+  trace(9991, "transform") << "--- collect surrounding spaces for recipe " << Recipe[r].name << end();
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     const instruction& inst = Recipe[r].steps.at(i);
     if (inst.is_label) continue;
@@ -69,7 +70,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
         raise_error << "recipe " << Recipe[r].name << " can have only one 'surrounding' recipe but has " << Recipe[Surrounding_space[r]].name << " and " << surrounding_recipe_name << '\n' << end();
         continue;
       }
-      trace("name") << "recipe " << Recipe[r].name << " is surrounded by " << surrounding_recipe_name << end();
+      trace(9993, "name") << "lexically surrounding space for recipe " << Recipe[r].name << " comes from " << surrounding_recipe_name << end();
       Surrounding_space[r] = Recipe_ordinal[surrounding_recipe_name];
     }
   }

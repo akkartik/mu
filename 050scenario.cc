@@ -202,7 +202,7 @@ case RUN: {
   transform_all();
   if (Trace_stream) {
     ++Trace_stream->callstack_depth;
-    trace("trace") << "run: incrementing callstack depth to " << Trace_stream->callstack_depth << end();
+    trace(9998, "trace") << "run: incrementing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
   Current_routine->calls.push_front(call(tmp_recipe.at(0)));

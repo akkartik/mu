@@ -76,7 +76,7 @@ recipe add2 x:number, y:number -> z:number [
 void check_header_products(const recipe_ordinal r) {
   const recipe& rr = Recipe[r];
   if (rr.products.empty()) return;
-  trace("transform") << "checking reply instructions against header for " << rr.name << end();
+  trace(9991, "transform") << "--- checking reply instructions against header for " << rr.name << end();
   for (long long int i = 0; i < SIZE(rr.steps); ++i) {
     const instruction& inst = rr.steps.at(i);
     if (inst.operation != REPLY) continue;
