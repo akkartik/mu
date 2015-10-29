@@ -4,7 +4,7 @@ scenario deleting-sandboxes [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
   1:address:array:character <- new []
-  2:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   # run a few commands
   assume-console [
     left-click 1, 0
@@ -13,7 +13,7 @@ scenario deleting-sandboxes [
     type [add 2, 2]
     press F4
   ]
-  event-loop screen:address, console:address, 2:address:programming-environment-data
+  event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -34,7 +34,7 @@ scenario deleting-sandboxes [
     left-click 7, 49
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -52,7 +52,7 @@ scenario deleting-sandboxes [
     left-click 3, 49
   ]
   run [
-    event-loop screen:address, console:address, 2:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   screen-should-contain [
     .                               run (F4)           .
