@@ -124,7 +124,7 @@ exclusive-container foo [
   x:number
   y:number
 ]
-+parse: reading exclusive-container foo
++parse: --- defining exclusive-container foo
 +parse:   element name: x
 +parse:   type: 1
 +parse:   element name: y

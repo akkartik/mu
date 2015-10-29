@@ -58,7 +58,7 @@ void run(routine* rr) {
     skip_to_next_routine();
     assert(Current_routine);
     assert(Current_routine->state == RUNNING);
-    trace("schedule") << current_routine_label() << end();
+    trace(9990, "schedule") << current_routine_label() << end();
     run_current_routine(Scheduling_interval);
     // Scheduler State Transitions
     if (Current_routine->completed())
@@ -460,7 +460,7 @@ DISCONTINUED,
 :(before "End Scheduler State Transitions")
 if (Current_routine->limit >= 0) {
   if (Current_routine->limit <= Scheduling_interval) {
-    trace("schedule") << "discontinuing routine " << Current_routine->id << end();
+    trace(9999, "schedule") << "discontinuing routine " << Current_routine->id << end();
     Current_routine->state = DISCONTINUED;
     Current_routine->limit = 0;
   }

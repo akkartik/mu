@@ -53,7 +53,7 @@ case CREATE_ARRAY: {
   // initialize array size, so that size_of will work
   Memory[base_address] = array_size;  // in array elements
   long long int size = size_of(product);  // in locations
-  trace("run") << "creating array of size " << size << '\n' << end();
+  trace(9998, "run") << "creating array of size " << size << '\n' << end();
   // initialize array
   for (long long int i = 1; i <= size_of(product); ++i) {
     Memory[base_address+i] = 0;

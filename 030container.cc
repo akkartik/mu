@@ -347,7 +347,7 @@ container foo [
   x:number
   y:number
 ]
-+parse: reading container foo
++parse: --- defining container foo
 +parse:   element name: x
 +parse:   type: 1
 +parse:   element name: y
@@ -363,13 +363,13 @@ container bar [
   x:number
   y:number
 ]
-+parse: reading container foo
++parse: --- defining container foo
 +parse: type number: 1000
 +parse:   element name: x
 +parse:   type: 1
 +parse:   element name: y
 +parse:   type: 1001
-+parse: reading container bar
++parse: --- defining container bar
 +parse: type number: 1001
 
 :(before "End Command Handlers")
@@ -381,12 +381,12 @@ else if (command == "container") {
 void insert_container(const string& command, kind_of_type kind, istream& in) {
   skip_whitespace(in);
   string name = next_word(in);
-  trace("parse") << "reading " << command << ' ' << name << end();
+  trace(9991, "parse") << "--- defining " << command << ' ' << name << end();
   if (Type_ordinal.find(name) == Type_ordinal.end()
       || Type_ordinal[name] == 0) {
     Type_ordinal[name] = Next_type_ordinal++;
   }
-  trace("parse") << "type number: " << Type_ordinal[name] << end();
+  trace(9999, "parse") << "type number: " << Type_ordinal[name] << end();
   skip_bracket(in, "'container' must begin with '['");
   type_info& info = Type[Type_ordinal[name]];
   recently_added_types.push_back(Type_ordinal[name]);
@@ -399,7 +399,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     // End insert_container Special Definitions(element)
     istringstream inner(element);
     info.element_names.push_back(slurp_until(inner, ':'));
-    trace("parse") << "  element name: " << info.element_names.back() << end();
+    trace(9993, "parse") << "  element name: " << info.element_names.back() << end();
     type_tree* new_type = NULL;
     type_tree** curr_type = &new_type;
     vector<type_ordinal> types;
@@ -412,7 +412,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
         Type_ordinal[type_name] = Next_type_ordinal++;
       }
       *curr_type = new type_tree(Type_ordinal[type_name]);
-      trace("parse") << "  type: " << Type_ordinal[type_name] << end();
+      trace(9993, "parse") << "  type: " << Type_ordinal[type_name] << end();
       curr_type = &(*curr_type)->right;
     }
     info.elements.push_back(new_type);
@@ -545,7 +545,7 @@ container foo [
   # ']' in comment
   y:number
 ]
-+parse: reading container foo
++parse: --- defining container foo
 +parse:   element name: x
 +parse:   type: 1
 +parse:   element name: y

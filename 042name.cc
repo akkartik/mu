@@ -30,6 +30,7 @@ for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
 
 :(code)
 void transform_names(const recipe_ordinal r) {
+  trace(9991, "transform") << "--- transform names for recipe " << Recipe[r].name << end();
   bool names_used = false;
   bool numeric_locations_used = false;
   map<string, long long int>& names = Name[r];
@@ -38,7 +39,7 @@ void transform_names(const recipe_ordinal r) {
   ++curr_idx;  // avoid using index 0, benign skip in some other cases
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
-    // Per-recipe Transforms
+    // End transform_names(inst) Special-cases
     // map names to addresses
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
       if (is_numeric_location(inst.ingredients.at(in))) numeric_locations_used = true;
@@ -54,7 +55,7 @@ void transform_names(const recipe_ordinal r) {
       if (is_named_location(inst.products.at(out))) names_used = true;
       if (disqualified(inst.products.at(out), inst, Recipe[r].name)) continue;
       if (names.find(inst.products.at(out).name) == names.end()) {
-        trace("name") << "assign " << inst.products.at(out).name << " " << curr_idx << end();
+        trace(9993, "name") << "assign " << inst.products.at(out).name << " " << curr_idx << end();
         names[inst.products.at(out).name] = curr_idx;
         curr_idx += size_of(inst.products.at(out));
       }
@@ -190,7 +191,7 @@ recipe main [
 +name: element y of type point is at offset 1
 +name: element x of type point is at offset 0
 
-:(after "Per-recipe Transforms")
+:(before "End transform_names(inst) Special-cases")
 // replace element names of containers with offsets
 if (inst.operation == Recipe_ordinal["get"]
     || inst.operation == Recipe_ordinal["get-address"]) {
@@ -204,7 +205,7 @@ if (inst.operation == Recipe_ordinal["get"]
     // since first non-address in base type must be a container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type, Recipe[r].name);
     inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, Recipe[r].name));
-    trace("name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << no_scientific(inst.ingredients.at(1).value) << end();
+    trace(9993, "name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << no_scientific(inst.ingredients.at(1).value) << end();
   }
 }
 
@@ -231,7 +232,7 @@ recipe main [
 +name: variant p of type number-or-point has tag 1
 +mem: storing 13 in location 20
 
-:(after "Per-recipe Transforms")
+:(before "End transform_names(inst) Special-cases")
 // convert variant names of exclusive containers
 if (inst.operation == Recipe_ordinal["maybe-convert"]) {
   if (SIZE(inst.ingredients) != 2) {
@@ -243,6 +244,6 @@ if (inst.operation == Recipe_ordinal["maybe-convert"]) {
     // since first non-address in base type must be an exclusive container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type, Recipe[r].name);
     inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, Recipe[r].name));
-    trace("name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << no_scientific(inst.ingredients.at(1).value) << end();
+    trace(9993, "name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << no_scientific(inst.ingredients.at(1).value) << end();
   }
 }
