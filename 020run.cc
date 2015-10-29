@@ -164,6 +164,7 @@ if (!Run_tests) {
   setup();
 //?   Trace_file = "interactive";
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
+  trace(9990, "run") << "=== Starting to run" << end();
   run_main(argc, argv);
   teardown();
 }

@@ -169,11 +169,12 @@ abc \\\[def]
 recipe main [
   1:address:array:character <- copy [abc]  # comment
 ]
++parse: --- defining main
 +parse: instruction: copy
 +parse:   ingredient: {"abc": "literal-string"}
 +parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
 # no other ingredients
-$parse: 3
+$parse: 4
 
 :(scenario string_literal_escapes_newlines_in_trace)
 recipe main [
