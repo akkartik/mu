@@ -53,7 +53,7 @@ long long int slurp_recipe(istream& in) {
   if (Recipe.find(Recipe_ordinal[result.name]) != Recipe.end()) {
     trace(9991, "parse") << "already exists" << end();
     if (warn_on_redefine(result.name))
-      raise << "redefining recipe " << Recipe[Recipe_ordinal[result.name]].name << "\n" << end();
+      raise << "redefining recipe " << result.name << "\n" << end();
     Recipe.erase(Recipe_ordinal[result.name]);
   }
   slurp_body(in, result);
