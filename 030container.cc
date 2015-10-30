@@ -401,9 +401,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     info.element_names.push_back(slurp_until(inner, ':'));
     trace(9993, "parse") << "  element name: " << info.element_names.back() << end();
     type_tree* new_type = NULL;
-    type_tree** curr_type = &new_type;
-    vector<type_ordinal> types;
-    while (!inner.eof()) {
+    for (type_tree** curr_type = &new_type; !inner.eof(); curr_type = &(*curr_type)->right) {
       string type_name = slurp_until(inner, ':');
       // End insert_container Special Uses(type_name)
       if (Type_ordinal.find(type_name) == Type_ordinal.end()
@@ -413,7 +411,6 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
       }
       *curr_type = new type_tree(Type_ordinal[type_name]);
       trace(9993, "parse") << "  type: " << Type_ordinal[type_name] << end();
-      curr_type = &(*curr_type)->right;
     }
     info.elements.push_back(new_type);
   }
