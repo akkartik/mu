@@ -16,8 +16,8 @@
 9993 parse: instruction: add
 9993 parse:   ingredient: {"x": <>}
 9993 parse:   ingredient: {"y": <>}
-9993 parse:   product: {"z": "number"}
-9992 load: after rewriting: z:number <- add x, y
+9993 parse:   product: {"z": <>}
+9992 load: after rewriting: z <- add x, y
 9993 parse: instruction: reply
 9993 parse:   ingredient: {"z": <>}
 9992 load: after rewriting: reply z
@@ -30,8 +30,10 @@
 9992 transform: default-space:address:array:location <- new location:type, number-of-locals:literal
 9992 transform: x:number <- next-ingredient 
 9992 transform: y:number <- next-ingredient 
-9992 transform: z:number <- add x, y
+9992 transform: z <- add x, y
+9993 transform: type of z is number
 9992 transform: reply z
+9993 transform: type of z is number
 9991 transform: --- transform names for recipe main
 9991 transform: --- transform names for recipe add2
 9999 new: location -> location
@@ -62,7 +64,7 @@
 9999 mem: storing 3 in location 1002
  103 run: y:number <- next-ingredient 
 9999 mem: storing 5 in location 1003
- 103 run: z:number <- add x, y
+ 103 run: z <- add x, y
 9999 mem: location 1002 is 3
 9999 mem: location 1003 is 5
 9999 mem: storing 8 in location 1004
@@ -72,3 +74,5 @@
 9998 run: result 0 is 8
 9999 mem: storing 8 in location 1
 9999 trace: fall-through: exiting main; decrementing callstack depth from 1
+9990 transform: === transform_all()
+9991 transform: --- parsing any uninitialized reagents as integers
