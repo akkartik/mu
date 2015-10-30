@@ -65,14 +65,14 @@ if (curr.name == "load-ingredients") {
 
 :(scenarios transform)
 :(scenario recipe_headers_are_checked)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe add2 x:number, y:number -> z:number [
   local-scope
   load-ingredients
   z:address:number <- copy 0/raw
   reply z
 ]
-+warn: add2: replied with the wrong type at 'reply z'
++error: add2: replied with the wrong type at 'reply z'
 
 :(before "End One-time Setup")
   Transform.push_back(check_header_products);
@@ -86,11 +86,11 @@ void check_header_products(const recipe_ordinal r) {
     const instruction& inst = rr.steps.at(i);
     if (inst.operation != REPLY) continue;
     if (SIZE(rr.products) != SIZE(inst.ingredients)) {
-      raise << maybe(rr.name) << "tried to reply the wrong number of products in '" << inst.to_string() << "'\n" << end();
+      raise_error << maybe(rr.name) << "tried to reply the wrong number of products in '" << inst.to_string() << "'\n" << end();
     }
     for (long long int i = 0; i < SIZE(rr.products); ++i) {
       if (!types_match(rr.products.at(i), inst.ingredients.at(i))) {
-        raise << maybe(rr.name) << "replied with the wrong type at '" << inst.to_string() << "'\n" << end();
+        raise_error << maybe(rr.name) << "replied with the wrong type at '" << inst.to_string() << "'\n" << end();
       }
     }
   }

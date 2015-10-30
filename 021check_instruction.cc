@@ -8,7 +8,7 @@
 //: sophisticated layer system I'd introduce the simpler version first and
 //: transform it in a separate layer or set of layers.
 
-:(after "int main")
+:(after "Transform.push_back(update_instruction_operations)")
   Transform.push_back(check_instruction);
 
 :(code)

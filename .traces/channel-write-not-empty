@@ -19,6 +19,7 @@
 9991 transform: --- transform braces for recipe scenario-channel-write-not-empty
 9991 transform: run ...
 9991 transform: memory-should-contain ...
+9991 transform: --- compute instruction operations for recipe scenario-channel-write-not-empty
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
@@ -55,11 +56,12 @@
 9991 transform: write ...
 9991 transform: channel-empty? ...
 9991 transform: channel-full? ...
+9991 transform: --- compute instruction operations for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
  103 run: 1:address:channel <- new-channel 3/capacity
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
  104 run: result:address:channel <- new channel:type
@@ -114,7 +116,7 @@
  103 run: 1:address:channel <- write 1:address:channel, 34
 9999 mem: location 1 is 1007
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1015
  104 run: chan:address:channel <- next-ingredient 
@@ -124,7 +126,7 @@
  104 run: full:boolean <- channel-full? chan
 9999 mem: location 1017 is 1007
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1026
  105 run: chan:address:channel <- next-ingredient 
@@ -145,7 +147,7 @@
  105 run: len:number <- channel-capacity chan
 9999 mem: location 1028 is 1007
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
 9999 mem: new alloc: 1034
  106 run: chan:address:channel <- next-ingredient 
@@ -172,7 +174,7 @@
 9999 mem: location 1029 is 1
 9999 mem: location 1030 is 4
 9999 mem: storing 0 in location 1031
- 105 run: break-unless at-end?, 
+ 105 run: jump-unless at-end?, 
 9999 mem: location 1031 is 0
 9998 run: jumping to instruction 9
  105 run: full:number <- get *chan, first-full:offset
@@ -194,7 +196,7 @@
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 0
 9999 mem: storing 0 in location 1019
- 104 run: break-unless full, 
+ 104 run: jump-unless full, 
 9999 mem: location 1019 is 0
 9998 run: jumping to instruction 8
  104 run: circular-buffer:address:array:character <- get *chan, data:offset
@@ -237,7 +239,7 @@
 9999 mem: location 1008 is 1
 9999 mem: location 1024 is 4
 9999 mem: storing 0 in location 1025
- 104 run: break-unless at-end?, 
+ 104 run: jump-unless at-end?, 
 9999 mem: location 1025 is 0
 9998 run: jumping to instruction 19
  104 run: reply chan/same-as-ingredient:0
@@ -248,7 +250,7 @@
  103 run: 2:boolean <- channel-empty? 1:address:channel
 9999 mem: location 1 is 1007
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
 9999 mem: new alloc: 1039
  104 run: chan:address:channel <- next-ingredient 
@@ -285,7 +287,7 @@
  103 run: 3:boolean <- channel-full? 1:address:channel
 9999 mem: location 1 is 1007
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
  104 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1028
@@ -305,7 +307,7 @@
  104 run: len:number <- channel-capacity chan
 9999 mem: location 1028 is 1007
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
  105 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1036
@@ -331,7 +333,7 @@
 9999 mem: location 1029 is 2
 9999 mem: location 1030 is 4
 9999 mem: storing 0 in location 1031
- 104 run: break-unless at-end?, 
+ 104 run: jump-unless at-end?, 
 9999 mem: location 1031 is 0
 9998 run: jumping to instruction 9
  104 run: full:number <- get *chan, first-full:offset

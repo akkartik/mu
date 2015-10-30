@@ -17,6 +17,7 @@
 9991 transform: --- transform braces for recipe scenario-trim-unmodified
 9991 transform: run ...
 9991 transform: memory-should-contain ...
+9991 transform: --- compute instruction operations for recipe scenario-trim-unmodified
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
@@ -46,6 +47,7 @@
 9991 transform: new ...
 9991 transform: trim ...
 9991 transform: copy ...
+9991 transform: --- compute instruction operations for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
  103 run: 1:address:array:character <- new [abc]
@@ -53,7 +55,7 @@
  103 run: 2:address:array:character <- trim 1:address:array:character
 9999 mem: location 1 is 1000
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 16
 9999 mem: new alloc: 1004
  104 run: s:address:array:character <- next-ingredient 
@@ -67,7 +69,7 @@
 9999 mem: location 1008 is 0
 9999 mem: location 1007 is 3
 9999 mem: storing 0 in location 1009
- 104 run: break-unless at-end?, 
+ 104 run: jump-unless at-end?, 
 9999 mem: location 1009 is 0
 9998 run: jumping to instruction 10
  104 run: curr:character <- index *s, start
@@ -80,7 +82,7 @@
  104 run: whitespace?:boolean <- space? curr
 9999 mem: location 1011 is 97
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1021
  105 run: c:character <- next-ingredient 
@@ -249,7 +251,7 @@
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 0
 9999 mem: storing 0 in location 1012
- 104 run: break-unless whitespace?, 
+ 104 run: jump-unless whitespace?, 
 9999 mem: location 1012 is 0
 9998 run: jumping to instruction 16
  104 run: end:number <- subtract len, 1
@@ -271,7 +273,7 @@
  104 run: whitespace?:boolean <- space? curr
 9999 mem: location 1011 is 99
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
  105 run: c:character <- next-ingredient 
 9999 mem: storing 99 in location 1023
@@ -439,7 +441,7 @@
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 0
 9999 mem: storing 0 in location 1012
- 104 run: break-unless whitespace?, 
+ 104 run: jump-unless whitespace?, 
 9999 mem: location 1012 is 0
 9998 run: jumping to instruction 26
  104 run: new-len:number <- subtract end, start, -1
@@ -459,7 +461,7 @@
 9999 mem: location 1016 is 0
 9999 mem: location 1013 is 2
 9999 mem: storing 0 in location 1018
- 104 run: break-if done?, 
+ 104 run: jump-if done?, 
 9999 mem: location 1018 is 0
 9998 run: jump-if fell through
  104 run: src:character <- index *s, i
@@ -483,13 +485,13 @@
  104 run: j <- add j, 1
 9999 mem: location 1017 is 0
 9999 mem: storing 1 in location 1017
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 32
  104 run: done?:boolean <- greater-than i, end
 9999 mem: location 1016 is 1
 9999 mem: location 1013 is 2
 9999 mem: storing 0 in location 1018
- 104 run: break-if done?, 
+ 104 run: jump-if done?, 
 9999 mem: location 1018 is 0
 9998 run: jump-if fell through
  104 run: src:character <- index *s, i
@@ -513,13 +515,13 @@
  104 run: j <- add j, 1
 9999 mem: location 1017 is 1
 9999 mem: storing 2 in location 1017
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 32
  104 run: done?:boolean <- greater-than i, end
 9999 mem: location 1016 is 2
 9999 mem: location 1013 is 2
 9999 mem: storing 0 in location 1018
- 104 run: break-if done?, 
+ 104 run: jump-if done?, 
 9999 mem: location 1018 is 0
 9998 run: jump-if fell through
  104 run: src:character <- index *s, i
@@ -543,13 +545,13 @@
  104 run: j <- add j, 1
 9999 mem: location 1017 is 2
 9999 mem: storing 3 in location 1017
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 32
  104 run: done?:boolean <- greater-than i, end
 9999 mem: location 1016 is 3
 9999 mem: location 1013 is 2
 9999 mem: storing 1 in location 1018
- 104 run: break-if done?, 
+ 104 run: jump-if done?, 
 9999 mem: location 1018 is 1
 9998 run: jumping to instruction 40
  104 run: reply result

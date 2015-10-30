@@ -173,15 +173,15 @@ void try_reclaim_locals() {
   const recipe_ordinal r = Recipe_ordinal[current_recipe_name()];
   if (Recipe[r].steps.empty()) return;
   const instruction& inst = Recipe[r].steps.at(0);
-  if (inst.name != "local-scope") return;
+  if (inst.old_name != "local-scope") return;
   abandon(current_call().default_space,
           /*array length*/1+/*number-of-locals*/Name[r][""]);
 }
 
 void rewrite_default_space_instruction(instruction& curr) {
-  curr.operation = Recipe_ordinal["new"];
   if (!curr.ingredients.empty())
-    raise_error << "new-default-space can't take any ingredients\n" << end();
+    raise_error << curr.to_string() << " can't take any ingredients\n" << end();
+  curr.name = "new";
   curr.ingredients.push_back(reagent("location:type"));
   curr.ingredients.push_back(reagent("number-of-locals:literal"));
   if (!curr.products.empty())

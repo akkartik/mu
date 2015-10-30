@@ -19,6 +19,7 @@
 9991 transform: --- transform braces for recipe scenario-interpolate-at-start
 9991 transform: run ...
 9991 transform: memory-should-contain ...
+9991 transform: --- compute instruction operations for recipe scenario-interpolate-at-start
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
@@ -55,6 +56,7 @@
 9991 transform: new ...
 9991 transform: interpolate ...
 9991 transform: copy ...
+9991 transform: --- compute instruction operations for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
  103 run: 1:address:array:character/raw <- new [_, hello!]
@@ -65,7 +67,7 @@
 9999 mem: location 1 is 1000
 9999 mem: location 2 is 1010
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 16
 9999 mem: new alloc: 1014
  104 run: template:address:array:character <- next-ingredient 
@@ -79,7 +81,7 @@
  104 run: a:address:array:character, arg-received?:boolean <- next-ingredient 
 9999 mem: storing 1010 in location 1019
 9999 mem: storing 1 in location 1020
- 104 run: break-unless arg-received?, 
+ 104 run: jump-unless arg-received?, 
 9999 mem: location 1020 is 1
 9998 run: jump-unless fell through
  104 run: a-len:number <- length *a
@@ -92,12 +94,12 @@
  104 run: result-len <- subtract result-len, 1
 9999 mem: location 1018 is 12
 9999 mem: storing 11 in location 1018
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 5
  104 run: a:address:array:character, arg-received?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1019
 9999 mem: storing 0 in location 1020
- 104 run: break-unless arg-received?, 
+ 104 run: jump-unless arg-received?, 
 9999 mem: location 1020 is 0
 9998 run: jumping to instruction 11
  104 run: rewind-ingredients 
@@ -114,14 +116,14 @@
  104 run: a:address:array:character, arg-received?:boolean <- next-ingredient 
 9999 mem: storing 1010 in location 1019
 9999 mem: storing 1 in location 1020
- 104 run: break-unless arg-received?, 
+ 104 run: jump-unless arg-received?, 
 9999 mem: location 1020 is 1
 9998 run: jump-unless fell through
  104 run: tem-done?:boolean <- greater-or-equal i, tem-len
 9999 mem: location 1024 is 0
 9999 mem: location 1017 is 9
 9999 mem: storing 0 in location 1025
- 104 run: break-if tem-done?, +done:label
+ 104 run: jump-if tem-done?, +done:label
 9999 mem: location 1025 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *template, i
@@ -134,7 +136,7 @@
  104 run: underscore?:boolean <- equal in, 95/_
 9999 mem: location 1026 is 95
 9999 mem: storing 1 in location 1027
- 104 run: break-if underscore?, 
+ 104 run: jump-if underscore?, 
 9999 mem: location 1027 is 1
 9998 run: jumping to instruction 31
  104 run: j:number <- copy 0
@@ -143,7 +145,7 @@
 9999 mem: location 1029 is 0
 9999 mem: location 1021 is 3
 9999 mem: storing 0 in location 1030
- 104 run: break-if arg-done?, 
+ 104 run: jump-if arg-done?, 
 9999 mem: location 1030 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *a, j
@@ -167,13 +169,13 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 0
 9999 mem: storing 1 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 34
  104 run: arg-done?:boolean <- greater-or-equal j, a-len
 9999 mem: location 1029 is 1
 9999 mem: location 1021 is 3
 9999 mem: storing 0 in location 1030
- 104 run: break-if arg-done?, 
+ 104 run: jump-if arg-done?, 
 9999 mem: location 1030 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *a, j
@@ -197,13 +199,13 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 1
 9999 mem: storing 2 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 34
  104 run: arg-done?:boolean <- greater-or-equal j, a-len
 9999 mem: location 1029 is 2
 9999 mem: location 1021 is 3
 9999 mem: storing 0 in location 1030
- 104 run: break-if arg-done?, 
+ 104 run: jump-if arg-done?, 
 9999 mem: location 1030 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *a, j
@@ -227,31 +229,31 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 2
 9999 mem: storing 3 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 34
  104 run: arg-done?:boolean <- greater-or-equal j, a-len
 9999 mem: location 1029 is 3
 9999 mem: location 1021 is 3
 9999 mem: storing 1 in location 1030
- 104 run: break-if arg-done?, 
+ 104 run: jump-if arg-done?, 
 9999 mem: location 1030 is 1
 9998 run: jumping to instruction 42
  104 run: i <- add i, 1
 9999 mem: location 1024 is 0
 9999 mem: storing 1 in location 1024
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 18
  104 run: a:address:array:character, arg-received?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1019
 9999 mem: storing 0 in location 1020
- 104 run: break-unless arg-received?, 
+ 104 run: jump-unless arg-received?, 
 9999 mem: location 1020 is 0
 9998 run: jumping to instruction 45
  104 run: tem-done?:boolean <- greater-or-equal i, tem-len
 9999 mem: location 1024 is 1
 9999 mem: location 1017 is 9
 9999 mem: storing 0 in location 1025
- 104 run: break-if tem-done?, 
+ 104 run: jump-if tem-done?, 
 9999 mem: location 1025 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *template, i
@@ -275,13 +277,13 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 3
 9999 mem: storing 4 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 48
  104 run: tem-done?:boolean <- greater-or-equal i, tem-len
 9999 mem: location 1024 is 2
 9999 mem: location 1017 is 9
 9999 mem: storing 0 in location 1025
- 104 run: break-if tem-done?, 
+ 104 run: jump-if tem-done?, 
 9999 mem: location 1025 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *template, i
@@ -305,13 +307,13 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 4
 9999 mem: storing 5 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 48
  104 run: tem-done?:boolean <- greater-or-equal i, tem-len
 9999 mem: location 1024 is 3
 9999 mem: location 1017 is 9
 9999 mem: storing 0 in location 1025
- 104 run: break-if tem-done?, 
+ 104 run: jump-if tem-done?, 
 9999 mem: location 1025 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *template, i
@@ -335,13 +337,13 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 5
 9999 mem: storing 6 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 48
  104 run: tem-done?:boolean <- greater-or-equal i, tem-len
 9999 mem: location 1024 is 4
 9999 mem: location 1017 is 9
 9999 mem: storing 0 in location 1025
- 104 run: break-if tem-done?, 
+ 104 run: jump-if tem-done?, 
 9999 mem: location 1025 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *template, i
@@ -365,13 +367,13 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 6
 9999 mem: storing 7 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 48
  104 run: tem-done?:boolean <- greater-or-equal i, tem-len
 9999 mem: location 1024 is 5
 9999 mem: location 1017 is 9
 9999 mem: storing 0 in location 1025
- 104 run: break-if tem-done?, 
+ 104 run: jump-if tem-done?, 
 9999 mem: location 1025 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *template, i
@@ -395,13 +397,13 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 7
 9999 mem: storing 8 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 48
  104 run: tem-done?:boolean <- greater-or-equal i, tem-len
 9999 mem: location 1024 is 6
 9999 mem: location 1017 is 9
 9999 mem: storing 0 in location 1025
- 104 run: break-if tem-done?, 
+ 104 run: jump-if tem-done?, 
 9999 mem: location 1025 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *template, i
@@ -425,13 +427,13 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 8
 9999 mem: storing 9 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 48
  104 run: tem-done?:boolean <- greater-or-equal i, tem-len
 9999 mem: location 1024 is 7
 9999 mem: location 1017 is 9
 9999 mem: storing 0 in location 1025
- 104 run: break-if tem-done?, 
+ 104 run: jump-if tem-done?, 
 9999 mem: location 1025 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *template, i
@@ -455,13 +457,13 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 9
 9999 mem: storing 10 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 48
  104 run: tem-done?:boolean <- greater-or-equal i, tem-len
 9999 mem: location 1024 is 8
 9999 mem: location 1017 is 9
 9999 mem: storing 0 in location 1025
- 104 run: break-if tem-done?, 
+ 104 run: jump-if tem-done?, 
 9999 mem: location 1025 is 0
 9998 run: jump-if fell through
  104 run: in:character <- index *template, i
@@ -485,13 +487,13 @@
  104 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 10
 9999 mem: storing 11 in location 1023
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 48
  104 run: tem-done?:boolean <- greater-or-equal i, tem-len
 9999 mem: location 1024 is 9
 9999 mem: location 1017 is 9
 9999 mem: storing 1 in location 1025
- 104 run: break-if tem-done?, 
+ 104 run: jump-if tem-done?, 
 9999 mem: location 1025 is 1
 9998 run: jumping to instruction 56
  104 run: reply result

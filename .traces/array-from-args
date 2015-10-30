@@ -19,6 +19,7 @@
 9991 transform: --- transform braces for recipe scenario-array-from-args
 9991 transform: run ...
 9991 transform: memory-should-contain ...
+9991 transform: --- compute instruction operations for recipe scenario-array-from-args
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
@@ -44,11 +45,12 @@
 9991 transform: --- transform braces for recipe run1001
 9991 transform: new-array ...
 9991 transform: copy ...
+9991 transform: --- compute instruction operations for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
  103 run: 1:address:array:character <- new-array 0, 1, 2
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 8
 9999 mem: new alloc: 1000
  104 run: capacity:number <- copy 0
@@ -56,40 +58,40 @@
  104 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1003
 9999 mem: storing 1 in location 1004
- 104 run: break-unless exists?, 
+ 104 run: jump-unless exists?, 
 9999 mem: location 1004 is 1
 9998 run: jump-unless fell through
  104 run: capacity <- add capacity, 1
 9999 mem: location 1002 is 0
 9999 mem: storing 1 in location 1002
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 3
  104 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 1 in location 1003
 9999 mem: storing 1 in location 1004
- 104 run: break-unless exists?, 
+ 104 run: jump-unless exists?, 
 9999 mem: location 1004 is 1
 9998 run: jump-unless fell through
  104 run: capacity <- add capacity, 1
 9999 mem: location 1002 is 1
 9999 mem: storing 2 in location 1002
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 3
  104 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 2 in location 1003
 9999 mem: storing 1 in location 1004
- 104 run: break-unless exists?, 
+ 104 run: jump-unless exists?, 
 9999 mem: location 1004 is 1
 9998 run: jump-unless fell through
  104 run: capacity <- add capacity, 1
 9999 mem: location 1002 is 2
 9999 mem: storing 3 in location 1002
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 3
  104 run: curr-value:character, exists?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1003
 9999 mem: storing 0 in location 1004
- 104 run: break-unless exists?, 
+ 104 run: jump-unless exists?, 
 9999 mem: location 1004 is 0
 9998 run: jumping to instruction 7
  104 run: result:address:array:character <- new character:type, capacity
@@ -104,7 +106,7 @@
 9999 mem: location 1006 is 0
 9999 mem: location 1002 is 3
 9999 mem: storing 0 in location 1007
- 104 run: break-if done?, 
+ 104 run: jump-if done?, 
 9999 mem: location 1007 is 0
 9998 run: jump-if fell through
  104 run: curr-value:character, exists?:boolean <- next-ingredient 
@@ -123,13 +125,13 @@
  104 run: i <- add i, 1
 9999 mem: location 1006 is 0
 9999 mem: storing 1 in location 1006
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 12
  104 run: done?:boolean <- greater-or-equal i, capacity
 9999 mem: location 1006 is 1
 9999 mem: location 1002 is 3
 9999 mem: storing 0 in location 1007
- 104 run: break-if done?, 
+ 104 run: jump-if done?, 
 9999 mem: location 1007 is 0
 9998 run: jump-if fell through
  104 run: curr-value:character, exists?:boolean <- next-ingredient 
@@ -148,13 +150,13 @@
  104 run: i <- add i, 1
 9999 mem: location 1006 is 1
 9999 mem: storing 2 in location 1006
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 12
  104 run: done?:boolean <- greater-or-equal i, capacity
 9999 mem: location 1006 is 2
 9999 mem: location 1002 is 3
 9999 mem: storing 0 in location 1007
- 104 run: break-if done?, 
+ 104 run: jump-if done?, 
 9999 mem: location 1007 is 0
 9998 run: jump-if fell through
  104 run: curr-value:character, exists?:boolean <- next-ingredient 
@@ -173,13 +175,13 @@
  104 run: i <- add i, 1
 9999 mem: location 1006 is 2
 9999 mem: storing 3 in location 1006
- 104 run: loop 
+ 104 run: jump 
 9998 run: jumping to instruction 12
  104 run: done?:boolean <- greater-or-equal i, capacity
 9999 mem: location 1006 is 3
 9999 mem: location 1002 is 3
 9999 mem: storing 1 in location 1007
- 104 run: break-if done?, 
+ 104 run: jump-if done?, 
 9999 mem: location 1007 is 1
 9998 run: jumping to instruction 20
  104 run: reply result

@@ -317,11 +317,6 @@ inline bool scalar(const vector<double>& x) {
   return SIZE(x) == 1;
 }
 
-// hook to suppress inserting recipe name into errors and warnings (for later layers)
-string maybe(string s) {
-  return s + ": ";
-}
-
 // helper for tests
 void run(string form) {
   vector<recipe_ordinal> tmp = load(form);

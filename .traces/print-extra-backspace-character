@@ -25,6 +25,7 @@
 9991 transform: --- transform braces for recipe scenario-print-extra-backspace-character
 9991 transform: run ...
 9991 transform: memory-should-contain ...
+9991 transform: --- compute instruction operations for recipe scenario-print-extra-backspace-character
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
@@ -86,11 +87,12 @@
 9991 transform: get ...
 9991 transform: get ...
 9991 transform: copy ...
+9991 transform: --- compute instruction operations for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
  103 run: 1:address:screen <- new-fake-screen 3/width, 2/height
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 8
 9999 mem: new alloc: 1000
  104 run: result:address:screen <- new screen:type
@@ -173,12 +175,12 @@
  104 run: clear-screen result
 9999 mem: location 1002 is 1009
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1027
  105 run: sc:address:screen <- next-ingredient 
 9999 mem: storing 1009 in location 1029
- 105 run: break-unless sc, 
+ 105 run: jump-unless sc, 
 9999 mem: location 1029 is 1009
 9998 run: jump-unless fell through
  105 run: buf:address:array:screen-cell <- get *sc, data:offset
@@ -202,7 +204,7 @@
 9999 mem: location 1032 is 0
 9999 mem: location 1031 is 6
 9999 mem: storing 0 in location 1033
- 105 run: break-if done?, 
+ 105 run: jump-if done?, 
 9999 mem: location 1033 is 0
 9998 run: jump-if fell through
  105 run: curr:address:screen-cell <- index-address *buf, i
@@ -232,13 +234,13 @@
  105 run: i <- add i, 1
 9999 mem: location 1032 is 0
 9999 mem: storing 1 in location 1032
- 105 run: loop 
+ 105 run: jump 
 9998 run: jumping to instruction 8
  105 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1032 is 1
 9999 mem: location 1031 is 6
 9999 mem: storing 0 in location 1033
- 105 run: break-if done?, 
+ 105 run: jump-if done?, 
 9999 mem: location 1033 is 0
 9998 run: jump-if fell through
  105 run: curr:address:screen-cell <- index-address *buf, i
@@ -268,13 +270,13 @@
  105 run: i <- add i, 1
 9999 mem: location 1032 is 1
 9999 mem: storing 2 in location 1032
- 105 run: loop 
+ 105 run: jump 
 9998 run: jumping to instruction 8
  105 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1032 is 2
 9999 mem: location 1031 is 6
 9999 mem: storing 0 in location 1033
- 105 run: break-if done?, 
+ 105 run: jump-if done?, 
 9999 mem: location 1033 is 0
 9998 run: jump-if fell through
  105 run: curr:address:screen-cell <- index-address *buf, i
@@ -304,13 +306,13 @@
  105 run: i <- add i, 1
 9999 mem: location 1032 is 2
 9999 mem: storing 3 in location 1032
- 105 run: loop 
+ 105 run: jump 
 9998 run: jumping to instruction 8
  105 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1032 is 3
 9999 mem: location 1031 is 6
 9999 mem: storing 0 in location 1033
- 105 run: break-if done?, 
+ 105 run: jump-if done?, 
 9999 mem: location 1033 is 0
 9998 run: jump-if fell through
  105 run: curr:address:screen-cell <- index-address *buf, i
@@ -340,13 +342,13 @@
  105 run: i <- add i, 1
 9999 mem: location 1032 is 3
 9999 mem: storing 4 in location 1032
- 105 run: loop 
+ 105 run: jump 
 9998 run: jumping to instruction 8
  105 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1032 is 4
 9999 mem: location 1031 is 6
 9999 mem: storing 0 in location 1033
- 105 run: break-if done?, 
+ 105 run: jump-if done?, 
 9999 mem: location 1033 is 0
 9998 run: jump-if fell through
  105 run: curr:address:screen-cell <- index-address *buf, i
@@ -376,13 +378,13 @@
  105 run: i <- add i, 1
 9999 mem: location 1032 is 4
 9999 mem: storing 5 in location 1032
- 105 run: loop 
+ 105 run: jump 
 9998 run: jumping to instruction 8
  105 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1032 is 5
 9999 mem: location 1031 is 6
 9999 mem: storing 0 in location 1033
- 105 run: break-if done?, 
+ 105 run: jump-if done?, 
 9999 mem: location 1033 is 0
 9998 run: jump-if fell through
  105 run: curr:address:screen-cell <- index-address *buf, i
@@ -412,13 +414,13 @@
  105 run: i <- add i, 1
 9999 mem: location 1032 is 5
 9999 mem: storing 6 in location 1032
- 105 run: loop 
+ 105 run: jump 
 9998 run: jumping to instruction 8
  105 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1032 is 6
 9999 mem: location 1031 is 6
 9999 mem: storing 1 in location 1033
- 105 run: break-if done?, 
+ 105 run: jump-if done?, 
 9999 mem: location 1033 is 1
 9998 run: jumping to instruction 17
  105 run: x:address:number <- get-address *sc, cursor-row:offset
@@ -458,7 +460,7 @@
  103 run: 1:address:screen <- print-character 1:address:screen, 97
 9999 mem: location 1 is 1009
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
 9999 mem: new alloc: 1038
  104 run: sc:address:screen <- next-ingredient 
@@ -468,7 +470,7 @@
  104 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1042
 9999 mem: storing 0 in location 1043
- 104 run: break-if color-found?, 
+ 104 run: jump-if color-found?, 
 9999 mem: location 1043 is 0
 9998 run: jump-if fell through
  104 run: color <- copy 7/white
@@ -476,7 +478,7 @@
  104 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1044
 9999 mem: storing 0 in location 1045
- 104 run: break-if bg-color-found?, 
+ 104 run: jump-if bg-color-found?, 
 9999 mem: location 1045 is 0
 9998 run: jump-if fell through
  104 run: bg-color <- copy 0/black
@@ -484,7 +486,7 @@
  104 run: trace 90, [print-character], c
 9999 mem: location 1041 is 97
   90 print-character: 97 
- 104 run: break-unless sc, 
+ 104 run: jump-unless sc, 
 9999 mem: location 1040 is 1009
 9998 run: jump-unless fell through
  104 run: width:number <- get *sc, num-columns:offset
@@ -564,7 +566,7 @@
  104 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1041 is 97
 9999 mem: storing 0 in location 1051
- 104 run: break-unless newline?, 
+ 104 run: jump-unless newline?, 
 9999 mem: location 1051 is 0
 9998 run: jumping to instruction 43
  104 run: index:number <- multiply *row, width
@@ -595,7 +597,7 @@
  104 run: backspace?:boolean <- equal c, 8
 9999 mem: location 1041 is 97
 9999 mem: storing 0 in location 1057
- 104 run: break-unless backspace?, 
+ 104 run: jump-unless backspace?, 
 9999 mem: location 1057 is 0
 9998 run: jumping to instruction 63
  104 run: cursor:address:screen-cell <- index-address *buf, index
@@ -632,7 +634,7 @@
 9999 mem: location 1012 is 0
 9999 mem: location 1062 is 2
 9999 mem: storing 0 in location 1063
- 104 run: break-if at-right?, 
+ 104 run: jump-if at-right?, 
 9999 mem: location 1063 is 0
 9998 run: jump-if fell through
  104 run: *column <- add *column, 1
@@ -648,7 +650,7 @@
  103 run: 1:address:screen <- print-character 1:address:screen, 8
 9999 mem: location 1 is 1009
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
  104 run: sc:address:screen <- next-ingredient 
 9999 mem: storing 1009 in location 1040
@@ -657,7 +659,7 @@
  104 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1042
 9999 mem: storing 0 in location 1043
- 104 run: break-if color-found?, 
+ 104 run: jump-if color-found?, 
 9999 mem: location 1043 is 0
 9998 run: jump-if fell through
  104 run: color <- copy 7/white
@@ -665,7 +667,7 @@
  104 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1044
 9999 mem: storing 0 in location 1045
- 104 run: break-if bg-color-found?, 
+ 104 run: jump-if bg-color-found?, 
 9999 mem: location 1045 is 0
 9998 run: jump-if fell through
  104 run: bg-color <- copy 0/black
@@ -673,7 +675,7 @@
  104 run: trace 90, [print-character], c
 9999 mem: location 1041 is 8
   90 print-character: 8 
- 104 run: break-unless sc, 
+ 104 run: jump-unless sc, 
 9999 mem: location 1040 is 1009
 9998 run: jump-unless fell through
  104 run: width:number <- get *sc, num-columns:offset
@@ -753,7 +755,7 @@
  104 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1041 is 8
 9999 mem: storing 0 in location 1051
- 104 run: break-unless newline?, 
+ 104 run: jump-unless newline?, 
 9999 mem: location 1051 is 0
 9998 run: jumping to instruction 43
  104 run: index:number <- multiply *row, width
@@ -784,14 +786,14 @@
  104 run: backspace?:boolean <- equal c, 8
 9999 mem: location 1041 is 8
 9999 mem: storing 1 in location 1057
- 104 run: break-unless backspace?, 
+ 104 run: jump-unless backspace?, 
 9999 mem: location 1057 is 1
 9998 run: jump-unless fell through
  104 run: at-left?:boolean <- lesser-or-equal *column, 0
 9999 mem: location 1050 is 1012
 9999 mem: location 1012 is 1
 9999 mem: storing 0 in location 1058
- 104 run: break-if at-left?, 
+ 104 run: jump-if at-left?, 
 9999 mem: location 1058 is 0
 9998 run: jump-if fell through
  104 run: *column <- subtract *column, 1
@@ -834,7 +836,7 @@
  103 run: 1:address:screen <- print-character 1:address:screen, 8
 9999 mem: location 1 is 1009
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
  104 run: sc:address:screen <- next-ingredient 
 9999 mem: storing 1009 in location 1040
@@ -843,7 +845,7 @@
  104 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1042
 9999 mem: storing 0 in location 1043
- 104 run: break-if color-found?, 
+ 104 run: jump-if color-found?, 
 9999 mem: location 1043 is 0
 9998 run: jump-if fell through
  104 run: color <- copy 7/white
@@ -851,7 +853,7 @@
  104 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1044
 9999 mem: storing 0 in location 1045
- 104 run: break-if bg-color-found?, 
+ 104 run: jump-if bg-color-found?, 
 9999 mem: location 1045 is 0
 9998 run: jump-if fell through
  104 run: bg-color <- copy 0/black
@@ -859,7 +861,7 @@
  104 run: trace 90, [print-character], c
 9999 mem: location 1041 is 8
   90 print-character: 8 
- 104 run: break-unless sc, 
+ 104 run: jump-unless sc, 
 9999 mem: location 1040 is 1009
 9998 run: jump-unless fell through
  104 run: width:number <- get *sc, num-columns:offset
@@ -939,7 +941,7 @@
  104 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1041 is 8
 9999 mem: storing 0 in location 1051
- 104 run: break-unless newline?, 
+ 104 run: jump-unless newline?, 
 9999 mem: location 1051 is 0
 9998 run: jumping to instruction 43
  104 run: index:number <- multiply *row, width
@@ -970,14 +972,14 @@
  104 run: backspace?:boolean <- equal c, 8
 9999 mem: location 1041 is 8
 9999 mem: storing 1 in location 1057
- 104 run: break-unless backspace?, 
+ 104 run: jump-unless backspace?, 
 9999 mem: location 1057 is 1
 9998 run: jump-unless fell through
  104 run: at-left?:boolean <- lesser-or-equal *column, 0
 9999 mem: location 1050 is 1012
 9999 mem: location 1012 is 0
 9999 mem: storing 1 in location 1058
- 104 run: break-if at-left?, 
+ 104 run: jump-if at-left?, 
 9999 mem: location 1058 is 1
 9998 run: jumping to instruction 61
  104 run: reply sc/same-as-ingredient:0

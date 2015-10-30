@@ -193,14 +193,13 @@ recipe main [
 
 :(before "End transform_names(inst) Special-cases")
 // replace element names of containers with offsets
-if (inst.operation == Recipe_ordinal["get"]
-    || inst.operation == Recipe_ordinal["get-address"]) {
+if (inst.name == "get" || inst.name == "get-address") {
   if (SIZE(inst.ingredients) != 2) {
     raise_error << maybe(Recipe[r].name) << "exactly 2 ingredients expected in '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1)))
-    raise_error << maybe(Recipe[r].name) << "expected ingredient 1 of " << (inst.operation == Recipe_ordinal["get"] ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(Recipe[r].name) << "expected ingredient 1 of " << (inst.name == "get" ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be a container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type, Recipe[r].name);
@@ -234,7 +233,7 @@ recipe main [
 
 :(before "End transform_names(inst) Special-cases")
 // convert variant names of exclusive containers
-if (inst.operation == Recipe_ordinal["maybe-convert"]) {
+if (inst.name == "maybe-convert") {
   if (SIZE(inst.ingredients) != 2) {
     raise_error << maybe(Recipe[r].name) << "exactly 2 ingredients expected in '" << inst.to_string() << "'\n" << end();
     break;
