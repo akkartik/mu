@@ -128,15 +128,16 @@ void deduce_types_from_header(const recipe_ordinal r) {
   }
   for (long long int i = 0; i < SIZE(rr.steps); ++i) {
     instruction& inst = rr.steps.at(i);
-    trace(9993, "transform") << inst.to_string() << '\n';
+    trace(9992, "transform") << inst.to_string() << end();
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
       if (inst.ingredients.at(i).type) continue;
       inst.ingredients.at(i).type = new type_tree(*header[inst.ingredients.at(i).name]);
+      trace(9993, "transform") << "type of " << inst.ingredients.at(i).name << " is " << dump_types(inst.ingredients.at(i)) << end();
     }
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
       if (inst.products.at(i).type) continue;
       inst.products.at(i).type = new type_tree(*header[inst.products.at(i).name]);
-      trace(9993, "transform") << "type of " << inst.products.at(i).name << " is " << dump_types(inst.products.at(i)) << '\n';
+      trace(9993, "transform") << "type of " << inst.products.at(i).name << " is " << dump_types(inst.products.at(i)) << end();
     }
   }
 }
@@ -172,6 +173,7 @@ recipe add2 x:number, y:number -> z:number [
   load-ingredients
   z <- add x, y
 ]
++transform: reply z:number
 +mem: storing 8 in location 1
 
 :(after "int main")
@@ -182,7 +184,7 @@ void deduce_fallthrough_reply(const recipe_ordinal r) {
   recipe& rr = Recipe[r];
   if (rr.products.empty()) return;
   if (rr.steps.empty()) return;
-  if (rr.steps.at(SIZE(rr.steps)-1).operation != REPLY) {
+  if (rr.steps.at(SIZE(rr.steps)-1).name != "reply") {
     instruction inst;
     inst.operation = REPLY;
     inst.name = "reply";
@@ -192,3 +194,17 @@ void deduce_fallthrough_reply(const recipe_ordinal r) {
     rr.steps.push_back(inst);
   }
 }
+
+:(scenario reply_on_fallthrough_already_exists)
+recipe main [
+  1:number/raw <- add2 3, 5
+]
+recipe add2 x:number, y:number -> z:number [
+  local-scope
+  load-ingredients
+  z <- add x, y  # no type for z
+  reply z
+]
++transform: reply z
+-transform: reply z:number
++mem: storing 8 in location 1
