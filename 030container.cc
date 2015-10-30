@@ -348,10 +348,10 @@ container foo [
   y:number
 ]
 +parse: --- defining container foo
-+parse:   element name: x
-+parse:   type: 1
-+parse:   element name: y
-+parse:   type: 1
++parse: element name: x
++parse: type: 1
++parse: element name: y
++parse: type: 1
 
 :(scenario container_use_before_definition)
 container foo [
@@ -546,10 +546,10 @@ container foo [
   y:number
 ]
 +parse: --- defining container foo
-+parse:   element name: x
-+parse:   type: 1
-+parse:   element name: y
-+parse:   type: 1
++parse: element name: x
++parse: type: 1
++parse: element name: y
++parse: type: 1
 
 :(before "End Transform")
 check_container_field_types();
