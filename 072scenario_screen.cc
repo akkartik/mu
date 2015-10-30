@@ -141,9 +141,7 @@ Name[r]["screen"] = SCREEN;
 // rewrite `assume-screen width, height` to
 // `screen:address:screen <- new-fake-screen width, height`
 if (curr.name == "assume-screen") {
-  curr.operation = Recipe_ordinal["new-fake-screen"];
   curr.name = "new-fake-screen";
-  assert(curr.operation);
   assert(curr.products.empty());
   curr.products.push_back(reagent("screen:address:screen"));
   curr.products.at(0).set_value(SCREEN);

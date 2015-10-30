@@ -134,15 +134,8 @@ bool next_instruction(istream& in, instruction* curr) {
     raise_error << "instruction prematurely ended with '<-'\n" << end();
     return false;
   }
-  curr->name = *p;
-  if (Recipe_ordinal.find(*p) == Recipe_ordinal.end()) {
-    Recipe_ordinal[*p] = Next_recipe_ordinal++;
-  }
-  if (Recipe_ordinal[*p] == 0) {
-    raise_error << "Recipe " << *p << " has number 0, which is reserved for IDLE.\n" << end();
-    return false;
-  }
-  curr->operation = Recipe_ordinal[*p];  ++p;
+  curr->old_name = curr->name = *p;  p++;
+  // curr->operation will be set in a later layer
 
   for (; p != words.end(); ++p) {
     curr->ingredients.push_back(reagent(*p));

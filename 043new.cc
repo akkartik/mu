@@ -30,7 +30,7 @@ trace(9999, "new") << "routine allocated memory from " << alloc << " to " << all
 Type_ordinal["type"] = 0;
 :(before "End transform_names(inst) Special-cases")
 // replace type names with type_ordinals
-if (inst.operation == Recipe_ordinal["new"]) {
+if (inst.name == "new") {
   // End NEW Transform Special-cases
   // first arg must be of type 'type'
   if (inst.ingredients.empty())

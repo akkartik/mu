@@ -39,18 +39,18 @@ void transform_labels(const recipe_ordinal r) {
   }
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
-    if (inst.operation == Recipe_ordinal["jump"]) {
+    if (inst.name == "jump") {
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
-    if (inst.operation == Recipe_ordinal["jump-if"] || inst.operation == Recipe_ordinal["jump-unless"]) {
+    if (inst.name == "jump-if" || inst.name == "jump-unless") {
       replace_offset(inst.ingredients.at(1), offset, i, r);
     }
-    if ((inst.operation == Recipe_ordinal["loop"] || inst.operation == Recipe_ordinal["break"])
+    if ((inst.name == "loop" || inst.name == "break")
         && SIZE(inst.ingredients) == 1) {
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
-    if ((inst.operation == Recipe_ordinal["loop-if"] || inst.operation == Recipe_ordinal["loop-unless"]
-            || inst.operation == Recipe_ordinal["break-if"] || inst.operation == Recipe_ordinal["break-unless"])
+    if ((inst.name == "loop-if" || inst.name == "loop-unless"
+            || inst.name == "break-if" || inst.name == "break-unless")
         && SIZE(inst.ingredients) == 2) {
       replace_offset(inst.ingredients.at(1), offset, i, r);
     }

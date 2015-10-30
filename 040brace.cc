@@ -64,34 +64,34 @@ void transform_braces(const recipe_ordinal r) {
       continue;
     }
     if (inst.is_label) continue;
-    if (inst.operation != Recipe_ordinal["loop"]
-         && inst.operation != Recipe_ordinal["loop-if"]
-         && inst.operation != Recipe_ordinal["loop-unless"]
-         && inst.operation != Recipe_ordinal["break"]
-         && inst.operation != Recipe_ordinal["break-if"]
-         && inst.operation != Recipe_ordinal["break-unless"]) {
-      trace(9991, "transform") << inst.name << " ..." << end();
+    if (inst.old_name != "loop"
+         && inst.old_name != "loop-if"
+         && inst.old_name != "loop-unless"
+         && inst.old_name != "break"
+         && inst.old_name != "break-if"
+         && inst.old_name != "break-unless") {
+      trace(9991, "transform") << inst.old_name << " ..." << end();
       continue;
     }
     // check for errors
-    if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
+    if (inst.old_name.find("-if") != string::npos || inst.old_name.find("-unless") != string::npos) {
       if (inst.ingredients.empty()) {
-        raise_error << inst.name << " expects 1 or 2 ingredients, but got none\n" << end();
+        raise_error << inst.old_name << " expects 1 or 2 ingredients, but got none\n" << end();
         continue;
       }
     }
     // update instruction operation
-    if (inst.name.find("-if") != string::npos)
-      inst.operation = Recipe_ordinal["jump-if"];
-    else if (inst.name.find("-unless") != string::npos)
-      inst.operation = Recipe_ordinal["jump-unless"];
+    if (inst.old_name.find("-if") != string::npos)
+      inst.name = "jump-if";
+    else if (inst.old_name.find("-unless") != string::npos)
+      inst.name = "jump-unless";
     else
-      inst.operation = Recipe_ordinal["jump"];
+      inst.name = "jump";
     // check for explicitly provided targets
-    if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
+    if (inst.old_name.find("-if") != string::npos || inst.old_name.find("-unless") != string::npos) {
       // conditional branches check arg 1
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
-        trace(9991, "transform") << "jump " << inst.ingredients.at(1).name << ":offset" << end();
+        trace(9991, "transform") << inst.name << ' ' << inst.ingredients.at(1).name << ":offset" << end();
         continue;
       }
     }
@@ -107,19 +107,17 @@ void transform_braces(const recipe_ordinal r) {
     target.type = new type_tree(Type_ordinal["offset"]);
     target.set_value(0);
     if (open_braces.empty())
-      raise_error << inst.name << " needs a '{' before\n" << end();
-    else if (inst.name.find("loop") != string::npos)
+      raise_error << inst.old_name << " needs a '{' before\n" << end();
+    else if (inst.old_name.find("loop") != string::npos)
       target.set_value(open_braces.top()-index);
     else  // break instruction
       target.set_value(matching_brace(open_braces.top(), braces, r) - index - 1);
     inst.ingredients.push_back(target);
     // log computed target
-    if (inst.name.find("-if") != string::npos)
-      trace(9991, "transform") << "jump-if " << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
-    else if (inst.name.find("-unless") != string::npos)
-      trace(9991, "transform") << "jump-unless " << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
-    else
+    if (inst.name == "jump")
       trace(9991, "transform") << "jump " << no_scientific(target.value) << ":offset" << end();
+    else
+      trace(9991, "transform") << inst.name << ' ' << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
   }
 }
 
@@ -136,12 +134,7 @@ long long int matching_brace(long long int index, const list<pair<int, long long
   return SIZE(Recipe[r].steps);  // exit current routine
 }
 
-// temporarily suppress run
-void transform(string form) {
-  load(form);
-  transform_all();
-}
-
+// todo: remove?
 //: Make sure these pseudo recipes get consistent numbers in all tests, even
 //: though they aren't implemented.
 
