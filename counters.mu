@@ -10,8 +10,7 @@ recipe increment-counter outer:address:array:location/names:new-counter, x:numbe
   local-scope
   load-ingredients
   0:address:array:location/names:new-counter <- copy outer  # setup outer space; it *must* come from 'new-counter'
-  n:number/space:1 <- add n:number/space:1, x
-  reply n/space:1
+  n/space:1 <- add n/space:1, x
 ]
 
 recipe main [
