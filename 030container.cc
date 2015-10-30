@@ -381,6 +381,7 @@ else if (command == "container") {
 void insert_container(const string& command, kind_of_type kind, istream& in) {
   skip_whitespace(in);
   string name = next_word(in);
+  // End container Name Refinements
   trace(9991, "parse") << "--- defining " << command << ' ' << name << end();
   if (Type_ordinal.find(name) == Type_ordinal.end()
       || Type_ordinal[name] == 0) {
@@ -521,6 +522,7 @@ void check_invalid_types(const recipe_ordinal r) {
 
 void check_invalid_types(const type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
+  // End Container Type Checks
   if (type->value && Type.find(type->value) == Type.end()) {
     raise_error << block << "unknown type in " << name << '\n' << end();
   }
