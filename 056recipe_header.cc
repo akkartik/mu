@@ -96,10 +96,54 @@ void check_header_products(const recipe_ordinal r) {
   }
 }
 
+//: Deduce types from the header if possible.
+
+:(scenarios run)
+:(scenario deduce_instruction_types_from_recipe_header)
+recipe main [
+  1:number/raw <- add2 3, 5
+]
+recipe add2 x:number, y:number -> z:number [
+  local-scope
+  load-ingredients
+  z <- add x, y  # no type for z
+  reply z
+]
++mem: storing 8 in location 1
+
+:(before "Transform.push_back(transform_names)")
+  Transform.push_back(deduce_types_from_header);
+
+:(code)
+void deduce_types_from_header(const recipe_ordinal r) {
+  recipe& rr = Recipe[r];
+  if (rr.products.empty()) return;
+  trace(9991, "transform") << "--- deducing types from header for " << rr.name << end();
+  map<string, const type_tree*> header;
+  for (long long int i = 0; i < SIZE(rr.ingredients); ++i) {
+    header[rr.ingredients.at(i).name] = rr.ingredients.at(i).type;
+  }
+  for (long long int i = 0; i < SIZE(rr.products); ++i) {
+    header[rr.products.at(i).name] = rr.products.at(i).type;
+  }
+  for (long long int i = 0; i < SIZE(rr.steps); ++i) {
+    instruction& inst = rr.steps.at(i);
+    trace(9993, "transform") << inst.to_string() << '\n';
+    for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+      if (inst.ingredients.at(i).type) continue;
+      inst.ingredients.at(i).type = new type_tree(*header[inst.ingredients.at(i).name]);
+    }
+    for (long long int i = 0; i < SIZE(inst.products); ++i) {
+      if (inst.products.at(i).type) continue;
+      inst.products.at(i).type = new type_tree(*header[inst.products.at(i).name]);
+      trace(9993, "transform") << "type of " << inst.products.at(i).name << " is " << dump_types(inst.products.at(i)) << '\n';
+    }
+  }
+}
+
 //: One final convenience: no need to say what to return if the information is
 //: in the header.
 
-:(scenarios run)
 :(scenario reply_based_on_header)
 recipe main [
   1:number/raw <- add2 3, 5
@@ -107,7 +151,7 @@ recipe main [
 recipe add2 x:number, y:number -> z:number [
   local-scope
   load-ingredients
-  z:number <- add x, y
+  z <- add x, y
   reply
 ]
 +mem: storing 8 in location 1
@@ -126,7 +170,7 @@ recipe main [
 recipe add2 x:number, y:number -> z:number [
   local-scope
   load-ingredients
-  z:number <- add x, y
+  z <- add x, y
 ]
 +mem: storing 8 in location 1
 
