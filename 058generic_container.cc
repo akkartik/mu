@@ -75,15 +75,15 @@ if (type->value >= START_TYPE_INGREDIENTS
 :(before "End size_of(type) Container Cases")
 if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
   trace(9999, "type") << "checking size of type ingredient\n";
-  result += size_of_type_ingredient(t.elements.at(i)->value - START_TYPE_INGREDIENTS,
-                                    type->right);
+  result += size_of_type_ingredient(t.elements.at(i), type->right);
   continue;
 }
 
 :(code)
 // generic version of size_of
-long long int size_of_type_ingredient(long long int type_ingredient_index, const type_tree* rest_of_type) {
-  const type_tree* curr = rest_of_type;
+long long int size_of_type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {
+  long long int type_ingredient_index = element_template->value - START_TYPE_INGREDIENTS;
+  const type_tree* curr = rest_of_use;
   while (type_ingredient_index > 0) {
     assert(curr);
     --type_ingredient_index;
@@ -97,3 +97,52 @@ long long int size_of_type_ingredient(long long int type_ingredient_index, const
     tmp.right = new type_tree(*curr->right);
   return size_of(&tmp);
 }
+
+:(scenario get_on_generic_container)
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  1:foo:point <- merge 14, 15, 16
+  2:number <- get 1:foo:point, 1:offset
+]
++mem: storing 16 in location 2
+
+:(before "End GET field Cases")
+if (Type[base_type].elements.at(i)->value >= START_TYPE_INGREDIENTS) {
+  src += size_of_type_ingredient(Type[base_type].elements.at(i), base.type->right);
+  continue;
+}
+
+:(scenario get_address_on_generic_container)
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  10:foo:point <- merge 14, 15, 16
+  1:address:number <- get-address 10:foo:point, 1:offset
+]
++mem: storing 12 in location 1
+
+:(before "End GET_ADDRESS field Cases")
+if (Type[base_type].elements.at(i)->value >= START_TYPE_INGREDIENTS) {
+  result += size_of_type_ingredient(Type[base_type].elements.at(i), base.type->right);
+  continue;
+}
+
+:(scenario get_on_generic_container_inside_generic_container)
+container foo:_t [
+  x:_t
+  y:number
+]
+container bar [
+  x:foo:point
+  y:number
+]
+recipe main [
+  1:bar <- merge 14, 15, 16, 17
+  2:number <- get 1:bar, 1:offset
+]
++mem: storing 17 in location 2
