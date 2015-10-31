@@ -114,6 +114,7 @@ void replace_best_variant(instruction& inst) {
       best_score = current_score;
     }
   }
+  // End Instruction Dispatch(inst, best_score)
 }
 
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {
@@ -139,6 +140,7 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
       return -1;
     }
   }
+  // the greater the number of unused ingredients, the lower the score
   return 100 - (SIZE(Recipe[variant].products)-SIZE(inst.products))
              - (SIZE(inst.ingredients)-SIZE(Recipe[variant].ingredients));  // ok to go negative
 }
