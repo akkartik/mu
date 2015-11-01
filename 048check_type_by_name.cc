@@ -19,29 +19,29 @@ recipe main [
 
 :(code)
 void check_types_by_name(const recipe_ordinal r) {
-  map<string, type_tree*> metadata;
+  map<string, type_tree*> type;
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
-      deduce_missing_type(metadata, inst.ingredients.at(in));
-      check_metadata(metadata, inst.ingredients.at(in), r);
+      deduce_missing_type(type, inst.ingredients.at(in));
+      check_type(type, inst.ingredients.at(in), r);
     }
     for (long long int out = 0; out < SIZE(inst.products); ++out) {
-      deduce_missing_type(metadata, inst.products.at(out));
-      check_metadata(metadata, inst.products.at(out), r);
+      deduce_missing_type(type, inst.products.at(out));
+      check_type(type, inst.products.at(out), r);
     }
   }
 }
 
-void check_metadata(map<string, type_tree*>& metadata, const reagent& x, const recipe_ordinal r) {
+void check_type(map<string, type_tree*>& type, const reagent& x, const recipe_ordinal r) {
   if (is_literal(x)) return;
   if (is_raw(x)) return;
   // if you use raw locations you're probably doing something unsafe
   if (is_integer(x.name)) return;
   if (!x.type) return;  // will throw a more precise error elsewhere
-  if (metadata.find(x.name) == metadata.end())
-    metadata[x.name] = x.type;
-  if (!types_match(metadata[x.name], x.type))
+  if (type.find(x.name) == type.end())
+    type[x.name] = x.type;
+  if (!types_match(type[x.name], x.type))
     raise_error << maybe(Recipe[r].name) << x.name << " used with multiple types\n" << end();
 }
 
@@ -52,10 +52,10 @@ recipe main [
 ]
 
 :(code)
-void deduce_missing_type(map<string, type_tree*>& metadata, reagent& x) {
+void deduce_missing_type(map<string, type_tree*>& type, reagent& x) {
   if (x.type) return;
-  if (metadata.find(x.name) == metadata.end()) return;
-  x.type = new type_tree(*metadata[x.name]);
+  if (type.find(x.name) == type.end()) return;
+  x.type = new type_tree(*type[x.name]);
   assert(!x.properties.at(0).second);
   x.properties.at(0).second = new string_tree("as-before");
 }
