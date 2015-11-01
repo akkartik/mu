@@ -131,11 +131,19 @@ void deduce_types_from_header(const recipe_ordinal r) {
     trace(9992, "transform") << inst.to_string() << end();
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
       if (inst.ingredients.at(i).type) continue;
+      if (header.find(inst.ingredients.at(i).name) == header.end()) {
+        raise << maybe(rr.name) << "unknown variable " << inst.ingredients.at(i).name << " in '" << inst.to_string() << "'\n" << end();
+        continue;
+      }
       inst.ingredients.at(i).type = new type_tree(*header[inst.ingredients.at(i).name]);
       trace(9993, "transform") << "type of " << inst.ingredients.at(i).name << " is " << dump_types(inst.ingredients.at(i)) << end();
     }
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
       if (inst.products.at(i).type) continue;
+      if (header.find(inst.products.at(i).name) == header.end()) {
+        raise << maybe(rr.name) << "unknown variable " << inst.products.at(i).name << " in '" << inst.to_string() << "'\n" << end();
+        continue;
+      }
       inst.products.at(i).type = new type_tree(*header[inst.products.at(i).name]);
       trace(9993, "transform") << "type of " << inst.products.at(i).name << " is " << dump_types(inst.products.at(i)) << end();
     }
