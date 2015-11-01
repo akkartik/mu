@@ -13,6 +13,7 @@
 
 :(code)
 void check_instruction(const recipe_ordinal r) {
+  trace(9991, "transform") << "--- perform checks for recipe " << Recipe[r].name << end();
   map<string, vector<type_ordinal> > metadata;
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
