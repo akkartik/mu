@@ -144,7 +144,7 @@ recipe add2 x:number, y:number -> z:number [
 void deduce_types_from_header(const recipe_ordinal r) {
   recipe& rr = Recipe[r];
   if (rr.products.empty()) return;
-  trace(9991, "transform") << "--- deducing types from header for " << rr.name << end();
+  trace(9991, "transform") << "--- deduce types from header for " << rr.name << end();
   map<string, const type_tree*> header;
   for (long long int i = 0; i < SIZE(rr.ingredients); ++i) {
     header[rr.ingredients.at(i).name] = rr.ingredients.at(i).type;
