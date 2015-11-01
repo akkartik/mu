@@ -74,8 +74,7 @@ if (result.has_header) {
   trace(9999, "parse") << "recipe " << result.name << " has a header" << end();
 }
 
-//: Now rewrite 'load-ingredients' to instructions to create all reagents in
-//: the header.
+//: Rewrite 'load-ingredients' to instructions to create all reagents in the header.
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 if (curr.name == "load-ingredients") {
@@ -88,6 +87,8 @@ if (curr.name == "load-ingredients") {
     curr.clear();
   }
 }
+
+//:: Check types going in and out of all recipes with headers.
 
 :(scenarios transform)
 :(scenario recipe_headers_are_checked)

@@ -19,16 +19,24 @@ recipe test a:number, b:number -> z:number [
 
 :(before "End Globals")
 map<string, vector<recipe_ordinal> > Recipe_variants;
+:(before "End Setup")
+Recipe_variants.clear();
 
 :(before "End Load Recipe Header(result)")
-if (Recipe_ordinal.find(result.name) != Recipe_ordinal.end()
-    && (Recipe.find(Recipe_ordinal[result.name]) == Recipe.end()
-        || Recipe[Recipe_ordinal[result.name]].has_header)
-    && !header_already_exists(result)) {
-  string new_name = next_unused_recipe_name(result.name);
-  Recipe_ordinal[new_name] = Next_recipe_ordinal++;
-  Recipe_variants[result.name].push_back(Recipe_ordinal[new_name]);
-  result.name = new_name;
+if (Recipe_ordinal.find(result.name) != Recipe_ordinal.end()) {
+  if ((Recipe.find(Recipe_ordinal[result.name]) == Recipe.end()
+          || Recipe[Recipe_ordinal[result.name]].has_header)
+      && !header_already_exists(result)) {
+    string new_name = next_unused_recipe_name(result.name);
+    Recipe_ordinal[new_name] = Next_recipe_ordinal++;
+    Recipe_variants[result.name].push_back(Recipe_ordinal[new_name]);
+    result.name = new_name;
+  }
+}
+else {
+  // save first variant
+  Recipe_ordinal[result.name] = Next_recipe_ordinal++;
+  Recipe_variants[result.name].push_back(Recipe_ordinal[result.name]);
 }
 
 :(code)
@@ -99,6 +107,8 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
     instruction& inst = Recipe[r].steps.at(index);
     if (inst.is_label) continue;
     if (Recipe_variants.find(inst.name) == Recipe_variants.end()) continue;
+    assert(!Recipe_variants[inst.name].empty());
+    if (++Recipe_variants[inst.name].begin() == Recipe_variants[inst.name].end()) continue;
     replace_best_variant(inst);
   }
 }
