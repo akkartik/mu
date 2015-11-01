@@ -11,7 +11,7 @@ recipe foo a:number -> result:number [
   load-ingredients
   result <- copy 34
 ]
-# generically matching variant
+# matching generic variant
 recipe foo a:_t -> result:_t [
   local-scope
   load-ingredients
@@ -141,3 +141,23 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
 bool is_type_ingredient(const reagent& x) {
   return x.properties.at(0).second->value.at(0) == '_';
 }
+
+:(scenario generic_recipe_2)
+recipe main [
+  10:point <- merge 14, 15
+  11:point <- foo 10:point
+]
+# non-matching generic variant
+recipe foo a:_t, b:_t -> result:number [
+  local-scope
+  load-ingredients
+  result <- copy 34
+]
+# matching generic variant
+recipe foo a:_t -> result:_t [
+  local-scope
+  load-ingredients
+  result <- copy a
+]
++mem: storing 14 in location 11
++mem: storing 15 in location 12
