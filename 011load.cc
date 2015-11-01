@@ -57,6 +57,7 @@ long long int slurp_recipe(istream& in) {
     Recipe.erase(Recipe_ordinal[result.name]);
   }
   slurp_body(in, result);
+  // End recipe Body(result)
   Recipe[Recipe_ordinal[result.name]] = result;
   // track added recipes because we may need to undo them in tests; see below
   recently_added_recipes.push_back(Recipe_ordinal[result.name]);
@@ -142,6 +143,7 @@ bool next_instruction(istream& in, instruction* curr) {
   }
 
   trace(9993, "parse") << "instruction: " << curr->name << end();
+  trace(9993, "parse") << "  number of ingredients: " << SIZE(curr->ingredients) << end();
   for (vector<reagent>::iterator p = curr->ingredients.begin(); p != curr->ingredients.end(); ++p) {
     trace(9993, "parse") << "  ingredient: " << p->to_string() << end();
   }

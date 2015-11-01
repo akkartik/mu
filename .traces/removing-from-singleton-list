@@ -1,5 +1,6 @@
 9991 parse: --- defining scenario-removing-from-singleton-list
 9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    1:address:duplex-list <- copy 0  # 1 points to singleton list\n    1:address:duplex-list <- push-duplex 3, 1:address:duplex-list\n    2:address:duplex-list <- remove-duplex 1:address:duplex-list\n    3:address:duplex-list <- get *1:address:duplex-list, next:offset\n    4:address:duplex-list <- get *1:address:duplex-list, prev:offset\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:duplex-list <- copy 0  # 1 points to singleton list
@@ -9,12 +10,14 @@
     4:address:duplex-list <- get *1:address:duplex-list, prev:offset
   ]
 9993 parse: instruction: memory-should-contain
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    2 <- 0  # remove returned null\n    3 <- 0  # removed node is also detached\n    4 <- 0\n  ": "literal-string"}
 9992 load: after rewriting: memory-should-contain [
     2 <- 0  # remove returned null
     3 <- 0  # removed node is also detached
     4 <- 0
   ]
+9999 parse: recipe scenario-removing-from-singleton-list has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe scenario-removing-from-singleton-list
 9991 transform: --- collect surrounding spaces for recipe scenario-removing-from-singleton-list
@@ -36,28 +39,34 @@
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"0": "literal"}
 9993 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 1:address:duplex-list <- copy 0
 9993 parse: instruction: push-duplex
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"3": "literal"}
 9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
 9993 parse: instruction: remove-duplex
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"2": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 2:address:duplex-list <- remove-duplex 1:address:duplex-list
 9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"*1": <"address" : <"duplex-list" : <>>>, "lookup": <>}
 9993 parse:   ingredient: {"next": "offset"}
 9993 parse:   product: {"3": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 3:address:duplex-list <- get *1:address:duplex-list, next:offset
 9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"*1": <"address" : <"duplex-list" : <>>>, "lookup": <>}
 9993 parse:   ingredient: {"prev": "offset"}
 9993 parse:   product: {"4": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 4:address:duplex-list <- get *1:address:duplex-list, prev:offset
+9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe run1001
 9991 transform: --- collect surrounding spaces for recipe run1001

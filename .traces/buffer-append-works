@@ -1,5 +1,6 @@
 9991 parse: --- defining scenario-buffer-append-works
 9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    local-scope\n    x:address:buffer <- new-buffer 3\n    s1:address:array:character <- get *x:address:buffer, data:offset\n    x:address:buffer <- buffer-append x:address:buffer, 97  # 'a'\n    x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'\n    x:address:buffer <- buffer-append x:address:buffer, 99  # 'c'\n    s2:address:array:character <- get *x:address:buffer, data:offset\n    1:boolean/raw <- equal s1:address:array:character, s2:address:array:character\n    2:array:character/raw <- copy *s2:address:array:character\n    +buffer-filled\n    x:address:buffer <- buffer-append x:address:buffer, 100  # 'd'\n    s3:address:array:character <- get *x:address:buffer, data:offset\n    10:boolean/raw <- equal s1:address:array:character, s3:address:array:character\n    11:number/raw <- get *x:address:buffer, length:offset\n    12:array:character/raw <- copy *s3:address:array:character\n  ": "literal-string"}
 9992 load: after rewriting: run [
     local-scope
@@ -19,6 +20,7 @@
     12:array:character/raw <- copy *s3:address:array:character
   ]
 9993 parse: instruction: memory-should-contain
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    # before +buffer-filled\n    1 <- 1   # no change in data pointer\n    2 <- 3   # size of data\n    3 <- 97  # data\n    4 <- 98\n    5 <- 99\n    # in the end\n    10 <- 0   # data pointer has grown\n    11 <- 4   # final length\n    12 <- 6   # but data's capacity has doubled\n    13 <- 97  # data\n    14 <- 98\n    15 <- 99\n    16 <- 100\n    17 <- 0\n    18 <- 0\n  ": "literal-string"}
 9992 load: after rewriting: memory-should-contain [
     # before +buffer-filled
@@ -38,6 +40,7 @@
     17 <- 0
     18 <- 0
   ]
+9999 parse: recipe scenario-buffer-append-works has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe scenario-buffer-append-works
 9991 transform: --- collect surrounding spaces for recipe scenario-buffer-append-works
@@ -69,71 +72,86 @@
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
 9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
 9993 parse: instruction: new-buffer
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"3": "literal"}
 9993 parse:   product: {"x": <"address" : <"buffer" : <>>>}
 9992 load: after rewriting: x:address:buffer <- new-buffer 3
 9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"*x": <"address" : <"buffer" : <>>>, "lookup": <>}
 9993 parse:   ingredient: {"data": "offset"}
 9993 parse:   product: {"s1": <"address" : <"array" : <"character" : <>>>>}
 9992 load: after rewriting: s1:address:array:character <- get *x:address:buffer, data:offset
 9993 parse: instruction: buffer-append
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <"address" : <"buffer" : <>>>}
 9993 parse:   ingredient: {"97": "literal"}
 9993 parse:   product: {"x": <"address" : <"buffer" : <>>>}
 9992 load: after rewriting: x:address:buffer <- buffer-append x:address:buffer, 97
 9993 parse: instruction: buffer-append
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <"address" : <"buffer" : <>>>}
 9993 parse:   ingredient: {"98": "literal"}
 9993 parse:   product: {"x": <"address" : <"buffer" : <>>>}
 9992 load: after rewriting: x:address:buffer <- buffer-append x:address:buffer, 98
 9993 parse: instruction: buffer-append
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <"address" : <"buffer" : <>>>}
 9993 parse:   ingredient: {"99": "literal"}
 9993 parse:   product: {"x": <"address" : <"buffer" : <>>>}
 9992 load: after rewriting: x:address:buffer <- buffer-append x:address:buffer, 99
 9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"*x": <"address" : <"buffer" : <>>>, "lookup": <>}
 9993 parse:   ingredient: {"data": "offset"}
 9993 parse:   product: {"s2": <"address" : <"array" : <"character" : <>>>>}
 9992 load: after rewriting: s2:address:array:character <- get *x:address:buffer, data:offset
 9993 parse: instruction: equal
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"s1": <"address" : <"array" : <"character" : <>>>>}
 9993 parse:   ingredient: {"s2": <"address" : <"array" : <"character" : <>>>>}
 9993 parse:   product: {"1": "boolean", "raw": <>}
 9992 load: after rewriting: 1:boolean/raw <- equal s1:address:array:character, s2:address:array:character
 9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"*s2": <"address" : <"array" : <"character" : <>>>>, "lookup": <>}
 9993 parse:   product: {"2": <"array" : <"character" : <>>>, "raw": <>}
 9992 load: after rewriting: 2:array:character/raw <- copy *s2:address:array:character
 9993 parse: label: +buffer-filled
 9992 load: after rewriting: +buffer-filled
 9993 parse: instruction: buffer-append
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <"address" : <"buffer" : <>>>}
 9993 parse:   ingredient: {"100": "literal"}
 9993 parse:   product: {"x": <"address" : <"buffer" : <>>>}
 9992 load: after rewriting: x:address:buffer <- buffer-append x:address:buffer, 100
 9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"*x": <"address" : <"buffer" : <>>>, "lookup": <>}
 9993 parse:   ingredient: {"data": "offset"}
 9993 parse:   product: {"s3": <"address" : <"array" : <"character" : <>>>>}
 9992 load: after rewriting: s3:address:array:character <- get *x:address:buffer, data:offset
 9993 parse: instruction: equal
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"s1": <"address" : <"array" : <"character" : <>>>>}
 9993 parse:   ingredient: {"s3": <"address" : <"array" : <"character" : <>>>>}
 9993 parse:   product: {"10": "boolean", "raw": <>}
 9992 load: after rewriting: 10:boolean/raw <- equal s1:address:array:character, s3:address:array:character
 9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"*x": <"address" : <"buffer" : <>>>, "lookup": <>}
 9993 parse:   ingredient: {"length": "offset"}
 9993 parse:   product: {"11": "number", "raw": <>}
 9992 load: after rewriting: 11:number/raw <- get *x:address:buffer, length:offset
 9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"*s3": <"address" : <"array" : <"character" : <>>>>, "lookup": <>}
 9993 parse:   product: {"12": <"array" : <"character" : <>>>, "raw": <>}
 9992 load: after rewriting: 12:array:character/raw <- copy *s3:address:array:character
+9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe run1001
 9991 transform: --- collect surrounding spaces for recipe run1001

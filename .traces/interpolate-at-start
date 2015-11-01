@@ -1,5 +1,6 @@
 9991 parse: --- defining scenario-interpolate-at-start
 9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    1:address:array:character/raw <- new [_, hello!]\n    2:address:array:character/raw <- new [abc]\n    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw\n    4:array:character/raw <- copy *3:address:array:character/raw\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:array:character/raw <- new [_, hello!]
@@ -8,11 +9,13 @@
     4:array:character/raw <- copy *3:address:array:character/raw
   ]
 9993 parse: instruction: memory-should-contain
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    4:string <- [abc, hello!]\n    16 <- 0  # out of bounds\n  ": "literal-string"}
 9992 load: after rewriting: memory-should-contain [
     4:string <- [abc, hello!]
     16 <- 0  # out of bounds
   ]
+9999 parse: recipe scenario-interpolate-at-start has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe scenario-interpolate-at-start
 9991 transform: --- collect surrounding spaces for recipe scenario-interpolate-at-start
@@ -33,22 +36,27 @@
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"_, hello!": "literal-string"}
 9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
 9992 load: after rewriting: 1:address:array:character/raw <- new [_, hello!]
 9993 parse: instruction: new
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"abc": "literal-string"}
 9993 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
 9992 load: after rewriting: 2:address:array:character/raw <- new [abc]
 9993 parse: instruction: interpolate
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
 9993 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
 9993 parse:   product: {"3": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
 9992 load: after rewriting: 3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
 9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"*3": <"address" : <"array" : <"character" : <>>>>, "raw": <>, "lookup": <>}
 9993 parse:   product: {"4": <"array" : <"character" : <>>>, "raw": <>}
 9992 load: after rewriting: 4:array:character/raw <- copy *3:address:array:character/raw
+9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe run1001
 9991 transform: --- collect surrounding spaces for recipe run1001

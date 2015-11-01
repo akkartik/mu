@@ -1,5 +1,6 @@
 9991 parse: --- defining scenario-removing-from-start-of-duplex-list
 9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    1:address:duplex-list <- copy 0  # 1 points to head of list\n    1:address:duplex-list <- push-duplex 3, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 4, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 5, 1:address:duplex-list\n    # removing from head? return value matters.\n    1:address:duplex-list <- remove-duplex 1:address:duplex-list\n    # check structure like before\n    2:address:duplex-list <- copy 1:address:duplex-list\n    3:character <- first-duplex 2:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    4:character <- first-duplex 2:address:duplex-list\n    5:address:duplex-list <- next-duplex 2:address:duplex-list\n    2:address:duplex-list <- prev-duplex 2:address:duplex-list\n    6:character <- first-duplex 2:address:duplex-list\n    7:boolean <- equal 1:address:duplex-list, 2:address:duplex-list\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:duplex-list <- copy 0  # 1 points to head of list
@@ -19,6 +20,7 @@
     7:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
   ]
 9993 parse: instruction: memory-should-contain
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    3 <- 4  # scanning next, skipping deleted element\n    4 <- 3\n    5 <- 0  # no more elements\n    6 <- 4  # prev of final element\n    7 <- 1  # list back at start\n  ": "literal-string"}
 9992 load: after rewriting: memory-should-contain [
     3 <- 4  # scanning next, skipping deleted element
@@ -27,6 +29,7 @@
     6 <- 4  # prev of final element
     7 <- 1  # list back at start
   ]
+9999 parse: recipe scenario-removing-from-start-of-duplex-list has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe scenario-removing-from-start-of-duplex-list
 9991 transform: --- collect surrounding spaces for recipe scenario-removing-from-start-of-duplex-list
@@ -58,61 +61,75 @@
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"0": "literal"}
 9993 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 1:address:duplex-list <- copy 0
 9993 parse: instruction: push-duplex
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"3": "literal"}
 9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
 9993 parse: instruction: push-duplex
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"4": "literal"}
 9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 1:address:duplex-list <- push-duplex 4, 1:address:duplex-list
 9993 parse: instruction: push-duplex
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"5": "literal"}
 9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 1:address:duplex-list <- push-duplex 5, 1:address:duplex-list
 9993 parse: instruction: remove-duplex
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"1": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 1:address:duplex-list <- remove-duplex 1:address:duplex-list
 9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"2": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 2:address:duplex-list <- copy 1:address:duplex-list
 9993 parse: instruction: first-duplex
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"3": "character"}
 9992 load: after rewriting: 3:character <- first-duplex 2:address:duplex-list
 9993 parse: instruction: next-duplex
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"2": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 2:address:duplex-list <- next-duplex 2:address:duplex-list
 9993 parse: instruction: first-duplex
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"4": "character"}
 9992 load: after rewriting: 4:character <- first-duplex 2:address:duplex-list
 9993 parse: instruction: next-duplex
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"5": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 5:address:duplex-list <- next-duplex 2:address:duplex-list
 9993 parse: instruction: prev-duplex
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"2": <"address" : <"duplex-list" : <>>>}
 9992 load: after rewriting: 2:address:duplex-list <- prev-duplex 2:address:duplex-list
 9993 parse: instruction: first-duplex
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"6": "character"}
 9992 load: after rewriting: 6:character <- first-duplex 2:address:duplex-list
 9993 parse: instruction: equal
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <>>>}
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <>>>}
 9993 parse:   product: {"7": "boolean"}
 9992 load: after rewriting: 7:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
+9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe run1001
 9991 transform: --- collect surrounding spaces for recipe run1001

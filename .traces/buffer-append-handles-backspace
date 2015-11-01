@@ -1,5 +1,6 @@
 9991 parse: --- defining scenario-buffer-append-handles-backspace
 9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    local-scope\n    x:address:buffer <- new-buffer 3\n    x <- buffer-append x, 97  # 'a'\n    x <- buffer-append x, 98  # 'b'\n    x <- buffer-append x, 8/backspace\n    s:address:array:character <- buffer-to-array x\n    1:array:character/raw <- copy *s\n  ": "literal-string"}
 9992 load: after rewriting: run [
     local-scope
@@ -11,12 +12,14 @@
     1:array:character/raw <- copy *s
   ]
 9993 parse: instruction: memory-should-contain
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    1 <- 1   # length\n    2 <- 97  # contents\n    3 <- 0\n  ": "literal-string"}
 9992 load: after rewriting: memory-should-contain [
     1 <- 1   # length
     2 <- 97  # contents
     3 <- 0
   ]
+9999 parse: recipe scenario-buffer-append-handles-backspace has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe scenario-buffer-append-handles-backspace
 9991 transform: --- collect surrounding spaces for recipe scenario-buffer-append-handles-backspace
@@ -40,34 +43,42 @@
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
 9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
 9993 parse: instruction: new-buffer
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"3": "literal"}
 9993 parse:   product: {"x": <"address" : <"buffer" : <>>>}
 9992 load: after rewriting: x:address:buffer <- new-buffer 3
 9993 parse: instruction: buffer-append
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <>}
 9993 parse:   ingredient: {"97": "literal"}
 9993 parse:   product: {"x": <>}
 9992 load: after rewriting: x <- buffer-append x, 97
 9993 parse: instruction: buffer-append
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <>}
 9993 parse:   ingredient: {"98": "literal"}
 9993 parse:   product: {"x": <>}
 9992 load: after rewriting: x <- buffer-append x, 98
 9993 parse: instruction: buffer-append
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <>}
 9993 parse:   ingredient: {"8": "literal", "backspace": <>}
 9993 parse:   product: {"x": <>}
 9992 load: after rewriting: x <- buffer-append x, 8/backspace
 9993 parse: instruction: buffer-to-array
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"x": <>}
 9993 parse:   product: {"s": <"address" : <"array" : <"character" : <>>>>}
 9992 load: after rewriting: s:address:array:character <- buffer-to-array x
 9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"*s": <>, "lookup": <>}
 9993 parse:   product: {"1": <"array" : <"character" : <>>>, "raw": <>}
 9992 load: after rewriting: 1:array:character/raw <- copy *s
+9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe run1001
 9991 transform: --- collect surrounding spaces for recipe run1001

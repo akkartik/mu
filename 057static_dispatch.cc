@@ -151,14 +151,14 @@ recipe test a:number -> z:number [
   z <- copy 1
 ]
 recipe test [
-  z:number <- copy 1
+  reply 34
 ]
 +warn: redefining recipe test
 
 :(scenario static_dispatch_disabled_on_headerless_definition_2)
 % Hide_warnings = true;
 recipe test [
-  z:number <- copy 1
+  reply 34
 ]
 recipe test a:number -> z:number [
   z <- copy 1

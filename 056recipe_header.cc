@@ -48,6 +48,32 @@ void load_recipe_header(istream& in, recipe& result) {
   // End Load Recipe Header(result)
 }
 
+//: If a recipe never mentions any ingredients or products, assume it has a header.
+
+:(scenario recipe_without_ingredients_or_products_has_header)
+recipe test [
+  1:number <- copy 34
+]
++parse: recipe test has a header
+
+:(before "End recipe Body(result)")
+if (!result.has_header) {
+  result.has_header = true;
+  for (long long int i = 0; i < SIZE(result.steps); ++i) {
+    const instruction& inst = result.steps.at(i);
+    if ((inst.name == "reply" && !inst.ingredients.empty())
+        || inst.name == "next-ingredient"
+        || inst.name == "ingredient"
+        || inst.name == "rewind-ingredients") {
+      result.has_header = false;
+      break;
+    }
+  }
+}
+if (result.has_header) {
+  trace(9999, "parse") << "recipe " << result.name << " has a header" << end();
+}
+
 //: Now rewrite 'load-ingredients' to instructions to create all reagents in
 //: the header.
 

@@ -1,5 +1,6 @@
 9991 parse: --- defining scenario-print-at-right-margin
 9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    1:address:screen <- new-fake-screen 2/width, 2/height\n    1:address:screen <- print-character 1:address:screen, 97  # 'a'\n    1:address:screen <- print-character 1:address:screen, 98  # 'b'\n    1:address:screen <- print-character 1:address:screen, 99  # 'c'\n    2:number <- get *1:address:screen, cursor-column:offset\n    3:address:array:screen-cell <- get *1:address:screen, data:offset\n    4:array:screen-cell <- copy *3:address:array:screen-cell\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:screen <- new-fake-screen 2/width, 2/height
@@ -11,6 +12,7 @@
     4:array:screen-cell <- copy *3:address:array:screen-cell
   ]
 9993 parse: instruction: memory-should-contain
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    2 <- 1  # cursor column\n    4 <- 4  # width*height\n    5 <- 97  # 'a'\n    6 <- 7  # white\n    7 <- 99  # 'c' over 'b'\n    8 <- 7  # white\n    9 <- 0\n  ": "literal-string"}
 9992 load: after rewriting: memory-should-contain [
     2 <- 1  # cursor column
@@ -21,6 +23,7 @@
     8 <- 7  # white
     9 <- 0
   ]
+9999 parse: recipe scenario-print-at-right-margin has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe scenario-print-at-right-margin
 9991 transform: --- collect surrounding spaces for recipe scenario-print-at-right-margin
@@ -44,39 +47,47 @@
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new-fake-screen
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"2": "literal", "width": <>}
 9993 parse:   ingredient: {"2": "literal", "height": <>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- new-fake-screen 2/width, 2/height
 9993 parse: instruction: print-character
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
 9993 parse:   ingredient: {"97": "literal"}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- print-character 1:address:screen, 97
 9993 parse: instruction: print-character
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
 9993 parse:   ingredient: {"98": "literal"}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- print-character 1:address:screen, 98
 9993 parse: instruction: print-character
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
 9993 parse:   ingredient: {"99": "literal"}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- print-character 1:address:screen, 99
 9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"*1": <"address" : <"screen" : <>>>, "lookup": <>}
 9993 parse:   ingredient: {"cursor-column": "offset"}
 9993 parse:   product: {"2": "number"}
 9992 load: after rewriting: 2:number <- get *1:address:screen, cursor-column:offset
 9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"*1": <"address" : <"screen" : <>>>, "lookup": <>}
 9993 parse:   ingredient: {"data": "offset"}
 9993 parse:   product: {"3": <"address" : <"array" : <"screen-cell" : <>>>>}
 9992 load: after rewriting: 3:address:array:screen-cell <- get *1:address:screen, data:offset
 9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"*3": <"address" : <"array" : <"screen-cell" : <>>>>, "lookup": <>}
 9993 parse:   product: {"4": <"array" : <"screen-cell" : <>>>}
 9992 load: after rewriting: 4:array:screen-cell <- copy *3:address:array:screen-cell
+9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe run1001
 9991 transform: --- collect surrounding spaces for recipe run1001

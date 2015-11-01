@@ -1,5 +1,6 @@
 9991 parse: --- defining scenario-clear-line-erases-printed-characters
 9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    1:address:screen <- new-fake-screen 3/width, 2/height\n    # print a character\n    1:address:screen <- print-character 1:address:screen, 97  # 'a'\n    # move cursor to start of line\n    1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column\n    # clear line\n    1:address:screen <- clear-line 1:address:screen\n    2:address:array:screen-cell <- get *1:address:screen, data:offset\n    3:array:screen-cell <- copy *2:address:array:screen-cell\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:screen <- new-fake-screen 3/width, 2/height
@@ -13,6 +14,7 @@
     3:array:screen-cell <- copy *2:address:array:screen-cell
   ]
 9993 parse: instruction: memory-should-contain
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    3 <- 6  # width*height\n    4 <- 0\n    5 <- 7\n    6 <- 0\n    7 <- 7\n    8 <- 0\n    9 <- 7\n    10 <- 0\n    11 <- 7\n    12 <- 0\n    13 <- 7\n    14 <- 0\n    15 <- 7\n  ": "literal-string"}
 9992 load: after rewriting: memory-should-contain [
     3 <- 6  # width*height
@@ -29,6 +31,7 @@
     14 <- 0
     15 <- 7
   ]
+9999 parse: recipe scenario-clear-line-erases-printed-characters has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe scenario-clear-line-erases-printed-characters
 9991 transform: --- collect surrounding spaces for recipe scenario-clear-line-erases-printed-characters
@@ -54,34 +57,41 @@
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new-fake-screen
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"3": "literal", "width": <>}
 9993 parse:   ingredient: {"2": "literal", "height": <>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- new-fake-screen 3/width, 2/height
 9993 parse: instruction: print-character
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
 9993 parse:   ingredient: {"97": "literal"}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- print-character 1:address:screen, 97
 9993 parse: instruction: move-cursor
+9993 parse:   number of ingredients: 3
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
 9993 parse:   ingredient: {"0": "literal", "row": <>}
 9993 parse:   ingredient: {"0": "literal", "column": <>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column
 9993 parse: instruction: clear-line
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- clear-line 1:address:screen
 9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"*1": <"address" : <"screen" : <>>>, "lookup": <>}
 9993 parse:   ingredient: {"data": "offset"}
 9993 parse:   product: {"2": <"address" : <"array" : <"screen-cell" : <>>>>}
 9992 load: after rewriting: 2:address:array:screen-cell <- get *1:address:screen, data:offset
 9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"*2": <"address" : <"array" : <"screen-cell" : <>>>>, "lookup": <>}
 9993 parse:   product: {"3": <"array" : <"screen-cell" : <>>>}
 9992 load: after rewriting: 3:array:screen-cell <- copy *2:address:array:screen-cell
+9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- resolve ambiguous calls for recipe run1001
 9991 transform: --- collect surrounding spaces for recipe run1001
