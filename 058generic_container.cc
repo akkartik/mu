@@ -74,7 +74,7 @@ if (type->value >= START_TYPE_INGREDIENTS
 
 :(before "End size_of(type) Container Cases")
 if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
-  trace(9999, "type") << "checking size of type ingredient\n";
+  trace(9999, "type") << "checking size of type ingredient\n" << end();
   result += size_of_type_ingredient(t.elements.at(i), type->right);
   continue;
 }
@@ -91,7 +91,7 @@ long long int size_of_type_ingredient(const type_tree* element_template, const t
   }
   assert(curr);
   assert(!curr->left);  // unimplemented
-  trace(9999, "type") << "type deduced to be " << Type[curr->value].name << "$";
+  trace(9999, "type") << "type deduced to be " << Type[curr->value].name << "$" << end();
   type_tree tmp(curr->value);
   if (curr->right)
     tmp.right = new type_tree(*curr->right);
