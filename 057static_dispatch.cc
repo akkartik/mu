@@ -108,12 +108,12 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
     if (inst.is_label) continue;
     if (Recipe_variants.find(inst.name) == Recipe_variants.end()) continue;
     assert(!Recipe_variants[inst.name].empty());
-    if (++Recipe_variants[inst.name].begin() == Recipe_variants[inst.name].end()) continue;
     replace_best_variant(inst);
   }
 }
 
 void replace_best_variant(instruction& inst) {
+  trace(9992, "transform") << "instruction " << inst.name << end();
   vector<recipe_ordinal>& variants = Recipe_variants[inst.name];
   long long int best_score = variant_score(inst, Recipe_ordinal[inst.name]);
   for (long long int i = 0; i < SIZE(variants); ++i) {
