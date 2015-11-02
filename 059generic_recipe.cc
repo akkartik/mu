@@ -36,7 +36,7 @@ if (best_score == -1) {
 recipe_ordinal pick_matching_generic_variant(vector<recipe_ordinal>& variants, const instruction& inst, long long int& best_score) {
   recipe_ordinal result = 0;
   for (long long int i = 0; i < SIZE(variants); ++i) {
-    trace(9992, "transform") << "checking variant " << i << end();
+    trace(9992, "transform") << "checking generic variant " << i << end();
     long long int current_score = generic_variant_score(inst, variants.at(i));
     trace(9992, "transform") << "final score: " << current_score << end();
     if (current_score > best_score) {
@@ -50,7 +50,7 @@ recipe_ordinal pick_matching_generic_variant(vector<recipe_ordinal>& variants, c
 
 long long int generic_variant_score(const instruction& inst, recipe_ordinal variant) {
   if (!any_type_ingredient_in_header(variant)) {
-    trace(9993, "tranform") << "no type ingredients" << end();
+    trace(9993, "transform") << "no type ingredients" << end();
     return -1;
   }
   const vector<reagent>& header_ingredients = Recipe[variant].ingredients;
@@ -82,64 +82,125 @@ long long int generic_variant_score(const instruction& inst, recipe_ordinal vari
 
 bool any_type_ingredient_in_header(recipe_ordinal variant) {
   for (long long int i = 0; i < SIZE(Recipe[variant].ingredients); ++i) {
-    if (is_type_ingredient(Recipe[variant].ingredients.at(i)))
+    if (contains_type_ingredient_name(Recipe[variant].ingredients.at(i)))
       return true;
   }
   return false;
 }
 
 bool non_type_ingredients_match(const reagent& lhs, const reagent& rhs) {
-  if (is_type_ingredient(lhs)) return true;
+  if (contains_type_ingredient_name(lhs)) return true;
   return types_match(lhs, rhs);
+}
+
+bool contains_type_ingredient_name(const reagent& x) {
+  return contains_type_ingredient_name(x.properties.at(0).second);
+}
+
+bool contains_type_ingredient_name(const string_tree* type) {
+  if (!type) return false;
+  if (is_type_ingredient_name(type->value)) return true;
+  return contains_type_ingredient_name(type->left) || contains_type_ingredient_name(type->right);
+}
+
+bool is_type_ingredient_name(const string& type) {
+  return !type.empty() && type.at(0) == '_';
 }
 
 recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   string new_name = next_unused_recipe_name(inst.name);
+  trace(9993, "transform") << "switching " << inst.name << " to " << new_name << end();
   assert(Recipe_ordinal.find(new_name) == Recipe_ordinal.end());
   recipe_ordinal result = Recipe_ordinal[new_name] = Next_recipe_ordinal++;
   // make a copy
+  assert(Recipe.find(exemplar) != Recipe.end());
   Recipe[result] = Recipe[exemplar];
   recipe& new_recipe = Recipe[result];
   // update its name
   new_recipe.name = new_name;
-  // update its header
-  map<string, type_tree*> mappings;  // weak references
-  for (long long int i = 0; i < SIZE(new_recipe.ingredients); ++i) {
-    if (!is_type_ingredient(new_recipe.ingredients.at(i))) continue;
-    type_tree* replacement_type = new type_tree(*inst.ingredients.at(i).type);
-    delete new_recipe.ingredients.at(i).type;
-    new_recipe.ingredients.at(i).type = replacement_type;
-    mappings[new_recipe.ingredients.at(i).name] = replacement_type;
+  // update its contents
+  map<string, string> mappings;  // weak references
+  compute_type_ingredient_mappings(Recipe[exemplar], inst, mappings);
+  replace_type_ingredients(new_recipe, mappings);
+  return result;
+}
+
+void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, string>& mappings) {
+  for (long long int i = 0; i < SIZE(exemplar.ingredients); ++i) {
+    accumulate_type_ingredients(exemplar.ingredients.at(i), inst.ingredients.at(i), mappings);
   }
+  for (long long int i = 0; i < SIZE(exemplar.products); ++i) {
+    accumulate_type_ingredients(exemplar.products.at(i), inst.products.at(i), mappings);
+  }
+}
+
+void accumulate_type_ingredients(const reagent& base, const reagent& refinements, map<string, string>& mappings) {
+  accumulate_type_ingredients(base.properties.at(0).second, refinements.properties.at(0).second, mappings);
+}
+
+void accumulate_type_ingredients(const string_tree* base, const string_tree* refinements, map<string, string>& mappings) {
+  if (!base) return;
+  assert(refinements);
+  if (!base->value.empty() && base->value.at(0) == '_') {
+    assert(!refinements->value.empty());
+    if (mappings.find(base->value) == mappings.end()) {
+      trace(9993, "transform") << "adding mapping from " << base->value << " to " << refinements->value << end();
+      mappings[base->value] = refinements->value;
+    }
+    else {
+      assert(mappings[base->value] == refinements->value);
+    }
+  }
+  else {
+    accumulate_type_ingredients(base->left, refinements->left, mappings);
+  }
+  accumulate_type_ingredients(base->right, refinements->right, mappings);
+}
+
+void replace_type_ingredients(recipe& new_recipe, const map<string, string>& mappings) {
+  // update its header
+  if (mappings.empty()) return;
+  trace(9993, "transform") << "replacing in recipe header ingredients" << end();
+  for (long long int i = 0; i < SIZE(new_recipe.ingredients); ++i) {
+    replace_type_ingredients(new_recipe.ingredients.at(i), mappings);
+  }
+  trace(9993, "transform") << "replacing in recipe header products" << end();
   for (long long int i = 0; i < SIZE(new_recipe.products); ++i) {
-    if (!is_type_ingredient(new_recipe.products.at(i))) continue;
-    type_tree* replacement_type = new type_tree(*inst.products.at(i).type);
-    delete new_recipe.products.at(i).type;
-    new_recipe.products.at(i).type = replacement_type;
-    mappings[new_recipe.products.at(i).name] = replacement_type;
+    replace_type_ingredients(new_recipe.products.at(i), mappings);
   }
   // update its body
   for (long long int i = 0; i < SIZE(new_recipe.steps); ++i) {
     instruction& inst = new_recipe.steps.at(i);
+    trace(9993, "transform") << "replacing in instruction '" << inst.to_string() << "'" << end();
     for (long long int j = 0; j < SIZE(inst.ingredients); ++j) {
-      if (mappings.find(inst.ingredients.at(j).name) != mappings.end()) {
-        delete inst.ingredients.at(j).type;
-        inst.ingredients.at(j).type = new type_tree(*mappings[inst.ingredients.at(j).name]);
-      }
+      replace_type_ingredients(inst.ingredients.at(j), mappings);
     }
     for (long long int j = 0; j < SIZE(inst.products); ++j) {
-      if (mappings.find(inst.products.at(j).name) != mappings.end()) {
-        delete inst.products.at(j).type;
-        inst.products.at(j).type = new type_tree(*mappings[inst.products.at(j).name]);
-      }
+      replace_type_ingredients(inst.products.at(j), mappings);
     }
   }
-  trace(9993, "transform") << "switching " << inst.name << " to " << new_name << end();
-  return result;
 }
 
-bool is_type_ingredient(const reagent& x) {
-  return x.properties.at(0).second->value.at(0) == '_';
+void replace_type_ingredients(reagent& x, const map<string, string>& mappings) {
+  if (!x.type) return;
+  trace(9993, "transform") << "replacing in ingredient " << x.original_string << end();
+  // replace properties
+  replace_type_ingredients(x.properties.at(0).second, mappings);
+  // refresh types from properties
+  delete x.type;
+  x.type = new_type_tree(x.properties.at(0).second);
+  if (x.type)
+    trace(9993, "transform") << "  after: " << dump_types(x) << end();
+}
+
+void replace_type_ingredients(string_tree* type, const map<string, string>& mappings) {
+  if (!type) return;
+  if (is_type_ingredient_name(type->value) && mappings.find(type->value) != mappings.end()) {
+    trace(9993, "transform") << type->value << " => " << mappings.find(type->value)->second << end();
+    type->value = mappings.find(type->value)->second;
+  }
+  replace_type_ingredients(type->left, mappings);
+  replace_type_ingredients(type->right, mappings);
 }
 
 :(scenario generic_recipe_2)
@@ -161,3 +222,22 @@ recipe foo a:_t -> result:_t [
 ]
 +mem: storing 14 in location 11
 +mem: storing 15 in location 12
+
+:(scenario generic_recipe_nonroot)
+% Hide_warnings = Hide_errors = true;
+recipe main [
+  10:foo:point <- merge 14, 15, 16
+  20:point/raw <- bar 10:foo:point
+]
+# generic recipe with type ingredient following some other type
+recipe bar a:foo:_t -> result:_t [
+  local-scope
+  load-ingredients
+  result <- get a, x:offset
+]
+container foo:_t [
+  x:_t
+  y:number
+]
++mem: storing 14 in location 20
++mem: storing 15 in location 21
