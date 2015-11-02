@@ -114,6 +114,8 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   recipe_ordinal result = Recipe_ordinal[new_name] = Next_recipe_ordinal++;
   // make a copy
   assert(Recipe.find(exemplar) != Recipe.end());
+  assert(Recipe.find(result) == Recipe.end());
+  recently_added_recipes.push_back(result);
   Recipe[result] = Recipe[exemplar];
   recipe& new_recipe = Recipe[result];
   // update its name
