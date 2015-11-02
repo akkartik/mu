@@ -70,7 +70,7 @@ void transform_braces(const recipe_ordinal r) {
          && inst.old_name != "break"
          && inst.old_name != "break-if"
          && inst.old_name != "break-unless") {
-      trace(9991, "transform") << inst.old_name << " ..." << end();
+      trace(9992, "transform") << inst.old_name << " ..." << end();
       continue;
     }
     // check for errors
@@ -91,14 +91,14 @@ void transform_braces(const recipe_ordinal r) {
     if (inst.old_name.find("-if") != string::npos || inst.old_name.find("-unless") != string::npos) {
       // conditional branches check arg 1
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
-        trace(9991, "transform") << inst.name << ' ' << inst.ingredients.at(1).name << ":offset" << end();
+        trace(9992, "transform") << inst.name << ' ' << inst.ingredients.at(1).name << ":offset" << end();
         continue;
       }
     }
     else {
       // unconditional branches check arg 0
       if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
-        trace(9991, "transform") << "jump " << inst.ingredients.at(0).name << ":offset" << end();
+        trace(9992, "transform") << "jump " << inst.ingredients.at(0).name << ":offset" << end();
         continue;
       }
     }
@@ -115,9 +115,9 @@ void transform_braces(const recipe_ordinal r) {
     inst.ingredients.push_back(target);
     // log computed target
     if (inst.name == "jump")
-      trace(9991, "transform") << "jump " << no_scientific(target.value) << ":offset" << end();
+      trace(9992, "transform") << "jump " << no_scientific(target.value) << ":offset" << end();
     else
-      trace(9991, "transform") << inst.name << ' ' << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
+      trace(9992, "transform") << inst.name << ' ' << inst.ingredients.at(0).name << ", " << no_scientific(target.value) << ":offset" << end();
   }
 }
 

@@ -1,9 +1,11 @@
 9991 parse: --- defining scenario-read-move-empty
 9993 parse: instruction: assume-screen
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"20": "literal", "width": <>}
 9993 parse:   ingredient: {"2": "literal", "height": <>}
 9992 load: after rewriting: screen:address:screen <- new-fake-screen 20/width, 2/height
 9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    1:address:channel <- new-channel 2\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting\n    assert 4:boolean/waiting?, [\nF read-move-file: routine failed to pause after coming up (before any keys were pressed)]\n    1:address:channel <- write 1:address:channel, 10/newline\n    1:address:channel <- write 1:address:channel, 97/a\n    restart 2:number/routine\n    wait-for-routine 2:number\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:channel <- new-channel 2
@@ -20,19 +22,25 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
     wait-for-routine 2:number
   ]
 9993 parse: instruction: screen-should-contain
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    .that's not enough   .\n    .                    .\n  ": "literal-string"}
 9992 load: after rewriting: screen-should-contain [
     .that's not enough   .
     .                    .
   ]
+9999 parse: recipe scenario-read-move-empty has a header
 9990 transform: === transform_all()
+9991 transform: --- resolve ambiguous calls for recipe scenario-read-move-empty
+9991 transform: --- deduce types for recipe scenario-read-move-empty
+9992 transform: screen => <address : <screen : <>>>
 9991 transform: --- collect surrounding spaces for recipe scenario-read-move-empty
 9991 transform: --- transform names for recipe scenario-read-move-empty
 9991 transform: --- transform braces for recipe scenario-read-move-empty
-9991 transform: assume-screen ...
-9991 transform: run ...
-9991 transform: screen-should-contain ...
+9992 transform: assume-screen ...
+9992 transform: run ...
+9992 transform: screen-should-contain ...
 9991 transform: --- compute instruction operations for recipe scenario-read-move-empty
+9991 transform: --- perform checks for recipe scenario-read-move-empty
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
@@ -139,7 +147,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 1097 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 1098
  104 run: max:number <- length *buf
@@ -1644,63 +1652,78 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new-channel
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": "literal"}
 9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
 9992 load: after rewriting: 1:address:channel <- new-channel 2
 9993 parse: instruction: start-running
+9993 parse:   number of ingredients: 3
 9993 parse:   ingredient: {"read-move": "recipe"}
 9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
 9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
 9993 parse:   product: {"2": "number", "routine": <>}
 9992 load: after rewriting: 2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
 9993 parse: instruction: wait-for-routine
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": "number"}
 9992 load: after rewriting: wait-for-routine 2:number
 9993 parse: instruction: routine-state
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": "number", "id": <>}
 9993 parse:   product: {"3": "number"}
 9992 load: after rewriting: 3:number <- routine-state 2:number/id
 9993 parse: instruction: equal
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"3": "number", "routine-state": <>}
 9993 parse:   ingredient: {"3": "literal", "waiting": <>}
 9993 parse:   product: {"4": "boolean", "waiting?": <>}
 9992 load: after rewriting: 4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
 9993 parse: instruction: assert
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"4": "boolean", "waiting?": <>}
 9993 parse:   ingredient: {"\nF read-move-file: routine failed to pause after coming up (before any keys were pressed)": "literal-string"}
 9992 load: after rewriting: assert 4:boolean/waiting?, [
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
 9993 parse: instruction: write
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
 9993 parse:   ingredient: {"10": "literal", "newline": <>}
 9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
 9992 load: after rewriting: 1:address:channel <- write 1:address:channel, 10/newline
 9993 parse: instruction: write
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
 9993 parse:   ingredient: {"97": "literal", "a": <>}
 9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
 9992 load: after rewriting: 1:address:channel <- write 1:address:channel, 97/a
 9993 parse: instruction: restart
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": "number", "routine": <>}
 9992 load: after rewriting: restart 2:number/routine
 9993 parse: instruction: wait-for-routine
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": "number"}
 9992 load: after rewriting: wait-for-routine 2:number
+9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
+9991 transform: --- resolve ambiguous calls for recipe run1001
+9991 transform: --- deduce types for recipe run1001
+9992 transform: screen => <address : <screen : <>>>
 9991 transform: --- collect surrounding spaces for recipe run1001
 9991 transform: --- transform names for recipe run1001
 9991 transform: --- transform braces for recipe run1001
-9991 transform: new-channel ...
-9991 transform: start-running ...
-9991 transform: wait-for-routine ...
-9991 transform: routine-state ...
-9991 transform: equal ...
-9991 transform: assert ...
-9991 transform: write ...
-9991 transform: write ...
-9991 transform: restart ...
-9991 transform: wait-for-routine ...
+9992 transform: new-channel ...
+9992 transform: start-running ...
+9992 transform: wait-for-routine ...
+9992 transform: routine-state ...
+9992 transform: equal ...
+9992 transform: assert ...
+9992 transform: write ...
+9992 transform: write ...
+9992 transform: restart ...
+9992 transform: wait-for-routine ...
 9991 transform: --- compute instruction operations for recipe run1001
+9991 transform: --- perform checks for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
  103 run: 1:address:channel <- new-channel 2
@@ -1901,7 +1924,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1115 is 1116
 9999 mem: location 1130 is 1113
 9998 run: address to copy is 1115
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 1115 is 1116
 9999 mem: storing 1116 in location 1131
  109 run: result:number <- length *q
@@ -1948,7 +1971,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1115 is 1116
 9999 mem: location 1097 is 1113
 9998 run: address to copy is 1115
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 1115 is 1116
 9999 mem: storing 1116 in location 1101
  107 run: free:address:number <- get-address *chan, first-free:offset
@@ -2032,7 +2055,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1115 is 1116
 9999 mem: location 1130 is 1113
 9998 run: address to copy is 1115
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 1115 is 1116
 9999 mem: storing 1116 in location 1131
  109 run: result:number <- length *q
@@ -2079,7 +2102,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1115 is 1116
 9999 mem: location 1097 is 1113
 9998 run: address to copy is 1115
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 1115 is 1116
 9999 mem: storing 1116 in location 1101
  107 run: free:address:number <- get-address *chan, first-free:offset
@@ -2141,7 +2164,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1115 is 1116
 9999 mem: location 101014 is 1113
 9998 run: address to copy is 1115
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 1115 is 1116
 9999 mem: storing 1116 in location 101018
  106 run: result:character <- index *circular-buffer, *full
@@ -2378,7 +2401,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -2583,7 +2606,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -2788,7 +2811,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -2993,7 +3016,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -3198,7 +3221,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -3403,7 +3426,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -3608,7 +3631,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -3813,7 +3836,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -4019,7 +4042,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -4224,7 +4247,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -4429,7 +4452,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -4634,7 +4657,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -4839,7 +4862,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -5044,7 +5067,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -5249,7 +5272,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -5454,7 +5477,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf
@@ -5659,7 +5682,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1013 is 1014
 9999 mem: location 101060 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 101075
  107 run: len:number <- length *buf

@@ -1,18 +1,22 @@
 9991 parse: --- defining scenario-print-board-and-read-move
 9993 parse: instruction: trace-until
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"100": "literal", "app": <>}
 9992 load: after rewriting: trace-until 100/app
 9993 parse: instruction: assume-screen
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"120": "literal", "width": <>}
 9993 parse:   ingredient: {"20": "literal", "height": <>}
 9992 load: after rewriting: screen:address:screen <- new-fake-screen 120/width, 20/height
 9993 parse: instruction: assume-console
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    type [a2-a4\n]\n  ": "literal-string"}
 9992 load: after rewriting: assume-console [
     type [a2-a4
 ]
   ]
 9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    screen:address:screen, console:address:console <- chessboard screen:address:screen, console:address:console\n    # icon for the cursor\n    screen <- print-character screen, 9251/␣\n  ": "literal-string"}
 9992 load: after rewriting: run [
     screen:address:screen, console:address:console <- chessboard screen:address:screen, console:address:console
@@ -20,6 +24,7 @@
     screen <- print-character screen, 9251/␣
   ]
 9993 parse: instruction: screen-should-contain
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n  #            1         2         3         4         5         6         7         8         9         10        11\n  #  012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\n    .Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.         .\n    .                                                                                                                        .\n    .8 | r n b q k b n r                                                                                                     .\n    .7 | p p p p p p p p                                                                                                     .\n    .6 |                                                                                                                     .\n    .5 |                                                                                                                     .\n    .4 | P                                                                                                                   .\n    .3 |                                                                                                                     .\n    .2 |   P P P P P P P                                                                                                     .\n    .1 | R N B Q K B N R                                                                                                     .\n    .  +----------------                                                                                                     .\n    .    a b c d e f g h                                                                                                     .\n    .                                                                                                                        .\n    .Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.                               .\n    .                                                                                                                        .\n    .Hit 'q' to exit.                                                                                                        .\n    .                                                                                                                        .\n    .move: ␣                                                                                                                 .\n    .                                                                                                                        .\n    .                                                                                                                        .\n  ": "literal-string"}
 9992 load: after rewriting: screen-should-contain [
   #            1         2         3         4         5         6         7         8         9         10        11
@@ -45,16 +50,21 @@
     .                                                                                                                        .
     .                                                                                                                        .
   ]
+9999 parse: recipe scenario-print-board-and-read-move has a header
 9990 transform: === transform_all()
+9991 transform: --- resolve ambiguous calls for recipe scenario-print-board-and-read-move
+9991 transform: --- deduce types for recipe scenario-print-board-and-read-move
+9992 transform: screen => <address : <screen : <>>>
 9991 transform: --- collect surrounding spaces for recipe scenario-print-board-and-read-move
 9991 transform: --- transform names for recipe scenario-print-board-and-read-move
 9991 transform: --- transform braces for recipe scenario-print-board-and-read-move
-9991 transform: trace-until ...
-9991 transform: assume-screen ...
-9991 transform: assume-console ...
-9991 transform: run ...
-9991 transform: screen-should-contain ...
+9992 transform: trace-until ...
+9992 transform: assume-screen ...
+9992 transform: assume-console ...
+9992 transform: run ...
+9992 transform: screen-should-contain ...
 9991 transform: --- compute instruction operations for recipe scenario-print-board-and-read-move
+9991 transform: --- perform checks for recipe scenario-print-board-and-read-move
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000

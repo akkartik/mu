@@ -1,15 +1,18 @@
 9991 parse: --- defining scenario-printing-the-board
 9993 parse: instruction: assume-screen
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"30": "literal", "width": <>}
 9993 parse:   ingredient: {"12": "literal", "height": <>}
 9992 load: after rewriting: screen:address:screen <- new-fake-screen 30/width, 12/height
 9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    1:address:array:address:array:character/board <- initial-position\n    screen:address:screen <- print-board screen:address:screen, 1:address:array:address:array:character/board\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:array:address:array:character/board <- initial-position
     screen:address:screen <- print-board screen:address:screen, 1:address:array:address:array:character/board
   ]
 9993 parse: instruction: screen-should-contain
+9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n  #  012345678901234567890123456789\n    .8 | r n b q k b n r           .\n    .7 | p p p p p p p p           .\n    .6 |                           .\n    .5 |                           .\n    .4 |                           .\n    .3 |                           .\n    .2 | P P P P P P P P           .\n    .1 | R N B Q K B N R           .\n    .  +----------------           .\n    .    a b c d e f g h           .\n    .                              .\n    .                              .\n  ": "literal-string"}
 9992 load: after rewriting: screen-should-contain [
   #  012345678901234567890123456789
@@ -26,14 +29,19 @@
     .                              .
     .                              .
   ]
+9999 parse: recipe scenario-printing-the-board has a header
 9990 transform: === transform_all()
+9991 transform: --- resolve ambiguous calls for recipe scenario-printing-the-board
+9991 transform: --- deduce types for recipe scenario-printing-the-board
+9992 transform: screen => <address : <screen : <>>>
 9991 transform: --- collect surrounding spaces for recipe scenario-printing-the-board
 9991 transform: --- transform names for recipe scenario-printing-the-board
 9991 transform: --- transform braces for recipe scenario-printing-the-board
-9991 transform: assume-screen ...
-9991 transform: run ...
-9991 transform: screen-should-contain ...
+9992 transform: assume-screen ...
+9992 transform: run ...
+9992 transform: screen-should-contain ...
 9991 transform: --- compute instruction operations for recipe scenario-printing-the-board
+9991 transform: --- perform checks for recipe scenario-printing-the-board
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
@@ -140,7 +148,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1737 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 1738
  104 run: max:number <- length *buf
@@ -13161,20 +13169,27 @@
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: initial-position
+9993 parse:   number of ingredients: 0
 9993 parse:   product: {"1": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "board": <>}
 9992 load: after rewriting: 1:address:array:address:array:character/board <- initial-position 
 9993 parse: instruction: print-board
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
 9993 parse:   ingredient: {"1": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "board": <>}
 9993 parse:   product: {"screen": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: screen:address:screen <- print-board screen:address:screen, 1:address:array:address:array:character/board
+9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
+9991 transform: --- resolve ambiguous calls for recipe run1001
+9991 transform: --- deduce types for recipe run1001
+9992 transform: screen => <address : <screen : <>>>
 9991 transform: --- collect surrounding spaces for recipe run1001
 9991 transform: --- transform names for recipe run1001
 9991 transform: --- transform braces for recipe run1001
-9991 transform: initial-position ...
-9991 transform: print-board ...
+9992 transform: initial-position ...
+9992 transform: print-board ...
 9991 transform: --- compute instruction operations for recipe run1001
+9991 transform: --- perform checks for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
  103 run: 1:address:array:address:array:character/board <- initial-position 
@@ -17760,7 +17775,7 @@
 9999 mem: location 1929 is 1930
 9999 mem: location 1923 is 1928
 9998 run: address to copy is 1929
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 1929 is 1930
 9999 mem: storing 1930 in location 1925
  108 run: capacity:number <- length *s
@@ -17784,7 +17799,7 @@
 9999 mem: location 1929 is 1930
 9999 mem: location 1963 is 1928
 9998 run: address to copy is 1929
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 1929 is 1930
 9999 mem: storing 1930 in location 1969
  107 run: dest:address:character <- index-address *s, *len
@@ -17832,7 +17847,7 @@
 9999 mem: location 1929 is 1930
 9999 mem: location 1910 is 1928
 9998 run: address to copy is 1929
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 1929 is 1930
 9999 mem: storing 1930 in location 1916
  106 run: result:address:array:character <- new character:type, len
@@ -18059,7 +18074,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  107 run: len:number <- length *buf
@@ -18310,7 +18325,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -18515,7 +18530,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -18720,7 +18735,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -18946,7 +18961,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -19133,7 +19148,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -19346,7 +19361,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -19533,7 +19548,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -19746,7 +19761,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -19933,7 +19948,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -20146,7 +20161,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -20333,7 +20348,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -20547,7 +20562,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -20734,7 +20749,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -20947,7 +20962,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -21134,7 +21149,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -21347,7 +21362,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -21534,7 +21549,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -21747,7 +21762,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -21934,7 +21949,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -22335,7 +22350,7 @@
 9999 mem: location 2029 is 2030
 9999 mem: location 1923 is 2028
 9998 run: address to copy is 2029
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2029 is 2030
 9999 mem: storing 2030 in location 1925
  108 run: capacity:number <- length *s
@@ -22359,7 +22374,7 @@
 9999 mem: location 2029 is 2030
 9999 mem: location 1963 is 2028
 9998 run: address to copy is 2029
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2029 is 2030
 9999 mem: storing 2030 in location 1969
  107 run: dest:address:character <- index-address *s, *len
@@ -22407,7 +22422,7 @@
 9999 mem: location 2029 is 2030
 9999 mem: location 1910 is 2028
 9998 run: address to copy is 2029
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2029 is 2030
 9999 mem: storing 2030 in location 1916
  106 run: result:address:array:character <- new character:type, len
@@ -22632,7 +22647,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  107 run: len:number <- length *buf
@@ -22883,7 +22898,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -23088,7 +23103,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -23293,7 +23308,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -23518,7 +23533,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -23705,7 +23720,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -23918,7 +23933,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -24106,7 +24121,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -24319,7 +24334,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -24506,7 +24521,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -24719,7 +24734,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -24906,7 +24921,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -25119,7 +25134,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -25306,7 +25321,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -25519,7 +25534,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -25706,7 +25721,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -25920,7 +25935,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -26107,7 +26122,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -26320,7 +26335,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -26507,7 +26522,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -26904,7 +26919,7 @@
 9999 mem: location 2068 is 2069
 9999 mem: location 1923 is 2067
 9998 run: address to copy is 2068
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2068 is 2069
 9999 mem: storing 2069 in location 1925
  108 run: capacity:number <- length *s
@@ -26928,7 +26943,7 @@
 9999 mem: location 2068 is 2069
 9999 mem: location 1963 is 2067
 9998 run: address to copy is 2068
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2068 is 2069
 9999 mem: storing 2069 in location 1969
  107 run: dest:address:character <- index-address *s, *len
@@ -26976,7 +26991,7 @@
 9999 mem: location 2068 is 2069
 9999 mem: location 1910 is 2067
 9998 run: address to copy is 2068
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2068 is 2069
 9999 mem: storing 2069 in location 1916
  106 run: result:address:array:character <- new character:type, len
@@ -27201,7 +27216,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  107 run: len:number <- length *buf
@@ -27452,7 +27467,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -27658,7 +27673,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -27863,7 +27878,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -28088,7 +28103,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -28275,7 +28290,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -28488,7 +28503,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -28675,7 +28690,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -28888,7 +28903,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -29075,7 +29090,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -29289,7 +29304,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -29476,7 +29491,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -29689,7 +29704,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -29876,7 +29891,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -30089,7 +30104,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -30276,7 +30291,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -30489,7 +30504,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -30676,7 +30691,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -30889,7 +30904,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -31077,7 +31092,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -31474,7 +31489,7 @@
 9999 mem: location 2107 is 2108
 9999 mem: location 1923 is 2106
 9998 run: address to copy is 2107
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2107 is 2108
 9999 mem: storing 2108 in location 1925
  108 run: capacity:number <- length *s
@@ -31498,7 +31513,7 @@
 9999 mem: location 2107 is 2108
 9999 mem: location 1963 is 2106
 9998 run: address to copy is 2107
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2107 is 2108
 9999 mem: storing 2108 in location 1969
  107 run: dest:address:character <- index-address *s, *len
@@ -31546,7 +31561,7 @@
 9999 mem: location 2107 is 2108
 9999 mem: location 1910 is 2106
 9998 run: address to copy is 2107
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2107 is 2108
 9999 mem: storing 2108 in location 1916
  106 run: result:address:array:character <- new character:type, len
@@ -31771,7 +31786,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  107 run: len:number <- length *buf
@@ -32022,7 +32037,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -32227,7 +32242,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -32432,7 +32447,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -32657,7 +32672,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -32845,7 +32860,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -33058,7 +33073,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -33245,7 +33260,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -33458,7 +33473,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -33645,7 +33660,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -33858,7 +33873,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -34045,7 +34060,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -34258,7 +34273,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -34445,7 +34460,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -34659,7 +34674,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -34846,7 +34861,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -35059,7 +35074,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -35246,7 +35261,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -35459,7 +35474,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -35646,7 +35661,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -36043,7 +36058,7 @@
 9999 mem: location 2146 is 2147
 9999 mem: location 1923 is 2145
 9998 run: address to copy is 2146
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2146 is 2147
 9999 mem: storing 2147 in location 1925
  108 run: capacity:number <- length *s
@@ -36067,7 +36082,7 @@
 9999 mem: location 2146 is 2147
 9999 mem: location 1963 is 2145
 9998 run: address to copy is 2146
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2146 is 2147
 9999 mem: storing 2147 in location 1969
  107 run: dest:address:character <- index-address *s, *len
@@ -36115,7 +36130,7 @@
 9999 mem: location 2146 is 2147
 9999 mem: location 1910 is 2145
 9998 run: address to copy is 2146
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2146 is 2147
 9999 mem: storing 2147 in location 1916
  106 run: result:address:array:character <- new character:type, len
@@ -36341,7 +36356,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  107 run: len:number <- length *buf
@@ -36592,7 +36607,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -36797,7 +36812,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -37002,7 +37017,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -37227,7 +37242,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -37414,7 +37429,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -37627,7 +37642,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -37814,7 +37829,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -38028,7 +38043,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -38215,7 +38230,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -38428,7 +38443,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -38615,7 +38630,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -38828,7 +38843,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -39015,7 +39030,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -39228,7 +39243,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -39415,7 +39430,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -39628,7 +39643,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -39816,7 +39831,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -40029,7 +40044,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -40216,7 +40231,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -40613,7 +40628,7 @@
 9999 mem: location 2185 is 2186
 9999 mem: location 1923 is 2184
 9998 run: address to copy is 2185
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2185 is 2186
 9999 mem: storing 2186 in location 1925
  108 run: capacity:number <- length *s
@@ -40637,7 +40652,7 @@
 9999 mem: location 2185 is 2186
 9999 mem: location 1963 is 2184
 9998 run: address to copy is 2185
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2185 is 2186
 9999 mem: storing 2186 in location 1969
  107 run: dest:address:character <- index-address *s, *len
@@ -40685,7 +40700,7 @@
 9999 mem: location 2185 is 2186
 9999 mem: location 1910 is 2184
 9998 run: address to copy is 2185
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2185 is 2186
 9999 mem: storing 2186 in location 1916
  106 run: result:address:array:character <- new character:type, len
@@ -40910,7 +40925,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  107 run: len:number <- length *buf
@@ -41161,7 +41176,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -41366,7 +41381,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -41572,7 +41587,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -41797,7 +41812,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -41984,7 +41999,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -42197,7 +42212,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -42384,7 +42399,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -42597,7 +42612,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -42784,7 +42799,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -42997,7 +43012,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -43184,7 +43199,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -43398,7 +43413,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -43585,7 +43600,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -43798,7 +43813,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -43985,7 +44000,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -44198,7 +44213,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -44385,7 +44400,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -44598,7 +44613,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -44785,7 +44800,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -45183,7 +45198,7 @@
 9999 mem: location 2224 is 2225
 9999 mem: location 1923 is 2223
 9998 run: address to copy is 2224
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2224 is 2225
 9999 mem: storing 2225 in location 1925
  108 run: capacity:number <- length *s
@@ -45207,7 +45222,7 @@
 9999 mem: location 2224 is 2225
 9999 mem: location 1963 is 2223
 9998 run: address to copy is 2224
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2224 is 2225
 9999 mem: storing 2225 in location 1969
  107 run: dest:address:character <- index-address *s, *len
@@ -45255,7 +45270,7 @@
 9999 mem: location 2224 is 2225
 9999 mem: location 1910 is 2223
 9998 run: address to copy is 2224
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2224 is 2225
 9999 mem: storing 2225 in location 1916
  106 run: result:address:array:character <- new character:type, len
@@ -45480,7 +45495,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  107 run: len:number <- length *buf
@@ -45731,7 +45746,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -45936,7 +45951,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -46141,7 +46156,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -46366,7 +46381,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -46553,7 +46568,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -46767,7 +46782,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -46954,7 +46969,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -47167,7 +47182,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -47354,7 +47369,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -47567,7 +47582,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -47754,7 +47769,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -47967,7 +47982,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -48154,7 +48169,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -48367,7 +48382,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -48555,7 +48570,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -48768,7 +48783,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -48955,7 +48970,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -49168,7 +49183,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -49355,7 +49370,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -49752,7 +49767,7 @@
 9999 mem: location 2263 is 2264
 9999 mem: location 1923 is 2262
 9998 run: address to copy is 2263
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2263 is 2264
 9999 mem: storing 2264 in location 1925
  108 run: capacity:number <- length *s
@@ -49776,7 +49791,7 @@
 9999 mem: location 2263 is 2264
 9999 mem: location 1963 is 2262
 9998 run: address to copy is 2263
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2263 is 2264
 9999 mem: storing 2264 in location 1969
  107 run: dest:address:character <- index-address *s, *len
@@ -49824,7 +49839,7 @@
 9999 mem: location 2263 is 2264
 9999 mem: location 1910 is 2262
 9998 run: address to copy is 2263
-9998 run: its type is address
+9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 2263 is 2264
 9999 mem: storing 2264 in location 1916
  106 run: result:address:array:character <- new character:type, len
@@ -50049,7 +50064,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  107 run: len:number <- length *buf
@@ -50301,7 +50316,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -50506,7 +50521,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -50711,7 +50726,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -50936,7 +50951,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -51123,7 +51138,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -51336,7 +51351,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -51523,7 +51538,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -51736,7 +51751,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -51923,7 +51938,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -52137,7 +52152,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -52324,7 +52339,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -52537,7 +52552,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -52724,7 +52739,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -52937,7 +52952,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -53124,7 +53139,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -53337,7 +53352,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -53524,7 +53539,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -53737,7 +53752,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -53925,7 +53940,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  105 run: len:number <- length *buf
@@ -54350,7 +54365,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -54555,7 +54570,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -54760,7 +54775,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -54965,7 +54980,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -55170,7 +55185,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -55375,7 +55390,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -55581,7 +55596,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -55786,7 +55801,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -55991,7 +56006,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -56196,7 +56211,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -56401,7 +56416,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -56606,7 +56621,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -56811,7 +56826,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -57016,7 +57031,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -57221,7 +57236,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -57427,7 +57442,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -57632,7 +57647,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -57837,7 +57852,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -58042,7 +58057,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -58462,7 +58477,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -58667,7 +58682,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -58872,7 +58887,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -59077,7 +59092,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -59283,7 +59298,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -59488,7 +59503,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -59693,7 +59708,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -59898,7 +59913,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -60103,7 +60118,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -60308,7 +60323,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -60513,7 +60528,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -60718,7 +60733,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -60923,7 +60938,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -61129,7 +61144,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -61334,7 +61349,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -61539,7 +61554,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -61744,7 +61759,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -61949,7 +61964,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
@@ -62154,7 +62169,7 @@
 9999 mem: location 1013 is 1014
 9999 mem: location 1987 is 1009
 9998 run: address to copy is 1013
-9998 run: its type is address
+9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 2002
  106 run: len:number <- length *buf
