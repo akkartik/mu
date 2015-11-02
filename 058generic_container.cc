@@ -148,7 +148,7 @@ void replace_type_ingredients(type_tree* element_type, type_tree* callsite_type)
   if (element_type->value >= START_TYPE_INGREDIENTS) {
     element_type->value = nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS);
   }
-  replace_type_ingredients(element_type->right, callsite_type->right);
+  replace_type_ingredients(element_type->right, callsite_type);
 }
 
 type_ordinal nth_type(type_tree* base, long long int n) {
