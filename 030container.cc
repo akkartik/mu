@@ -152,10 +152,9 @@ case GET: {
     raise_error << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
     break;
   }
-  reagent product = inst.products.at(0);
+  reagent& product = inst.products.at(0);
   // Update GET product in Check
-  reagent element;
-  element.type = new type_tree(*Type[base_type].elements.at(offset_value));
+  const reagent element = element_type(base, offset_value);
   if (!types_match(product, element)) {
     raise_error << maybe(Recipe[r].name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
@@ -180,13 +179,23 @@ case GET: {
     src += size_of(Type[base_type].elements.at(i));
   }
   trace(9998, "run") << "address to copy is " << src << end();
-  type_ordinal src_type = Type[base_type].elements.at(offset)->value;
-  trace(9998, "run") << "its type is " << Type[src_type].name << end();
-  reagent tmp;
+  reagent tmp = element_type(base, offset);
   tmp.set_value(src);
-  tmp.type = new type_tree(src_type);
+  trace(9998, "run") << "its type is " << dump_types(tmp) << end();
   products.push_back(read_memory(tmp));
   break;
+}
+
+:(code)
+const reagent element_type(const reagent& canonized_base, long long int offset_value) {
+  assert(offset_value >= 0);
+  assert(Type.find(canonized_base.type->value) != Type.end());
+  const type_info& info = Type[canonized_base.type->value];
+  assert(info.kind == CONTAINER);
+  reagent element;
+  element.type = new type_tree(*info.elements.at(offset_value));
+  // End element_type Special-cases
+  return element;
 }
 
 :(scenario get_handles_nested_container_elements)
@@ -273,9 +282,8 @@ case GET_ADDRESS: {
   }
   reagent product = inst.products.at(0);
   // Update GET_ADDRESS product in Check
-  reagent element;
   // same type as for GET..
-  element.type = new type_tree(*Type[base_type].elements.at(offset_value));
+  reagent element = element_type(base, offset_value);
   // ..except for an address at the start
   element.type = new type_tree(Type_ordinal["address"], element.type);
   if (!types_match(product, element)) {
