@@ -19,6 +19,7 @@ recipe main [
 
 :(code)
 void check_types_by_name(const recipe_ordinal r) {
+  trace(9991, "transform") << "--- deduce types for recipe " << Recipe[r].name << end();
   map<string, type_tree*> type;
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
@@ -39,8 +40,10 @@ void check_type(map<string, type_tree*>& type, const reagent& x, const recipe_or
   // if you use raw locations you're probably doing something unsafe
   if (is_integer(x.name)) return;
   if (!x.type) return;  // will throw a more precise error elsewhere
-  if (type.find(x.name) == type.end())
+  if (type.find(x.name) == type.end()) {
+    trace(9992, "transform") << x.name << " => " << dump_types(x) << end();
     type[x.name] = x.type;
+  }
   if (!types_match(type[x.name], x.type))
     raise_error << maybe(Recipe[r].name) << x.name << " used with multiple types\n" << end();
 }

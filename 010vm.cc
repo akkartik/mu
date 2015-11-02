@@ -392,7 +392,7 @@ string dump_types(const reagent& x) {
 void dump_types(type_tree* type, ostream& out) {
   // abbreviate a single-node tree to just its contents
   if (!type->left && !type->right) {
-    out << Type[type->value].name;
+    dump_type_name(type->value, out);
     return;
   }
   dump_types_tree(type, out);
@@ -403,13 +403,20 @@ void dump_types_tree(type_tree* type, ostream& out) {
   if (type->left)
     dump_types_tree(type->left, out);
   else
-    out << Type[type->value].name;
+    dump_type_name(type->value, out);
   out << " : ";
   if (type->right)
     dump_types_tree(type->right, out);
   else
     out << "<>";
   out << ">";
+}
+
+void dump_type_name(recipe_ordinal type, ostream& out) {
+  if (Type.find(type) != Type.end())
+    out << Type[type].name;
+  else
+    out << "?";
 }
 
 string instruction::to_string() const {
