@@ -144,15 +144,13 @@ case GET: {
     break;
   }
   long long int offset_value = 0;
-  if (is_integer(offset.name)) {  // later layers permit non-integer offsets
+  if (is_integer(offset.name))  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
-    if (offset_value < 0 || offset_value >= SIZE(Type[base_type].elements)) {
-      raise_error << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
-      break;
-    }
-  }
-  else {
+  else
     offset_value = offset.value;
+  if (offset_value < 0 || offset_value >= SIZE(Type[base_type].elements)) {
+    raise_error << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
+    break;
   }
   reagent product = inst.products.at(0);
   // Update GET product in Check
