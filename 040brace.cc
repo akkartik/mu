@@ -134,25 +134,6 @@ long long int matching_brace(long long int index, const list<pair<int, long long
   return SIZE(Recipe[r].steps);  // exit current routine
 }
 
-// todo: remove?
-//: Make sure these pseudo recipes get consistent numbers in all tests, even
-//: though they aren't implemented.
-
-:(before "End Primitive Recipe Declarations")
-BREAK,
-BREAK_IF,
-BREAK_UNLESS,
-LOOP,
-LOOP_IF,
-LOOP_UNLESS,
-:(before "End Primitive Recipe Numbers")
-Recipe_ordinal["break"] = BREAK;
-Recipe_ordinal["break-if"] = BREAK_IF;
-Recipe_ordinal["break-unless"] = BREAK_UNLESS;
-Recipe_ordinal["loop"] = LOOP;
-Recipe_ordinal["loop-if"] = LOOP_IF;
-Recipe_ordinal["loop-unless"] = LOOP_UNLESS;
-
 :(scenario loop)
 recipe main [
   1:number <- copy 0
