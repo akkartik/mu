@@ -91,7 +91,7 @@ long long int size_of_type_ingredient(const type_tree* element_template, const t
   }
   assert(curr);
   assert(!curr->left);  // unimplemented
-  trace(9999, "type") << "type deduced to be " << Type[curr->value].name << "$\n";
+  trace(9999, "type") << "type deduced to be " << Type[curr->value].name << "$";
   type_tree tmp(curr->value);
   if (curr->right)
     tmp.right = new type_tree(*curr->right);
@@ -105,7 +105,7 @@ container foo:_t [
 ]
 recipe main [
   1:foo:point <- merge 14, 15, 16
-  2:number <- get 1:foo:point, 1:offset
+  2:number <- get 1:foo:point, y:offset
 ]
 +mem: storing 16 in location 2
 
@@ -113,6 +113,48 @@ recipe main [
 if (Type[base_type].elements.at(i)->value >= START_TYPE_INGREDIENTS) {
   src += size_of_type_ingredient(Type[base_type].elements.at(i), base.type->right);
   continue;
+}
+
+:(scenario get_on_generic_container_2)
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  1:foo:point <- merge 14, 15, 16
+  2:point <- get 1:foo:point, x:offset
+]
++mem: storing 14 in location 2
++mem: storing 15 in location 3
+
+:(before "End element_type Special-cases")
+if (contains_type_ingredient(element)) {
+  replace_type_ingredients(element.type, canonized_base.type->right);
+}
+
+:(code)
+bool contains_type_ingredient(const reagent& x) {
+  return contains_type_ingredient(x.type);
+}
+
+bool contains_type_ingredient(const type_tree* type) {
+  if (!type) return false;
+  if (type->value >= START_TYPE_INGREDIENTS) return true;
+  return contains_type_ingredient(type->left) || contains_type_ingredient(type->right);
+}
+
+void replace_type_ingredients(type_tree* element_type, type_tree* callsite_type) {
+  if (!element_type) return;
+  if (element_type->value >= START_TYPE_INGREDIENTS) {
+    element_type->value = nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS);
+  }
+  replace_type_ingredients(element_type->right, callsite_type->right);
+}
+
+type_ordinal nth_type(type_tree* base, long long int n) {
+  assert(n >= 0);
+  if (n == 0) return base->value;  // todo: base->left
+  return nth_type(base->right, n-1);
 }
 
 :(scenario get_address_on_generic_container)
