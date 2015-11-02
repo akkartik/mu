@@ -59,6 +59,7 @@ void deduce_missing_type(map<string, type_tree*>& type, reagent& x) {
   if (x.type) return;
   if (type.find(x.name) == type.end()) return;
   x.type = new type_tree(*type[x.name]);
+  trace(9992, "transform") << x.name << " <= " << dump_types(x) << end();
   assert(!x.properties.at(0).second);
   x.properties.at(0).second = new string_tree("as-before");
 }
