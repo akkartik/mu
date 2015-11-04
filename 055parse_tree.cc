@@ -61,3 +61,15 @@ recipe main [
   {1: (map (address array character) (list number))} <- copy 34
 ]
 +parse:   product: {"1": <"map" : <<"address" : <"array" : <"character" : <>>>> : <<"list" : <"number" : <>>> : <>>>>}
+
+//: an exception is 'new', which takes a type tree as its ingredient *value*
+
+:(scenario dilated_reagent_with_new)
+recipe main [
+  x:address:number <- new {(foo bar) type}
+]
+# type isn't defined so size is meaningless, but at least we parse the type correctly
++new: size of <"foo" : <"bar" : <>>> is 1
+
+:(before "End Post-processing(type_name) When Converting 'new'")
+type_name = parse_string_tree(type_name);
