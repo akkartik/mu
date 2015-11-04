@@ -389,7 +389,7 @@ string dump_types(const reagent& x) {
   return out.str();
 }
 
-void dump_types(type_tree* type, ostream& out) {
+void dump_types(const type_tree* type, ostream& out) {
   // abbreviate a single-node tree to just its contents
   if (!type->left && !type->right) {
     dump_type_name(type->value, out);
@@ -398,7 +398,7 @@ void dump_types(type_tree* type, ostream& out) {
   dump_types_tree(type, out);
 }
 
-void dump_types_tree(type_tree* type, ostream& out) {
+void dump_types_tree(const type_tree* type, ostream& out) {
   out << "<";
   if (type->left)
     dump_types_tree(type->left, out);

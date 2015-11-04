@@ -75,6 +75,12 @@ if (type->value >= START_TYPE_INGREDIENTS
 :(before "End size_of(type) Container Cases")
 if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
   trace(9999, "type") << "checking size of type ingredient\n" << end();
+  long long int size = size_of_type_ingredient(t.elements.at(i), type->right);
+  if (!size) {
+    ostringstream out;
+    dump_types(type, out);
+    raise_error << "illegal type '" << out.str() << "' seems to be missing a type ingredient or three\n" << end();
+  }
   result += size_of_type_ingredient(t.elements.at(i), type->right);
   continue;
 }
@@ -84,10 +90,11 @@ if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
 long long int size_of_type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {
   long long int type_ingredient_index = element_template->value - START_TYPE_INGREDIENTS;
   const type_tree* curr = rest_of_use;
+  if (!curr) return 0;
   while (type_ingredient_index > 0) {
-    assert(curr);
     --type_ingredient_index;
     curr = curr->right;
+    if (!curr) return 0;
   }
   assert(curr);
   assert(!curr->left);  // unimplemented
@@ -129,6 +136,9 @@ recipe main [
 
 :(before "End element_type Special-cases")
 if (contains_type_ingredient(element)) {
+  if (!canonized_base.type->right) {
+    raise_error << "illegal type '" << dump_types(canonized_base) << "' seems to be missing a type ingredient or three\n" << end();
+  }
   replace_type_ingredients(element.type, canonized_base.type->right);
 }
 
@@ -144,8 +154,15 @@ bool contains_type_ingredient(const type_tree* type) {
 }
 
 void replace_type_ingredients(type_tree* element_type, type_tree* callsite_type) {
+  if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
   if (element_type->value >= START_TYPE_INGREDIENTS) {
+    if (!has_nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS)) {
+      ostringstream out;
+      dump_types(callsite_type, out);
+      raise_error << "illegal type '" << out.str() << "' seems to be missing a type ingredient or three\n" << end();
+      return;
+    }
     element_type->value = nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS);
   }
   replace_type_ingredients(element_type->right, callsite_type);
@@ -156,6 +173,27 @@ type_ordinal nth_type(type_tree* base, long long int n) {
   if (n == 0) return base->value;  // todo: base->left
   return nth_type(base->right, n-1);
 }
+
+bool has_nth_type(type_tree* base, long long int n) {
+  assert(n >= 0);
+  if (base == NULL) return false;
+  if (n == 0) return true;
+  return has_nth_type(base->right, n-1);
+}
+
+:(scenario get_on_generic_container_error)
+% Hide_errors = true;
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  10:foo:point <- merge 14, 15, 16
+  1:number <- get 10:foo, 1:offset
+]
++error: illegal type 'foo' seems to be missing a type ingredient or three
+
+//: get-address similarly
 
 :(scenario get_address_on_generic_container)
 container foo:_t [
