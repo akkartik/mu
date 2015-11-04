@@ -20,7 +20,12 @@ recipe test a:number, b:number -> z:number [
 :(before "End Globals")
 map<string, vector<recipe_ordinal> > Recipe_variants;
 :(before "End Setup")
-Recipe_variants.clear();
+for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin(); p != Recipe_variants.end(); ++p) {
+  for (long long int i = 0; i < SIZE(p->second); ++i) {
+    if (p->second.at(i) >= Reserved_for_tests)
+      p->second.at(i) = -1;
+  }
+}
 
 :(before "End Load Recipe Header(result)")
 if (Recipe_ordinal.find(result.name) != Recipe_ordinal.end()) {
@@ -128,6 +133,7 @@ void replace_best_variant(instruction& inst) {
 }
 
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {
+  if (variant == -1) return -1;
   const vector<reagent>& header_ingredients = Recipe[variant].ingredients;
   if (SIZE(inst.ingredients) < SIZE(header_ingredients)) {
     trace(9993, "transform") << "too few ingredients" << end();
