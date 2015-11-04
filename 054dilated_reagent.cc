@@ -95,8 +95,9 @@ if (s.at(0) == '{') {
 :(code)
 string slurp_key(istream& in) {
   string result = next_word(in);
-  while (!result.empty() && *result.rbegin() == ':') {
+  while (!result.empty() && *result.rbegin() == ':')
     strip_last(result);
-  }
+  while (isspace(in.peek()) || in.peek() == ':')
+    in.get();
   return result;
 }
