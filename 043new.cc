@@ -24,29 +24,11 @@ Memory_allocated_until += Initial_memory_per_routine;
 alloc_max = Memory_allocated_until;
 trace(9999, "new") << "routine allocated memory from " << alloc << " to " << alloc_max << end();
 
-//:: First handle 'type' operands.
-
+//:: 'new' takes a weird 'type' as its first ingredient; don't error on it
 :(before "End Mu Types Initialization")
 Type_ordinal["type"] = 0;
-:(before "End transform_names(inst) Special-cases")
-// replace type names with type_ordinals
-if (inst.name == "new") {
-  // End NEW Transform Special-cases
-  // first arg must be of type 'type'
-  if (inst.ingredients.empty())
-    raise_error << maybe(Recipe[r].name) << "'new' expects one or two ingredients\n" << end();
-  if (!is_mu_type_literal(inst.ingredients.at(0)))
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << inst.ingredients.at(0).original_string << '\n' << end();
-  if (Type_ordinal.find(inst.ingredients.at(0).name) == Type_ordinal.end())
-    raise_error << maybe(Recipe[r].name) << "unknown type " << inst.ingredients.at(0).name << '\n' << end();
-  inst.ingredients.at(0).set_value(Type_ordinal[inst.ingredients.at(0).name]);
-  trace(9999, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).name << end();
-  end_new_transform:;
-}
 
-//:: Now implement the primitive recipe.
-//: todo: build 'new' in mu itself
-
+//:: typecheck 'new' instructions
 :(before "End Primitive Recipe Declarations")
 NEW,
 :(before "End Primitive Recipe Numbers")
@@ -57,7 +39,7 @@ case NEW: {
     raise_error << maybe(Recipe[r].name) << "'new' requires one or two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
-  // End NEW Checks
+  // End NEW Check Special-cases
   reagent type = inst.ingredients.at(0);
   if (!is_mu_type_literal(type)) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
@@ -65,24 +47,48 @@ case NEW: {
   }
   break;
 }
+
+//:: translate 'new' to 'alloc' instructions that take a size instead of a type
+:(after "Transform.push_back(check_instruction)" following "Transform.push_back(check_invalid_types)")  // so that all types are defined
+  Transform.push_back(transform_new_to_allocate);
+
+:(code)
+void transform_new_to_allocate(recipe_ordinal r) {
+  trace(9991, "transform") << "--- convert 'new' to 'allocate' for recipe " << Recipe[r].name << end();
+  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
+    instruction& inst = Recipe[r].steps.at(i);
+    // Convert 'new' To 'allocate'
+    if (inst.name == "new") {
+      inst.operation = ALLOCATE;
+//?       istringstream in(inst.ingredients.at(0).name);
+//?       in >> std::noskipws;
+      string_tree* type_name = new string_tree(inst.ingredients.at(0).name);
+      // End Post-processing(type_name) When Converting 'new'
+      type_tree* type = new_type_tree(type_name);
+      inst.ingredients.at(0).set_value(size_of(type));
+      ostringstream out;
+      dump_property(type_name, out);
+      trace(9992, "new") << "size of " << out.str() << " is " << inst.ingredients.at(0).value << end();
+      delete type;
+      delete type_name;
+    }
+  }
+}
+
+//:: implement 'allocate' based on size
+
+:(before "End Primitive Recipe Declarations")
+ALLOCATE,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["allocate"] = ALLOCATE;
 :(before "End Primitive Recipe Implementations")
-case NEW: {
+case ALLOCATE: {
   // compute the space we need
-  long long int size = 0;
-  long long int array_length = 0;
-  {
-    type_tree* type = new type_tree(current_instruction().ingredients.at(0).value);
-    if (SIZE(current_instruction().ingredients) > 1) {
-      // array
-      array_length = ingredients.at(1).at(0);
-      trace(9999, "mem") << "array size is " << array_length << end();
-      size = array_length*size_of(type) + /*space for length*/1;
-    }
-    else {
-      // scalar
-      size = size_of(type);
-    }
-    delete type;
+  long long int size = ingredients.at(0).at(0);
+  if (SIZE(ingredients) > 1) {
+    // array
+    trace(9999, "mem") << "array size is " << ingredients.at(1).at(0) << end();
+    size = /*space for length*/1 + size*ingredients.at(1).at(0);
   }
 //?   Total_alloc += size;
 //?   Num_alloc++;
@@ -99,12 +105,26 @@ case NEW: {
     Memory[address] = 0;
   }
   if (SIZE(current_instruction().ingredients) > 1) {
-    Memory[result] = array_length;
+    Memory[result] = ingredients.at(1).at(0);  // array length
   }
   // bump
   Current_routine->alloc += size;
   // no support for reclaiming memory
   assert(Current_routine->alloc <= Current_routine->alloc_max);
+  break;
+}
+
+//:: ensure we never call 'allocate' directly; its types are not checked
+:(before "End Primitive Recipe Checks")
+case ALLOCATE: {
+  raise << "never call 'allocate' directly'; always use 'new'\n" << end();
+  break;
+}
+
+//:: ensure we never call 'new' without translating it (unless we add special-cases later)
+:(before "End Primitive Recipe Implementations")
+case NEW: {
+  raise << "no implementation for 'new'; why wasn't it translated to 'allocate'?\n" << end();
   break;
 }
 
@@ -257,7 +277,7 @@ void abandon(long long int address, long long int size) {
   Free_list[size] = address;
 }
 
-:(before "ensure_space(size)" following "case NEW")
+:(before "ensure_space(size)" following "case ALLOCATE")
 if (Free_list[size]) {
   long long int result = Free_list[size];
   Free_list[size] = Memory[result];
@@ -268,7 +288,7 @@ if (Free_list[size]) {
     }
   }
   if (SIZE(current_instruction().ingredients) > 1)
-    Memory[result] = array_length;
+    Memory[result] = ingredients.at(1).at(0);
   else
     Memory[result] = 0;
   products.resize(1);
@@ -316,18 +336,10 @@ recipe main [
 # unicode for '«'
 +mem: storing 171 in location 3
 
-:(before "End NEW Transform Special-cases")
-  if (!inst.ingredients.empty()
-      && !inst.ingredients.at(0).properties.empty()
-      && inst.ingredients.at(0).properties.at(0).second
-      && inst.ingredients.at(0).properties.at(0).second->value == "literal-string") {
-    // skip transform
-    inst.ingredients.at(0).initialized = true;
-    goto end_new_transform;
-  }
-
-:(before "End NEW Checks")
+:(before "End NEW Check Special-cases")
 if (is_literal_string(inst.ingredients.at(0))) break;
+:(before "Convert 'new' To 'allocate'")
+if (inst.name == "new" && is_literal_string(inst.ingredients.at(0))) continue;
 :(after "case NEW" following "Primitive Recipe Implementations")
   if (is_literal_string(current_instruction().ingredients.at(0))) {
     products.resize(1);
@@ -437,5 +449,7 @@ string read_mu_string(long long int address) {
 }
 
 bool is_mu_type_literal(reagent r) {
+//?   if (!r.properties.empty())
+//?     dump_property(r.properties.at(0).second, cerr);
   return is_literal(r) && !r.properties.empty() && r.properties.at(0).second && r.properties.at(0).second->value == "type";
 }
