@@ -66,7 +66,7 @@ recipe main [
 
 :(scenario dilated_reagent_with_new)
 recipe main [
-  x:address:number <- new {(foo bar) type}
+  x:address:number <- new {(foo bar): type}
 ]
 # type isn't defined so size is meaningless, but at least we parse the type correctly
 +new: size of <"foo" : <"bar" : <>>> is 1
