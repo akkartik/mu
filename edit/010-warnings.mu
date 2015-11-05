@@ -5,10 +5,9 @@ container programming-environment-data [
 ]
 
 # copy code from recipe editor, persist, load into mu, save any warnings
-recipe! update-recipes [
+recipe! update-recipes env:address:programming-environment-data, screen:address:screen -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   local-scope
-  env:address:programming-environment-data <- next-ingredient
-  screen:address:screen <- next-ingredient
+  load-ingredients
   recipes:address:editor-data <- get *env, recipes:offset
   in:address:array:character <- editor-contents recipes
   save [recipes.mu], in
@@ -19,9 +18,10 @@ recipe! update-recipes [
     break-unless *recipe-warnings
     status:address:array:character <- new [errors found]
     update-status screen, status, 1/red
-    reply 1/errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
+    errors-found? <- copy 1/true
+    reply
   }
-  reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
+  errors-found? <- copy 0/false
 ]
 
 before <render-components-end> [
@@ -46,9 +46,9 @@ container sandbox-data [
   warnings:address:array:character
 ]
 
-recipe! update-sandbox [
+recipe! update-sandbox sandbox:address:sandbox-data -> sandbox:address:sandbox-data [
   local-scope
-  sandbox:address:sandbox-data <- next-ingredient
+  load-ingredients
   data:address:array:character <- get *sandbox, data:offset
   response:address:address:array:character <- get-address *sandbox, response:offset
   warnings:address:address:array:character <- get-address *sandbox, warnings:offset
