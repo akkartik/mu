@@ -129,12 +129,11 @@ after <global-keypress> [
   }
 ]
 
-recipe run-sandboxes [
+recipe run-sandboxes env:address:programming-environment-data, screen:address:screen -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   local-scope
-  env:address:programming-environment-data <- next-ingredient
-  screen:address:screen <- next-ingredient
-  stop?:boolean, env, screen <- update-recipes env, screen
-  reply-if stop?, 1/errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
+  load-ingredients
+  errors-found?:boolean, env, screen <- update-recipes env, screen
+  reply-if errors-found?
   # check contents of right editor (sandbox)
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   {
@@ -151,9 +150,9 @@ recipe run-sandboxes [
     *next <- copy *dest
     *dest <- copy new-sandbox
     # clear sandbox editor
-    init:address:address:duplex-list <- get-address *current-sandbox, data:offset
+    init:address:address:duplex-list:character <- get-address *current-sandbox, data:offset
     *init <- push-duplex 167/§, 0/tail
-    top-of-screen:address:address:duplex-list <- get-address *current-sandbox, top-of-screen:offset
+    top-of-screen:address:address:duplex-list:character <- get-address *current-sandbox, top-of-screen:offset
     *top-of-screen <- copy *init
   }
   # save all sandboxes before running, just in case we die when running
@@ -162,49 +161,45 @@ recipe run-sandboxes [
   curr:address:sandbox-data <- get *env, sandbox:offset
   {
     break-unless curr
-    update-sandbox curr
+    curr <- update-sandbox curr
     curr <- get *curr, next-sandbox:offset
     loop
   }
-  reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
+  errors-found? <- copy 0/false
 ]
 
 # copy code from recipe editor, persist, load into mu
-# replaced in a later layer
-recipe update-recipes [
+# replaced in a later layer (whereupon errors-found? will actually be set)
+recipe update-recipes env:address:programming-environment-data, screen:address:screen -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   local-scope
-  env:address:programming-environment-data <- next-ingredient
-  screen:address:screen <- next-ingredient
+  load-ingredients
   recipes:address:editor-data <- get *env, recipes:offset
   in:address:array:character <- editor-contents recipes
   save [recipes.mu], in  # newlayer: persistence
   reload in
-  reply 0/no-errors-found, env/same-as-ingredient:0, screen/same-as-ingredient:1
+  errors-found? <- copy 0/false
 ]
 
 # replaced in a later layer
-recipe update-sandbox [
+recipe update-sandbox sandbox:address:sandbox-data -> sandbox:address:sandbox-data [
   local-scope
-  sandbox:address:sandbox-data <- next-ingredient
+  load-ingredients
   data:address:array:character <- get *sandbox, data:offset
   response:address:address:array:character <- get-address *sandbox, response:offset
   fake-screen:address:address:screen <- get-address *sandbox, screen:offset
   *response, _, *fake-screen <- run-interactive data
 ]
 
-recipe update-status [
+recipe update-status screen:address:screen, msg:address:array:character, color:number -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  msg:address:array:character <- next-ingredient
-  color:number <- next-ingredient
+  load-ingredients
   screen <- move-cursor screen, 0, 2
   screen <- print-string screen, msg, color, 238/grey/background
-  reply screen/same-as-ingredient:0
 ]
 
-recipe save-sandboxes [
+recipe save-sandboxes env:address:programming-environment-data [
   local-scope
-  env:address:programming-environment-data <- next-ingredient
+  load-ingredients
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   # first clear previous versions, in case we deleted some sandbox
   $system [rm lesson/[0-9]* >/dev/null 2>/dev/null]  # some shells can't handle '>&'
@@ -228,10 +223,9 @@ recipe save-sandboxes [
   }
 ]
 
-recipe! render-sandbox-side [
+recipe! render-sandbox-side screen:address:screen, env:address:programming-environment-data -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
+  load-ingredients
   trace 11, [app], [render sandbox side]
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
@@ -243,20 +237,15 @@ recipe! render-sandbox-side [
   sandbox:address:sandbox-data <- get *env, sandbox:offset
   row, screen <- render-sandboxes screen, sandbox, left, right, row
   clear-rest-of-screen screen, row, left, left, right
-  reply screen/same-as-ingredient:0
 ]
 
-recipe render-sandboxes [
+recipe render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:number, right:number, row:number -> row:number, screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  sandbox:address:sandbox-data <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
-  row:number <- next-ingredient
-  reply-unless sandbox, row/same-as-ingredient:4, screen/same-as-ingredient:0
+  load-ingredients
+  reply-unless sandbox
   screen-height:number <- screen-height screen
   at-bottom?:boolean <- greater-or-equal row, screen-height
-  reply-if at-bottom?:boolean, row/same-as-ingredient:4, screen/same-as-ingredient:0
+  reply-if at-bottom?:boolean
   # render sandbox menu
   row <- add row, 1
   screen <- move-cursor screen, row, left
@@ -277,7 +266,7 @@ recipe render-sandboxes [
   sandbox-response:address:array:character <- get *sandbox, response:offset
   <render-sandbox-results>
   {
-    sandbox-screen:address <- get *sandbox, screen:offset
+    sandbox-screen:address:screen <- get *sandbox, screen:offset
     empty-screen?:boolean <- fake-screen-is-empty? sandbox-screen
     break-if empty-screen?
     row, screen <- render-screen screen, sandbox-screen, left, right, row
@@ -290,19 +279,18 @@ recipe render-sandboxes [
   }
   +render-sandbox-end
   at-bottom?:boolean <- greater-or-equal row, screen-height
-  reply-if at-bottom?, row/same-as-ingredient:4, screen/same-as-ingredient:0
+  reply-if at-bottom?
   # draw solid line after sandbox
   draw-horizontal screen, row, left, right, 9473/horizontal-double
   # draw next sandbox
   next-sandbox:address:sandbox-data <- get *sandbox, next-sandbox:offset
   row, screen <- render-sandboxes screen, next-sandbox, left, right, row
-  reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
 # assumes programming environment has no sandboxes; restores them from previous session
-recipe restore-sandboxes [
+recipe restore-sandboxes env:address:programming-environment-data -> env:address:programming-environment-data [
   local-scope
-  env:address:programming-environment-data <- next-ingredient
+  load-ingredients
   # read all scenarios, pushing them to end of a list of scenarios
   suffix:address:array:character <- new [.out]
   idx:number <- copy 0
@@ -328,29 +316,23 @@ recipe restore-sandboxes [
     curr <- get-address **curr, next-sandbox:offset
     loop
   }
-  reply env/same-as-ingredient:0
 ]
 
-# row, screen <- render-screen screen:address:screen, sandbox-screen:address, left:number, right:number, row:number
 # print the fake sandbox screen to 'screen' with appropriate delimiters
 # leave cursor at start of next line
-recipe render-screen [
+recipe render-screen screen:address:screen, sandbox-screen:address:screen, left:number, right:number, row:number -> row:number, screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  s:address:screen <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
-  row:number <- next-ingredient
-  reply-unless s, row/same-as-ingredient:4, screen/same-as-ingredient:0
+  load-ingredients
+  reply-unless sandbox-screen
   # print 'screen:'
   header:address:array:character <- new [screen:]
   row <- render-string screen, header, left, right, 245/grey, row
   screen <- move-cursor screen, row, left
-  # start printing s
+  # start printing sandbox-screen
   column:number <- copy left
-  s-width:number <- screen-width s
-  s-height:number <- screen-height s
-  buf:address:array:screen-cell <- get *s, data:offset
+  s-width:number <- screen-width sandbox-screen
+  s-height:number <- screen-height sandbox-screen
+  buf:address:array:screen-cell <- get *sandbox-screen, data:offset
   stop-printing:number <- add left, s-width, 3
   max-column:number <- min stop-printing, right
   i:number <- copy 0
@@ -400,7 +382,6 @@ recipe render-screen [
     row <- add row, 1
     loop
   }
-  reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
 scenario run-updates-results [
@@ -485,11 +466,11 @@ scenario run-instruction-manages-screen-per-sandbox [
   ]
 ]
 
-recipe editor-contents [
+recipe editor-contents editor:address:editor-data -> result:address:array:character [
   local-scope
-  editor:address:editor-data <- next-ingredient
+  load-ingredients
   buf:address:buffer <- new-buffer 80
-  curr:address:duplex-list <- get *editor, data:offset
+  curr:address:duplex-list:character <- get *editor, data:offset
   # skip § sentinel
   assert curr, [editor without data is illegal; must have at least a sentinel]
   curr <- next-duplex curr
@@ -501,8 +482,7 @@ recipe editor-contents [
     curr <- next-duplex curr
     loop
   }
-  result:address:array:character <- buffer-to-array buf
-  reply result
+  result <- buffer-to-array buf
 ]
 
 scenario editor-provides-edited-contents [

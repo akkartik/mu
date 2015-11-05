@@ -511,7 +511,7 @@ recipe render-string screen:address:screen, s:address:array:character, left:numb
 ]
 
 # like 'render-string' but with colorization for comments like in the editor
-recipe render-code-string screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
+recipe render-code-string screen:address:screen, s:address:array:character, left:number, right:number, row:number -> row:number, screen:address:screen [
   local-scope
   load-ingredients
   reply-unless s
