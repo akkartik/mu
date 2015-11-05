@@ -14,8 +14,8 @@ recipe main [
 ]
 +error: main: x used with multiple types
 
-:(after "int main")
-  Transform.push_back(check_types_by_name);
+:(after "Begin Transforms")
+Transform.push_back(check_types_by_name);
 
 :(code)
 void check_types_by_name(const recipe_ordinal r) {

@@ -18,8 +18,8 @@ recipe main [
 +error: main: use before set: y
 # todo: detect conditional defines
 
-:(after "int main")
-  Transform.push_back(transform_names);
+:(after "Begin Transforms")
+Transform.push_back(transform_names);
 
 :(before "End Globals")
 map<recipe_ordinal, map<string, long long int> > Name;

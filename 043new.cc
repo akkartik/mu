@@ -50,7 +50,7 @@ case NEW: {
 
 //:: translate 'new' to 'alloc' instructions that take a size instead of a type
 :(after "Transform.push_back(check_instruction)" following "Transform.push_back(check_invalid_types)")  // so that all types are defined
-  Transform.push_back(transform_new_to_allocate);
+Transform.push_back(transform_new_to_allocate);
 
 :(code)
 void transform_new_to_allocate(recipe_ordinal r) {

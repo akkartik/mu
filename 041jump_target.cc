@@ -18,8 +18,8 @@ recipe main [
 :(before "End Mu Types Initialization")
 Type_ordinal["label"] = 0;
 
-:(after "int main")
-  Transform.push_back(transform_labels);
+:(after "Begin Transforms")
+Transform.push_back(transform_labels);
 
 :(code)
 void transform_labels(const recipe_ordinal r) {

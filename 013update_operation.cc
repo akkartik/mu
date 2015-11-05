@@ -1,9 +1,8 @@
 //: Once all code is loaded, save operation ids of instructions and check that
 //: nothing's undefined.
 
-:(after "int main")
-  // do this before any other transforms
-  Transform.push_back(update_instruction_operations);
+:(after "Begin Transforms")
+Transform.push_back(update_instruction_operations);
 
 :(code)
 void update_instruction_operations(recipe_ordinal r) {

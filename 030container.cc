@@ -510,8 +510,8 @@ container bar [
 -error: unknown type: bar
 $error: 0
 
-:(after "int main")
-  Transform.push_back(check_invalid_types);
+:(after "Begin Transforms")
+Transform.push_back(check_invalid_types);
 
 :(code)
 void check_invalid_types(const recipe_ordinal r) {
@@ -556,7 +556,7 @@ container foo [
 +parse: element name: y
 +parse: type: 1
 
-:(before "End Transform")
+:(before "End Transform All")
 check_container_field_types();
 
 :(code)

@@ -102,8 +102,8 @@ recipe test a:number, b:number -> z:number [
 ]
 +mem: storing 2 in location 7
 
-:(after "int main")
-  Transform.push_back(resolve_ambiguous_calls);
+:(after "Begin Transforms")
+Transform.push_back(resolve_ambiguous_calls);
 
 :(code)
 void resolve_ambiguous_calls(recipe_ordinal r) {
