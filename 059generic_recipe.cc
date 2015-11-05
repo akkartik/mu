@@ -38,6 +38,12 @@ if (best_score == -1) {
   }
 }
 
+//: Don't bother resolving ambiguous calls inside generic recipes. Just do
+//: their specializations.
+
+:(after "void resolve_ambiguous_calls")
+if (any_type_ingredient_in_header(r)) return;
+
 :(code)
 recipe_ordinal pick_matching_generic_variant(vector<recipe_ordinal>& variants, const instruction& inst, long long int& best_score) {
   recipe_ordinal result = 0;
