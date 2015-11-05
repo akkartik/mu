@@ -140,10 +140,6 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
 }
 
 void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, string>& mappings) {
-  if (SIZE(inst.ingredients) < SIZE(exemplar.ingredients)
-      || SIZE(inst.products) < SIZE(exemplar.products)) {
-    raise_error << "can't specialize " << exemplar.name << " without all ingredients and products, but got '" << inst.to_string() << "'\n" << end();
-  }
   for (long long int i = 0; i < SIZE(exemplar.ingredients); ++i) {
     accumulate_type_ingredients(exemplar.ingredients.at(i), inst.ingredients.at(i), mappings, exemplar);
   }
@@ -164,10 +160,9 @@ void accumulate_type_ingredients(const reagent& base, const reagent& refinement,
 void accumulate_type_ingredients(const string_tree* base, const string_tree* refinement, map<string, string>& mappings, const recipe& exemplar, const reagent& r) {
   if (!base) return;
   if (!refinement) {
-    if (!Trace_stream) cerr << "Turn on START_TRACING_UNTIL_END_OF_SCOPE in 020run.cc for more details.\n";
-    DUMP("");
+    raise_error << maybe(exemplar.name) << "missing type ingredient in " << r.original_string << '\n' << end();
+    return;
   }
-  assert(refinement);
   if (!base->value.empty() && base->value.at(0) == '_') {
     assert(!refinement->value.empty());
     if (mappings.find(base->value) == mappings.end()) {
