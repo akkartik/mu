@@ -125,8 +125,6 @@ scenario editor-initializes-without-data [
   ]
 ]
 
-# last-row:number, last-column:number, screen, editor <- render screen:address:screen, editor:address:editor-data
-#
 # Assumes cursor should be at coordinates (cursor-row, cursor-column) and
 # updates before-cursor to match. Might also move coordinates if they're
 # outside text.
@@ -412,7 +410,6 @@ after <character-c-received> [
   color <- get-color color, c
 ]
 
-# color <- get-color color:number, c:character
 # so far the previous color is all the information we need; that may change
 recipe get-color color:number, c:character -> color:number [
   local-scope
