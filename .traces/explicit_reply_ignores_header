@@ -1,0 +1,123 @@
+9991 parse: --- defining main
+9993 parse: instruction: add2
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"3": "literal"}
+9993 parse:   ingredient: {"5": "literal"}
+9993 parse:   product: {"1": "number", "raw": <>}
+9993 parse:   product: {"2": "number", "raw": <>}
+9992 load: after rewriting: 1:number/raw, 2:number/raw <- add2 3, 5
+9999 parse: recipe main has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: a:number
+9999 parse: header ingredient: b:number
+9999 parse: header product: y:number
+9999 parse: header product: z:number
+9991 parse: --- defining add2
+9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: add
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"a": <>}
+9993 parse:   ingredient: {"b": <>}
+9993 parse:   product: {"y": <>}
+9992 load: after rewriting: y <- add a, b
+9993 parse: instruction: subtract
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"a": <>}
+9993 parse:   ingredient: {"b": <>}
+9993 parse:   product: {"z": <>}
+9992 load: after rewriting: z <- subtract a, b
+9993 parse: instruction: reply
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"a": <>}
+9993 parse:   ingredient: {"z": <>}
+9992 load: after rewriting: reply a, z
+9999 parse: recipe add2 has a header
+9990 transform: === transform_all()
+9991 transform: --- resolve ambiguous calls for recipe main
+9992 transform: instruction add2
+9992 transform: checking variant 0: -1
+9992 transform: checking variant 1: -1
+9992 transform: checking variant 2: -1
+9992 transform: checking variant 3: -1
+9992 transform: checking variant 4: 100
+9991 transform: --- resolve ambiguous calls for recipe add2
+9991 transform: --- deduce types for recipe main
+9991 transform: --- deduce types for recipe add2
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: a => number
+9992 transform: b => number
+9992 transform: a <= number
+9992 transform: b <= number
+9992 transform: a <= number
+9992 transform: b <= number
+9992 transform: a <= number
+9991 transform: --- collect surrounding spaces for recipe main
+9991 transform: --- collect surrounding spaces for recipe add2
+9991 transform: --- deduce types from header for add2
+9992 transform: default-space:address:array:location <- new location:type, number-of-locals:literal
+9992 transform: a:number <- next-ingredient 
+9992 transform: b:number <- next-ingredient 
+9992 transform: y <- add a, b
+9993 transform: type of y is number
+9992 transform: z <- subtract a, b
+9993 transform: type of z is number
+9992 transform: reply a, z
+9993 transform: type of z is number
+9991 transform: --- transform names for recipe main
+9991 transform: --- transform names for recipe add2
+9993 name: assign a 1
+9993 name: assign b 2
+9993 name: assign y 3
+9993 name: assign z 4
+9991 transform: --- transform braces for recipe main
+9992 transform: add2 ...
+9991 transform: --- transform braces for recipe add2
+9992 transform: local-scope ...
+9992 transform:  ...
+9992 transform:  ...
+9992 transform: add ...
+9992 transform: subtract ...
+9992 transform: reply ...
+9991 transform: --- compute instruction operations for recipe main
+9991 transform: --- compute instruction operations for recipe add2
+9991 transform: --- perform checks for recipe main
+9991 transform: --- perform checks for recipe add2
+9991 transform: --- convert 'new' to 'allocate' for recipe main
+9991 transform: --- convert 'new' to 'allocate' for recipe add2
+9992 new: size of "location" is 1
+9991 transform: --- checking reply instructions against header for add2
+9991 transform: --- parsing any uninitialized reagents as integers
+9999 trace: new routine; incrementing callstack depth to 1
+9999 new: routine allocated memory from 1000 to 101000
+9990 schedule: main
+ 102 run: 1:number/raw, 2:number/raw <- add2 3, 5
+9999 trace: incrementing callstack depth to 2
+ 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+9999 mem: array size is 5
+9999 mem: new alloc: 1000
+ 103 run: a:number <- next-ingredient 
+9999 mem: storing 3 in location 1002
+ 103 run: b:number <- next-ingredient 
+9999 mem: storing 5 in location 1003
+ 103 run: y <- add a, b
+9999 mem: location 1002 is 3
+9999 mem: location 1003 is 5
+9999 mem: storing 8 in location 1004
+ 103 run: z <- subtract a, b
+9999 mem: location 1002 is 3
+9999 mem: location 1003 is 5
+9999 mem: storing -2 in location 1005
+ 103 run: reply a, z
+9999 mem: location 1002 is 3
+9999 mem: location 1005 is -2
+9999 trace: reply: decrementing callstack depth from 2
+9998 run: result 0 is 3
+9998 run: result 1 is -2
+9999 mem: storing 3 in location 1
+9999 mem: storing -2 in location 2
+9999 trace: fall-through: exiting main; decrementing callstack depth from 1

@@ -199,6 +199,20 @@ if (curr.name == "reply" && curr.ingredients.empty()) {
   }
 }
 
+:(scenario explicit_reply_ignores_header)
+recipe main [
+  1:number/raw, 2:number/raw <- add2 3, 5
+]
+recipe add2 a:number, b:number -> y:number, z:number [
+  local-scope
+  load-ingredients
+  y <- add a, b
+  z <- subtract a, b
+  reply a, z
+]
++mem: storing 3 in location 1
++mem: storing -2 in location 2
+
 :(scenario reply_on_fallthrough_based_on_header)
 recipe main [
   1:number/raw <- add2 3, 5
