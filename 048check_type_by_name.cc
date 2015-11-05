@@ -21,28 +21,32 @@ recipe main [
 void check_types_by_name(const recipe_ordinal r) {
   trace(9991, "transform") << "--- deduce types for recipe " << Recipe[r].name << end();
   map<string, type_tree*> type;
+  map<string, string_tree*> type_name;
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
-      deduce_missing_type(type, inst.ingredients.at(in));
-      check_type(type, inst.ingredients.at(in), r);
+      deduce_missing_type(type, type_name, inst.ingredients.at(in));
+      check_type(type, type_name, inst.ingredients.at(in), r);
     }
     for (long long int out = 0; out < SIZE(inst.products); ++out) {
-      deduce_missing_type(type, inst.products.at(out));
-      check_type(type, inst.products.at(out), r);
+      deduce_missing_type(type, type_name, inst.products.at(out));
+      check_type(type, type_name, inst.products.at(out), r);
     }
   }
 }
 
-void check_type(map<string, type_tree*>& type, const reagent& x, const recipe_ordinal r) {
+void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, const reagent& x, const recipe_ordinal r) {
   if (is_literal(x)) return;
-  if (is_raw(x)) return;
+  if (is_raw(x)) return;  // TODO: delete this
   // if you use raw locations you're probably doing something unsafe
   if (is_integer(x.name)) return;
   if (!x.type) return;  // will throw a more precise error elsewhere
   if (type.find(x.name) == type.end()) {
     trace(9992, "transform") << x.name << " => " << dump_types(x) << end();
     type[x.name] = x.type;
+  }
+  if (type_name.find(x.name) == type_name.end()) {
+    type_name[x.name] = x.properties.at(0).second;
   }
   if (!types_match(type[x.name], x.type))
     raise_error << maybe(Recipe[r].name) << x.name << " used with multiple types\n" << end();
@@ -55,13 +59,13 @@ recipe main [
 ]
 
 :(code)
-void deduce_missing_type(map<string, type_tree*>& type, reagent& x) {
+void deduce_missing_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, reagent& x) {
   if (x.type) return;
   if (type.find(x.name) == type.end()) return;
   x.type = new type_tree(*type[x.name]);
   trace(9992, "transform") << x.name << " <= " << dump_types(x) << end();
   assert(!x.properties.at(0).second);
-  x.properties.at(0).second = new string_tree("as-before");
+  x.properties.at(0).second = new string_tree(*type_name[x.name]);
 }
 
 :(scenario transform_fills_in_missing_types_in_product)
