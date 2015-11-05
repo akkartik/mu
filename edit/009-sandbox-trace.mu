@@ -126,9 +126,9 @@ container sandbox-data [
 ]
 
 # replaced in a later layer
-recipe! update-sandbox [
+recipe! update-sandbox sandbox:address:sandbox-data -> sandbox:address:sandbox-data [
   local-scope
-  sandbox:address:sandbox-data <- next-ingredient
+  load-ingredients
   data:address:array:character <- get *sandbox, data:offset
   response:address:address:array:character <- get-address *sandbox, response:offset
   trace:address:address:array:character <- get-address *sandbox, trace:offset
@@ -165,12 +165,11 @@ after <global-touch> [
   }
 ]
 
-recipe find-click-in-sandbox-code [
+recipe find-click-in-sandbox-code env:address:programming-environment-data, click-row:number -> sandbox:address:sandbox-data [
   local-scope
-  env:address:programming-environment-data <- next-ingredient
-  click-row:number <- next-ingredient
+  load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
-  sandbox:address:sandbox-data <- get *env, sandbox:offset
+  sandbox <- get *env, sandbox:offset
   start:number <- get *sandbox, starting-row-on-screen:offset
   clicked-on-sandboxes?:boolean <- greater-or-equal click-row, start
   assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
