@@ -108,6 +108,7 @@ Transform.push_back(resolve_ambiguous_calls);
 
 :(code)
 void resolve_ambiguous_calls(recipe_ordinal r) {
+  if (!Recipe[r].has_header) return;
   trace(9991, "transform") << "--- resolve ambiguous calls for recipe " << Recipe[r].name << end();
   for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
     instruction& inst = Recipe[r].steps.at(index);
