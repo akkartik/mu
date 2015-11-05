@@ -102,7 +102,8 @@ recipe test a:number, b:number -> z:number [
 ]
 +mem: storing 2 in location 7
 
-:(after "Begin Transforms")
+//: after insert_fragments (tangle) and before computing operation ids
+:(before "Transform.push_back(deduce_types_from_header)")
 Transform.push_back(resolve_ambiguous_calls);
 
 :(code)
