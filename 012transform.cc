@@ -2,6 +2,16 @@
 //:
 //: The hope is that this framework of transform tools will provide a
 //: deconstructed alternative to conventional compilers.
+//:
+//: We're going to have many transforms in mu, and getting their order right
+//: (not the same as ordering of layers) is a well-known problem. Some tips:
+//:   a) Design each layer to rely on as few previous layers as possible.
+//:
+//:   b) When positioning transforms, try to find the tightest constraint in
+//:   each transform relative to previous layers.
+//:
+//:   c) Even so you'll periodically need to try adjusting each transform
+//:   relative to those in previous layers to find a better arrangement.
 
 :(before "End recipe Fields")
 long long int transformed_until;
