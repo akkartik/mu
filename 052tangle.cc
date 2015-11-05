@@ -57,7 +57,7 @@ else if (command == "after") {
 :(after "int main")
   Transform.push_back(insert_fragments);
 
-//; We might need to perform multiple passes, in case inserted fragments
+//: We might need to perform multiple passes, in case inserted fragments
 //: include more labels that need further insertions. Track which labels we've
 //: already processed using an extra field.
 :(before "End instruction Fields")
