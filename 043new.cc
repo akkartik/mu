@@ -48,7 +48,7 @@ case NEW: {
   break;
 }
 
-//:: translate 'new' to 'alloc' instructions that take a size instead of a type
+//:: translate 'new' to 'allocate' instructions that take a size instead of a type
 :(after "Transform.push_back(check_instruction)" following "Transform.push_back(check_invalid_types)")  // so that all types are defined
 Transform.push_back(transform_new_to_allocate);
 
