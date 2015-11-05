@@ -57,6 +57,7 @@ string_tree* parse_string_tree(istream& in) {
 }
 
 :(scenario dilated_reagent_with_type_tree)
+% Hide_errors = true;  // 'map' isn't defined yet
 recipe main [
   {1: (map (address array character) (list number))} <- copy 34
 ]
