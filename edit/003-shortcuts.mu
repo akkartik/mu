@@ -1359,7 +1359,7 @@ after <handle-special-key> [
 
 recipe move-to-end-of-line editor:address:editor-data [
   local-scope
-  editor:address:editor-data <- next-ingredient
+  load-ingredients
   before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   # while not at start of line, move 
@@ -2173,14 +2173,13 @@ after <scroll-up> [
 # takes a pointer into the doubly-linked list, scans back to before start of
 # previous *wrapped* line
 # beware: never return null pointer
-recipe before-previous-line curr:address:duplex-list:character -> curr:address:duplex-list:character [
+recipe before-previous-line curr:address:duplex-list:character, editor:address:editor-data -> curr:address:duplex-list:character [
   local-scope
-  curr:address:duplex-list:character <- next-ingredient
+  load-ingredients
   c:character <- get *curr, value:offset
   # compute max, number of characters to skip
   #   1 + len%(width-1)
   #   except rotate second term to vary from 1 to width-1 rather than 0 to width-2
-  editor:address:editor-data <- next-ingredient
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   max-line-length:number <- subtract right, left, -1/exclusive-right, 1/wrap-icon
@@ -2776,8 +2775,7 @@ after <handle-special-key> [
 
 recipe page-up editor:address:editor-data, screen-height:number -> editor:address:editor-data [
   local-scope
-  editor:address:editor-data <- next-ingredient
-  screen-height:number <- next-ingredient
+  load-ingredients
   max:number <- subtract screen-height, 1/menu-bar, 1/overlapping-line
   count:number <- copy 0
   top-of-screen:address:address:duplex-list:character <- get-address *editor, top-of-screen:offset

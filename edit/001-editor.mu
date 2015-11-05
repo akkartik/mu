@@ -80,8 +80,7 @@ recipe new-editor s:address:array:character, screen:address:screen, left:number,
 
 recipe insert-text editor:address:editor-data, text:address:array:character -> editor:address:editor-data [
   local-scope
-  editor:address:editor-data <- next-ingredient
-  text:address:array:character <- next-ingredient
+  load-ingredients
   # early exit if text is empty
   reply-unless text, editor/same-as-ingredient:0
   len:number <- length *text
