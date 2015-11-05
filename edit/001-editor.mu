@@ -78,7 +78,7 @@ recipe new-editor s:address:array:character, screen:address:screen, left:number,
   <editor-initialization>
 ]
 
-recipe insert-text [
+recipe insert-text editor:address:editor-data, text:address:array:character -> editor:address:editor-data [
   local-scope
   editor:address:editor-data <- next-ingredient
   text:address:array:character <- next-ingredient
@@ -88,7 +88,7 @@ recipe insert-text [
   reply-unless len, editor/same-as-ingredient:0
   idx:number <- copy 0
   # now we can start appending the rest, character by character
-  curr:address:duplex-list <- get *editor, data:offset
+  curr:address:duplex-list:character <- get *editor, data:offset
   {
     done?:boolean <- greater-or-equal idx, len
     break-if done?
@@ -130,17 +130,16 @@ scenario editor-initializes-without-data [
 # Assumes cursor should be at coordinates (cursor-row, cursor-column) and
 # updates before-cursor to match. Might also move coordinates if they're
 # outside text.
-recipe render [
+recipe render screen:address:screen, editor:address:editor-data -> last-row:number, last-column:number, screen:address:screen, editor:address:editor-data [
   local-scope
-  screen:address:screen <- next-ingredient
-  editor:address:editor-data <- next-ingredient
+  load-ingredients
   reply-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
   left:number <- get *editor, left:offset
   screen-height:number <- screen-height screen
   right:number <- get *editor, right:offset
   # traversing editor
-  curr:address:duplex-list <- get *editor, top-of-screen:offset
-  prev:address:duplex-list <- copy curr  # just in case curr becomes null and we can't compute prev-duplex
+  curr:address:duplex-list:character <- get *editor, top-of-screen:offset
+  prev:address:duplex-list:character <- copy curr  # just in case curr becomes null and we can't compute prev-duplex
   curr <- next-duplex curr
   # traversing screen
   +render-loop-initialization
@@ -149,7 +148,7 @@ recipe render [
   column:number <- copy left
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
   screen <- move-cursor screen, row, column
   {
     +next-character
@@ -211,7 +210,7 @@ recipe render [
     loop
   }
   # save first character off-screen
-  bottom-of-screen:address:address:duplex-list <- get-address *editor, bottom-of-screen:offset
+  bottom-of-screen:address:address:duplex-list:character <- get-address *editor, bottom-of-screen:offset
   *bottom-of-screen <- copy curr
   # is cursor to the right of the last line? move to end
   {
@@ -228,11 +227,9 @@ recipe render [
   reply row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
-recipe clear-line-delimited [
+recipe clear-line-delimited screen:address:screen, column:number, right:number [
   local-scope
-  screen:address:screen <- next-ingredient
-  column:number <- next-ingredient
-  right:number <- next-ingredient
+  load-ingredients
   {
     done?:boolean <- greater-than column, right
     break-if done?
@@ -242,13 +239,9 @@ recipe clear-line-delimited [
   }
 ]
 
-recipe clear-screen-from [
+recipe clear-screen-from screen:address:screen, row:number, column:number, left:number, right:number -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  row:number <- next-ingredient
-  column:number <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
+  load-ingredients
   # if it's the real screen, use the optimized primitive
   {
     break-if screen
@@ -262,12 +255,9 @@ recipe clear-screen-from [
   reply screen/same-as-ingredient:0
 ]
 
-recipe clear-rest-of-screen [
+recipe clear-rest-of-screen screen:address:screen, row:number, left:number, right:number [
   local-scope
-  screen:address:screen <- next-ingredient
-  row:number <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
+  load-ingredients
   row <- add row, 1
   screen <- move-cursor screen, row, left
   screen-height:number <- screen-height screen
@@ -424,10 +414,9 @@ after <character-c-received> [
 
 # color <- get-color color:number, c:character
 # so far the previous color is all the information we need; that may change
-recipe get-color [
+recipe get-color color:number, c:character -> color:number [
   local-scope
-  color:number <- next-ingredient
-  c:character <- next-ingredient
+  load-ingredients
   color-is-white?:boolean <- equal color, 7/white
   # if color is white and next character is '#', switch color to blue
   {
