@@ -135,8 +135,8 @@ bool is_waypoint(string label) {
 //: complain about unapplied fragments
 :(before "End Globals")
 bool Transform_check_insert_fragments_Ran = false;
-:(before "End Transforms")
-Transform.push_back(check_insert_fragments);  // final transform
+:(after "Transform.push_back(insert_fragments)")
+Transform.push_back(check_insert_fragments);
 :(code)
 void check_insert_fragments(unused recipe_ordinal) {
   if (Transform_check_insert_fragments_Ran) return;

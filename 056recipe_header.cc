@@ -101,7 +101,7 @@ recipe add2 x:number, y:number -> z:number [
 ]
 +error: add2: replied with the wrong type at 'reply z'
 
-:(before "End Transforms")
+:(after "Transform.push_back(check_types_by_name)")
 Transform.push_back(check_header_products);
 
 :(code)
@@ -111,7 +111,7 @@ void check_header_products(const recipe_ordinal r) {
   trace(9991, "transform") << "--- checking reply instructions against header for " << rr.name << end();
   for (long long int i = 0; i < SIZE(rr.steps); ++i) {
     const instruction& inst = rr.steps.at(i);
-    if (inst.operation != REPLY) continue;
+    if (inst.name != "reply") continue;
     if (SIZE(rr.products) != SIZE(inst.ingredients)) {
       raise_error << maybe(rr.name) << "tried to reply the wrong number of products in '" << inst.to_string() << "'\n" << end();
     }
@@ -138,7 +138,7 @@ recipe add2 x:number, y:number -> z:number [
 ]
 +mem: storing 8 in location 1
 
-:(before "Transform.push_back(transform_names)")
+:(before "Transform.push_back(check_header_products)")
 Transform.push_back(deduce_types_from_header);
 
 :(code)
@@ -225,7 +225,7 @@ recipe add2 x:number, y:number -> z:number [
 +transform: reply z:number
 +mem: storing 8 in location 1
 
-:(after "Begin Transforms")
+:(after "Transform.push_back(insert_fragments)")
 Transform.push_back(deduce_fallthrough_reply);
 
 :(code)

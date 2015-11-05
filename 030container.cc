@@ -190,6 +190,7 @@ case GET: {
 const reagent element_type(const reagent& canonized_base, long long int offset_value) {
   assert(offset_value >= 0);
   assert(Type.find(canonized_base.type->value) != Type.end());
+  assert(!Type[canonized_base.type->value].name.empty());
   const type_info& info = Type[canonized_base.type->value];
   assert(info.kind == CONTAINER);
   reagent element;
@@ -563,6 +564,7 @@ check_container_field_types();
 void check_container_field_types() {
   for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
     const type_info& info = p->second;
+    // Check Container Field Types(info)
     for (long long int i = 0; i < SIZE(info.elements); ++i) {
       check_invalid_types(info.elements.at(i), maybe(info.name), info.element_names.at(i));
     }

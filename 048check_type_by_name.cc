@@ -14,7 +14,7 @@ recipe main [
 ]
 +error: main: x used with multiple types
 
-:(after "Begin Transforms")
+:(before "Transform.push_back(transform_names)")
 Transform.push_back(check_types_by_name);
 
 :(code)

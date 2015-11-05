@@ -30,12 +30,12 @@ recipe increment-counter [
 +mem: storing 5 in location 3
 
 //: To make this work, compute the recipe that provides names for the
-//: surrounding space of each recipe. This must happen before transform_names.
+//: surrounding space of each recipe.
 
 :(before "End Globals")
 map<recipe_ordinal, recipe_ordinal> Surrounding_space;
 
-:(after "Begin Transforms")
+:(before "Transform.push_back(transform_names)")
 Transform.push_back(collect_surrounding_spaces);
 
 :(code)
