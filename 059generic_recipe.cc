@@ -140,20 +140,33 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
 }
 
 void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, string>& mappings) {
+  if (SIZE(inst.ingredients) < SIZE(exemplar.ingredients)
+      || SIZE(inst.products) < SIZE(exemplar.products)) {
+    raise_error << "can't specialize " << exemplar.name << " without all ingredients and products, but got '" << inst.to_string() << "'\n" << end();
+  }
   for (long long int i = 0; i < SIZE(exemplar.ingredients); ++i) {
-    accumulate_type_ingredients(exemplar.ingredients.at(i), inst.ingredients.at(i), mappings);
+    accumulate_type_ingredients(exemplar.ingredients.at(i), inst.ingredients.at(i), mappings, exemplar);
   }
   for (long long int i = 0; i < SIZE(exemplar.products); ++i) {
-    accumulate_type_ingredients(exemplar.products.at(i), inst.products.at(i), mappings);
+    accumulate_type_ingredients(exemplar.products.at(i), inst.products.at(i), mappings, exemplar);
   }
 }
 
-void accumulate_type_ingredients(const reagent& base, const reagent& refinement, map<string, string>& mappings) {
-  accumulate_type_ingredients(base.properties.at(0).second, refinement.properties.at(0).second, mappings);
+void accumulate_type_ingredients(const reagent& base, const reagent& refinement, map<string, string>& mappings, const recipe& exemplar) {
+  if (!refinement.properties.at(0).second) {
+    if (!Trace_stream) cerr << "Turn on START_TRACING_UNTIL_END_OF_SCOPE in 020run.cc for more details.\n";
+    DUMP("");
+  }
+  assert(refinement.properties.at(0).second);
+  accumulate_type_ingredients(base.properties.at(0).second, refinement.properties.at(0).second, mappings, exemplar, base);
 }
 
-void accumulate_type_ingredients(const string_tree* base, const string_tree* refinement, map<string, string>& mappings) {
+void accumulate_type_ingredients(const string_tree* base, const string_tree* refinement, map<string, string>& mappings, const recipe& exemplar, const reagent& r) {
   if (!base) return;
+  if (!refinement) {
+    if (!Trace_stream) cerr << "Turn on START_TRACING_UNTIL_END_OF_SCOPE in 020run.cc for more details.\n";
+    DUMP("");
+  }
   assert(refinement);
   if (!base->value.empty() && base->value.at(0) == '_') {
     assert(!refinement->value.empty());
@@ -166,9 +179,9 @@ void accumulate_type_ingredients(const string_tree* base, const string_tree* ref
     }
   }
   else {
-    accumulate_type_ingredients(base->left, refinement->left, mappings);
+    accumulate_type_ingredients(base->left, refinement->left, mappings, exemplar, r);
   }
-  accumulate_type_ingredients(base->right, refinement->right, mappings);
+  accumulate_type_ingredients(base->right, refinement->right, mappings, exemplar, r);
 }
 
 void replace_type_ingredients(recipe& new_recipe, const map<string, string>& mappings) {

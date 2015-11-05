@@ -2,9 +2,9 @@
 
 # temporary main for this layer: just render the given string at the given
 # screen dimensions, then stop
-recipe! main [
+recipe! main text:address:array:character [
   local-scope
-  text:address:array:character <- next-ingredient
+  load-ingredients
   open-console
   hide-screen 0/screen
   new-editor text, 0/screen, 0/left, 5/right
@@ -44,19 +44,15 @@ container editor-data [
   cursor-column:number
 ]
 
-# editor:address, screen <- new-editor s:address:array:character, screen:address:screen, left:number, right:number
-# creates a new editor widget and renders its initial appearance to screen.
-#   top/left/right constrain the screen area available to the new editor.
-#   right is exclusive.
-recipe new-editor [
+# creates a new editor widget and renders its initial appearance to screen
+#   top/left/right constrain the screen area available to the new editor
+#   right is exclusive
+recipe new-editor s:address:array:character, screen:address:screen, left:number, right:number -> result:address:editor-data [
   local-scope
-  s:address:array:character <- next-ingredient
-  screen:address:screen <- next-ingredient
+  load-ingredients
   # no clipping of bounds
-  left:number <- next-ingredient
-  right:number <- next-ingredient
   right <- subtract right, 1
-  result:address:editor-data <- new editor-data:type
+  result <- new editor-data:type
   # initialize screen-related fields
   x:address:number <- get-address *result, left:offset
   *x <- copy left
@@ -67,11 +63,11 @@ recipe new-editor [
   *x <- copy 1/top
   x <- get-address *result, cursor-column:offset
   *x <- copy left
-  init:address:address:duplex-list <- get-address *result, data:offset
+  init:address:address:duplex-list:character <- get-address *result, data:offset
   *init <- push-duplex 167/§, 0/tail
-  top-of-screen:address:address:duplex-list <- get-address *result, top-of-screen:offset
+  top-of-screen:address:address:duplex-list:character <- get-address *result, top-of-screen:offset
   *top-of-screen <- copy *init
-  y:address:address:duplex-list <- get-address *result, before-cursor:offset
+  y:address:address:duplex-list:character <- get-address *result, before-cursor:offset
   *y <- copy *init
   result <- insert-text result, s
   # initialize cursor to top of screen
@@ -80,7 +76,6 @@ recipe new-editor [
   # initial render to screen, just for some old tests
   _, _, screen, result <- render screen, result
   <editor-initialization>
-  reply result
 ]
 
 recipe insert-text [
