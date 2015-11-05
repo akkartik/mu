@@ -114,6 +114,16 @@ recipe main [
 ]
 +mem: storing 34 in location 4
 
+:(scenario get_indirect2)
+recipe main [
+  1:number <- copy 2
+  2:number <- copy 34
+  3:number <- copy 35
+  4:address:number <- copy 5/raw
+  *4:address:number <- get 1:address:point/lookup, 0:offset
+]
++mem: storing 34 in location 5
+
 :(scenario include_nonlookup_properties)
 recipe main [
   1:number <- copy 2
@@ -155,6 +165,7 @@ recipe main [
   2:number <- copy 34
   3:number <- copy *1:address:number
 ]
++parse: ingredient: {"1": <"address" : <"number" : <>>>, "lookup": <>}
 +mem: storing 34 in location 3
 
 :(before "End Parsing reagent")
@@ -165,6 +176,7 @@ recipe main [
   }
   if (name.empty())
     raise_error << "illegal name " << original_string << '\n' << end();
+  properties.at(0).first = name;
 }
 
 //:: helpers for debugging

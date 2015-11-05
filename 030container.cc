@@ -131,7 +131,7 @@ case GET: {
     raise_error << maybe(Recipe[r].name) << "'get' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
-  reagent base = inst.ingredients.at(0);
+  reagent base = inst.ingredients.at(0);  // new copy for every invocation
   // Update GET base in Check
   if (!base.type || !base.type->value || Type[base.type->value].kind != CONTAINER) {
     raise_error << maybe(Recipe[r].name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
@@ -152,7 +152,7 @@ case GET: {
     raise_error << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
     break;
   }
-  reagent& product = inst.products.at(0);
+  reagent product = inst.products.at(0);
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
   if (!types_match(product, element)) {
