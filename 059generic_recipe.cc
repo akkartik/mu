@@ -148,27 +148,27 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
   }
 }
 
-void accumulate_type_ingredients(const reagent& base, const reagent& refinements, map<string, string>& mappings) {
-  accumulate_type_ingredients(base.properties.at(0).second, refinements.properties.at(0).second, mappings);
+void accumulate_type_ingredients(const reagent& base, const reagent& refinement, map<string, string>& mappings) {
+  accumulate_type_ingredients(base.properties.at(0).second, refinement.properties.at(0).second, mappings);
 }
 
-void accumulate_type_ingredients(const string_tree* base, const string_tree* refinements, map<string, string>& mappings) {
+void accumulate_type_ingredients(const string_tree* base, const string_tree* refinement, map<string, string>& mappings) {
   if (!base) return;
-  assert(refinements);
+  assert(refinement);
   if (!base->value.empty() && base->value.at(0) == '_') {
-    assert(!refinements->value.empty());
+    assert(!refinement->value.empty());
     if (mappings.find(base->value) == mappings.end()) {
-      trace(9993, "transform") << "adding mapping from " << base->value << " to " << refinements->value << end();
-      mappings[base->value] = refinements->value;
+      trace(9993, "transform") << "adding mapping from " << base->value << " to " << refinement->value << end();
+      mappings[base->value] = refinement->value;
     }
     else {
-      assert(mappings[base->value] == refinements->value);
+      assert(mappings[base->value] == refinement->value);
     }
   }
   else {
-    accumulate_type_ingredients(base->left, refinements->left, mappings);
+    accumulate_type_ingredients(base->left, refinement->left, mappings);
   }
-  accumulate_type_ingredients(base->right, refinements->right, mappings);
+  accumulate_type_ingredients(base->right, refinement->right, mappings);
 }
 
 void replace_type_ingredients(recipe& new_recipe, const map<string, string>& mappings) {
