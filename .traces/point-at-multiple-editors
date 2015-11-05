@@ -1,37 +1,80 @@
-9999 parse: instruction: trace-until
-9999 parse:   ingredient: {"100": "literal", "app": <>}
-9999 parse: instruction: assume-screen
-9999 parse:   ingredient: {"30": "literal", "width": <>}
-9999 parse:   ingredient: {"5": "literal", "height": <>}
-9999 parse: instruction: new
-9999 parse:   ingredient: {"abc": "literal-string"}
-9999 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9999 parse: instruction: new
-9999 parse:   ingredient: {"def": "literal-string"}
-9999 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>}
-9999 parse: instruction: new-programming-environment
-9999 parse:   ingredient: {"screen": "address"}
-9999 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
-9999 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>}
-9999 parse:   product: {"3": <"address" : <"programming-environment-data" : <>>>}
-9999 parse: instruction: assume-console
-9999 parse:   ingredient: {"\n    left-click 1, 1\n    left-click 1, 17\n  ": "literal-string"}
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    event-loop screen:address, console:address, 3:address:programming-environment-data\n    4:address:editor-data <- get *3:address:programming-environment-data, recipes:offset\n    5:number <- get *4:address:editor-data, cursor-column:offset\n    6:address:editor-data <- get *3:address:programming-environment-data, current-sandbox:offset\n    7:number <- get *6:address:editor-data, cursor-column:offset\n  ": "literal-string"}
-9999 parse: instruction: memory-should-contain
-9999 parse:   ingredient: {"\n    5 <- 1\n    7 <- 17\n  ": "literal-string"}
-9999 after-brace: recipe scenario-point-at-multiple-editors
-9999 after-brace: trace-until ...
-9999 after-brace: new-fake-screen ...
-9999 after-brace: new ...
-9999 after-brace: new ...
-9999 after-brace: new-programming-environment ...
-9999 after-brace: assume-console ...
-9999 after-brace: run ...
-9999 after-brace: memory-should-contain ...
+9991 parse: --- defining scenario-point-at-multiple-editors
+9993 parse: instruction: trace-until
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"100": "literal", "app": <>}
+9992 load: after rewriting: trace-until 100/app
+9993 parse: instruction: assume-screen
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"30": "literal", "width": <>}
+9993 parse:   ingredient: {"5": "literal", "height": <>}
+9992 load: after rewriting: screen:address:screen <- new-fake-screen 30/width, 5/height
+9993 parse: instruction: new
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"abc": "literal-string"}
+9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
+9992 load: after rewriting: 1:address:array:character <- new [abc]
+9993 parse: instruction: new
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"def": "literal-string"}
+9993 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>}
+9992 load: after rewriting: 2:address:array:character <- new [def]
+9993 parse: instruction: new-programming-environment
+9993 parse:   number of ingredients: 3
+9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
+9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
+9993 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>}
+9993 parse:   product: {"3": <"address" : <"programming-environment-data" : <>>>}
+9992 load: after rewriting: 3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+9993 parse: instruction: assume-console
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"\n    left-click 1, 1\n    left-click 1, 17\n  ": "literal-string"}
+9992 load: after rewriting: assume-console [
+    left-click 1, 1
+    left-click 1, 17
+  ]
+9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"\n    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data\n    4:address:editor-data <- get *3:address:programming-environment-data, recipes:offset\n    5:number <- get *4:address:editor-data, cursor-column:offset\n    6:address:editor-data <- get *3:address:programming-environment-data, current-sandbox:offset\n    7:number <- get *6:address:editor-data, cursor-column:offset\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    4:address:editor-data <- get *3:address:programming-environment-data, recipes:offset
+    5:number <- get *4:address:editor-data, cursor-column:offset
+    6:address:editor-data <- get *3:address:programming-environment-data, current-sandbox:offset
+    7:number <- get *6:address:editor-data, cursor-column:offset
+  ]
+9993 parse: instruction: memory-should-contain
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"\n    5 <- 1\n    7 <- 17\n  ": "literal-string"}
+9992 load: after rewriting: memory-should-contain [
+    5 <- 1
+    7 <- 17
+  ]
+9999 parse: recipe scenario-point-at-multiple-editors has a header
+9990 transform: === transform_all()
+9991 transform: --- fill in reply ingredients from header for recipe scenario-point-at-multiple-editors
+9991 transform: --- collect surrounding spaces for recipe scenario-point-at-multiple-editors
+9991 transform: --- deduce types for recipe scenario-point-at-multiple-editors
+9992 transform: screen => <address : <screen : <>>>
+9991 transform: --- resolve ambiguous calls for recipe scenario-point-at-multiple-editors
+9992 transform: instruction new-programming-environment
+9992 transform: checking variant 0: 100
+9991 transform: --- transform names for recipe scenario-point-at-multiple-editors
+9991 transform: --- transform braces for recipe scenario-point-at-multiple-editors
+9992 transform: trace-until ...
+9992 transform: assume-screen ...
+9992 transform: new ...
+9992 transform: new ...
+9992 transform: new-programming-environment ...
+9992 transform: assume-console ...
+9992 transform: run ...
+9992 transform: memory-should-contain ...
+9991 transform: --- compute instruction operations for recipe scenario-point-at-multiple-editors
+9991 transform: --- perform checks for recipe scenario-point-at-multiple-editors
+9991 transform: --- convert 'new' to 'allocate' for recipe scenario-point-at-multiple-editors
+9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
-9999 schedule: scenario-point-at-multiple-editors
+9990 schedule: scenario-point-at-multiple-editors
  102 run: trace-until 100/app
   90 print-character: 32 
   90 print-character: 32 

@@ -1,20 +1,52 @@
-9999 parse: instruction: trace-until
-9999 parse:   ingredient: {"100": "literal", "app": <>}
-9999 parse: instruction: assume-screen
-9999 parse:   ingredient: {"60": "literal", "width": <>}
-9999 parse:   ingredient: {"10": "literal", "height": <>}
-9999 parse: instruction: run
-9999 parse:   ingredient: {"\n    1:address:array:character <- new [abc]\n    2:address:array:character <- new [def]\n    3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character\n    render-all screen, 3:address:programming-environment-data\n  ": "literal-string"}
-9999 parse: instruction: screen-should-contain
-9999 parse:   ingredient: {"\n    .                                         run (F4)           .\n    .abc                           ┊def                          .\n    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.\n    .                              ┊                             .\n    .                              ┊                             .\n  ": "literal-string"}
-9999 after-brace: recipe scenario-multiple-editors-cover-only-their-own-areas
-9999 after-brace: trace-until ...
-9999 after-brace: new-fake-screen ...
-9999 after-brace: run ...
-9999 after-brace: screen-should-contain ...
+9991 parse: --- defining scenario-multiple-editors-cover-only-their-own-areas
+9993 parse: instruction: trace-until
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"100": "literal", "app": <>}
+9992 load: after rewriting: trace-until 100/app
+9993 parse: instruction: assume-screen
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"60": "literal", "width": <>}
+9993 parse:   ingredient: {"10": "literal", "height": <>}
+9992 load: after rewriting: screen:address:screen <- new-fake-screen 60/width, 10/height
+9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"\n    1:address:array:character <- new [abc]\n    2:address:array:character <- new [def]\n    3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character\n    render-all screen, 3:address:programming-environment-data\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- new [def]
+    3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+    render-all screen, 3:address:programming-environment-data
+  ]
+9993 parse: instruction: screen-should-contain
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"\n    .                                         run (F4)           .\n    .abc                           ┊def                          .\n    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.\n    .                              ┊                             .\n    .                              ┊                             .\n  ": "literal-string"}
+9992 load: after rewriting: screen-should-contain [
+    .                                         run (F4)           .
+    .abc                           ┊def                          .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                              ┊                             .
+    .                              ┊                             .
+  ]
+9999 parse: recipe scenario-multiple-editors-cover-only-their-own-areas has a header
+9990 transform: === transform_all()
+9991 transform: --- fill in reply ingredients from header for recipe scenario-multiple-editors-cover-only-their-own-areas
+9991 transform: --- collect surrounding spaces for recipe scenario-multiple-editors-cover-only-their-own-areas
+9991 transform: --- deduce types for recipe scenario-multiple-editors-cover-only-their-own-areas
+9992 transform: screen => <address : <screen : <>>>
+9991 transform: --- resolve ambiguous calls for recipe scenario-multiple-editors-cover-only-their-own-areas
+9991 transform: --- transform names for recipe scenario-multiple-editors-cover-only-their-own-areas
+9991 transform: --- transform braces for recipe scenario-multiple-editors-cover-only-their-own-areas
+9992 transform: trace-until ...
+9992 transform: assume-screen ...
+9992 transform: run ...
+9992 transform: screen-should-contain ...
+9991 transform: --- compute instruction operations for recipe scenario-multiple-editors-cover-only-their-own-areas
+9991 transform: --- perform checks for recipe scenario-multiple-editors-cover-only-their-own-areas
+9991 transform: --- convert 'new' to 'allocate' for recipe scenario-multiple-editors-cover-only-their-own-areas
+9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
-9999 schedule: scenario-multiple-editors-cover-only-their-own-areas
+9990 schedule: scenario-multiple-editors-cover-only-their-own-areas
  102 run: trace-until 100/app
   90 print-character: 32 
   90 print-character: 32 
@@ -456,7 +488,6 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
-  11 app: render sandbox side 
   90 print-character: 100 
   90 print-character: 101 
   90 print-character: 102 
@@ -486,238 +517,6 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 9473 
   90 print-character: 9473 
   90 print-character: 9473 
@@ -754,4 +553,199 @@
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
-  11 app: render status 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 

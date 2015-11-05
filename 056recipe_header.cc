@@ -192,10 +192,19 @@ recipe add2 x:number, y:number -> z:number [
 ]
 +mem: storing 8 in location 1
 
-:(before "End Rewrite Instruction(curr, recipe result)")
-if (curr.name == "reply" && curr.ingredients.empty()) {
-  for (long long int i = 0; i < SIZE(result.products); ++i) {
-    curr.ingredients.push_back(result.products.at(i));
+:(after "Transform.push_back(insert_fragments)")
+Transform.push_back(fill_in_reply_ingredients);
+
+:(code)
+void fill_in_reply_ingredients(recipe_ordinal r) {
+  if (!Recipe[r].has_header) return;
+  trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << Recipe[r].name << end();
+  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
+    instruction& inst = Recipe[r].steps.at(i);
+    if (inst.name == "reply" && inst.ingredients.empty()) {
+      for (long long int i = 0; i < SIZE(Recipe[r].products); ++i)
+        inst.ingredients.push_back(Recipe[r].products.at(i));
+    }
   }
 }
 

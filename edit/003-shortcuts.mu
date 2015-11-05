@@ -31,7 +31,8 @@ after <handle-special-character> [
     editor, screen, go-render?:boolean <- insert-at-cursor editor, 32/space, screen
     editor, screen, go-render?:boolean <- insert-at-cursor editor, 32/space, screen
     <insert-character-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    go-render? <- copy 1/true
+    reply
   }
 ]
 
@@ -70,46 +71,48 @@ after <handle-special-character> [
     delete-previous-character?:boolean <- equal *c, 8/backspace
     break-unless delete-previous-character?
     <backspace-character-begin>
-    editor, screen, go-render?:boolean, backspaced-cell:address:duplex-list <- delete-before-cursor editor, screen
+    editor, screen, go-render?:boolean, backspaced-cell:address:duplex-list:character <- delete-before-cursor editor, screen
     <backspace-character-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
+    reply
   }
 ]
 
-# editor, screen, go-render?:boolean, backspaced-cell:address:duplex-list <- delete-before-cursor editor:address:editor-data, screen
 # return values:
 #   go-render? - whether caller needs to update the screen
 #   backspaced-cell - value deleted (or 0 if nothing was deleted) so we can save it for undo, etc.
-recipe delete-before-cursor [
+recipe delete-before-cursor editor:address:editor-data, screen:address:screen -> editor:address:editor-data, screen:address:screen, go-render?:boolean, backspaced-cell:address:duplex-list:character [
   local-scope
-  editor:address:editor-data <- next-ingredient
-  screen:address:screen <- next-ingredient
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  load-ingredients
+  before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
   # if at start of text (before-cursor at § sentinel), return
-  prev:address:duplex-list <- prev-duplex *before-cursor
-  reply-unless prev, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render, 0/nothing-deleted
+  prev:address:duplex-list:character <- prev-duplex *before-cursor
+  go-render?, backspaced-cell <- copy 0/no-more-render, 0/nothing-deleted
+  reply-unless prev
   trace 10, [app], [delete-before-cursor]
   original-row:number <- get *editor, cursor-row:offset
   editor, scroll?:boolean <- move-cursor-coordinates-left editor
-  backspaced-cell:address:duplex-list <- copy *before-cursor
+  backspaced-cell:address:duplex-list:character <- copy *before-cursor
   remove-duplex *before-cursor  # will also neatly trim next/prev pointers in backspaced-cell/*before-cursor
   *before-cursor <- copy prev
-  reply-if scroll?, editor/same-as-ingredient:0, 1/go-render, backspaced-cell
+  go-render? <- copy 1/true
+  reply-if scroll?
   screen-width:number <- screen-width screen
   cursor-row:number <- get *editor, cursor-row:offset
   cursor-column:number <- get *editor, cursor-column:offset
   # did we just backspace over a newline?
   same-row?:boolean <- equal cursor-row, original-row
-  reply-unless same-row?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render, backspaced-cell
+  go-render? <- copy 1/true
+  reply-unless same-row?
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
-  curr:address:duplex-list <- next-duplex *before-cursor
+  curr:address:duplex-list:character <- next-duplex *before-cursor
   screen <- move-cursor screen, cursor-row, cursor-column
   curr-column:number <- copy cursor-column
   {
     # hit right margin? give up and let caller render
     at-right?:boolean <- greater-or-equal curr-column, screen-width
-    reply-if at-right?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render, backspaced-cell
+    go-render? <- copy 1/true
+    reply-if at-right?
     break-unless curr
     # newline? done.
     currc:character <- get *curr, value:offset
@@ -122,13 +125,13 @@ recipe delete-before-cursor [
   }
   # we're guaranteed not to be at the right margin
   screen <- print-character screen, 32/space
-  reply editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render, backspaced-cell
+  go-render? <- copy 0/false
 ]
 
-recipe move-cursor-coordinates-left [
+recipe move-cursor-coordinates-left editor:address:editor-data -> editor:address:editor-data, go-render?:boolean [
   local-scope
-  editor:address:editor-data <- next-ingredient
-  before-cursor:address:duplex-list <- get *editor, before-cursor:offset
+  load-ingredients
+  before-cursor:address:duplex-list:character <- get *editor, before-cursor:offset
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   left:number <- get *editor, left:offset
@@ -138,7 +141,8 @@ recipe move-cursor-coordinates-left [
     break-if at-left-margin?
     trace 10, [app], [decrementing cursor column]
     *cursor-column <- subtract *cursor-column, 1
-    reply editor/same-as-ingredient:0, 0/no-more-render
+    go-render? <- copy 0/false
+    reply
   }
   # if at left margin, we must move to previous row:
   top-of-screen?:boolean <- equal *cursor-row, 1  # exclude menu bar
@@ -159,28 +163,26 @@ recipe move-cursor-coordinates-left [
     break-unless previous-character-is-newline?
     # compute length of previous line
     trace 10, [app], [switching to previous line]
-    d:address:duplex-list <- get *editor, data:offset
+    d:address:duplex-list:character <- get *editor, data:offset
     end-of-line:number <- previous-line-length before-cursor, d
     *cursor-column <- add left, end-of-line
-    reply editor/same-as-ingredient:0, go-render?
+    reply
   }
   # case 2: if previous-character was not newline, we're just at a wrapped line
   trace 10, [app], [wrapping to previous line]
   right:number <- get *editor, right:offset
   *cursor-column <- subtract right, 1  # leave room for wrap icon
-  reply editor/same-as-ingredient:0, go-render?
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
 # the length of the previous line before the 'curr' pointer.
-recipe previous-line-length [
+recipe previous-line-length curr:address:duplex-list:character, start:address:duplex-list:character -> result:number [
   local-scope
-  curr:address:duplex-list <- next-ingredient
-  start:address:duplex-list <- next-ingredient
+  load-ingredients
   result:number <- copy 0
-  reply-unless curr, result
+  reply-unless curr
   at-start?:boolean <- equal curr, start
-  reply-if at-start?, result
+  reply-if at-start?
   {
     curr <- prev-duplex curr
     break-unless curr
@@ -192,7 +194,6 @@ recipe previous-line-length [
     result <- add result, 1
     loop
   }
-  reply result
 ]
 
 scenario editor-clears-last-line-on-backspace [
@@ -264,25 +265,26 @@ after <handle-special-key> [
     delete-next-character?:boolean <- equal *k, 65522/delete
     break-unless delete-next-character?
     <delete-character-begin>
-    editor, screen, go-render?:boolean, deleted-cell:address:duplex-list <- delete-at-cursor editor, screen
+    editor, screen, go-render?:boolean, deleted-cell:address:duplex-list:character <- delete-at-cursor editor, screen
     <delete-character-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
+    reply
   }
 ]
 
-recipe delete-at-cursor [
+recipe delete-at-cursor editor:address:editor-data, screen:address:screen -> editor:address:editor-data, screen:address:screen, go-render?:boolean, deleted-cell:address:duplex-list:character [
   local-scope
-  editor:address:editor-data <- next-ingredient
-  screen:address:screen <- next-ingredient
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  candidate:address:duplex-list <- next-duplex *before-cursor
-  reply-unless candidate, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render, 0/nothing-deleted
-  currc:character <- get *candidate, value:offset
-  remove-duplex candidate
+  load-ingredients
+  before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
+  deleted-cell:address:duplex-list:character <- next-duplex *before-cursor
+  go-render? <- copy 0/false
+  reply-unless deleted-cell
+  currc:character <- get *deleted-cell, value:offset
+  remove-duplex deleted-cell
   deleted-newline?:boolean <- equal currc, 10/newline
-  reply-if deleted-newline?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render, candidate/deleted-cell
+  go-render? <- copy 1/true
+  reply-if deleted-newline?
   # wasn't a newline? render rest of line
-  curr:address:duplex-list <- next-duplex *before-cursor  # refresh after remove-duplex above
+  curr:address:duplex-list:character <- next-duplex *before-cursor  # refresh after remove-duplex above
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   screen <- move-cursor screen, *cursor-row, *cursor-column
@@ -291,7 +293,8 @@ recipe delete-at-cursor [
   {
     # hit right margin? give up and let caller render
     at-right?:boolean <- greater-or-equal curr-column, screen-width
-    reply-if at-right?, editor/same-as-ingredient:0, screen/same-as-ingredient:1, 1/go-render, candidate/deleted-cell
+    go-render? <- copy 1/true
+    reply-if at-right?
     break-unless curr
     # newline? done.
     currc:character <- get *curr, value:offset
@@ -304,7 +307,7 @@ recipe delete-at-cursor [
   }
   # we're guaranteed not to be at the right margin
   screen <- print-character screen, 32/space
-  reply editor/same-as-ingredient:0, screen/same-as-ingredient:1, 0/no-more-render, candidate/deleted-cell
+  go-render? <- copy 0/false
 ]
 
 # right arrow
@@ -336,7 +339,7 @@ after <handle-special-key> [
     move-to-next-character?:boolean <- equal *k, 65514/right-arrow
     break-unless move-to-next-character?
     # if not at end of text
-    next-cursor:address:duplex-list <- next-duplex *before-cursor
+    next-cursor:address:duplex-list:character <- next-duplex *before-cursor
     break-unless next-cursor
     # scan to next character
     <move-cursor-begin>
@@ -345,15 +348,14 @@ after <handle-special-key> [
     screen <- move-cursor screen, *cursor-row, *cursor-column
     undo-coalesce-tag:number <- copy 2/right-arrow
     <move-cursor-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
+    reply
   }
 ]
 
-recipe move-cursor-coordinates-right [
+recipe move-cursor-coordinates-right editor:address:editor-data, screen-height:number -> editor:address:editor-data, go-render?:boolean [
   local-scope
-  editor:address:editor-data <- next-ingredient
-  screen-height:number <- next-ingredient
-  before-cursor:address:duplex-list <- get *editor before-cursor:offset
+  load-ingredients
+  before-cursor:address:duplex-list:character <- get *editor before-cursor:offset
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   left:number <- get *editor, left:offset
@@ -366,10 +368,12 @@ recipe move-cursor-coordinates-right [
     *cursor-row <- add *cursor-row, 1
     *cursor-column <- copy left
     below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal
-    reply-unless below-screen?, editor/same-as-ingredient:0, 0/no-more-render
+    go-render? <- copy 0/false
+    reply-unless below-screen?
     <scroll-down>
     *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
-    reply editor/same-as-ingredient:0, 1/go-render
+    go-render? <- copy 1/true
+    reply
   }
   # if the line wraps, move cursor to start of next row
   {
@@ -378,7 +382,7 @@ recipe move-cursor-coordinates-right [
     at-wrap?:boolean <- equal *cursor-column, wrap-column
     break-unless at-wrap?
     # and if next character isn't newline
-    next:address:duplex-list <- next-duplex before-cursor
+    next:address:duplex-list:character <- next-duplex before-cursor
     break-unless next
     next-character:character <- get *next, value:offset
     newline?:boolean <- equal next-character, 10/newline
@@ -389,11 +393,12 @@ recipe move-cursor-coordinates-right [
     reply-unless below-screen?, editor/same-as-ingredient:0, 0/no-more-render
     <scroll-down>
     *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
-    reply editor/same-as-ingredient:0, 1/go-render
+    go-render? <- copy 1/true
+    reply
   }
   # otherwise move cursor one character right
   *cursor-column <- add *cursor-column, 1
-  reply editor/same-as-ingredient:0, 0/no-more-render
+  go-render? <- copy 0/false
 ]
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow [
@@ -611,14 +616,15 @@ after <handle-special-key> [
     break-unless move-to-previous-character?
     trace 10, [app], [left arrow]
     # if not at start of text (before-cursor at § sentinel)
-    prev:address:duplex-list <- prev-duplex *before-cursor
-    reply-unless prev, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+    prev:address:duplex-list:character <- prev-duplex *before-cursor
+    go-render? <- copy 0/false
+    reply-unless prev
     <move-cursor-begin>
     editor, go-render? <- move-cursor-coordinates-left editor
     *before-cursor <- copy prev
     undo-coalesce-tag:number <- copy 1/left-arrow
     <move-cursor-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
+    reply
   }
 ]
 
@@ -811,16 +817,16 @@ after <handle-special-key> [
     editor, go-render? <- move-to-previous-line editor
     undo-coalesce-tag:number <- copy 3/up-arrow
     <move-cursor-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
+    reply
   }
 ]
 
-recipe move-to-previous-line [
+recipe move-to-previous-line editor:address:editor-data -> editor:address:editor-data, go-render?:boolean [
   local-scope
-  editor:address:editor-data <- next-ingredient
+  load-ingredients
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   already-at-top?:boolean <- lesser-or-equal *cursor-row, 1/top
@@ -830,21 +836,23 @@ recipe move-to-previous-line [
     # if not at newline, move to start of line (previous newline)
     # then scan back another line
     # if either step fails, give up without modifying cursor or coordinates
-    curr:address:duplex-list <- copy *before-cursor
+    curr:address:duplex-list:character <- copy *before-cursor
     {
-      old:address:duplex-list <- copy curr
+      old:address:duplex-list:character <- copy curr
       c2:character <- get *curr, value:offset
       at-newline?:boolean <- equal c2, 10/newline
       break-if at-newline?
-      curr:address:duplex-list <- before-previous-line curr, editor
+      curr:address:duplex-list:character <- before-previous-line curr, editor
       no-motion?:boolean <- equal curr, old
-      reply-if no-motion?, editor/same-as-ingredient:0, 0/no-more-render
+      go-render? <- copy 0/false
+      reply-if no-motion?
     }
     {
       old <- copy curr
       curr <- before-previous-line curr, editor
       no-motion?:boolean <- equal curr, old
-      reply-if no-motion?, editor/same-as-ingredient:0, 0/no-more-render
+      go-render? <- copy 0/false
+      reply-if no-motion?
     }
     *before-cursor <- copy curr
     *cursor-row <- subtract *cursor-row, 1
@@ -854,7 +862,7 @@ recipe move-to-previous-line [
     {
       done?:boolean <- greater-or-equal *cursor-column, target-column
       break-if done?
-      curr:address:duplex-list <- next-duplex *before-cursor
+      curr:address:duplex-list:character <- next-duplex *before-cursor
       break-unless curr
       currc:character <- get *curr, value:offset
       at-newline?:boolean <- equal currc, 10/newline
@@ -864,13 +872,15 @@ recipe move-to-previous-line [
       *cursor-column <- add *cursor-column, 1
       loop
     }
-    reply editor/same-as-ingredient:0, 0/no-more-render
+    go-render? <- copy 0/false
+    reply
   }
   {
     # if cursor already at top, scroll up
     break-unless already-at-top?
     <scroll-up>
-    reply editor/same-as-ingredient:0, 1/go-render
+    go-render? <- copy 1/true
+    reply
   }
 ]
 
@@ -1032,17 +1042,16 @@ after <handle-special-key> [
     editor, go-render? <- move-to-next-line editor, screen-height
     undo-coalesce-tag:number <- copy 4/down-arrow
     <move-cursor-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, go-render?
+    reply
   }
 ]
 
-recipe move-to-next-line [
+recipe move-to-next-line editor:address:editor-data, screen-height:number -> editor:address:editor-data, go-render?:boolean [
   local-scope
-  editor:address:editor-data <- next-ingredient
-  screen-height:number <- next-ingredient
+  load-ingredients
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   last-line:number <- subtract screen-height, 1
@@ -1052,7 +1061,7 @@ recipe move-to-next-line [
     break-if already-at-bottom?
     # scan to start of next line, then to right column or until end of line
     max:number <- subtract right, left
-    next-line:address:duplex-list <- before-start-of-next-line *before-cursor, max
+    next-line:address:duplex-list:character <- before-start-of-next-line *before-cursor, max
     {
       # already at end of buffer? try to scroll up (so we can see more
       # warnings or sandboxes below)
@@ -1060,7 +1069,8 @@ recipe move-to-next-line [
       break-unless no-motion?
       scroll?:boolean <- greater-than *cursor-row, 1
       break-if scroll?, +try-to-scroll:label
-      reply editor/same-as-ingredient:0, 0/no-more-render
+      go-render? <- copy 0/false
+      reply
     }
     *cursor-row <- add *cursor-row, 1
     *before-cursor <- copy next-line
@@ -1069,7 +1079,7 @@ recipe move-to-next-line [
     {
       done?:boolean <- greater-or-equal *cursor-column, target-column
       break-if done?
-      curr:address:duplex-list <- next-duplex *before-cursor
+      curr:address:duplex-list:character <- next-duplex *before-cursor
       break-unless curr
       currc:character <- get *curr, value:offset
       at-newline?:boolean <- equal currc, 10/newline
@@ -1079,11 +1089,12 @@ recipe move-to-next-line [
       *cursor-column <- add *cursor-column, 1
       loop
     }
-    reply editor/same-as-ingredient:0, 0/no-more-render
+    go-render? <- copy 0/false
+    reply
   }
   +try-to-scroll
   <scroll-down>
-  reply editor/same-as-ingredient:0, 1/go-render
+  go-render? <- copy 1/true
 ]
 
 scenario editor-adjusts-column-at-next-line [
@@ -1117,71 +1128,6 @@ de]
     .          .
     .abc       .
     .de0       .
-    .┈┈┈┈┈┈┈┈┈┈.
-    .          .
-  ]
-]
-
-scenario editor-scrolls-at-end-on-down-arrow [
-  assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
-de]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
-  editor-render screen, 2:address:editor-data
-  $clear-trace
-  # try to move down past end of text
-  assume-console [
-    left-click 2, 0
-    press down-arrow
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
-  ]
-  # screen should scroll, moving cursor to end of text
-  memory-should-contain [
-    3 <- 1
-    4 <- 2
-  ]
-  assume-console [
-    type [0]
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .de0       .
-    .┈┈┈┈┈┈┈┈┈┈.
-    .          .
-  ]
-  # try to move down again
-  $clear-trace
-  assume-console [
-    left-click 2, 0
-    press down-arrow
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
-  ]
-  # screen stops scrolling because cursor is already at top
-  memory-should-contain [
-    3 <- 1
-    4 <- 3
-  ]
-  check-trace-count-for-label 0, [print-character]
-  assume-console [
-    type [1]
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .de01      .
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
@@ -1222,7 +1168,8 @@ after <handle-special-character> [
     move-to-start-of-line editor
     undo-coalesce-tag:number <- copy 0/never
     <move-cursor-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+    go-render? <- copy 0/false
+    reply
   }
 ]
 
@@ -1234,20 +1181,21 @@ after <handle-special-key> [
     move-to-start-of-line editor
     undo-coalesce-tag:number <- copy 0/never
     <move-cursor-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+    go-render? <- copy 0/false
+    reply
   }
 ]
 
-recipe move-to-start-of-line [
+recipe move-to-start-of-line editor:address:editor-data [
   local-scope
-  editor:address:editor-data <- next-ingredient
+  load-ingredients
   # update cursor column
   left:number <- get *editor, left:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   *cursor-column <- copy left
   # update before-cursor
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  init:address:duplex-list <- get *editor, data:offset
+  before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
+  init:address:duplex-list:character <- get *editor, data:offset
   # while not at start of line, move 
   {
     at-start-of-text?:boolean <- equal *before-cursor, init
@@ -1391,7 +1339,8 @@ after <handle-special-character> [
     move-to-end-of-line editor
     undo-coalesce-tag:number <- copy 0/never
     <move-cursor-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+    go-render? <- copy 0/false
+    reply
   }
 ]
 
@@ -1403,18 +1352,19 @@ after <handle-special-key> [
     move-to-end-of-line editor
     undo-coalesce-tag:number <- copy 0/never
     <move-cursor-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
+    go-render? <- copy 0/false
+    reply
   }
 ]
 
-recipe move-to-end-of-line [
+recipe move-to-end-of-line editor:address:editor-data [
   local-scope
   editor:address:editor-data <- next-ingredient
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   # while not at start of line, move 
   {
-    next:address:duplex-list <- next-duplex *before-cursor
+    next:address:duplex-list:character <- next-duplex *before-cursor
     break-unless next  # end of text
     nextc:character <- get *next, value:offset
     at-end-of-line?:boolean <- equal nextc, 10/newline
@@ -1530,20 +1480,21 @@ after <handle-special-character> [
     delete-to-start-of-line?:boolean <- equal *c, 21/ctrl-u
     break-unless delete-to-start-of-line?
     <delete-to-start-of-line-begin>
-    deleted-cells:address:duplex-list <- delete-to-start-of-line editor
+    deleted-cells:address:duplex-list:character <- delete-to-start-of-line editor
     <delete-to-start-of-line-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    go-render? <- copy 1/true
+    reply
   }
 ]
 
-recipe delete-to-start-of-line [
+recipe delete-to-start-of-line editor:address:editor-data -> result:address:duplex-list:character [
   local-scope
-  editor:address:editor-data <- next-ingredient
+  load-ingredients
   # compute range to delete
-  init:address:duplex-list <- get *editor, data:offset
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
-  start:address:duplex-list <- copy *before-cursor
-  end:address:duplex-list <- next-duplex *before-cursor
+  init:address:duplex-list:character <- get *editor, data:offset
+  before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
+  start:address:duplex-list:character <- copy *before-cursor
+  end:address:duplex-list:character <- next-duplex *before-cursor
   {
     at-start-of-text?:boolean <- equal start, init
     break-if at-start-of-text?
@@ -1555,14 +1506,13 @@ recipe delete-to-start-of-line [
     loop
   }
   # snip it out
-  result:address:duplex-list <- next-duplex start
+  result:address:duplex-list:character <- next-duplex start
   remove-duplex-between start, end
   # adjust cursor
   *before-cursor <- copy start
   left:number <- get *editor, left:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   *cursor-column <- copy left
-  reply result
 ]
 
 scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
@@ -1664,18 +1614,19 @@ after <handle-special-character> [
     delete-to-end-of-line?:boolean <- equal *c, 11/ctrl-k
     break-unless delete-to-end-of-line?
     <delete-to-end-of-line-begin>
-    deleted-cells:address:duplex-list <- delete-to-end-of-line editor
+    deleted-cells:address:duplex-list:character <- delete-to-end-of-line editor
     <delete-to-end-of-line-end>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    go-render? <- copy 1/true
+    reply
   }
 ]
 
-recipe delete-to-end-of-line [
+recipe delete-to-end-of-line editor:address:editor-data -> result:address:duplex-list:character [
   local-scope
-  editor:address:editor-data <- next-ingredient
+  load-ingredients
   # compute range to delete
-  start:address:duplex-list <- get *editor, before-cursor:offset
-  end:address:duplex-list <- next-duplex start
+  start:address:duplex-list:character <- get *editor, before-cursor:offset
+  end:address:duplex-list:character <- next-duplex start
   {
     at-end-of-text?:boolean <- equal end, 0/null
     break-if at-end-of-text?
@@ -1686,9 +1637,8 @@ recipe delete-to-end-of-line [
     loop
   }
   # snip it out
-  result:address:duplex-list <- next-duplex start
+  result:address:duplex-list:character <- next-duplex start  # XXX: segfault on deleting this type
   remove-duplex-between start, end
-  reply result
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
@@ -1842,29 +1792,25 @@ d]
 
 after <scroll-down> [
   trace 10, [app], [scroll down]
-  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+  top-of-screen:address:address:duplex-list:character <- get-address *editor, top-of-screen:offset
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   max:number <- subtract right, left
-  old-top:address:duplex-list <- copy *top-of-screen
+  old-top:address:duplex-list:character <- copy *top-of-screen
   *top-of-screen <- before-start-of-next-line *top-of-screen, max
   no-movement?:boolean <- equal old-top, *top-of-screen
-  # Hack: this reply doesn't match one of the locations of <scroll-down>,
-  # directly within insert-at-cursor. However, I'm unable to trigger the
-  # error.. If necessary create a duplicate copy of <scroll-down> with the
-  # right 'reply-if'.
-  reply-if no-movement?, editor/same-as-ingredient:0, 0/no-more-render
+  go-render? <- copy 0/false
+  reply-if no-movement?
 ]
 
 # takes a pointer into the doubly-linked list, scans ahead at most 'max'
 # positions until the next newline
 # beware: never return null pointer.
-recipe before-start-of-next-line [
+recipe before-start-of-next-line original:address:duplex-list:character, max:number -> curr:address:duplex-list:character [
   local-scope
-  original:address:duplex-list <- next-ingredient
-  max:number <- next-ingredient
+  load-ingredients
   count:number <- copy 0
-  curr:address:duplex-list <- copy original
+  curr:address:duplex-list:character <- copy original
   # skip the initial newline if it exists
   {
     c:character <- get *curr, value:offset
@@ -2085,6 +2031,71 @@ d]
   ]
 ]
 
+scenario editor-scrolls-at-end-on-down-arrow [
+  assume-screen 10/width, 5/height
+  1:address:array:character <- new [abc
+de]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
+  # try to move down past end of text
+  assume-console [
+    left-click 2, 0
+    press down-arrow
+  ]
+  run [
+    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen should scroll, moving cursor to end of text
+  memory-should-contain [
+    3 <- 1
+    4 <- 2
+  ]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .de0       .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # try to move down again
+  $clear-trace
+  assume-console [
+    left-click 2, 0
+    press down-arrow
+  ]
+  run [
+    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
+  ]
+  # screen stops scrolling because cursor is already at top
+  memory-should-contain [
+    3 <- 1
+    4 <- 3
+  ]
+  check-trace-count-for-label 0, [print-character]
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .de01      .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
 scenario editor-combines-page-and-line-scroll [
   # screen has 1 line for menu + 3 lines
   assume-screen 10/width, 4/height
@@ -2151,19 +2162,20 @@ d]
 
 after <scroll-up> [
   trace 10, [app], [scroll up]
-  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
-  old-top:address:duplex-list <- copy *top-of-screen
+  top-of-screen:address:address:duplex-list:character <- get-address *editor, top-of-screen:offset
+  old-top:address:duplex-list:character <- copy *top-of-screen
   *top-of-screen <- before-previous-line *top-of-screen, editor
   no-movement?:boolean <- equal old-top, *top-of-screen
-  reply-if no-movement?, editor/same-as-ingredient:0, 0/no-more-render
+  go-render? <- copy 0/false
+  reply-if no-movement?
 ]
 
 # takes a pointer into the doubly-linked list, scans back to before start of
 # previous *wrapped* line
 # beware: never return null pointer
-recipe before-previous-line [
+recipe before-previous-line curr:address:duplex-list:character -> curr:address:duplex-list:character [
   local-scope
-  curr:address:duplex-list <- next-ingredient
+  curr:address:duplex-list:character <- next-ingredient
   c:character <- get *curr, value:offset
   # compute max, number of characters to skip
   #   1 + len%(width-1)
@@ -2172,12 +2184,12 @@ recipe before-previous-line [
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   max-line-length:number <- subtract right, left, -1/exclusive-right, 1/wrap-icon
-  sentinel:address:duplex-list <- get *editor, data:offset
+  sentinel:address:duplex-list:character <- get *editor, data:offset
   len:number <- previous-line-length curr, sentinel
   {
     break-if len
     # empty line; just skip this newline
-    prev:address:duplex-list <- prev-duplex curr
+    prev:address:duplex-list:character <- prev-duplex curr
     reply-unless prev, curr
     reply prev
   }
@@ -2193,7 +2205,7 @@ recipe before-previous-line [
   {
     done?:boolean <- greater-or-equal count, max
     break-if done?
-    prev:address:duplex-list <- prev-duplex curr
+    prev:address:duplex-list:character <- prev-duplex curr
     break-unless prev
     curr <- copy prev
     count <- add count, 1
@@ -2541,15 +2553,15 @@ after <handle-special-character> [
   {
     page-down?:boolean <- equal *c, 6/ctrl-f
     break-unless page-down?
-    top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
-    old-top:address:duplex-list <- copy *top-of-screen
+    top-of-screen:address:address:duplex-list:character <- get-address *editor, top-of-screen:offset
+    old-top:address:duplex-list:character <- copy *top-of-screen
     <move-cursor-begin>
     page-down editor
     undo-coalesce-tag:number <- copy 0/never
     <move-cursor-end>
     no-movement?:boolean <- equal *top-of-screen, old-top
-    reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    go-render? <- not no-movement?
+    reply
   }
 ]
 
@@ -2557,28 +2569,28 @@ after <handle-special-key> [
   {
     page-down?:boolean <- equal *k, 65518/page-down
     break-unless page-down?
-    top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
-    old-top:address:duplex-list <- copy *top-of-screen
+    top-of-screen:address:address:duplex-list:character <- get-address *editor, top-of-screen:offset
+    old-top:address:duplex-list:character <- copy *top-of-screen
     <move-cursor-begin>
     page-down editor
     undo-coalesce-tag:number <- copy 0/never
     <move-cursor-end>
     no-movement?:boolean <- equal *top-of-screen, old-top
-    reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    go-render? <- not no-movement?
+    reply
   }
 ]
 
 # page-down skips entire wrapped lines, so it can't scroll past lines
 # taking up the entire screen
-recipe page-down [
+recipe page-down editor:address:editor-data -> editor:address:editor-data [
   local-scope
-  editor:address:editor-data <- next-ingredient
+  load-ingredients
   # if editor contents don't overflow screen, do nothing
-  bottom-of-screen:address:duplex-list <- get *editor, bottom-of-screen:offset
-  reply-unless bottom-of-screen, editor/same-as-ingredient:0
+  bottom-of-screen:address:duplex-list:character <- get *editor, bottom-of-screen:offset
+  reply-unless bottom-of-screen
   # if not, position cursor at final character
-  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
   *before-cursor <- prev-duplex bottom-of-screen
   # keep one line in common with previous page
   {
@@ -2589,9 +2601,8 @@ recipe page-down [
   }
   # move cursor and top-of-screen to start of that line
   move-to-start-of-line editor
-  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+  top-of-screen:address:address:duplex-list:character <- get-address *editor, top-of-screen:offset
   *top-of-screen <- copy *before-cursor
-  reply editor/same-as-ingredient:0
 ]
 
 scenario editor-does-not-scroll-past-end [
@@ -2734,15 +2745,15 @@ after <handle-special-character> [
   {
     page-up?:boolean <- equal *c, 2/ctrl-b
     break-unless page-up?
-    top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
-    old-top:address:duplex-list <- copy *top-of-screen
+    top-of-screen:address:address:duplex-list:character <- get-address *editor, top-of-screen:offset
+    old-top:address:duplex-list:character <- copy *top-of-screen
     <move-cursor-begin>
     editor <- page-up editor, screen-height
     undo-coalesce-tag:number <- copy 0/never
     <move-cursor-end>
     no-movement?:boolean <- equal *top-of-screen, old-top
-    reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    go-render? <- not no-movement?
+    reply
   }
 ]
 
@@ -2750,36 +2761,35 @@ after <handle-special-key> [
   {
     page-up?:boolean <- equal *k, 65519/page-up
     break-unless page-up?
-    top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
-    old-top:address:duplex-list <- copy *top-of-screen
+    top-of-screen:address:address:duplex-list:character <- get-address *editor, top-of-screen:offset
+    old-top:address:duplex-list:character <- copy *top-of-screen
     <move-cursor-begin>
     editor <- page-up editor, screen-height
     undo-coalesce-tag:number <- copy 0/never
     <move-cursor-end>
     no-movement?:boolean <- equal *top-of-screen, old-top
     # don't bother re-rendering if nothing changed. todo: test this
-    reply-if no-movement?, screen/same-as-ingredient:0, editor/same-as-ingredient:1, 0/no-more-render
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    go-render? <- not no-movement?
+    reply
   }
 ]
 
-recipe page-up [
+recipe page-up editor:address:editor-data, screen-height:number -> editor:address:editor-data [
   local-scope
   editor:address:editor-data <- next-ingredient
   screen-height:number <- next-ingredient
   max:number <- subtract screen-height, 1/menu-bar, 1/overlapping-line
   count:number <- copy 0
-  top-of-screen:address:address:duplex-list <- get-address *editor, top-of-screen:offset
+  top-of-screen:address:address:duplex-list:character <- get-address *editor, top-of-screen:offset
   {
     done?:boolean <- greater-or-equal count, max
     break-if done?
-    prev:address:duplex-list <- before-previous-line *top-of-screen, editor
+    prev:address:duplex-list:character <- before-previous-line *top-of-screen, editor
     break-unless prev
     *top-of-screen <- copy prev
     count <- add count, 1
     loop
   }
-  reply editor/same-as-ingredient:0
 ]
 
 scenario editor-can-scroll-up-multiple-pages [

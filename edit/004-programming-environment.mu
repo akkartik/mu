@@ -21,15 +21,13 @@ container programming-environment-data [
   sandbox-in-focus?:boolean  # false => cursor in recipes; true => cursor in current-sandbox
 ]
 
-recipe new-programming-environment [
+recipe new-programming-environment screen:address:screen, initial-recipe-contents:address:array:character, initial-sandbox-contents:address:array:character -> result:address:programming-environment-data [
   local-scope
-  screen:address:screen <- next-ingredient
-  initial-recipe-contents:address:array:character <- next-ingredient
-  initial-sandbox-contents:address:array:character <- next-ingredient
+  load-ingredients
   width:number <- screen-width screen
   height:number <- screen-height screen
   # top menu
-  result:address:programming-environment-data <- new programming-environment-data:type
+  result <- new programming-environment-data:type
   draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
   button-start:number <- subtract width, 20
   button-on-screen?:boolean <- greater-or-equal button-start, 0
@@ -47,15 +45,11 @@ recipe new-programming-environment [
   new-left:number <- add divider, 1
   current-sandbox:address:address:editor-data <- get-address *result, current-sandbox:offset
   *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
-  +programming-environment-initialization
-  reply result
 ]
 
-recipe event-loop [
+recipe event-loop screen:address:screen, console:address:console, env:address:programming-environment-data [
   local-scope
-  screen:address:screen <- next-ingredient
-  console:address:console <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
+  load-ingredients
   recipes:address:editor-data <- get *env, recipes:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
@@ -185,10 +179,9 @@ recipe event-loop [
   }
 ]
 
-recipe resize [
+recipe resize screen:address:screen, env:address:programming-environment-data -> env:address:programming-environment-data [
   local-scope
-  screen:address:screen <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
+  load-ingredients
   clear-screen screen  # update screen dimensions
   width:number <- screen-width screen
   divider:number, _ <- divide-with-remainder width, 2
@@ -212,7 +205,6 @@ recipe resize [
   *cursor-row <- copy 1
   cursor-column:address:number <- get-address *current-sandbox, cursor-column:offset
   *cursor-column <- copy *left
-  reply env/same-as-ingredient:1
 ]
 
 scenario point-at-multiple-editors [
@@ -375,10 +367,9 @@ def]
   ]
 ]
 
-recipe render-all [
+recipe render-all screen:address:screen, env:address:programming-environment-data -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
+  load-ingredients
   trace 10, [app], [render all]
   hide-screen screen
   # top menu
@@ -407,13 +398,11 @@ recipe render-all [
   screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
   #
   show-screen screen
-  reply screen/same-as-ingredient:0
 ]
 
-recipe render-recipes [
+recipe render-recipes screen:address:screen, env:address:programming-environment-data -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
+  load-ingredients
   trace 11, [app], [render recipes]
   recipes:address:editor-data <- get *env, recipes:offset
   # render recipes
@@ -427,14 +416,12 @@ recipe render-recipes [
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
-  reply screen/same-as-ingredient:0
 ]
 
 # replaced in a later layer
-recipe render-sandbox-side [
+recipe render-sandbox-side screen:address:screen, env:address:programming-environment-data -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
+  load-ingredients
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
@@ -445,15 +432,11 @@ recipe render-sandbox-side [
   draw-horizontal screen, row, left, right, 9473/horizontal
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
-  reply screen/same-as-ingredient:0
 ]
 
-recipe update-cursor [
+recipe update-cursor screen:address:screen, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  recipes:address:editor-data <- next-ingredient
-  current-sandbox:address:editor-data <- next-ingredient
-  sandbox-in-focus?:boolean <- next-ingredient
+  load-ingredients
   {
     break-if sandbox-in-focus?
     cursor-row:number <- get *recipes, cursor-row:offset
@@ -465,21 +448,14 @@ recipe update-cursor [
     cursor-column:number <- get *current-sandbox, cursor-column:offset
   }
   screen <- move-cursor screen, cursor-row, cursor-column
-  reply screen/same-as-ingredient:0
 ]
 
-# row, screen <- render-string screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number
 # print a string 's' to 'editor' in 'color' starting at 'row'
 # clear rest of last line, move cursor to next line
-recipe render-string [
+recipe render-string screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  s:address:array:character <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
-  color:number <- next-ingredient
-  row:number <- next-ingredient
-  reply-unless s, row/same-as-ingredient:5, screen/same-as-ingredient:0
+  load-ingredients
+  reply-unless s
   column:number <- copy left
   screen <- move-cursor screen, row, column
   screen-height:number <- screen-height screen
@@ -532,19 +508,13 @@ recipe render-string [
     row <- add row, 1
   }
   move-cursor screen, row, left
-  reply row/same-as-ingredient:5, screen/same-as-ingredient:0
 ]
 
-# row, screen <- render-code-string screen:address:screen, s:address:array:character, left:number, right:number, row:number
 # like 'render-string' but with colorization for comments like in the editor
-recipe render-code-string [
+recipe render-code-string screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  s:address:array:character <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
-  row:number <- next-ingredient
-  reply-unless s, row/same-as-ingredient:4, screen/same-as-ingredient:0
+  load-ingredients
+  reply-unless s
   color:number <- copy 7/white
   column:number <- copy left
   screen <- move-cursor screen, row, column
@@ -599,7 +569,6 @@ recipe render-code-string [
     row <- add row, 1
   }
   move-cursor screen, row, left
-  reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
 # ctrl-l - redraw screen (just in case it printed junk somehow)
@@ -696,11 +665,9 @@ after <global-type> [
   }
 ]
 
-recipe maximize [
+recipe maximize screen:address:screen, console:address:console, env:address:programming-environment-data -> screen:address:screen, console:address:console [
   local-scope
-  screen:address:screen <- next-ingredient
-  console:address:console <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
+  load-ingredients
   hide-screen screen
   # maximize one of the sides
   maximized?:address:boolean <- get-address *env, maximized?:offset
@@ -723,7 +690,6 @@ recipe maximize [
     screen <- render-sandbox-side screen, env
   }
   show-screen screen
-  reply screen/same-as-ingredient:0, console/same-as-ingredient:1
 ]
 
 # when maximized, wait for any event and simply unmaximize
@@ -757,12 +723,9 @@ after <handle-event> [
 
 ## helpers
 
-recipe draw-vertical [
+recipe draw-vertical screen:address:screen, col:number, y:number, bottom:number [
   local-scope
-  screen:address:screen <- next-ingredient
-  col:number <- next-ingredient
-  y:number <- next-ingredient
-  bottom:number <- next-ingredient
+  load-ingredients
   style:character, style-found?:boolean <- next-ingredient
   {
     break-if style-found?
