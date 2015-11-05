@@ -34,6 +34,11 @@ assert(Next_type_ordinal < START_TYPE_INGREDIENTS);
 :(before "End type_info Fields")
 map<string, type_ordinal> type_ingredient_names;
 
+//: Suppress unknown type checks in generic containers.
+
+:(before "Check Container Field Types(info)")
+if (!info.type_ingredient_names.empty()) continue;
+
 :(before "End container Name Refinements")
 if (name.find(':') != string::npos) {
   trace(9999, "parse") << "container has type ingredients; parsing" << end();

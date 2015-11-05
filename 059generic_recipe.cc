@@ -20,6 +20,12 @@ recipe foo a:_t -> result:_t [
 +mem: storing 14 in location 11
 +mem: storing 15 in location 12
 
+//: Suppress unknown type checks in generic recipes. Their specializations
+//: will be checked.
+
+:(after "void check_invalid_types(const recipe_ordinal r)")
+  if (any_type_ingredient_in_header(r)) return;
+
 :(before "End Instruction Dispatch(inst, best_score)")
 if (best_score == -1) {
   trace(9992, "transform") << "no variant found; searching for variant with suitable type ingredients" << end();

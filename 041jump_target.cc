@@ -18,7 +18,7 @@ recipe main [
 :(before "End Mu Types Initialization")
 Type_ordinal["label"] = 0;
 
-:(after "Begin Transforms")
+:(before "Transform.push_back(transform_braces)")
 Transform.push_back(transform_labels);
 
 :(code)

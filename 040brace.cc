@@ -80,12 +80,18 @@ void transform_braces(const recipe_ordinal r) {
       }
     }
     // update instruction operation
-    if (inst.old_name.find("-if") != string::npos)
+    if (inst.old_name.find("-if") != string::npos) {
       inst.name = "jump-if";
-    else if (inst.old_name.find("-unless") != string::npos)
+      inst.operation = JUMP_IF;
+    }
+    else if (inst.old_name.find("-unless") != string::npos) {
       inst.name = "jump-unless";
-    else
+      inst.operation = JUMP_UNLESS;
+    }
+    else {
       inst.name = "jump";
+      inst.operation = JUMP;
+    }
     // check for explicitly provided targets
     if (inst.old_name.find("-if") != string::npos || inst.old_name.find("-unless") != string::npos) {
       // conditional branches check arg 1
@@ -349,3 +355,29 @@ recipe main [
   }
 ]
 +error: break-if expects 1 or 2 ingredients, but got none
+
+//: Make sure these pseudo recipes get consistent numbers in all tests, even
+//: though they aren't implemented. Allows greater flexibility in ordering
+//: transforms.
+
+:(before "End Primitive Recipe Declarations")
+BREAK,
+BREAK_IF,
+BREAK_UNLESS,
+LOOP,
+LOOP_IF,
+LOOP_UNLESS,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["break"] = BREAK;
+Recipe_ordinal["break-if"] = BREAK_IF;
+Recipe_ordinal["break-unless"] = BREAK_UNLESS;
+Recipe_ordinal["loop"] = LOOP;
+Recipe_ordinal["loop-if"] = LOOP_IF;
+Recipe_ordinal["loop-unless"] = LOOP_UNLESS;
+:(before "End Primitive Recipe Checks")
+case BREAK: break;
+case BREAK_IF: break;
+case BREAK_UNLESS: break;
+case LOOP: break;
+case LOOP_IF: break;
+case LOOP_UNLESS: break;
