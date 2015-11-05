@@ -101,8 +101,8 @@ recipe add2 x:number, y:number -> z:number [
 ]
 +error: add2: replied with the wrong type at 'reply z'
 
-:(before "End One-time Setup")
-  Transform.push_back(check_header_products);
+:(before "End Transforms")
+Transform.push_back(check_header_products);
 
 :(code)
 void check_header_products(const recipe_ordinal r) {
@@ -139,7 +139,7 @@ recipe add2 x:number, y:number -> z:number [
 +mem: storing 8 in location 1
 
 :(before "Transform.push_back(transform_names)")
-  Transform.push_back(deduce_types_from_header);
+Transform.push_back(deduce_types_from_header);
 
 :(code)
 void deduce_types_from_header(const recipe_ordinal r) {
@@ -225,8 +225,8 @@ recipe add2 x:number, y:number -> z:number [
 +transform: reply z:number
 +mem: storing 8 in location 1
 
-:(after "int main")
-  Transform.push_back(deduce_fallthrough_reply);
+:(after "Begin Transforms")
+Transform.push_back(deduce_fallthrough_reply);
 
 :(code)
 void deduce_fallthrough_reply(const recipe_ordinal r) {

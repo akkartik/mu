@@ -54,8 +54,8 @@ else if (command == "after") {
 
 //: after all recipes are loaded, insert fragments at appropriate labels.
 
-:(after "int main")
-  Transform.push_back(insert_fragments);
+:(after "Begin Transforms")
+Transform.push_back(insert_fragments);
 
 //: We might need to perform multiple passes, in case inserted fragments
 //: include more labels that need further insertions. Track which labels we've
@@ -135,7 +135,7 @@ bool is_waypoint(string label) {
 //: complain about unapplied fragments
 :(before "End Globals")
 bool Transform_check_insert_fragments_Ran = false;
-:(before "End One-time Setup")
+:(before "End Transforms")
 Transform.push_back(check_insert_fragments);  // final transform
 :(code)
 void check_insert_fragments(unused recipe_ordinal) {

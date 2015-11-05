@@ -14,6 +14,10 @@ typedef void (*transform_fn)(recipe_ordinal);
 :(before "End Globals")
 vector<transform_fn> Transform;
 
+:(after "int main")
+  // Begin Transforms
+  // End Transforms
+
 :(code)
 void transform_all() {
   trace(9990, "transform") << "=== transform_all()" << end();
@@ -29,7 +33,7 @@ void transform_all() {
     }
   }
   parse_int_reagents();  // do this after all other transforms have run
-  // End Transform
+  // End Transform All
 }
 
 void parse_int_reagents() {

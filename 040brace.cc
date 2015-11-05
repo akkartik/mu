@@ -31,9 +31,8 @@ recipe main [
 +transform: jump 1:offset
 +transform: copy ...
 
-//: one-time setup
-:(after "int main")
-  Transform.push_back(transform_braces);
+:(after "Begin Transforms")
+Transform.push_back(transform_braces);
 
 :(code)
 void transform_braces(const recipe_ordinal r) {

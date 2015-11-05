@@ -9,7 +9,7 @@
 //: transform it in a separate layer or set of layers.
 
 :(after "Transform.push_back(update_instruction_operations)")
-  Transform.push_back(check_instruction);
+Transform.push_back(check_instruction);
 
 :(code)
 void check_instruction(const recipe_ordinal r) {
