@@ -32,6 +32,10 @@ vector<transform_fn> Transform;
 void transform_all() {
   trace(9990, "transform") << "=== transform_all()" << end();
   for (long long int t = 0; t < SIZE(Transform); ++t) {
+//?     if (Recipe_ordinal.find("delete-sandbox") != Recipe_ordinal.end()
+//?         && Recipe.find(Recipe_ordinal["delete-sandbox"]) != Recipe.end()
+//?         && !Recipe[Recipe_ordinal["delete-sandbox"]].steps.empty())
+//?       cerr << "transform " << t << ": " << Recipe[Recipe_ordinal["delete-sandbox"]].steps.at(14).products.at(0).to_string() << '\n';
 //?     cerr << "transform " << t << '\n';
     for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
       recipe& r = p->second;
