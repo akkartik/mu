@@ -530,7 +530,7 @@ void check_invalid_types(const recipe_ordinal r) {
 void check_invalid_types(const type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
   // End Container Type Checks
-  if (type->value && Type.find(type->value) == Type.end()) {
+  if (type->value && (Type.find(type->value) == Type.end() || Type[type->value].name.empty())) {
     raise_error << block << "unknown type in " << name << '\n' << end();
   }
   if (type->left) check_invalid_types(type->left, block, name);
