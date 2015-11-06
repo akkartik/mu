@@ -40,38 +40,38 @@ Transform.push_back(collect_surrounding_spaces);
 
 :(code)
 void collect_surrounding_spaces(const recipe_ordinal r) {
-  trace(9991, "transform") << "--- collect surrounding spaces for recipe " << Recipe[r].name << end();
-  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
-    const instruction& inst = Recipe[r].steps.at(i);
+  trace(9991, "transform") << "--- collect surrounding spaces for recipe " << get(Recipe, r).name << end();
+  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+    const instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.is_label) continue;
     for (long long int j = 0; j < SIZE(inst.products); ++j) {
       if (is_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
       type_tree* type = inst.products.at(j).type;
       if (!type
-          || type->value != Type_ordinal["address"]
+          || type->value != get(Type_ordinal, "address")
           || !type->right
-          || type->right->value != Type_ordinal["array"]
+          || type->right->value != get(Type_ordinal, "array")
           || !type->right->right
-          || type->right->right->value != Type_ordinal["location"]
+          || type->right->right->value != get(Type_ordinal, "location")
           || type->right->right->right) {
         raise_error << "slot 0 should always have type address:array:location, but is " << inst.products.at(j).to_string() << '\n' << end();
         continue;
       }
       string_tree* s = property(inst.products.at(j), "names");
       if (!s) {
-        raise_error << "slot 0 requires a /names property in recipe " << Recipe[r].name << end();
+        raise_error << "slot 0 requires a /names property in recipe " << get(Recipe, r).name << end();
         continue;
       }
       if (s->right) raise_error << "slot 0 should have a single value in /names, but got " << inst.products.at(j).to_string() << '\n' << end();
       const string& surrounding_recipe_name = s->value;
       if (Surrounding_space.find(r) != Surrounding_space.end()
-          && Surrounding_space[r] != Recipe_ordinal[surrounding_recipe_name]) {
-        raise_error << "recipe " << Recipe[r].name << " can have only one 'surrounding' recipe but has " << Recipe[Surrounding_space[r]].name << " and " << surrounding_recipe_name << '\n' << end();
+          && Surrounding_space[r] != get(Recipe_ordinal, surrounding_recipe_name)) {
+        raise_error << "recipe " << get(Recipe, r).name << " can have only one 'surrounding' recipe but has " << Recipe[Surrounding_space[r]].name << " and " << surrounding_recipe_name << '\n' << end();
         continue;
       }
-      trace(9993, "name") << "lexically surrounding space for recipe " << Recipe[r].name << " comes from " << surrounding_recipe_name << end();
-      Surrounding_space[r] = Recipe_ordinal[surrounding_recipe_name];
+      trace(9993, "name") << "lexically surrounding space for recipe " << get(Recipe, r).name << " comes from " << surrounding_recipe_name << end();
+      Surrounding_space[r] = get(Recipe_ordinal, surrounding_recipe_name);
     }
   }
 }
@@ -117,7 +117,7 @@ long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_o
 recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n) {
   if (n == 0) return r;
   if (Surrounding_space.find(r) == Surrounding_space.end()) {
-    raise_error << "don't know surrounding recipe of " << Recipe[r].name << '\n' << end();
+    raise_error << "don't know surrounding recipe of " << get(Recipe, r).name << '\n' << end();
     return 0;
   }
   assert(Surrounding_space[r]);

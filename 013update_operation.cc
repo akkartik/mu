@@ -6,15 +6,15 @@ Transform.push_back(update_instruction_operations);
 
 :(code)
 void update_instruction_operations(recipe_ordinal r) {
-  trace(9991, "transform") << "--- compute instruction operations for recipe " << Recipe[r].name << end();
-  for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
-    instruction& inst = Recipe[r].steps.at(index);
+  trace(9991, "transform") << "--- compute instruction operations for recipe " << get(Recipe, r).name << end();
+  for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
+    instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.is_label) continue;
     if (Recipe_ordinal.find(inst.name) == Recipe_ordinal.end()) {
-      raise_error << maybe(Recipe[r].name) << "instruction " << inst.name << " has no recipe\n" << end();
+      raise_error << maybe(get(Recipe, r).name) << "instruction " << inst.name << " has no recipe\n" << end();
       return;
     }
-    inst.operation = Recipe_ordinal[inst.name];
+    inst.operation = get(Recipe_ordinal, inst.name);
   }
 }
 

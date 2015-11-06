@@ -151,7 +151,7 @@ if (curr.name == "assume-screen") {
 :(before "End Primitive Recipe Declarations")
 SCREEN_SHOULD_CONTAIN,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["screen-should-contain"] = SCREEN_SHOULD_CONTAIN;
+put(Recipe_ordinal, "screen-should-contain", SCREEN_SHOULD_CONTAIN);
 :(before "End Primitive Recipe Checks")
 case SCREEN_SHOULD_CONTAIN: {
   break;
@@ -166,7 +166,7 @@ case SCREEN_SHOULD_CONTAIN: {
 :(before "End Primitive Recipe Declarations")
 SCREEN_SHOULD_CONTAIN_IN_COLOR,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["screen-should-contain-in-color"] = SCREEN_SHOULD_CONTAIN_IN_COLOR;
+put(Recipe_ordinal, "screen-should-contain-in-color", SCREEN_SHOULD_CONTAIN_IN_COLOR);
 :(before "End Primitive Recipe Checks")
 case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
   break;
@@ -196,15 +196,15 @@ struct raw_string_stream {
 :(code)
 void check_screen(const string& expected_contents, const int color) {
   assert(!current_call().default_space);  // not supported
-  long long int screen_location = Memory[SCREEN];
-  int data_offset = find_element_name(Type_ordinal["screen"], "data", "");
+  long long int screen_location = get_or_insert(Memory, SCREEN);
+  int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
   long long int screen_data_location = screen_location+data_offset;  // type: address:array:character
-  long long int screen_data_start = Memory[screen_data_location];  // type: array:character
-  int width_offset = find_element_name(Type_ordinal["screen"], "num-columns", "");
-  long long int screen_width = Memory[screen_location+width_offset];
-  int height_offset = find_element_name(Type_ordinal["screen"], "num-rows", "");
-  long long int screen_height = Memory[screen_location+height_offset];
+  long long int screen_data_start = get_or_insert(Memory, screen_data_location);  // type: array:character
+  int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
+  long long int screen_width = get_or_insert(Memory, screen_location+width_offset);
+  int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
+  long long int screen_height = get_or_insert(Memory, screen_location+height_offset);
   raw_string_stream cursor(expected_contents);
   // todo: too-long expected_contents should fail
   long long int addr = screen_data_start+1;  // skip length
@@ -215,21 +215,21 @@ void check_screen(const string& expected_contents, const int color) {
     for (long long int column = 0;  column < screen_width;  ++column, addr+= /*size of screen-cell*/2) {
       const int cell_color_offset = 1;
       uint32_t curr = cursor.get();
-      if (Memory[addr] == 0 && isspace(curr)) continue;
-      if (curr == ' ' && color != -1 && color != Memory[addr+cell_color_offset]) {
+      if (get_or_insert(Memory, addr) == 0 && isspace(curr)) continue;
+      if (curr == ' ' && color != -1 && color != get_or_insert(Memory, addr+cell_color_offset)) {
         // filter out other colors
         continue;
       }
-      if (Memory[addr] != 0 && Memory[addr] == curr) {
-        if (color == -1 || color == Memory[addr+cell_color_offset]) continue;
+      if (get_or_insert(Memory, addr) != 0 && Memory[addr] == curr) {
+        if (color == -1 || color == get_or_insert(Memory, addr+cell_color_offset)) continue;
         // contents match but color is off
         if (Current_scenario && !Scenario_testing_scenario) {
           // genuine test in a mu file
-          raise_error << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(Memory[addr]) << ") to be in color " << color << " instead of " << no_scientific(Memory[addr+cell_color_offset]) << "\n" << end();
+          raise_error << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(get_or_insert(Memory, addr)) << ") to be in color " << color << " instead of " << no_scientific(Memory[addr+cell_color_offset]) << "\n" << end();
         }
         else {
           // just testing check_screen
-          raise_error << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << no_scientific(Memory[addr+cell_color_offset]) << '\n' << end();
+          raise_error << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << '\n' << end();
         }
         if (!Scenario_testing_scenario) {
           Passed = false;
@@ -246,21 +246,21 @@ void check_screen(const string& expected_contents, const int color) {
         expected_pretty[0] = ' ', expected_pretty[1] = '(', expected_pretty[2] = '\'', expected_pretty[3] = static_cast<unsigned char>(curr), expected_pretty[4] = '\'', expected_pretty[5] = ')', expected_pretty[6] = '\0';
       }
       char actual_pretty[10] = {0};
-      if (Memory[addr] < 256 && !iscntrl(Memory[addr])) {
+      if (get_or_insert(Memory, addr) < 256 && !iscntrl(Memory[addr])) {
         // " ('<curr>')"
-        actual_pretty[0] = ' ', actual_pretty[1] = '(', actual_pretty[2] = '\'', actual_pretty[3] = static_cast<unsigned char>(Memory[addr]), actual_pretty[4] = '\'', actual_pretty[5] = ')', actual_pretty[6] = '\0';
+        actual_pretty[0] = ' ', actual_pretty[1] = '(', actual_pretty[2] = '\'', actual_pretty[3] = static_cast<unsigned char>(get_or_insert(Memory, addr)), actual_pretty[4] = '\'', actual_pretty[5] = ')', actual_pretty[6] = '\0';
       }
 
       ostringstream color_phrase;
       if (color != -1) color_phrase << " in color " << color;
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise_error << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
+        raise_error << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
         dump_screen();
       }
       else {
         // just testing check_screen
-        raise_error << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(Memory[addr]) << actual_pretty << '\n' << end();
+        raise_error << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -317,7 +317,7 @@ void raw_string_stream::skip_whitespace_and_comments() {
 :(before "End Primitive Recipe Declarations")
 _DUMP_SCREEN,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$dump-screen"] = _DUMP_SCREEN;
+put(Recipe_ordinal, "$dump-screen", _DUMP_SCREEN);
 :(before "End Primitive Recipe Checks")
 case _DUMP_SCREEN: {
   break;
@@ -331,22 +331,22 @@ case _DUMP_SCREEN: {
 :(code)
 void dump_screen() {
   assert(!current_call().default_space);  // not supported
-  long long int screen_location = Memory[SCREEN];
-  int width_offset = find_element_name(Type_ordinal["screen"], "num-columns", "");
-  long long int screen_width = Memory[screen_location+width_offset];
-  int height_offset = find_element_name(Type_ordinal["screen"], "num-rows", "");
-  long long int screen_height = Memory[screen_location+height_offset];
-  int data_offset = find_element_name(Type_ordinal["screen"], "data", "");
+  long long int screen_location = get_or_insert(Memory, SCREEN);
+  int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
+  long long int screen_width = get_or_insert(Memory, screen_location+width_offset);
+  int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
+  long long int screen_height = get_or_insert(Memory, screen_location+height_offset);
+  int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
   long long int screen_data_location = screen_location+data_offset;  // type: address:array:character
-  long long int screen_data_start = Memory[screen_data_location];  // type: array:character
-  assert(Memory[screen_data_start] == screen_width*screen_height);
+  long long int screen_data_start = get_or_insert(Memory, screen_data_location);  // type: array:character
+  assert(get_or_insert(Memory, screen_data_start) == screen_width*screen_height);
   long long int curr = screen_data_start+1;  // skip length
   for (long long int row = 0; row < screen_height; ++row) {
     cerr << '.';
     for (long long int col = 0; col < screen_width; ++col) {
-      if (Memory[curr])
-        cerr << to_unicode(static_cast<uint32_t>(Memory[curr]));
+      if (get_or_insert(Memory, curr))
+        cerr << to_unicode(static_cast<uint32_t>(get_or_insert(Memory, curr)));
       else
         cerr << ' ';
       curr += /*size of screen-cell*/2;

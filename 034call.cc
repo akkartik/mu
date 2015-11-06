@@ -82,7 +82,7 @@ inline long long int& current_step_index() {
 :(replace{} "inline const string& current_recipe_name()")
 inline const string& current_recipe_name() {
   assert(!Current_routine->calls.empty());
-  return Recipe[current_call().running_recipe].name;
+  return get(Recipe, current_call().running_recipe).name;
 }
 :(replace{} "inline const instruction& current_instruction()")
 inline const instruction& current_instruction() {
@@ -91,13 +91,13 @@ inline const instruction& current_instruction() {
 }
 :(code)
 inline const instruction& to_instruction(const call& call) {
-  return Recipe[call.running_recipe].steps.at(call.running_step_index);
+  return get(Recipe, call.running_recipe).steps.at(call.running_step_index);
 }
 
 :(after "Defined Recipe Checks")
 // not a primitive; check that it's present in the book of recipes
 if (Recipe.find(inst.operation) == Recipe.end()) {
-  raise_error << maybe(Recipe[r].name) << "undefined operation in '" << inst.to_string() << "'\n" << end();
+  raise_error << maybe(get(Recipe, r).name) << "undefined operation in '" << inst.to_string() << "'\n" << end();
   break;
 }
 :(replace{} "default:" following "End Primitive Recipe Implementations")
@@ -142,7 +142,7 @@ inline bool routine::completed() const {
 
 inline const vector<instruction>& routine::steps() const {
   assert(!calls.empty());
-  return Recipe[calls.front().running_recipe].steps;
+  return get(Recipe, calls.front().running_recipe).steps;
 }
 
 :(before "Running One Instruction")

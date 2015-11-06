@@ -1,7 +1,7 @@
 :(before "End Primitive Recipe Declarations")
 RANDOM,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["random"] = RANDOM;
+put(Recipe_ordinal, "random", RANDOM);
 :(before "End Primitive Recipe Checks")
 case RANDOM: {
   break;
@@ -18,7 +18,7 @@ case RANDOM: {
 :(before "End Primitive Recipe Declarations")
 MAKE_RANDOM_NONDETERMINISTIC,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["make-random-nondeterministic"] = MAKE_RANDOM_NONDETERMINISTIC;
+put(Recipe_ordinal, "make-random-nondeterministic", MAKE_RANDOM_NONDETERMINISTIC);
 :(before "End Primitive Recipe Checks")
 case MAKE_RANDOM_NONDETERMINISTIC: {
   break;
@@ -32,15 +32,15 @@ case MAKE_RANDOM_NONDETERMINISTIC: {
 :(before "End Primitive Recipe Declarations")
 ROUND,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["round"] = ROUND;
+put(Recipe_ordinal, "round", ROUND);
 :(before "End Primitive Recipe Checks")
 case ROUND: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(Recipe[r].name) << "'round' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'round' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'round' should be a number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'round' should be a number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;

@@ -3,12 +3,12 @@
 :(before "End Primitive Recipe Declarations")
 AND,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["and"] = AND;
+put(Recipe_ordinal, "and", AND);
 :(before "End Primitive Recipe Checks")
 case AND: {
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_scalar(inst.ingredients.at(i))) {
-      raise_error << maybe(Recipe[r].name) << "'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise_error << maybe(get(Recipe, r).name) << "'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }
@@ -53,12 +53,12 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 OR,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["or"] = OR;
+put(Recipe_ordinal, "or", OR);
 :(before "End Primitive Recipe Checks")
 case OR: {
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_scalar(inst.ingredients.at(i))) {
-      raise_error << maybe(Recipe[r].name) << "'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise_error << maybe(get(Recipe, r).name) << "'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }
@@ -103,16 +103,16 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 NOT,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["not"] = NOT;
+put(Recipe_ordinal, "not", NOT);
 :(before "End Primitive Recipe Checks")
 case NOT: {
   if (SIZE(inst.products) > SIZE(inst.ingredients)) {
-    raise_error << maybe(Recipe[r].name) << "'not' cannot have fewer ingredients than products in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'not' cannot have fewer ingredients than products in '" << inst.to_string() << "'\n" << end();
     break;
   }
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_scalar(inst.ingredients.at(i))) {
-      raise_error << maybe(Recipe[r].name) << "'not' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise_error << maybe(get(Recipe, r).name) << "'not' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }

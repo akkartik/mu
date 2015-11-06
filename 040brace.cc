@@ -39,11 +39,11 @@ void transform_braces(const recipe_ordinal r) {
   const int OPEN = 0, CLOSE = 1;
   // use signed integer for step index because we'll be doing arithmetic on it
   list<pair<int/*OPEN/CLOSE*/, /*step*/long long int> > braces;
-  trace(9991, "transform") << "--- transform braces for recipe " << Recipe[r].name << end();
-  for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
-    const instruction& inst = Recipe[r].steps.at(index);
+  trace(9991, "transform") << "--- transform braces for recipe " << get(Recipe, r).name << end();
+  for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
+    const instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.label == "{") {
-      trace(9993, "transform") << maybe(Recipe[r].name) << "push (open, " << index << ")" << end();
+      trace(9993, "transform") << maybe(get(Recipe, r).name) << "push (open, " << index << ")" << end();
       braces.push_back(pair<int,long long int>(OPEN, index));
     }
     if (inst.label == "}") {
@@ -52,15 +52,15 @@ void transform_braces(const recipe_ordinal r) {
     }
   }
   stack</*step*/long long int> open_braces;
-  for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
-    instruction& inst = Recipe[r].steps.at(index);
+  for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
+    instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.label == "{") {
       open_braces.push(index);
       continue;
     }
     if (inst.label == "}") {
       if (open_braces.empty()) {
-        raise << "missing '{' in " << Recipe[r].name << '\n';
+        raise << "missing '{' in " << get(Recipe, r).name << '\n';
         return;
       }
       open_braces.pop();
@@ -113,7 +113,7 @@ void transform_braces(const recipe_ordinal r) {
     }
     // if implicit, compute target
     reagent target;
-    target.type = new type_tree(Type_ordinal["offset"]);
+    target.type = new type_tree(get(Type_ordinal, "offset"));
     target.set_value(0);
     if (open_braces.empty())
       raise_error << inst.old_name << " needs a '{' before\n" << end();
@@ -139,8 +139,8 @@ long long int matching_brace(long long int index, const list<pair<int, long long
     stacksize += (p->first ? 1 : -1);
     if (stacksize == 0) return p->second;
   }
-  raise_error << maybe(Recipe[r].name) << "unbalanced '{'\n" << end();
-  return SIZE(Recipe[r].steps);  // exit current routine
+  raise_error << maybe(get(Recipe, r).name) << "unbalanced '{'\n" << end();
+  return SIZE(get(Recipe, r).steps);  // exit current routine
 }
 
 :(scenario loop)
@@ -372,12 +372,12 @@ LOOP,
 LOOP_IF,
 LOOP_UNLESS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["break"] = BREAK;
-Recipe_ordinal["break-if"] = BREAK_IF;
-Recipe_ordinal["break-unless"] = BREAK_UNLESS;
-Recipe_ordinal["loop"] = LOOP;
-Recipe_ordinal["loop-if"] = LOOP_IF;
-Recipe_ordinal["loop-unless"] = LOOP_UNLESS;
+put(Recipe_ordinal, "break", BREAK);
+put(Recipe_ordinal, "break-if", BREAK_IF);
+put(Recipe_ordinal, "break-unless", BREAK_UNLESS);
+put(Recipe_ordinal, "loop", LOOP);
+put(Recipe_ordinal, "loop-if", LOOP_IF);
+put(Recipe_ordinal, "loop-unless", LOOP_UNLESS);
 :(before "End Primitive Recipe Checks")
 case BREAK: break;
 case BREAK_IF: break;

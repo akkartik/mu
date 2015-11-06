@@ -73,8 +73,8 @@ void insert_fragments(const recipe_ordinal r) {
     made_progress = false;
     // create a new vector because insertions invalidate iterators
     vector<instruction> result;
-    for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
-      const instruction& inst = Recipe[r].steps.at(i);
+    for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+      const instruction& inst = get(Recipe, r).steps.at(i);
       if (!inst.is_label || !is_waypoint(inst.label) || inst.tangle_done) {
         result.push_back(inst);
         continue;
@@ -83,7 +83,7 @@ void insert_fragments(const recipe_ordinal r) {
       made_progress = true;
       Fragments_used.insert(inst.label);
       ostringstream prefix;
-      prefix << '+' << Recipe[r].name << '_' << pass << '_' << i;
+      prefix << '+' << get(Recipe, r).name << '_' << pass << '_' << i;
       if (Before_fragments.find(inst.label) != Before_fragments.end()) {
         append_fragment(result, Before_fragments[inst.label].steps, prefix.str());
       }
@@ -92,7 +92,7 @@ void insert_fragments(const recipe_ordinal r) {
         append_fragment(result, After_fragments[inst.label].steps, prefix.str());
       }
     }
-    Recipe[r].steps.swap(result);
+    get(Recipe, r).steps.swap(result);
     ++pass;
   }
 }

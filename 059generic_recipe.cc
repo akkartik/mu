@@ -31,9 +31,9 @@ if (best_score == -1) {
   trace(9992, "transform") << "no variant found; searching for variant with suitable type ingredients" << end();
   recipe_ordinal exemplar = pick_matching_generic_variant(variants, inst, best_score);
   if (exemplar) {
-    trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << Recipe[exemplar].name << end();
+    trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
     variants.push_back(new_variant(exemplar, inst));
-    inst.name = Recipe[variants.back()].name;
+    inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
   }
 }
@@ -65,7 +65,7 @@ long long int generic_variant_score(const instruction& inst, recipe_ordinal vari
     trace(9993, "transform") << "no type ingredients" << end();
     return -1;
   }
-  const vector<reagent>& header_ingredients = Recipe[variant].ingredients;
+  const vector<reagent>& header_ingredients = get(Recipe, variant).ingredients;
   if (SIZE(inst.ingredients) < SIZE(header_ingredients)) {
     trace(9993, "transform") << "too few ingredients" << end();
     return -1;
@@ -76,11 +76,11 @@ long long int generic_variant_score(const instruction& inst, recipe_ordinal vari
       return -1;
     }
   }
-  if (SIZE(inst.products) > SIZE(Recipe[variant].products)) {
+  if (SIZE(inst.products) > SIZE(get(Recipe, variant).products)) {
     trace(9993, "transform") << "too few products" << end();
     return -1;
   }
-  const vector<reagent>& header_products = Recipe[variant].products;
+  const vector<reagent>& header_products = get(Recipe, variant).products;
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
     if (!non_type_ingredients_match(header_products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "mismatch: product " << i << end();
@@ -88,13 +88,13 @@ long long int generic_variant_score(const instruction& inst, recipe_ordinal vari
     }
   }
   // the greater the number of unused ingredients, the lower the score
-  return 100 - (SIZE(Recipe[variant].products)-SIZE(inst.products))
-             - (SIZE(inst.ingredients)-SIZE(Recipe[variant].ingredients));  // ok to go negative
+  return 100 - (SIZE(get(Recipe, variant).products)-SIZE(inst.products))
+             - (SIZE(inst.ingredients)-SIZE(get(Recipe, variant).ingredients));  // ok to go negative
 }
 
 bool any_type_ingredient_in_header(recipe_ordinal variant) {
-  for (long long int i = 0; i < SIZE(Recipe[variant].ingredients); ++i) {
-    if (contains_type_ingredient_name(Recipe[variant].ingredients.at(i)))
+  for (long long int i = 0; i < SIZE(get(Recipe, variant).ingredients); ++i) {
+    if (contains_type_ingredient_name(get(Recipe, variant).ingredients.at(i)))
       return true;
   }
   return false;
@@ -123,18 +123,18 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   string new_name = next_unused_recipe_name(inst.name);
   trace(9993, "transform") << "switching " << inst.name << " to " << new_name << end();
   assert(Recipe_ordinal.find(new_name) == Recipe_ordinal.end());
-  recipe_ordinal result = Recipe_ordinal[new_name] = Next_recipe_ordinal++;
+  recipe_ordinal result = put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
   // make a copy
   assert(Recipe.find(exemplar) != Recipe.end());
   assert(Recipe.find(result) == Recipe.end());
   recently_added_recipes.push_back(result);
-  Recipe[result] = Recipe[exemplar];
-  recipe& new_recipe = Recipe[result];
+  put(Recipe, result, get(Recipe, exemplar));
+  recipe& new_recipe = get(Recipe, result);
   // update its name
   new_recipe.name = new_name;
   // update its contents
   map<string, string> mappings;  // weak references
-  compute_type_ingredient_mappings(Recipe[exemplar], inst, mappings);
+  compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings);
   replace_type_ingredients(new_recipe, mappings);
   return result;
 }

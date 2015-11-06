@@ -80,7 +80,7 @@ if (result.has_header) {
 if (curr.name == "load-ingredients") {
   curr.clear();
   for (long long int i = 0; i < SIZE(result.ingredients); ++i) {
-    curr.operation = Recipe_ordinal["next-ingredient"];
+    curr.operation = get(Recipe_ordinal, "next-ingredient");
     curr.name = "next-ingredient";
     curr.products.push_back(result.ingredients.at(i));
     result.steps.push_back(curr);
@@ -106,7 +106,7 @@ Transform.push_back(check_header_products);
 
 :(code)
 void check_header_products(const recipe_ordinal r) {
-  const recipe& rr = Recipe[r];
+  const recipe& rr = get(Recipe, r);
   if (rr.products.empty()) return;
   trace(9991, "transform") << "--- checking reply instructions against header for " << rr.name << end();
   for (long long int i = 0; i < SIZE(rr.steps); ++i) {
@@ -143,7 +143,7 @@ Transform.push_back(deduce_types_from_header);
 
 :(code)
 void deduce_types_from_header(const recipe_ordinal r) {
-  recipe& rr = Recipe[r];
+  recipe& rr = get(Recipe, r);
   if (rr.products.empty()) return;
   trace(9991, "transform") << "--- deduce types from header for " << rr.name << end();
   map<string, const type_tree*> header;
@@ -197,13 +197,13 @@ Transform.push_back(fill_in_reply_ingredients);
 
 :(code)
 void fill_in_reply_ingredients(recipe_ordinal r) {
-  if (!Recipe[r].has_header) return;
-  trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << Recipe[r].name << end();
-  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
-    instruction& inst = Recipe[r].steps.at(i);
+  if (!get(Recipe, r).has_header) return;
+  trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << get(Recipe, r).name << end();
+  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+    instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.name == "reply" && inst.ingredients.empty()) {
-      for (long long int i = 0; i < SIZE(Recipe[r].products); ++i)
-        inst.ingredients.push_back(Recipe[r].products.at(i));
+      for (long long int i = 0; i < SIZE(get(Recipe, r).products); ++i)
+        inst.ingredients.push_back(get(Recipe, r).products.at(i));
     }
   }
 }
@@ -239,7 +239,7 @@ Transform.push_back(deduce_fallthrough_reply);
 
 :(code)
 void deduce_fallthrough_reply(const recipe_ordinal r) {
-  recipe& rr = Recipe[r];
+  recipe& rr = get(Recipe, r);
   if (rr.products.empty()) return;
   if (rr.steps.empty()) return;
   if (rr.steps.at(SIZE(rr.steps)-1).name != "reply") {

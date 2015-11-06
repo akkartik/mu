@@ -9,19 +9,19 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 TRACE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["trace"] = TRACE;
+put(Recipe_ordinal, "trace", TRACE);
 :(before "End Primitive Recipe Checks")
 case TRACE: {
   if (SIZE(inst.ingredients) < 3) {
-    raise_error << maybe(Recipe[r].name) << "'trace' takes three or more ingredients rather than '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'trace' takes three or more ingredients rather than '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'trace' should be a number (depth), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'trace' should be a number (depth), but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise_error << maybe(Recipe[r].name) << "second ingredient of 'trace' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'trace' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -43,7 +43,7 @@ case TRACE: {
 :(before "End Primitive Recipe Declarations")
 STASH,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["stash"] = STASH;
+put(Recipe_ordinal, "stash", STASH);
 :(before "End Primitive Recipe Checks")
 case STASH: {
   break;
@@ -92,7 +92,7 @@ string print_mu(const reagent& r, const vector<double>& data) {
 :(before "End Primitive Recipe Declarations")
 HIDE_ERRORS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["hide-errors"] = HIDE_ERRORS;
+put(Recipe_ordinal, "hide-errors", HIDE_ERRORS);
 :(before "End Primitive Recipe Checks")
 case HIDE_ERRORS: {
   break;
@@ -107,7 +107,7 @@ case HIDE_ERRORS: {
 :(before "End Primitive Recipe Declarations")
 SHOW_ERRORS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["show-errors"] = SHOW_ERRORS;
+put(Recipe_ordinal, "show-errors", SHOW_ERRORS);
 :(before "End Primitive Recipe Checks")
 case SHOW_ERRORS: {
   break;
@@ -122,7 +122,7 @@ case SHOW_ERRORS: {
 :(before "End Primitive Recipe Declarations")
 TRACE_UNTIL,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["trace-until"] = TRACE_UNTIL;
+put(Recipe_ordinal, "trace-until", TRACE_UNTIL);
 :(before "End Primitive Recipe Checks")
 case TRACE_UNTIL: {
   break;
@@ -138,7 +138,7 @@ case TRACE_UNTIL: {
 :(before "End Primitive Recipe Declarations")
 _DUMP_TRACE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$dump-trace"] = _DUMP_TRACE;
+put(Recipe_ordinal, "$dump-trace", _DUMP_TRACE);
 :(before "End Primitive Recipe Checks")
 case _DUMP_TRACE: {
   break;
@@ -157,7 +157,7 @@ case _DUMP_TRACE: {
 :(before "End Primitive Recipe Declarations")
 _CLEAR_TRACE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$clear-trace"] = _CLEAR_TRACE;
+put(Recipe_ordinal, "$clear-trace", _CLEAR_TRACE);
 :(before "End Primitive Recipe Checks")
 case _CLEAR_TRACE: {
   break;
@@ -171,7 +171,7 @@ case _CLEAR_TRACE: {
 :(before "End Primitive Recipe Declarations")
 _SAVE_TRACE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$save-trace"] = _SAVE_TRACE;
+put(Recipe_ordinal, "$save-trace", _SAVE_TRACE);
 :(before "End Primitive Recipe Checks")
 case _SAVE_TRACE: {
   break;
@@ -198,19 +198,19 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 ASSERT,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["assert"] = ASSERT;
+put(Recipe_ordinal, "assert", ASSERT);
 :(before "End Primitive Recipe Checks")
 case ASSERT: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "'assert' takes exactly two ingredients rather than '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'assert' takes exactly two ingredients rather than '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "'assert' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'assert' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise_error << maybe(Recipe[r].name) << "'assert' requires a literal string for its second ingredient, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'assert' requires a literal string for its second ingredient, but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -228,7 +228,7 @@ case ASSERT: {
 :(before "End Primitive Recipe Declarations")
 _PRINT,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$print"] = _PRINT;
+put(Recipe_ordinal, "$print", _PRINT);
 :(before "End Primitive Recipe Checks")
 case _PRINT: {
   break;
@@ -257,7 +257,7 @@ case _PRINT: {
 :(before "End Primitive Recipe Declarations")
 _EXIT,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$exit"] = _EXIT;
+put(Recipe_ordinal, "$exit", _EXIT);
 :(before "End Primitive Recipe Checks")
 case _EXIT: {
   break;
@@ -271,11 +271,11 @@ case _EXIT: {
 :(before "End Primitive Recipe Declarations")
 _SYSTEM,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$system"] = _SYSTEM;
+put(Recipe_ordinal, "$system", _SYSTEM);
 :(before "End Primitive Recipe Checks")
 case _SYSTEM: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(Recipe[r].name) << "'$system' requires exactly one ingredient, but got none\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'$system' requires exactly one ingredient, but got none\n" << end();
     break;
   }
   break;
@@ -291,7 +291,7 @@ case _SYSTEM: {
 :(before "End Primitive Recipe Declarations")
 _DUMP_MEMORY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$dump-memory"] = _DUMP_MEMORY;
+put(Recipe_ordinal, "$dump-memory", _DUMP_MEMORY);
 :(before "End Primitive Recipe Checks")
 case _DUMP_MEMORY: {
   break;

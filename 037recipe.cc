@@ -4,22 +4,22 @@
 
 :(before "End Mu Types Initialization")
 // 'recipe' is a literal
-Type_ordinal["recipe"] = 0;
+put(Type_ordinal, "recipe", 0);
 // 'recipe-ordinal' is the literal that can store recipe literals
-type_ordinal recipe_ordinal = Type_ordinal["recipe-ordinal"] = Next_type_ordinal++;
-Type[recipe_ordinal].name = "recipe-ordinal";
+type_ordinal recipe_ordinal = put(Type_ordinal, "recipe-ordinal", Next_type_ordinal++);
+get(Type, recipe_ordinal).name = "recipe-ordinal";
 
 :(before "End Reagent-parsing Exceptions")
 if (r.properties.at(0).second && r.properties.at(0).second->value == "recipe") {
-  r.set_value(Recipe_ordinal[r.name]);
+  r.set_value(get(Recipe_ordinal, r.name));
   return;
 }
 
 :(code)
 bool is_mu_recipe(reagent r) {
   if (!r.type) return false;
-  if (r.type->value == Type_ordinal["recipe"]) return true;
-  if (r.type->value == Type_ordinal["recipe-ordinal"]) return true;
+  if (r.type->value == get(Type_ordinal, "recipe")) return true;
+  if (r.type->value == get(Type_ordinal, "recipe-ordinal")) return true;
   // End is_mu_recipe Cases
   return false;
 }

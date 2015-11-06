@@ -34,7 +34,7 @@ long long int space_base(const reagent& x, long long int space_index, long long 
   if (space_index == 0) {
     return base;
   }
-  long long int result = space_base(x, space_index-1, Memory[base+1]);
+  long long int result = space_base(x, space_index-1, get_or_insert(Memory, base+1));
   return result;
 }
 

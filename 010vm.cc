@@ -34,7 +34,7 @@ struct instruction {
   string label;  // only if is_label
   string name;  // only if !is_label
   string old_name;  // before our automatic rewrite rules
-  recipe_ordinal operation;  // Recipe_ordinal[name]
+  recipe_ordinal operation;  // get(Recipe_ordinal, name)
   vector<reagent> ingredients;  // only if !is_label
   vector<reagent> products;  // only if !is_label
   // End instruction Fields
@@ -123,22 +123,22 @@ type_ordinal Next_type_ordinal = 1;
 :(code)
 void setup_types() {
   Type.clear();  Type_ordinal.clear();
-  Type_ordinal["literal"] = 0;
+  put(Type_ordinal, "literal", 0);
   Next_type_ordinal = 1;
   // Mu Types Initialization
-  type_ordinal number = Type_ordinal["number"] = Next_type_ordinal++;
-  Type_ordinal["location"] = Type_ordinal["number"];  // wildcard type: either a pointer or a scalar
-  Type[number].name = "number";
-  type_ordinal address = Type_ordinal["address"] = Next_type_ordinal++;
-  Type[address].name = "address";
-  type_ordinal boolean = Type_ordinal["boolean"] = Next_type_ordinal++;
-  Type[boolean].name = "boolean";
-  type_ordinal character = Type_ordinal["character"] = Next_type_ordinal++;
-  Type[character].name = "character";
+  type_ordinal number = put(Type_ordinal, "number", Next_type_ordinal++);
+  put(Type_ordinal, "location", get(Type_ordinal, "number"));  // wildcard type: either a pointer or a scalar
+  get(Type, number).name = "number";
+  type_ordinal address = put(Type_ordinal, "address", Next_type_ordinal++);
+  get(Type, address).name = "address";
+  type_ordinal boolean = put(Type_ordinal, "boolean", Next_type_ordinal++);
+  get(Type, boolean).name = "boolean";
+  type_ordinal character = put(Type_ordinal, "character", Next_type_ordinal++);
+  get(Type, character).name = "character";
   // Array types are a special modifier to any other type. For example,
   // array:number or array:address:boolean.
-  type_ordinal array = Type_ordinal["array"] = Next_type_ordinal++;
-  Type[array].name = "array";
+  type_ordinal array = put(Type_ordinal, "array", Next_type_ordinal++);
+  get(Type, array).name = "array";
   // End Mu Types Initialization
 }
 void teardown_types() {
@@ -196,9 +196,9 @@ enum primitive_recipes {
 //: what to do for them.
 void setup_recipes() {
   Recipe.clear();  Recipe_ordinal.clear();
-  Recipe_ordinal["idle"] = IDLE;
+  put(Recipe_ordinal, "idle", IDLE);
   // Primitive Recipe Numbers
-  Recipe_ordinal["copy"] = COPY;
+  put(Recipe_ordinal, "copy", COPY);
   // End Primitive Recipe Numbers
 }
 //: We could just reset the recipe table after every test, but that gets slow
@@ -209,7 +209,7 @@ void setup_recipes() {
 setup_recipes();
 assert(MAX_PRIMITIVE_RECIPES < 200);  // level 0 is primitives; until 199
 Next_recipe_ordinal = 200;
-Recipe_ordinal["main"] = Next_recipe_ordinal++;
+put(Recipe_ordinal, "main", Next_recipe_ordinal++);
 // End Load Recipes
 :(before "End Test Run Initialization")
 assert(Next_recipe_ordinal < 1000);  // recipes being tested didn't overflow into test space
@@ -276,9 +276,9 @@ type_tree* new_type_tree(const string_tree* properties) {
     if (Type_ordinal.find(type_name) == Type_ordinal.end()
         // types can contain integers, like for array sizes
         && !is_integer(type_name)) {
-      Type_ordinal[type_name] = Next_type_ordinal++;
+      put(Type_ordinal, type_name, Next_type_ordinal++);
     }
-    result->value = Type_ordinal[type_name];
+    result->value = get(Type_ordinal, type_name);
   }
   result->left = new_type_tree(properties->left);
   result->right = new_type_tree(properties->right);
@@ -414,7 +414,7 @@ void dump_types_tree(const type_tree* type, ostream& out) {
 
 void dump_type_name(recipe_ordinal type, ostream& out) {
   if (Type.find(type) != Type.end())
-    out << Type[type].name;
+    out << get(Type, type).name;
   else
     out << "?";
 }
@@ -470,7 +470,7 @@ void dump_memory() {
 }
 
 void dump_recipe(const string& recipe_name) {
-  const recipe& r = Recipe[Recipe_ordinal[recipe_name]];
+  const recipe& r = get(Recipe, get(Recipe_ordinal, recipe_name));
   cout << "recipe " << r.name << " [\n";
   for (long long int i = 0; i < SIZE(r.steps); ++i) {
     cout << "  " << r.steps.at(i).to_string() << '\n';

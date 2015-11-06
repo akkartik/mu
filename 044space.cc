@@ -127,7 +127,7 @@ if (curr.name == "new-default-space") {
 :(after "vector<double> read_memory(reagent x)")
   if (x.name == "number-of-locals") {
     vector<double> result;
-    result.push_back(Name[Recipe_ordinal[current_recipe_name()]][""]);
+    result.push_back(Name[get(Recipe_ordinal, current_recipe_name())][""]);
     if (result.back() == 0)
       raise_error << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names?\n" << end();
     return result;
@@ -170,9 +170,9 @@ if (curr.name == "local-scope") {
 :(code)
 void try_reclaim_locals() {
   // only reclaim routines starting with 'local-scope'
-  const recipe_ordinal r = Recipe_ordinal[current_recipe_name()];
-  if (Recipe[r].steps.empty()) return;
-  const instruction& inst = Recipe[r].steps.at(0);
+  const recipe_ordinal r = get(Recipe_ordinal, current_recipe_name());
+  if (get(Recipe, r).steps.empty()) return;
+  const instruction& inst = get(Recipe, r).steps.at(0);
   if (inst.old_name != "local-scope") return;
   abandon(current_call().default_space,
           /*array length*/1+/*number-of-locals*/Name[r][""]);
@@ -199,9 +199,9 @@ long long int space_base(const reagent& x) {
 
 long long int address(long long int offset, long long int base) {
   if (base == 0) return offset;  // raw
-  if (offset >= static_cast<long long int>(Memory[base])) {
+  if (offset >= static_cast<long long int>(get_or_insert(Memory, base))) {
     // todo: test
-    raise_error << "location " << offset << " is out of bounds " << no_scientific(Memory[base]) << " at " << base << '\n' << end();
+    raise_error << "location " << offset << " is out of bounds " << no_scientific(get_or_insert(Memory, base)) << " at " << base << '\n' << end();
   }
   return base+1 + offset;
 }
@@ -210,11 +210,11 @@ long long int address(long long int offset, long long int base) {
   if (x.name == "default-space") {
     if (!scalar(data)
         || !x.type
-        || x.type->value != Type_ordinal["address"]
+        || x.type->value != get(Type_ordinal, "address")
         || !x.type->right
-        || x.type->right->value != Type_ordinal["array"]
+        || x.type->right->value != get(Type_ordinal, "array")
         || !x.type->right->right
-        || x.type->right->right->value != Type_ordinal["location"]
+        || x.type->right->right->value != get(Type_ordinal, "location")
         || x.type->right->right->right) {
       raise_error << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
     }

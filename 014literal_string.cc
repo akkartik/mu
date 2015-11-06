@@ -19,7 +19,7 @@ recipe main [
 +parse:   ingredient: {"abc:def/ghi": "literal-string"}
 
 :(before "End Mu Types Initialization")
-Type_ordinal["literal-string"] = 0;
+put(Type_ordinal, "literal-string", 0);
 
 :(before "End next_word Special-cases")
   if (in.peek() == '[') {
