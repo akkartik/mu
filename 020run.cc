@@ -63,9 +63,9 @@ void run_current_routine()
 //?     Instructions_running[current_recipe_name()]++;
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << current_instruction().to_string() << end();
-    if (Memory[0] != 0) {
+    if (get_or_insert(Memory, 0) != 0) {
       raise_error << "something wrote to location 0; this should never happen\n" << end();
-      Memory[0] = 0;
+      put(Memory, 0, 0);
     }
     // Read all ingredients from memory.
     // Each ingredient loads a vector of values rather than a single value; mu
@@ -119,15 +119,15 @@ inline long long int& current_step_index() {
 }
 
 inline const string& current_recipe_name() {
-  return Recipe[Current_routine->running_recipe].name;
+  return get(Recipe, Current_routine->running_recipe).name;
 }
 
 inline const instruction& current_instruction() {
-  return Recipe[Current_routine->running_recipe].steps.at(Current_routine->running_step_index);
+  return get(Recipe, Current_routine->running_recipe).steps.at(Current_routine->running_step_index);
 }
 
 inline bool routine::completed() const {
-  return running_step_index >= SIZE(Recipe[running_recipe].steps);
+  return running_step_index >= SIZE(get(Recipe, running_recipe).steps);
 }
 
 //:: Startup flow
@@ -154,7 +154,7 @@ if (argc > 1) {
   }
   transform_all();
 //?   dump_recipe("handle-keyboard-event"),  exit(0);
-  if (Run_tests) Recipe.erase(Recipe_ordinal[string("main")]);
+  if (Run_tests) Recipe.erase(get(Recipe_ordinal, string("main")));
 }
 
 //: Step 3: if we aren't running tests, locate a recipe called 'main' and
@@ -171,7 +171,7 @@ if (!Run_tests) {
 
 :(code)
 void run_main(int argc, char* argv[]) {
-  recipe_ordinal r = Recipe_ordinal[string("main")];
+  recipe_ordinal r = get(Recipe_ordinal, string("main"));
   if (r) run(r);
 }
 
@@ -258,7 +258,7 @@ vector<double> read_memory(reagent x) {
   long long int base = x.value;
   long long int size = size_of(x);
   for (long long int offset = 0; offset < size; ++offset) {
-    double val = Memory[base+offset];
+    double val = get_or_insert(Memory, base+offset);
     trace(9999, "mem") << "location " << base+offset << " is " << no_scientific(val) << end();
     result.push_back(val);
   }
@@ -276,7 +276,7 @@ void write_memory(reagent x, vector<double> data) {
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
     if (base+offset == 0) continue;
     trace(9999, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << base+offset << end();
-    Memory[base+offset] = data.at(offset);
+    put(Memory, base+offset, data.at(offset));
   }
 }
 

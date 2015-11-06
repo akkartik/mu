@@ -5,11 +5,11 @@
 :(before "End Primitive Recipe Declarations")
 RESTORE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["restore"] = RESTORE;
+put(Recipe_ordinal, "restore", RESTORE);
 :(before "End Primitive Recipe Checks")
 case RESTORE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(Recipe[r].name) << "'restore' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'restore' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
   string filename;
@@ -20,7 +20,7 @@ case RESTORE: {
     ;
   }
   else {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'restore' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'restore' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
     break;
   }
   break;
@@ -69,11 +69,11 @@ string slurp(const string& filename) {
 :(before "End Primitive Recipe Declarations")
 SAVE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["save"] = SAVE;
+put(Recipe_ordinal, "save", SAVE);
 :(before "End Primitive Recipe Checks")
 case SAVE: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "'save' requires exactly two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'save' requires exactly two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
   if (is_literal_string(inst.ingredients.at(0))) {
@@ -83,11 +83,11 @@ case SAVE: {
     ;
   }
   else {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'save' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'save' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
     break;
   }
   if (!is_mu_string(inst.ingredients.at(1))) {
-    raise_error << maybe(Recipe[r].name) << "second ingredient of 'save' should be an address:array:character, but got " << inst.ingredients.at(1).to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'save' should be an address:array:character, but got " << inst.ingredients.at(1).to_string() << '\n' << end();
     break;
   }
   break;

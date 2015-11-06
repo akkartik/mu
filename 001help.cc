@@ -87,6 +87,22 @@ bool is_equal(char* s, const char* lit) {
 //:
 //: 5. Integer overflow is still impossible to guard against. Maybe after
 //: reading http://www.cs.utah.edu/~regehr/papers/overflow12.pdf
+//:
+//: 6. Map's operator[] being non-const is fucking evil.
+:(before "Globals")  // can't generate prototypes for these
+// from http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map
+template<typename T> typename T::mapped_type& get(T& map, typename T::key_type const& key) {
+  typename T::iterator iter(map.find(key));
+  assert(iter != map.end());
+  return iter->second;
+}
+template<typename T> typename T::mapped_type& get_or_insert(T& map, typename T::key_type const& key) {
+  return map[key];
+}
+template<typename T> typename T::mapped_type const& put(T& map, typename T::key_type const& key, typename T::mapped_type const& value) {
+  map[key] = value;
+  return map[key];
+}
 
 :(before "End Includes")
 #include<assert.h>

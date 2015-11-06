@@ -26,23 +26,23 @@ trace(9999, "new") << "routine allocated memory from " << alloc << " to " << all
 
 //:: 'new' takes a weird 'type' as its first ingredient; don't error on it
 :(before "End Mu Types Initialization")
-Type_ordinal["type"] = 0;
+put(Type_ordinal, "type", 0);
 
 //:: typecheck 'new' instructions
 :(before "End Primitive Recipe Declarations")
 NEW,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["new"] = NEW;
+put(Recipe_ordinal, "new", NEW);
 :(before "End Primitive Recipe Checks")
 case NEW: {
   if (inst.ingredients.empty() || SIZE(inst.ingredients) > 2) {
-    raise_error << maybe(Recipe[r].name) << "'new' requires one or two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'new' requires one or two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
   // End NEW Check Special-cases
   reagent type = inst.ingredients.at(0);
   if (!is_mu_type_literal(type)) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
     break;
   }
   break;
@@ -54,9 +54,9 @@ Transform.push_back(transform_new_to_allocate);
 
 :(code)
 void transform_new_to_allocate(recipe_ordinal r) {
-  trace(9991, "transform") << "--- convert 'new' to 'allocate' for recipe " << Recipe[r].name << end();
-  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
-    instruction& inst = Recipe[r].steps.at(i);
+  trace(9991, "transform") << "--- convert 'new' to 'allocate' for recipe " << get(Recipe, r).name << end();
+  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+    instruction& inst = get(Recipe, r).steps.at(i);
     // Convert 'new' To 'allocate'
     if (inst.name == "new") {
       inst.operation = ALLOCATE;
@@ -80,7 +80,7 @@ void transform_new_to_allocate(recipe_ordinal r) {
 :(before "End Primitive Recipe Declarations")
 ALLOCATE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["allocate"] = ALLOCATE;
+put(Recipe_ordinal, "allocate", ALLOCATE);
 :(before "End Primitive Recipe Implementations")
 case ALLOCATE: {
   // compute the space we need
@@ -102,10 +102,10 @@ case ALLOCATE: {
   products.at(0).push_back(result);
   // initialize allocated space
   for (long long int address = result; address < result+size; ++address) {
-    Memory[address] = 0;
+    put(Memory, address, 0);
   }
   if (SIZE(current_instruction().ingredients) > 1) {
-    Memory[result] = ingredients.at(1).at(0);  // array length
+    put(Memory, result, ingredients.at(1).at(0));  // array length
   }
   // bump
   Current_routine->alloc += size;
@@ -158,7 +158,7 @@ void ensure_space(long long int size) {
 
 :(scenario new_initializes)
 % Memory_allocated_until = 10;
-% Memory[Memory_allocated_until] = 1;
+% put(Memory, Memory_allocated_until, 1);
 recipe main [
   1:address:number <- new number:type
   2:number <- copy *1:address:number
@@ -236,17 +236,17 @@ Free_list.clear();
 :(before "End Primitive Recipe Declarations")
 ABANDON,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["abandon"] = ABANDON;
+put(Recipe_ordinal, "abandon", ABANDON);
 :(before "End Primitive Recipe Checks")
 case ABANDON: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(Recipe[r].name) << "'abandon' requires one ingredient, but got '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'abandon' requires one ingredient, but got '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent types = inst.ingredients.at(0);
   canonize_type(types);
-  if (!types.type || types.type->value != Type_ordinal["address"]) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'abandon' should be an address, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+  if (!types.type || types.type->value != get(Type_ordinal, "address")) {
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'abandon' should be an address, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -257,7 +257,7 @@ case ABANDON: {
   reagent types = current_instruction().ingredients.at(0);
   canonize(types);
   // lookup_memory without drop_one_lookup {
-  types.set_value(Memory[types.value]);
+  types.set_value(get_or_insert(Memory, types.value));
   drop_address_from_type(types);
   // }
   abandon(address, size_of(types));
@@ -271,26 +271,26 @@ void abandon(long long int address, long long int size) {
 //?   cerr << "abandon: " << size << '\n';
   // clear memory
   for (long long int curr = address; curr < address+size; ++curr)
-    Memory[curr] = 0;
+    put(Memory, curr, 0);
   // append existing free list to address
-  Memory[address] = Free_list[size];
+  put(Memory, address, Free_list[size]);
   Free_list[size] = address;
 }
 
 :(before "ensure_space(size)" following "case ALLOCATE")
 if (Free_list[size]) {
   long long int result = Free_list[size];
-  Free_list[size] = Memory[result];
+  Free_list[size] = get_or_insert(Memory, result);
   for (long long int curr = result+1; curr < result+size; ++curr) {
-    if (Memory[curr] != 0) {
+    if (get_or_insert(Memory, curr) != 0) {
       raise_error << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
       break;  // always fatal
     }
   }
   if (SIZE(current_instruction().ingredients) > 1)
-    Memory[result] = ingredients.at(1).at(0);
+    put(Memory, result, ingredients.at(1).at(0));
   else
-    Memory[result] = 0;
+    put(Memory, result, 0);
   products.resize(1);
   products.at(0).push_back(result);
   break;
@@ -356,14 +356,14 @@ long long int new_mu_string(const string& contents) {
   ensure_space(string_length+1);  // don't forget the extra location for array size
   // initialize string
   long long int result = Current_routine->alloc;
-  Memory[Current_routine->alloc++] = string_length;
+  put(Memory, Current_routine->alloc++, string_length);
   long long int curr = 0;
   const char* raw_contents = contents.c_str();
   for (long long int i = 0; i < string_length; ++i) {
     uint32_t curr_character;
     assert(curr < SIZE(contents));
     tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
-    Memory[Current_routine->alloc] = curr_character;
+    put(Memory, Current_routine->alloc, curr_character);
     curr += tb_utf8_char_length(raw_contents[curr]);
     ++Current_routine->alloc;
   }
@@ -430,20 +430,20 @@ long long int unicode_length(const string& s) {
 
 bool is_mu_string(const reagent& x) {
   return x.type
-    && x.type->value == Type_ordinal["address"]
+    && x.type->value == get(Type_ordinal, "address")
     && x.type->right
-    && x.type->right->value == Type_ordinal["array"]
+    && x.type->right->value == get(Type_ordinal, "array")
     && x.type->right->right
-    && x.type->right->right->value == Type_ordinal["character"]
+    && x.type->right->right->value == get(Type_ordinal, "character")
     && x.type->right->right->right == NULL;
 }
 
 string read_mu_string(long long int address) {
-  long long int size = Memory[address];
+  long long int size = get_or_insert(Memory, address);
   if (size == 0) return "";
   ostringstream tmp;
   for (long long int curr = address+1; curr <= address+size; ++curr) {
-    tmp << to_unicode(static_cast<uint32_t>(Memory[curr]));
+    tmp << to_unicode(static_cast<uint32_t>(get_or_insert(Memory, curr)));
   }
   return tmp.str();
 }

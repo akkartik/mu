@@ -13,10 +13,10 @@ Transform.push_back(check_instruction);
 
 :(code)
 void check_instruction(const recipe_ordinal r) {
-  trace(9991, "transform") << "--- perform checks for recipe " << Recipe[r].name << end();
+  trace(9991, "transform") << "--- perform checks for recipe " << get(Recipe, r).name << end();
   map<string, vector<type_ordinal> > metadata;
-  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
-    instruction& inst = Recipe[r].steps.at(i);
+  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+    instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.is_label) continue;
     switch (inst.operation) {
       // Primitive Recipe Checks
@@ -27,7 +27,7 @@ void check_instruction(const recipe_ordinal r) {
         }
         for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
           if (!types_match(inst.products.at(i), inst.ingredients.at(i))) {
-            raise_error << maybe(Recipe[r].name) << "can't copy " << inst.ingredients.at(i).original_string << " to " << inst.products.at(i).original_string << "; types don't match\n" << end();
+            raise_error << maybe(get(Recipe, r).name) << "can't copy " << inst.ingredients.at(i).original_string << " to " << inst.products.at(i).original_string << "; types don't match\n" << end();
             goto finish_checking_instruction;
           }
         }
@@ -90,8 +90,8 @@ bool types_match(reagent lhs, reagent rhs) {
 bool types_match(type_tree* lhs, type_tree* rhs) {
   if (!lhs) return true;
   if (!rhs || rhs->value == 0) {
-    if (lhs->value == Type_ordinal["array"]) return false;
-    if (lhs->value == Type_ordinal["address"]) return false;
+    if (lhs->value == get(Type_ordinal, "array")) return false;
+    if (lhs->value == get(Type_ordinal, "address")) return false;
     return size_of(rhs) == size_of(lhs);
   }
   if (lhs->value != rhs->value) return false;
@@ -102,8 +102,8 @@ bool types_match(type_tree* lhs, type_tree* rhs) {
 bool types_match(const reagent lhs, const type_tree* rhs, const vector<double>& data) {
   if (is_dummy(lhs)) return true;
   if (rhs->value == 0) {
-    if (lhs.type->value == Type_ordinal["array"]) return false;
-    if (lhs.type->value == Type_ordinal["address"]) return scalar(data) && data.at(0) == 0;
+    if (lhs.type->value == get(Type_ordinal, "array")) return false;
+    if (lhs.type->value == get(Type_ordinal, "address")) return scalar(data) && data.at(0) == 0;
     return size_of(rhs) == size_of(lhs);
   }
   if (lhs.type->value != rhs->value) return false;
@@ -117,13 +117,13 @@ bool is_raw(const reagent& r) {
 bool is_mu_array(reagent r) {
   if (!r.type) return false;
   if (is_literal(r)) return false;
-  return r.type->value == Type_ordinal["array"];
+  return r.type->value == get(Type_ordinal, "array");
 }
 
 bool is_mu_address(reagent r) {
   if (!r.type) return false;
   if (is_literal(r)) return false;
-  return r.type->value == Type_ordinal["address"];
+  return r.type->value == get(Type_ordinal, "address");
 }
 
 bool is_mu_number(reagent r) {
@@ -131,8 +131,8 @@ bool is_mu_number(reagent r) {
   if (is_literal(r))
     return r.properties.at(0).second->value == "literal-number"
         || r.properties.at(0).second->value == "literal";
-  if (r.type->value == Type_ordinal["character"]) return true;  // permit arithmetic on unicode code points
-  return r.type->value == Type_ordinal["number"];
+  if (r.type->value == get(Type_ordinal, "character")) return true;  // permit arithmetic on unicode code points
+  return r.type->value == get(Type_ordinal, "number");
 }
 
 bool is_mu_scalar(reagent r) {

@@ -26,15 +26,15 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 RUN_INTERACTIVE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
+put(Recipe_ordinal, "run-interactive", RUN_INTERACTIVE);
 :(before "End Primitive Recipe Checks")
 case RUN_INTERACTIVE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(Recipe[r].name) << "'run-interactive' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'run-interactive' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
   if (!is_mu_string(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'run-interactive' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'run-interactive' should be a string, but got " << inst.ingredients.at(0).to_string() << '\n' << end();
     break;
   }
   break;
@@ -69,7 +69,7 @@ Track_most_recent_products = false;
 // all warnings.
 // returns true if successfully called (no errors found during load and transform)
 bool run_interactive(long long int address) {
-  assert(Recipe_ordinal.find("interactive") != Recipe_ordinal.end() && Recipe_ordinal["interactive"] != 0);
+  assert(Recipe_ordinal.find("interactive") != Recipe_ordinal.end() && get(Recipe_ordinal, "interactive") != 0);
   // try to sandbox the run as best you can
   // todo: test this
   if (!Current_scenario) {
@@ -78,8 +78,8 @@ bool run_interactive(long long int address) {
   }
   string command = trim(strip_comments(read_mu_string(address)));
   if (command.empty()) return false;
-  Recipe.erase(Recipe_ordinal["interactive"]);
-  Name[Recipe_ordinal["interactive"]].clear();
+  Recipe.erase(get(Recipe_ordinal, "interactive"));
+  Name[get(Recipe_ordinal, "interactive")].clear();
   run_code_begin();
   // don't kill the current routine on parse errors
   routine* save_current_routine = Current_routine;
@@ -103,7 +103,7 @@ bool run_interactive(long long int address) {
     trace(9999, "trace") << "run-interactive: incrementing callstack depth to " << Save_trace_stream->callstack_depth << end();
     assert(Save_trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
-  Current_routine->calls.push_front(call(Recipe_ordinal["sandbox"]));
+  Current_routine->calls.push_front(call(get(Recipe_ordinal, "sandbox")));
   return true;
 }
 
@@ -167,7 +167,7 @@ add 2, 2]
 :(before "End Primitive Recipe Declarations")
 _START_TRACKING_PRODUCTS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$start-tracking-products"] = _START_TRACKING_PRODUCTS;
+put(Recipe_ordinal, "$start-tracking-products", _START_TRACKING_PRODUCTS);
 :(before "End Primitive Recipe Checks")
 case _START_TRACKING_PRODUCTS: {
   break;
@@ -181,7 +181,7 @@ case _START_TRACKING_PRODUCTS: {
 :(before "End Primitive Recipe Declarations")
 _STOP_TRACKING_PRODUCTS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$stop-tracking-products"] = _STOP_TRACKING_PRODUCTS;
+put(Recipe_ordinal, "$stop-tracking-products", _STOP_TRACKING_PRODUCTS);
 :(before "End Primitive Recipe Checks")
 case _STOP_TRACKING_PRODUCTS: {
   break;
@@ -195,7 +195,7 @@ case _STOP_TRACKING_PRODUCTS: {
 :(before "End Primitive Recipe Declarations")
 _MOST_RECENT_PRODUCTS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$most-recent-products"] = _MOST_RECENT_PRODUCTS;
+put(Recipe_ordinal, "$most-recent-products", _MOST_RECENT_PRODUCTS);
 :(before "End Primitive Recipe Checks")
 case _MOST_RECENT_PRODUCTS: {
   break;
@@ -210,7 +210,7 @@ case _MOST_RECENT_PRODUCTS: {
 :(before "End Primitive Recipe Declarations")
 SAVE_ERRORS_WARNINGS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["save-errors-warnings"] = SAVE_ERRORS_WARNINGS;
+put(Recipe_ordinal, "save-errors-warnings", SAVE_ERRORS_WARNINGS);
 :(before "End Primitive Recipe Checks")
 case SAVE_ERRORS_WARNINGS: {
   break;
@@ -225,7 +225,7 @@ case SAVE_ERRORS_WARNINGS: {
 :(before "End Primitive Recipe Declarations")
 SAVE_APP_TRACE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["save-app-trace"] = SAVE_APP_TRACE;
+put(Recipe_ordinal, "save-app-trace", SAVE_APP_TRACE);
 :(before "End Primitive Recipe Checks")
 case SAVE_APP_TRACE: {
   break;
@@ -240,7 +240,7 @@ case SAVE_APP_TRACE: {
 :(before "End Primitive Recipe Declarations")
 _CLEANUP_RUN_INTERACTIVE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$cleanup-run-interactive"] = _CLEANUP_RUN_INTERACTIVE;
+put(Recipe_ordinal, "$cleanup-run-interactive", _CLEANUP_RUN_INTERACTIVE);
 :(before "End Primitive Recipe Checks")
 case _CLEANUP_RUN_INTERACTIVE: {
   break;
@@ -356,7 +356,7 @@ string strip_comments(string in) {
 long long int stringified_value_of_location(long long int address) {
   // convert to string
   ostringstream out;
-  out << no_scientific(Memory[address]);
+  out << no_scientific(get_or_insert(Memory, address));
   return new_mu_string(out.str());
 }
 
@@ -403,15 +403,15 @@ void truncate(string& x) {
 :(before "End Primitive Recipe Declarations")
 RELOAD,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["reload"] = RELOAD;
+put(Recipe_ordinal, "reload", RELOAD);
 :(before "End Primitive Recipe Checks")
 case RELOAD: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(Recipe[r].name) << "'reload' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'reload' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
   if (!is_mu_string(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'reload' should be a string, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'reload' should be a string, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -420,7 +420,7 @@ case RELOAD: {
 case RELOAD: {
   // clear any containers in advance
   for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
-    Type_ordinal.erase(Type[recently_added_types.at(i)].name);
+    Type_ordinal.erase(get(Type, recently_added_types.at(i)).name);
     Type.erase(recently_added_types.at(i));
   }
   string code = read_mu_string(ingredients.at(0).at(0));

@@ -50,9 +50,9 @@ void read_type_ingredients(string& name) {
   string save_name = name;
   istringstream in(save_name);
   name = slurp_until(in, ':');
-  if (Type_ordinal.find(name) == Type_ordinal.end() || Type_ordinal[name] == 0)
-    Type_ordinal[name] = Next_type_ordinal++;
-  type_info& info = Type[Type_ordinal[name]];
+  if (Type_ordinal.find(name) == Type_ordinal.end() || get(Type_ordinal, name) == 0)
+    put(Type_ordinal, name, Next_type_ordinal++);
+  type_info& info = get(Type, get(Type_ordinal, name));
   long long int next_type_ordinal = START_TYPE_INGREDIENTS;
   while (!in.eof()) {
     string curr = slurp_until(in, ':');
@@ -74,7 +74,7 @@ if (type_name.at(0) == '_') {
 
 :(before "End Container Type Checks")
 if (type->value >= START_TYPE_INGREDIENTS
-    && (type->value - START_TYPE_INGREDIENTS) < SIZE(Type[type->value].type_ingredient_names))
+    && (type->value - START_TYPE_INGREDIENTS) < SIZE(get(Type, type->value).type_ingredient_names))
   return;
 
 :(before "End size_of(type) Container Cases")
@@ -103,7 +103,7 @@ long long int size_of_type_ingredient(const type_tree* element_template, const t
   }
   assert(curr);
   assert(!curr->left);  // unimplemented
-  trace(9999, "type") << "type deduced to be " << Type[curr->value].name << "$" << end();
+  trace(9999, "type") << "type deduced to be " << get(Type, curr->value).name << "$" << end();
   type_tree tmp(curr->value);
   if (curr->right)
     tmp.right = new type_tree(*curr->right);
@@ -122,8 +122,8 @@ recipe main [
 +mem: storing 16 in location 2
 
 :(before "End GET field Cases")
-if (Type[base_type].elements.at(i)->value >= START_TYPE_INGREDIENTS) {
-  src += size_of_type_ingredient(Type[base_type].elements.at(i), base.type->right);
+if (get(Type, base_type).elements.at(i)->value >= START_TYPE_INGREDIENTS) {
+  src += size_of_type_ingredient(get(Type, base_type).elements.at(i), base.type->right);
   continue;
 }
 
@@ -212,8 +212,8 @@ recipe main [
 +mem: storing 12 in location 1
 
 :(before "End GET_ADDRESS field Cases")
-if (Type[base_type].elements.at(i)->value >= START_TYPE_INGREDIENTS) {
-  result += size_of_type_ingredient(Type[base_type].elements.at(i), base.type->right);
+if (get(Type, base_type).elements.at(i)->value >= START_TYPE_INGREDIENTS) {
+  result += size_of_type_ingredient(get(Type, base_type).elements.at(i), base.type->right);
   continue;
 }
 

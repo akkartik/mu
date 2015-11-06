@@ -19,11 +19,11 @@ Transform.push_back(check_types_by_name);
 
 :(code)
 void check_types_by_name(const recipe_ordinal r) {
-  trace(9991, "transform") << "--- deduce types for recipe " << Recipe[r].name << end();
+  trace(9991, "transform") << "--- deduce types for recipe " << get(Recipe, r).name << end();
   map<string, type_tree*> type;
   map<string, string_tree*> type_name;
-  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
-    instruction& inst = Recipe[r].steps.at(i);
+  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+    instruction& inst = get(Recipe, r).steps.at(i);
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
       deduce_missing_type(type, type_name, inst.ingredients.at(in));
       check_type(type, type_name, inst.ingredients.at(in), r);
@@ -49,7 +49,7 @@ void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_n
     type_name[x.name] = x.properties.at(0).second;
   }
   if (!types_match(type[x.name], x.type))
-    raise_error << maybe(Recipe[r].name) << x.name << " used with multiple types\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << x.name << " used with multiple types\n" << end();
 }
 
 :(scenario transform_fills_in_missing_types)

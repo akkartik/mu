@@ -2,14 +2,14 @@
 
 :(before "End Mu Types Initialization")
 //: We'll use this container as a running example, with two number elements.
-type_ordinal point = Type_ordinal["point"] = Next_type_ordinal++;
-Type[point].size = 2;
-Type[point].kind = CONTAINER;
-Type[point].name = "point";
-Type[point].elements.push_back(new type_tree(number));
-Type[point].element_names.push_back("x");
-Type[point].elements.push_back(new type_tree(number));
-Type[point].element_names.push_back("y");
+type_ordinal point = put(Type_ordinal, "point", Next_type_ordinal++);
+get(Type, point).size = 2;
+get(Type, point).kind = CONTAINER;
+get(Type, point).name = "point";
+get(Type, point).elements.push_back(new type_tree(number));
+get(Type, point).element_names.push_back("x");
+get(Type, point).elements.push_back(new type_tree(number));
+get(Type, point).element_names.push_back("y");
 
 //: Containers can be copied around with a single instruction just like
 //: numbers, no matter how large they are.
@@ -37,14 +37,14 @@ recipe main [
 :(before "End Mu Types Initialization")
 // A more complex container, containing another container as one of its
 // elements.
-type_ordinal point_number = Type_ordinal["point-number"] = Next_type_ordinal++;
-Type[point_number].size = 2;
-Type[point_number].kind = CONTAINER;
-Type[point_number].name = "point-number";
-Type[point_number].elements.push_back(new type_tree(point));
-Type[point_number].element_names.push_back("xy");
-Type[point_number].elements.push_back(new type_tree(number));
-Type[point_number].element_names.push_back("z");
+type_ordinal point_number = put(Type_ordinal, "point-number", Next_type_ordinal++);
+get(Type, point_number).size = 2;
+get(Type, point_number).kind = CONTAINER;
+get(Type, point_number).name = "point-number";
+get(Type, point_number).elements.push_back(new type_tree(point));
+get(Type, point_number).element_names.push_back("xy");
+get(Type, point_number).elements.push_back(new type_tree(number));
+get(Type, point_number).element_names.push_back("z");
 
 :(scenario copy_handles_nested_container_elements)
 recipe main [
@@ -87,7 +87,7 @@ if (type->value == 0) {
   assert(!type->left && !type->right);
   return 1;
 }
-type_info t = Type[type->value];
+type_info t = get(Type, type->value);
 if (t.kind == CONTAINER) {
   // size of a container is the sum of the sizes of its elements
   long long int result = 0;
@@ -124,23 +124,23 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 GET,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["get"] = GET;
+put(Recipe_ordinal, "get", GET);
 :(before "End Primitive Recipe Checks")
 case GET: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "'get' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);  // new copy for every invocation
   // Update GET base in Check
-  if (!base.type || !base.type->value || Type[base.type->value].kind != CONTAINER) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+  if (!base.type || !base.type->value || get(Type, base.type->value).kind != CONTAINER) {
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.type->value;
   reagent offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
-    raise_error << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   long long int offset_value = 0;
@@ -148,15 +148,15 @@ case GET: {
     offset_value = to_integer(offset.name);
   else
     offset_value = offset.value;
-  if (offset_value < 0 || offset_value >= SIZE(Type[base_type].elements)) {
-    raise_error << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
+  if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
+    raise_error << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
     break;
   }
   reagent product = inst.products.at(0);
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
   if (!types_match(product, element)) {
-    raise_error << maybe(Recipe[r].name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
   }
   break;
@@ -172,11 +172,11 @@ case GET: {
   }
   type_ordinal base_type = base.type->value;
   long long int offset = ingredients.at(1).at(0);
-  if (offset < 0 || offset >= SIZE(Type[base_type].elements)) break;  // copied from Check above
+  if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
   long long int src = base_address;
   for (long long int i = 0; i < offset; ++i) {
     // End GET field Cases
-    src += size_of(Type[base_type].elements.at(i));
+    src += size_of(get(Type, base_type).elements.at(i));
   }
   trace(9998, "run") << "address to copy is " << src << end();
   reagent tmp = element_type(base, offset);
@@ -190,8 +190,8 @@ case GET: {
 const reagent element_type(const reagent& canonized_base, long long int offset_value) {
   assert(offset_value >= 0);
   assert(Type.find(canonized_base.type->value) != Type.end());
-  assert(!Type[canonized_base.type->value].name.empty());
-  const type_info& info = Type[canonized_base.type->value];
+  assert(!get(Type, canonized_base.type->value).name.empty());
+  const type_info& info = get(Type, canonized_base.type->value);
   assert(info.kind == CONTAINER);
   reagent element;
   element.type = new type_tree(*info.elements.at(offset_value));
@@ -251,30 +251,30 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 GET_ADDRESS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["get-address"] = GET_ADDRESS;
+put(Recipe_ordinal, "get-address", GET_ADDRESS);
 :(before "End Primitive Recipe Checks")
 case GET_ADDRESS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "'get-address' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get-address' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
   // Update GET_ADDRESS base in Check
-  if (!base.type || Type[base.type->value].kind != CONTAINER) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+  if (!base.type || get(Type, base.type->value).kind != CONTAINER) {
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.type->value;
   reagent offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
-    raise_error << maybe(Recipe[r].name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   long long int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
-    if (offset_value < 0 || offset_value >= SIZE(Type[base_type].elements)) {
-      raise_error << maybe(Recipe[r].name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
+    if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
+      raise_error << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
       break;
     }
   }
@@ -286,9 +286,9 @@ case GET_ADDRESS: {
   // same type as for GET..
   reagent element = element_type(base, offset_value);
   // ..except for an address at the start
-  element.type = new type_tree(Type_ordinal["address"], element.type);
+  element.type = new type_tree(get(Type_ordinal, "address"), element.type);
   if (!types_match(product, element)) {
-    raise_error << maybe(Recipe[r].name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
   }
   break;
@@ -304,11 +304,11 @@ case GET_ADDRESS: {
   }
   type_ordinal base_type = base.type->value;
   long long int offset = ingredients.at(1).at(0);
-  if (offset < 0 || offset >= SIZE(Type[base_type].elements)) break;  // copied from Check above
+  if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
   long long int result = base_address;
   for (long long int i = 0; i < offset; ++i) {
     // End GET_ADDRESS field Cases
-    result += size_of(Type[base_type].elements.at(i));
+    result += size_of(get(Type, base_type).elements.at(i));
   }
   trace(9998, "run") << "address to copy is " << result << end();
   products.resize(1);
@@ -391,13 +391,13 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   // End container Name Refinements
   trace(9991, "parse") << "--- defining " << command << ' ' << name << end();
   if (Type_ordinal.find(name) == Type_ordinal.end()
-      || Type_ordinal[name] == 0) {
-    Type_ordinal[name] = Next_type_ordinal++;
+      || get(Type_ordinal, name) == 0) {
+    put(Type_ordinal, name, Next_type_ordinal++);
   }
-  trace(9999, "parse") << "type number: " << Type_ordinal[name] << end();
+  trace(9999, "parse") << "type number: " << get(Type_ordinal, name) << end();
   skip_bracket(in, "'container' must begin with '['");
-  type_info& info = Type[Type_ordinal[name]];
-  recently_added_types.push_back(Type_ordinal[name]);
+  type_info& info = get(Type, get(Type_ordinal, name));
+  recently_added_types.push_back(get(Type_ordinal, name));
   info.name = name;
   info.kind = kind;
   while (!in.eof()) {
@@ -415,10 +415,10 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
       if (Type_ordinal.find(type_name) == Type_ordinal.end()
           // types can contain integers, like for array sizes
           && !is_integer(type_name)) {
-        Type_ordinal[type_name] = Next_type_ordinal++;
+        put(Type_ordinal, type_name, Next_type_ordinal++);
       }
-      *curr_type = new type_tree(Type_ordinal[type_name]);
-      trace(9993, "parse") << "  type: " << Type_ordinal[type_name] << end();
+      *curr_type = new type_tree(get(Type_ordinal, type_name));
+      trace(9993, "parse") << "  type: " << get(Type_ordinal, type_name) << end();
     }
     info.elements.push_back(new_type);
   }
@@ -458,7 +458,7 @@ vector<type_ordinal> recently_added_types;
 recently_added_types.clear();
 :(before "End Setup")  //: for tests
 for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
-  Type_ordinal.erase(Type[recently_added_types.at(i)].name);
+  Type_ordinal.erase(get(Type, recently_added_types.at(i)).name);
   // todo: why do I explicitly need to provide this?
   for (long long int j = 0; j < SIZE(Type.at(recently_added_types.at(i)).elements); ++j) {
     delete Type.at(recently_added_types.at(i)).elements.at(j);
@@ -516,13 +516,13 @@ Transform.push_back(check_invalid_types);
 
 :(code)
 void check_invalid_types(const recipe_ordinal r) {
-  for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
-    const instruction& inst = Recipe[r].steps.at(index);
+  for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
+    const instruction& inst = get(Recipe, r).steps.at(index);
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-      check_invalid_types(inst.ingredients.at(i).type, maybe(Recipe[r].name), "'"+inst.to_string()+"'");
+      check_invalid_types(inst.ingredients.at(i).type, maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
     }
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
-      check_invalid_types(inst.products.at(i).type, maybe(Recipe[r].name), "'"+inst.to_string()+"'");
+      check_invalid_types(inst.products.at(i).type, maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
     }
   }
 }
@@ -530,7 +530,7 @@ void check_invalid_types(const recipe_ordinal r) {
 void check_invalid_types(const type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
   // End Container Type Checks
-  if (type->value && (Type.find(type->value) == Type.end() || Type[type->value].name.empty())) {
+  if (type->value && (Type.find(type->value) == Type.end() || get(Type, type->value).name.empty())) {
     raise_error << block << "unknown type in " << name << '\n' << end();
   }
   if (type->left) check_invalid_types(type->left, block, name);
@@ -576,7 +576,7 @@ void check_container_field_types() {
 :(before "End Primitive Recipe Declarations")
 MERGE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["merge"] = MERGE;
+put(Recipe_ordinal, "merge", MERGE);
 :(before "End Primitive Recipe Checks")
 case MERGE: {
   break;

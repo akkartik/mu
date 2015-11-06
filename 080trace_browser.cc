@@ -1,7 +1,7 @@
 :(before "End Primitive Recipe Declarations")
 _BROWSE_TRACE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$browse-trace"] = _BROWSE_TRACE;
+put(Recipe_ordinal, "$browse-trace", _BROWSE_TRACE);
 :(before "End Primitive Recipe Checks")
 case _BROWSE_TRACE: {
   break;

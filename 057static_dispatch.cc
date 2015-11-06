@@ -29,19 +29,19 @@ for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin();
 
 :(before "End Load Recipe Header(result)")
 if (Recipe_ordinal.find(result.name) != Recipe_ordinal.end()) {
-  if ((Recipe.find(Recipe_ordinal[result.name]) == Recipe.end()
-          || Recipe[Recipe_ordinal[result.name]].has_header)
+  if ((Recipe.find(get(Recipe_ordinal, result.name)) == Recipe.end()
+          || get(Recipe, get(Recipe_ordinal, result.name)).has_header)
       && !header_already_exists(result)) {
     string new_name = next_unused_recipe_name(result.name);
-    Recipe_ordinal[new_name] = Next_recipe_ordinal++;
-    Recipe_variants[result.name].push_back(Recipe_ordinal[new_name]);
+    put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
+    Recipe_variants[result.name].push_back(get(Recipe_ordinal, new_name));
     result.name = new_name;
   }
 }
 else {
   // save first variant
-  Recipe_ordinal[result.name] = Next_recipe_ordinal++;
-  Recipe_variants[result.name].push_back(Recipe_ordinal[result.name]);
+  put(Recipe_ordinal, result.name, Next_recipe_ordinal++);
+  Recipe_variants[result.name].push_back(get(Recipe_ordinal, result.name));
 }
 
 :(code)
@@ -49,7 +49,7 @@ bool header_already_exists(const recipe& rr) {
   const vector<recipe_ordinal>& variants = Recipe_variants[rr.name];
   for (long long int i = 0; i < SIZE(variants); ++i) {
     if (Recipe.find(variants.at(i)) != Recipe.end()
-        && all_reagents_match(rr, Recipe[variants.at(i)])) {
+        && all_reagents_match(rr, get(Recipe, variants.at(i)))) {
       return true;
     }
   }
@@ -108,10 +108,10 @@ Transform.push_back(resolve_ambiguous_calls);
 
 :(code)
 void resolve_ambiguous_calls(recipe_ordinal r) {
-  if (!Recipe[r].has_header) return;
-  trace(9991, "transform") << "--- resolve ambiguous calls for recipe " << Recipe[r].name << end();
-  for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
-    instruction& inst = Recipe[r].steps.at(index);
+  if (!get(Recipe, r).has_header) return;
+  trace(9991, "transform") << "--- resolve ambiguous calls for recipe " << get(Recipe, r).name << end();
+  for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
+    instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.is_label) continue;
     if (Recipe_variants.find(inst.name) == Recipe_variants.end()) continue;
     assert(!Recipe_variants[inst.name].empty());
@@ -122,12 +122,12 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
 void replace_best_variant(instruction& inst) {
   trace(9992, "transform") << "instruction " << inst.name << end();
   vector<recipe_ordinal>& variants = Recipe_variants[inst.name];
-  long long int best_score = variant_score(inst, Recipe_ordinal[inst.name]);
+  long long int best_score = variant_score(inst, get(Recipe_ordinal, inst.name));
   for (long long int i = 0; i < SIZE(variants); ++i) {
     long long int current_score = variant_score(inst, variants.at(i));
     trace(9992, "transform") << "checking variant " << i << ": " << current_score << end();
     if (current_score > best_score) {
-      inst.name = Recipe[variants.at(i)].name;
+      inst.name = get(Recipe, variants.at(i)).name;
       best_score = current_score;
     }
   }
@@ -136,7 +136,7 @@ void replace_best_variant(instruction& inst) {
 
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {
   if (variant == -1) return -1;
-  const vector<reagent>& header_ingredients = Recipe[variant].ingredients;
+  const vector<reagent>& header_ingredients = get(Recipe, variant).ingredients;
   if (SIZE(inst.ingredients) < SIZE(header_ingredients)) {
     trace(9993, "transform") << "too few ingredients" << end();
     return -1;
@@ -147,11 +147,11 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
       return -1;
     }
   }
-  if (SIZE(inst.products) > SIZE(Recipe[variant].products)) {
+  if (SIZE(inst.products) > SIZE(get(Recipe, variant).products)) {
     trace(9993, "transform") << "too few products" << end();
     return -1;
   }
-  const vector<reagent>& header_products = Recipe[variant].products;
+  const vector<reagent>& header_products = get(Recipe, variant).products;
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
     if (!types_match(header_products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "mismatch: product " << i << end();
@@ -159,8 +159,8 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
     }
   }
   // the greater the number of unused ingredients, the lower the score
-  return 100 - (SIZE(Recipe[variant].products)-SIZE(inst.products))
-             - (SIZE(inst.ingredients)-SIZE(Recipe[variant].ingredients));  // ok to go negative
+  return 100 - (SIZE(get(Recipe, variant).products)-SIZE(inst.products))
+             - (SIZE(inst.ingredients)-SIZE(get(Recipe, variant).ingredients));  // ok to go negative
 }
 
 :(scenario static_dispatch_disabled_on_headerless_definition)

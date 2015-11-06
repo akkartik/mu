@@ -12,15 +12,15 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 JUMP,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["jump"] = JUMP;
+put(Recipe_ordinal, "jump", JUMP);
 :(before "End Primitive Recipe Checks")
 case JUMP: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(Recipe[r].name) << "'jump' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'jump' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'jump' should be a label or offset, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'jump' should be a label or offset, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -35,7 +35,7 @@ case JUMP: {
 
 //: special type to designate jump targets
 :(before "End Mu Types Initialization")
-Type_ordinal["offset"] = 0;
+put(Type_ordinal, "offset", 0);
 
 :(scenario jump_backward)
 recipe main [
@@ -51,19 +51,19 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 JUMP_IF,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["jump-if"] = JUMP_IF;
+put(Recipe_ordinal, "jump-if", JUMP_IF);
 :(before "End Primitive Recipe Checks")
 case JUMP_IF: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "'jump-if' requires exactly two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'jump-if' requires exactly two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "'jump-if' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'jump-if' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(1))) {
-    raise_error << maybe(Recipe[r].name) << "'jump-if' requires a label or offset for its second ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'jump-if' requires a label or offset for its second ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -103,19 +103,19 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 JUMP_UNLESS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["jump-unless"] = JUMP_UNLESS;
+put(Recipe_ordinal, "jump-unless", JUMP_UNLESS);
 :(before "End Primitive Recipe Checks")
 case JUMP_UNLESS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "'jump-unless' requires exactly two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'jump-unless' requires exactly two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "'jump-unless' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'jump-unless' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(1))) {
-    raise_error << maybe(Recipe[r].name) << "'jump-unless' requires a label or offset for its second ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'jump-unless' requires a label or offset for its second ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;

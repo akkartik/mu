@@ -7,14 +7,14 @@
 :(before "End Mu Types Initialization")
 //: We'll use this container as a running example, with two number elements.
 {
-type_ordinal tmp = Type_ordinal["number-or-point"] = Next_type_ordinal++;
-Type[tmp].size = 2;
-Type[tmp].kind = EXCLUSIVE_CONTAINER;
-Type[tmp].name = "number-or-point";
-Type[tmp].elements.push_back(new type_tree(number));
-Type[tmp].element_names.push_back("i");
-Type[tmp].elements.push_back(new type_tree(point));
-Type[tmp].element_names.push_back("p");
+type_ordinal tmp = put(Type_ordinal, "number-or-point", Next_type_ordinal++);
+get(Type, tmp).size = 2;
+get(Type, tmp).kind = EXCLUSIVE_CONTAINER;
+get(Type, tmp).name = "number-or-point";
+get(Type, tmp).elements.push_back(new type_tree(number));
+get(Type, tmp).element_names.push_back("i");
+get(Type, tmp).elements.push_back(new type_tree(point));
+get(Type, tmp).element_names.push_back("p");
 }
 
 //: Tests in this layer often explicitly setup memory before reading it as an
@@ -53,7 +53,7 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
 //: 'maybe-convert' requires a literal in ingredient 1. We'll use a synonym
 //: called 'variant'.
 :(before "End Mu Types Initialization")
-Type_ordinal["variant"] = 0;
+put(Type_ordinal, "variant", 0);
 
 :(scenario maybe_convert)
 recipe main [
@@ -76,21 +76,21 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 MAYBE_CONVERT,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["maybe-convert"] = MAYBE_CONVERT;
+put(Recipe_ordinal, "maybe-convert", MAYBE_CONVERT);
 :(before "End Primitive Recipe Checks")
 case MAYBE_CONVERT: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "'maybe-convert' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'maybe-convert' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
   canonize_type(base);
-  if (!base.type || !base.type->value || Type[base.type->value].kind != EXCLUSIVE_CONTAINER) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
+  if (!base.type || !base.type->value || get(Type, base.type->value).kind != EXCLUSIVE_CONTAINER) {
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1))) {
-    raise_error << maybe(Recipe[r].name) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -106,7 +106,7 @@ case MAYBE_CONVERT: {
   }
   long long int tag = current_instruction().ingredients.at(1).value;
   long long int result;
-  if (tag == static_cast<long long int>(Memory[base_address])) {
+  if (tag == static_cast<long long int>(get_or_insert(Memory, base_address))) {
     result = base_address+1;
   }
   else {
@@ -160,7 +160,7 @@ if (current_instruction().operation == MERGE
     && current_instruction().products.at(0).type) {
   reagent x = current_instruction().products.at(0);
   canonize(x);
-  if (Type[x.type->value].kind == EXCLUSIVE_CONTAINER) {
+  if (get(Type, x.type->value).kind == EXCLUSIVE_CONTAINER) {
     return size_of(x) < SIZE(data);
   }
 }

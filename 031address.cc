@@ -48,15 +48,15 @@ void canonize(reagent& x) {
 }
 
 void lookup_memory(reagent& x) {
-  if (!x.type || x.type->value != Type_ordinal["address"]) {
+  if (!x.type || x.type->value != get(Type_ordinal, "address")) {
     raise_error << maybe(current_recipe_name()) << "tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
   }
   // compute value
   if (x.value == 0) {
     raise_error << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
   }
-  trace(9999, "mem") << "location " << x.value << " is " << no_scientific(Memory[x.value]) << end();
-  x.set_value(Memory[x.value]);
+  trace(9999, "mem") << "location " << x.value << " is " << no_scientific(get_or_insert(Memory, x.value)) << end();
+  x.set_value(get_or_insert(Memory, x.value));
   drop_address_from_type(x);
   drop_one_lookup(x);
 }
@@ -77,7 +77,7 @@ void lookup_memory(reagent& x) {
 :(code)
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
-    if (!r.type || r.type->value != Type_ordinal["address"]) {
+    if (!r.type || r.type->value != get(Type_ordinal, "address")) {
       raise_error << "can't lookup non-address: " << r.original_string << '\n' << end();
       return false;
     }
@@ -184,12 +184,12 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 _DUMP,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$dump"] = _DUMP;
+put(Recipe_ordinal, "$dump", _DUMP);
 :(before "End Primitive Recipe Implementations")
 case _DUMP: {
   reagent after_canonize = current_instruction().ingredients.at(0);
   canonize(after_canonize);
-  cerr << maybe(current_recipe_name()) << current_instruction().ingredients.at(0).name << ' ' << no_scientific(current_instruction().ingredients.at(0).value) << " => " << no_scientific(after_canonize.value) << " => " << no_scientific(Memory[after_canonize.value]) << '\n';
+  cerr << maybe(current_recipe_name()) << current_instruction().ingredients.at(0).name << ' ' << no_scientific(current_instruction().ingredients.at(0).value) << " => " << no_scientific(after_canonize.value) << " => " << no_scientific(get_or_insert(Memory, after_canonize.value)) << '\n';
   break;
 }
 
@@ -200,11 +200,11 @@ long long int foo = -1;
 :(before "End Primitive Recipe Declarations")
 _FOO,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$foo"] = _FOO;
+put(Recipe_ordinal, "$foo", _FOO);
 :(before "End Primitive Recipe Implementations")
 case _FOO: {
   if (current_instruction().ingredients.empty()) {
-    if (foo != -1) cerr << foo << ": " << no_scientific(Memory[foo]) << '\n';
+    if (foo != -1) cerr << foo << ": " << no_scientific(get_or_insert(Memory, foo)) << '\n';
     else cerr << '\n';
   }
   else {

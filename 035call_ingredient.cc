@@ -43,11 +43,11 @@ for (long long int i = 0; i < SIZE(ingredient_types); ++i) {
 :(before "End Primitive Recipe Declarations")
 NEXT_INGREDIENT,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["next-ingredient"] = NEXT_INGREDIENT;
+put(Recipe_ordinal, "next-ingredient", NEXT_INGREDIENT);
 :(before "End Primitive Recipe Checks")
 case NEXT_INGREDIENT: {
   if (!inst.ingredients.empty()) {
-    raise_error << maybe(Recipe[r].name) << "'next-ingredient' didn't expect any ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'next-ingredient' didn't expect any ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   break;
@@ -113,7 +113,7 @@ recipe f [
 :(before "End Primitive Recipe Declarations")
 REWIND_INGREDIENTS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["rewind-ingredients"] = REWIND_INGREDIENTS;
+put(Recipe_ordinal, "rewind-ingredients", REWIND_INGREDIENTS);
 :(before "End Primitive Recipe Checks")
 case REWIND_INGREDIENTS: {
   break;
@@ -138,15 +138,15 @@ recipe f [
 :(before "End Primitive Recipe Declarations")
 INGREDIENT,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["ingredient"] = INGREDIENT;
+put(Recipe_ordinal, "ingredient", INGREDIENT);
 :(before "End Primitive Recipe Checks")
 case INGREDIENT: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(Recipe[r].name) << "'ingredient' expects exactly one ingredient, but got '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'ingredient' expects exactly one ingredient, but got '" << inst.to_string() << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(0)) && !is_mu_number(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "'ingredient' expects a literal ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'ingredient' expects a literal ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;

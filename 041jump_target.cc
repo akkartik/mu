@@ -16,7 +16,7 @@ recipe main [
 -mem: storing 0 in location 1
 
 :(before "End Mu Types Initialization")
-Type_ordinal["label"] = 0;
+put(Type_ordinal, "label", 0);
 
 :(before "Transform.push_back(transform_braces)")
 Transform.push_back(transform_labels);
@@ -24,21 +24,21 @@ Transform.push_back(transform_labels);
 :(code)
 void transform_labels(const recipe_ordinal r) {
   map<string, long long int> offset;
-  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
-    const instruction& inst = Recipe[r].steps.at(i);
+  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+    const instruction& inst = get(Recipe, r).steps.at(i);
     if (!inst.label.empty() && inst.label.at(0) == '+') {
       if (offset.find(inst.label) == offset.end()) {
         offset[inst.label] = i;
       }
       else {
-        raise_error << maybe(Recipe[r].name) << "duplicate label '" << inst.label << "'" << end();
+        raise_error << maybe(get(Recipe, r).name) << "duplicate label '" << inst.label << "'" << end();
         // have all jumps skip some random but noticeable and deterministic amount of code
         offset[inst.label] = 9999;
       }
     }
   }
-  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
-    instruction& inst = Recipe[r].steps.at(i);
+  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+    instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.name == "jump") {
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
@@ -60,19 +60,19 @@ void transform_labels(const recipe_ordinal r) {
 :(code)
 void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, const long long int current_offset, const recipe_ordinal r) {
   if (!is_literal(x)) {
-    raise_error << maybe(Recipe[r].name) << "jump target must be offset or label but is " << x.original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "jump target must be offset or label but is " << x.original_string << '\n' << end();
     x.set_value(0);  // no jump by default
     return;
   }
   assert(!x.initialized);
   if (is_integer(x.name)) return;  // non-labels will be handled like other number operands
   if (!is_jump_target(x.name)) {
-    raise_error << maybe(Recipe[r].name) << "can't jump to label " << x.name << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "can't jump to label " << x.name << '\n' << end();
     x.set_value(0);  // no jump by default
     return;
   }
   if (offset.find(x.name) == offset.end()) {
-    raise_error << maybe(Recipe[r].name) << "can't find label " << x.name << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "can't find label " << x.name << '\n' << end();
     x.set_value(0);  // no jump by default
     return;
   }

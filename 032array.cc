@@ -16,30 +16,30 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 CREATE_ARRAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["create-array"] = CREATE_ARRAY;
+put(Recipe_ordinal, "create-array", CREATE_ARRAY);
 :(before "End Primitive Recipe Checks")
 case CREATE_ARRAY: {
   if (inst.products.empty()) {
-    raise_error << maybe(Recipe[r].name) << "'create-array' needs one product and no ingredients but got '" << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'create-array' needs one product and no ingredients but got '" << inst.to_string() << '\n' << end();
     break;
   }
   reagent product = inst.products.at(0);
   canonize_type(product);
   if (!is_mu_array(product)) {
-    raise_error << maybe(Recipe[r].name) << "'create-array' cannot create non-array " << product.original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'create-array' cannot create non-array " << product.original_string << '\n' << end();
     break;
   }
   if (!product.type->right) {
-    raise_error << maybe(Recipe[r].name) << "create array of what? " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "create array of what? " << inst.to_string() << '\n' << end();
     break;
   }
   // 'create-array' will need to check properties rather than types
   if (!product.properties.at(0).second || !product.properties.at(0).second->right || !product.properties.at(0).second->right->right) {
-    raise_error << maybe(Recipe[r].name) << "create array of what size? " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "create array of what size? " << inst.to_string() << '\n' << end();
     break;
   }
   if (!is_integer(product.properties.at(0).second->right->right->value)) {
-    raise_error << maybe(Recipe[r].name) << "'create-array' product should specify size of array after its element type, but got " << product.properties.at(0).second->right->right->value << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'create-array' product should specify size of array after its element type, but got " << product.properties.at(0).second->right->right->value << '\n' << end();
     break;
   }
   break;
@@ -51,12 +51,12 @@ case CREATE_ARRAY: {
   long long int base_address = product.value;
   long long int array_size = to_integer(product.properties.at(0).second->right->right->value);
   // initialize array size, so that size_of will work
-  Memory[base_address] = array_size;  // in array elements
+  put(Memory, base_address, array_size);  // in array elements
   long long int size = size_of(product);  // in locations
   trace(9998, "run") << "creating array of size " << size << '\n' << end();
   // initialize array
   for (long long int i = 1; i <= size_of(product); ++i) {
-    Memory[base_address+i] = 0;
+    put(Memory, base_address+i, 0);
   }
   // dummy product; doesn't actually do anything
   products.resize(1);
@@ -105,15 +105,15 @@ recipe main [
 
 //: disable the size mismatch check since the destination array need not be initialized
 :(before "End size_mismatch(x) Cases")
-if (x.type && x.type->value == Type_ordinal["array"]) return false;
+if (x.type && x.type->value == get(Type_ordinal, "array")) return false;
 :(before "End size_of(reagent) Cases")
-if (r.type && r.type->value == Type_ordinal["array"]) {
+if (r.type && r.type->value == get(Type_ordinal, "array")) {
   if (!r.type->right) {
     raise_error << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
     return 1;
   }
   // skip the 'array' type to get at the element type
-  return 1 + Memory[r.value]*size_of(array_element(r.type));
+  return 1 + get_or_insert(Memory, r.value)*size_of(array_element(r.type));
 }
 
 //:: To access elements of an array, use 'index'
@@ -142,17 +142,17 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 INDEX,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["index"] = INDEX;
+put(Recipe_ordinal, "index", INDEX);
 :(before "End Primitive Recipe Checks")
 case INDEX: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "'index' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'index' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
   canonize_type(base);
   if (!is_mu_array(base)) {
-    raise_error << maybe(Recipe[r].name) << "'index' on a non-array " << base.original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'index' on a non-array " << base.original_string << '\n' << end();
     break;
   }
   if (inst.products.empty()) break;
@@ -161,7 +161,7 @@ case INDEX: {
   reagent element;
   element.type = new type_tree(*array_element(base.type));
   if (!types_match(product, element)) {
-    raise_error << maybe(Recipe[r].name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
   }
   break;
@@ -179,13 +179,13 @@ case INDEX: {
   canonize(offset);
   vector<double> offset_val(read_memory(offset));
   type_tree* element_type = array_element(base.type);
-  if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
+  if (offset_val.at(0) < 0 || offset_val.at(0) >= get_or_insert(Memory, base_address)) {
     raise_error << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
   }
   long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
   trace(9998, "run") << "address to copy is " << src << end();
-  trace(9998, "run") << "its type is " << Type[element_type->value].name << end();
+  trace(9998, "run") << "its type is " << get(Type, element_type->value).name << end();
   reagent tmp;
   tmp.set_value(src);
   tmp.type = new type_tree(*element_type);
@@ -269,17 +269,17 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 INDEX_ADDRESS,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["index-address"] = INDEX_ADDRESS;
+put(Recipe_ordinal, "index-address", INDEX_ADDRESS);
 :(before "End Primitive Recipe Checks")
 case INDEX_ADDRESS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "'index-address' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'index-address' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
   canonize_type(base);
   if (!is_mu_array(base)) {
-    raise_error << maybe(Recipe[r].name) << "'index-address' on a non-array " << base.original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'index-address' on a non-array " << base.original_string << '\n' << end();
     break;
   }
   if (inst.products.empty()) break;
@@ -287,9 +287,9 @@ case INDEX_ADDRESS: {
   canonize_type(product);
   reagent element;
   element.type = new type_tree(*array_element(base.type));
-  element.type = new type_tree(Type_ordinal["address"], element.type);
+  element.type = new type_tree(get(Type_ordinal, "address"), element.type);
   if (!types_match(product, element)) {
-    raise_error << maybe(Recipe[r].name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
   }
   break;
@@ -307,7 +307,7 @@ case INDEX_ADDRESS: {
   canonize(offset);
   vector<double> offset_val(read_memory(offset));
   type_tree* element_type = array_element(base.type);
-  if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
+  if (offset_val.at(0) < 0 || offset_val.at(0) >= get_or_insert(Memory, base_address)) {
     raise_error << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
   }
@@ -377,11 +377,11 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 LENGTH,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["length"] = LENGTH;
+put(Recipe_ordinal, "length", LENGTH);
 :(before "End Primitive Recipe Checks")
 case LENGTH: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(Recipe[r].name) << "'length' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'length' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent x = inst.ingredients.at(0);
@@ -401,7 +401,7 @@ case LENGTH: {
     break;
   }
   products.resize(1);
-  products.at(0).push_back(Memory[x.value]);
+  products.at(0).push_back(get_or_insert(Memory, x.value));
   break;
 }
 

@@ -48,20 +48,20 @@ long long int slurp_recipe(istream& in) {
     raise_error << "empty result.name\n" << end();
   trace(9991, "parse") << "--- defining " << result.name << end();
   if (Recipe_ordinal.find(result.name) == Recipe_ordinal.end()) {
-    Recipe_ordinal[result.name] = Next_recipe_ordinal++;
+    put(Recipe_ordinal, result.name, Next_recipe_ordinal++);
   }
-  if (Recipe.find(Recipe_ordinal[result.name]) != Recipe.end()) {
+  if (Recipe.find(get(Recipe_ordinal, result.name)) != Recipe.end()) {
     trace(9991, "parse") << "already exists" << end();
     if (warn_on_redefine(result.name))
       raise << "redefining recipe " << result.name << "\n" << end();
-    Recipe.erase(Recipe_ordinal[result.name]);
+    Recipe.erase(get(Recipe_ordinal, result.name));
   }
   slurp_body(in, result);
   // End recipe Body(result)
-  Recipe[Recipe_ordinal[result.name]] = result;
+  get(Recipe, get(Recipe_ordinal, result.name)) = result;
   // track added recipes because we may need to undo them in tests; see below
-  recently_added_recipes.push_back(Recipe_ordinal[result.name]);
-  return Recipe_ordinal[result.name];
+  recently_added_recipes.push_back(get(Recipe_ordinal, result.name));
+  return get(Recipe_ordinal, result.name);
 }
 
 void slurp_body(istream& in, recipe& result) {
@@ -243,7 +243,7 @@ long long int Reserved_for_tests = 1000;
 :(before "End Setup")
 for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
   if (recently_added_recipes.at(i) >= Reserved_for_tests)  // don't renumber existing recipes, like 'interactive'
-    Recipe_ordinal.erase(Recipe[recently_added_recipes.at(i)].name);
+    Recipe_ordinal.erase(get(Recipe, recently_added_recipes.at(i)).name);
   Recipe.erase(recently_added_recipes.at(i));
 }
 // Clear Other State For recently_added_recipes

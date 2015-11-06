@@ -9,7 +9,7 @@ bool Autodisplay = true;
 :(before "End Primitive Recipe Declarations")
 OPEN_CONSOLE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["open-console"] = OPEN_CONSOLE;
+put(Recipe_ordinal, "open-console", OPEN_CONSOLE);
 :(before "End Primitive Recipe Checks")
 case OPEN_CONSOLE: {
   break;
@@ -31,7 +31,7 @@ case OPEN_CONSOLE: {
 :(before "End Primitive Recipe Declarations")
 CLOSE_CONSOLE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["close-console"] = CLOSE_CONSOLE;
+put(Recipe_ordinal, "close-console", CLOSE_CONSOLE);
 :(before "End Primitive Recipe Checks")
 case CLOSE_CONSOLE: {
   break;
@@ -48,7 +48,7 @@ tb_shutdown();
 :(before "End Primitive Recipe Declarations")
 CLEAR_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["clear-display"] = CLEAR_DISPLAY;
+put(Recipe_ordinal, "clear-display", CLEAR_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case CLEAR_DISPLAY: {
   break;
@@ -63,7 +63,7 @@ case CLEAR_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 SYNC_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["sync-display"] = SYNC_DISPLAY;
+put(Recipe_ordinal, "sync-display", SYNC_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case SYNC_DISPLAY: {
   break;
@@ -77,7 +77,7 @@ case SYNC_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 CLEAR_LINE_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["clear-line-on-display"] = CLEAR_LINE_ON_DISPLAY;
+put(Recipe_ordinal, "clear-line-on-display", CLEAR_LINE_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case CLEAR_LINE_ON_DISPLAY: {
   break;
@@ -96,26 +96,26 @@ case CLEAR_LINE_ON_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 PRINT_CHARACTER_TO_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["print-character-to-display"] = PRINT_CHARACTER_TO_DISPLAY;
+put(Recipe_ordinal, "print-character-to-display", PRINT_CHARACTER_TO_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case PRINT_CHARACTER_TO_DISPLAY: {
   if (inst.ingredients.empty()) {
-    raise_error << maybe(Recipe[r].name) << "'print-character-to-display' requires at least one ingredient, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'print-character-to-display' requires at least one ingredient, but got " << inst.to_string() << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'print-character-to-display' should be a character, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'print-character-to-display' should be a character, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (SIZE(inst.ingredients) > 1) {
     if (!is_mu_number(inst.ingredients.at(1))) {
-      raise_error << maybe(Recipe[r].name) << "second ingredient of 'print-character-to-display' should be a foreground color number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+      raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'print-character-to-display' should be a foreground color number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
       break;
     }
   }
   if (SIZE(inst.ingredients) > 2) {
     if (!is_mu_number(inst.ingredients.at(2))) {
-      raise_error << maybe(Recipe[r].name) << "third ingredient of 'print-character-to-display' should be a background color number, but got " << inst.ingredients.at(2).original_string << '\n' << end();
+      raise_error << maybe(get(Recipe, r).name) << "third ingredient of 'print-character-to-display' should be a background color number, but got " << inst.ingredients.at(2).original_string << '\n' << end();
       break;
     }
   }
@@ -166,7 +166,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 CURSOR_POSITION_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["cursor-position-on-display"] = CURSOR_POSITION_ON_DISPLAY;
+put(Recipe_ordinal, "cursor-position-on-display", CURSOR_POSITION_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case CURSOR_POSITION_ON_DISPLAY: {
   break;
@@ -182,19 +182,19 @@ case CURSOR_POSITION_ON_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 MOVE_CURSOR_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
+put(Recipe_ordinal, "move-cursor-on-display", MOVE_CURSOR_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case MOVE_CURSOR_ON_DISPLAY: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(Recipe[r].name) << "'move-cursor-on-display' requires two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'move-cursor-on-display' requires two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise_error << maybe(Recipe[r].name) << "first ingredient of 'move-cursor-on-display' should be a row number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'move-cursor-on-display' should be a row number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(1))) {
-    raise_error << maybe(Recipe[r].name) << "second ingredient of 'move-cursor-on-display' should be a column number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'move-cursor-on-display' should be a column number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -211,7 +211,7 @@ case MOVE_CURSOR_ON_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 MOVE_CURSOR_DOWN_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["move-cursor-down-on-display"] = MOVE_CURSOR_DOWN_ON_DISPLAY;
+put(Recipe_ordinal, "move-cursor-down-on-display", MOVE_CURSOR_DOWN_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case MOVE_CURSOR_DOWN_ON_DISPLAY: {
   break;
@@ -231,7 +231,7 @@ case MOVE_CURSOR_DOWN_ON_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 MOVE_CURSOR_UP_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["move-cursor-up-on-display"] = MOVE_CURSOR_UP_ON_DISPLAY;
+put(Recipe_ordinal, "move-cursor-up-on-display", MOVE_CURSOR_UP_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case MOVE_CURSOR_UP_ON_DISPLAY: {
   break;
@@ -249,7 +249,7 @@ case MOVE_CURSOR_UP_ON_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 MOVE_CURSOR_RIGHT_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["move-cursor-right-on-display"] = MOVE_CURSOR_RIGHT_ON_DISPLAY;
+put(Recipe_ordinal, "move-cursor-right-on-display", MOVE_CURSOR_RIGHT_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
   break;
@@ -269,7 +269,7 @@ case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 MOVE_CURSOR_LEFT_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["move-cursor-left-on-display"] = MOVE_CURSOR_LEFT_ON_DISPLAY;
+put(Recipe_ordinal, "move-cursor-left-on-display", MOVE_CURSOR_LEFT_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case MOVE_CURSOR_LEFT_ON_DISPLAY: {
   break;
@@ -287,7 +287,7 @@ case MOVE_CURSOR_LEFT_ON_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 DISPLAY_WIDTH,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["display-width"] = DISPLAY_WIDTH;
+put(Recipe_ordinal, "display-width", DISPLAY_WIDTH);
 :(before "End Primitive Recipe Checks")
 case DISPLAY_WIDTH: {
   break;
@@ -302,7 +302,7 @@ case DISPLAY_WIDTH: {
 :(before "End Primitive Recipe Declarations")
 DISPLAY_HEIGHT,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["display-height"] = DISPLAY_HEIGHT;
+put(Recipe_ordinal, "display-height", DISPLAY_HEIGHT);
 :(before "End Primitive Recipe Checks")
 case DISPLAY_HEIGHT: {
   break;
@@ -317,7 +317,7 @@ case DISPLAY_HEIGHT: {
 :(before "End Primitive Recipe Declarations")
 HIDE_CURSOR_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["hide-cursor-on-display"] = HIDE_CURSOR_ON_DISPLAY;
+put(Recipe_ordinal, "hide-cursor-on-display", HIDE_CURSOR_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case HIDE_CURSOR_ON_DISPLAY: {
   break;
@@ -331,7 +331,7 @@ case HIDE_CURSOR_ON_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 SHOW_CURSOR_ON_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["show-cursor-on-display"] = SHOW_CURSOR_ON_DISPLAY;
+put(Recipe_ordinal, "show-cursor-on-display", SHOW_CURSOR_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case SHOW_CURSOR_ON_DISPLAY: {
   break;
@@ -345,7 +345,7 @@ case SHOW_CURSOR_ON_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 HIDE_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["hide-display"] = HIDE_DISPLAY;
+put(Recipe_ordinal, "hide-display", HIDE_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case HIDE_DISPLAY: {
   break;
@@ -359,7 +359,7 @@ case HIDE_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 SHOW_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["show-display"] = SHOW_DISPLAY;
+put(Recipe_ordinal, "show-display", SHOW_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case SHOW_DISPLAY: {
   break;
@@ -376,7 +376,7 @@ case SHOW_DISPLAY: {
 :(before "End Primitive Recipe Declarations")
 WAIT_FOR_SOME_INTERACTION,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["wait-for-some-interaction"] = WAIT_FOR_SOME_INTERACTION;
+put(Recipe_ordinal, "wait-for-some-interaction", WAIT_FOR_SOME_INTERACTION);
 :(before "End Primitive Recipe Checks")
 case WAIT_FOR_SOME_INTERACTION: {
   break;
@@ -391,7 +391,7 @@ case WAIT_FOR_SOME_INTERACTION: {
 :(before "End Primitive Recipe Declarations")
 CHECK_FOR_INTERACTION,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["check-for-interaction"] = CHECK_FOR_INTERACTION;
+put(Recipe_ordinal, "check-for-interaction", CHECK_FOR_INTERACTION);
 :(before "End Primitive Recipe Checks")
 case CHECK_FOR_INTERACTION: {
   break;
@@ -458,7 +458,7 @@ case CHECK_FOR_INTERACTION: {
 :(before "End Primitive Recipe Declarations")
 INTERACTIONS_LEFT,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["interactions-left?"] = INTERACTIONS_LEFT;
+put(Recipe_ordinal, "interactions-left?", INTERACTIONS_LEFT);
 :(before "End Primitive Recipe Checks")
 case INTERACTIONS_LEFT: {
   break;
@@ -475,7 +475,7 @@ case INTERACTIONS_LEFT: {
 :(before "End Primitive Recipe Declarations")
 CLEAR_DISPLAY_FROM,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["clear-display-from"] = CLEAR_DISPLAY_FROM;
+put(Recipe_ordinal, "clear-display-from", CLEAR_DISPLAY_FROM);
 :(before "End Primitive Recipe Checks")
 case CLEAR_DISPLAY_FROM: {
   break;
