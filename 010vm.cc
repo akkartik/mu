@@ -275,6 +275,8 @@ type_tree* new_type_tree(const string_tree* properties) {
     const string& type_name = properties->value;
     if (contains_key(Type_ordinal, type_name))
       result->value = get(Type_ordinal, type_name);
+    else
+      result->value = -1;
   }
   result->left = new_type_tree(properties->left);
   result->right = new_type_tree(properties->right);

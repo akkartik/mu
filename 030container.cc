@@ -83,6 +83,10 @@ recipe main [
 +mem: storing 0 in location 7
 
 :(before "End size_of(type) Cases")
+if (type->value == -1) {
+  // error value, but we'll raise it elsewhere
+  return 1;
+}
 if (type->value == 0) {
   assert(!type->left && !type->right);
   return 1;
@@ -458,6 +462,7 @@ vector<type_ordinal> recently_added_types;
 recently_added_types.clear();
 :(before "End Setup")  //: for tests
 for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
+  if (!contains_key(Type, recently_added_types.at(i))) continue;
   Type_ordinal.erase(get(Type, recently_added_types.at(i)).name);
   // todo: why do I explicitly need to provide this?
   for (long long int j = 0; j < SIZE(Type.at(recently_added_types.at(i)).elements); ++j) {
@@ -530,11 +535,14 @@ void check_invalid_types(const recipe_ordinal r) {
 void check_invalid_types(const type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
   // End Container Type Checks
-  if (type->value && (!contains_key(Type, type->value) || get(Type, type->value).name.empty())) {
-    raise_error << block << "unknown type in " << name << '\n' << end();
+  if (type->value == 0) {
+    assert(!type->left && !type->right);
+    return;
   }
-  if (type->left) check_invalid_types(type->left, block, name);
-  if (type->right) check_invalid_types(type->right, block, name);
+  if (!contains_key(Type, type->value))
+    raise_error << block << "unknown type in " << name << '\n' << end();
+  check_invalid_types(type->left, block, name);
+  check_invalid_types(type->right, block, name);
 }
 
 :(scenario container_unknown_field)
