@@ -41,11 +41,11 @@ void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_n
   // if you use raw locations you're probably doing something unsafe
   if (is_integer(x.name)) return;
   if (!x.type) return;  // will throw a more precise error elsewhere
-  if (type.find(x.name) == type.end()) {
+  if (!contains_key(type, x.name)) {
     trace(9992, "transform") << x.name << " => " << dump_types(x) << end();
     type[x.name] = x.type;
   }
-  if (type_name.find(x.name) == type_name.end()) {
+  if (!contains_key(type_name, x.name)) {
     type_name[x.name] = x.properties.at(0).second;
   }
   if (!types_match(type[x.name], x.type))
@@ -61,7 +61,7 @@ recipe main [
 :(code)
 void deduce_missing_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, reagent& x) {
   if (x.type) return;
-  if (type.find(x.name) == type.end()) return;
+  if (!contains_key(type, x.name)) return;
   x.type = new type_tree(*type[x.name]);
   trace(9992, "transform") << x.name << " <= " << dump_types(x) << end();
   assert(!x.properties.at(0).second);

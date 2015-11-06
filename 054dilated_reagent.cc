@@ -84,7 +84,7 @@ if (s.at(0) == '{') {
   // structures for the first row of properties
   name = properties.at(0).first;
   string type_name = properties.at(0).second->value;
-  if (Type_ordinal.find(type_name) == Type_ordinal.end()) {
+  if (!contains_key(Type_ordinal, type_name)) {
       // this type can't be an integer literal
     put(Type_ordinal, type_name, Next_type_ordinal++);
   }

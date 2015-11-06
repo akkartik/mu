@@ -189,7 +189,7 @@ case GET: {
 :(code)
 const reagent element_type(const reagent& canonized_base, long long int offset_value) {
   assert(offset_value >= 0);
-  assert(Type.find(canonized_base.type->value) != Type.end());
+  assert(contains_key(Type, canonized_base.type->value));
   assert(!get(Type, canonized_base.type->value).name.empty());
   const type_info& info = get(Type, canonized_base.type->value);
   assert(info.kind == CONTAINER);
@@ -390,7 +390,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   string name = next_word(in);
   // End container Name Refinements
   trace(9991, "parse") << "--- defining " << command << ' ' << name << end();
-  if (Type_ordinal.find(name) == Type_ordinal.end()
+  if (!contains_key(Type_ordinal, name)
       || get(Type_ordinal, name) == 0) {
     put(Type_ordinal, name, Next_type_ordinal++);
   }
@@ -412,7 +412,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     for (type_tree** curr_type = &new_type; !inner.eof(); curr_type = &(*curr_type)->right) {
       string type_name = slurp_until(inner, ':');
       // End insert_container Special Uses(type_name)
-      if (Type_ordinal.find(type_name) == Type_ordinal.end()
+      if (!contains_key(Type_ordinal, type_name)
           // types can contain integers, like for array sizes
           && !is_integer(type_name)) {
         put(Type_ordinal, type_name, Next_type_ordinal++);
@@ -530,7 +530,7 @@ void check_invalid_types(const recipe_ordinal r) {
 void check_invalid_types(const type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
   // End Container Type Checks
-  if (type->value && (Type.find(type->value) == Type.end() || get(Type, type->value).name.empty())) {
+  if (type->value && (!contains_key(Type, type->value) || get(Type, type->value).name.empty())) {
     raise_error << block << "unknown type in " << name << '\n' << end();
   }
   if (type->left) check_invalid_types(type->left, block, name);

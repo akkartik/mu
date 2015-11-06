@@ -96,13 +96,18 @@ template<typename T> typename T::mapped_type& get(T& map, typename T::key_type c
   assert(iter != map.end());
   return iter->second;
 }
-template<typename T> typename T::mapped_type& get_or_insert(T& map, typename T::key_type const& key) {
-  return map[key];
-}
 template<typename T> typename T::mapped_type const& put(T& map, typename T::key_type const& key, typename T::mapped_type const& value) {
   map[key] = value;
   return map[key];
 }
+template<typename T> bool contains_key(T& map, typename T::key_type const& key) {
+  return map.find(key) != map.end();
+}
+template<typename T> typename T::mapped_type& get_or_insert(T& map, typename T::key_type const& key) {
+  return map[key];
+}
+//: The contract: any container that relies on get_or_insert should never call
+//: contains_key.
 
 :(before "End Includes")
 #include<assert.h>

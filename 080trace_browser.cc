@@ -78,7 +78,7 @@ void start_trace_browser() {
       for (int screen_row = tb_height(); screen_row > 0 && Top_of_screen > 0; --screen_row) {
         --Top_of_screen;
         if (Top_of_screen <= 0) break;
-        while (Top_of_screen > 0 && Visible.find(Top_of_screen) == Visible.end())
+        while (Top_of_screen > 0 && !contains_key(Visible, Top_of_screen))
           --Top_of_screen;
       }
       if (Top_of_screen > 0)
@@ -90,7 +90,7 @@ void start_trace_browser() {
       for (int screen_row = tb_height(); screen_row > 0 && Top_of_screen > 0; --screen_row) {
         --Top_of_screen;
         if (Top_of_screen <= 0) break;
-        while (Top_of_screen > 0 && Visible.find(Top_of_screen) == Visible.end())
+        while (Top_of_screen > 0 && !contains_key(Visible, Top_of_screen))
           --Top_of_screen;
       }
       refresh_screen_rows();
@@ -100,13 +100,13 @@ void start_trace_browser() {
     }
     if (key == TB_KEY_CARRIAGE_RETURN) {
       // expand lines under current by one level
-      assert(Trace_index.find(Display_row) != Trace_index.end());
+      assert(contains_key(Trace_index, Display_row));
       long long int start_index = Trace_index[Display_row];
       long long int index = 0;
       // simultaneously compute end_index and min_depth
       int min_depth = 9999;
       for (index = start_index+1; index < SIZE(Trace_stream->past_lines); ++index) {
-        if (Visible.find(index) != Visible.end()) break;
+        if (contains_key(Visible, index)) break;
         trace_line& curr_line = Trace_stream->past_lines.at(index);
         if (curr_line.depth == 0) continue;
         assert(curr_line.depth > Trace_stream->past_lines.at(start_index).depth);
@@ -124,13 +124,13 @@ void start_trace_browser() {
     }
     if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
       // collapse all lines under current
-      assert(Trace_index.find(Display_row) != Trace_index.end());
+      assert(contains_key(Trace_index, Display_row));
       long long int start_index = Trace_index[Display_row];
       long long int index = 0;
       // end_index is the next line at a depth same as or lower than start_index
       int initial_depth = Trace_stream->past_lines.at(start_index).depth;
       for (index = start_index+1; index < SIZE(Trace_stream->past_lines); ++index) {
-        if (Visible.find(index) == Visible.end()) continue;
+        if (!contains_key(Visible, index)) continue;
         trace_line& curr_line = Trace_stream->past_lines.at(index);
         if (curr_line.depth == 0) continue;
         if (curr_line.depth <= initial_depth) break;
@@ -152,7 +152,7 @@ void refresh_screen_rows() {
   Trace_index.clear();
   for (screen_row = 0, index = Top_of_screen; screen_row < tb_height() && index < SIZE(Trace_stream->past_lines); ++screen_row, ++index) {
     // skip lines without depth for now
-    while (Visible.find(index) == Visible.end()) {
+    while (!contains_key(Visible, index)) {
       ++index;
       if (index >= SIZE(Trace_stream->past_lines)) goto done;
     }
@@ -165,7 +165,7 @@ done:;
 void render() {
   long long int screen_row = 0;
   for (screen_row = 0; screen_row < tb_height(); ++screen_row) {
-    if (Trace_index.find(screen_row) == Trace_index.end()) break;
+    if (!contains_key(Trace_index, screen_row)) break;
     trace_line& curr_line = Trace_stream->past_lines.at(Trace_index[screen_row]);
     ostringstream out;
     out << std::setw(4) << curr_line.depth << ' ' << curr_line.label << ": " << curr_line.contents;
@@ -189,8 +189,8 @@ void render() {
 }
 
 long long int lines_hidden(long long int screen_row) {
-  assert(Trace_index.find(screen_row) != Trace_index.end());
-  if (Trace_index.find(screen_row+1) == Trace_index.end())
+  assert(contains_key(Trace_index, screen_row));
+  if (!contains_key(Trace_index, screen_row+1))
     return SIZE(Trace_stream->past_lines)-Trace_index[screen_row];
   else
     return Trace_index[screen_row+1] - Trace_index[screen_row];

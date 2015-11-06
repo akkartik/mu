@@ -74,7 +74,7 @@ else if (command == "scenario") {
 scenario parse_scenario(istream& in) {
   scenario result;
   result.name = next_word(in);
-  if (Scenario_names.find(result.name) != Scenario_names.end())
+  if (contains_key(Scenario_names, result.name))
     raise_error << "duplicate scenario name: " << result.name << '\n' << end();
   Scenario_names.insert(result.name);
   skip_whitespace_and_comments(in);
@@ -281,7 +281,7 @@ void check_memory(const string& s) {
     string _assign;  in >> _assign;  assert(_assign == "<-");
     skip_whitespace_and_comments(in);
     double value = 0;  in >> value;
-    if (locations_checked.find(address) != locations_checked.end())
+    if (contains_key(locations_checked, address))
       raise_error << "duplicate expectation for location " << address << '\n' << end();
     trace(9999, "run") << "checking location " << address << end();
     if (get_or_insert(Memory, address) != value) {

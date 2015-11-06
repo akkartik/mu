@@ -84,11 +84,11 @@ void insert_fragments(const recipe_ordinal r) {
       Fragments_used.insert(inst.label);
       ostringstream prefix;
       prefix << '+' << get(Recipe, r).name << '_' << pass << '_' << i;
-      if (Before_fragments.find(inst.label) != Before_fragments.end()) {
+      if (contains_key(Before_fragments, inst.label)) {
         append_fragment(result, Before_fragments[inst.label].steps, prefix.str());
       }
       result.push_back(inst);
-      if (After_fragments.find(inst.label) != After_fragments.end()) {
+      if (contains_key(After_fragments, inst.label)) {
         append_fragment(result, After_fragments[inst.label].steps, prefix.str());
       }
     }
@@ -113,7 +113,7 @@ void append_fragment(vector<instruction>& base, const vector<instruction>& patch
   for (long long int i = 0; i < SIZE(patch); ++i) {
     instruction inst = patch.at(i);
     if (inst.is_label) {
-      if (jump_targets.find(inst.label) != jump_targets.end())
+      if (contains_key(jump_targets, inst.label))
         inst.label = prefix+inst.label;
       base.push_back(inst);
       continue;
@@ -121,7 +121,7 @@ void append_fragment(vector<instruction>& base, const vector<instruction>& patch
     for (long long int j = 0; j < SIZE(inst.ingredients); ++j) {
       reagent& x = inst.ingredients.at(j);
       if (!is_literal(x)) continue;
-      if (x.properties.at(0).second->value == "label" && jump_targets.find(x.name) != jump_targets.end())
+      if (x.properties.at(0).second->value == "label" && contains_key(jump_targets, x.name))
         x.name = prefix+x.name;
     }
     base.push_back(inst);
@@ -142,11 +142,11 @@ void check_insert_fragments(unused recipe_ordinal) {
   if (Transform_check_insert_fragments_Ran) return;
   Transform_check_insert_fragments_Ran = true;
   for (map<string, recipe>::iterator p = Before_fragments.begin(); p != Before_fragments.end(); ++p) {
-    if (Fragments_used.find(p->first) == Fragments_used.end())
+    if (!contains_key(Fragments_used, p->first))
       raise_error << "could not locate insert before " << p->first << '\n' << end();
   }
   for (map<string, recipe>::iterator p = After_fragments.begin(); p != After_fragments.end(); ++p) {
-    if (Fragments_used.find(p->first) == Fragments_used.end())
+    if (!contains_key(Fragments_used, p->first))
       raise_error << "could not locate insert after " << p->first << '\n' << end();
   }
 }

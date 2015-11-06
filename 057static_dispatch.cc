@@ -28,7 +28,7 @@ for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin();
 }
 
 :(before "End Load Recipe Header(result)")
-if (Recipe_ordinal.find(result.name) != Recipe_ordinal.end()) {
+if (contains_key(Recipe_ordinal, result.name)) {
   if ((Recipe.find(get(Recipe_ordinal, result.name)) == Recipe.end()
           || get(Recipe, get(Recipe_ordinal, result.name)).has_header)
       && !header_already_exists(result)) {
@@ -113,7 +113,7 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
   for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
     instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.is_label) continue;
-    if (Recipe_variants.find(inst.name) == Recipe_variants.end()) continue;
+    if (!contains_key(Recipe_variants, inst.name)) continue;
     assert(!Recipe_variants[inst.name].empty());
     replace_best_variant(inst);
   }

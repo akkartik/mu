@@ -96,7 +96,7 @@ inline const instruction& to_instruction(const call& call) {
 
 :(after "Defined Recipe Checks")
 // not a primitive; check that it's present in the book of recipes
-if (Recipe.find(inst.operation) == Recipe.end()) {
+if (!contains_key(Recipe, inst.operation)) {
   raise_error << maybe(get(Recipe, r).name) << "undefined operation in '" << inst.to_string() << "'\n" << end();
   break;
 }
