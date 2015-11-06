@@ -80,7 +80,7 @@ bool disqualified(/*mutable*/ reagent& x, const instruction& inst, const string&
 }
 
 bool already_transformed(const reagent& r, const map<string, long long int>& names) {
-  return names.find(r.name) != names.end();
+  return contains_key(names, r.name);
 }
 
 long long int lookup_name(const reagent& r, const recipe_ordinal default_recipe) {

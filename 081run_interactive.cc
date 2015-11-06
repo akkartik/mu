@@ -69,7 +69,7 @@ Track_most_recent_products = false;
 // all warnings.
 // returns true if successfully called (no errors found during load and transform)
 bool run_interactive(long long int address) {
-  assert(Recipe_ordinal.find("interactive") != Recipe_ordinal.end() && get(Recipe_ordinal, "interactive") != 0);
+  assert(contains_key(Recipe_ordinal, "interactive") && get(Recipe_ordinal, "interactive") != 0);
   // try to sandbox the run as best you can
   // todo: test this
   if (!Current_scenario) {

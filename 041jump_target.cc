@@ -27,7 +27,7 @@ void transform_labels(const recipe_ordinal r) {
   for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     const instruction& inst = get(Recipe, r).steps.at(i);
     if (!inst.label.empty() && inst.label.at(0) == '+') {
-      if (offset.find(inst.label) == offset.end()) {
+      if (!contains_key(offset, inst.label)) {
         offset[inst.label] = i;
       }
       else {
@@ -71,7 +71,7 @@ void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, co
     x.set_value(0);  // no jump by default
     return;
   }
-  if (offset.find(x.name) == offset.end()) {
+  if (!contains_key(offset, x.name)) {
     raise_error << maybe(get(Recipe, r).name) << "can't find label " << x.name << '\n' << end();
     x.set_value(0);  // no jump by default
     return;

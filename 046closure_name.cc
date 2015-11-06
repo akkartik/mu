@@ -65,7 +65,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
       }
       if (s->right) raise_error << "slot 0 should have a single value in /names, but got " << inst.products.at(j).to_string() << '\n' << end();
       const string& surrounding_recipe_name = s->value;
-      if (Surrounding_space.find(r) != Surrounding_space.end()
+      if (contains_key(Surrounding_space, r)
           && Surrounding_space[r] != get(Recipe_ordinal, surrounding_recipe_name)) {
         raise_error << "recipe " << get(Recipe, r).name << " can have only one 'surrounding' recipe but has " << Recipe[Surrounding_space[r]].name << " and " << surrounding_recipe_name << '\n' << end();
         continue;
@@ -99,7 +99,7 @@ long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe)
 // recursively call transform_names on it.
 long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_ordinal>& done, vector<recipe_ordinal>& path) {
   if (!Name[r].empty()) return Name[r][x.name];
-  if (done.find(r) != done.end()) {
+  if (contains_key(done, r)) {
     raise_error << "can't compute address of " << x.to_string() << " because " << end();
     for (long long int i = 1; i < SIZE(path); ++i) {
       raise_error << path.at(i-1) << " requires computing names of " << path.at(i) << '\n' << end();
@@ -116,7 +116,7 @@ long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_o
 
 recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n) {
   if (n == 0) return r;
-  if (Surrounding_space.find(r) == Surrounding_space.end()) {
+  if (!contains_key(Surrounding_space, r)) {
     raise_error << "don't know surrounding recipe of " << get(Recipe, r).name << '\n' << end();
     return 0;
   }
@@ -135,5 +135,5 @@ bool already_transformed(const reagent& r, const map<string, long long int>& nam
     }
     if (p->value != "0") return true;
   }
-  return names.find(r.name) != names.end();
+  return contains_key(names, r.name);
 }

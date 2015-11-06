@@ -10,7 +10,7 @@ void update_instruction_operations(recipe_ordinal r) {
   for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
     instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.is_label) continue;
-    if (Recipe_ordinal.find(inst.name) == Recipe_ordinal.end()) {
+    if (!contains_key(Recipe_ordinal, inst.name)) {
       raise_error << maybe(get(Recipe, r).name) << "instruction " << inst.name << " has no recipe\n" << end();
       return;
     }

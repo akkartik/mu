@@ -122,11 +122,11 @@ bool is_type_ingredient_name(const string& type) {
 recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   string new_name = next_unused_recipe_name(inst.name);
   trace(9993, "transform") << "switching " << inst.name << " to " << new_name << end();
-  assert(Recipe_ordinal.find(new_name) == Recipe_ordinal.end());
+  assert(!contains_key(Recipe_ordinal, new_name));
   recipe_ordinal result = put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
   // make a copy
-  assert(Recipe.find(exemplar) != Recipe.end());
-  assert(Recipe.find(result) == Recipe.end());
+  assert(contains_key(Recipe, exemplar));
+  assert(!contains_key(Recipe, result));
   recently_added_recipes.push_back(result);
   put(Recipe, result, get(Recipe, exemplar));
   recipe& new_recipe = get(Recipe, result);
@@ -165,7 +165,7 @@ void accumulate_type_ingredients(const string_tree* base, const string_tree* ref
   }
   if (!base->value.empty() && base->value.at(0) == '_') {
     assert(!refinement->value.empty());
-    if (mappings.find(base->value) == mappings.end()) {
+    if (!contains_key(mappings, base->value)) {
       trace(9993, "transform") << "adding mapping from " << base->value << " to " << refinement->value << end();
       mappings[base->value] = refinement->value;
     }
@@ -217,7 +217,7 @@ void replace_type_ingredients(reagent& x, const map<string, string>& mappings) {
 
 void replace_type_ingredients(string_tree* type, const map<string, string>& mappings) {
   if (!type) return;
-  if (is_type_ingredient_name(type->value) && mappings.find(type->value) != mappings.end()) {
+  if (is_type_ingredient_name(type->value) && contains_key(mappings, type->value)) {
     trace(9993, "transform") << type->value << " => " << mappings.find(type->value)->second << end();
     type->value = mappings.find(type->value)->second;
   }

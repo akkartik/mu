@@ -72,7 +72,7 @@ case ASSUME_CONSOLE: {
       string key = curr.ingredients.at(0).name;
       if (is_integer(key))
         put(Memory, Current_routine->alloc+1, to_integer(key));
-      else if (Key.find(key) != Key.end())
+      else if (contains_key(Key, key))
         put(Memory, Current_routine->alloc+1, Key[key]);
       else
         raise_error << "assume-console: can't press " << key << '\n' << end();

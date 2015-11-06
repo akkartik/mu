@@ -273,7 +273,7 @@ type_tree* new_type_tree(const string_tree* properties) {
   type_tree* result = new type_tree(0);
   if (!properties->value.empty()) {
     const string& type_name = properties->value;
-    if (Type_ordinal.find(type_name) == Type_ordinal.end()
+    if (!contains_key(Type_ordinal, type_name)
         // types can contain integers, like for array sizes
         && !is_integer(type_name)) {
       put(Type_ordinal, type_name, Next_type_ordinal++);
@@ -413,7 +413,7 @@ void dump_types_tree(const type_tree* type, ostream& out) {
 }
 
 void dump_type_name(recipe_ordinal type, ostream& out) {
-  if (Type.find(type) != Type.end())
+  if (contains_key(Type, type))
     out << get(Type, type).name;
   else
     out << "?";
