@@ -149,14 +149,14 @@ case GET: {
   else
     offset_value = offset.value;
   if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
-    raise_error << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
     break;
   }
   reagent product = inst.products.at(0);
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
   if (!types_match(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << get(Type, base_type).name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
   }
   break;
@@ -274,7 +274,7 @@ case GET_ADDRESS: {
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
-      raise_error << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << Type[base_type].name << '\n' << end();
+      raise_error << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
       break;
     }
   }
@@ -288,7 +288,7 @@ case GET_ADDRESS: {
   // ..except for an address at the start
   element.type = new type_tree(get(Type_ordinal, "address"), element.type);
   if (!types_match(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << Type[base_type].name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << get(Type, base_type).name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
     break;
   }
   break;
