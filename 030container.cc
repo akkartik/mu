@@ -3,7 +3,7 @@
 :(before "End Mu Types Initialization")
 //: We'll use this container as a running example, with two number elements.
 type_ordinal point = put(Type_ordinal, "point", Next_type_ordinal++);
-get(Type, point).size = 2;
+get_or_insert(Type, point).size = 2;
 get(Type, point).kind = CONTAINER;
 get(Type, point).name = "point";
 get(Type, point).elements.push_back(new type_tree(number));
@@ -38,7 +38,7 @@ recipe main [
 // A more complex container, containing another container as one of its
 // elements.
 type_ordinal point_number = put(Type_ordinal, "point-number", Next_type_ordinal++);
-get(Type, point_number).size = 2;
+get_or_insert(Type, point_number).size = 2;
 get(Type, point_number).kind = CONTAINER;
 get(Type, point_number).name = "point-number";
 get(Type, point_number).elements.push_back(new type_tree(point));
@@ -396,7 +396,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   }
   trace(9999, "parse") << "type number: " << get(Type_ordinal, name) << end();
   skip_bracket(in, "'container' must begin with '['");
-  type_info& info = get(Type, get(Type_ordinal, name));
+  type_info& info = get_or_insert(Type, get(Type_ordinal, name));
   recently_added_types.push_back(get(Type_ordinal, name));
   info.name = name;
   info.kind = kind;

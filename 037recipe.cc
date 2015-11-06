@@ -7,7 +7,7 @@
 put(Type_ordinal, "recipe", 0);
 // 'recipe-ordinal' is the literal that can store recipe literals
 type_ordinal recipe_ordinal = put(Type_ordinal, "recipe-ordinal", Next_type_ordinal++);
-get(Type, recipe_ordinal).name = "recipe-ordinal";
+get_or_insert(Type, recipe_ordinal).name = "recipe-ordinal";
 
 :(before "End Reagent-parsing Exceptions")
 if (r.properties.at(0).second && r.properties.at(0).second->value == "recipe") {
