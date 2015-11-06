@@ -8,7 +8,7 @@
 //: We'll use this container as a running example, with two number elements.
 {
 type_ordinal tmp = put(Type_ordinal, "number-or-point", Next_type_ordinal++);
-get(Type, tmp).size = 2;
+get_or_insert(Type, tmp).size = 2;
 get(Type, tmp).kind = EXCLUSIVE_CONTAINER;
 get(Type, tmp).name = "number-or-point";
 get(Type, tmp).elements.push_back(new type_tree(number));

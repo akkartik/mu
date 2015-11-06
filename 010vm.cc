@@ -128,17 +128,17 @@ void setup_types() {
   // Mu Types Initialization
   type_ordinal number = put(Type_ordinal, "number", Next_type_ordinal++);
   put(Type_ordinal, "location", get(Type_ordinal, "number"));  // wildcard type: either a pointer or a scalar
-  get(Type, number).name = "number";
+  get_or_insert(Type, number).name = "number";
   type_ordinal address = put(Type_ordinal, "address", Next_type_ordinal++);
-  get(Type, address).name = "address";
+  get_or_insert(Type, address).name = "address";
   type_ordinal boolean = put(Type_ordinal, "boolean", Next_type_ordinal++);
-  get(Type, boolean).name = "boolean";
+  get_or_insert(Type, boolean).name = "boolean";
   type_ordinal character = put(Type_ordinal, "character", Next_type_ordinal++);
-  get(Type, character).name = "character";
+  get_or_insert(Type, character).name = "character";
   // Array types are a special modifier to any other type. For example,
   // array:number or array:address:boolean.
   type_ordinal array = put(Type_ordinal, "array", Next_type_ordinal++);
-  get(Type, array).name = "array";
+  get_or_insert(Type, array).name = "array";
   // End Mu Types Initialization
 }
 void teardown_types() {

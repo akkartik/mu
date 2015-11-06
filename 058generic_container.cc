@@ -52,7 +52,7 @@ void read_type_ingredients(string& name) {
   name = slurp_until(in, ':');
   if (Type_ordinal.find(name) == Type_ordinal.end() || get(Type_ordinal, name) == 0)
     put(Type_ordinal, name, Next_type_ordinal++);
-  type_info& info = get(Type, get(Type_ordinal, name));
+  type_info& info = get_or_insert(Type, get(Type_ordinal, name));
   long long int next_type_ordinal = START_TYPE_INGREDIENTS;
   while (!in.eof()) {
     string curr = slurp_until(in, ':');
