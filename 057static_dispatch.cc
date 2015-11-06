@@ -29,24 +29,24 @@ for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin();
 
 :(before "End Load Recipe Header(result)")
 if (contains_key(Recipe_ordinal, result.name)) {
-  if ((Recipe.find(get(Recipe_ordinal, result.name)) == Recipe.end()
-          || get(Recipe, get(Recipe_ordinal, result.name)).has_header)
+  const recipe_ordinal r = get(Recipe_ordinal, result.name);
+  if ((!contains_key(Recipe, r) || get(Recipe, r).has_header)
       && !header_already_exists(result)) {
     string new_name = next_unused_recipe_name(result.name);
     put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
-    Recipe_variants[result.name].push_back(get(Recipe_ordinal, new_name));
+    get(Recipe_variants, result.name).push_back(get(Recipe_ordinal, new_name));
     result.name = new_name;
   }
 }
 else {
   // save first variant
   put(Recipe_ordinal, result.name, Next_recipe_ordinal++);
-  Recipe_variants[result.name].push_back(get(Recipe_ordinal, result.name));
+  get_or_insert(Recipe_variants, result.name).push_back(get(Recipe_ordinal, result.name));
 }
 
 :(code)
 bool header_already_exists(const recipe& rr) {
-  const vector<recipe_ordinal>& variants = Recipe_variants[rr.name];
+  const vector<recipe_ordinal>& variants = get(Recipe_variants, rr.name);
   for (long long int i = 0; i < SIZE(variants); ++i) {
     if (Recipe.find(variants.at(i)) != Recipe.end()
         && all_reagents_match(rr, get(Recipe, variants.at(i)))) {
@@ -114,14 +114,14 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
     instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.is_label) continue;
     if (!contains_key(Recipe_variants, inst.name)) continue;
-    assert(!Recipe_variants[inst.name].empty());
+    assert(!get(Recipe_variants, inst.name).empty());
     replace_best_variant(inst);
   }
 }
 
 void replace_best_variant(instruction& inst) {
   trace(9992, "transform") << "instruction " << inst.name << end();
-  vector<recipe_ordinal>& variants = Recipe_variants[inst.name];
+  vector<recipe_ordinal>& variants = get(Recipe_variants, inst.name);
   long long int best_score = variant_score(inst, get(Recipe_ordinal, inst.name));
   for (long long int i = 0; i < SIZE(variants); ++i) {
     long long int current_score = variant_score(inst, variants.at(i));

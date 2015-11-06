@@ -67,7 +67,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
       const string& surrounding_recipe_name = s->value;
       if (contains_key(Surrounding_space, r)
           && Surrounding_space[r] != get(Recipe_ordinal, surrounding_recipe_name)) {
-        raise_error << "recipe " << get(Recipe, r).name << " can have only one 'surrounding' recipe but has " << Recipe[Surrounding_space[r]].name << " and " << surrounding_recipe_name << '\n' << end();
+        raise_error << "recipe " << get(Recipe, r).name << " can have only one 'surrounding' recipe but has " << get(Recipe, Surrounding_space[r]).name << " and " << surrounding_recipe_name << '\n' << end();
         continue;
       }
       trace(9993, "name") << "lexically surrounding space for recipe " << get(Recipe, r).name << " comes from " << surrounding_recipe_name << end();

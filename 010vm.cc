@@ -273,12 +273,8 @@ type_tree* new_type_tree(const string_tree* properties) {
   type_tree* result = new type_tree(0);
   if (!properties->value.empty()) {
     const string& type_name = properties->value;
-    if (!contains_key(Type_ordinal, type_name)
-        // types can contain integers, like for array sizes
-        && !is_integer(type_name)) {
-      put(Type_ordinal, type_name, Next_type_ordinal++);
-    }
-    result->value = get(Type_ordinal, type_name);
+    if (contains_key(Type_ordinal, type_name))
+      result->value = get(Type_ordinal, type_name);
   }
   result->left = new_type_tree(properties->left);
   result->right = new_type_tree(properties->right);
@@ -412,11 +408,11 @@ void dump_types_tree(const type_tree* type, ostream& out) {
   out << ">";
 }
 
-void dump_type_name(recipe_ordinal type, ostream& out) {
+void dump_type_name(type_ordinal type, ostream& out) {
   if (contains_key(Type, type))
     out << get(Type, type).name;
   else
-    out << "?";
+    out << "?" << type;
 }
 
 string instruction::to_string() const {

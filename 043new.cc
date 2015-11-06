@@ -53,7 +53,7 @@ case NEW: {
 Transform.push_back(transform_new_to_allocate);
 
 :(code)
-void transform_new_to_allocate(recipe_ordinal r) {
+void transform_new_to_allocate(const recipe_ordinal r) {
   trace(9991, "transform") << "--- convert 'new' to 'allocate' for recipe " << get(Recipe, r).name << end();
   for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);

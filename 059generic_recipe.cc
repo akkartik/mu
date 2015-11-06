@@ -20,10 +20,18 @@ recipe foo a:_t -> result:_t [
 +mem: storing 14 in location 11
 +mem: storing 15 in location 12
 
-//: Suppress unknown type checks in generic recipes. Their specializations
-//: will be checked.
+//: Before anything else, disable all previous transforms which rely on
+//: reagent.type if a recipe contains any type ingredients.
 
 :(after "void check_invalid_types(const recipe_ordinal r)")
+  if (any_type_ingredient_in_header(r)) return;
+:(after "void check_header_products(const recipe_ordinal r)")
+  if (any_type_ingredient_in_header(r)) return;
+:(after "void transform_names(const recipe_ordinal r)")
+  if (any_type_ingredient_in_header(r)) return;
+:(after "void transform_new_to_allocate(const recipe_ordinal r)")
+  if (any_type_ingredient_in_header(r)) return;
+:(after "void check_instruction(const recipe_ordinal r)")
   if (any_type_ingredient_in_header(r)) return;
 
 :(before "End Instruction Dispatch(inst, best_score)")
