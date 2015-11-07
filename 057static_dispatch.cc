@@ -19,6 +19,8 @@ recipe test a:number, b:number -> z:number [
 
 :(before "End Globals")
 map<string, vector<recipe_ordinal> > Recipe_variants;
+:(before "End One-time Setup")
+put(Recipe_variants, "main", vector<recipe_ordinal>());  // since we manually added main to Recipe_ordinal
 :(before "End Setup")
 for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin(); p != Recipe_variants.end(); ++p) {
   for (long long int i = 0; i < SIZE(p->second); ++i) {
