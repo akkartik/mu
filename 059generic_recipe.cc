@@ -57,6 +57,7 @@ if (any_type_ingredient_in_header(r)) return;
 recipe_ordinal pick_matching_generic_variant(vector<recipe_ordinal>& variants, const instruction& inst, long long int& best_score) {
   recipe_ordinal result = 0;
   for (long long int i = 0; i < SIZE(variants); ++i) {
+    if (variants.at(i) == -1) continue;  // ghost from a previous test
     trace(9992, "transform") << "checking generic variant " << i << end();
     long long int current_score = generic_variant_score(inst, variants.at(i));
     trace(9992, "transform") << "final score: " << current_score << end();
