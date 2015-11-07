@@ -23,7 +23,7 @@ map<string, vector<recipe_ordinal> > Recipe_variants;
 for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin(); p != Recipe_variants.end(); ++p) {
   for (long long int i = 0; i < SIZE(p->second); ++i) {
     if (p->second.at(i) >= Reserved_for_tests)
-      p->second.at(i) = -1;
+      p->second.at(i) = -1;  // just leave a ghost
   }
 }
 
@@ -136,7 +136,7 @@ void replace_best_variant(instruction& inst) {
 }
 
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {
-  if (variant == -1) return -1;
+  if (variant == -1) return -1;  // ghost from a previous test
   const vector<reagent>& header_ingredients = get(Recipe, variant).ingredients;
   if (SIZE(inst.ingredients) < SIZE(header_ingredients)) {
     trace(9993, "transform") << "too few ingredients" << end();
