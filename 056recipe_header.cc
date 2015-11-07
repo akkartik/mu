@@ -102,7 +102,7 @@ recipe add2 x:number, y:number -> z:number [
 +error: add2: replied with the wrong type at 'reply z'
 
 :(after "Transform.push_back(check_types_by_name)")
-Transform.push_back(check_header_products);
+Transform.push_back(check_header_products);  // idempotent
 
 :(code)
 void check_header_products(const recipe_ordinal r) {
@@ -140,7 +140,7 @@ recipe add2 x:number, y:number -> z:number [
 +mem: storing 8 in location 1
 
 :(before "Transform.push_back(check_header_products)")
-Transform.push_back(deduce_types_from_header);
+Transform.push_back(deduce_types_from_header);  // idempotent
 
 :(code)
 void deduce_types_from_header(const recipe_ordinal r) {

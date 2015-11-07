@@ -2,7 +2,7 @@
 //: nothing's undefined.
 
 :(before "End Transforms")
-Transform.push_back(update_instruction_operations);
+Transform.push_back(update_instruction_operations);  // idempotent
 
 :(code)
 void update_instruction_operations(recipe_ordinal r) {

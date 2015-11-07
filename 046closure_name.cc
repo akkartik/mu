@@ -36,7 +36,7 @@ recipe increment-counter [
 map<recipe_ordinal, recipe_ordinal> Surrounding_space;
 
 :(before "Transform.push_back(transform_names)")
-Transform.push_back(collect_surrounding_spaces);
+Transform.push_back(collect_surrounding_spaces);  // idempotent
 
 :(code)
 void collect_surrounding_spaces(const recipe_ordinal r) {
