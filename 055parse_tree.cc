@@ -59,9 +59,14 @@ string_tree* parse_string_tree(istream& in) {
 :(scenario dilated_reagent_with_type_tree)
 % Hide_errors = true;  // 'map' isn't defined yet
 recipe main [
-  {1: (map (address array character) (list number))} <- copy 34
+  {1: (foo (address array character) (bar number))} <- copy 34
 ]
-+parse:   product: {"1": <"map" : <<"address" : <"array" : <"character" : <>>>> : <<"list" : <"number" : <>>> : <>>>>}
+# just to avoid errors
+container foo [
+]
+container bar [
+]
++parse:   product: {"1": <"foo" : <<"address" : <"array" : <"character" : <>>>> : <<"bar" : <"number" : <>>> : <>>>>}
 
 //: an exception is 'new', which takes a type tree as its ingredient *value*
 
