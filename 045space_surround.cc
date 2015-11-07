@@ -14,6 +14,8 @@ recipe main [
   1:number <- copy 32
   1:number/space:1 <- copy 33
 ]
+recipe dummy [
+]
 # chain space
 +mem: storing 20 in location 11
 # store to default-space
