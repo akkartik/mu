@@ -153,6 +153,12 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   map<string, string> mappings;  // weak references
   compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings);
   replace_type_ingredients(new_recipe, mappings);
+  // redo all previous transforms in the new specialization, except for non-idempotent ones
+  // including this one in case there are new ambiguous calls in the specialization
+  for (long long int t = 0; t <= new_recipe.transformed_until; ++t) {
+    if (Transform.at(t) == insert_fragments) continue;  // not idempotent
+    (*Transform.at(t))(result);
+  }
   return result;
 }
 
