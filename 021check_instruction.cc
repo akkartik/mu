@@ -14,6 +14,7 @@ Transform.push_back(check_instruction);
 :(code)
 void check_instruction(const recipe_ordinal r) {
   trace(9991, "transform") << "--- perform checks for recipe " << get(Recipe, r).name << end();
+//?   cerr << "--- perform checks for recipe " << get(Recipe, r).name << '\n';
   map<string, vector<type_ordinal> > metadata;
   for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);

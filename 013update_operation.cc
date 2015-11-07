@@ -7,6 +7,7 @@ Transform.push_back(update_instruction_operations);
 :(code)
 void update_instruction_operations(recipe_ordinal r) {
   trace(9991, "transform") << "--- compute instruction operations for recipe " << get(Recipe, r).name << end();
+//?   cerr << "--- compute instruction operations for recipe " << get(Recipe, r).name << '\n';
   for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
     instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.is_label) continue;

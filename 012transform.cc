@@ -48,6 +48,7 @@ void transform_all() {
 
 void parse_int_reagents() {
   trace(9991, "transform") << "--- parsing any uninitialized reagents as integers" << end();
+//?   cerr << "--- parsing any uninitialized reagents as integers" << '\n';
   for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
     recipe& r = p->second;
     if (r.steps.empty()) continue;

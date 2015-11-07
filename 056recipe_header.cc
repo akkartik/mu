@@ -109,6 +109,7 @@ void check_header_products(const recipe_ordinal r) {
   const recipe& rr = get(Recipe, r);
   if (rr.products.empty()) return;
   trace(9991, "transform") << "--- checking reply instructions against header for " << rr.name << end();
+//?   cerr << "--- checking reply instructions against header for " << rr.name << '\n';
   for (long long int i = 0; i < SIZE(rr.steps); ++i) {
     const instruction& inst = rr.steps.at(i);
     if (inst.name != "reply") continue;
@@ -146,6 +147,7 @@ void deduce_types_from_header(const recipe_ordinal r) {
   recipe& rr = get(Recipe, r);
   if (rr.products.empty()) return;
   trace(9991, "transform") << "--- deduce types from header for " << rr.name << end();
+//?   cerr << "--- deduce types from header for " << rr.name << '\n';
   map<string, const type_tree*> header;
   for (long long int i = 0; i < SIZE(rr.ingredients); ++i) {
     header[rr.ingredients.at(i).name] = rr.ingredients.at(i).type;

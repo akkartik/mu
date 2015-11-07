@@ -20,6 +20,7 @@ Transform.push_back(check_types_by_name);
 :(code)
 void check_types_by_name(const recipe_ordinal r) {
   trace(9991, "transform") << "--- deduce types for recipe " << get(Recipe, r).name << end();
+//?   cerr << "--- deduce types for recipe " << get(Recipe, r).name << '\n';
   map<string, type_tree*> type;
   map<string, string_tree*> type_name;
   for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {

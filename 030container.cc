@@ -517,32 +517,39 @@ container bar [
 $error: 0
 
 :(after "Begin Transforms")
-Transform.push_back(check_invalid_types);
+Transform.push_back(check_or_set_invalid_types);
 
 :(code)
-void check_invalid_types(const recipe_ordinal r) {
+void check_or_set_invalid_types(const recipe_ordinal r) {
   for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
     const instruction& inst = get(Recipe, r).steps.at(index);
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-      check_invalid_types(inst.ingredients.at(i).type, maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
+      check_or_set_invalid_types(inst.ingredients.at(i).type, inst.ingredients.at(i).properties.at(0).second,
+                          maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
     }
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
-      check_invalid_types(inst.products.at(i).type, maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
+      check_or_set_invalid_types(inst.products.at(i).type, inst.products.at(i).properties.at(0).second,
+                          maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
     }
   }
 }
 
-void check_invalid_types(const type_tree* type, const string& block, const string& name) {
+void check_or_set_invalid_types(type_tree* type, const string_tree* type_name, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
+//?   cerr << "checking ";  dump_types(type, cerr);  cerr << '\n';
   // End Container Type Checks
   if (type->value == 0) {
     assert(!type->left && !type->right);
     return;
   }
-  if (!contains_key(Type, type->value))
-    raise_error << block << "unknown type in " << name << '\n' << end();
-  check_invalid_types(type->left, block, name);
-  check_invalid_types(type->right, block, name);
+  if (!contains_key(Type, type->value)) {
+    if (type_name && contains_key(Type_ordinal, type_name->value))
+      type->value = get(Type_ordinal, type_name->value);
+    else
+      raise_error << block << "unknown type in " << name << '\n' << end();
+  }
+  check_or_set_invalid_types(type->left, type_name ? type_name->left : NULL, block, name);
+  check_or_set_invalid_types(type->right, type_name ? type_name->right : NULL, block, name);
 }
 
 :(scenario container_unknown_field)
@@ -577,6 +584,34 @@ void check_container_field_types() {
       check_invalid_types(info.elements.at(i), maybe(info.name), info.element_names.at(i));
     }
   }
+}
+
+void check_invalid_types(const recipe_ordinal r) {
+  for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
+    const instruction& inst = get(Recipe, r).steps.at(index);
+    for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+      check_invalid_types(inst.ingredients.at(i).type,
+                          maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
+    }
+    for (long long int i = 0; i < SIZE(inst.products); ++i) {
+      check_invalid_types(inst.products.at(i).type,
+                          maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
+    }
+  }
+}
+
+void check_invalid_types(type_tree* type, const string& block, const string& name) {
+  if (!type) return;  // will throw a more precise error elsewhere
+//?   cerr << "checking ";  dump_types(type, cerr);  cerr << '\n';
+  // End Container Type Checks
+  if (type->value == 0) {
+    assert(!type->left && !type->right);
+    return;
+  }
+  if (!contains_key(Type, type->value))
+    raise_error << block << "unknown type in " << name << '\n' << end();
+  check_invalid_types(type->left, block, name);
+  check_invalid_types(type->right, block, name);
 }
 
 //:: Construct types out of their constituent fields. Doesn't currently do
