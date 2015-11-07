@@ -32,7 +32,7 @@ recipe main [
 +transform: copy ...
 
 :(after "Begin Transforms")
-Transform.push_back(transform_braces);
+Transform.push_back(transform_braces);  // idempotent
 
 :(code)
 void transform_braces(const recipe_ordinal r) {

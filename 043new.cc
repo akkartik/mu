@@ -50,7 +50,7 @@ case NEW: {
 
 //:: translate 'new' to 'allocate' instructions that take a size instead of a type
 :(after "Transform.push_back(check_instruction)")  // check_instruction will guard against direct 'allocate' instructions below
-Transform.push_back(transform_new_to_allocate);
+Transform.push_back(transform_new_to_allocate);  // idempotent
 
 :(code)
 void transform_new_to_allocate(const recipe_ordinal r) {

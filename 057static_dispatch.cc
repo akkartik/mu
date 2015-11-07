@@ -104,7 +104,7 @@ recipe test a:number, b:number -> z:number [
 
 //: after insert_fragments (tangle) and before computing operation ids
 :(before "Transform.push_back(deduce_types_from_header)")
-Transform.push_back(resolve_ambiguous_calls);
+Transform.push_back(resolve_ambiguous_calls);  // idempotent
 
 :(code)
 void resolve_ambiguous_calls(recipe_ordinal r) {

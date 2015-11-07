@@ -19,7 +19,7 @@ recipe main [
 # todo: detect conditional defines
 
 :(after "Begin Transforms")
-Transform.push_back(transform_names);
+Transform.push_back(transform_names);  // idempotent
 
 :(before "End Globals")
 map<recipe_ordinal, map<string, long long int> > Name;

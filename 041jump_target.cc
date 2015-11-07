@@ -19,7 +19,7 @@ recipe main [
 put(Type_ordinal, "label", 0);
 
 :(before "Transform.push_back(transform_braces)")
-Transform.push_back(transform_labels);
+Transform.push_back(transform_labels);  // idempotent
 
 :(code)
 void transform_labels(const recipe_ordinal r) {

@@ -15,7 +15,7 @@ recipe main [
 +error: main: x used with multiple types
 
 :(before "Transform.push_back(transform_names)")
-Transform.push_back(check_types_by_name);
+Transform.push_back(check_types_by_name);  // idempotent
 
 :(code)
 void check_types_by_name(const recipe_ordinal r) {
