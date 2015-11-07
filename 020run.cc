@@ -155,6 +155,7 @@ if (argc > 1) {
   transform_all();
 //?   dump_recipe("handle-keyboard-event"),  exit(0);
   if (Run_tests) Recipe.erase(get(Recipe_ordinal, string("main")));
+  // End Loading .mu Files
 }
 
 //: Step 3: if we aren't running tests, locate a recipe called 'main' and

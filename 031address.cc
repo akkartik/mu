@@ -92,6 +92,13 @@ void drop_address_from_type(reagent& r) {
   r.type = tmp->right;
   tmp->right = NULL;
   delete tmp;
+  // property
+  if (r.properties.at(0).second) {
+    string_tree* tmp2 = r.properties.at(0).second;
+    r.properties.at(0).second = tmp2->right;
+    tmp2->right = NULL;
+    delete tmp2;
+  }
 }
 
 void drop_one_lookup(reagent& r) {
