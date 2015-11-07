@@ -34,6 +34,13 @@ recipe foo a:_t -> result:_t [
 :(after "void check_header_products(const recipe_ordinal r)")
   if (any_type_ingredient_in_header(r)) return;
 
+//: We'll be creating recipes without loading them from anywhere by
+//: *specializing* existing recipes, so make sure we don't clear any of those
+//: when we start running tests.
+:(before "End Loading .mu Files")
+recently_added_recipes.clear();
+recently_added_types.clear();
+
 :(before "End Instruction Dispatch(inst, best_score)")
 if (best_score == -1) {
   trace(9992, "transform") << "no variant found; searching for variant with suitable type ingredients" << end();
@@ -150,15 +157,21 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
 }
 
 void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, string>& mappings) {
+//?   cerr << "=== " << exemplar.name << " vs " << inst.to_string() << '\n';
   for (long long int i = 0; i < SIZE(exemplar.ingredients); ++i) {
-    accumulate_type_ingredients(exemplar.ingredients.at(i), inst.ingredients.at(i), mappings, exemplar);
+    reagent ingredient = inst.ingredients.at(i);
+    canonize_type(ingredient);
+    accumulate_type_ingredients(exemplar.ingredients.at(i), ingredient, mappings, exemplar);
   }
   for (long long int i = 0; i < SIZE(exemplar.products); ++i) {
-    accumulate_type_ingredients(exemplar.products.at(i), inst.products.at(i), mappings, exemplar);
+    reagent product = inst.products.at(i);
+    canonize_type(product);
+    accumulate_type_ingredients(exemplar.products.at(i), product, mappings, exemplar);
   }
 }
 
 void accumulate_type_ingredients(const reagent& base, const reagent& refinement, map<string, string>& mappings, const recipe& exemplar) {
+//?   cerr << base.to_string() << " vs " << refinement.to_string() << '\n';
   if (!refinement.properties.at(0).second) {
     if (!Trace_stream) cerr << "Turn on START_TRACING_UNTIL_END_OF_SCOPE in 020run.cc for more details.\n";
     DUMP("");
@@ -177,10 +190,11 @@ void accumulate_type_ingredients(const string_tree* base, const string_tree* ref
     assert(!refinement->value.empty());
     if (!contains_key(mappings, base->value)) {
       trace(9993, "transform") << "adding mapping from " << base->value << " to " << refinement->value << end();
-      mappings[base->value] = refinement->value;
+      put(mappings, base->value, refinement->value);
     }
     else {
-      assert(mappings[base->value] == refinement->value);
+//?       cerr << base->value << ": " << get(mappings, base->value) << " => " << refinement->value << '\n';
+      assert(get(mappings, base->value) == refinement->value);
     }
   }
   else {
