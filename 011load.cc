@@ -242,7 +242,8 @@ vector<recipe_ordinal> recently_added_recipes;
 long long int Reserved_for_tests = 1000;
 :(before "End Setup")
 for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
-  if (recently_added_recipes.at(i) >= Reserved_for_tests)  // don't renumber existing recipes, like 'interactive'
+  if (recently_added_recipes.at(i) >= Reserved_for_tests  // don't renumber existing recipes, like 'interactive'
+      && contains_key(Recipe, recently_added_recipes.at(i)))  // in case previous test had duplicate definitions
     Recipe_ordinal.erase(get(Recipe, recently_added_recipes.at(i)).name);
   Recipe.erase(recently_added_recipes.at(i));
 }
