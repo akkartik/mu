@@ -31,6 +31,7 @@ for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
 :(code)
 void transform_names(const recipe_ordinal r) {
   trace(9991, "transform") << "--- transform names for recipe " << get(Recipe, r).name << end();
+//?   cerr << "--- transform names for recipe " << get(Recipe, r).name << '\n';
   bool names_used = false;
   bool numeric_locations_used = false;
   map<string, long long int>& names = Name[r];

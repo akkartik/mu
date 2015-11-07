@@ -23,15 +23,15 @@ recipe foo a:_t -> result:_t [
 //: Before anything else, disable all previous transforms which rely on
 //: reagent.type if a recipe contains any type ingredients.
 
-:(after "void check_invalid_types(const recipe_ordinal r)")
+:(after "void check_instruction(const recipe_ordinal r)")
   if (any_type_ingredient_in_header(r)) return;
-:(after "void check_header_products(const recipe_ordinal r)")
+:(after "void check_or_set_invalid_types(const recipe_ordinal r)")
   if (any_type_ingredient_in_header(r)) return;
 :(after "void transform_names(const recipe_ordinal r)")
   if (any_type_ingredient_in_header(r)) return;
 :(after "void transform_new_to_allocate(const recipe_ordinal r)")
   if (any_type_ingredient_in_header(r)) return;
-:(after "void check_instruction(const recipe_ordinal r)")
+:(after "void check_header_products(const recipe_ordinal r)")
   if (any_type_ingredient_in_header(r)) return;
 
 :(before "End Instruction Dispatch(inst, best_score)")
@@ -43,6 +43,7 @@ if (best_score == -1) {
     variants.push_back(new_variant(exemplar, inst));
     inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
+//?     cerr << "new specialization: " << inst.name << '\n';
   }
 }
 
