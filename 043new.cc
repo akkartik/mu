@@ -61,7 +61,6 @@ void transform_new_to_allocate(const recipe_ordinal r) {
     // Convert 'new' To 'allocate'
     if (inst.name == "new") {
       inst.operation = ALLOCATE;
-      cerr << inst.ingredients.at(0).name << '\n';
       string_tree* type_name = new string_tree(inst.ingredients.at(0).name);
       // End Post-processing(type_name) When Converting 'new'
       type_tree* type = new_type_tree(type_name);

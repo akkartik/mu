@@ -141,17 +141,6 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   replace_type_ingredients(new_recipe, mappings);
   ensure_all_concrete_types(new_recipe);
   // finally, perform all transforms on the new specialization
-  cerr << "contents of " << new_recipe.name << '\n';
-  for (long long int index = 0; index < SIZE(new_recipe.steps); ++index) {
-    instruction& inst = new_recipe.steps.at(index);
-    cerr << "inst: " << inst.to_string() << '\n';
-    for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-      cerr << "  " << inst.ingredients.at(i).to_string() << " => " << dump_types(inst.ingredients.at(i)) << '\n';
-    }
-    cerr << "--\n";
-    for (long long int i = 0; i < SIZE(inst.products); ++i)
-      cerr << "  " << inst.products.at(i).to_string() << " => " << dump_types(inst.products.at(i)) << '\n';
-  }
   for (long long int t = 0; t < SIZE(Transform); ++t) {
     (*Transform.at(t))(new_recipe_ordinal);
   }
@@ -227,7 +216,6 @@ void accumulate_type_ingredients(const string_tree* base, const string_tree* ref
     assert(!refinement->value.empty());
     if (!contains_key(mappings, base->value)) {
       trace(9993, "transform") << "adding mapping from " << base->value << " to " << refinement->value << end();
-      cerr << "adding mapping from " << base->value << " to " << refinement->value << '\n';
       put(mappings, base->value, refinement->value);
     }
     else {
@@ -263,11 +251,8 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, string>& map
     }
     // special-case for new: replace type ingredient in first ingredient *value*
     if (inst.name == "new" && inst.ingredients.at(0).name.at(0) != '[') {
-      cerr << "about to translate new ingredient: " << inst.ingredients.at(0).name << '\n';
       string_tree* type_name = parse_string_tree(inst.ingredients.at(0).name);
-      dump_property(type_name, cerr); cerr << '\n';
       replace_type_ingredients(type_name, mappings);
-      cerr << "=> "; dump_property(type_name, cerr); cerr << '\n';
       inst.ingredients.at(0).name = simple_string(type_name);
       delete type_name;
     }
@@ -277,7 +262,6 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, string>& map
 string simple_string(string_tree* x) {
   ostringstream out;
   simple_string(x, out);
-  cerr << "translated new ingredient: " << out.str() << '\n';
   return out.str();
 }
 
@@ -313,7 +297,6 @@ void replace_type_ingredients(string_tree* type, const map<string, string>& mapp
   if (!type) return;
   if (is_type_ingredient_name(type->value) && contains_key(mappings, type->value)) {
     trace(9993, "transform") << type->value << " => " << mappings.find(type->value)->second << end();
-    cerr << type->value << " => " << mappings.find(type->value)->second << '\n';
     type->value = mappings.find(type->value)->second;
   }
   replace_type_ingredients(type->left, mappings);
