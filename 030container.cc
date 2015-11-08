@@ -160,7 +160,7 @@ case GET: {
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
   if (!types_match(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << get(Type, base_type).name << " can't be saved in " << product.original_string << "; type should be " << debug_string(element.type) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << get(Type, base_type).name << " can't be saved in " << product.original_string << "; type should be " << debug_string(element.type) << " but is " << debug_string(product.type) << '\n' << end();
     break;
   }
   break;
@@ -240,7 +240,7 @@ recipe main [
   14:number <- copy 36
   15:address:number <- get 12:point-number/raw, 1:offset
 ]
-+error: main: 'get' 1:offset (1) on point-number can't be saved in 15:address:number; type should be number
++error: main: 'get' 1:offset (1) on point-number can't be saved in 15:address:number; type should be number but is <address : <number : <>>>
 
 //:: To write to elements of containers, you need their address.
 
