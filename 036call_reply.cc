@@ -42,7 +42,9 @@ case REPLY: {
   for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
     if (has_property(caller_instruction.products.at(i), "skiptypecheck")) continue;  // todo: drop this once we have generic containers
     if (!types_match(caller_instruction.products.at(i), reply_inst.ingredients.at(i))) {
-      raise_error << maybe(callee) << "reply ingredient " << reply_inst.ingredients.at(i).original_string << " can't be saved in " << caller_instruction.products.at(i).original_string << '\n' << end();
+      raise_error << maybe(callee) << "reply ingredient " << reply_inst.ingredients.at(i).to_string() << " can't be saved in " << caller_instruction.products.at(i).to_string() << '\n' << end();
+      cerr << dump_types(reply_inst.ingredients.at(i)) << " ========= " << dump_types(caller_instruction.products.at(i)) << '\n';
+      exit(0);
       goto finish_reply;
     }
   }
