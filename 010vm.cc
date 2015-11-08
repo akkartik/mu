@@ -464,6 +464,14 @@ string_tree* property(const reagent& r, const string& name) {
   return NULL;
 }
 
+bool deeply_equal(const string_tree* a, const string_tree* b) {
+  if (!a) return !b;
+  if (!b) return !a;
+  return a->value == b->value
+      && deeply_equal(a->left, b->left)
+      && deeply_equal(a->right, b->right);
+}
+
 void dump_memory() {
   for (map<long long int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
     cout << p->first << ": " << no_scientific(p->second) << '\n';
