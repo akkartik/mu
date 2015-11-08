@@ -96,6 +96,11 @@ template<typename T> typename T::mapped_type& get(T& map, typename T::key_type c
   assert(iter != map.end());
   return iter->second;
 }
+template<typename T> typename T::mapped_type const& get(const T& map, typename T::key_type const& key) {
+  typename T::const_iterator iter(map.find(key));
+  assert(iter != map.end());
+  return iter->second;
+}
 template<typename T> typename T::mapped_type const& put(T& map, typename T::key_type const& key, typename T::mapped_type const& value) {
   map[key] = value;
   return map[key];
