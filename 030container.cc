@@ -160,7 +160,7 @@ case GET: {
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
   if (!types_match(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << get(Type, base_type).name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << get(Type, base_type).name << " can't be saved in " << product.original_string << "; type should be " << debug_string(element.type) << '\n' << end();
     break;
   }
   break;
@@ -185,7 +185,7 @@ case GET: {
   trace(9998, "run") << "address to copy is " << src << end();
   reagent tmp = element_type(base, offset);
   tmp.set_value(src);
-  trace(9998, "run") << "its type is " << dump_types(tmp) << end();
+  trace(9998, "run") << "its type is " << debug_string(tmp.type) << end();
   products.push_back(read_memory(tmp));
   break;
 }
@@ -292,7 +292,7 @@ case GET_ADDRESS: {
   // ..except for an address at the start
   element.type = new type_tree(get(Type_ordinal, "address"), element.type);
   if (!types_match(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << get(Type, base_type).name << " can't be saved in " << product.original_string << "; type should be " << dump_types(element) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << get(Type, base_type).name << " can't be saved in " << product.original_string << "; type should be " << debug_string(element.type) << '\n' << end();
     break;
   }
   break;

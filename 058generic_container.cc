@@ -81,11 +81,8 @@ if (type->value >= START_TYPE_INGREDIENTS
 if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
   trace(9999, "type") << "checking size of type ingredient\n" << end();
   long long int size = size_of_type_ingredient(t.elements.at(i), type->right);
-  if (!size) {
-    ostringstream out;
-    dump_types(type, out);
-    raise_error << "illegal type '" << out.str() << "' seems to be missing a type ingredient or three\n" << end();
-  }
+  if (!size)
+    raise_error << "illegal type '" << debug_string(type) << "' seems to be missing a type ingredient or three\n" << end();
   result += size;
   continue;
 }
@@ -123,8 +120,12 @@ recipe main [
 +mem: storing 16 in location 2
 
 :(before "End GET field Cases")
-if (get(Type, base_type).elements.at(i)->value >= START_TYPE_INGREDIENTS) {
-  src += size_of_type_ingredient(get(Type, base_type).elements.at(i), base.type->right);
+const type_tree* type = get(Type, base_type).elements.at(i);
+if (type->value >= START_TYPE_INGREDIENTS) {
+  long long int size = size_of_type_ingredient(type, base.type->right);
+  if (!size)
+    raise_error << "illegal field type '" << debug_string(type) << "' seems to be missing a type ingredient or three\n" << end();
+  src += size;
   continue;
 }
 
@@ -142,9 +143,8 @@ recipe main [
 
 :(before "End element_type Special-cases")
 if (contains_type_ingredient(element)) {
-  if (!canonized_base.type->right) {
-    raise_error << "illegal type '" << dump_types(canonized_base) << "' seems to be missing a type ingredient or three\n" << end();
-  }
+  if (!canonized_base.type->right)
+    raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
   replace_type_ingredients(element.type, canonized_base.type->right);
 }
 
@@ -164,9 +164,7 @@ void replace_type_ingredients(type_tree* element_type, type_tree* callsite_type)
   if (!element_type) return;
   if (element_type->value >= START_TYPE_INGREDIENTS) {
     if (!has_nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS)) {
-      ostringstream out;
-      dump_types(callsite_type, out);
-      raise_error << "illegal type '" << out.str() << "' seems to be missing a type ingredient or three\n" << end();
+      raise_error << "illegal type '" << debug_string(callsite_type) << "' seems to be missing a type ingredient or three\n" << end();
       return;
     }
     element_type->value = nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS);
@@ -213,8 +211,12 @@ recipe main [
 +mem: storing 12 in location 1
 
 :(before "End GET_ADDRESS field Cases")
-if (get(Type, base_type).elements.at(i)->value >= START_TYPE_INGREDIENTS) {
-  result += size_of_type_ingredient(get(Type, base_type).elements.at(i), base.type->right);
+const type_tree* type = get(Type, base_type).elements.at(i);
+if (type->value >= START_TYPE_INGREDIENTS) {
+  long long int size = size_of_type_ingredient(type, base.type->right);
+  if (!size)
+    raise_error << "illegal type '" << debug_string(type) << "' seems to be missing a type ingredient or three\n" << end();
+  result += size;
   continue;
 }
 

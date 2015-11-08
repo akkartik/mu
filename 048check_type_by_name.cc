@@ -40,7 +40,7 @@ void deduce_missing_type(map<string, type_tree*>& type, map<string, string_tree*
   if (x.type) return;
   if (!contains_key(type, x.name)) return;
   x.type = new type_tree(*type[x.name]);
-  trace(9992, "transform") << x.name << " <= " << dump_types(x) << end();
+  trace(9992, "transform") << x.name << " <= " << debug_string(x.type) << end();
   assert(!x.properties.at(0).second);
   x.properties.at(0).second = new string_tree(*type_name[x.name]);
 }
@@ -52,7 +52,7 @@ void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_n
   if (is_integer(x.name)) return;
   if (!x.type) return;  // will throw a more precise error elsewhere
   if (!contains_key(type, x.name)) {
-    trace(9992, "transform") << x.name << " => " << dump_types(x) << end();
+    trace(9992, "transform") << x.name << " => " << debug_string(x.type) << end();
     type[x.name] = x.type;
   }
   if (!contains_key(type_name, x.name)) {

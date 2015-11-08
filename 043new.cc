@@ -65,9 +65,7 @@ void transform_new_to_allocate(const recipe_ordinal r) {
       // End Post-processing(type_name) When Converting 'new'
       type_tree* type = new_type_tree(type_name);
       inst.ingredients.at(0).set_value(size_of(type));
-      ostringstream out;
-      dump_property(type_name, out);
-      trace(9992, "new") << "size of " << out.str() << " is " << inst.ingredients.at(0).value << end();
+      trace(9992, "new") << "size of " << debug_string(type_name) << " is " << inst.ingredients.at(0).value << end();
       delete type;
       delete type_name;
     }
