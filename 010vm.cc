@@ -21,6 +21,7 @@ struct recipe {
   vector<instruction> steps;
   // End recipe Fields
   recipe();
+  string to_string() const;
 };
 
 :(before "struct recipe")
@@ -269,7 +270,6 @@ string_tree* parse_property_list(istream& in) {
 }
 
 type_tree* new_type_tree(const string_tree* properties) {
-//?   dump_property(properties, cerr);  cerr << '\n';
   if (!properties) return NULL;
   type_tree* result = new type_tree(0);
   if (!properties->value.empty()) {
@@ -349,25 +349,30 @@ string reagent::to_string() const {
     out << "{";
     for (long long int i = 0; i < SIZE(properties); ++i) {
       if (i > 0) out << ", ";
-      out << "\"" << properties.at(i).first << "\": ";
-      dump_property(properties.at(i).second, out);
+      out << "\"" << properties.at(i).first << "\": " << debug_string(properties.at(i).second);
     }
     out << "}";
   }
   return out.str();
 }
 
-void dump_property(const string_tree* property, ostream& out) {
+string debug_string(const reagent& x) {
+  ostringstream out;
+  out << x.name << ": " << debug_string(x.type) << " -- " << x.to_string();
+  return out.str();
+}
+
+string debug_string(const string_tree* property) {
   if (!property) {
-    out << "<>";
-    return;
+    return "<>";
   }
-  // abbreviate a single-node tree to just its contents
-  if (!property->left && !property->right) {
+  ostringstream out;
+  if (!property->left && !property->right)
+    // abbreviate a single-node tree to just its contents
     out << '"' << property->value << '"';
-    return;
-  }
-  dump_property_tree(property, out);
+  else
+    dump_property_tree(property, out);
+  return out.str();
 }
 
 void dump_property_tree(const string_tree* property, ostream& out) {
@@ -384,23 +389,17 @@ void dump_property_tree(const string_tree* property, ostream& out) {
   out << ">";
 }
 
-string dump_types(const reagent& x) {
-  ostringstream out;
-  dump_types(x.type, out);
-  return out.str();
-}
-
-void dump_types(const type_tree* type, ostream& out) {
+string debug_string(const type_tree* type) {
   // abbreviate a single-node tree to just its contents
   if (!type) {
-    out << "NULLNULLNULL";  // should never happen
-    return;
+    return "NULLNULLNULL";  // should never happen
   }
-  if (!type->left && !type->right) {
+  ostringstream out;
+  if (!type->left && !type->right)
     dump_type_name(type->value, out);
-    return;
-  }
-  dump_types_tree(type, out);
+  else
+    dump_types_tree(type, out);
+  return out.str();
 }
 
 void dump_types_tree(const type_tree* type, ostream& out) {
@@ -436,6 +435,22 @@ string instruction::to_string() const {
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
     if (i > 0) out << ", ";
     out << ingredients.at(i).original_string;
+  }
+  return out.str();
+}
+
+string debug_string(const recipe& x) {
+  ostringstream out;
+  out << "recipe " << x.name << '\n';
+  for (long long int index = 0; index < SIZE(x.steps); ++index) {
+    const instruction& inst = x.steps.at(index);
+    out << "  inst: " << inst.to_string() << '\n';
+    out << "  ingredients\n";
+    for (long long int i = 0; i < SIZE(inst.ingredients); ++i)
+      out << "    " << debug_string(inst.ingredients.at(i)) << '\n';
+    out << "  products\n";
+    for (long long int i = 0; i < SIZE(inst.products); ++i)
+      out << "    " << debug_string(inst.products.at(i)) << '\n';
   }
   return out.str();
 }
@@ -482,27 +497,15 @@ void dump_memory() {
   }
 }
 
-void dump_recipe(const string& recipe_name) {
-  const recipe& r = get(Recipe, get(Recipe_ordinal, recipe_name));
-  cout << "recipe " << r.name << " [\n";
-  for (long long int i = 0; i < SIZE(r.steps); ++i) {
-    cout << "  " << r.steps.at(i).to_string() << '\n';
+string recipe::to_string() const {
+  ostringstream out;
+  out << "recipe " << name << " [\n";
+  for (long long int i = 0; i < SIZE(steps); ++i) {
+    out << "  " << steps.at(i).to_string() << '\n';
   }
-  cout << "]\n";
+  out << "]\n";
+  return out.str();
 }
-
-//? string debug_string(const recipe& x) {
-//?   for (long long int index = 0; index < SIZE(x.steps); ++index) {
-//?     const instruction& inst = x.steps.at(index);
-//?     cerr << "inst: " << inst.to_string() << '\n';
-//?     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-//?       cerr << "  " << inst.ingredients.at(i).to_string() << " => " << dump_types(inst.ingredients.at(i)) << '\n';
-//?     }
-//?     cerr << "--\n";
-//?     for (long long int i = 0; i < SIZE(inst.products); ++i)
-//?       cerr << "  " << inst.products.at(i).to_string() << " => " << dump_types(inst.products.at(i)) << '\n';
-//?   }
-//? }
 
 void skip_whitespace(istream& in) {
   while (!in.eof() && isspace(in.peek()) && in.peek() != '\n') {
