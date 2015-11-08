@@ -78,8 +78,7 @@ void lookup_memory(reagent& x) {
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
     if (!r.type || r.type->value != get(Type_ordinal, "address")) {
-      raise_error << "can't lookup non-address: " << r.to_string() << '\n' << end();
-      dump_types(r.type, cerr);  cerr << '\n';
+      raise_error << "can't lookup non-address: " << r.original_string << '\n' << end();
       return false;
     }
     drop_address_from_type(r);

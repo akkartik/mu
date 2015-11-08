@@ -37,7 +37,7 @@ void transform_all() {
       recipe& r = p->second;
       if (r.steps.empty()) continue;
       if (r.transformed_until != t-1) continue;
-      // End Transform Checks
+//?       cerr << "  recipe " << r.name << '\n';
       (*Transform.at(t))(/*recipe_ordinal*/p->first);
       r.transformed_until = t;
     }

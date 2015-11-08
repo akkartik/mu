@@ -20,10 +20,19 @@ recipe foo a:_t -> result:_t [
 +mem: storing 14 in location 11
 +mem: storing 15 in location 12
 
-//: Before anything else, disable transforms for generic recipes.
+//: Before anything else, disable all previous transforms which rely on
+//: reagent.type if a recipe contains any type ingredients.
 
-:(before "End Transform Checks")
-if (any_type_ingredient_in_header(/*recipe_ordinal*/p->first)) continue;
+:(after "void check_instruction(const recipe_ordinal r)")
+  if (any_type_ingredient_in_header(r)) return;
+:(after "void check_or_set_invalid_types(const recipe_ordinal r)")
+  if (any_type_ingredient_in_header(r)) return;
+:(after "void transform_names(const recipe_ordinal r)")
+  if (any_type_ingredient_in_header(r)) return;
+:(after "void transform_new_to_allocate(const recipe_ordinal r)")
+  if (any_type_ingredient_in_header(r)) return;
+:(after "void check_header_products(const recipe_ordinal r)")
+  if (any_type_ingredient_in_header(r)) return;
 
 //: We'll be creating recipes without loading them from anywhere by
 //: *specializing* existing recipes, so make sure we don't clear any of those
@@ -41,8 +50,15 @@ if (best_score == -1) {
     variants.push_back(new_variant(exemplar, inst));
     inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
+//?     cerr << "new specialization: " << inst.name << '\n';
   }
 }
+
+//: Don't bother resolving ambiguous calls inside generic recipes. Just do
+//: their specializations.
+
+:(after "void resolve_ambiguous_calls")
+if (any_type_ingredient_in_header(r)) return;
 
 :(code)
 recipe_ordinal pick_matching_generic_variant(vector<recipe_ordinal>& variants, const instruction& inst, long long int& best_score) {
@@ -124,95 +140,42 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   string new_name = next_unused_recipe_name(inst.name);
   trace(9993, "transform") << "switching " << inst.name << " to " << new_name << end();
   assert(!contains_key(Recipe_ordinal, new_name));
-  recipe_ordinal new_recipe_ordinal = put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
+  recipe_ordinal result = put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
   // make a copy
   assert(contains_key(Recipe, exemplar));
-  assert(!contains_key(Recipe, new_recipe_ordinal));
-  recently_added_recipes.push_back(new_recipe_ordinal);
-  put(Recipe, new_recipe_ordinal, get(Recipe, exemplar));
-  recipe& new_recipe = get(Recipe, new_recipe_ordinal);
-  // Since the exemplar never ran any transforms, we have to redo some of the
-  // work of the check_types_by_name transform while supporting type-ingredients.
-  compute_type_names(new_recipe);
-  // that gives enough information to replace type-ingredients with concrete types
+  assert(!contains_key(Recipe, result));
+  recently_added_recipes.push_back(result);
+  put(Recipe, result, get(Recipe, exemplar));
+  recipe& new_recipe = get(Recipe, result);
+  // update its name
   new_recipe.name = new_name;
-  map<string, string> mappings;
+  // update its contents
+  map<string, string> mappings;  // weak references
   compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings);
   replace_type_ingredients(new_recipe, mappings);
-  ensure_all_concrete_types(new_recipe);
-  // finally, perform all transforms on the new specialization
-  cerr << "contents of " << new_recipe.name << '\n';
-  for (long long int index = 0; index < SIZE(new_recipe.steps); ++index) {
-    instruction& inst = new_recipe.steps.at(index);
-    cerr << "inst: " << inst.to_string() << '\n';
-    for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-      cerr << "  " << inst.ingredients.at(i).to_string() << " => " << dump_types(inst.ingredients.at(i)) << '\n';
-    }
-    cerr << "--\n";
-    for (long long int i = 0; i < SIZE(inst.products); ++i)
-      cerr << "  " << inst.products.at(i).to_string() << " => " << dump_types(inst.products.at(i)) << '\n';
-  }
-  for (long long int t = 0; t < SIZE(Transform); ++t) {
-    (*Transform.at(t))(new_recipe_ordinal);
-  }
-  new_recipe.transformed_until = SIZE(Transform)-1;
-  return new_recipe_ordinal;
-}
-
-void compute_type_names(recipe& variant) {
-  map<string, string_tree*> type_names;
-  for (long long int i = 0; i < SIZE(variant.ingredients); ++i) {
-    save_or_deduce_type_name(variant.ingredients.at(i), type_names);
-  }
-  for (long long int i = 0; i < SIZE(variant.products); ++i) {
-    save_or_deduce_type_name(variant.products.at(i), type_names);
-  }
-  for (long long int i = 0; i < SIZE(variant.steps); ++i) {
-    instruction& inst = variant.steps.at(i);
-    for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
-      save_or_deduce_type_name(inst.ingredients.at(in), type_names);
-    }
-    for (long long int out = 0; out < SIZE(inst.products); ++out) {
-      save_or_deduce_type_name(inst.products.at(out), type_names);
-    }
-  }
-}
-
-void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name) {
-  if (!x.properties.at(0).second && contains_key(type_name, x.name)) {
-    x.properties.at(0).second = new string_tree(*get(type_name, x.name));
-    return;
-  }
-  if (!x.properties.at(0).second) {
-    raise << "unknown type for " << x.original_string << '\n' << end();
-    return;
-  }
-  if (contains_key(type_name, x.name)) return;
-  if (x.properties.at(0).second->value == "offset" || x.properties.at(0).second->value == "variant") return;  // hack for container-access instructions
-  put(type_name, x.name, x.properties.at(0).second);
-  ostringstream type_name_buf;
-  dump_property(x.properties.at(0).second, type_name_buf);
-  trace(9993, "transform") << "type of " << x.name << " is " << type_name_buf.str() << end();
+  return result;
 }
 
 void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, string>& mappings) {
+//?   cerr << "=== " << exemplar.name << " vs " << inst.to_string() << '\n';
   for (long long int i = 0; i < SIZE(exemplar.ingredients); ++i) {
-    const reagent& base = exemplar.ingredients.at(i);
     reagent ingredient = inst.ingredients.at(i);
-    assert(ingredient.properties.at(0).second);
     canonize_type(ingredient);
-    accumulate_type_ingredients(base, ingredient, mappings, exemplar);
+    accumulate_type_ingredients(exemplar.ingredients.at(i), ingredient, mappings, exemplar);
   }
   for (long long int i = 0; i < SIZE(exemplar.products); ++i) {
-    const reagent& base = exemplar.products.at(i);
     reagent product = inst.products.at(i);
-    assert(product.properties.at(0).second);
     canonize_type(product);
-    accumulate_type_ingredients(base, product, mappings, exemplar);
+    accumulate_type_ingredients(exemplar.products.at(i), product, mappings, exemplar);
   }
 }
 
-void accumulate_type_ingredients(const reagent& base, reagent& refinement, map<string, string>& mappings, const recipe& exemplar) {
+void accumulate_type_ingredients(const reagent& base, const reagent& refinement, map<string, string>& mappings, const recipe& exemplar) {
+//?   cerr << base.to_string() << " vs " << refinement.to_string() << '\n';
+  if (!refinement.properties.at(0).second) {
+    if (!Trace_stream) cerr << "Turn on START_TRACING_UNTIL_END_OF_SCOPE in 020run.cc for more details.\n";
+    DUMP("");
+  }
   assert(refinement.properties.at(0).second);
   accumulate_type_ingredients(base.properties.at(0).second, refinement.properties.at(0).second, mappings, exemplar, base);
 }
@@ -227,10 +190,10 @@ void accumulate_type_ingredients(const string_tree* base, const string_tree* ref
     assert(!refinement->value.empty());
     if (!contains_key(mappings, base->value)) {
       trace(9993, "transform") << "adding mapping from " << base->value << " to " << refinement->value << end();
-      cerr << "adding mapping from " << base->value << " to " << refinement->value << '\n';
       put(mappings, base->value, refinement->value);
     }
     else {
+//?       cerr << base->value << ": " << get(mappings, base->value) << " => " << refinement->value << '\n';
       assert(get(mappings, base->value) == refinement->value);
     }
   }
@@ -265,9 +228,9 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, string>& map
 }
 
 void replace_type_ingredients(reagent& x, const map<string, string>& mappings) {
+  if (!x.type) return;
   trace(9993, "transform") << "replacing in ingredient " << x.original_string << end();
   // replace properties
-  assert(x.properties.at(0).second);
   replace_type_ingredients(x.properties.at(0).second, mappings);
   // refresh types from properties
   delete x.type;
@@ -280,40 +243,10 @@ void replace_type_ingredients(string_tree* type, const map<string, string>& mapp
   if (!type) return;
   if (is_type_ingredient_name(type->value) && contains_key(mappings, type->value)) {
     trace(9993, "transform") << type->value << " => " << mappings.find(type->value)->second << end();
-    cerr << type->value << " => " << mappings.find(type->value)->second << '\n';
     type->value = mappings.find(type->value)->second;
   }
   replace_type_ingredients(type->left, mappings);
   replace_type_ingredients(type->right, mappings);
-}
-
-void ensure_all_concrete_types(const recipe& new_recipe) {
-  for (long long int i = 0; i < SIZE(new_recipe.ingredients); ++i) {
-    ensure_all_concrete_types(new_recipe.ingredients.at(i).type);
-  }
-  for (long long int i = 0; i < SIZE(new_recipe.products); ++i) {
-    ensure_all_concrete_types(new_recipe.products.at(i).type);
-  }
-  for (long long int i = 0; i < SIZE(new_recipe.steps); ++i) {
-    const instruction& inst = new_recipe.steps.at(i);
-    for (long long int j = 0; j < SIZE(inst.ingredients); ++j) {
-      ensure_all_concrete_types(inst.ingredients.at(j).type);
-    }
-    for (long long int j = 0; j < SIZE(inst.products); ++j) {
-      ensure_all_concrete_types(inst.products.at(j).type);
-    }
-  }
-}
-
-void ensure_all_concrete_types(const type_tree* x) {
-  if (!x) {
-    raise << "AAA null type\n" << end();
-    return;
-  }
-  if (x->value == -1) {
-    raise << "AAA unknown type\n" << end();
-    return;
-  }
 }
 
 :(scenario generic_recipe_2)

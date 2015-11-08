@@ -36,15 +36,6 @@ void check_types_by_name(const recipe_ordinal r) {
   }
 }
 
-void deduce_missing_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, reagent& x) {
-  if (x.type) return;
-  if (!contains_key(type, x.name)) return;
-  x.type = new type_tree(*type[x.name]);
-  trace(9992, "transform") << x.name << " <= " << dump_types(x) << end();
-  assert(!x.properties.at(0).second);
-  x.properties.at(0).second = new string_tree(*type_name[x.name]);
-}
-
 void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, const reagent& x, const recipe_ordinal r) {
   if (is_literal(x)) return;
   if (is_raw(x)) return;  // TODO: delete this
@@ -67,6 +58,16 @@ recipe main [
   x:number <- copy 1
   y:number <- add x, 1
 ]
+
+:(code)
+void deduce_missing_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, reagent& x) {
+  if (x.type) return;
+  if (!contains_key(type, x.name)) return;
+  x.type = new type_tree(*type[x.name]);
+  trace(9992, "transform") << x.name << " <= " << dump_types(x) << end();
+  assert(!x.properties.at(0).second);
+  x.properties.at(0).second = new string_tree(*type_name[x.name]);
+}
 
 :(scenario transform_fills_in_missing_types_in_product)
 recipe main [

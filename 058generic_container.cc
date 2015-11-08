@@ -60,15 +60,15 @@ void read_type_ingredients(string& name) {
       raise_error << "can't repeat type ingredient names in a single container definition\n" << end();
       return;
     }
-    put(info.type_ingredient_names, curr, next_type_ordinal++);
+    info.type_ingredient_names[curr] = next_type_ordinal++;
   }
 }
 
 :(before "End insert_container Special Uses(type_name)")
 // check for use of type ingredients
 if (type_name.at(0) == '_') {
-  *curr_type = new type_tree(get(info.type_ingredient_names, type_name));
-  trace(9999, "parse") << "  type: " << get(info.type_ingredient_names, type_name) << end();
+  *curr_type = new type_tree(info.type_ingredient_names[type_name]);
+  trace(9999, "parse") << "  type: " << info.type_ingredient_names[type_name] << end();
   continue;
 }
 
@@ -86,7 +86,7 @@ if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
     dump_types(type, out);
     raise_error << "illegal type '" << out.str() << "' seems to be missing a type ingredient or three\n" << end();
   }
-  result += size;
+  result += size_of_type_ingredient(t.elements.at(i), type->right);
   continue;
 }
 
@@ -103,7 +103,6 @@ long long int size_of_type_ingredient(const type_tree* element_template, const t
   }
   assert(curr);
   assert(!curr->left);  // unimplemented
-  assert(contains_key(Type, curr->value));
   trace(9999, "type") << "type deduced to be " << get(Type, curr->value).name << "$" << end();
   type_tree tmp(curr->value);
   if (curr->right)
