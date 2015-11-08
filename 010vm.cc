@@ -278,8 +278,10 @@ type_tree* new_type_tree(const string_tree* properties) {
       result->value = get(Type_ordinal, type_name);
     else if (is_integer(type_name))  // sometimes types will contain non-type tags, like numbers for the size of an array
       result->value = 0;
-    else
+    else {
+      cerr << "AAAAAAAAAAAAAA "; dump_property(properties, cerr); cerr << '\n';
       result->value = -1;  // should never happen; will trigger errors later
+    }
   }
   result->left = new_type_tree(properties->left);
   result->right = new_type_tree(properties->right);
