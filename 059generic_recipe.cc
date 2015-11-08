@@ -307,7 +307,6 @@ void replace_type_ingredients(string_tree* type, const map<string, const string_
     type->value = replacement->value;
     if (replacement->left) type->left = new string_tree(*replacement->left);
     if (replacement->right) type->right = new string_tree(*replacement->right);
-    trace(9993, "transform") << " ===> " << debug_string(type) << end();
   }
   replace_type_ingredients(type->left, mappings);
   replace_type_ingredients(type->right, mappings);

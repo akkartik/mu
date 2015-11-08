@@ -145,7 +145,9 @@ recipe main [
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
     raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredients(element.type, canonized_base.type->right);
+  trace(9999, "transform") << " === before replace: " << debug_string(element.type) << end();
+  replace_type_ingredient(element.type, canonized_base.type->right);
+  trace(9999, "transform") << " === after replace: " << debug_string(element.type) << end();
 }
 
 :(code)
@@ -159,7 +161,7 @@ bool contains_type_ingredient(const type_tree* type) {
   return contains_type_ingredient(type->left) || contains_type_ingredient(type->right);
 }
 
-void replace_type_ingredients(type_tree* element_type, type_tree* callsite_type) {
+void replace_type_ingredient(type_tree* element_type, const type_tree* callsite_type) {
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
   if (element_type->value >= START_TYPE_INGREDIENTS) {
@@ -167,18 +169,21 @@ void replace_type_ingredients(type_tree* element_type, type_tree* callsite_type)
       raise_error << "illegal type '" << debug_string(callsite_type) << "' seems to be missing a type ingredient or three\n" << end();
       return;
     }
-    element_type->value = nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS);
+    const type_tree* replacement = nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS);
+    element_type->value = replacement->value;
+    element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
+    element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
   }
-  replace_type_ingredients(element_type->right, callsite_type);
+  replace_type_ingredient(element_type->right, callsite_type);
 }
 
-type_ordinal nth_type(type_tree* base, long long int n) {
+const type_tree* nth_type(const type_tree* base, long long int n) {
   assert(n >= 0);
-  if (n == 0) return base->value;  // todo: base->left
+  if (n == 0) return base;
   return nth_type(base->right, n-1);
 }
 
-bool has_nth_type(type_tree* base, long long int n) {
+bool has_nth_type(const type_tree* base, long long int n) {
   assert(n >= 0);
   if (base == NULL) return false;
   if (n == 0) return true;

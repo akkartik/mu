@@ -151,13 +151,15 @@ void deduce_types_from_header(const recipe_ordinal r) {
   map<string, const type_tree*> header;
   for (long long int i = 0; i < SIZE(rr.ingredients); ++i) {
     header[rr.ingredients.at(i).name] = rr.ingredients.at(i).type;
+    trace(9993, "transform") << "type of " << rr.ingredients.at(i).name << " is " << debug_string(rr.ingredients.at(i).type) << end();
   }
   for (long long int i = 0; i < SIZE(rr.products); ++i) {
     header[rr.products.at(i).name] = rr.products.at(i).type;
+    trace(9993, "transform") << "type of " << rr.products.at(i).name << " is " << debug_string(rr.products.at(i).type) << end();
   }
   for (long long int i = 0; i < SIZE(rr.steps); ++i) {
     instruction& inst = rr.steps.at(i);
-    trace(9992, "transform") << inst.to_string() << end();
+    trace(9992, "transform") << "instruction: " << inst.to_string() << end();
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
       if (inst.ingredients.at(i).type) continue;
       if (header.find(inst.ingredients.at(i).name) == header.end()) {
@@ -168,6 +170,7 @@ void deduce_types_from_header(const recipe_ordinal r) {
       trace(9993, "transform") << "type of " << inst.ingredients.at(i).name << " is " << debug_string(inst.ingredients.at(i).type) << end();
     }
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
+      trace(9993, "transform") << "  product: " << debug_string(inst.products.at(i)) << end();
       if (inst.products.at(i).type) continue;
       if (header.find(inst.products.at(i).name) == header.end()) {
         raise << maybe(rr.name) << "unknown variable " << inst.products.at(i).name << " in '" << inst.to_string() << "'\n" << end();
@@ -233,7 +236,7 @@ recipe add2 x:number, y:number -> z:number [
   load-ingredients
   z <- add x, y
 ]
-+transform: reply z:number
++transform: instruction: reply z:number
 +mem: storing 8 in location 1
 
 :(after "Transform.push_back(insert_fragments)")
@@ -265,6 +268,6 @@ recipe add2 x:number, y:number -> z:number [
   z <- add x, y  # no type for z
   reply z
 ]
-+transform: reply z
--transform: reply z:number
++transform: instruction: reply z
+-transform: instruction: reply z:number
 +mem: storing 8 in location 1
