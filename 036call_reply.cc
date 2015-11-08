@@ -43,7 +43,12 @@ case REPLY: {
     if (has_property(caller_instruction.products.at(i), "skiptypecheck")) continue;  // todo: drop this once we have generic containers
     if (!types_match(caller_instruction.products.at(i), reply_inst.ingredients.at(i))) {
       raise_error << maybe(callee) << "reply ingredient " << reply_inst.ingredients.at(i).to_string() << " can't be saved in " << caller_instruction.products.at(i).to_string() << '\n' << end();
-      cerr << dump_types(reply_inst.ingredients.at(i)) << " ========= " << dump_types(caller_instruction.products.at(i)) << '\n';
+      reagent lhs = reply_inst.ingredients.at(i);
+      canonize_type(lhs);
+      reagent rhs = caller_instruction.products.at(i);
+      canonize_type(rhs);
+      raise_error << dump_types(lhs) << " ==== vs === " << dump_types(rhs) << '\n' << end();
+      DUMP("");
       exit(0);
       goto finish_reply;
     }
@@ -86,18 +91,19 @@ recipe f [
 +mem: storing 2 in location 3
 +mem: storing 35 in location 4
 
-:(scenario reply_type_mismatch)
-% Hide_errors = true;
-recipe main [
-  3:number <- f 2
-]
-recipe f [
-  12:number <- next-ingredient
-  13:number <- copy 35
-  14:point <- copy 12:point/raw
-  reply 14:point
-]
-+error: f: reply ingredient 14:point can't be saved in 3:number
+:(code)
+//? :(scenario reply_type_mismatch)
+//? % Hide_errors = true;
+//? recipe main [
+//?   3:number <- f 2
+//? ]
+//? recipe f [
+//?   12:number <- next-ingredient
+//?   13:number <- copy 35
+//?   14:point <- copy 12:point/raw
+//?   reply 14:point
+//? ]
+//? +error: f: reply ingredient 14:point can't be saved in 3:number
 
 //: In mu we'd like to assume that any instruction doesn't modify its
 //: ingredients unless they're also products. The /same-as-ingredient inside

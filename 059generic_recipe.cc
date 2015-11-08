@@ -136,7 +136,7 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   compute_type_names(new_recipe);
   // that gives enough information to replace type-ingredients with concrete types
   new_recipe.name = new_name;
-  map<string, string> mappings;
+  map<string, const string_tree*> mappings;
   compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings);
   replace_type_ingredients(new_recipe, mappings);
   ensure_all_concrete_types(new_recipe);
@@ -184,7 +184,7 @@ void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name) 
   trace(9993, "transform") << "type of " << x.name << " is " << type_name_buf.str() << end();
 }
 
-void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, string>& mappings) {
+void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, const string_tree*>& mappings) {
   for (long long int i = 0; i < SIZE(exemplar.ingredients); ++i) {
     const reagent& base = exemplar.ingredients.at(i);
     reagent ingredient = inst.ingredients.at(i);
@@ -201,12 +201,12 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
   }
 }
 
-void accumulate_type_ingredients(const reagent& base, reagent& refinement, map<string, string>& mappings, const recipe& exemplar) {
+void accumulate_type_ingredients(const reagent& base, reagent& refinement, map<string, const string_tree*>& mappings, const recipe& exemplar) {
   assert(refinement.properties.at(0).second);
   accumulate_type_ingredients(base.properties.at(0).second, refinement.properties.at(0).second, mappings, exemplar, base);
 }
 
-void accumulate_type_ingredients(const string_tree* base, const string_tree* refinement, map<string, string>& mappings, const recipe& exemplar, const reagent& r) {
+void accumulate_type_ingredients(const string_tree* base, const string_tree* refinement, map<string, const string_tree*>& mappings, const recipe& exemplar, const reagent& r) {
   if (!base) return;
   if (!refinement) {
     raise_error << maybe(exemplar.name) << "missing type ingredient in " << r.original_string << '\n' << end();
@@ -214,12 +214,18 @@ void accumulate_type_ingredients(const string_tree* base, const string_tree* ref
   }
   if (!base->value.empty() && base->value.at(0) == '_') {
     assert(!refinement->value.empty());
+    if (base->right) {
+      raise_error << "type_ingredients in non-last position not currently supported\n" << end();
+      return;
+    }
     if (!contains_key(mappings, base->value)) {
-      trace(9993, "transform") << "adding mapping from " << base->value << " to " << refinement->value << end();
-      put(mappings, base->value, refinement->value);
+      ostringstream tmp;
+      dump_property(refinement, tmp);
+      trace(9993, "transform") << "adding mapping from " << base->value << " to " << tmp.str() << end();
+      put(mappings, base->value, new string_tree(*refinement));
     }
     else {
-      assert(get(mappings, base->value) == refinement->value);
+      assert(deeply_equal(get(mappings, base->value), refinement));
     }
   }
   else {
@@ -228,7 +234,7 @@ void accumulate_type_ingredients(const string_tree* base, const string_tree* ref
   accumulate_type_ingredients(base->right, refinement->right, mappings, exemplar, r);
 }
 
-void replace_type_ingredients(recipe& new_recipe, const map<string, string>& mappings) {
+void replace_type_ingredients(recipe& new_recipe, const map<string, const string_tree*>& mappings) {
   // update its header
   if (mappings.empty()) return;
   trace(9993, "transform") << "replacing in recipe header ingredients" << end();
@@ -281,7 +287,7 @@ void simple_string(string_tree* x, ostream& out) {
   out << ')';
 }
 
-void replace_type_ingredients(reagent& x, const map<string, string>& mappings) {
+void replace_type_ingredients(reagent& x, const map<string, const string_tree*>& mappings) {
   trace(9993, "transform") << "replacing in ingredient " << x.original_string << end();
   // replace properties
   assert(x.properties.at(0).second);
@@ -293,11 +299,19 @@ void replace_type_ingredients(reagent& x, const map<string, string>& mappings) {
     trace(9993, "transform") << "  after: " << dump_types(x) << end();
 }
 
-void replace_type_ingredients(string_tree* type, const map<string, string>& mappings) {
+void replace_type_ingredients(string_tree* type, const map<string, const string_tree*>& mappings) {
   if (!type) return;
   if (is_type_ingredient_name(type->value) && contains_key(mappings, type->value)) {
-    trace(9993, "transform") << type->value << " => " << mappings.find(type->value)->second << end();
-    type->value = mappings.find(type->value)->second;
+    const string_tree* replacement = get(mappings, type->value);
+    ostringstream tmp;
+    dump_property(replacement, tmp);
+    trace(9993, "transform") << type->value << " => " << tmp.str() << end();
+    type->value = replacement->value;
+    if (replacement->left) type->left = new string_tree(*replacement->left);
+    if (replacement->right) type->right = new string_tree(*replacement->right);
+    ostringstream tmp2;
+    dump_property(type, tmp2);
+    trace(9993, "transform") << " ===> " << tmp2.str() << end();
   }
   replace_type_ingredients(type->left, mappings);
   replace_type_ingredients(type->right, mappings);
