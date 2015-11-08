@@ -131,11 +131,11 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   recently_added_recipes.push_back(new_recipe_ordinal);
   put(Recipe, new_recipe_ordinal, get(Recipe, exemplar));
   recipe& new_recipe = get(Recipe, new_recipe_ordinal);
+  new_recipe.name = new_name;
   // Since the exemplar never ran any transforms, we have to redo some of the
   // work of the check_types_by_name transform while supporting type-ingredients.
   compute_type_names(new_recipe);
   // that gives enough information to replace type-ingredients with concrete types
-  new_recipe.name = new_name;
   map<string, const string_tree*> mappings;
   compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings);
   replace_type_ingredients(new_recipe, mappings);
@@ -149,6 +149,7 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
 }
 
 void compute_type_names(recipe& variant) {
+  trace(9993, "transform") << "compute type names: " << variant.name << end();
   map<string, string_tree*> type_names;
   for (long long int i = 0; i < SIZE(variant.ingredients); ++i) {
     save_or_deduce_type_name(variant.ingredients.at(i), type_names);
@@ -158,6 +159,7 @@ void compute_type_names(recipe& variant) {
   }
   for (long long int i = 0; i < SIZE(variant.steps); ++i) {
     instruction& inst = variant.steps.at(i);
+    trace(9993, "transform") << "  instruction: " << inst.to_string() << end();
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
       save_or_deduce_type_name(inst.ingredients.at(in), type_names);
     }

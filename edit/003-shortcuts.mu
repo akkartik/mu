@@ -1637,7 +1637,7 @@ recipe delete-to-end-of-line editor:address:editor-data -> result:address:duplex
     loop
   }
   # snip it out
-  result:address:duplex-list:character <- next-duplex start  # XXX: segfault on deleting this type
+  result <- next-duplex start
   remove-duplex-between start, end
 ]
 

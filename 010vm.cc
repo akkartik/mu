@@ -392,6 +392,10 @@ string dump_types(const reagent& x) {
 
 void dump_types(const type_tree* type, ostream& out) {
   // abbreviate a single-node tree to just its contents
+  if (!type) {
+    out << "NULLNULLNULL";  // should never happen
+    return;
+  }
   if (!type->left && !type->right) {
     dump_type_name(type->value, out);
     return;
@@ -486,6 +490,19 @@ void dump_recipe(const string& recipe_name) {
   }
   cout << "]\n";
 }
+
+//? string debug_string(const recipe& x) {
+//?   for (long long int index = 0; index < SIZE(x.steps); ++index) {
+//?     const instruction& inst = x.steps.at(index);
+//?     cerr << "inst: " << inst.to_string() << '\n';
+//?     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+//?       cerr << "  " << inst.ingredients.at(i).to_string() << " => " << dump_types(inst.ingredients.at(i)) << '\n';
+//?     }
+//?     cerr << "--\n";
+//?     for (long long int i = 0; i < SIZE(inst.products); ++i)
+//?       cerr << "  " << inst.products.at(i).to_string() << " => " << dump_types(inst.products.at(i)) << '\n';
+//?   }
+//? }
 
 void skip_whitespace(istream& in) {
   while (!in.eof() && isspace(in.peek()) && in.peek() != '\n') {
