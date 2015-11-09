@@ -137,9 +137,6 @@ recipe foo [
     .  x <- copy 0                                     ┊                                                 .
     .]                                                 ┊                                                 .
     .foo: missing type for x in 'x <- copy 0'          ┊                                                 .
-    .foo: can't copy 0 to x; types don't match         ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
-    .                                                  ┊                                                 .
   ]
 ]
 

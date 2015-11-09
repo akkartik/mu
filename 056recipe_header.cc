@@ -148,13 +148,16 @@ void deduce_types_from_header(const recipe_ordinal r) {
   if (rr.products.empty()) return;
   trace(9991, "transform") << "--- deduce types from header for " << rr.name << end();
 //?   cerr << "--- deduce types from header for " << rr.name << '\n';
-  map<string, const type_tree*> header;
+  map<string, const type_tree*> header_type;
+  map<string, const string_tree*> header_type_name;
   for (long long int i = 0; i < SIZE(rr.ingredients); ++i) {
-    header[rr.ingredients.at(i).name] = rr.ingredients.at(i).type;
+    put(header_type, rr.ingredients.at(i).name, rr.ingredients.at(i).type);
+    put(header_type_name, rr.ingredients.at(i).name, rr.ingredients.at(i).properties.at(0).second);
     trace(9993, "transform") << "type of " << rr.ingredients.at(i).name << " is " << debug_string(rr.ingredients.at(i).type) << end();
   }
   for (long long int i = 0; i < SIZE(rr.products); ++i) {
-    header[rr.products.at(i).name] = rr.products.at(i).type;
+    put(header_type, rr.products.at(i).name, rr.products.at(i).type);
+    put(header_type_name, rr.products.at(i).name, rr.products.at(i).properties.at(0).second);
     trace(9993, "transform") << "type of " << rr.products.at(i).name << " is " << debug_string(rr.products.at(i).type) << end();
   }
   for (long long int i = 0; i < SIZE(rr.steps); ++i) {
@@ -162,21 +165,27 @@ void deduce_types_from_header(const recipe_ordinal r) {
     trace(9992, "transform") << "instruction: " << inst.to_string() << end();
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
       if (inst.ingredients.at(i).type) continue;
-      if (header.find(inst.ingredients.at(i).name) == header.end()) {
+      if (header_type.find(inst.ingredients.at(i).name) == header_type.end()) {
         raise << maybe(rr.name) << "unknown variable " << inst.ingredients.at(i).name << " in '" << inst.to_string() << "'\n" << end();
         continue;
       }
-      inst.ingredients.at(i).type = new type_tree(*header[inst.ingredients.at(i).name]);
+      if (!inst.ingredients.at(i).type)
+        inst.ingredients.at(i).type = new type_tree(*get(header_type, inst.ingredients.at(i).name));
+      if (!inst.ingredients.at(i).properties.at(0).second)
+        inst.ingredients.at(i).properties.at(0).second = new string_tree(*get(header_type_name, inst.ingredients.at(i).name));
       trace(9993, "transform") << "type of " << inst.ingredients.at(i).name << " is " << debug_string(inst.ingredients.at(i).type) << end();
     }
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
       trace(9993, "transform") << "  product: " << debug_string(inst.products.at(i)) << end();
       if (inst.products.at(i).type) continue;
-      if (header.find(inst.products.at(i).name) == header.end()) {
+      if (header_type.find(inst.products.at(i).name) == header_type.end()) {
         raise << maybe(rr.name) << "unknown variable " << inst.products.at(i).name << " in '" << inst.to_string() << "'\n" << end();
         continue;
       }
-      inst.products.at(i).type = new type_tree(*header[inst.products.at(i).name]);
+      if (!inst.products.at(i).type)
+        inst.products.at(i).type = new type_tree(*get(header_type, inst.products.at(i).name));
+      if (!inst.products.at(i).properties.at(0).second)
+        inst.products.at(i).properties.at(0).second = new string_tree(*get(header_type_name, inst.products.at(i).name));
       trace(9993, "transform") << "type of " << inst.products.at(i).name << " is " << debug_string(inst.products.at(i).type) << end();
     }
   }
