@@ -267,6 +267,10 @@ vector<double> read_memory(reagent x) {
 }
 
 void write_memory(reagent x, vector<double> data) {
+  if (!x.type) {
+    raise_error << "can't write to " << x.to_string() << "; no type\n" << end();
+    return;
+  }
   if (is_dummy(x)) return;
   if (is_literal(x)) return;
   long long int base = x.value;

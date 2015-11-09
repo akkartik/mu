@@ -145,13 +145,9 @@ void setup_types() {
   // End Mu Types Initialization
 }
 void teardown_types() {
-  // todo: why can't I just Type.clear()?
   for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
-    if (!p->second.name.empty()) {
-      for (long long int i = 0; i < SIZE(p->second.elements); ++i) {
-        delete p->second.elements.at(i);
-      }
-    }
+    for (long long int i = 0; i < SIZE(p->second.elements); ++i)
+      delete p->second.elements.at(i);
   }
   Type_ordinal.clear();
 }
@@ -313,9 +309,8 @@ string_tree::string_tree(const string_tree& old) {  // :value(old.value) {
 reagent& reagent::operator=(const reagent& old) {
   original_string = old.original_string;
   properties.clear();
-  for (long long int i = 0; i < SIZE(old.properties); ++i) {
+  for (long long int i = 0; i < SIZE(old.properties); ++i)
     properties.push_back(pair<string, string_tree*>(old.properties.at(i).first, old.properties.at(i).second ? new string_tree(*old.properties.at(i).second) : NULL));
-  }
   name = old.name;
   value = old.value;
   initialized = old.initialized;
@@ -324,9 +319,8 @@ reagent& reagent::operator=(const reagent& old) {
 }
 
 reagent::~reagent() {
-  for (long long int i = 0; i < SIZE(properties); ++i) {
+  for (long long int i = 0; i < SIZE(properties); ++i)
     if (properties.at(i).second) delete properties.at(i).second;
-  }
   delete type;
 }
 type_tree::~type_tree() {
@@ -365,9 +359,7 @@ string debug_string(const reagent& x) {
 }
 
 string debug_string(const string_tree* property) {
-  if (!property) {
-    return "<>";
-  }
+  if (!property) return "<>";
   ostringstream out;
   if (!property->left && !property->right)
     // abbreviate a single-node tree to just its contents
@@ -393,9 +385,7 @@ void dump_property_tree(const string_tree* property, ostream& out) {
 
 string debug_string(const type_tree* type) {
   // abbreviate a single-node tree to just its contents
-  if (!type) {
-    return "NULLNULLNULL";  // should never happen
-  }
+  if (!type) return "NULLNULLNULL";  // should never happen
   ostringstream out;
   if (!type->left && !type->right)
     dump_type_name(type->value, out);
@@ -502,9 +492,8 @@ void dump_memory() {
 string recipe::to_string() const {
   ostringstream out;
   out << "recipe " << name << " [\n";
-  for (long long int i = 0; i < SIZE(steps); ++i) {
+  for (long long int i = 0; i < SIZE(steps); ++i)
     out << "  " << steps.at(i).to_string() << '\n';
-  }
   out << "]\n";
   return out.str();
 }

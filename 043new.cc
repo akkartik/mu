@@ -98,12 +98,11 @@ case ALLOCATE: {
   products.resize(1);
   products.at(0).push_back(result);
   // initialize allocated space
-  for (long long int address = result; address < result+size; ++address) {
+  for (long long int address = result; address < result+size; ++address)
     put(Memory, address, 0);
-  }
-  if (SIZE(current_instruction().ingredients) > 1) {
-    put(Memory, result, ingredients.at(1).at(0));  // array length
-  }
+  // initialize array length
+  if (SIZE(current_instruction().ingredients) > 1)
+    put(Memory, result, ingredients.at(1).at(0));
   // bump
   Current_routine->alloc += size;
   // no support for reclaiming memory

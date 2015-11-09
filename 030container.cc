@@ -481,9 +481,7 @@ while(p != Type_ordinal.end()) {
   // increment iterator
   ++p;
   // now delete current item if necessary
-  if (t >= 1000) {
-    Type_ordinal.erase(name);
-  }
+  if (t >= 1000) Type_ordinal.erase(name);
 }
 //: lastly, ensure scenarios are consistent by always starting them at the
 //: same type number.
@@ -580,9 +578,8 @@ void check_container_field_types() {
   for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
     const type_info& info = p->second;
     // Check Container Field Types(info)
-    for (long long int i = 0; i < SIZE(info.elements); ++i) {
+    for (long long int i = 0; i < SIZE(info.elements); ++i)
       check_invalid_types(info.elements.at(i), maybe(info.name), info.element_names.at(i));
-    }
   }
 }
 
@@ -602,7 +599,6 @@ void check_invalid_types(const recipe_ordinal r) {
 
 void check_invalid_types(type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
-//?   cerr << "checking ";  dump_types(type, cerr);  cerr << '\n';
   // End Container Type Checks
   if (type->value == 0) {
     assert(!type->left && !type->right);

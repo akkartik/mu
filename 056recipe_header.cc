@@ -113,13 +113,11 @@ void check_header_products(const recipe_ordinal r) {
   for (long long int i = 0; i < SIZE(rr.steps); ++i) {
     const instruction& inst = rr.steps.at(i);
     if (inst.name != "reply") continue;
-    if (SIZE(rr.products) != SIZE(inst.ingredients)) {
+    if (SIZE(rr.products) != SIZE(inst.ingredients))
       raise_error << maybe(rr.name) << "tried to reply the wrong number of products in '" << inst.to_string() << "'\n" << end();
-    }
     for (long long int i = 0; i < SIZE(rr.products); ++i) {
-      if (!types_match(rr.products.at(i), inst.ingredients.at(i))) {
+      if (!types_match(rr.products.at(i), inst.ingredients.at(i)))
         raise_error << maybe(rr.name) << "replied with the wrong type at '" << inst.to_string() << "'\n" << end();
-      }
     }
   }
 }
