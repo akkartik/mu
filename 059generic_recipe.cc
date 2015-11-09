@@ -328,7 +328,6 @@ recipe foo a:_t -> result:_t [
 +mem: storing 15 in location 12
 
 :(scenario generic_recipe_nonroot)
-% Hide_warnings = Hide_errors = true;
 recipe main [
   10:foo:point <- merge 14, 15, 16
   20:point/raw <- bar 10:foo:point
@@ -338,6 +337,24 @@ recipe bar a:foo:_t -> result:_t [
   local-scope
   load-ingredients
   result <- get a, x:offset
+]
+container foo:_t [
+  x:_t
+  y:number
+]
++mem: storing 14 in location 20
++mem: storing 15 in location 21
+
+:(scenario generic_recipe_type_deduction_ignores_offsets)
+recipe main [
+  10:foo:point <- merge 14, 15, 16
+  20:point/raw <- bar 10:foo:point
+]
+recipe bar a:foo:_t -> result:_t [
+  local-scope
+  load-ingredients
+  x:number <- copy 1
+  result <- get a, x:offset  # shouldn't collide with other variable
 ]
 container foo:_t [
   x:_t
