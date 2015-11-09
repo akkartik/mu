@@ -525,11 +525,11 @@ void check_or_set_invalid_types(const recipe_ordinal r) {
     const instruction& inst = get(Recipe, r).steps.at(index);
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
       check_or_set_invalid_types(inst.ingredients.at(i).type, inst.ingredients.at(i).properties.at(0).second,
-                          maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
+                                 maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
     }
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
       check_or_set_invalid_types(inst.products.at(i).type, inst.products.at(i).properties.at(0).second,
-                          maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
+                                 maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
     }
   }
 }
