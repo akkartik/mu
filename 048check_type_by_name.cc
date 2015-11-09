@@ -14,7 +14,7 @@ recipe main [
 ]
 +error: main: x used with multiple types
 
-:(after "Transform.push_back(check_or_set_invalid_types)")
+:(before "Transform.push_back(check_or_set_invalid_types)")
 Transform.push_back(check_types_by_name);  // idempotent
 
 :(code)
