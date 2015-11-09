@@ -259,32 +259,10 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const string
     if (inst.name == "new" && inst.ingredients.at(0).name.at(0) != '[') {
       string_tree* type_name = parse_string_tree(inst.ingredients.at(0).name);
       replace_type_ingredients(type_name, mappings);
-      inst.ingredients.at(0).name = simple_string(type_name);
+      inst.ingredients.at(0).name = type_name->to_string();
       delete type_name;
     }
   }
-}
-
-string simple_string(string_tree* x) {
-  ostringstream out;
-  simple_string(x, out);
-  return out.str();
-}
-
-void simple_string(string_tree* x, ostream& out) {
-  if (!x->left && !x->right) {
-    out << x->value;
-    return;
-  }
-  out << '(';
-  for (string_tree* curr = x; curr; curr = curr->right) {
-    if (curr != x) out << ' ';
-    if (curr->left)
-      simple_string(curr->left, out);
-    else
-      out << curr->value;
-  }
-  out << ')';
 }
 
 void replace_type_ingredients(reagent& x, const map<string, const string_tree*>& mappings) {
