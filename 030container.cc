@@ -535,8 +535,8 @@ void check_or_set_invalid_types(const recipe_ordinal r) {
 }
 
 void check_or_set_invalid_types(type_tree* type, const string_tree* type_name, const string& block, const string& name) {
+  // can't assert that type_name is non-null, even at the top of a recursive call tree
   if (!type) return;  // will throw a more precise error elsewhere
-//?   cerr << "checking ";  dump_types(type, cerr);  cerr << '\n';
   // End Container Type Checks
   if (type->value == 0) {
     assert(!type->left && !type->right);
