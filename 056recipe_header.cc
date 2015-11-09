@@ -37,16 +37,40 @@ void load_recipe_header(istream& in, recipe& result) {
     if (s == "->") break;
     result.ingredients.push_back(reagent(s));
     trace(9999, "parse") << "header ingredient: " << result.ingredients.back().original_string << end();
-    skip_whitespace(in);
+    skip_whitespace_and_comments(in);
   }
   while (in.peek() != '[') {
     string s = next_word(in);
     result.products.push_back(reagent(s));
     trace(9999, "parse") << "header product: " << result.products.back().original_string << end();
-    skip_whitespace(in);
+    skip_whitespace_and_comments(in);
   }
   // End Load Recipe Header(result)
 }
+
+:(scenario recipe_handles_stray_comma)
+recipe main [
+  1:number/raw <- add2 3, 5
+]
+recipe add2 x:number, y:number -> z:number, [
+  local-scope
+  load-ingredients
+  z:number <- add x, y
+  reply z
+]
++mem: storing 8 in location 1
+
+:(scenario recipe_handles_stray_comma_2)
+recipe main [
+  foo
+]
+recipe foo, [
+  1:number/raw <- add 2, 2
+]
+recipe bar [
+  1:number/raw <- add 2, 3
+]
++mem: storing 4 in location 1
 
 //: If a recipe never mentions any ingredients or products, assume it has a header.
 

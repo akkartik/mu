@@ -43,6 +43,7 @@ vector<recipe_ordinal> load(istream& in) {
 long long int slurp_recipe(istream& in) {
   recipe result;
   result.name = next_word(in);
+  skip_whitespace_and_comments(in);
   // End recipe Refinements
   if (result.name.empty())
     raise_error << "empty result.name\n" << end();
@@ -66,7 +67,7 @@ long long int slurp_recipe(istream& in) {
 
 void slurp_body(istream& in, recipe& result) {
   in >> std::noskipws;
-  skip_whitespace(in);
+  skip_whitespace_and_comments(in);
   if (in.get() != '[')
     raise_error << "recipe body must begin with '['\n" << end();
   skip_whitespace_and_comments(in);
@@ -199,6 +200,7 @@ void skip_whitespace_and_comments(istream& in) {
   while (true) {
     if (in.eof()) break;
     if (isspace(in.peek())) in.get();
+    else if (in.peek() == ',') in.get();
     else if (in.peek() == '#') skip_comment(in);
     else break;
   }
