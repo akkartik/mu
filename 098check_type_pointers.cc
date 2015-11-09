@@ -6,7 +6,6 @@ void check_type_pointers() {
   for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
     if (any_type_ingredient_in_header(p->first)) continue;
     const recipe& r = p->second;
-    trace(9991, "transform") << "--- checking type and type_name pointers for recipe " << r.name << end();
     for (long long int i = 0; i < SIZE(r.steps); ++i) {
       const instruction& inst = r.steps.at(i);
       for (long long int j = 0; j < SIZE(inst.ingredients); ++j) {
