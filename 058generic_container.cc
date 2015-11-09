@@ -145,9 +145,7 @@ recipe main [
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
     raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  trace(9999, "transform") << " === before replace: " << debug_string(element.type) << end();
   replace_type_ingredient(element.type, canonized_base.type->right);
-  trace(9999, "transform") << " === after replace: " << debug_string(element.type) << end();
 }
 
 :(code)
