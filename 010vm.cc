@@ -99,6 +99,8 @@ struct string_tree {
   string_tree(string v, string_tree* r) :value(v), left(NULL), right(r) {}
   // advanced: tree containing strings
   string_tree(string_tree* l, string_tree* r) :left(l), right(r) {}
+  // print as s-expression
+  string to_string() const;
 };
 
 :(before "End Globals")
@@ -505,6 +507,28 @@ string recipe::to_string() const {
   }
   out << "]\n";
   return out.str();
+}
+
+string string_tree::to_string() const {
+  ostringstream out;
+  dump(this, out);
+  return out.str();
+}
+
+void dump(const string_tree* x, ostream& out) {
+  if (!x->left && !x->right) {
+    out << x->value;
+    return;
+  }
+  out << '(';
+  for (const string_tree* curr = x; curr; curr = curr->right) {
+    if (curr != x) out << ' ';
+    if (curr->left)
+      dump(curr->left, out);
+    else
+      out << curr->value;
+  }
+  out << ')';
 }
 
 void skip_whitespace(istream& in) {
