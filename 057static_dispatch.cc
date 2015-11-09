@@ -83,9 +83,8 @@ string next_unused_recipe_name(const string& recipe_name) {
   for (long long int i = 2; ; ++i) {
     ostringstream out;
     out << recipe_name << '_' << i;
-    if (Recipe_ordinal.find(out.str()) == Recipe_ordinal.end()) {
+    if (Recipe_ordinal.find(out.str()) == Recipe_ordinal.end())
       return out.str();
-    }
   }
 }
 
@@ -105,8 +104,7 @@ recipe test a:number, b:number -> z:number [
 +mem: storing 2 in location 7
 
 //: after insert_fragments (tangle) and before computing operation ids
-//: after filling in all missing types (because we'll be specializing generics
-//: here in a later layer)
+//: after filling in all missing types (because we'll be specializing generics here in a later layer)
 :(after "Transform.push_back(deduce_types_from_header)")
 Transform.push_back(resolve_ambiguous_calls);  // idempotent
 

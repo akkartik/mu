@@ -151,21 +151,17 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
 void compute_type_names(recipe& variant) {
   trace(9993, "transform") << "compute type names: " << variant.name << end();
   map<string, string_tree*> type_names;
-  for (long long int i = 0; i < SIZE(variant.ingredients); ++i) {
+  for (long long int i = 0; i < SIZE(variant.ingredients); ++i)
     save_or_deduce_type_name(variant.ingredients.at(i), type_names);
-  }
-  for (long long int i = 0; i < SIZE(variant.products); ++i) {
+  for (long long int i = 0; i < SIZE(variant.products); ++i)
     save_or_deduce_type_name(variant.products.at(i), type_names);
-  }
   for (long long int i = 0; i < SIZE(variant.steps); ++i) {
     instruction& inst = variant.steps.at(i);
     trace(9993, "transform") << "  instruction: " << inst.to_string() << end();
-    for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
+    for (long long int in = 0; in < SIZE(inst.ingredients); ++in)
       save_or_deduce_type_name(inst.ingredients.at(in), type_names);
-    }
-    for (long long int out = 0; out < SIZE(inst.products); ++out) {
+    for (long long int out = 0; out < SIZE(inst.products); ++out)
       save_or_deduce_type_name(inst.products.at(out), type_names);
-    }
   }
 }
 
@@ -238,23 +234,19 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const string
   // update its header
   if (mappings.empty()) return;
   trace(9993, "transform") << "replacing in recipe header ingredients" << end();
-  for (long long int i = 0; i < SIZE(new_recipe.ingredients); ++i) {
+  for (long long int i = 0; i < SIZE(new_recipe.ingredients); ++i)
     replace_type_ingredients(new_recipe.ingredients.at(i), mappings);
-  }
   trace(9993, "transform") << "replacing in recipe header products" << end();
-  for (long long int i = 0; i < SIZE(new_recipe.products); ++i) {
+  for (long long int i = 0; i < SIZE(new_recipe.products); ++i)
     replace_type_ingredients(new_recipe.products.at(i), mappings);
-  }
   // update its body
   for (long long int i = 0; i < SIZE(new_recipe.steps); ++i) {
     instruction& inst = new_recipe.steps.at(i);
     trace(9993, "transform") << "replacing in instruction '" << inst.to_string() << "'" << end();
-    for (long long int j = 0; j < SIZE(inst.ingredients); ++j) {
+    for (long long int j = 0; j < SIZE(inst.ingredients); ++j)
       replace_type_ingredients(inst.ingredients.at(j), mappings);
-    }
-    for (long long int j = 0; j < SIZE(inst.products); ++j) {
+    for (long long int j = 0; j < SIZE(inst.products); ++j)
       replace_type_ingredients(inst.products.at(j), mappings);
-    }
     // special-case for new: replace type ingredient in first ingredient *value*
     if (inst.name == "new" && inst.ingredients.at(0).name.at(0) != '[') {
       string_tree* type_name = parse_string_tree(inst.ingredients.at(0).name);
@@ -291,30 +283,26 @@ void replace_type_ingredients(string_tree* type, const map<string, const string_
 }
 
 void ensure_all_concrete_types(const recipe& new_recipe) {
-  for (long long int i = 0; i < SIZE(new_recipe.ingredients); ++i) {
+  for (long long int i = 0; i < SIZE(new_recipe.ingredients); ++i)
     ensure_all_concrete_types(new_recipe.ingredients.at(i).type);
-  }
-  for (long long int i = 0; i < SIZE(new_recipe.products); ++i) {
+  for (long long int i = 0; i < SIZE(new_recipe.products); ++i)
     ensure_all_concrete_types(new_recipe.products.at(i).type);
-  }
   for (long long int i = 0; i < SIZE(new_recipe.steps); ++i) {
     const instruction& inst = new_recipe.steps.at(i);
-    for (long long int j = 0; j < SIZE(inst.ingredients); ++j) {
+    for (long long int j = 0; j < SIZE(inst.ingredients); ++j)
       ensure_all_concrete_types(inst.ingredients.at(j).type);
-    }
-    for (long long int j = 0; j < SIZE(inst.products); ++j) {
+    for (long long int j = 0; j < SIZE(inst.products); ++j)
       ensure_all_concrete_types(inst.products.at(j).type);
-    }
   }
 }
 
 void ensure_all_concrete_types(const type_tree* x) {
   if (!x) {
-    raise << "AAA null type\n" << end();
+    raise << "null type\n" << end();
     return;
   }
   if (x->value == -1) {
-    raise << "AAA unknown type\n" << end();
+    raise << "unknown type\n" << end();
     return;
   }
 }
