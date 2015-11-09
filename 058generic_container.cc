@@ -141,6 +141,17 @@ recipe main [
 +mem: storing 14 in location 2
 +mem: storing 15 in location 3
 
+:(scenario get_on_generic_container_3)
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  1:foo:address:point <- merge 34, 48  # unsafe
+  2:address:point <- get 1:foo:address:point, x:offset
+]
++mem: storing 34 in location 2
+
 :(before "End element_type Special-cases")
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
