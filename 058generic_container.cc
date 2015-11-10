@@ -100,6 +100,12 @@ long long int size_of_type_ingredient(const type_tree* element_template, const t
   }
   assert(curr);
   assert(!curr->left);  // unimplemented
+  if (!contains_key(Type, curr->value)) {
+    // temporarily while we're still ironing out kinks; eventually replace with a raise_error
+    DUMP("");
+    cerr << "missing type " << debug_string(curr) << '\n';
+    exit(0);
+  }
   assert(contains_key(Type, curr->value));
   trace(9999, "type") << "type deduced to be " << get(Type, curr->value).name << "$" << end();
   type_tree tmp(curr->value);

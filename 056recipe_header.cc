@@ -72,6 +72,14 @@ recipe bar [
 ]
 +mem: storing 4 in location 1
 
+:(after "Begin debug_string(recipe x)")
+out << "ingredients:\n";
+for (long long int i = 0; i < SIZE(x.ingredients); ++i)
+  out << "  " << debug_string(x.ingredients.at(i)) << '\n';
+out << "products:\n";
+for (long long int i = 0; i < SIZE(x.products); ++i)
+  out << "  " << debug_string(x.products.at(i)) << '\n';
+
 //: If a recipe never mentions any ingredients or products, assume it has a header.
 
 :(scenario recipe_without_ingredients_or_products_has_header)

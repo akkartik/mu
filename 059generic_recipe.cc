@@ -98,6 +98,10 @@ bool any_type_ingredient_in_header(recipe_ordinal variant) {
     if (contains_type_ingredient_name(get(Recipe, variant).ingredients.at(i)))
       return true;
   }
+  for (long long int i = 0; i < SIZE(get(Recipe, variant).products); ++i) {
+    if (contains_type_ingredient_name(get(Recipe, variant).products.at(i)))
+      return true;
+  }
   return false;
 }
 
@@ -362,3 +366,24 @@ container foo:_t [
 ]
 +mem: storing 14 in location 20
 +mem: storing 15 in location 21
+
+:(scenario generic_recipe_handles_generic_new_ingredient)
+recipe main [
+  1:address:foo:point <- bar 3
+  11:foo:point <- copy *1:address:foo:point
+]
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe bar x:number -> result:address:foo:_t [
+  local-scope
+  load-ingredients
+  # new refers to _t in its ingredient *value*
+  result <- new {(foo _t) : type}
+]
++mem: storing 0 in location 11
++mem: storing 0 in location 12
++mem: storing 0 in location 13
+
+# todo: container after generic recipe containing 'new'
