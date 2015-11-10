@@ -140,9 +140,13 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   // work of the check_types_by_name transform while supporting type-ingredients.
   compute_type_names(new_recipe);
   // that gives enough information to replace type-ingredients with concrete types
-  map<string, const string_tree*> mappings;
-  compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings);
-  replace_type_ingredients(new_recipe, mappings);
+  {
+    map<string, const string_tree*> mappings;
+    compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings);
+    replace_type_ingredients(new_recipe, mappings);
+    for (map<string, const string_tree*>::iterator p = mappings.begin(); p != mappings.end(); ++p)
+      delete p->second;
+  }
   ensure_all_concrete_types(new_recipe);
   // finally, perform all transforms on the new specialization
   for (long long int t = 0; t < SIZE(Transform); ++t) {
@@ -386,4 +390,22 @@ recipe bar x:number -> result:address:foo:_t [
 +mem: storing 0 in location 12
 +mem: storing 0 in location 13
 
-# todo: container after generic recipe containing 'new'
+:(scenario generic_recipe_handles_generic_new_ingredient_2)
+recipe main [
+  1:address:foo:point <- bar 3
+  11:foo:point <- copy *1:address:foo:point
+]
+recipe bar x:number -> result:address:foo:_t [
+  local-scope
+  load-ingredients
+  # new refers to _t in its ingredient *value*
+  result <- new {(foo _t) : type}
+]
+# container defined after use
+container foo:_t [
+  x:_t
+  y:number
+]
++mem: storing 0 in location 11
++mem: storing 0 in location 12
++mem: storing 0 in location 13
