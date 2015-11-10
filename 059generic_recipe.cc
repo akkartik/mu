@@ -409,3 +409,18 @@ container foo:_t [
 +mem: storing 0 in location 11
 +mem: storing 0 in location 12
 +mem: storing 0 in location 13
+
+:(scenario generic_recipe_supports_compound_types)
+recipe main [
+  1:address:point <- new point:type
+  2:address:number <- get-address *1:address:point, y:offset
+  *2:address:number <- copy 34
+  3:address:point <- bar 1:address:point  # specialize _t to address:point
+  4:point <- copy *3:address:point
+]
+recipe bar a:_t -> result:_t [
+  local-scope
+  load-ingredients
+  result <- copy a
+]
++mem: storing 34 in location 5
