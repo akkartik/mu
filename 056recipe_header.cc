@@ -138,18 +138,18 @@ Transform.push_back(check_reply_instructions_against_header);  // idempotent
 
 :(code)
 void check_reply_instructions_against_header(const recipe_ordinal r) {
-  const recipe& rr = get(Recipe, r);
-  if (rr.products.empty()) return;
-  trace(9991, "transform") << "--- checking reply instructions against header for " << rr.name << end();
-//?   cerr << "--- checking reply instructions against header for " << rr.name << '\n';
-  for (long long int i = 0; i < SIZE(rr.steps); ++i) {
-    const instruction& inst = rr.steps.at(i);
+  const recipe& caller_recipe = get(Recipe, r);
+  if (caller_recipe.products.empty()) return;
+  trace(9991, "transform") << "--- checking reply instructions against header for " << caller_recipe.name << end();
+//?   cerr << "--- checking reply instructions against header for " << caller_recipe.name << '\n';
+  for (long long int i = 0; i < SIZE(caller_recipe.steps); ++i) {
+    const instruction& inst = caller_recipe.steps.at(i);
     if (inst.name != "reply") continue;
-    if (SIZE(rr.products) != SIZE(inst.ingredients))
-      raise_error << maybe(rr.name) << "tried to reply the wrong number of products in '" << inst.to_string() << "'\n" << end();
-    for (long long int i = 0; i < SIZE(rr.products); ++i) {
-      if (!types_match(rr.products.at(i), inst.ingredients.at(i)))
-        raise_error << maybe(rr.name) << "replied with the wrong type at '" << inst.to_string() << "'\n" << end();
+    if (SIZE(caller_recipe.products) != SIZE(inst.ingredients))
+      raise_error << maybe(caller_recipe.name) << "tried to reply the wrong number of products in '" << inst.to_string() << "'\n" << end();
+    for (long long int i = 0; i < SIZE(caller_recipe.products); ++i) {
+      if (!types_match(caller_recipe.products.at(i), inst.ingredients.at(i)))
+        raise_error << maybe(caller_recipe.name) << "replied with the wrong type at '" << inst.to_string() << "'\n" << end();
     }
   }
 }
@@ -171,13 +171,13 @@ Transform.push_back(check_and_update_header_reagents);  // idempotent
 
 :(code)
 void check_and_update_header_reagents(const recipe_ordinal r) {
-  recipe& rr = get(Recipe, r);
-  if (rr.products.empty()) return;
-  trace(9991, "transform") << "--- checking reply instructions against header for " << rr.name << end();
-  for (long long int i = 0; i < SIZE(rr.ingredients); ++i) {
-    if (contains_key(rr.ingredient_index, rr.ingredients.at(i).name))
-      raise_error << maybe(rr.name) << rr.ingredients.at(i).name << " can't repeat in the ingredients\n" << end();
-    put(rr.ingredient_index, rr.ingredients.at(i).name, i);
+  recipe& caller_recipe = get(Recipe, r);
+  if (caller_recipe.products.empty()) return;
+  trace(9991, "transform") << "--- checking reply instructions against header for " << caller_recipe.name << end();
+  for (long long int i = 0; i < SIZE(caller_recipe.ingredients); ++i) {
+    if (contains_key(caller_recipe.ingredient_index, caller_recipe.ingredients.at(i).name))
+      raise_error << maybe(caller_recipe.name) << caller_recipe.ingredients.at(i).name << " can't repeat in the ingredients\n" << end();
+    put(caller_recipe.ingredient_index, caller_recipe.ingredients.at(i).name, i);
   }
 }
 
@@ -201,29 +201,29 @@ Transform.push_back(deduce_types_from_header);  // idempotent
 
 :(code)
 void deduce_types_from_header(const recipe_ordinal r) {
-  recipe& rr = get(Recipe, r);
-  if (rr.products.empty()) return;
-  trace(9991, "transform") << "--- deduce types from header for " << rr.name << end();
-//?   cerr << "--- deduce types from header for " << rr.name << '\n';
+  recipe& caller_recipe = get(Recipe, r);
+  if (caller_recipe.products.empty()) return;
+  trace(9991, "transform") << "--- deduce types from header for " << caller_recipe.name << end();
+//?   cerr << "--- deduce types from header for " << caller_recipe.name << '\n';
   map<string, const type_tree*> header_type;
   map<string, const string_tree*> header_type_name;
-  for (long long int i = 0; i < SIZE(rr.ingredients); ++i) {
-    put(header_type, rr.ingredients.at(i).name, rr.ingredients.at(i).type);
-    put(header_type_name, rr.ingredients.at(i).name, rr.ingredients.at(i).properties.at(0).second);
-    trace(9993, "transform") << "type of " << rr.ingredients.at(i).name << " is " << debug_string(rr.ingredients.at(i).type) << end();
+  for (long long int i = 0; i < SIZE(caller_recipe.ingredients); ++i) {
+    put(header_type, caller_recipe.ingredients.at(i).name, caller_recipe.ingredients.at(i).type);
+    put(header_type_name, caller_recipe.ingredients.at(i).name, caller_recipe.ingredients.at(i).properties.at(0).second);
+    trace(9993, "transform") << "type of " << caller_recipe.ingredients.at(i).name << " is " << debug_string(caller_recipe.ingredients.at(i).type) << end();
   }
-  for (long long int i = 0; i < SIZE(rr.products); ++i) {
-    put(header_type, rr.products.at(i).name, rr.products.at(i).type);
-    put(header_type_name, rr.products.at(i).name, rr.products.at(i).properties.at(0).second);
-    trace(9993, "transform") << "type of " << rr.products.at(i).name << " is " << debug_string(rr.products.at(i).type) << end();
+  for (long long int i = 0; i < SIZE(caller_recipe.products); ++i) {
+    put(header_type, caller_recipe.products.at(i).name, caller_recipe.products.at(i).type);
+    put(header_type_name, caller_recipe.products.at(i).name, caller_recipe.products.at(i).properties.at(0).second);
+    trace(9993, "transform") << "type of " << caller_recipe.products.at(i).name << " is " << debug_string(caller_recipe.products.at(i).type) << end();
   }
-  for (long long int i = 0; i < SIZE(rr.steps); ++i) {
-    instruction& inst = rr.steps.at(i);
+  for (long long int i = 0; i < SIZE(caller_recipe.steps); ++i) {
+    instruction& inst = caller_recipe.steps.at(i);
     trace(9992, "transform") << "instruction: " << inst.to_string() << end();
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
       if (inst.ingredients.at(i).type) continue;
       if (header_type.find(inst.ingredients.at(i).name) == header_type.end()) {
-        raise << maybe(rr.name) << "unknown variable " << inst.ingredients.at(i).name << " in '" << inst.to_string() << "'\n" << end();
+        raise << maybe(caller_recipe.name) << "unknown variable " << inst.ingredients.at(i).name << " in '" << inst.to_string() << "'\n" << end();
         continue;
       }
       if (!inst.ingredients.at(i).type)
@@ -236,7 +236,7 @@ void deduce_types_from_header(const recipe_ordinal r) {
       trace(9993, "transform") << "  product: " << debug_string(inst.products.at(i)) << end();
       if (inst.products.at(i).type) continue;
       if (header_type.find(inst.products.at(i).name) == header_type.end()) {
-        raise << maybe(rr.name) << "unknown variable " << inst.products.at(i).name << " in '" << inst.to_string() << "'\n" << end();
+        raise << maybe(caller_recipe.name) << "unknown variable " << inst.products.at(i).name << " in '" << inst.to_string() << "'\n" << end();
         continue;
       }
       if (!inst.products.at(i).type)
@@ -268,34 +268,34 @@ Transform.push_back(fill_in_reply_ingredients);  // idempotent
 
 :(code)
 void fill_in_reply_ingredients(recipe_ordinal r) {
-  recipe& rr = get(Recipe, r);
-  if (!rr.has_header) return;
-  trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << rr.name << end();
-  for (long long int i = 0; i < SIZE(rr.steps); ++i) {
-    instruction& inst = rr.steps.at(i);
+  recipe& caller_recipe = get(Recipe, r);
+  if (!caller_recipe.has_header) return;
+  trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << caller_recipe.name << end();
+  for (long long int i = 0; i < SIZE(caller_recipe.steps); ++i) {
+    instruction& inst = caller_recipe.steps.at(i);
     if (inst.name == "reply" && inst.ingredients.empty())
-      add_header_products(inst, rr);
+      add_header_products(inst, caller_recipe);
   }
   // fall through reply
-  if (rr.steps.at(SIZE(rr.steps)-1).name != "reply") {
+  if (caller_recipe.steps.at(SIZE(caller_recipe.steps)-1).name != "reply") {
     instruction inst;
     inst.name = "reply";
-    add_header_products(inst, rr);
-    rr.steps.push_back(inst);
+    add_header_products(inst, caller_recipe);
+    caller_recipe.steps.push_back(inst);
   }
 }
 
-void add_header_products(instruction& inst, const recipe& rr) {
+void add_header_products(instruction& inst, const recipe& caller_recipe) {
   assert(inst.name == "reply");
   // collect any products with the same names as ingredients
-  for (long long int i = 0; i < SIZE(rr.products); ++i) {
+  for (long long int i = 0; i < SIZE(caller_recipe.products); ++i) {
     // if the ingredient is missing, add it from the header
     if (SIZE(inst.ingredients) == i)
-      inst.ingredients.push_back(rr.products.at(i));
+      inst.ingredients.push_back(caller_recipe.products.at(i));
     // if it's missing /same_as_ingredient, try to fill it in
-    if (contains_key(rr.ingredient_index, rr.products.at(i).name) && !has_property(inst.ingredients.at(i), "same_as_ingredient")) {
+    if (contains_key(caller_recipe.ingredient_index, caller_recipe.products.at(i).name) && !has_property(inst.ingredients.at(i), "same_as_ingredient")) {
       ostringstream same_as_ingredient;
-      same_as_ingredient << get(rr.ingredient_index, rr.products.at(i).name);
+      same_as_ingredient << get(caller_recipe.ingredient_index, caller_recipe.products.at(i).name);
       inst.ingredients.at(i).properties.push_back(pair<string, string_tree*>("same-as-ingredient", new string_tree(same_as_ingredient.str())));
     }
   }
