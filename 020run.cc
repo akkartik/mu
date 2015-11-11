@@ -161,7 +161,7 @@ if (argc > 1) {
 //: Step 3: if we aren't running tests, locate a recipe called 'main' and
 //: start running it.
 :(before "End Main")
-if (!Run_tests) {
+if (!Run_tests && contains_key(Recipe_ordinal, string("main")) && contains_key(Recipe, get(Recipe_ordinal, string("main")))) {
   setup();
 //?   Trace_file = "interactive";
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
