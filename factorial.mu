@@ -7,9 +7,9 @@ recipe main [
 ]
 ]
 
-recipe factorial [
+recipe factorial n:number -> result:number [
   local-scope
-  n:number <- next-ingredient
+  load-ingredients
   {
     # if n=0 return 1
     zero?:boolean <- equal n, 0
@@ -19,8 +19,7 @@ recipe factorial [
   # return n * factorial(n-1)
   x:number <- subtract n, 1
   subresult:number <- factorial x
-  result:number <- multiply subresult, n
-  reply result
+  result <- multiply subresult, n
 ]
 
 # unit test
