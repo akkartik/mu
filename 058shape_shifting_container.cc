@@ -1,14 +1,9 @@
 //:: Container definitions can contain type parameters.
 //:
-//: Extremely hacky initial implementation:
-//:
-//: a) We still don't support the full complexity of type trees inside
-//: container definitions. So for example you can't have a container element
-//: with this type:
+//: Extremely hacky initial implementation. We still don't support the full
+//: complexity of type trees inside container definitions. So for example you
+//: can't have a container element with this type:
 //:   (map (array address character) (list number))
-//:
-//: b) We also can't include type parameters anywhere except at the top of the
-//: type of a container element.
 
 :(scenario size_of_shape_shifting_container)
 container foo:_t [
