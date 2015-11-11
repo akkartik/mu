@@ -110,18 +110,19 @@ Transform.push_back(resolve_ambiguous_calls);  // idempotent
 
 :(code)
 void resolve_ambiguous_calls(recipe_ordinal r) {
-  if (!get(Recipe, r).has_header) return;
-  trace(9991, "transform") << "--- resolve ambiguous calls for recipe " << get(Recipe, r).name << end();
-  for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
-    instruction& inst = get(Recipe, r).steps.at(index);
+  recipe& caller_recipe = get(Recipe, r);
+  if (!caller_recipe.has_header) return;
+  trace(9991, "transform") << "--- resolve ambiguous calls for recipe " << caller_recipe.name << end();
+  for (long long int index = 0; index < SIZE(caller_recipe.steps); ++index) {
+    instruction& inst = caller_recipe.steps.at(index);
     if (inst.is_label) continue;
     if (!contains_key(Recipe_variants, inst.name)) continue;
     assert(!get(Recipe_variants, inst.name).empty());
-    replace_best_variant(inst);
+    replace_best_variant(inst, caller_recipe);
   }
 }
 
-void replace_best_variant(instruction& inst) {
+void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
   trace(9992, "transform") << "instruction " << inst.name << end();
   vector<recipe_ordinal>& variants = get(Recipe_variants, inst.name);
   long long int best_score = variant_score(inst, get(Recipe_ordinal, inst.name));
