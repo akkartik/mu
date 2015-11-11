@@ -110,7 +110,7 @@ recipe delete-before-cursor editor:address:editor-data, screen:address:screen ->
   curr-column:number <- copy cursor-column
   {
     # hit right margin? give up and let caller render
-    at-right?:boolean <- greater-or-equal curr-column, screen-width
+    at-right?:boolean <- greater-or-equal curr-column, right
     go-render? <- copy 1/true
     reply-if at-right?
     break-unless curr
@@ -220,6 +220,64 @@ cd]
   memory-should-contain [
     4 <- 1
     5 <- 2
+  ]
+]
+
+scenario editor-joins-and-wraps-lines-on-backspace [
+  assume-screen 10/width, 5/height
+  # initialize editor with two long-ish but non-wrapping lines
+  1:address:array:character <- new [abc def
+ghi jkl]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  editor-render screen, 2:address:editor-data
+  $clear-trace
+  # position the cursor at the start of the second and hit backspace
+  assume-console [
+    left-click 2, 0
+    press backspace
+  ]
+  run [
+    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
+  ]
+  # resulting single line should wrap correctly
+  screen-should-contain [
+    .          .
+    .abc defgh↩.
+    .i jkl     .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+]
+
+scenario editor-wraps-long-lines-on-backspace [
+  assume-screen 10/width, 5/height
+  # initialize editor in part of the screen with a long line
+  1:address:array:character <- new [abc def ghij]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 8/right
+  editor-render screen, 2:address:editor-data
+  # confirm that it wraps
+  screen-should-contain [
+    .          .
+    .abc def↩  .
+    . ghij     .
+    .┈┈┈┈┈┈┈┈  .
+  ]
+  $clear-trace
+  # position the cursor somewhere in the middle of the top screen line and hit backspace
+  assume-console [
+    left-click 1, 4
+    press backspace
+  ]
+  run [
+    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
+  ]
+  # resulting single line should wrap correctly and not overflow its bounds
+  screen-should-contain [
+    .          .
+    .abcdef ↩  .
+    .ghij      .
+    .┈┈┈┈┈┈┈┈  .
+    .          .
   ]
 ]
 
