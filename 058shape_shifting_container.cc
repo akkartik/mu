@@ -10,7 +10,7 @@
 //: b) We also can't include type parameters anywhere except at the top of the
 //: type of a container element.
 
-:(scenario size_of_generic_container)
+:(scenario size_of_shape_shifting_container)
 container foo:_t [
   x:_t
   y:number
@@ -34,7 +34,7 @@ assert(Next_type_ordinal < START_TYPE_INGREDIENTS);
 :(before "End type_info Fields")
 map<string, type_ordinal> type_ingredient_names;
 
-//: Suppress unknown type checks in generic containers.
+//: Suppress unknown type checks in shape-shifting containers.
 
 :(before "Check Container Field Types(info)")
 if (!info.type_ingredient_names.empty()) continue;
@@ -88,7 +88,7 @@ if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
 }
 
 :(code)
-// generic version of size_of
+// shape-shifting version of size_of
 long long int size_of_type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {
   long long int type_ingredient_index = element_template->value - START_TYPE_INGREDIENTS;
   const type_tree* curr = rest_of_use;
@@ -114,7 +114,7 @@ long long int size_of_type_ingredient(const type_tree* element_template, const t
   return size_of(&tmp);
 }
 
-:(scenario get_on_generic_container)
+:(scenario get_on_shape_shifting_container)
 container foo:_t [
   x:_t
   y:number
@@ -135,7 +135,7 @@ if (type->value >= START_TYPE_INGREDIENTS) {
   continue;
 }
 
-:(scenario get_on_generic_container_2)
+:(scenario get_on_shape_shifting_container_2)
 container foo:_t [
   x:_t
   y:number
@@ -147,7 +147,7 @@ recipe main [
 +mem: storing 14 in location 2
 +mem: storing 15 in location 3
 
-:(scenario get_on_generic_container_3)
+:(scenario get_on_shape_shifting_container_3)
 container foo:_t [
   x:_t
   y:number
@@ -205,7 +205,7 @@ bool has_nth_type(const type_tree* base, long long int n) {
   return has_nth_type(base->right, n-1);
 }
 
-:(scenario get_on_generic_container_error)
+:(scenario get_on_shape_shifting_container_error)
 % Hide_errors = true;
 container foo:_t [
   x:_t
@@ -219,7 +219,7 @@ recipe main [
 
 //: get-address similarly
 
-:(scenario get_address_on_generic_container)
+:(scenario get_address_on_shape_shifting_container)
 container foo:_t [
   x:_t
   y:number
@@ -240,7 +240,7 @@ if (type->value >= START_TYPE_INGREDIENTS) {
   continue;
 }
 
-:(scenario get_on_generic_container_inside_generic_container)
+:(scenario get_on_shape_shifting_container_inside_shape_shifting_container)
 container foo:_t [
   x:_t
   y:number
