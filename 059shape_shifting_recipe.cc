@@ -1,6 +1,6 @@
 //:: Like container definitions, recipes too can contain type parameters.
 
-:(scenario generic_recipe)
+:(scenario shape_shifting_recipe)
 recipe main [
   10:point <- merge 14, 15
   11:point <- foo 10:point
@@ -11,7 +11,7 @@ recipe foo a:number -> result:number [
   load-ingredients
   result <- copy 34
 ]
-# matching generic variant
+# matching shape-shifting variant
 recipe foo a:_t -> result:_t [
   local-scope
   load-ingredients
@@ -20,7 +20,7 @@ recipe foo a:_t -> result:_t [
 +mem: storing 14 in location 11
 +mem: storing 15 in location 12
 
-//: Before anything else, disable transforms for generic recipes.
+//: Before anything else, disable transforms for shape-shifting recipes.
 
 :(before "End Transform Checks")
 if (any_type_ingredient_in_header(/*recipe_ordinal*/p->first)) continue;
@@ -35,7 +35,7 @@ recently_added_types.clear();
 :(before "End Instruction Dispatch(inst, best_score)")
 if (best_score == -1) {
   trace(9992, "transform") << "no variant found; searching for variant with suitable type ingredients" << end();
-  recipe_ordinal exemplar = pick_matching_generic_variant(variants, inst, best_score);
+  recipe_ordinal exemplar = pick_matching_shape_shifting_variant(variants, inst, best_score);
   if (exemplar) {
     trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
     variants.push_back(new_variant(exemplar, inst, caller_recipe));
@@ -45,12 +45,12 @@ if (best_score == -1) {
 }
 
 :(code)
-recipe_ordinal pick_matching_generic_variant(vector<recipe_ordinal>& variants, const instruction& inst, long long int& best_score) {
+recipe_ordinal pick_matching_shape_shifting_variant(vector<recipe_ordinal>& variants, const instruction& inst, long long int& best_score) {
   recipe_ordinal result = 0;
   for (long long int i = 0; i < SIZE(variants); ++i) {
     if (variants.at(i) == -1) continue;  // ghost from a previous test
-    trace(9992, "transform") << "checking generic variant " << i << end();
-    long long int current_score = generic_variant_score(inst, variants.at(i));
+    trace(9992, "transform") << "checking shape-shifting variant " << i << end();
+    long long int current_score = shape_shifting_variant_score(inst, variants.at(i));
     trace(9992, "transform") << "final score: " << current_score << end();
     if (current_score > best_score) {
       trace(9992, "transform") << "matches" << end();
@@ -61,7 +61,7 @@ recipe_ordinal pick_matching_generic_variant(vector<recipe_ordinal>& variants, c
   return result;
 }
 
-long long int generic_variant_score(const instruction& inst, recipe_ordinal variant) {
+long long int shape_shifting_variant_score(const instruction& inst, recipe_ordinal variant) {
   if (!any_type_ingredient_in_header(variant)) {
     trace(9993, "transform") << "no type ingredients" << end();
     return -1;
@@ -321,18 +321,18 @@ void ensure_all_concrete_types(const type_tree* x) {
   }
 }
 
-:(scenario generic_recipe_2)
+:(scenario shape_shifting_recipe_2)
 recipe main [
   10:point <- merge 14, 15
   11:point <- foo 10:point
 ]
-# non-matching generic variant
+# non-matching shape-shifting variant
 recipe foo a:_t, b:_t -> result:number [
   local-scope
   load-ingredients
   result <- copy 34
 ]
-# matching generic variant
+# matching shape-shifting variant
 recipe foo a:_t -> result:_t [
   local-scope
   load-ingredients
@@ -341,12 +341,12 @@ recipe foo a:_t -> result:_t [
 +mem: storing 14 in location 11
 +mem: storing 15 in location 12
 
-:(scenario generic_recipe_nonroot)
+:(scenario shape_shifting_recipe_nonroot)
 recipe main [
   10:foo:point <- merge 14, 15, 16
   20:point/raw <- bar 10:foo:point
 ]
-# generic recipe with type ingredient following some other type
+# shape-shifting recipe with type ingredient following some other type
 recipe bar a:foo:_t -> result:_t [
   local-scope
   load-ingredients
@@ -359,7 +359,7 @@ container foo:_t [
 +mem: storing 14 in location 20
 +mem: storing 15 in location 21
 
-:(scenario generic_recipe_type_deduction_ignores_offsets)
+:(scenario shape_shifting_recipe_type_deduction_ignores_offsets)
 recipe main [
   10:foo:point <- merge 14, 15, 16
   20:point/raw <- bar 10:foo:point
@@ -377,7 +377,7 @@ container foo:_t [
 +mem: storing 14 in location 20
 +mem: storing 15 in location 21
 
-:(scenario generic_recipe_handles_generic_new_ingredient)
+:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient)
 recipe main [
   1:address:foo:point <- bar 3
   11:foo:point <- copy *1:address:foo:point
@@ -396,7 +396,7 @@ recipe bar x:number -> result:address:foo:_t [
 +mem: storing 0 in location 12
 +mem: storing 0 in location 13
 
-:(scenario generic_recipe_handles_generic_new_ingredient_2)
+:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient_2)
 recipe main [
   1:address:foo:point <- bar 3
   11:foo:point <- copy *1:address:foo:point
@@ -416,7 +416,7 @@ container foo:_t [
 +mem: storing 0 in location 12
 +mem: storing 0 in location 13
 
-:(scenario generic_recipe_supports_compound_types)
+:(scenario shape_shifting_recipe_supports_compound_types)
 recipe main [
   1:address:point <- new point:type
   2:address:number <- get-address *1:address:point, y:offset
@@ -431,7 +431,7 @@ recipe bar a:_t -> result:_t [
 ]
 +mem: storing 34 in location 5
 
-:(scenario generic_recipe_error)
+:(scenario shape_shifting_recipe_error)
 % Hide_errors = true;
 recipe main [
   a:number <- copy 3
