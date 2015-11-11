@@ -6,9 +6,9 @@
 # This isn't a very tasteful example, just a simple demonstration of
 # possibilities.
 
-recipe factorial [
+recipe factorial n:number -> result:number [
   local-scope
-  n:number <- next-ingredient
+  load-ingredients
   {
     <base-case>
   }
@@ -26,8 +26,7 @@ after <recursive-case> [
   # return n * factorial(n - 1)
   x:number <- subtract n, 1
   subresult:number <- factorial x
-  result:number <- multiply subresult, n
-  reply result
+  result <- multiply subresult, n
 ]
 
 recipe main [

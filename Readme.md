@@ -75,9 +75,18 @@ Running Mu will always recompile it if necessary:
   $ ./mu
   ```
 
-As a sneak peek, here's how you compute factorial in Mu:
+As a sneak peek, here's how you perform some simple arithmetic:
 
-<img alt='code example' src='html/factorial.png' width='330px'>
+  ```nim
+  recipe example1 [
+    a:number <- add 2, 2
+    a <- multiply a, 3
+  ]
+  ```
+
+But it's easier to read in color:
+
+<img alt='code example' src='html/example1.png' width='188px'>
 
 Mu functions or 'recipes' are lists of instructions, one to a line. Each
 instruction operates on some *ingredients* and returns some *products*.
@@ -96,15 +105,63 @@ you can perform integer division as follows:
 
 Each reagent can provide a name as well as its type separated by a colon. You
 only have to specify the type the first time you mention a name, but you can
-be more explicit if you choose. Types can be multiple words, like:
+be more explicit if you choose. Types can be multiple words and even arbitrary
+trees, like:
 
   ```nim
   x:array:number:3  # x is an array of 3 numbers
   y:list:number  # y is a list of numbers
+  # without syntactic sugar
+  {z: (map (address array character) (list number))}   # map from string to list of numbers
   ```
 
-Recipes load their ingredients from their caller using the *next-ingredient*
-instruction, and return products using *reply*.
+Try out the program now:
+
+  ```shell
+  $ ./mu example1.mu
+  $
+  ```
+
+Not much to see yet, since it doesn't print anything. To print the result, try
+adding the instruction `$print a` to the recipe.
+
+---
+
+Here's a second example, of a recipe that can take ingredients:
+
+<img alt='fahrenheit to celsius' src='html/f2c-1.png' width='426px'>
+
+Recipes can specify headers showing their expected ingredients and products,
+separated by '->' (unlike the '<-' in *calls*).
+
+Since mu is a low-level VM language, it provides extra control at the cost of
+verbosity. You have explicit control over stack frames to isolate your recipes
+(in a type-safe manner; more on that below), but you have to explicitly
+`load-ingredients` after you set up the stack.
+
+An alternative syntax is what the above example is converted to internally:
+
+<img alt='fahrenheit to celsius desugared' src='html/f2c-2.png' width='426px'>
+
+The header gets dropped after checking types at call-sites, and after
+replacing `load-ingredients` with explicit instructions to load each
+ingredient separately, and to explicitly return products to the caller. After
+this translation recipes are once again just lists of instructions.
+
+This alternative syntax isn't just an implementation detail. I've actually
+found it easier to teach functions to non-programmers by starting with this
+syntax, so that they can see the names of variables gradually transition from
+caller to callee.
+
+---
+
+A third example, this time illustrating conditionals:
+
+<img alt='factorial example' src='html/factorial.png' width='330px'>
+
+In spite of how it looks, this is still just a list of instructions.
+Internally, the instructions `break` and `loop` get converted to `jump`
+instructions to after the enclosing `}` or `{`, respectively.
 
 Try out the factorial program now:
 
