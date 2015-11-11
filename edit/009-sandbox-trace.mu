@@ -80,7 +80,7 @@ scenario sandbox-shows-app-trace-and-result [
   1:address:array:character <- new [ 
 recipe foo [
   stash [abc]
-  add 2, 2
+  reply 4 
 ]]
   # run it
   2:address:array:character <- new [foo]
@@ -94,7 +94,7 @@ recipe foo [
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
     .  stash [abc]       ┊                  x.
-    .  add 2, 2          ┊foo                .
+    .  reply 4           ┊foo                .
     .]                   ┊4                  .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
     .                    ┊                   .
@@ -112,7 +112,7 @@ recipe foo [
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
     .  stash [abc]       ┊                  x.
-    .  add 2, 2          ┊foo                .
+    .  reply 4           ┊foo                .
     .]                   ┊abc                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
     .                    ┊━━━━━━━━━━━━━━━━━━━.

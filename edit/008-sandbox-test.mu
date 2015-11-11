@@ -6,7 +6,7 @@ scenario sandbox-click-on-result-toggles-color-to-green [
   # basic recipe
   1:address:array:character <- new [ 
 recipe foo [
-  add 2, 2
+  reply 4
 ]]
   # run it
   2:address:array:character <- new [foo]
@@ -19,7 +19,7 @@ recipe foo [
     .                     run (F4)           .
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  add 2, 2          ┊                  x.
+    .  reply 4           ┊                  x.
     .]                   ┊foo                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
     .                    ┊━━━━━━━━━━━━━━━━━━━.
@@ -51,13 +51,13 @@ recipe foo [
     .                     run (F4)           .
     .␣                   ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  add 2, 2          ┊                  x.
+    .  reply 4           ┊                  x.
     .]                   ┊foo                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
     .                    ┊━━━━━━━━━━━━━━━━━━━.
     .                    ┊                   .
   ]
-  # now change the second arg of the 'add'
+  # now change the result
   # then rerun
   assume-console [
     left-click 3, 11  # cursor to end of line
@@ -75,7 +75,7 @@ recipe foo [
     .                                        .
     .                                        .
     .                                        .
-    .                     5                  .
+    .                     3                  .
     .                                        .
     .                                        .
   ]
