@@ -40,13 +40,14 @@ it's not like anything you're used to. The 'OS' will lack virtual memory, user
 accounts, any unprivileged mode, address space isolation, and many other
 features.
 
-To avoid building a compiler I'm going to do all my programming in (virtual
-machine) assembly. To keep assembly from getting too painful I'm going to
-pervasively use one trick: load-time directives to let me order code however I
-want, and to write boilerplate once and insert it in multiple places. If
-you're familiar with literate programming or aspect-oriented programming,
-these directives may seem vaguely familiar. If you're not, think of them as a
-richer interface for function inlining.
+To avoid building a compiler I'm going to do all my programming in (extremely
+type-safe) assembly (for an idealized virtual machine that nonetheless will
+translate easily to x86). To keep assembly from getting too painful I'm going
+to pervasively use one trick: load-time directives to let me order code
+however I want, and to write boilerplate once and insert it in multiple
+places. If you're familiar with literate programming or aspect-oriented
+programming, these directives may seem vaguely familiar. If you're not, think
+of them as a richer interface for function inlining.
 
 Trading off notational convenience for tests may seem regressive, but I
 suspect high-level languages aren't particularly helpful in understanding
