@@ -38,7 +38,7 @@ if (best_score == -1) {
   recipe_ordinal exemplar = pick_matching_generic_variant(variants, inst, best_score);
   if (exemplar) {
     trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
-    variants.push_back(new_variant(exemplar, inst));
+    variants.push_back(new_variant(exemplar, inst, caller_recipe));
     inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
   }
@@ -124,7 +124,7 @@ bool is_type_ingredient_name(const string& type) {
   return !type.empty() && type.at(0) == '_';
 }
 
-recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
+recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, const recipe& caller_recipe) {
   string new_name = next_unused_recipe_name(inst.name);
   trace(9993, "transform") << "switching " << inst.name << " to " << new_name << end();
   assert(!contains_key(Recipe_ordinal, new_name));
@@ -142,10 +142,12 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst) {
   // that gives enough information to replace type-ingredients with concrete types
   {
     map<string, const string_tree*> mappings;
-    compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings);
-    replace_type_ingredients(new_recipe, mappings);
+    bool error = false;
+    compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings, caller_recipe, &error);
+    if (!error) replace_type_ingredients(new_recipe, mappings);
     for (map<string, const string_tree*>::iterator p = mappings.begin(); p != mappings.end(); ++p)
       delete p->second;
+    if (error) return exemplar;
   }
   ensure_all_concrete_types(new_recipe);
   // finally, perform all transforms on the new specialization
@@ -190,29 +192,29 @@ void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name) 
   trace(9993, "transform") << "type of " << x.name << " is " << debug_string(x.properties.at(0).second) << end();
 }
 
-void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, const string_tree*>& mappings) {
+void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, const string_tree*>& mappings, const recipe& caller_recipe, bool* error) {
   for (long long int i = 0; i < SIZE(exemplar.ingredients); ++i) {
     const reagent& base = exemplar.ingredients.at(i);
     reagent ingredient = inst.ingredients.at(i);
     assert(ingredient.properties.at(0).second);
     canonize_type(ingredient);
-    accumulate_type_ingredients(base, ingredient, mappings, exemplar);
+    accumulate_type_ingredients(base, ingredient, mappings, exemplar, inst, caller_recipe, error);
   }
   for (long long int i = 0; i < SIZE(exemplar.products); ++i) {
     const reagent& base = exemplar.products.at(i);
     reagent product = inst.products.at(i);
     assert(product.properties.at(0).second);
     canonize_type(product);
-    accumulate_type_ingredients(base, product, mappings, exemplar);
+    accumulate_type_ingredients(base, product, mappings, exemplar, inst, caller_recipe, error);
   }
 }
 
-void accumulate_type_ingredients(const reagent& base, reagent& refinement, map<string, const string_tree*>& mappings, const recipe& exemplar) {
+void accumulate_type_ingredients(const reagent& base, reagent& refinement, map<string, const string_tree*>& mappings, const recipe& exemplar, const instruction& call_instruction, const recipe& caller_recipe, bool* error) {
   assert(refinement.properties.at(0).second);
-  accumulate_type_ingredients(base.properties.at(0).second, refinement.properties.at(0).second, mappings, exemplar, base);
+  accumulate_type_ingredients(base.properties.at(0).second, refinement.properties.at(0).second, mappings, exemplar, base, call_instruction, caller_recipe, error);
 }
 
-void accumulate_type_ingredients(const string_tree* base, const string_tree* refinement, map<string, const string_tree*>& mappings, const recipe& exemplar, const reagent& r) {
+void accumulate_type_ingredients(const string_tree* base, const string_tree* refinement, map<string, const string_tree*>& mappings, const recipe& exemplar, const reagent& r, const instruction& call_instruction, const recipe& caller_recipe, bool* error) {
   if (!base) return;
   if (!refinement) {
     raise_error << maybe(exemplar.name) << "missing type ingredient in " << r.original_string << '\n' << end();
@@ -229,13 +231,17 @@ void accumulate_type_ingredients(const string_tree* base, const string_tree* ref
       put(mappings, base->value, new string_tree(*refinement));
     }
     else {
-      assert(deeply_equal(get(mappings, base->value), refinement));
+      if (!deeply_equal(get(mappings, base->value), refinement)) {
+        raise_error << maybe(caller_recipe.name) << "no call found for '" << call_instruction.to_string() << "'\n" << end();
+        *error = true;
+        return;
+      }
     }
   }
   else {
-    accumulate_type_ingredients(base->left, refinement->left, mappings, exemplar, r);
+    accumulate_type_ingredients(base->left, refinement->left, mappings, exemplar, r, call_instruction, caller_recipe, error);
   }
-  accumulate_type_ingredients(base->right, refinement->right, mappings, exemplar, r);
+  accumulate_type_ingredients(base->right, refinement->right, mappings, exemplar, r, call_instruction, caller_recipe, error);
 }
 
 void replace_type_ingredients(recipe& new_recipe, const map<string, const string_tree*>& mappings) {
@@ -424,3 +430,15 @@ recipe bar a:_t -> result:_t [
   result <- copy a
 ]
 +mem: storing 34 in location 5
+
+:(scenario generic_recipe_error)
+% Hide_errors = true;
+recipe main [
+  a:number <- copy 3
+  b:address:number <- foo a
+]
+recipe foo a:_t -> b:_t [
+  load-ingredients
+  b <- copy a
+]
++error: main: no call found for 'b:address:number <- foo a'
