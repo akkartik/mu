@@ -13,15 +13,15 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.muData { color: #ffff00; }
 .Special { color: #ff6060; }
-.muScenario { color: #00af00; }
+.muData { color: #ffff00; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
 .Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
+.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -100,11 +100,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     undo?:boolean<span class="Special"> &lt;- </span>equal *c, <span class="Constant">26/ctrl-z</span>
     <span class="muControl">break-unless</span> undo?
-    undo:address:address:list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
+    undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
     <span class="muControl">break-unless</span> *undo
     op:address:operation<span class="Special"> &lt;- </span>first *undo
     *undo<span class="Special"> &lt;- </span>rest *undo
-    redo:address:address:list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">redo:offset</span>
+    redo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">redo:offset</span>
     *redo<span class="Special"> &lt;- </span>push op, *redo
 <span class="Constant">    &lt;handle-undo&gt;</span>
     <span class="muControl">reply</span> screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>, <span class="Constant">1/go-render</span>
@@ -116,11 +116,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     redo?:boolean<span class="Special"> &lt;- </span>equal *c, <span class="Constant">25/ctrl-y</span>
     <span class="muControl">break-unless</span> redo?
-    redo:address:address:list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">redo:offset</span>
+    redo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">redo:offset</span>
     <span class="muControl">break-unless</span> *redo
     op:address:operation<span class="Special"> &lt;- </span>first *redo
     *redo<span class="Special"> &lt;- </span>rest *redo
-    undo:address:address:list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
+    undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
     *undo<span class="Special"> &lt;- </span>push op, *undo
 <span class="Constant">    &lt;handle-redo&gt;</span>
     <span class="muControl">reply</span> screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>, <span class="Constant">1/go-render</span>
@@ -133,18 +133,18 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># create an editor and type a character</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   assume-console [
     type <span class="Constant">[0]</span>
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># character should be gone</span>
   screen-should-contain [
@@ -158,7 +158,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -170,12 +170,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># save operation to undo</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;insert-character-begin&gt;</span> [
-  top-before:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
-  cursor-before:address:duplex-list<span class="Special"> &lt;- </span>copy *before-cursor
+  top-before:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  cursor-before:address:duplex-list:character<span class="Special"> &lt;- </span>copy *before-cursor
 ]
 <span class="muRecipe">before</span> <span class="Constant">&lt;insert-character-end&gt;</span> [
-  top-after:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
-  undo:address:address:list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
+  top-after:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if previous operation was an insert, coalesce this operation with it</span>
     <span class="muControl">break-unless</span> *undo
@@ -184,19 +184,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> typing
     previous-coalesce-tag:number<span class="Special"> &lt;- </span>get *typing, <span class="Constant">tag:offset</span>
     <span class="muControl">break-unless</span> previous-coalesce-tag
-    insert-until:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *typing, <span class="Constant">insert-until:offset</span>
+    insert-until:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *typing, <span class="Constant">insert-until:offset</span>
     *insert-until<span class="Special"> &lt;- </span>next-duplex *before-cursor
     after-row:address:number<span class="Special"> &lt;- </span>get-address *typing, <span class="Constant">after-row:offset</span>
     *after-row<span class="Special"> &lt;- </span>copy *cursor-row
     after-column:address:number<span class="Special"> &lt;- </span>get-address *typing, <span class="Constant">after-column:offset</span>
     *after-column<span class="Special"> &lt;- </span>copy *cursor-column
-    after-top:address:number<span class="Special"> &lt;- </span>get-address *typing, <span class="Constant">after-top-of-screen:offset</span>
+    after-top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *typing, <span class="Constant">after-top-of-screen:offset</span>
     *after-top<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
     <span class="muControl">break</span> <span class="Constant">+done-adding-insert-operation:label</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if not, create a new operation</span>
-  insert-from:address:duplex-list<span class="Special"> &lt;- </span>next-duplex cursor-before
-  insert-to:address:duplex-list<span class="Special"> &lt;- </span>next-duplex insert-from
+  insert-from:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex cursor-before
+  insert-to:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex insert-from
   op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
   *op<span class="Special"> &lt;- </span>merge <span class="Constant">0/insert-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, insert-from, insert-to, <span class="Constant">1/coalesce</span>
   editor<span class="Special"> &lt;- </span>add-operation editor, op
@@ -207,14 +207,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">after</span> <span class="Constant">&lt;insert-enter-begin&gt;</span> [
   cursor-row-before:number<span class="Special"> &lt;- </span>copy *cursor-row
   cursor-column-before:number<span class="Special"> &lt;- </span>copy *cursor-column
-  top-before:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
-  cursor-before:address:duplex-list<span class="Special"> &lt;- </span>copy *before-cursor
+  top-before:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  cursor-before:address:duplex-list:character<span class="Special"> &lt;- </span>copy *before-cursor
 ]
 <span class="muRecipe">before</span> <span class="Constant">&lt;insert-enter-end&gt;</span> [
-  top-after:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  top-after:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
   <span class="Comment"># never coalesce</span>
-  insert-from:address:duplex-list<span class="Special"> &lt;- </span>next-duplex cursor-before
-  insert-to:address:duplex-list<span class="Special"> &lt;- </span>next-duplex *before-cursor
+  insert-from:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex cursor-before
+  insert-to:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
   op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
   *op<span class="Special"> &lt;- </span>merge <span class="Constant">0/insert-operation</span>, cursor-row-before, cursor-column-before, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, insert-from, insert-to, <span class="Constant">0/never-coalesce</span>
   editor<span class="Special"> &lt;- </span>add-operation editor, op
@@ -224,10 +224,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># redo stack, because it's now obsolete.</span>
 <span class="Comment"># Beware: since we're counting cursor moves as operations, this means just</span>
 <span class="Comment"># moving the cursor can lose work on the undo stack.</span>
-<span class="muRecipe">recipe</span> add-operation [
+<span class="muRecipe">recipe</span> add-operation editor:address:editor-data, op:address:operation<span class="muRecipe"> -&gt; </span>editor:address:editor-data [
   <span class="Constant">local-scope</span>
-  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  op:address:operation<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
   *undo<span class="Special"> &lt;- </span>push op *undo
   redo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">redo:offset</span>
@@ -239,14 +238,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     typing:address:insert-operation<span class="Special"> &lt;- </span>maybe-convert *op, <span class="Constant">typing:variant</span>
     <span class="muControl">break-unless</span> typing
-    start:address:duplex-list<span class="Special"> &lt;- </span>get *typing, <span class="Constant">insert-from:offset</span>
-    end:address:duplex-list<span class="Special"> &lt;- </span>get *typing, <span class="Constant">insert-until:offset</span>
+    start:address:duplex-list:character<span class="Special"> &lt;- </span>get *typing, <span class="Constant">insert-from:offset</span>
+    end:address:duplex-list:character<span class="Special"> &lt;- </span>get *typing, <span class="Constant">insert-until:offset</span>
     <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
     *before-cursor<span class="Special"> &lt;- </span>prev-duplex start
     remove-duplex-between *before-cursor, end
     *cursor-row<span class="Special"> &lt;- </span>get *typing, <span class="Constant">before-row:offset</span>
     *cursor-column<span class="Special"> &lt;- </span>get *typing, <span class="Constant">before-column:offset</span>
-    top:address:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+    top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">top-of-screen:offset</span>
     *top<span class="Special"> &lt;- </span>get *typing, <span class="Constant">before-top-of-screen:offset</span>
   <span class="Delimiter">}</span>
 ]
@@ -255,18 +254,18 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># create an editor and type multiple characters</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   assume-console [
     type <span class="Constant">[012]</span>
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># all characters must be gone</span>
   screen-should-contain [
@@ -281,13 +280,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># create an editor with some text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># type some characters</span>
   assume-console [
     type <span class="Constant">[012]</span>
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .012a      .</span>
@@ -299,7 +298,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># back to original text</span>
   screen-should-contain [
@@ -313,7 +312,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[3]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -327,14 +326,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># create an editor with some text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[  abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># new line</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">8</span>
     press enter
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .  abc     .</span>
@@ -354,7 +353,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
@@ -374,7 +373,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -390,13 +389,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># create an editor, type something, undo</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   assume-console [
     type <span class="Constant">[012]</span>
     press ctrl-z
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -408,7 +407,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># all characters must be back</span>
   screen-should-contain [
@@ -422,7 +421,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[3]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -436,13 +435,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     typing:address:insert-operation<span class="Special"> &lt;- </span>maybe-convert *op, <span class="Constant">typing:variant</span>
     <span class="muControl">break-unless</span> typing
-    insert-from:address:duplex-list<span class="Special"> &lt;- </span>get *typing, <span class="Constant">insert-from:offset</span>  <span class="Comment"># ignore insert-to because it's already been spliced away</span>
+    insert-from:address:duplex-list:character<span class="Special"> &lt;- </span>get *typing, <span class="Constant">insert-from:offset</span>  <span class="Comment"># ignore insert-to because it's already been spliced away</span>
     <span class="Comment"># assert insert-to matches next-duplex(*before-cursor)</span>
     insert-duplex-range *before-cursor, insert-from
     <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
     *cursor-row<span class="Special"> &lt;- </span>get *typing, <span class="Constant">after-row:offset</span>
     *cursor-column<span class="Special"> &lt;- </span>get *typing, <span class="Constant">after-column:offset</span>
-    top:address:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+    top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">top-of-screen:offset</span>
     *top<span class="Special"> &lt;- </span>get *typing, <span class="Constant">after-top-of-screen:offset</span>
   <span class="Delimiter">}</span>
 ]
@@ -451,13 +450,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># create an editor, type something, undo</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   assume-console [
     type <span class="Constant">[012]</span>
     press ctrl-z
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .          .</span>
@@ -469,7 +468,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># all characters must be back</span>
   screen-should-contain [
@@ -483,7 +482,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[3]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -499,18 +498,18 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   assume-console [
     type <span class="Constant">[1]</span>
     press ctrl-z
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># do some more work</span>
   assume-console [
     type <span class="Constant">[0]</span>
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .0abc      .</span>
@@ -523,7 +522,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># nothing should happen</span>
   screen-should-contain [
@@ -539,7 +538,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># create an editor</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># insert some text and tabs, hit enter, some more text and tabs</span>
   assume-console [
@@ -551,7 +550,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press tab
     type <span class="Constant">[efg]</span>
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .  ab  cd  .</span>
@@ -570,7 +569,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># typing in second line deleted, but not indent</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
@@ -591,7 +590,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># indent and newline deleted</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
@@ -611,7 +610,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># empty screen</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
@@ -631,7 +630,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># first line inserted</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
@@ -651,7 +650,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># newline and indent inserted</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
@@ -672,7 +671,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># indent and newline deleted</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
@@ -698,19 +697,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># move the cursor</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">1</span>
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -724,7 +723,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -738,17 +737,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">after</span> <span class="Constant">&lt;move-cursor-begin&gt;</span> [
   before-cursor-row:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-row:offset</span>
   before-cursor-column:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-column:offset</span>
-  before-top-of-screen:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  before-top-of-screen:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
 ]
 <span class="muRecipe">before</span> <span class="Constant">&lt;move-cursor-end&gt;</span> [
   after-cursor-row:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-row:offset</span>
   after-cursor-column:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-column:offset</span>
-  after-top-of-screen:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  after-top-of-screen:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> undo-coalesce-tag
     <span class="Comment"># if previous operation was also a move, and also had the same coalesce</span>
     <span class="Comment"># tag, coalesce with it</span>
-    undo:address:address:list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
+    undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
     <span class="muControl">break-unless</span> *undo
     op:address:operation<span class="Special"> &lt;- </span>first *undo
     move:address:move-operation<span class="Special"> &lt;- </span>maybe-convert *op, <span class="Constant">move:variant</span>
@@ -760,7 +759,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     *after-row<span class="Special"> &lt;- </span>copy after-cursor-row
     after-column:address:number<span class="Special"> &lt;- </span>get-address *move, <span class="Constant">after-column:offset</span>
     *after-column<span class="Special"> &lt;- </span>copy after-cursor-column
-    after-top:address:number<span class="Special"> &lt;- </span>get-address *move, <span class="Constant">after-top-of-screen:offset</span>
+    after-top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *move, <span class="Constant">after-top-of-screen:offset</span>
     *after-top<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
     <span class="muControl">break</span> <span class="Constant">+done-adding-move-operation:label</span>
   <span class="Delimiter">}</span>
@@ -775,7 +774,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     move:address:move-operation<span class="Special"> &lt;- </span>maybe-convert *op, <span class="Constant">move:variant</span>
     <span class="muControl">break-unless</span> move
     <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
-    top:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">top-of-screen:offset</span>
+    top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">top-of-screen:offset</span>
     *cursor-row<span class="Special"> &lt;- </span>get *move, <span class="Constant">before-row:offset</span>
     *cursor-column<span class="Special"> &lt;- </span>get *move, <span class="Constant">before-column:offset</span>
     *top<span class="Special"> &lt;- </span>get *move, <span class="Constant">before-top-of-screen:offset</span>
@@ -789,13 +788,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">cdefgh]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   <span class="Comment"># position cursor at end of screen and try to move right</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">3</span>
     press right-arrow
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   <span class="Comment"># screen scrolls</span>
@@ -814,7 +813,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -835,7 +834,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -851,20 +850,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># move the cursor</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">1</span>
     press left-arrow
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -878,7 +877,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -895,14 +894,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># move the cursor</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">1</span>
     press up-arrow
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   memory-should-contain [
@@ -914,7 +913,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -928,7 +927,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -945,20 +944,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># move the cursor</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press down-arrow
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -972,7 +971,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -992,19 +991,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Constant">d</span>
 <span class="Constant">e</span>
 <span class="Constant">f]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># scroll the page</span>
   assume-console [
     press ctrl-f
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1027,19 +1026,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Constant">d</span>
 <span class="Constant">e</span>
 <span class="Constant">f]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># scroll the page</span>
   assume-console [
     press page-down
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1062,20 +1061,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Constant">d</span>
 <span class="Constant">e</span>
 <span class="Constant">f]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># scroll the page down and up</span>
   assume-console [
     press page-down
     press ctrl-b
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1098,20 +1097,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Constant">d</span>
 <span class="Constant">e</span>
 <span class="Constant">f]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># scroll the page down and up</span>
   assume-console [
     press page-down
     press page-up
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1131,20 +1130,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># move the cursor, then to start of line</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press ctrl-a
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1158,7 +1157,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1175,20 +1174,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># move the cursor, then to start of line</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press home
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1202,7 +1201,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1219,20 +1218,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># move the cursor, then to start of line</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press ctrl-e
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1246,7 +1245,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1263,20 +1262,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># move the cursor, then to start of line</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press end
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1290,7 +1289,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1305,14 +1304,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># create an editor, type some text, move the cursor, type some more text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   assume-console [
     type <span class="Constant">[abc]</span>
     left-click <span class="Constant">1</span>, <span class="Constant">1</span>
     type <span class="Constant">[d]</span>
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   screen-should-contain [
@@ -1330,7 +1329,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1350,7 +1349,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1370,7 +1369,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1390,7 +1389,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1410,7 +1409,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1430,7 +1429,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1453,7 +1452,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># move the cursor</span>
   assume-console [
@@ -1462,7 +1461,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press right-arrow
     press up-arrow
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   memory-should-contain [
@@ -1474,7 +1473,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1488,7 +1487,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1507,19 +1506,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">1</span>
     press ctrl-z
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># redo</span>
   assume-console [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1533,7 +1532,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1551,7 +1550,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
     *cursor-row<span class="Special"> &lt;- </span>get *move, <span class="Constant">after-row:offset</span>
     *cursor-column<span class="Special"> &lt;- </span>get *move, <span class="Constant">after-column:offset</span>
-    top:address:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+    top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">top-of-screen:offset</span>
     *top<span class="Special"> &lt;- </span>get *move, <span class="Constant">after-top-of-screen:offset</span>
   <span class="Delimiter">}</span>
 ]
@@ -1562,7 +1561,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># create an editor</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># insert some text and hit backspace</span>
   assume-console [
@@ -1570,7 +1569,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press backspace
     press backspace
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -1588,7 +1587,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
@@ -1607,7 +1606,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
@@ -1625,13 +1624,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># save operation to undo</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;backspace-character-begin&gt;</span> [
-  top-before:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  top-before:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
 ]
 <span class="muRecipe">before</span> <span class="Constant">&lt;backspace-character-end&gt;</span> [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> backspaced-cell  <span class="Comment"># backspace failed; don't add an undo operation</span>
-    top-after:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
-    undo:address:address:list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
+    top-after:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+    undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
     <span class="Delimiter">{</span>
       <span class="Comment"># if previous operation was an insert, coalesce this operation with it</span>
       <span class="muControl">break-unless</span> *undo
@@ -1641,22 +1640,22 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       previous-coalesce-tag:number<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">tag:offset</span>
       coalesce?:boolean<span class="Special"> &lt;- </span>equal previous-coalesce-tag, <span class="Constant">1/coalesce-backspace</span>
       <span class="muControl">break-unless</span> coalesce?
-      delete-from:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">delete-from:offset</span>
+      delete-from:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">delete-from:offset</span>
       *delete-from<span class="Special"> &lt;- </span>copy *before-cursor
-      backspaced-so-far:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">deleted-text:offset</span>
+      backspaced-so-far:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">deleted-text:offset</span>
       insert-duplex-range backspaced-cell, *backspaced-so-far
       *backspaced-so-far<span class="Special"> &lt;- </span>copy backspaced-cell
       after-row:address:number<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-row:offset</span>
       *after-row<span class="Special"> &lt;- </span>copy *cursor-row
       after-column:address:number<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-column:offset</span>
       *after-column<span class="Special"> &lt;- </span>copy *cursor-column
-      after-top:address:number<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-top-of-screen:offset</span>
+      after-top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-top-of-screen:offset</span>
       *after-top<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
       <span class="muControl">break</span> <span class="Constant">+done-adding-backspace-operation:label</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># if not, create a new operation</span>
     op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-    deleted-until:address:duplex-list<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
     *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, backspaced-cell/deleted, *before-cursor/delete-from, deleted-until, <span class="Constant">1/coalesce-backspace</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-backspace-operation</span>
@@ -1667,17 +1666,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     deletion:address:delete-operation<span class="Special"> &lt;- </span>maybe-convert *op, <span class="Constant">delete:variant</span>
     <span class="muControl">break-unless</span> deletion
-    start2:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">data:offset</span>
-    anchor:address:duplex-list<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">delete-from:offset</span>
+    start2:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">data:offset</span>
+    anchor:address:duplex-list:character<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">delete-from:offset</span>
     <span class="muControl">break-unless</span> anchor
-    deleted:address:duplex-list<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">deleted-text:offset</span>
-    old-cursor:address:duplex-list<span class="Special"> &lt;- </span>last-duplex deleted
+    deleted:address:duplex-list:character<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">deleted-text:offset</span>
+    old-cursor:address:duplex-list:character<span class="Special"> &lt;- </span>last-duplex deleted
     insert-duplex-range anchor, deleted
     <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
     *before-cursor<span class="Special"> &lt;- </span>copy old-cursor
     *cursor-row<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">before-row:offset</span>
     *cursor-column<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">before-column:offset</span>
-    top:address:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+    top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">top-of-screen:offset</span>
     *top<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">before-top-of-screen:offset</span>
   <span class="Delimiter">}</span>
 ]
@@ -1686,13 +1685,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     deletion:address:delete-operation<span class="Special"> &lt;- </span>maybe-convert *op, <span class="Constant">delete:variant</span>
     <span class="muControl">break-unless</span> deletion
-    start:address:duplex-list<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">delete-from:offset</span>
-    end:address:duplex-list<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">delete-until:offset</span>
+    start:address:duplex-list:character<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">delete-from:offset</span>
+    end:address:duplex-list:character<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">delete-until:offset</span>
     remove-duplex-between start, end
     <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
     *cursor-row<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">after-row:offset</span>
     *cursor-column<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">after-column:offset</span>
-    top:address:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+    top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">top-of-screen:offset</span>
     *top<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">after-top-of-screen:offset</span>
   <span class="Delimiter">}</span>
 ]
@@ -1703,7 +1702,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># create an editor</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># insert some text and hit delete and backspace a few times</span>
   assume-console [
@@ -1714,7 +1713,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press delete
     press delete
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .af        .</span>
@@ -1732,7 +1731,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
@@ -1751,7 +1750,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
@@ -1770,7 +1769,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
@@ -1789,7 +1788,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># first line inserted</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
@@ -1809,7 +1808,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># first line inserted</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
@@ -1829,7 +1828,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># first line inserted</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
@@ -1847,13 +1846,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;delete-character-begin&gt;</span> [
-  top-before:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  top-before:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
 ]
 <span class="muRecipe">before</span> <span class="Constant">&lt;delete-character-end&gt;</span> [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> deleted-cell  <span class="Comment"># delete failed; don't add an undo operation</span>
-    top-after:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
-    undo:address:address:list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
+    top-after:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+    undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
     <span class="Delimiter">{</span>
       <span class="Comment"># if previous operation was an insert, coalesce this operation with it</span>
       <span class="muControl">break-unless</span> *undo
@@ -1863,21 +1862,21 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       previous-coalesce-tag:number<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">tag:offset</span>
       coalesce?:boolean<span class="Special"> &lt;- </span>equal previous-coalesce-tag, <span class="Constant">2/coalesce-delete</span>
       <span class="muControl">break-unless</span> coalesce?
-      delete-until:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">delete-until:offset</span>
+      delete-until:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">delete-until:offset</span>
       *delete-until<span class="Special"> &lt;- </span>next-duplex *before-cursor
-      deleted-so-far:address:address:duplex-list<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">deleted-text:offset</span>
+      deleted-so-far:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">deleted-text:offset</span>
       *deleted-so-far<span class="Special"> &lt;- </span>append-duplex *deleted-so-far, deleted-cell
       after-row:address:number<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-row:offset</span>
       *after-row<span class="Special"> &lt;- </span>copy *cursor-row
       after-column:address:number<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-column:offset</span>
       *after-column<span class="Special"> &lt;- </span>copy *cursor-column
-      after-top:address:number<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-top-of-screen:offset</span>
+      after-top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-top-of-screen:offset</span>
       *after-top<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
       <span class="muControl">break</span> <span class="Constant">+done-adding-delete-operation:label</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># if not, create a new operation</span>
     op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-    deleted-until:address:duplex-list<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
     *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, deleted-cell/deleted, *before-cursor/delete-from, deleted-until, <span class="Constant">2/coalesce-delete</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-delete-operation</span>
@@ -1891,14 +1890,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># insert some text and hit delete and backspace a few times</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">1</span>
     press ctrl-k
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -1917,7 +1916,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1937,7 +1936,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># first line inserted</span>
   screen-should-contain [
@@ -1958,7 +1957,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1970,15 +1969,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;delete-to-end-of-line-begin&gt;</span> [
-  top-before:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  top-before:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
 ]
 <span class="muRecipe">before</span> <span class="Constant">&lt;delete-to-end-of-line-end&gt;</span> [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> deleted-cells  <span class="Comment"># delete failed; don't add an undo operation</span>
-    top-after:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
-    undo:address:address:list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
+    top-after:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+    undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
     op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-    deleted-until:address:duplex-list<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
     *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, deleted-cells/deleted, *before-cursor/delete-from, deleted-until, <span class="Constant">0/never-coalesce</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-delete-operation</span>
@@ -1992,14 +1991,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># insert some text and hit delete and backspace a few times</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">2</span>
     press ctrl-u
   ]
-  editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .c         .</span>
@@ -2018,7 +2017,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2038,7 +2037,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   <span class="Comment"># first line inserted</span>
   screen-should-contain [
@@ -2059,7 +2058,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:address, console:address, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2071,19 +2070,40 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;delete-to-start-of-line-begin&gt;</span> [
-  top-before:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  top-before:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
 ]
 <span class="muRecipe">before</span> <span class="Constant">&lt;delete-to-start-of-line-end&gt;</span> [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> deleted-cells  <span class="Comment"># delete failed; don't add an undo operation</span>
-    top-after:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
-    undo:address:address:list<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
+    top-after:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+    undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
     op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-    deleted-until:address:duplex-list<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
     *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, deleted-cells/deleted, *before-cursor/delete-from, deleted-until, <span class="Constant">0/never-coalesce</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-delete-operation</span>
   <span class="Delimiter">}</span>
+]
+
+<span class="muScenario">scenario</span> editor-can-undo-and-redo-ctrl-u-2 [
+  <span class="Comment"># create an editor</span>
+  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Comment"># insert some text and hit delete and backspace a few times</span>
+  assume-console [
+    type <span class="Constant">[abc]</span>
+    press ctrl-u
+    press ctrl-z
+  ]
+  editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .abc       .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈.</span>
+   <span class="Constant"> .          .</span>
+  ]
 ]
 
 <span class="Comment"># todo:</span>

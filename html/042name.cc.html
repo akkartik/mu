@@ -13,15 +13,16 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.cSpecial { color: #008000; }
-.SalientComment { color: #00ffff; }
+.traceContains { color: #008000; }
 .traceAbsent { color: #c00000; }
+.Identifier { color: #804000; }
+.cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.Identifier { color: #804000; }
-.traceContains { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
+.SalientComment { color: #00ffff; }
 -->
 </style>
 
@@ -45,15 +46,16 @@ recipe main [
 <span class="traceContains">+mem: storing 0 in location 1</span>
 
 <span class="Delimiter">:(scenarios transform)</span>
-<span class="Delimiter">:(scenario transform_names_warns)</span>
-<span class="Special">% Hide_warnings = true;</span>
+<span class="Delimiter">:(scenario transform_names_fails_on_use_before_define)</span>
+<span class="Special">% Hide_errors = true;</span>
 recipe main [
   x:number<span class="Special"> &lt;- </span>copy y:number
 ]
-<span class="traceContains">+warn: use before set: y in main</span>
+<span class="traceContains">+error: main: use before set: y</span>
+<span class="Comment"># todo: detect conditional defines</span>
 
-<span class="Delimiter">:(after &quot;int main&quot;)</span>
-  Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>transform_names<span class="Delimiter">);</span>
+<span class="Delimiter">:(after &quot;Transform.push_back(check_or_set_invalid_types&quot;)</span>  <span class="Comment">// there'll be other transforms relating to types; they all need to happen first</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>transform_names<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 map&lt;recipe_ordinal<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> long long int&gt; &gt; Name<span class="Delimiter">;</span>
@@ -64,31 +66,33 @@ for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</
 
 <span class="Delimiter">:(code)</span>
 void transform_names<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- transform names for recipe &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;--- transform names for recipe &quot; &lt;&lt; get(Recipe, r).name &lt;&lt; '\n';</span>
   bool names_used = <span class="Constant">false</span><span class="Delimiter">;</span>
   bool numeric_locations_used = <span class="Constant">false</span><span class="Delimiter">;</span>
   map&lt;string<span class="Delimiter">,</span> long long int&gt;&amp; names = Name[r]<span class="Delimiter">;</span>
   <span class="Comment">// store the indices 'used' so far in the map</span>
   long long int&amp; curr_idx = names[<span class="Constant">&quot;&quot;</span>]<span class="Delimiter">;</span>
   ++curr_idx<span class="Delimiter">;</span>  <span class="Comment">// avoid using index 0, benign skip in some other cases</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    instruction&amp; inst = Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    <span class="Comment">// Per-recipe Transforms</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Comment">// End transform_names(inst) Special-cases</span>
     <span class="Comment">// map names to addresses</span>
     for <span class="Delimiter">(</span>long long int in = <span class="Constant">0</span><span class="Delimiter">;</span> in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       if <span class="Delimiter">(</span>is_numeric_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">)))</span> numeric_locations_used = <span class="Constant">true</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>is_named_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">)))</span> names_used = <span class="Constant">true</span><span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>disqualified<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> inst<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>disqualified<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>!already_transformed<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> names<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-        raise &lt;&lt; <span class="Constant">&quot;use before set: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; in &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;use before set: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
       inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>lookup_name<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> r<span class="Delimiter">));</span>
     <span class="Delimiter">}</span>
     for <span class="Delimiter">(</span>long long int out = <span class="Constant">0</span><span class="Delimiter">;</span> out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       if <span class="Delimiter">(</span>is_numeric_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">)))</span> numeric_locations_used = <span class="Constant">true</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>is_named_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">)))</span> names_used = <span class="Constant">true</span><span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>disqualified<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">),</span> inst<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>disqualified<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">),</span> inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">).</span>name<span class="Delimiter">)</span> == names<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;name&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;assign &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; &quot;</span> &lt;&lt; curr_idx &lt;&lt; end<span class="Delimiter">();</span>
+        trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;name&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;assign &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; &quot;</span> &lt;&lt; curr_idx &lt;&lt; end<span class="Delimiter">();</span>
         names[inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">).</span>name] = curr_idx<span class="Delimiter">;</span>
         curr_idx += size_of<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">));</span>
       <span class="Delimiter">}</span>
@@ -96,12 +100,12 @@ void transform_names<span class="Delimiter">(</span>const recipe_ordinal r<span 
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>names_used &amp;&amp; numeric_locations_used<span class="Delimiter">)</span>
-    raise &lt;&lt; <span class="Constant">&quot;mixing variable names and numeric addresses in &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;mixing variable names and numeric addresses</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-bool disqualified<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">mutable</span><span class="Comment">*/</span> reagent&amp; x<span class="Delimiter">,</span> const instruction&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; <span class="Constant">&quot;missing type in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+bool disqualified<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">mutable</span><span class="Comment">*/</span> reagent&amp; x<span class="Delimiter">,</span> const instruction&amp; inst<span class="Delimiter">,</span> const string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type for &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -113,27 +117,28 @@ bool disqualified<span class="Delimiter">(</span><span class="Comment">/*</span>
 <span class="Delimiter">}</span>
 
 bool already_transformed<span class="Delimiter">(</span>const reagent&amp; r<span class="Delimiter">,</span> const map&lt;string<span class="Delimiter">,</span> long long int&gt;&amp; names<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>r<span class="Delimiter">.</span>name<span class="Delimiter">)</span> != names<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+  <span class="Identifier">return</span> contains_key<span class="Delimiter">(</span>names<span class="Delimiter">,</span> r<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 long long int lookup_name<span class="Delimiter">(</span>const reagent&amp; r<span class="Delimiter">,</span> const recipe_ordinal default_recipe<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> Name[default_recipe][r<span class="Delimiter">.</span>name]<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-type_ordinal skip_addresses<span class="Delimiter">(</span>const vector&lt;type_ordinal&gt;&amp; types<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>types<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> != Type_ordinal[<span class="Constant">&quot;address&quot;</span>]<span class="Delimiter">)</span> <span class="Identifier">return</span> types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+type_ordinal skip_addresses<span class="Delimiter">(</span>type_tree* type<span class="Delimiter">,</span> const string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(;</span> type<span class="Delimiter">;</span> type = type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span>
+      <span class="Identifier">return</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  raise &lt;&lt; <span class="Constant">&quot;expected a container&quot;</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  raise_error &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;expected a container&quot;</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-int find_element_name<span class="Delimiter">(</span>const type_ordinal t<span class="Delimiter">,</span> const string&amp; name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  const type_info&amp; container = Type[t]<span class="Delimiter">;</span>
+int find_element_name<span class="Delimiter">(</span>const type_ordinal t<span class="Delimiter">,</span> const string&amp; name<span class="Delimiter">,</span> const string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  const type_info&amp; container = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> t<span class="Delimiter">);</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>container<span class="Delimiter">.</span>element_names<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>container<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == name<span class="Delimiter">)</span> <span class="Identifier">return</span> i<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  raise &lt;&lt; <span class="Constant">&quot;unknown element &quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot; in container &quot;</span> &lt;&lt; Type[t]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  raise_error &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;unknown element &quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot; in container &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> t<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -149,13 +154,6 @@ bool is_named_location<span class="Delimiter">(</span>const reagent&amp; x<span 
   if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>is_special_name<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> !is_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-bool is_raw<span class="Delimiter">(</span>const reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Comment">/*</span><span class="Comment">skip value+type</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;raw&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 bool is_special_name<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -176,51 +174,51 @@ recipe main [
 <span class="Comment">//: an escape hatch to suppress name conversion that we'll use later</span>
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario transform_names_passes_raw)</span>
-<span class="Special">% Hide_warnings = true;</span>
+<span class="Special">% Hide_errors = true;</span>
 recipe main [
   x:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceAbsent">-name: assign x 1</span>
-<span class="traceContains">+warn: can't write to location 0 in 'x:number/raw &lt;- copy 0'</span>
+<span class="traceContains">+error: can't write to location 0 in 'x:number/raw &lt;- copy 0'</span>
 
 <span class="Delimiter">:(scenarios transform)</span>
-<span class="Delimiter">:(scenario transform_names_warns_when_mixing_names_and_numeric_locations)</span>
-<span class="Special">% Hide_warnings = true;</span>
+<span class="Delimiter">:(scenario transform_names_fails_when_mixing_names_and_numeric_locations)</span>
+<span class="Special">% Hide_errors = true;</span>
 recipe main [
   x:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
 ]
-<span class="traceContains">+warn: mixing variable names and numeric addresses in main</span>
+<span class="traceContains">+error: main: mixing variable names and numeric addresses</span>
 
-<span class="Delimiter">:(scenario transform_names_warns_when_mixing_names_and_numeric_locations_2)</span>
-<span class="Special">% Hide_warnings = true;</span>
+<span class="Delimiter">:(scenario transform_names_fails_when_mixing_names_and_numeric_locations_2)</span>
+<span class="Special">% Hide_errors = true;</span>
 recipe main [
   x:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy x:number
 ]
-<span class="traceContains">+warn: mixing variable names and numeric addresses in main</span>
+<span class="traceContains">+error: main: mixing variable names and numeric addresses</span>
 
-<span class="Delimiter">:(scenario transform_names_does_not_warn_when_mixing_names_and_raw_locations)</span>
-<span class="Special">% Hide_warnings = true;</span>
+<span class="Delimiter">:(scenario transform_names_does_not_fail_when_mixing_names_and_raw_locations)</span>
+<span class="Special">% Hide_errors = true;</span>
 recipe main [
   x:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number/<span class="Special">raw</span>
 ]
-<span class="traceAbsent">-warn: mixing variable names and numeric addresses in main</span>
-$warn: <span class="Constant">0</span>
+<span class="traceAbsent">-error: main: mixing variable names and numeric addresses</span>
+$error: <span class="Constant">0</span>
 
-<span class="Delimiter">:(scenario transform_names_does_not_warn_when_mixing_names_and_literals)</span>
-<span class="Special">% Hide_warnings = true;</span>
+<span class="Delimiter">:(scenario transform_names_does_not_fail_when_mixing_names_and_literals)</span>
+<span class="Special">% Hide_errors = true;</span>
 recipe main [
   x:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
-<span class="traceAbsent">-warn: mixing variable names and numeric addresses in main</span>
-$warn: <span class="Constant">0</span>
+<span class="traceAbsent">-error: main: mixing variable names and numeric addresses</span>
+$error: <span class="Constant">0</span>
 
 <span class="SalientComment">//:: Support element names for containers in 'get' and 'get-address'.</span>
 
 <span class="Comment">//: update our running example container for the next test</span>
 <span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
-Type[point]<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;x&quot;</span><span class="Delimiter">);</span>
-Type[point]<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;y&quot;</span><span class="Delimiter">);</span>
+get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> point<span class="Delimiter">).</span>element_names<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;x&quot;</span><span class="Delimiter">);</span>
+get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> point<span class="Delimiter">).</span>element_names<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;y&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">:(scenario transform_names_transforms_container_elements)</span>
 recipe main [
   p:address:point<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># unsafe</span>
@@ -230,21 +228,20 @@ recipe main [
 <span class="traceContains">+name: element y of type point is at offset 1</span>
 <span class="traceContains">+name: element x of type point is at offset 0</span>
 
-<span class="Delimiter">:(after &quot;Per-recipe Transforms&quot;)</span>
+<span class="Delimiter">:(before &quot;End transform_names(inst) Special-cases&quot;)</span>
 <span class="Comment">// replace element names of containers with offsets</span>
-if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;get&quot;</span>]
-    || inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;get-address&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;get&quot;</span> || inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;get-address&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: exactly 2 ingredients expected in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;exactly 2 ingredients expected in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span>
-    raise &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: expected ingredient 1 of &quot;</span> &lt;&lt; <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;get&quot;</span>] ? <span class="Constant">&quot;'get'&quot;</span> : <span class="Constant">&quot;'get-address'&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; to have type 'offset'; got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;expected ingredient 1 of &quot;</span> &lt;&lt; <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;get&quot;</span> ? <span class="Constant">&quot;'get'&quot;</span> : <span class="Constant">&quot;'get-address'&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; to have type 'offset'; got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">.</span>find_first_not_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// since first non-address in base type must be a container, we don't have to canonize</span>
-    type_ordinal base_type = skip_addresses<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>types<span class="Delimiter">);</span>
-    inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>find_element_name<span class="Delimiter">(</span>base_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
-    trace<span class="Delimiter">(</span><span class="Constant">&quot;name&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;element &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; of type &quot;</span> &lt;&lt; Type[base_type]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; is at offset &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>value &lt;&lt; end<span class="Delimiter">();</span>
+    type_ordinal base_type = skip_addresses<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>type<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+    inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>find_element_name<span class="Delimiter">(</span>base_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">));</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;name&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;element &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; of type &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; is at offset &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>value<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
@@ -252,8 +249,8 @@ if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario transform_names_handles_containers)</span>
 recipe main [
-  a:point<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  b:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  a:point<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Special">raw</span>
+  b:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Special">raw</span>
 ]
 <span class="traceContains">+name: assign a 1</span>
 <span class="traceContains">+name: assign b 3</span>
@@ -271,19 +268,19 @@ recipe main [
 <span class="traceContains">+name: variant p of type number-or-point has tag 1</span>
 <span class="traceContains">+mem: storing 13 in location 20</span>
 
-<span class="Delimiter">:(after &quot;Per-recipe Transforms&quot;)</span>
+<span class="Delimiter">:(before &quot;End transform_names(inst) Special-cases&quot;)</span>
 <span class="Comment">// convert variant names of exclusive containers</span>
-if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;maybe-convert&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;maybe-convert&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: exactly 2 ingredients expected in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;exactly 2 ingredients expected in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">.</span>find_first_not_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// since first non-address in base type must be an exclusive container, we don't have to canonize</span>
-    type_ordinal base_type = skip_addresses<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>types<span class="Delimiter">);</span>
-    inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>find_element_name<span class="Delimiter">(</span>base_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
-    trace<span class="Delimiter">(</span><span class="Constant">&quot;name&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;variant &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; of type &quot;</span> &lt;&lt; Type[base_type]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has tag &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>value &lt;&lt; end<span class="Delimiter">();</span>
+    type_ordinal base_type = skip_addresses<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>type<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+    inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>find_element_name<span class="Delimiter">(</span>base_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">));</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;name&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;variant &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; of type &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; has tag &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>value<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 </pre>
