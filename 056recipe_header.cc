@@ -134,10 +134,10 @@ recipe add2 x:number, y:number -> z:number [
 +error: add2: replied with the wrong type at 'reply z'
 
 :(after "Transform.push_back(check_types_by_name)")
-Transform.push_back(check_header_products);  // idempotent
+Transform.push_back(check_reply_instructions_against_header);  // idempotent
 
 :(code)
-void check_header_products(const recipe_ordinal r) {
+void check_reply_instructions_against_header(const recipe_ordinal r) {
   const recipe& rr = get(Recipe, r);
   if (rr.products.empty()) return;
   trace(9991, "transform") << "--- checking reply instructions against header for " << rr.name << end();
@@ -151,6 +151,33 @@ void check_header_products(const recipe_ordinal r) {
       if (!types_match(rr.products.at(i), inst.ingredients.at(i)))
         raise_error << maybe(rr.name) << "replied with the wrong type at '" << inst.to_string() << "'\n" << end();
     }
+  }
+}
+
+:(scenario recipe_headers_check_for_duplicate_names)
+% Hide_errors = true;
+recipe add2 x:number, x:number -> z:number [
+  local-scope
+  load-ingredients
+  reply z
+]
++error: add2: x can't repeat in the ingredients
+
+:(before "End recipe Fields")
+map<string, int> ingredient_index;
+
+:(after "Transform.push_back(insert_fragments)")
+Transform.push_back(check_and_update_header_reagents);  // idempotent
+
+:(code)
+void check_and_update_header_reagents(const recipe_ordinal r) {
+  recipe& rr = get(Recipe, r);
+  if (rr.products.empty()) return;
+  trace(9991, "transform") << "--- checking reply instructions against header for " << rr.name << end();
+  for (long long int i = 0; i < SIZE(rr.ingredients); ++i) {
+    if (contains_key(rr.ingredient_index, rr.ingredients.at(i).name))
+      raise_error << maybe(rr.name) << rr.ingredients.at(i).name << " can't repeat in the ingredients\n" << end();
+    put(rr.ingredient_index, rr.ingredients.at(i).name, i);
   }
 }
 
@@ -169,7 +196,7 @@ recipe add2 x:number, y:number -> z:number [
 ]
 +mem: storing 8 in location 1
 
-:(before "Transform.push_back(check_header_products)")
+:(before "Transform.push_back(check_reply_instructions_against_header)")
 Transform.push_back(deduce_types_from_header);  // idempotent
 
 :(code)
@@ -236,18 +263,40 @@ recipe add2 x:number, y:number -> z:number [
 ]
 +mem: storing 8 in location 1
 
-:(after "Transform.push_back(insert_fragments)")
-Transform.push_back(fill_in_reply_ingredients);
+:(after "Transform.push_back(check_and_update_header_reagents)")
+Transform.push_back(fill_in_reply_ingredients);  // idempotent
 
 :(code)
 void fill_in_reply_ingredients(recipe_ordinal r) {
-  if (!get(Recipe, r).has_header) return;
-  trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << get(Recipe, r).name << end();
-  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
-    instruction& inst = get(Recipe, r).steps.at(i);
-    if (inst.name == "reply" && inst.ingredients.empty()) {
-      for (long long int i = 0; i < SIZE(get(Recipe, r).products); ++i)
-        inst.ingredients.push_back(get(Recipe, r).products.at(i));
+  recipe& rr = get(Recipe, r);
+  if (!rr.has_header) return;
+  trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << rr.name << end();
+  for (long long int i = 0; i < SIZE(rr.steps); ++i) {
+    instruction& inst = rr.steps.at(i);
+    if (inst.name == "reply" && inst.ingredients.empty())
+      add_header_products(inst, rr);
+  }
+  // fall through reply
+  if (rr.steps.at(SIZE(rr.steps)-1).name != "reply") {
+    instruction inst;
+    inst.name = "reply";
+    add_header_products(inst, rr);
+    rr.steps.push_back(inst);
+  }
+}
+
+void add_header_products(instruction& inst, const recipe& rr) {
+  assert(inst.name == "reply");
+  // collect any products with the same names as ingredients
+  for (long long int i = 0; i < SIZE(rr.products); ++i) {
+    // if the ingredient is missing, add it from the header
+    if (SIZE(inst.ingredients) == i)
+      inst.ingredients.push_back(rr.products.at(i));
+    // if it's missing /same_as_ingredient, try to fill it in
+    if (contains_key(rr.ingredient_index, rr.products.at(i).name) && !has_property(inst.ingredients.at(i), "same_as_ingredient")) {
+      ostringstream same_as_ingredient;
+      same_as_ingredient << get(rr.ingredient_index, rr.products.at(i).name);
+      inst.ingredients.at(i).properties.push_back(pair<string, string_tree*>("same-as-ingredient", new string_tree(same_as_ingredient.str())));
     }
   }
 }
@@ -278,25 +327,6 @@ recipe add2 x:number, y:number -> z:number [
 +transform: instruction: reply z:number
 +mem: storing 8 in location 1
 
-:(after "Transform.push_back(insert_fragments)")
-Transform.push_back(deduce_fallthrough_reply);
-
-:(code)
-void deduce_fallthrough_reply(const recipe_ordinal r) {
-  recipe& rr = get(Recipe, r);
-  if (rr.products.empty()) return;
-  if (rr.steps.empty()) return;
-  if (rr.steps.at(SIZE(rr.steps)-1).name != "reply") {
-    instruction inst;
-    inst.operation = REPLY;
-    inst.name = "reply";
-    for (long long int i = 0; i < SIZE(rr.products); ++i) {
-      inst.ingredients.push_back(rr.products.at(i));
-    }
-    rr.steps.push_back(inst);
-  }
-}
-
 :(scenario reply_on_fallthrough_already_exists)
 recipe main [
   1:number/raw <- add2 3, 5
@@ -310,3 +340,16 @@ recipe add2 x:number, y:number -> z:number [
 +transform: instruction: reply z
 -transform: instruction: reply z:number
 +mem: storing 8 in location 1
+
+:(scenario recipe_headers_perform_same_ingredient_check)
+% Hide_errors = true;
+recipe main [
+  1:number <- copy 34
+  2:number <- copy 34
+  3:number <- add2 1:number, 2:number
+]
+recipe add2 x:number, y:number -> x:number [
+  local-scope
+  load-ingredients
+]
++error: main: '3:number <- add2 1:number, 2:number' should write to 1:number rather than 3:number

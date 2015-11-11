@@ -52,6 +52,7 @@
 9992 transform: assume-console ...
 9992 transform: run ...
 9992 transform: screen-should-contain ...
+9992 transform:  ...
 9991 transform: --- deduce types for recipe scenario-editor-handles-empty-event-queue
 9992 transform: screen => <address : <screen : <>>>
 9992 transform: screen <= <address : <screen : <>>>
@@ -59,7 +60,7 @@
 9992 transform: instruction new-editor
 9992 transform: checking variant 0: 100
 9992 transform: instruction editor-render
-9992 transform: checking variant 0: 100
+9992 transform: checking variant 0: 99
 9991 transform: --- collect surrounding spaces for recipe scenario-editor-handles-empty-event-queue
 9991 transform: --- transform names for recipe scenario-editor-handles-empty-event-queue
 9991 transform: --- compute instruction operations for recipe scenario-editor-handles-empty-event-queue
@@ -6910,7 +6911,8 @@
  104 run: jump-if done?, 
 9999 mem: location 1242 is 1
 9998 run: jumping to instruction 10
-9999 trace: fall-through: exiting clear-line-delimited; decrementing callstack depth from 3
+ 104 run: reply 
+9999 trace: reply: decrementing callstack depth from 3
  103 run: row <- add row, 1
 9999 mem: location 1148 is 1
 9999 mem: storing 2 in location 1148
@@ -8985,7 +8987,8 @@
  104 run: jump-unless continue?, 
 9999 mem: location 1255 is 0
 9998 run: jumping to instruction 27
-9999 trace: fall-through: exiting draw-horizontal; decrementing callstack depth from 3
+ 104 run: reply 
+9999 trace: reply: decrementing callstack depth from 3
  103 run: row <- add row, 1
 9999 mem: location 1148 is 2
 9999 mem: storing 3 in location 1148
@@ -9308,10 +9311,10 @@
  106 run: trace 90, [print-character], c
 9999 mem: location 1214 is 32
   90 print-character: 32 
+9990 schedule: print-character/clear-line-delimited/clear-screen-from/editor-render/scenario-editor-handles-empty-event-queue
  106 run: jump-unless sc, 
 9999 mem: location 1213 is 1009
 9998 run: jump-unless fell through
-9990 schedule: print-character/clear-line-delimited/clear-screen-from/editor-render/scenario-editor-handles-empty-event-queue
  106 run: width:number <- get *sc, num-columns:offset
 9999 mem: location 1213 is 1009
 9999 mem: location 1009 is 5
@@ -11067,13 +11070,15 @@
  105 run: jump-if done?, 
 9999 mem: location 1242 is 1
 9998 run: jumping to instruction 10
-9999 trace: fall-through: exiting clear-line-delimited; decrementing callstack depth from 4
+ 105 run: reply 
+9999 trace: reply: decrementing callstack depth from 4
  104 run: clear-rest-of-screen screen, row, left, right
 9999 mem: location 1195 is 1009
 9999 mem: location 1196 is 3
 9999 mem: location 1198 is 0
 9999 mem: location 1199 is 9
 9999 trace: incrementing callstack depth to 4
+9990 schedule: clear-rest-of-screen/clear-screen-from/editor-render/scenario-editor-handles-empty-event-queue
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1263
@@ -11081,7 +11086,6 @@
 9999 mem: storing 1009 in location 1265
  105 run: row:number <- next-ingredient 
 9999 mem: storing 3 in location 1266
-9990 schedule: clear-rest-of-screen/clear-screen-from/editor-render/scenario-editor-handles-empty-event-queue
  105 run: left:number <- next-ingredient 
 9999 mem: storing 0 in location 1267
  105 run: right:number <- next-ingredient 
@@ -12821,6 +12825,7 @@
  107 run: reply sc/same-as-ingredient:0
 9999 mem: location 1213 is 1009
 9999 trace: reply: decrementing callstack depth from 6
+9990 schedule: clear-line-delimited/clear-rest-of-screen/clear-screen-from/editor-render/scenario-editor-handles-empty-event-queue
  106 run: column <- add column, 1
 9999 mem: location 1240 is 7
 9999 mem: storing 8 in location 1240
@@ -12830,7 +12835,6 @@
 9999 mem: location 1240 is 8
 9999 mem: location 1241 is 9
 9999 mem: storing 0 in location 1242
-9990 schedule: clear-line-delimited/clear-rest-of-screen/clear-screen-from/editor-render/scenario-editor-handles-empty-event-queue
  106 run: jump-if done?, 
 9999 mem: location 1242 is 0
 9998 run: jump-if fell through
@@ -13227,7 +13231,8 @@
  106 run: jump-if done?, 
 9999 mem: location 1242 is 1
 9998 run: jumping to instruction 10
-9999 trace: fall-through: exiting clear-line-delimited; decrementing callstack depth from 5
+ 106 run: reply 
+9999 trace: reply: decrementing callstack depth from 5
  105 run: row <- add row, 1
 9999 mem: location 1266 is 4
 9999 mem: storing 5 in location 1266
@@ -13240,11 +13245,14 @@
  105 run: jump-if at-bottom-of-screen?, 
 9999 mem: location 1270 is 1
 9998 run: jumping to instruction 15
-9999 trace: fall-through: exiting clear-rest-of-screen; decrementing callstack depth from 4
+ 105 run: reply 
+9999 trace: reply: decrementing callstack depth from 4
  104 run: reply screen/same-as-ingredient:0
 9999 mem: location 1195 is 1009
 9999 trace: reply: decrementing callstack depth from 3
-9999 trace: fall-through: exiting editor-render; decrementing callstack depth from 2
+ 103 run: reply screen:address:screen
+9999 mem: location 1144 is 1009
+9999 trace: reply: decrementing callstack depth from 2
  102 run: assume-console []
  102 run: run [
     editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
@@ -13261,6 +13269,7 @@
 9991 transform: --- fill in reply ingredients from header for recipe run1001
 9991 transform: --- transform braces for recipe run1001
 9992 transform: editor-event-loop ...
+9992 transform:  ...
 9991 transform: --- deduce types for recipe run1001
 9992 transform: screen => <address : <screen : <>>>
 9992 transform: console => <address : <console : <>>>
@@ -13437,12 +13446,15 @@
  104 run: jump-if quit?, 
 9999 mem: location 1286 is 1
 9998 run: jumping to instruction 28
-9999 trace: fall-through: exiting editor-event-loop; decrementing callstack depth from 3
-9999 trace: fall-through: exiting run1001; decrementing callstack depth from 2
+ 104 run: reply 
+9999 trace: reply: decrementing callstack depth from 3
+ 103 run: reply 
+9999 trace: reply: decrementing callstack depth from 2
  102 run: screen-should-contain [
     .          .
     .abc       .
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-9999 trace: fall-through: exiting scenario-editor-handles-empty-event-queue; decrementing callstack depth from 1
+ 102 run: reply 
+9999 trace: reply: decrementing callstack depth from 1

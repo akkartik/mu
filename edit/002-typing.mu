@@ -259,7 +259,7 @@ recipe insert-at-cursor editor:address:editor-data, c:character, screen:address:
 ]
 
 # helper for tests
-recipe editor-render screen:address:screen, editor:address:editor-data [
+recipe editor-render screen:address:screen, editor:address:editor-data -> screen:address:screen [
   local-scope
   load-ingredients
   left:number <- get *editor, left:offset
