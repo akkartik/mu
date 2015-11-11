@@ -1,0 +1,294 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 058shape_shifting_container.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1.05em; }
+.traceContains { color: #008000; }
+.Special { color: #ff6060; }
+.cSpecial { color: #008000; }
+.Constant { color: #00a0a0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
+.SalientComment { color: #00ffff; }
+.Identifier { color: #804000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="SalientComment">//:: Container definitions can contain type parameters.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Extremely hacky initial implementation:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: a) We still don't support the full complexity of type trees inside</span>
+<span class="Comment">//: container definitions. So for example you can't have a container element</span>
+<span class="Comment">//: with this type:</span>
+<span class="Comment">//:   (map (array address character) (list number))</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: b) We also can't include type parameters anywhere except at the top of the</span>
+<span class="Comment">//: type of a container element.</span>
+
+<span class="Delimiter">:(scenario size_of_shape_shifting_container)</span>
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo:number<span class="Special"> &lt;- </span>merge <span class="Constant">12</span><span class="Delimiter">,</span> <span class="Constant">13</span>
+  <span class="Constant">3</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span>
+]
+<span class="traceContains">+mem: storing 12 in location 1</span>
+<span class="traceContains">+mem: storing 13 in location 2</span>
+<span class="traceContains">+mem: storing 14 in location 3</span>
+<span class="traceContains">+mem: storing 15 in location 4</span>
+<span class="traceContains">+mem: storing 16 in location 5</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Comment">// We'll use large type ordinals to mean &quot;the following type of the variable&quot;.</span>
+const int START_TYPE_INGREDIENTS = <span class="Constant">2000</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Test Run Initialization&quot;)</span>
+assert<span class="Delimiter">(</span>Next_type_ordinal &lt; START_TYPE_INGREDIENTS<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(before &quot;End type_info Fields&quot;)</span>
+map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; type_ingredient_names<span class="Delimiter">;</span>
+
+<span class="Comment">//: Suppress unknown type checks in shape-shifting containers.</span>
+
+<span class="Delimiter">:(before &quot;Check Container Field Types(info)&quot;)</span>
+if <span class="Delimiter">(</span>!info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;End container Name Refinements&quot;)</span>
+if <span class="Delimiter">(</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">':'</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;container has type ingredients; parsing&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  read_type_ingredients<span class="Delimiter">(</span>name<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+void read_type_ingredients<span class="Delimiter">(</span>string&amp; name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  string save_name = name<span class="Delimiter">;</span>
+  istringstream in<span class="Delimiter">(</span>save_name<span class="Delimiter">);</span>
+  name = slurp_until<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">)</span> || get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span>
+    put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
+  type_info&amp; info = get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">));</span>
+  long long int next_type_ordinal = START_TYPE_INGREDIENTS<span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    string curr = slurp_until<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>curr<span class="Delimiter">)</span> != info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      raise_error &lt;&lt; <span class="Constant">&quot;can't repeat type ingredient names in a single container definition</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    put<span class="Delimiter">(</span>info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> next_type_ordinal++<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End insert_container Special Uses(type_name)&quot;)</span>
+<span class="Comment">// check for use of type ingredients</span>
+if <span class="Delimiter">(</span>type_name<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'_'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  *curr_type = new type_tree<span class="Delimiter">(</span>get<span class="Delimiter">(</span>info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">,</span> type_name<span class="Delimiter">));</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  type: &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">,</span> type_name<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Container Type Checks&quot;)</span>
+if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value &gt;= START_TYPE_INGREDIENTS
+    &amp;&amp; <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value - START_TYPE_INGREDIENTS<span class="Delimiter">)</span> &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>type_ingredient_names<span class="Delimiter">))</span>
+  <span class="Identifier">return</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;End size_of(type) Container Cases&quot;)</span>
+if <span class="Delimiter">(</span>t<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>value &gt;= START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;type&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking size of type ingredient</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  long long int size = size_of_type_ingredient<span class="Delimiter">(</span>t<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!size<span class="Delimiter">)</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;illegal type '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  result += size<span class="Delimiter">;</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Comment">// shape-shifting version of size_of</span>
+long long int size_of_type_ingredient<span class="Delimiter">(</span>const type_tree* element_template<span class="Delimiter">,</span> const type_tree* rest_of_use<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  long long int type_ingredient_index = element_template<span class="Delimiter">-&gt;</span>value - START_TYPE_INGREDIENTS<span class="Delimiter">;</span>
+  const type_tree* curr = rest_of_use<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>!curr<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>type_ingredient_index &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    --type_ingredient_index<span class="Delimiter">;</span>
+    curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>!curr<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  assert<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>!curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>  <span class="Comment">// unimplemented</span>
+  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> curr<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Comment">// temporarily while we're still ironing out kinks; eventually replace with a raise_error</span>
+    DUMP<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+    cerr &lt;&lt; <span class="Constant">&quot;missing type &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>curr<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> curr<span class="Delimiter">-&gt;</span>value<span class="Delimiter">));</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;type&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type deduced to be &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> curr<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;$&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  type_tree tmp<span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+    tmp<span class="Delimiter">.</span>right = new type_tree<span class="Delimiter">(</span>*curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>&amp;tmp<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario get_on_shape_shifting_container)</span>
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo:point<span class="Delimiter">,</span> y:offset
+]
+<span class="traceContains">+mem: storing 16 in location 2</span>
+
+<span class="Delimiter">:(before &quot;End GET field Cases&quot;)</span>
+const type_tree* type = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value &gt;= START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  long long int size = size_of_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!size<span class="Delimiter">)</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;illegal field type '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  src += size<span class="Delimiter">;</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario get_on_shape_shifting_container_2)</span>
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span>
+  <span class="Constant">2</span>:point<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo:point<span class="Delimiter">,</span> x:offset
+]
+<span class="traceContains">+mem: storing 14 in location 2</span>
+<span class="traceContains">+mem: storing 15 in location 3</span>
+
+<span class="Delimiter">:(scenario get_on_shape_shifting_container_3)</span>
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo:address:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">48</span>  <span class="Comment"># unsafe</span>
+  <span class="Constant">2</span>:address:point<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo:address:point<span class="Delimiter">,</span> x:offset
+]
+<span class="traceContains">+mem: storing 34 in location 2</span>
+
+<span class="Delimiter">:(before &quot;End element_type Special-cases&quot;)</span>
+if <span class="Delimiter">(</span>contains_type_ingredient<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;illegal type '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  replace_type_ingredient<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+bool contains_type_ingredient<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> contains_type_ingredient<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+bool contains_type_ingredient<span class="Delimiter">(</span>const type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value &gt;= START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> contains_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> || contains_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+void replace_type_ingredient<span class="Delimiter">(</span>type_tree* element_type<span class="Delimiter">,</span> const type_tree* callsite_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!callsite_type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error but it's already been raised above</span>
+  if <span class="Delimiter">(</span>!element_type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>value &gt;= START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!has_nth_type<span class="Delimiter">(</span>callsite_type<span class="Delimiter">,</span> element_type<span class="Delimiter">-&gt;</span>value-START_TYPE_INGREDIENTS<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      raise_error &lt;&lt; <span class="Constant">&quot;illegal type '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>callsite_type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    const type_tree* replacement = nth_type<span class="Delimiter">(</span>callsite_type<span class="Delimiter">,</span> element_type<span class="Delimiter">-&gt;</span>value-START_TYPE_INGREDIENTS<span class="Delimiter">);</span>
+    element_type<span class="Delimiter">-&gt;</span>value = replacement<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
+    element_type<span class="Delimiter">-&gt;</span>left = replacement<span class="Delimiter">-&gt;</span>left ? new type_tree<span class="Delimiter">(</span>*replacement<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+    element_type<span class="Delimiter">-&gt;</span>right = replacement<span class="Delimiter">-&gt;</span>right ? new type_tree<span class="Delimiter">(</span>*replacement<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  replace_type_ingredient<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> callsite_type<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+const type_tree* nth_type<span class="Delimiter">(</span>const type_tree* base<span class="Delimiter">,</span> long long int n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>n &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>n == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> base<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> nth_type<span class="Delimiter">(</span>base<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> n-<span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+bool has_nth_type<span class="Delimiter">(</span>const type_tree* base<span class="Delimiter">,</span> long long int n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>n &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>base == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>n == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> has_nth_type<span class="Delimiter">(</span>base<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> n-<span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario get_on_shape_shifting_container_error)</span>
+<span class="Special">% Hide_errors = true;</span>
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  <span class="Constant">10</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span>
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">10</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+]
+<span class="traceContains">+error: illegal type 'foo' seems to be missing a type ingredient or three</span>
+
+<span class="Comment">//: get-address similarly</span>
+
+<span class="Delimiter">:(scenario get_address_on_shape_shifting_container)</span>
+container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  <span class="Constant">10</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span>
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>get-address <span class="Constant">10</span>:foo:point<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+]
+<span class="traceContains">+mem: storing 12 in location 1</span>
+
+<span class="Delimiter">:(before &quot;End GET_ADDRESS field Cases&quot;)</span>
+const type_tree* type = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value &gt;= START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  long long int size = size_of_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!size<span class="Delimiter">)</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;illegal type '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  result += size<span class="Delimiter">;</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario get_on_shape_shifting_container_inside_shape_shifting_container)</span>
+container foo:_t [
+  x:_t
+  y:number
+]
+container bar [
+  x:foo:point
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span><span class="Delimiter">,</span> <span class="Constant">17</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:bar<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+]
+<span class="traceContains">+mem: storing 17 in location 2</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

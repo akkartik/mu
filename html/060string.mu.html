@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.muData { color: #ffff00; }
 .muScenario { color: #00af00; }
+.muData { color: #ffff00; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -447,7 +447,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   s:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   oldc:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   newc:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  from:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  from:number, _<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>  <span class="Comment"># default to 0</span>
   len:number<span class="Special"> &lt;- </span>length *s
   i:number<span class="Special"> &lt;- </span>find-next s, oldc, from
   done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
@@ -625,62 +625,60 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   c:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># most common case first</span>
   result:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">32/space</span>
-  <span class="muControl">jump-if</span> result <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">9/tab</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">13/carriage-return</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   <span class="Comment"># remaining uncommon cases in sorted order</span>
   <span class="Comment"># <a href="http://unicode.org">http://unicode.org</a> code-points in unicode-set Z and Pattern_White_Space</span>
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">11/ctrl-k</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">12/ctrl-l</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">133/ctrl-0085</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">160/no-break-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">5760/ogham-space-mark</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8192/en-quad</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8193/em-quad</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8194/en-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8195/em-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8196/three-per-em-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8197/four-per-em-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8198/six-per-em-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8199/figure-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8200/punctuation-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8201/thin-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8202/hair-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8206/left-to-right</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8207/right-to-left</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8232/line-separator</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8233/paragraph-separator</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8239/narrow-no-break-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8287/medium-mathematical-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
+  <span class="muControl">reply-if</span> result, result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">12288/ideographic-space</span>
-  <span class="muControl">jump-if</span> result, <span class="Constant">+reply:label</span>
-<span class="Constant">  +reply</span>
   <span class="muControl">reply</span> result
 ]
 

@@ -13,10 +13,11 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.Identifier { color: #804000; }
 .Constant { color: #00a0a0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
-.Identifier { color: #804000; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -32,10 +33,21 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment">//:</span>
 <span class="Comment">//: The hope is that this framework of transform tools will provide a</span>
 <span class="Comment">//: deconstructed alternative to conventional compilers.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: We're going to have many transforms in mu, and getting their order right</span>
+<span class="Comment">//: (not the same as ordering of layers) is a well-known problem. Some tips:</span>
+<span class="Comment">//:   a) Design each layer to rely on as few previous layers as possible.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   b) When positioning transforms, try to find the tightest constraint in</span>
+<span class="Comment">//:   each transform relative to previous layers.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   c) Even so you'll periodically need to try adjusting each transform</span>
+<span class="Comment">//:   relative to those in previous layers to find a better arrangement.</span>
 
 <span class="Delimiter">:(before &quot;End recipe Fields&quot;)</span>
 long long int transformed_until<span class="Delimiter">;</span>
-  recipe<span class="Delimiter">()</span> :transformed_until<span class="Delimiter">(</span>-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+<span class="Delimiter">:(before &quot;End recipe Constructor&quot;)</span>
+transformed_until = -<span class="Constant">1</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 typedef void <span class="Delimiter">(</span>*transform_fn<span class="Delimiter">)(</span>recipe_ordinal<span class="Delimiter">);</span>
@@ -43,22 +55,31 @@ typedef void <span class="Delimiter">(</span>*transform_fn<span class="Delimiter
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 vector&lt;transform_fn&gt; Transform<span class="Delimiter">;</span>
 
+<span class="Delimiter">:(after &quot;int main&quot;)</span>
+  <span class="Comment">// Begin Transforms</span>
+  <span class="Comment">// End Transforms</span>
+
 <span class="Delimiter">:(code)</span>
 void transform_all<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9990</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;=== transform_all()&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   for <span class="Delimiter">(</span>long long int t = <span class="Constant">0</span><span class="Delimiter">;</span> t &lt; SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">);</span> ++t<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;transform &quot; &lt;&lt; t &lt;&lt; '\n';</span>
     for <span class="Delimiter">(</span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt;::iterator p = Recipe<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Recipe<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       recipe&amp; r = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>transformed_until != t-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Comment">// End Transform Checks</span>
       <span class="Delimiter">(</span>*Transform<span class="Delimiter">.</span>at<span class="Delimiter">(</span>t<span class="Delimiter">))(</span><span class="Comment">/*</span><span class="Comment">recipe_ordinal</span><span class="Comment">*/</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">);</span>
       r<span class="Delimiter">.</span>transformed_until = t<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   parse_int_reagents<span class="Delimiter">();</span>  <span class="Comment">// do this after all other transforms have run</span>
-  <span class="Comment">// End Transform</span>
+  <span class="Comment">// End Transform All</span>
 <span class="Delimiter">}</span>
 
 void parse_int_reagents<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- parsing any uninitialized reagents as integers&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;--- parsing any uninitialized reagents as integers&quot; &lt;&lt; '\n';</span>
   for <span class="Delimiter">(</span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt;::iterator p = Recipe<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Recipe<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     recipe&amp; r = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>

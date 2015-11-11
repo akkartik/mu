@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.muData { color: #ffff00; }
 .muScenario { color: #00af00; }
+.muData { color: #ffff00; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -81,8 +81,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       <span class="muControl">break-if</span> done?
       curr:address:screen-cell<span class="Special"> &lt;- </span>index-address *buf, i
       curr-content:address:character<span class="Special"> &lt;- </span>get-address *curr, <span class="Constant">contents:offset</span>
-      *curr-content<span class="Special"> &lt;- </span>copy <span class="Constant">[ ]</span>
-      curr-color:address:character<span class="Special"> &lt;- </span>get-address *curr, <span class="Constant">color:offset</span>
+      *curr-content<span class="Special"> &lt;- </span>copy <span class="Constant">0/empty</span>
+      curr-color:address:number<span class="Special"> &lt;- </span>get-address *curr, <span class="Constant">color:offset</span>
       *curr-color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
       i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
       <span class="muControl">loop</span>
@@ -558,7 +558,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> cursor-to-next-line [
   <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen<span class="Special"> &lt;- </span>cursor-down screen
   screen<span class="Special"> &lt;- </span>cursor-to-start-of-line screen
   <span class="muControl">reply</span> screen/same-as-ingredient:<span class="Constant">0</span>
@@ -594,7 +594,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> hide-cursor [
   <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
@@ -607,7 +607,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> show-cursor [
   <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
@@ -620,7 +620,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> hide-screen [
   <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Comment"># todo: help test this</span>
   <span class="Delimiter">{</span>
@@ -634,7 +634,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> show-screen [
   <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Comment"># todo: help test this</span>
   <span class="Delimiter">{</span>
@@ -648,7 +648,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> print-string [
   <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   s:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
@@ -697,7 +697,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> print-integer [
   <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   n:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>

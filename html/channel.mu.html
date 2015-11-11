@@ -13,12 +13,12 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -33,11 +33,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># example program: communicating between routines using channels</span>
 
 <span class="muRecipe">recipe</span> producer [
-  <span class="Comment"># produce numbers 1 to 5 on a channel</span>
+  <span class="Comment"># produce characters 1 to 5 on a channel</span>
   <span class="Constant">local-scope</span>
   chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># n = 0</span>
-  n:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  n:character<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>lesser-than n, <span class="Constant">5</span>
     <span class="muControl">break-unless</span> done?
@@ -56,9 +56,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># read an integer from the channel</span>
-    n:number, chan:address:channel<span class="Special"> &lt;- </span>read chan
+    n:character, chan:address:channel<span class="Special"> &lt;- </span>read chan
     <span class="Comment"># other threads might get between these prints</span>
-    $print <span class="Constant">[consume: ]</span>, n:number, <span class="Constant">[ </span>
+    $print <span class="Constant">[consume: ]</span>, n:character, <span class="Constant">[ </span>
 <span class="Constant">]</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
@@ -68,8 +68,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">local-scope</span>
   chan:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3</span>
   <span class="Comment"># create two background 'routines' that communicate by a channel</span>
-  routine1:number<span class="Special"> &lt;- </span>start-running <span class="Constant">producer:recipe</span>, chan
-  routine2:number<span class="Special"> &lt;- </span>start-running <span class="Constant">consumer:recipe</span>, chan
+  routine1:character<span class="Special"> &lt;- </span>start-running <span class="Constant">producer:recipe</span>, chan
+  routine2:character<span class="Special"> &lt;- </span>start-running <span class="Constant">consumer:recipe</span>, chan
   wait-for-routine routine1
   wait-for-routine routine2
 ]

@@ -13,13 +13,13 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
 .muData { color: #ffff00; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -61,7 +61,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">recipe</span> new-fake-console [
   <span class="Constant">local-scope</span>
   result:address:console<span class="Special"> &lt;- </span>new <span class="Constant">console:type</span>
-  buf:address:address:array:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
+  buf:address:address:array:event<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
   *buf<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   idx:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">index:offset</span>
   *idx<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -96,7 +96,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># newlines, tabs, ctrl-d..</span>
 <span class="muRecipe">recipe</span> read-key [
   <span class="Constant">local-scope</span>
-  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address:console<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   x:event, console, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-event console
   <span class="muControl">reply-if</span> quit?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
   <span class="muControl">reply-unless</span> found?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
@@ -107,9 +107,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> send-keys-to-channel [
   <span class="Constant">local-scope</span>
-  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address:console<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     c:character, console, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-key console
     <span class="muControl">loop-unless</span> found?
@@ -124,7 +124,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> wait-for-event [
   <span class="Constant">local-scope</span>
-  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address:console<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     _, console, found?:boolean<span class="Special"> &lt;- </span>read-event console
     <span class="muControl">loop-unless</span> found?
@@ -135,7 +135,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># use this helper to skip rendering if there's lots of other events queued up</span>
 <span class="muRecipe">recipe</span> has-more-events? [
   <span class="Constant">local-scope</span>
-  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address:console<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> console
     <span class="Comment"># fake consoles should be plenty fast; never skip</span>

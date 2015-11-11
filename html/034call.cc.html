@@ -13,15 +13,15 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.PreProc { color: #c000c0; }
+.traceContains { color: #008000; }
 .SalientComment { color: #00ffff; }
 .cSpecial { color: #008000; }
+.PreProc { color: #c000c0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
 .Constant { color: #00a0a0; }
-.traceContains { color: #008000; }
 -->
 </style>
 
@@ -77,6 +77,9 @@ struct call <span class="Delimiter">{</span>
     running_step_index = <span class="Constant">0</span><span class="Delimiter">;</span>
     <span class="Comment">// End call Constructor</span>
   <span class="Delimiter">}</span>
+  ~call<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+    <span class="Comment">// End call Destructor</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">};</span>
 typedef list&lt;call&gt; call_stack<span class="Delimiter">;</span>
 
@@ -90,8 +93,18 @@ struct routine <span class="Delimiter">{</span>
 <span class="Delimiter">};</span>
 <span class="Delimiter">:(code)</span>
 routine::routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new routine; incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
+    assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
+  <span class="Delimiter">}</span>
   calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
   <span class="Comment">// End routine Constructor</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+inline call&amp; current_call<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: now update routine's helpers</span>
@@ -99,48 +112,61 @@ routine::routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Del
 <span class="Delimiter">:(replace{} &quot;inline long long int&amp; current_step_index()&quot;)</span>
 inline long long int&amp; current_step_index<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_step_index<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> current_call<span class="Delimiter">().</span>running_step_index<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(replace{} &quot;inline const string&amp; current_recipe_name()&quot;)</span>
 inline const string&amp; current_recipe_name<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  <span class="Identifier">return</span> Recipe[Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> current_call<span class="Delimiter">().</span>running_recipe<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(replace{} &quot;inline const instruction&amp; current_instruction()&quot;)</span>
 inline const instruction&amp; current_instruction<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  <span class="Identifier">return</span> Recipe[Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_step_index<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> to_instruction<span class="Delimiter">(</span>current_call<span class="Delimiter">());</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(code)</span>
+inline const instruction&amp; to_instruction<span class="Delimiter">(</span>const call&amp; call<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> call<span class="Delimiter">.</span>running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>call<span class="Delimiter">.</span>running_step_index<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="Delimiter">:(after &quot;Defined Recipe Checks&quot;)</span>
+<span class="Comment">// not a primitive; check that it's present in the book of recipes</span>
+if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;undefined operation in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 <span class="Delimiter">:(replace{} &quot;default:&quot; following &quot;End Primitive Recipe Implementations&quot;)</span>
 default: <span class="Delimiter">{</span>
-  <span class="Comment">// not a primitive; try to look up the book of recipes</span>
-  if <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> == Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: undefined operation in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  const instruction&amp; call_instruction = current_instruction<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> == Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>  <span class="Comment">// duplicate from Checks</span>
     <span class="Comment">// stop running this instruction immediately</span>
     ++current_step_index<span class="Delimiter">();</span>
     <span class="Identifier">continue</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  <span class="Comment">// not a primitive; look up the book of recipes</span>
+  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
+    assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
+  <span class="Delimiter">}</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">));</span>
-  call_housekeeping:
-  ++Callstack_depth<span class="Delimiter">;</span>
-  assert<span class="Delimiter">(</span>Callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
+  <span class="Comment">// End Call Housekeeping</span>
   <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not done with caller; don't increment current_step_index()</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(scenario calling_undefined_recipe_warns)</span>
-<span class="Special">% Hide_warnings = true;</span>
+<span class="Delimiter">:(scenario calling_undefined_recipe_fails)</span>
+<span class="Special">% Hide_errors = true;</span>
 recipe main [
   foo
 ]
-<span class="traceContains">+warn: main: undefined operation in 'foo '</span>
+<span class="traceContains">+error: main: undefined operation in 'foo '</span>
 
 <span class="Delimiter">:(scenario calling_undefined_recipe_handles_missing_result)</span>
-<span class="Special">% Hide_warnings = true;</span>
+<span class="Special">% Hide_errors = true;</span>
 recipe main [
   x:number<span class="Special"> &lt;- </span>foo
 ]
-<span class="traceContains">+warn: main: undefined operation in 'x:number &lt;- foo '</span>
+<span class="traceContains">+error: main: undefined operation in 'x:number &lt;- foo '</span>
 
 <span class="SalientComment">//:: finally, we need to fix the termination conditions for the run loop</span>
 
@@ -151,7 +177,7 @@ inline bool routine::completed<span class="Delimiter">()</span> const <span clas
 
 inline const vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter">()</span> const <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  <span class="Identifier">return</span> Recipe[calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe]<span class="Delimiter">.</span>steps<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;Running One Instruction&quot;)</span>
@@ -159,11 +185,15 @@ inline const vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter
 <span class="Comment">// it, and the one below that, and so on</span>
 while <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &gt;= SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
   <span class="Comment">// Falling Through End Of Recipe</span>
-  --Callstack_depth<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;fall-through: exiting &quot;</span> &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;; decrementing callstack depth from &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
+    --Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
+    assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Comment">// Complete Call Fallthrough</span>
-  <span class="Comment">// todo: no products returned warning</span>
+  <span class="Comment">// todo: fail if no products returned</span>
   ++current_step_index<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 

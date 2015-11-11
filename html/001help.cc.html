@@ -13,8 +13,8 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.cSpecial { color: #008000; }
 .PreProc { color: #c000c0; }
+.cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
@@ -44,6 +44,11 @@ if <span class="Delimiter">(</span>argc &lt;= <span class="Constant">1</span> ||
        &lt;&lt; <span class="Constant">&quot;  mu test</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        &lt;&lt; <span class="Constant">&quot;To load files and then run all tests:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        &lt;&lt; <span class="Constant">&quot;  mu test file1.mu file2.mu ...</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       &lt;&lt; <span class="Constant">&quot;To load all files with a numeric prefix in a directory:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       &lt;&lt; <span class="Constant">&quot;  mu directory1</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       &lt;&lt; <span class="Constant">&quot;You can test directories just like files.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       &lt;&lt; <span class="Constant">&quot;To pass ingredients to a mu program, provide them after '--':</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       &lt;&lt; <span class="Constant">&quot;  mu file_or_dir1 file_or_dir2 ... -- ingredient1 ingredient2 ...</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        <span class="Delimiter">;</span>
   <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -62,59 +67,85 @@ bool is_equal<span class="Delimiter">(</span>char* s<span class="Delimiter">,</s
   <span class="Identifier">return</span> strncmp<span class="Delimiter">(</span>s<span class="Delimiter">,</span> lit<span class="Delimiter">,</span> strlen<span class="Delimiter">(</span>lit<span class="Delimiter">))</span> == <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Comment">// I'll throw some style conventions here for want of a better place for them.</span>
-<span class="Comment">// As a rule I hate style guides. Do what you want, that's my motto. But since</span>
-<span class="Comment">// we're dealing with C/C++, the one big thing we want to avoid is undefined</span>
-<span class="Comment">// behavior. If a compiler ever encounters undefined behavior it can make</span>
-<span class="Comment">// your program do anything it wants.</span>
-<span class="Comment">//</span>
-<span class="Comment">// For reference, my checklist of undefined behaviors to watch out for:</span>
-<span class="Comment">//   out-of-bounds access</span>
-<span class="Comment">//   uninitialized variables</span>
-<span class="Comment">//   use after free</span>
-<span class="Comment">//   dereferencing invalid pointers: null, a new of size 0, others</span>
-<span class="Comment">//</span>
-<span class="Comment">//   casting a large number to a type too small to hold it</span>
-<span class="Comment">//</span>
-<span class="Comment">//   integer overflow</span>
-<span class="Comment">//   division by zero and other undefined expressions</span>
-<span class="Comment">//   left-shift by negative count</span>
-<span class="Comment">//   shifting values by more than or equal to the number of bits they contain</span>
-<span class="Comment">//   bitwise operations on signed numbers</span>
-<span class="Comment">//</span>
-<span class="Comment">//   Converting pointers to types of different alignment requirements</span>
-<span class="Comment">//     T* -&gt; void* -&gt; T*: defined</span>
-<span class="Comment">//     T* -&gt; U* -&gt; T*: defined if non-function pointers and alignment requirements are same</span>
-<span class="Comment">//     function pointers may be cast to other function pointers</span>
-<span class="Comment">//</span>
-<span class="Comment">//       Casting a numeric value into a value that can't be represented by the target type (either directly or via static_cast)</span>
-<span class="Comment">//</span>
-<span class="Comment">// To guard against these, some conventions:</span>
-<span class="Comment">//</span>
-<span class="Comment">// 0. Initialize all primitive variables in functions and constructors.</span>
-<span class="Comment">//</span>
-<span class="Comment">// 1. Minimize use of pointers and pointer arithmetic. Avoid 'new' and</span>
-<span class="Comment">// 'delete' as far as possible. Rely on STL to perform memory management to</span>
-<span class="Comment">// avoid use-after-free issues (and memory leaks).</span>
-<span class="Comment">//</span>
-<span class="Comment">// 2. Avoid naked arrays to avoid out-of-bounds access. Never use operator[]</span>
-<span class="Comment">// except with map. Use at() with STL vectors and so on.</span>
-<span class="Comment">//</span>
-<span class="Comment">// 3. Valgrind all the things.</span>
-<span class="Comment">//</span>
-<span class="Comment">// 4. Avoid unsigned numbers. Not strictly an undefined-behavior issue, but</span>
-<span class="Comment">// the extra range doesn't matter, and it's one less confusing category of</span>
-<span class="Comment">// interaction gotchas to worry about.</span>
-<span class="Comment">//</span>
-<span class="Comment">// Corollary: don't use the size() method on containers, since it returns an</span>
-<span class="Comment">// unsigned and that'll cause warnings about mixing signed and unsigned,</span>
-<span class="Comment">// yadda-yadda. Instead use this macro below to perform an unsafe cast to</span>
-<span class="Comment">// signed. We'll just give up immediately if a container's every too large.</span>
+<span class="Comment">//: I'll throw some style conventions here for want of a better place for them.</span>
+<span class="Comment">//: As a rule I hate style guides. Do what you want, that's my motto. But since</span>
+<span class="Comment">//: we're dealing with C/C++, the one big thing we want to avoid is undefined</span>
+<span class="Comment">//: behavior. If a compiler ever encounters undefined behavior it can make</span>
+<span class="Comment">//: your program do anything it wants.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: For reference, my checklist of undefined behaviors to watch out for:</span>
+<span class="Comment">//:   out-of-bounds access</span>
+<span class="Comment">//:   uninitialized variables</span>
+<span class="Comment">//:   use after free</span>
+<span class="Comment">//:   dereferencing invalid pointers: null, a new of size 0, others</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   casting a large number to a type too small to hold it</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   integer overflow</span>
+<span class="Comment">//:   division by zero and other undefined expressions</span>
+<span class="Comment">//:   left-shift by negative count</span>
+<span class="Comment">//:   shifting values by more than or equal to the number of bits they contain</span>
+<span class="Comment">//:   bitwise operations on signed numbers</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   Converting pointers to types of different alignment requirements</span>
+<span class="Comment">//:     T* -&gt; void* -&gt; T*: defined</span>
+<span class="Comment">//:     T* -&gt; U* -&gt; T*: defined if non-function pointers and alignment requirements are same</span>
+<span class="Comment">//:     function pointers may be cast to other function pointers</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:       Casting a numeric value into a value that can't be represented by the target type (either directly or via static_cast)</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: To guard against these, some conventions:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: 0. Initialize all primitive variables in functions and constructors.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: 1. Minimize use of pointers and pointer arithmetic. Avoid 'new' and</span>
+<span class="Comment">//: 'delete' as far as possible. Rely on STL to perform memory management to</span>
+<span class="Comment">//: avoid use-after-free issues (and memory leaks).</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: 2. Avoid naked arrays to avoid out-of-bounds access. Never use operator[]</span>
+<span class="Comment">//: except with map. Use at() with STL vectors and so on.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: 3. Valgrind all the things.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: 4. Avoid unsigned numbers. Not strictly an undefined-behavior issue, but</span>
+<span class="Comment">//: the extra range doesn't matter, and it's one less confusing category of</span>
+<span class="Comment">//: interaction gotchas to worry about.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Corollary: don't use the size() method on containers, since it returns an</span>
+<span class="Comment">//: unsigned and that'll cause warnings about mixing signed and unsigned,</span>
+<span class="Comment">//: yadda-yadda. Instead use this macro below to perform an unsafe cast to</span>
+<span class="Comment">//: signed. We'll just give up immediately if a container's ever too large.</span>
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span class="PreProc">#define SIZE(X) (assert(X</span><span class="Delimiter">.</span><span class="PreProc">size() &lt; (</span><span class="Constant">1LL</span><span class="PreProc">&lt;&lt;(</span>sizeof<span class="PreProc">(</span>long<span class="PreProc"> </span>long<span class="PreProc"> </span>int<span class="PreProc">)*</span><span class="Constant">8</span><span class="PreProc">-</span><span class="Constant">2</span><span class="PreProc">)))</span><span class="Delimiter">,</span><span class="PreProc"> </span>static_cast<span class="PreProc">&lt;</span>long<span class="PreProc"> </span>long<span class="PreProc"> </span>int<span class="PreProc">&gt;(X</span><span class="Delimiter">.</span><span class="PreProc">size()))</span>
-<span class="Comment">//</span>
-<span class="Comment">// 5. Integer overflow is still impossible to guard against. Maybe after</span>
-<span class="Comment">// reading <a href="http://www.cs.utah.edu/~regehr/papers/overflow12.pdf">http://www.cs.utah.edu/~regehr/papers/overflow12.pdf</a></span>
+<span class="PreProc">#define SIZE(X) (assert((X)</span><span class="Delimiter">.</span><span class="PreProc">size() &lt; (</span><span class="Constant">1LL</span><span class="PreProc">&lt;&lt;(</span>sizeof<span class="PreProc">(</span>long<span class="PreProc"> </span>long<span class="PreProc"> </span>int<span class="PreProc">)*</span><span class="Constant">8</span><span class="PreProc">-</span><span class="Constant">2</span><span class="PreProc">)))</span><span class="Delimiter">,</span><span class="PreProc"> </span>static_cast<span class="PreProc">&lt;</span>long<span class="PreProc"> </span>long<span class="PreProc"> </span>int<span class="PreProc">&gt;((X)</span><span class="Delimiter">.</span><span class="PreProc">size()))</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: 5. Integer overflow is still impossible to guard against. Maybe after</span>
+<span class="Comment">//: reading <a href="http://www.cs.utah.edu/~regehr/papers/overflow12.pdf">http://www.cs.utah.edu/~regehr/papers/overflow12.pdf</a></span>
+<span class="Comment">//:</span>
+<span class="Comment">//: 6. Map's operator[] being non-const is fucking evil.</span>
+<span class="Delimiter">:(before &quot;Globals&quot;)</span>  <span class="Comment">// can't generate prototypes for these</span>
+<span class="Comment">// from <a href="http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map">http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map</a></span>
+template&lt;typename T&gt; typename T::mapped_type&amp; get<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> typename T::key_type const&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  typename T::iterator iter<span class="Delimiter">(</span>map<span class="Delimiter">.</span>find<span class="Delimiter">(</span>key<span class="Delimiter">));</span>
+  assert<span class="Delimiter">(</span>iter != map<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+  <span class="Identifier">return</span> iter<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+template&lt;typename T&gt; typename T::mapped_type const&amp; get<span class="Delimiter">(</span>const T&amp; map<span class="Delimiter">,</span> typename T::key_type const&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  typename T::const_iterator iter<span class="Delimiter">(</span>map<span class="Delimiter">.</span>find<span class="Delimiter">(</span>key<span class="Delimiter">));</span>
+  assert<span class="Delimiter">(</span>iter != map<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+  <span class="Identifier">return</span> iter<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+template&lt;typename T&gt; typename T::mapped_type const&amp; put<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> typename T::key_type const&amp; key<span class="Delimiter">,</span> typename T::mapped_type const&amp; value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  map[key] = value<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> map[key]<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+template&lt;typename T&gt; bool contains_key<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> typename T::key_type const&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> map<span class="Delimiter">.</span>find<span class="Delimiter">(</span>key<span class="Delimiter">)</span> != map<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+template&lt;typename T&gt; typename T::mapped_type&amp; get_or_insert<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> typename T::key_type const&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> map[key]<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Comment">//: The contract: any container that relies on get_or_insert should never call</span>
+<span class="Comment">//: contains_key.</span>
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#include</span><span class="Constant">&lt;assert.h&gt;</span>

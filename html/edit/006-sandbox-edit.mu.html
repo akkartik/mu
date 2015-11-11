@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
+.muRecipe { color: #ff8700; }
 .muScenario { color: #00af00; }
 .Special { color: #ff6060; }
-.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
 .Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -35,25 +35,25 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="SalientComment">## editing sandboxes after they've been created</span>
 
 <span class="muScenario">scenario</span> clicking-on-a-sandbox-moves-it-to-editor [
-  $close-trace  <span class="Comment"># trace too long</span>
+  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">40/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
-<span class="Constant">  add 2, 2</span>
+<span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
   <span class="Comment"># run it</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
-  event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                     run (F4)           .</span>
    <span class="Constant"> .                    ┊                   .</span>
    <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .  add 2, 2          ┊                  x.</span>
+   <span class="Constant"> .  reply 4           ┊                  x.</span>
    <span class="Constant"> .]                   ┊foo                .</span>
    <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .</span>
    <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
@@ -64,14 +64,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     left-click <span class="Constant">3</span>, <span class="Constant">30</span>
   ]
   run [
-    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># it pops back into editor</span>
   screen-should-contain [
    <span class="Constant"> .                     run (F4)           .</span>
    <span class="Constant"> .                    ┊foo                .</span>
    <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .  add 2, 2          ┊                   .</span>
+   <span class="Constant"> .  reply 4           ┊                   .</span>
    <span class="Constant"> .]                   ┊                   .</span>
    <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                   .</span>
    <span class="Constant"> .                    ┊                   .</span>
@@ -82,13 +82,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[0]</span>
   ]
   run [
-    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .                     run (F4)           .</span>
    <span class="Constant"> .                    ┊0foo               .</span>
    <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .  add 2, 2          ┊                   .</span>
+   <span class="Constant"> .  reply 4           ┊                   .</span>
    <span class="Constant"> .]                   ┊                   .</span>
    <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                   .</span>
    <span class="Constant"> .                    ┊                   .</span>
@@ -97,8 +97,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
-  <span class="Comment"># right side of screen and below sandbox editor? pop appropriate sandbox</span>
-  <span class="Comment"># contents back into sandbox editor provided it's empty</span>
+  <span class="Comment"># below sandbox editor? pop appropriate sandbox contents back into sandbox editor</span>
   <span class="Delimiter">{</span>
     sandbox-left-margin:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">left:offset</span>
     click-column:number<span class="Special"> &lt;- </span>get *t, <span class="Constant">column:offset</span>
@@ -111,7 +110,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     below-sandbox-editor?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-row, first-sandbox-begins
     <span class="muControl">break-unless</span> below-sandbox-editor?
     empty-sandbox-editor?:boolean<span class="Special"> &lt;- </span>empty-editor? current-sandbox
-    <span class="muControl">break-unless</span> empty-sandbox-editor?  <span class="Comment"># make the user hit F4 before editing a new sandbox</span>
+    <span class="muControl">break-unless</span> empty-sandbox-editor?  <span class="Comment"># don't clobber existing contents</span>
     <span class="Comment"># identify the sandbox to edit and remove it from the sandbox list</span>
     sandbox:address:sandbox-data<span class="Special"> &lt;- </span>extract-sandbox env, click-row
     text:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
@@ -124,19 +123,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> empty-editor? [
+<span class="muRecipe">recipe</span> empty-editor? editor:address:editor-data<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
-  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  head:address:duplex-list<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
-  first:address:duplex-list<span class="Special"> &lt;- </span>next-duplex head
-  result:boolean<span class="Special"> &lt;- </span>not first
-  <span class="muControl">reply</span> result
+  <span class="Constant">load-ingredients</span>
+  head:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
+  first:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex head
+  result<span class="Special"> &lt;- </span>not first
 ]
 
-<span class="muRecipe">recipe</span> extract-sandbox [
+<span class="muRecipe">recipe</span> extract-sandbox env:address:programming-environment-data, click-row:number<span class="muRecipe"> -&gt; </span>result:address:sandbox-data [
   <span class="Constant">local-scope</span>
-  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  click-row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   <span class="Comment"># assert click-row &gt;= sandbox.starting-row-on-screen</span>
   sandbox:address:address:sandbox-data<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">sandbox:offset</span>
   start:number<span class="Special"> &lt;- </span>get **sandbox, <span class="Constant">starting-row-on-screen:offset</span>
@@ -153,7 +150,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># snip sandbox out of its list</span>
-  result:address:sandbox-data<span class="Special"> &lt;- </span>copy *sandbox
+  result<span class="Special"> &lt;- </span>copy *sandbox
   *sandbox<span class="Special"> &lt;- </span>copy next-sandbox
   <span class="Comment"># position cursor in sandbox editor</span>
   sandbox-in-focus?:address:boolean<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">sandbox-in-focus?:offset</span>
@@ -162,26 +159,24 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="muScenario">scenario</span> sandbox-with-print-can-be-edited [
-  $close-trace  <span class="Comment"># trace too long</span>
+  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">20/height</span>
   <span class="Comment"># left editor is empty</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># right editor contains an instruction</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[print-integer screen:address, 4]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[print-integer screen, 4]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
   <span class="Comment"># run the sandbox</span>
   assume-console [
     press F4
   ]
-  run [
-    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
-  ]
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                x.</span>
-   <span class="Constant"> .                                                  ┊print-integer screen:address, 4                  .</span>
+   <span class="Constant"> .                                                  ┊print-integer screen, 4                          .</span>
    <span class="Constant"> .                                                  ┊screen:                                          .</span>
    <span class="Constant"> .                                                  ┊  .4                             .               .</span>
    <span class="Constant"> .                                                  ┊  .                              .               .</span>
@@ -196,11 +191,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     left-click <span class="Constant">3</span>, <span class="Constant">70</span>
   ]
   run [
-    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ┊print-integer screen:address, 4                  .</span>
+   <span class="Constant"> .                                                  ┊print-integer screen, 4                          .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>

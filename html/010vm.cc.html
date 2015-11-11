@@ -14,6 +14,7 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .cSpecial { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
 .PreProc { color: #c000c0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
@@ -53,6 +54,8 @@ struct recipe <span class="Delimiter">{</span>
   string name<span class="Delimiter">;</span>
   vector&lt;instruction&gt; steps<span class="Delimiter">;</span>
   <span class="Comment">// End recipe Fields</span>
+  recipe<span class="Delimiter">();</span>
+  string to_string<span class="Delimiter">()</span> const<span class="Delimiter">;</span>
 <span class="Delimiter">};</span>
 
 <span class="Delimiter">:(before &quot;struct recipe&quot;)</span>
@@ -65,12 +68,14 @@ struct instruction <span class="Delimiter">{</span>
   bool is_label<span class="Delimiter">;</span>
   string label<span class="Delimiter">;</span>  <span class="Comment">// only if is_label</span>
   string name<span class="Delimiter">;</span>  <span class="Comment">// only if !is_label</span>
-  recipe_ordinal operation<span class="Delimiter">;</span>  <span class="Comment">// Recipe_ordinal[name]</span>
+  string old_name<span class="Delimiter">;</span>  <span class="Comment">// before our automatic rewrite rules</span>
+  recipe_ordinal operation<span class="Delimiter">;</span>  <span class="Comment">// get(Recipe_ordinal, name)</span>
   vector&lt;reagent&gt; ingredients<span class="Delimiter">;</span>  <span class="Comment">// only if !is_label</span>
   vector&lt;reagent&gt; products<span class="Delimiter">;</span>  <span class="Comment">// only if !is_label</span>
   <span class="Comment">// End instruction Fields</span>
   instruction<span class="Delimiter">();</span>
   void clear<span class="Delimiter">();</span>
+  bool is_clear<span class="Delimiter">();</span>
   string to_string<span class="Delimiter">()</span> const<span class="Delimiter">;</span>
 <span class="Delimiter">};</span>
 
@@ -81,13 +86,16 @@ struct instruction <span class="Delimiter">{</span>
 <span class="Comment">// properties besides types, but we're getting ahead of ourselves.</span>
 struct reagent <span class="Delimiter">{</span>
   string original_string<span class="Delimiter">;</span>
-  vector&lt;pair&lt;string<span class="Delimiter">,</span> vector&lt;string&gt; &gt; &gt; properties<span class="Delimiter">;</span>
+  vector&lt;pair&lt;string<span class="Delimiter">,</span> string_tree*&gt; &gt; properties<span class="Delimiter">;</span>
   string name<span class="Delimiter">;</span>
   double value<span class="Delimiter">;</span>
   bool initialized<span class="Delimiter">;</span>
-  vector&lt;type_ordinal&gt; types<span class="Delimiter">;</span>
+  type_tree* type<span class="Delimiter">;</span>
   reagent<span class="Delimiter">(</span>string s<span class="Delimiter">);</span>
   reagent<span class="Delimiter">();</span>
+  ~reagent<span class="Delimiter">();</span>
+  reagent<span class="Delimiter">(</span>const reagent&amp; old<span class="Delimiter">);</span>
+  reagent&amp; operator=<span class="Delimiter">(</span>const reagent&amp; old<span class="Delimiter">);</span>
   void set_value<span class="Delimiter">(</span>double v<span class="Delimiter">)</span> <span class="Delimiter">{</span> value = v<span class="Delimiter">;</span> initialized = <span class="Constant">true</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
   string to_string<span class="Delimiter">()</span> const<span class="Delimiter">;</span>
 <span class="Delimiter">};</span>
@@ -95,6 +103,38 @@ struct reagent <span class="Delimiter">{</span>
 <span class="Delimiter">:(before &quot;struct reagent&quot;)</span>
 struct property <span class="Delimiter">{</span>
   vector&lt;string&gt; values<span class="Delimiter">;</span>
+<span class="Delimiter">};</span>
+
+<span class="Comment">// Types can range from a simple type ordinal, to arbitrarily complex trees of</span>
+<span class="Comment">// type parameters, like (map (address array character) (list number))</span>
+struct type_tree <span class="Delimiter">{</span>
+  type_ordinal value<span class="Delimiter">;</span>
+  type_tree* left<span class="Delimiter">;</span>
+  type_tree* right<span class="Delimiter">;</span>
+  ~type_tree<span class="Delimiter">();</span>
+  type_tree<span class="Delimiter">(</span>const type_tree&amp; old<span class="Delimiter">);</span>
+  <span class="Comment">// simple: type ordinal</span>
+  explicit type_tree<span class="Delimiter">(</span>type_ordinal v<span class="Delimiter">)</span> :value<span class="Delimiter">(</span>v<span class="Delimiter">),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  <span class="Comment">// intermediate: list of type ordinals</span>
+  type_tree<span class="Delimiter">(</span>type_ordinal v<span class="Delimiter">,</span> type_tree* r<span class="Delimiter">)</span> :value<span class="Delimiter">(</span>v<span class="Delimiter">),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  <span class="Comment">// advanced: tree containing type ordinals</span>
+  type_tree<span class="Delimiter">(</span>type_tree* l<span class="Delimiter">,</span> type_tree* r<span class="Delimiter">)</span> :value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> left<span class="Delimiter">(</span>l<span class="Delimiter">),</span> right<span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+<span class="Delimiter">};</span>
+
+struct string_tree <span class="Delimiter">{</span>
+  string value<span class="Delimiter">;</span>
+  string_tree* left<span class="Delimiter">;</span>
+  string_tree* right<span class="Delimiter">;</span>
+  ~string_tree<span class="Delimiter">();</span>
+  string_tree<span class="Delimiter">(</span>const string_tree&amp; old<span class="Delimiter">);</span>
+  <span class="Comment">// simple: flat string</span>
+  explicit string_tree<span class="Delimiter">(</span>string v<span class="Delimiter">)</span> :value<span class="Delimiter">(</span>v<span class="Delimiter">),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  <span class="Comment">// intermediate: list of strings</span>
+  string_tree<span class="Delimiter">(</span>string v<span class="Delimiter">,</span> string_tree* r<span class="Delimiter">)</span> :value<span class="Delimiter">(</span>v<span class="Delimiter">),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  <span class="Comment">// advanced: tree containing strings</span>
+  string_tree<span class="Delimiter">(</span>string_tree* l<span class="Delimiter">,</span> string_tree* r<span class="Delimiter">)</span> :left<span class="Delimiter">(</span>l<span class="Delimiter">),</span> right<span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  <span class="Comment">// print as s-expression</span>
+  string to_string<span class="Delimiter">()</span> const<span class="Delimiter">;</span>
 <span class="Delimiter">};</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
@@ -106,7 +146,7 @@ Memory<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">:(after &quot;Types&quot;)</span>
 <span class="Comment">// Mu types encode how the numbers stored in different parts of memory are</span>
 <span class="Comment">// interpreted. A location tagged as a 'character' type will interpret the</span>
-<span class="Comment">// number 97 as the letter 'a', while a different location of type 'number'</span>
+<span class="Comment">// value 97 as the letter 'a', while a different location of type 'number'</span>
 <span class="Comment">// would not.</span>
 <span class="Comment">//</span>
 <span class="Comment">// Unlike most computers today, mu stores types in a single big table, shared</span>
@@ -120,26 +160,34 @@ type_ordinal Next_type_ordinal = <span class="Constant">1</span><span class="Del
 <span class="Delimiter">:(code)</span>
 void setup_types<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   Type<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>  Type_ordinal<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  Type_ordinal[<span class="Constant">&quot;literal&quot;</span>] = <span class="Constant">0</span><span class="Delimiter">;</span>
+  put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
   Next_type_ordinal = <span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Comment">// Mu Types Initialization</span>
-  type_ordinal number = Type_ordinal[<span class="Constant">&quot;number&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
-  Type_ordinal[<span class="Constant">&quot;location&quot;</span>] = Type_ordinal[<span class="Constant">&quot;number&quot;</span>]<span class="Delimiter">;</span>  <span class="Comment">// wildcard type: either a pointer or a scalar</span>
-  Type[number]<span class="Delimiter">.</span>name = <span class="Constant">&quot;number&quot;</span><span class="Delimiter">;</span>
-  type_ordinal address = Type_ordinal[<span class="Constant">&quot;address&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
-  Type[address]<span class="Delimiter">.</span>name = <span class="Constant">&quot;address&quot;</span><span class="Delimiter">;</span>
-  type_ordinal boolean = Type_ordinal[<span class="Constant">&quot;boolean&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
-  Type[boolean]<span class="Delimiter">.</span>name = <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">;</span>
-  type_ordinal character = Type_ordinal[<span class="Constant">&quot;character&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
-  Type[character]<span class="Delimiter">.</span>name = <span class="Constant">&quot;character&quot;</span><span class="Delimiter">;</span>
+  type_ordinal number = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
+  put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">));</span>  <span class="Comment">// wildcard type: either a pointer or a scalar</span>
+  get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> number<span class="Delimiter">).</span>name = <span class="Constant">&quot;number&quot;</span><span class="Delimiter">;</span>
+  type_ordinal address = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
+  get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> address<span class="Delimiter">).</span>name = <span class="Constant">&quot;address&quot;</span><span class="Delimiter">;</span>
+  type_ordinal boolean = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
+  get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> boolean<span class="Delimiter">).</span>name = <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">;</span>
+  type_ordinal character = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;character&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
+  get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> character<span class="Delimiter">).</span>name = <span class="Constant">&quot;character&quot;</span><span class="Delimiter">;</span>
   <span class="Comment">// Array types are a special modifier to any other type. For example,</span>
   <span class="Comment">// array:number or array:address:boolean.</span>
-  type_ordinal array = Type_ordinal[<span class="Constant">&quot;array&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
-  Type[array]<span class="Delimiter">.</span>name = <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
+  type_ordinal array = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
+  get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> array<span class="Delimiter">).</span>name = <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
   <span class="Comment">// End Mu Types Initialization</span>
+<span class="Delimiter">}</span>
+void teardown_types<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt;::iterator p = Type<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Type<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+      delete p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  Type_ordinal<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
 setup_types<span class="Delimiter">();</span>
+atexit<span class="Delimiter">(</span>teardown_types<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 <span class="Comment">// You can construct arbitrary new types. New types are either 'containers'</span>
@@ -153,19 +201,19 @@ setup_types<span class="Delimiter">();</span>
 <span class="Comment">// with different properties for each, that may require an exclusive container</span>
 <span class="Comment">// whose variants are individual-account and joint-account containers.</span>
 enum kind_of_type <span class="Delimiter">{</span>
-  primitive<span class="Delimiter">,</span>
-  container<span class="Delimiter">,</span>
-  exclusive_container
+  PRIMITIVE<span class="Delimiter">,</span>
+  CONTAINER<span class="Delimiter">,</span>
+  EXCLUSIVE_CONTAINER
 <span class="Delimiter">};</span>
 
 struct type_info <span class="Delimiter">{</span>
   string name<span class="Delimiter">;</span>
   kind_of_type kind<span class="Delimiter">;</span>
   long long int size<span class="Delimiter">;</span>  <span class="Comment">// only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)</span>
-  vector&lt;vector&lt;type_ordinal&gt; &gt; elements<span class="Delimiter">;</span>
+  vector&lt;type_tree*&gt; elements<span class="Delimiter">;</span>
   vector&lt;string&gt; element_names<span class="Delimiter">;</span>
   <span class="Comment">// End type_info Fields</span>
-  type_info<span class="Delimiter">()</span> :kind<span class="Delimiter">(</span>primitive<span class="Delimiter">),</span> size<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  type_info<span class="Delimiter">()</span> :kind<span class="Delimiter">(</span>PRIMITIVE<span class="Delimiter">),</span> size<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
 <span class="Delimiter">};</span>
 
 enum primitive_recipes <span class="Delimiter">{</span>
@@ -181,9 +229,9 @@ enum primitive_recipes <span class="Delimiter">{</span>
 <span class="Comment">//: what to do for them.</span>
 void setup_recipes<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   Recipe<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>  Recipe_ordinal<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  Recipe_ordinal[<span class="Constant">&quot;idle&quot;</span>] = IDLE<span class="Delimiter">;</span>
+  put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;idle&quot;</span><span class="Delimiter">,</span> IDLE<span class="Delimiter">);</span>
   <span class="Comment">// Primitive Recipe Numbers</span>
-  Recipe_ordinal[<span class="Constant">&quot;copy&quot;</span>] = COPY<span class="Delimiter">;</span>
+  put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;copy&quot;</span><span class="Delimiter">,</span> COPY<span class="Delimiter">);</span>
   <span class="Comment">// End Primitive Recipe Numbers</span>
 <span class="Delimiter">}</span>
 <span class="Comment">//: We could just reset the recipe table after every test, but that gets slow</span>
@@ -194,7 +242,7 @@ void setup_recipes<span class="Delimiter">()</span> <span class="Delimiter">{</s
 setup_recipes<span class="Delimiter">();</span>
 assert<span class="Delimiter">(</span>MAX_PRIMITIVE_RECIPES &lt; <span class="Constant">200</span><span class="Delimiter">);</span>  <span class="Comment">// level 0 is primitives; until 199</span>
 Next_recipe_ordinal = <span class="Constant">200</span><span class="Delimiter">;</span>
-Recipe_ordinal[<span class="Constant">&quot;main&quot;</span>] = Next_recipe_ordinal++<span class="Delimiter">;</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">,</span> Next_recipe_ordinal++<span class="Delimiter">);</span>
 <span class="Comment">// End Load Recipes</span>
 <span class="Delimiter">:(before &quot;End Test Run Initialization&quot;)</span>
 assert<span class="Delimiter">(</span>Next_recipe_ordinal &lt; <span class="Constant">1000</span><span class="Delimiter">);</span>  <span class="Comment">// recipes being tested didn't overflow into test space</span>
@@ -206,13 +254,18 @@ Next_recipe_ordinal = <span class="Constant">1000</span><span class="Delimiter">
 <span class="SalientComment">//:: Helpers</span>
 
 <span class="Delimiter">:(code)</span>
+recipe::recipe<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Comment">// End recipe Constructor</span>
+<span class="Delimiter">}</span>
+
 instruction::instruction<span class="Delimiter">()</span> :is_label<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">),</span> operation<span class="Delimiter">(</span>IDLE<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// End instruction Constructor</span>
 <span class="Delimiter">}</span>
-void instruction::clear<span class="Delimiter">()</span> <span class="Delimiter">{</span> is_label=<span class="Constant">false</span><span class="Delimiter">;</span> label<span class="Delimiter">.</span>clear<span class="Delimiter">();</span> operation=IDLE<span class="Delimiter">;</span> ingredients<span class="Delimiter">.</span>clear<span class="Delimiter">();</span> products<span class="Delimiter">.</span>clear<span class="Delimiter">();</span> <span class="Delimiter">}</span>
+void instruction::clear<span class="Delimiter">()</span> <span class="Delimiter">{</span> is_label=<span class="Constant">false</span><span class="Delimiter">;</span> label<span class="Delimiter">.</span>clear<span class="Delimiter">();</span> name<span class="Delimiter">.</span>clear<span class="Delimiter">();</span> old_name<span class="Delimiter">.</span>clear<span class="Delimiter">();</span> operation=IDLE<span class="Delimiter">;</span> ingredients<span class="Delimiter">.</span>clear<span class="Delimiter">();</span> products<span class="Delimiter">.</span>clear<span class="Delimiter">();</span> <span class="Delimiter">}</span>
+bool instruction::is_clear<span class="Delimiter">()</span> <span class="Delimiter">{</span> <span class="Identifier">return</span> !is_label &amp;&amp; name<span class="Delimiter">.</span>empty<span class="Delimiter">();</span> <span class="Delimiter">}</span>
 
 <span class="Comment">// Reagents have the form &lt;name&gt;:&lt;type&gt;:&lt;type&gt;:.../&lt;property&gt;/&lt;property&gt;/...</span>
-reagent::reagent<span class="Delimiter">(</span>string s<span class="Delimiter">)</span> :original_string<span class="Delimiter">(</span>s<span class="Delimiter">),</span> value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> initialized<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+reagent::reagent<span class="Delimiter">(</span>string s<span class="Delimiter">)</span> :original_string<span class="Delimiter">(</span>s<span class="Delimiter">),</span> value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> initialized<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">),</span> type<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// Parsing reagent(string s)</span>
   istringstream in<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
@@ -220,58 +273,180 @@ reagent::reagent<span class="Delimiter">(</span>string s<span class="Delimiter">
   while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     istringstream row<span class="Delimiter">(</span>slurp_until<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">'/'</span><span class="Delimiter">));</span>
     row &gt;&gt; std::noskipws<span class="Delimiter">;</span>
-    string name = slurp_until<span class="Delimiter">(</span>row<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">);</span>
-    vector&lt;string&gt; values<span class="Delimiter">;</span>
-    while <span class="Delimiter">(</span>!row<span class="Delimiter">.</span>eof<span class="Delimiter">())</span>
-      values<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>slurp_until<span class="Delimiter">(</span>row<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">));</span>
-    properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> vector&lt;string&gt; &gt;<span class="Delimiter">(</span>name<span class="Delimiter">,</span> values<span class="Delimiter">));</span>
+    string key = slurp_until<span class="Delimiter">(</span>row<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">);</span>
+    string_tree* value = parse_property_list<span class="Delimiter">(</span>row<span class="Delimiter">);</span>
+    properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>key<span class="Delimiter">,</span> value<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
-  <span class="Comment">// structures for the first row of properties</span>
+  <span class="Comment">// structures for the first row of properties: name and list of types</span>
   name = properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>first<span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    string type = properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span>type<span class="Delimiter">)</span> == Type_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">()</span>
-        <span class="Comment">// types can contain integers, like for array sizes</span>
-        &amp;&amp; !is_integer<span class="Delimiter">(</span>type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      Type_ordinal[type] = Next_type_ordinal++<span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_ordinal[type]<span class="Delimiter">);</span>
+  type = new_type_tree<span class="Delimiter">(</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>name<span class="Delimiter">)</span> &amp;&amp; type == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    type = new type_tree<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>!properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
+    properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second = new string_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>name<span class="Delimiter">)</span> &amp;&amp; types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-    properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>name == <span class="Constant">&quot;_&quot;</span> &amp;&amp; types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-    properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;dummy&quot;</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>name == <span class="Constant">&quot;_&quot;</span> &amp;&amp; type == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    type = new type_tree<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>!properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
+    properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second = new string_tree<span class="Delimiter">(</span><span class="Constant">&quot;dummy&quot;</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// End Parsing reagent</span>
 <span class="Delimiter">}</span>
 
-reagent::reagent<span class="Delimiter">()</span> :value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> initialized<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+string_tree* parse_property_list<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  string_tree* result = new string_tree<span class="Delimiter">(</span>slurp_until<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">));</span>
+  result<span class="Delimiter">-&gt;</span>right = parse_property_list<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+type_tree* new_type_tree<span class="Delimiter">(</span>const string_tree* properties<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!properties<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  type_tree* result = new type_tree<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!properties<span class="Delimiter">-&gt;</span>value<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    const string&amp; type_name = properties<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">))</span>
+      result<span class="Delimiter">-&gt;</span>value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">);</span>
+    else if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>type_name<span class="Delimiter">))</span>  <span class="Comment">// sometimes types will contain non-type tags, like numbers for the size of an array</span>
+      result<span class="Delimiter">-&gt;</span>value = <span class="Constant">0</span><span class="Delimiter">;</span>
+    else
+      result<span class="Delimiter">-&gt;</span>value = -<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// should never happen; will trigger errors later</span>
+  <span class="Delimiter">}</span>
+  result<span class="Delimiter">-&gt;</span>left = new_type_tree<span class="Delimiter">(</span>properties<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
+  result<span class="Delimiter">-&gt;</span>right = new_type_tree<span class="Delimiter">(</span>properties<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: avoid memory leaks for the type tree</span>
+
+reagent::reagent<span class="Delimiter">(</span>const reagent&amp; old<span class="Delimiter">)</span> :original_string<span class="Delimiter">(</span>old<span class="Delimiter">.</span>original_string<span class="Delimiter">),</span> properties<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">),</span> name<span class="Delimiter">(</span>old<span class="Delimiter">.</span>name<span class="Delimiter">),</span> value<span class="Delimiter">(</span>old<span class="Delimiter">.</span>value<span class="Delimiter">),</span> initialized<span class="Delimiter">(</span>old<span class="Delimiter">.</span>initialized<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  properties<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span>
+                                                    old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second ? new string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  type = old<span class="Delimiter">.</span>type ? new type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>type<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+type_tree::type_tree<span class="Delimiter">(</span>const type_tree&amp; old<span class="Delimiter">)</span> :value<span class="Delimiter">(</span>old<span class="Delimiter">.</span>value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  left = old<span class="Delimiter">.</span>left ? new type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  right = old<span class="Delimiter">.</span>right ? new type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+string_tree::string_tree<span class="Delimiter">(</span>const string_tree&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// :value(old.value) {</span>
+  value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  left = old<span class="Delimiter">.</span>left ? new string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  right = old<span class="Delimiter">.</span>right ? new string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+reagent&amp; reagent::operator=<span class="Delimiter">(</span>const reagent&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  original_string = old<span class="Delimiter">.</span>original_string<span class="Delimiter">;</span>
+  properties<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+    properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span> old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second ? new string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">));</span>
+  name = old<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  initialized = old<span class="Delimiter">.</span>initialized<span class="Delimiter">;</span>
+  type = old<span class="Delimiter">.</span>type ? new type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>type<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> *this<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+reagent::~reagent<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+    if <span class="Delimiter">(</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> delete properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">;</span>
+  delete type<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+type_tree::~type_tree<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  delete left<span class="Delimiter">;</span>
+  delete right<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+string_tree::~string_tree<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  delete left<span class="Delimiter">;</span>
+  delete right<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+reagent::reagent<span class="Delimiter">()</span> :value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> initialized<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">),</span> type<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// The first property is special, so ensure we always have it.</span>
   <span class="Comment">// Other properties can be pushed back, but the first must always be</span>
   <span class="Comment">// assigned to.</span>
-  properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> vector&lt;string&gt; &gt;<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">,</span> vector&lt;string&gt;<span class="Delimiter">()));</span>
+  properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
 string reagent::to_string<span class="Delimiter">()</span> const <span class="Delimiter">{</span>
   ostringstream out<span class="Delimiter">;</span>
-  out &lt;&lt; <span class="Constant">&quot;{name: </span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>!properties<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    out &lt;&lt; <span class="Constant">&quot;, properties: [&quot;</span><span class="Delimiter">;</span>
+    out &lt;&lt; <span class="Constant">&quot;{&quot;</span><span class="Delimiter">;</span>
     for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      out &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: &quot;</span><span class="Delimiter">;</span>
-      for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        if <span class="Delimiter">(</span>j &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">':'</span><span class="Delimiter">;</span>
-        out &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-      if <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
-      else out &lt;&lt; <span class="Constant">&quot;]&quot;</span><span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
+      out &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
+    out &lt;&lt; <span class="Constant">&quot;}&quot;</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  out &lt;&lt; <span class="Constant">&quot;}&quot;</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+string debug_string<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  ostringstream out<span class="Delimiter">;</span>
+  out &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; -- &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>to_string<span class="Delimiter">();</span>
+  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+string debug_string<span class="Delimiter">(</span>const string_tree* property<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!property<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&lt;&gt;&quot;</span><span class="Delimiter">;</span>
+  ostringstream out<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>!property<span class="Delimiter">-&gt;</span>left &amp;&amp; !property<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+    <span class="Comment">// abbreviate a single-node tree to just its contents</span>
+    out &lt;&lt; <span class="Constant">'&quot;'</span> &lt;&lt; property<span class="Delimiter">-&gt;</span>value &lt;&lt; <span class="Constant">'&quot;'</span><span class="Delimiter">;</span>
+  else
+    dump_property_tree<span class="Delimiter">(</span>property<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+void dump_property_tree<span class="Delimiter">(</span>const string_tree* property<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  out &lt;&lt; <span class="Constant">&quot;&lt;&quot;</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>property<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span>
+    dump_property_tree<span class="Delimiter">(</span>property<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  else
+    out &lt;&lt; <span class="Constant">'&quot;'</span> &lt;&lt; property<span class="Delimiter">-&gt;</span>value &lt;&lt; <span class="Constant">'&quot;'</span><span class="Delimiter">;</span>
+  out &lt;&lt; <span class="Constant">&quot; : &quot;</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>property<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+    dump_property_tree<span class="Delimiter">(</span>property<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  else
+    out &lt;&lt; <span class="Constant">&quot;&lt;&gt;&quot;</span><span class="Delimiter">;</span>
+  out &lt;&lt; <span class="Constant">&quot;&gt;&quot;</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+string debug_string<span class="Delimiter">(</span>const type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// abbreviate a single-node tree to just its contents</span>
+  if <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;NULLNULLNULL&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// should never happen</span>
+  ostringstream out<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>left &amp;&amp; !type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+    dump_type_name<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  else
+    dump_types_tree<span class="Delimiter">(</span>type<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+void dump_types_tree<span class="Delimiter">(</span>const type_tree* type<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  out &lt;&lt; <span class="Constant">&quot;&lt;&quot;</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span>
+    dump_types_tree<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  else
+    dump_type_name<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  out &lt;&lt; <span class="Constant">&quot; : &quot;</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+    dump_types_tree<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  else
+    out &lt;&lt; <span class="Constant">&quot;&lt;&gt;&quot;</span><span class="Delimiter">;</span>
+  out &lt;&lt; <span class="Constant">&quot;&gt;&quot;</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+void dump_type_name<span class="Delimiter">(</span>type_ordinal type<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">))</span>
+    out &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+  else
+    out &lt;&lt; <span class="Constant">&quot;?&quot;</span> &lt;&lt; type<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 string instruction::to_string<span class="Delimiter">()</span> const <span class="Delimiter">{</span>
@@ -286,6 +461,23 @@ string instruction::to_string<span class="Delimiter">()</span> const <span class
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
     out &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+string debug_string<span class="Delimiter">(</span>const recipe&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  ostringstream out<span class="Delimiter">;</span>
+  out &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  <span class="Comment">// Begin debug_string(recipe x)</span>
+  for <span class="Delimiter">(</span>long long int index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    const instruction&amp; inst = x<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
+    out &lt;&lt; <span class="Constant">&quot;  inst: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    out &lt;&lt; <span class="Constant">&quot;  ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+      out &lt;&lt; <span class="Constant">&quot;    &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    out &lt;&lt; <span class="Constant">&quot;  products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+      out &lt;&lt; <span class="Constant">&quot;    &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
@@ -310,22 +502,115 @@ bool has_property<span class="Delimiter">(</span>reagent x<span class="Delimiter
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-vector&lt;string&gt; property<span class="Delimiter">(</span>const reagent&amp; r<span class="Delimiter">,</span> const string&amp; name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+string_tree* property<span class="Delimiter">(</span>const reagent&amp; r<span class="Delimiter">,</span> const string&amp; name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   for <span class="Delimiter">(</span>long long int p = <span class="Comment">/*</span><span class="Comment">skip name:type</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span> p != SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>p<span class="Delimiter">).</span>first == name<span class="Delimiter">)</span>
       <span class="Identifier">return</span> r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>p<span class="Delimiter">).</span>second<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> vector&lt;string&gt;<span class="Delimiter">();</span>
+  <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+bool deeply_equal<span class="Delimiter">(</span>const string_tree* a<span class="Delimiter">,</span> const string_tree* b<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!a<span class="Delimiter">)</span> <span class="Identifier">return</span> !b<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>!b<span class="Delimiter">)</span> <span class="Identifier">return</span> !a<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> a<span class="Delimiter">-&gt;</span>value == b<span class="Delimiter">-&gt;</span>value
+      &amp;&amp; deeply_equal<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span>
+      &amp;&amp; deeply_equal<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 void dump_memory<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   for <span class="Delimiter">(</span>map&lt;long long int<span class="Delimiter">,</span> double&gt;::iterator p = Memory<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Memory<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    cout &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    cout &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
+
+string recipe::to_string<span class="Delimiter">()</span> const <span class="Delimiter">{</span>
+  ostringstream out<span class="Delimiter">;</span>
+  out &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot; [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+    out &lt;&lt; <span class="Constant">&quot;  &quot;</span> &lt;&lt; steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  out &lt;&lt; <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+string string_tree::to_string<span class="Delimiter">()</span> const <span class="Delimiter">{</span>
+  ostringstream out<span class="Delimiter">;</span>
+  dump<span class="Delimiter">(</span>this<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+void dump<span class="Delimiter">(</span>const string_tree* x<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!x<span class="Delimiter">-&gt;</span>left &amp;&amp; !x<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    out &lt;&lt; x<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  out &lt;&lt; <span class="Constant">'('</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>const string_tree* curr = x<span class="Delimiter">;</span> curr<span class="Delimiter">;</span> curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>curr != x<span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span>
+      dump<span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+    else
+      out &lt;&lt; curr<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  out &lt;&lt; <span class="Constant">')'</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+void skip_whitespace<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">()</span> &amp;&amp; isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Types&quot;)</span>
+struct no_scientific <span class="Delimiter">{</span>
+  double x<span class="Delimiter">;</span>
+  explicit no_scientific<span class="Delimiter">(</span>double y<span class="Delimiter">)</span> :x<span class="Delimiter">(</span>y<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+<span class="Delimiter">};</span>
+
+<span class="Delimiter">:(code)</span>
+ostream&amp; operator&lt;&lt;<span class="Delimiter">(</span>ostream&amp; os<span class="Delimiter">,</span> no_scientific x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!isfinite<span class="Delimiter">(</span>x<span class="Delimiter">.</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Comment">// Infinity or NaN</span>
+    os &lt;&lt; x<span class="Delimiter">.</span>x<span class="Delimiter">;</span>
+    <span class="Identifier">return</span> os<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  ostringstream tmp<span class="Delimiter">;</span>
+  tmp &lt;&lt; std::fixed &lt;&lt; x<span class="Delimiter">.</span>x<span class="Delimiter">;</span>
+  os &lt;&lt; trim_floating_point<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+  <span class="Identifier">return</span> os<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+string trim_floating_point<span class="Delimiter">(</span>const string&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+  long long int len = SIZE<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  while <span class="Delimiter">(</span>len &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>len-<span class="Constant">1</span><span class="Delimiter">)</span> != <span class="Constant">'0'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    --len<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>len-<span class="Constant">1</span><span class="Delimiter">)</span> == <span class="Constant">'.'</span><span class="Delimiter">)</span> --len<span class="Delimiter">;</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; in &lt;&lt; &quot;: &quot; &lt;&lt; in.substr(0, len) &lt;&lt; '\n';</span>
+  <span class="Identifier">return</span> in<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> len<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+void test_trim_floating_point<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;0&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;000000000&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;1.5&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;1.5000&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;1.000001&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;1.000001&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;23&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23.000000&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;23&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23.0&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;23&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23.&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;23&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;3&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3.000000&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;3&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3.0&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;3&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3.&quot;</span><span class="Delimiter">));</span>
+  CHECK_EQ<span class="Delimiter">(</span><span class="Constant">&quot;3&quot;</span><span class="Delimiter">,</span> trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3&quot;</span><span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#include</span><span class="Constant">&lt;utility&gt;</span>
 using std::pair<span class="Delimiter">;</span>
+<span class="PreProc">#include</span><span class="Constant">&lt;math.h&gt;</span>
 </pre>
 </body>
 </html>

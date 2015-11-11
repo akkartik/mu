@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 055parse_tree.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1.05em; }
+.traceContains { color: #008000; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+.Identifier { color: #804000; }
+.Constant { color: #00a0a0; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">// So far instructions can only contain linear lists of properties. Now we add</span>
+<span class="Comment">// support for more complex trees of properties in dilated reagents. This will</span>
+<span class="Comment">// come in handy later for expressing complex types, like &quot;a dictionary from</span>
+<span class="Comment">// (address to array of charaters) to (list of numbers)&quot;.</span>
+
+<span class="Delimiter">:(scenario dilated_reagent_with_nested_brackets)</span>
+recipe main [
+  <span class="Delimiter">{</span><span class="Constant">1</span>: number<span class="Delimiter">,</span> foo: <span class="Delimiter">(</span>bar <span class="Delimiter">(</span>baz quux<span class="Delimiter">))}</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;, &quot;foo&quot;: &lt;&quot;bar&quot; : &lt;&lt;&quot;baz&quot; : &lt;&quot;quux&quot; : &lt;&gt;&gt;&gt; : &lt;&gt;&gt;&gt;}</span>
+
+<span class="Delimiter">:(before &quot;End Parsing Reagent Property(value)&quot;)</span>
+value = parse_string_tree<span class="Delimiter">(</span>value<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(code)</span>
+string_tree* parse_string_tree<span class="Delimiter">(</span>string_tree* s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>!s<span class="Delimiter">-&gt;</span>left &amp;&amp; !s<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>s<span class="Delimiter">-&gt;</span>value<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'('</span><span class="Delimiter">)</span> <span class="Identifier">return</span> s<span class="Delimiter">;</span>
+  string_tree* result = parse_string_tree<span class="Delimiter">(</span>s<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  delete s<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+string_tree* parse_string_tree<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  istringstream in<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
+  in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> parse_string_tree<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+string_tree* parse_string_tree<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">')'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'('</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    string_tree* result = new string_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip '('</span>
+  string_tree* result = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  string_tree** curr = &amp;result<span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">')'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">());</span>
+    *curr = new string_tree<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+    skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    skip_ignored_characters<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">)</span>
+      <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>left = parse_string_tree<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    else
+      <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>value = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    curr = &amp;<span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>right<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip ')'</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario dilated_reagent_with_type_tree)</span>
+<span class="Special">% Hide_errors = true;  // 'map' isn't defined yet</span>
+recipe main [
+  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>foo <span class="Delimiter">(</span>address array character<span class="Delimiter">)</span> <span class="Delimiter">(</span>bar number<span class="Delimiter">))}</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+<span class="Comment"># just to avoid errors</span>
+container foo [
+]
+container bar [
+]
+<span class="traceContains">+parse:   product: {&quot;1&quot;: &lt;&quot;foo&quot; : &lt;&lt;&quot;address&quot; : &lt;&quot;array&quot; : &lt;&quot;character&quot; : &lt;&gt;&gt;&gt;&gt; : &lt;&lt;&quot;bar&quot; : &lt;&quot;number&quot; : &lt;&gt;&gt;&gt; : &lt;&gt;&gt;&gt;&gt;}</span>
+
+<span class="Comment">//: an exception is 'new', which takes a type tree as its ingredient *value*</span>
+
+<span class="Delimiter">:(scenario dilated_reagent_with_new)</span>
+recipe main [
+  x:address:number<span class="Special"> &lt;- </span>new <span class="Delimiter">{(</span>foo bar<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
+]
+<span class="Comment"># type isn't defined so size is meaningless, but at least we parse the type correctly</span>
+<span class="traceContains">+new: size of &lt;&quot;foo&quot; : &lt;&quot;bar&quot; : &lt;&gt;&gt;&gt; is 1</span>
+
+<span class="Delimiter">:(before &quot;End Post-processing(type_name) When Converting 'new'&quot;)</span>
+type_name = parse_string_tree<span class="Delimiter">(</span>type_name<span class="Delimiter">);</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

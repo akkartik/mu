@@ -13,13 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.muData { color: #ffff00; }
 .muScenario { color: #00af00; }
+.muData { color: #ffff00; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
 -->
 </style>
 
@@ -33,55 +34,58 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <pre id='vimCodeElement'>
 <span class="Comment"># A list links up multiple objects together to make them easier to manage.</span>
 <span class="Comment">#</span>
-<span class="Comment"># Try to make all objects in a single list of the same type, it'll help avoid bugs.</span>
-<span class="Comment"># If you want to store multiple types in a single list, use an exclusive-container.</span>
+<span class="Comment"># The objects must be of the same type. If you want to store multiple types in</span>
+<span class="Comment"># a single list, use an exclusive-container.</span>
 
-<span class="muData">container</span> list [
-  value:location
-  next:address:list
+<span class="muData">container</span> list:_elem [
+  value:_elem
+  next:address:list:_elem
 ]
 
-<span class="Comment"># result:address:list &lt;- push x:location, in:address:list</span>
-<span class="muRecipe">recipe</span> push [
+<span class="muRecipe">recipe</span> push x:_elem, in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:list:_elem [
   <span class="Constant">local-scope</span>
-  x:location<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  in:address:list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  result:address:list<span class="Special"> &lt;- </span>new <span class="Constant">list:type</span>
-  val:address:location<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">value:offset</span>
+  <span class="Constant">load-ingredients</span>
+  result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
+  val:address:_elem<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">value:offset</span>
   *val<span class="Special"> &lt;- </span>copy x
-  next:address:address:list<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">next:offset</span>
+  next:address:address:list:_elem<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">next:offset</span>
   *next<span class="Special"> &lt;- </span>copy in
   <span class="muControl">reply</span> result
 ]
 
-<span class="Comment"># result:location &lt;- first in:address:list</span>
-<span class="muRecipe">recipe</span> first [
+<span class="muRecipe">recipe</span> first in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
   <span class="Constant">local-scope</span>
-  in:address:list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  result:location<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
-  <span class="muControl">reply</span> result
+  <span class="Constant">load-ingredients</span>
+  result<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
 ]
 
 <span class="Comment"># result:address:list &lt;- rest in:address:list</span>
-<span class="muRecipe">recipe</span> rest [
+<span class="muRecipe">recipe</span> rest in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:list:_elem [
   <span class="Constant">local-scope</span>
-  in:address:list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  result:address:list<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
-  <span class="muControl">reply</span> result
+  <span class="Constant">load-ingredients</span>
+  result<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
 ]
 
+<span class="muRecipe">recipe</span> force-specialization-list-number [
+  <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">2</span>:number, <span class="Constant">1</span>:address:list:number
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list:number
+  <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list:number
+]
+
+<span class="Comment"># todo: automatically specialize code in scenarios</span>
 <span class="muScenario">scenario</span> list-handling [
   run [
-    <span class="Constant">1</span>:address:list<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    <span class="Constant">1</span>:address:list<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">1</span>:address:list
-    <span class="Constant">1</span>:address:list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, <span class="Constant">1</span>:address:list
-    <span class="Constant">1</span>:address:list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, <span class="Constant">1</span>:address:list
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list
-    <span class="Constant">1</span>:address:list<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list
-    <span class="Constant">1</span>:address:list<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list
-    <span class="Constant">1</span>:address:list<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">2</span>:number, <span class="Constant">1</span>:address:list:number
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, <span class="Constant">1</span>:address:list:number
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, <span class="Constant">1</span>:address:list:number
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list:number
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list:number
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list:number
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list:number
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list:number
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list:number
   ]
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># empty to empty, dust to dust..</span>

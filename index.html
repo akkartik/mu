@@ -37,9 +37,12 @@ single function or 'recipe'.
 <li><a href='html/screen.mu.html'>screen.mu</a>: example program showing
 print primitives that inject a screen <em>dependency</em> which can be faked
 for testing.
-<li><a href='html/chessboard.mu.html'>chessboard.mu</a>: putting it all
-together, a little console program along with thorough tests of its behavior
-including both screen and keyboard handling.
+<li><a href='html/static_dispatch.mu.html'>static_dispatch.mu</a>: example
+program showing mu's ability to define recipes with headers, and allow recipes
+with the same name but different headers to coexist.
+<li><a href='html/chessboard.mu.html'>chessboard.mu</a>: a little program for
+2 people to play chess, with thorough tests of its behavior including both
+screen and keyboard handling.
 </ul>
 
 Now a listing of every layer in mu. Recall that you can <a href='http://akkartik.name/post/wart-layers'>stop
@@ -72,21 +75,25 @@ of recipes and how it's turned into the data structures.
 programs are loaded but before they are run they can be transformed in an
 extensible manner akin to lisp macros. Think of this as the core of Mu's
 &lsquo;compiler&rsquo; for providing high-level features atop the core.
-<br/><a href='html/013literal_string.cc.html'>013literal_string.cc</a>: extend
+<br/><a href='html/013update_operation.cc.html'>013update_operation.cc</a>:
+our first transform: check for unknown recipes before the program runs.
+<br/><a href='html/014literal_string.cc.html'>014literal_string.cc</a>: extend
 the loader to support literal strings in various instructions.
-<br/><a href='html/014literal_noninteger.cc.html'>014literal_noninteger.cc</a>:
+<br/><a href='html/015literal_noninteger.cc.html'>015literal_noninteger.cc</a>:
 extend the loader to support non-integer numbers.
 <br/><a href='html/020run.cc.html'>020run.cc</a>: executing Mu recipes by
-executing the list of instructions they contain.
-<br/>Various primitive operations: on <a href='html/021arithmetic.cc.html'>numbers</a>,
-<a href='html/022boolean.cc.html'>booleans</a>, for <a href='html/023jump.cc.html'>control flow</a>,
-and <a href='html/024compare.cc.html'>comparing values</a>.
-<br/>Primitive operations to help with testing: <a href='html/025trace.cc.html'>tracing/logging</a>, 
-<a href='html/026assert.cc.html'>assert</a> and
-<a href='html/027debug.cc.html'>debug by print</a>.
+executing the list of instructions they contain. Future layers will define
+more primitive operations that can be used in instructions.
+<br/><a href='html/021check_instruction.cc.html'>021check_instruction.cc</a>:
+harness for adding per-primitive checks to run before running a program.
+<br/>Various primitive operations: on <a href='html/022arithmetic.cc.html'>numbers</a>,
+<a href='html/023boolean.cc.html'>booleans</a>, for <a href='html/024jump.cc.html'>control flow</a>,
+and <a href='html/025compare.cc.html'>comparing values</a>.
+<br/><a href='html/029tools.cc.html'>029tools.cc</a>: various primitive
+operations to help with testing and debugging.
 
-<br/><a href='html/030container.cc.html'>030container.cc</a>: compound types
-akin to records, structs or classes.
+<p/><a href='html/030container.cc.html'>030container.cc</a>: Mu supports
+compound types akin to records, structs or classes.
 <br/><a href='html/031address.cc.html'>031address.cc</a>: adding and removing
 layers of indirection to Mu data.
 <br/><a href='html/032array.cc.html'>032array.cc</a>: all Mu data structures
@@ -110,7 +117,7 @@ synchronization between routines.
 <p><b>Part III</b>: transforms to provide 80% of the benefits of high-level
 languages.
 <br/><a href='html/040brace.cc.html'>040brace.cc</a> and
-<a href='html/041jump_label.cc.html'>041jump_label.cc</a>: how Mu provides
+<a href='html/041jump_target.cc.html'>041jump_target.cc</a>: how Mu provides
 structured goto-less programming without introducing the syntax of
 conditionals and loops other languages require.
 <br/><a href='html/042name.cc.html'>042name.cc</a>: how Mu transforms variable
@@ -128,16 +135,34 @@ can implement lexical scope.
 <br/><a href='html/047global.cc.html'>047global.cc</a>: support for 'global'
 variables that are always available inside a single routine. Mu has no
 variables that are available transparently across routines.
-<br/><a href='html/048typecheck.cc.html'>048typecheck.cc</a>: a simple
-transformer to insert missing types in instructions.
+<br/><a href='html/048check_type_by_name.cc.html'>048check_type_by_name.cc</a>:
+a simple transform to deduce missing types in instructions on the basis of
+previous instructions in the same recipe.
 <br/><a href='html/050scenario.cc.html'>050scenario.cc</a>: Mu's first syntax
 &mdash; not for code but for tests. (<a href='html/051scenario_test.mu.html'>example</a>)
 <br/><a href='html/052tangle.cc.html'>052tangle.cc</a>: support for layers in
 Mu programs. They've been so good to us.
-<br/><a href='html/053continuation.cc.html'>053continuation.cc</a>:
-first-class and delimited continuations, primitives for yield, exceptions and
-much else besides.
-<p/><a href='html/999spaces.cc.html'>999spaces.cc.html</a>: Maps summarizing
+<br/>Support for <em>shape-shifting</em> or generic data structures that can
+contain <em>type ingredients</em>: <a href='html/054dilated_reagent.cc.html'>054dilated_reagent.cc</a>,
+a new syntax for allowing spaces in types; <a href='html/055parse_tree.cc.html'>055parse_tree.cc</a>,
+a new syntax for representing complex types using trees;
+<a href='html/056recipe_header.cc.html'>056recipe_header.cc</a>, a new syntax
+for introducing ingredients and products with the name of a reagent;
+<a href='html/057static_dispatch.cc.html'>057static_dispatch.cc</a>,
+allowing multiple variants of a recipe to coexist with support for different
+headers;
+<a href='html/058shape_shifting_container.cc.html'>058shape_shifting_container.cc</a>, 
+a new syntax for wildcard <em>type ingredients</em> in containers; and finally
+<a href='html/059shape_shifting_recipe.cc.html'>059shape_shifting_recipe.cc</a>, 
+support for type ingredients in recipes. Everytime you call a shape-shifting
+recipe with a new set of types for its type ingredients, it creates a
+new variant of the recipe for you matching those types.
+<p/><a href='html/098check_type_pointers.cc.html'>098check_type_pointers.cc.html</a>:
+After all our messing about with types, a final pass to make sure we didn't
+introduce any invalid types.
+<br/><a href='html/999spaces.cc.html'>999spaces.cc.html</a>: Maps summarizing
+various address spaces in the core, and the conventions that regulate their
+use in previous layers.
 various address spaces in the core, and the conventions that regulate their
 use in previous layers.
 

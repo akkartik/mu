@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muControl { color: #c0a020; }
+.muRecipe { color: #ff8700; }
 .muScenario { color: #00af00; }
 .Special { color: #ff6060; }
-.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
 .Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -35,11 +35,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="SalientComment">## deleting sandboxes</span>
 
 <span class="muScenario">scenario</span> deleting-sandboxes [
-  $close-trace  <span class="Comment"># trace too long</span>
+  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
   <span class="Comment"># run a few commands</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">80</span>
@@ -48,9 +48,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[add 2, 2]</span>
     press F4
   ]
-  run [
-    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
-  ]
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -71,7 +69,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     left-click <span class="Constant">7</span>, <span class="Constant">99</span>
   ]
   run [
-    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -89,7 +87,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     left-click <span class="Constant">3</span>, <span class="Constant">99</span>
   ]
   run [
-    event-loop screen:address, console:address, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -113,11 +111,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="Comment"># was-deleted?:boolean &lt;- delete-sandbox t:touch-event, env:address:programming-environment-data</span>
-<span class="muRecipe">recipe</span> delete-sandbox [
+<span class="muRecipe">recipe</span> delete-sandbox t:touch-event, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>was-delete?:boolean [
   <span class="Constant">local-scope</span>
-  t:touch-event<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   click-column:number<span class="Special"> &lt;- </span>get t, <span class="Constant">column:offset</span>
   current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   right:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">right:offset</span>

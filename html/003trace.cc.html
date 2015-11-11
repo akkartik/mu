@@ -13,8 +13,8 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.cSpecial { color: #008000; }
 .PreProc { color: #c000c0; }
+.cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
@@ -112,11 +112,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Delimiter">:(before &quot;int main&quot;)</span>
 <span class="Comment">// End Tracing  // hack to ensure most code in this layer comes before anything else</span>
 
-<span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
-bool Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
-
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 struct trace_line <span class="Delimiter">{</span>
   int depth<span class="Delimiter">;</span>  <span class="Comment">// optional field just to help browse traces later</span>
@@ -126,63 +121,66 @@ struct trace_line <span class="Delimiter">{</span>
   trace_line<span class="Delimiter">(</span>int d<span class="Delimiter">,</span> string l<span class="Delimiter">,</span> string c<span class="Delimiter">)</span> :depth<span class="Delimiter">(</span>d<span class="Delimiter">),</span> label<span class="Delimiter">(</span>l<span class="Delimiter">),</span> contents<span class="Delimiter">(</span>c<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
 <span class="Delimiter">};</span>
 
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+const int Max_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
+const int Error_depth = <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// definitely always print the error that caused death</span>
+const int Warning_depth = <span class="Constant">1</span><span class="Delimiter">;</span>
+const int App_depth = <span class="Constant">2</span><span class="Delimiter">;</span>  <span class="Comment">// temporarily where all mu code will trace to</span>
+<span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
+bool Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
+bool Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
+Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
+
 <span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
 struct trace_stream <span class="Delimiter">{</span>
   vector&lt;trace_line&gt; past_lines<span class="Delimiter">;</span>
   <span class="Comment">// accumulator for current line</span>
   ostringstream* curr_stream<span class="Delimiter">;</span>
-  string curr_layer<span class="Delimiter">;</span>
+  string curr_label<span class="Delimiter">;</span>
   int curr_depth<span class="Delimiter">;</span>
-  string dump_layer<span class="Delimiter">;</span>
-  set&lt;string&gt; collect_layers<span class="Delimiter">;</span>  <span class="Comment">// if not empty, ignore all absent layers</span>
+  int callstack_depth<span class="Delimiter">;</span>
+  int collect_depth<span class="Delimiter">;</span>
   ofstream null_stream<span class="Delimiter">;</span>  <span class="Comment">// never opens a file, so writes silently fail</span>
-  trace_stream<span class="Delimiter">()</span> :curr_stream<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> curr_depth<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  trace_stream<span class="Delimiter">()</span> :curr_stream<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> curr_depth<span class="Delimiter">(</span>Max_depth<span class="Delimiter">),</span> callstack_depth<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> collect_depth<span class="Delimiter">(</span>Max_depth<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
   ~trace_stream<span class="Delimiter">()</span> <span class="Delimiter">{</span> if <span class="Delimiter">(</span>curr_stream<span class="Delimiter">)</span> delete curr_stream<span class="Delimiter">;</span> <span class="Delimiter">}</span>
 
-  ostream&amp; stream<span class="Delimiter">(</span>string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Identifier">return</span> stream<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> layer<span class="Delimiter">);</span>
+  ostream&amp; stream<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Identifier">return</span> stream<span class="Delimiter">(</span>Max_depth<span class="Delimiter">,</span> label<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 
-  ostream&amp; stream<span class="Delimiter">(</span>int depth<span class="Delimiter">,</span> string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!is_collecting<span class="Delimiter">(</span>layer<span class="Delimiter">))</span> <span class="Identifier">return</span> null_stream<span class="Delimiter">;</span>
+  ostream&amp; stream<span class="Delimiter">(</span>int depth<span class="Delimiter">,</span> string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>depth &gt; collect_depth<span class="Delimiter">)</span> <span class="Identifier">return</span> null_stream<span class="Delimiter">;</span>
     curr_stream = new ostringstream<span class="Delimiter">;</span>
-    curr_layer = layer<span class="Delimiter">;</span>
+    curr_label = label<span class="Delimiter">;</span>
     curr_depth = depth<span class="Delimiter">;</span>
     <span class="Identifier">return</span> *curr_stream<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
-  bool is_collecting<span class="Delimiter">(</span>const string&amp; layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Identifier">return</span> collect_layers<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || collect_layers<span class="Delimiter">.</span>find<span class="Delimiter">(</span>layer<span class="Delimiter">)</span> != collect_layers<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
-  <span class="Delimiter">}</span>
-
-  bool is_narrowly_collecting<span class="Delimiter">(</span>const string&amp; layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Identifier">return</span> collect_layers<span class="Delimiter">.</span>find<span class="Delimiter">(</span>layer<span class="Delimiter">)</span> != collect_layers<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
-  <span class="Delimiter">}</span>
-
-  <span class="Comment">// be sure to call this before messing with curr_stream or curr_layer</span>
+  <span class="Comment">// be sure to call this before messing with curr_stream or curr_label</span>
   void newline<span class="Delimiter">()</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>!curr_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
     string curr_contents = curr_stream<span class="Delimiter">-&gt;</span>str<span class="Delimiter">();</span>
     if <span class="Delimiter">(</span>curr_contents<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-    past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>curr_depth<span class="Delimiter">,</span> trim<span class="Delimiter">(</span>curr_layer<span class="Delimiter">),</span> curr_contents<span class="Delimiter">));</span>  <span class="Comment">// preserve indent in contents</span>
-    if <span class="Delimiter">(</span>curr_layer == dump_layer || curr_layer == <span class="Constant">&quot;dump&quot;</span> || dump_layer == <span class="Constant">&quot;all&quot;</span> ||
-        <span class="Delimiter">(</span>!Hide_warnings &amp;&amp; curr_layer == <span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span>
-      cerr &lt;&lt; curr_layer &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>curr_depth<span class="Delimiter">,</span> trim<span class="Delimiter">(</span>curr_label<span class="Delimiter">),</span> curr_contents<span class="Delimiter">));</span>  <span class="Comment">// preserve indent in contents</span>
+    if <span class="Delimiter">(</span>!Hide_errors &amp;&amp; curr_label == <span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span>
+      cerr &lt;&lt; curr_label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    else if <span class="Delimiter">(</span>!Hide_warnings &amp;&amp; curr_label == <span class="Constant">&quot;warn&quot;</span><span class="Delimiter">)</span>
+      cerr &lt;&lt; curr_label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     delete curr_stream<span class="Delimiter">;</span>
     curr_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-    curr_layer<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-    curr_depth = <span class="Constant">0</span><span class="Delimiter">;</span>
+    curr_label<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+    curr_depth = Max_depth<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
   <span class="Comment">// Useful for debugging.</span>
-  string readable_contents<span class="Delimiter">(</span>string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// missing layer = everything</span>
+  string readable_contents<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// missing label = everything</span>
     ostringstream output<span class="Delimiter">;</span>
-    layer = trim<span class="Delimiter">(</span>layer<span class="Delimiter">);</span>
+    label = trim<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
     for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
-      if <span class="Delimiter">(</span>layer<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || layer == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>depth<span class="Delimiter">)</span>
-          output &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">)</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>depth &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
-        output &lt;&lt; p<span class="Delimiter">-&gt;</span>label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>label<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        output &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">)</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>depth &lt;&lt; <span class="Constant">' '</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
     <span class="Identifier">return</span> output<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
@@ -194,9 +192,10 @@ trace_stream* Trace_stream = <span class="Constant">NULL</span><span class="Deli
 
 <span class="Comment">// Top-level helper. IMPORTANT: can't nest.</span>
 <span class="PreProc">#define trace(</span><span class="Delimiter">...</span><span class="PreProc">)  !Trace_stream ? cerr </span><span class="Comment">/*</span><span class="Comment">print nothing</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(__VA_ARGS__)</span>
-<span class="Comment">// Warnings should go straight to cerr by default since calls to trace() have</span>
+<span class="Comment">// Errors and warnings should go straight to cerr by default since calls to trace() have</span>
 <span class="Comment">// some unfriendly constraints (they delay printing, they can't nest)</span>
-<span class="PreProc">#define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown()</span><span class="Delimiter">,</span><span class="PreProc">cerr) </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(</span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">))</span>
+<span class="PreProc">#define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown()</span><span class="Delimiter">,</span><span class="PreProc">cerr) </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(Warning_depth</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">))</span>
+<span class="PreProc">#define raise_error  ((!Trace_stream || !Hide_errors) ? (tb_shutdown()</span><span class="Delimiter">,</span><span class="PreProc">cerr) </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(Error_depth</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;error&quot;</span><span class="PreProc">))</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 struct end <span class="Delimiter">{};</span>
@@ -208,7 +207,7 @@ ostream&amp; operator&lt;&lt;<span class="Delimiter">(</span>ostream&amp; os<spa
 
 <span class="PreProc">#define CLEAR_TRACE  </span>delete<span class="PreProc"> Trace_stream</span><span class="Delimiter">,</span><span class="PreProc"> Trace_stream = </span>new<span class="PreProc"> trace_stream</span><span class="Delimiter">;</span>
 
-<span class="PreProc">#define DUMP(layer)  </span>if<span class="PreProc"> (Trace_stream) cerr &lt;&lt; Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">readable_contents(layer)</span><span class="Delimiter">;</span>
+<span class="PreProc">#define DUMP(label)  </span>if<span class="PreProc"> (Trace_stream) cerr &lt;&lt; Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">readable_contents(label)</span><span class="Delimiter">;</span>
 
 <span class="Comment">// All scenarios save their traces in the repo, just like code. This gives</span>
 <span class="Comment">// future readers more meat when they try to make sense of a new project.</span>
@@ -233,19 +232,21 @@ struct lease_tracer <span class="Delimiter">{</span>
 <span class="Delimiter">:(before &quot;End Test Setup&quot;)</span>
 START_TRACING_UNTIL_END_OF_SCOPE
 
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#define CHECK_TRACE_CONTENTS(</span><span class="Delimiter">...</span><span class="PreProc">)  check_trace_contents(__FUNCTION__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__FILE__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__LINE__</span><span class="Delimiter">,</span><span class="PreProc"> __VA_ARGS__)</span>
 
 <span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
-bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string FILE<span class="Delimiter">,</span> int LINE<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// missing layer == anywhere</span>
+bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string FILE<span class="Delimiter">,</span> int LINE<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   vector&lt;string&gt; expected_lines = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>
   long long int curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>curr_expected_line &lt; SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">)</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
     ++curr_expected_line<span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>curr_expected_line == SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  string layer<span class="Delimiter">,</span> contents<span class="Delimiter">;</span>
-  split_layer_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;layer<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
+  string label<span class="Delimiter">,</span> contents<span class="Delimiter">;</span>
+  split_label_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;label<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
   for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>layer != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span>
+    if <span class="Delimiter">(</span>label != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
 
     if <span class="Delimiter">(</span>contents != trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span>
@@ -255,39 +256,39 @@ bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span cl
     while <span class="Delimiter">(</span>curr_expected_line &lt; SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">)</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
       ++curr_expected_line<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>curr_expected_line == SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-    split_layer_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;layer<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
+    split_label_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;label<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 
   ++Num_failures<span class="Delimiter">;</span>
   cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; FILE &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;] in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-  DUMP<span class="Delimiter">(</span>layer<span class="Delimiter">);</span>
+  DUMP<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
   Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-void split_layer_contents<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">,</span> string* layer<span class="Delimiter">,</span> string* contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void split_label_contents<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">,</span> string* label<span class="Delimiter">,</span> string* contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   static const string delim<span class="Delimiter">(</span><span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
   size_t pos = s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>pos == string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    *layer = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+    *label = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
     *contents = trim<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   else <span class="Delimiter">{</span>
-    *layer = trim<span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> pos<span class="Delimiter">));</span>
+    *label = trim<span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> pos<span class="Delimiter">));</span>
     *contents = trim<span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span>pos+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">)));</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 ^L
 
-int trace_count<span class="Delimiter">(</span>string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+int trace_count<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>label<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-int trace_count<span class="Delimiter">(</span>string layer<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+int trace_count<span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   long result = <span class="Constant">0</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>layer == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       if <span class="Delimiter">(</span>line == <span class="Constant">&quot;&quot;</span> || line == trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span>
         ++result<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -295,22 +296,22 @@ int trace_count<span class="Delimiter">(</span>string layer<span class="Delimite
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="PreProc">#define CHECK_TRACE_WARNS()  CHECK(trace_count(</span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">)</span>
-<span class="PreProc">#define CHECK_TRACE_DOESNT_WARN() \</span>
-<span class="PreProc">  </span>if<span class="PreProc"> (trace_count(</span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
+<span class="PreProc">#define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">)</span>
+<span class="PreProc">#define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \</span>
+<span class="PreProc">  </span>if<span class="PreProc"> (trace_count(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
 <span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): unexpected warnings</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    DUMP(</span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): unexpected errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    DUMP(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    </span><span class="Identifier">return</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">  </span><span class="Delimiter">}</span>
 
-bool trace_doesnt_contain<span class="Delimiter">(</span>string layer<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> line<span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">;</span>
+bool trace_doesnt_contain<span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>label<span class="Delimiter">,</span> line<span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 bool trace_doesnt_contain<span class="Delimiter">(</span>string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  vector&lt;string&gt; tmp = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
+  vector&lt;string&gt; tmp = split_first<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
   <span class="Identifier">return</span> trace_doesnt_contain<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
@@ -327,9 +328,18 @@ vector&lt;string&gt; split<span class="Delimiter">(</span>string s<span class="D
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> begin<span class="Delimiter">,</span> end-begin<span class="Delimiter">));</span>
-    begin = SIZE<span class="Delimiter">(</span>end+delim<span class="Delimiter">);</span>
+    begin = end+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
     end = s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">,</span> begin<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+vector&lt;string&gt; split_first<span class="Delimiter">(</span>string s<span class="Delimiter">,</span> string delim<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  vector&lt;string&gt; result<span class="Delimiter">;</span>
+  size_t end=s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
+  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> end<span class="Delimiter">));</span>
+  if <span class="Delimiter">(</span>end != string::npos<span class="Delimiter">)</span>
+    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> end+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">),</span> string::npos<span class="Delimiter">));</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -380,20 +390,13 @@ using std::ofstream<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">//: In future layers we'll use the depth field as follows:</span>
 <span class="Comment">//:</span>
-<span class="Comment">//: Mu 'applications' will be able to use depths 1-99 as they like.</span>
-<span class="Comment">//: Depth 100 will be for scheduling (more on that later).</span>
-const int Scheduling_depth = <span class="Constant">100</span><span class="Delimiter">;</span>
-<span class="Comment">//: Primitive statements will occupy 101-9998</span>
+<span class="Comment">//: Errors will be depth 0.</span>
+<span class="Comment">//: Warnings will be depth 1.</span>
+<span class="Comment">//: Mu 'applications' will be able to use depths 2-100 as they like.</span>
+<span class="Comment">//: Primitive statements will occupy 101-9989</span>
 const int Initial_callstack_depth = <span class="Constant">101</span><span class="Delimiter">;</span>
-const int Max_callstack_depth = <span class="Constant">9998</span><span class="Delimiter">;</span>
-<span class="Comment">//: (ignore this until the call layer)</span>
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-int Callstack_depth = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Callstack_depth = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Comment">//: Finally, details of primitive mu statements will occupy depth 9999 (more on that later as well)</span>
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-const int Primitive_recipe_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
+const int Max_callstack_depth = <span class="Constant">9989</span><span class="Delimiter">;</span>
+<span class="Comment">//: Finally, details of primitive mu statements will occupy depth 9990-9999 (more on that later as well)</span>
 <span class="Comment">//:</span>
 <span class="Comment">//: This framework should help us hide some details at each level, mixing</span>
 <span class="Comment">//: static ideas like layers with the dynamic notion of call-stack depth.</span>
