@@ -1,5 +1,6 @@
 //: An alternative syntax for reagents that permits whitespace in properties,
-//: grouped by brackets.
+//: grouped by brackets. We'll use this ability in the next layer, when we
+//: generalize types from lists to trees of properties.
 
 :(scenarios load)
 :(scenario dilated_reagent)
