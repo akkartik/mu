@@ -90,19 +90,17 @@ after <global-touch> [
   }
 ]
 
-recipe empty-editor? [
+recipe empty-editor? editor:address:editor-data -> result:boolean [
   local-scope
-  editor:address:editor-data <- next-ingredient
-  head:address:duplex-list <- get *editor, data:offset
-  first:address:duplex-list <- next-duplex head
-  result:boolean <- not first
-  reply result
+  load-ingredients
+  head:address:duplex-list:character <- get *editor, data:offset
+  first:address:duplex-list:character <- next-duplex head
+  result <- not first
 ]
 
-recipe extract-sandbox [
+recipe extract-sandbox env:address:programming-environment-data, click-row:number -> result:address:sandbox-data [
   local-scope
-  env:address:programming-environment-data <- next-ingredient
-  click-row:number <- next-ingredient
+  load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
   sandbox:address:address:sandbox-data <- get-address *env, sandbox:offset
   start:number <- get **sandbox, starting-row-on-screen:offset
@@ -119,9 +117,8 @@ recipe extract-sandbox [
     loop
   }
   # snip sandbox out of its list
-  result:address:sandbox-data <- copy *sandbox
+  result <- copy *sandbox
   *sandbox <- copy next-sandbox
-  reply result
 ]
 
 scenario sandbox-with-print-can-be-edited [

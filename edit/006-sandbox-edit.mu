@@ -121,7 +121,6 @@ recipe extract-sandbox env:address:programming-environment-data, click-row:numbe
   # position cursor in sandbox editor
   sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
   *sandbox-in-focus? <- copy 1/true
-  reply result
 ]
 
 scenario sandbox-with-print-can-be-edited [
