@@ -76,11 +76,9 @@ after <global-touch> [
   }
 ]
 
-# was-deleted?:boolean <- delete-sandbox t:touch-event, env:address:programming-environment-data
-recipe delete-sandbox [
+recipe delete-sandbox t:touch-event, env:address:programming-environment-data -> was-delete?:boolean [
   local-scope
-  t:touch-event <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
+  load-ingredients
   click-column:number <- get t, column:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   right:number <- get *current-sandbox, right:offset

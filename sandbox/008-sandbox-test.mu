@@ -31,10 +31,9 @@ after <global-touch> [
   }
 ]
 
-recipe find-click-in-sandbox-output [
+recipe find-click-in-sandbox-output env:address:programming-environment-data, click-row:number -> sandbox:address:sandbox-data [
   local-scope
-  env:address:programming-environment-data <- next-ingredient
-  click-row:number <- next-ingredient
+  load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
   sandbox:address:sandbox-data <- get *env, sandbox:offset
   start:number <- get *sandbox, starting-row-on-screen:offset
@@ -58,9 +57,9 @@ recipe find-click-in-sandbox-output [
   reply sandbox
 ]
 
-recipe toggle-expected-response [
+recipe toggle-expected-response sandbox:address:sandbox-data -> sandbox:address:sandbox-data [
   local-scope
-  sandbox:address:sandbox-data <- next-ingredient
+  load-ingredients
   expected-response:address:address:array:character <- get-address *sandbox, expected-response:offset
   {
     # if expected-response is set, reset
@@ -71,7 +70,6 @@ recipe toggle-expected-response [
   # if not, current response is the expected response
   response:address:array:character <- get *sandbox, response:offset
   *expected-response <- copy response
-  reply sandbox/same-as-ingredient:0
 ]
 
 # when rendering a sandbox, color it in red/green if expected response exists
