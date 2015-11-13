@@ -132,7 +132,7 @@ Here's a second example, of a recipe that can take ingredients:
 <img alt='fahrenheit to celsius' src='html/f2c-1.png' width='426px'>
 
 Recipes can specify headers showing their expected ingredients and products,
-separated by '->' (unlike the '<-' in *calls*).
+separated by `->` (unlike the `<-` in *calls*).
 
 Since mu is a low-level VM language, it provides extra control at the cost of
 verbosity. You have explicit control over stack frames to isolate your recipes
@@ -150,8 +150,8 @@ this translation recipes are once again just lists of instructions.
 
 This alternative syntax isn't just an implementation detail. I've actually
 found it easier to teach functions to non-programmers by starting with this
-syntax, so that they can see the names of variables gradually transition from
-caller to callee.
+syntax, so that they can visualize a pipe from caller to callee, and see the
+names of variables gradually get translated through the pipe.
 
 ---
 
