@@ -1,0 +1,227 @@
+9991 parse: --- defining container test-list
+9999 parse: type number: 1000
+9993 parse:   element name: next
+9993 parse:   type: 2
+9993 parse:   type: 1000
+9991 parse: --- defining main
+9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 parse: instruction: new
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"test-list": "type"}
+9993 parse:   product: {"p": <"address" : <"test-list" : <>>>}
+9992 load: after rewriting: p:address:test-list <- new test-list:type
+9993 parse: instruction: foo
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"p": <>}
+9992 load: after rewriting: foo p
+9999 parse: recipe main has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: p:address:test-list
+9999 parse: header product: p:address:test-list
+9991 parse: --- defining foo
+9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: test-next
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"p": <>}
+9993 parse:   product: {"p2": <"address" : <"test-list" : <>>>}
+9992 load: after rewriting: p2:address:test-list <- test-next p
+9993 parse: instruction: test-remove
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"p2": <>}
+9993 parse:   ingredient: {"p": <>}
+9993 parse:   product: {"p": <>}
+9992 load: after rewriting: p <- test-remove p2, p
+9999 parse: recipe foo has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: x:address:test-list
+9999 parse: header product: y:address:test-list
+9991 parse: --- defining test-next
+9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"x": <>, "lookup": <>}
+9993 parse:   ingredient: {"next": "offset"}
+9993 parse:   product: {"y": <>}
+9992 load: after rewriting: y <- get *x, next:offset
+9999 parse: recipe test-next has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: x:address:test-list/contained-in:from
+9999 parse: header ingredient: from:address:test-list
+9999 parse: header product: from:address:test-list
+9991 parse: --- defining test-remove
+9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: get-address
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"x": <>, "lookup": <>}
+9993 parse:   ingredient: {"next": "offset"}
+9993 parse:   product: {"x2": <"address" : <"address" : <"test-list" : <>>>>}
+9992 load: after rewriting: x2:address:address:test-list <- get-address *x, next:offset
+9999 parse: recipe test-remove has a header
+9990 transform: === transform_all()
+9991 transform: --- checking reply instructions against header for foo
+9991 transform: --- checking reply instructions against header for test-next
+9991 transform: --- checking reply instructions against header for test-remove
+9991 transform: --- fill in reply ingredients from header for recipe main
+9991 transform: --- fill in reply ingredients from header for recipe foo
+9991 transform: --- fill in reply ingredients from header for recipe test-next
+9991 transform: --- fill in reply ingredients from header for recipe test-remove
+9991 transform: --- transform braces for recipe main
+9992 transform: local-scope ...
+9992 transform: new ...
+9992 transform: foo ...
+9992 transform:  ...
+9991 transform: --- transform braces for recipe foo
+9992 transform: local-scope ...
+9992 transform:  ...
+9992 transform: test-next ...
+9992 transform: test-remove ...
+9992 transform:  ...
+9991 transform: --- transform braces for recipe test-next
+9992 transform: local-scope ...
+9992 transform:  ...
+9992 transform: get ...
+9992 transform:  ...
+9991 transform: --- transform braces for recipe test-remove
+9992 transform: local-scope ...
+9992 transform:  ...
+9992 transform:  ...
+9992 transform: get-address ...
+9992 transform:  ...
+9991 transform: --- deduce types for recipe main
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: p => <address : <test-list : <>>>
+9992 transform: p <= <address : <test-list : <>>>
+9991 transform: --- deduce types for recipe foo
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: p => <address : <test-list : <>>>
+9992 transform: p <= <address : <test-list : <>>>
+9992 transform: p2 => <address : <test-list : <>>>
+9992 transform: p2 <= <address : <test-list : <>>>
+9992 transform: p <= <address : <test-list : <>>>
+9992 transform: p <= <address : <test-list : <>>>
+9991 transform: --- deduce types for recipe test-next
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: x => <address : <test-list : <>>>
+9992 transform: x <= <address : <test-list : <>>>
+9992 transform: y => <address : <test-list : <>>>
+9991 transform: --- deduce types for recipe test-remove
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: x => <address : <test-list : <>>>
+9992 transform: from => <address : <test-list : <>>>
+9992 transform: x <= <address : <test-list : <>>>
+9992 transform: x2 => <address : <address : <test-list : <>>>>
+9991 transform: --- deduce types from header for foo
+9993 transform: type of p is <address : <test-list : <>>>
+9993 transform: type of p is <address : <test-list : <>>>
+9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 transform: instruction: p:address:test-list <- next-ingredient 
+9993 transform:   product: p: <address : <test-list : <>>> -- {"p": <"address" : <"test-list" : <>>>}
+9992 transform: instruction: p2:address:test-list <- test-next p
+9993 transform:   product: p2: <address : <test-list : <>>> -- {"p2": <"address" : <"test-list" : <>>>}
+9992 transform: instruction: p <- test-remove p2, p
+9993 transform:   product: p: <address : <test-list : <>>> -- {"p": <"address" : <"test-list" : <>>>}
+9992 transform: instruction: reply p:address:test-list
+9991 transform: --- deduce types from header for test-next
+9993 transform: type of x is <address : <test-list : <>>>
+9993 transform: type of y is <address : <test-list : <>>>
+9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 transform: instruction: x:address:test-list <- next-ingredient 
+9993 transform:   product: x: <address : <test-list : <>>> -- {"x": <"address" : <"test-list" : <>>>}
+9992 transform: instruction: y <- get *x, next:offset
+9993 transform:   product: y: NULLNULLNULL -- {"y": <>}
+9993 transform: type of y is <address : <test-list : <>>>
+9992 transform: instruction: reply y:address:test-list
+9991 transform: --- deduce types from header for test-remove
+9993 transform: type of x is <address : <test-list : <>>>
+9993 transform: type of from is <address : <test-list : <>>>
+9993 transform: type of from is <address : <test-list : <>>>
+9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 transform: instruction: x:address:test-list/contained-in:from <- next-ingredient 
+9993 transform:   product: x: <address : <test-list : <>>> -- {"x": <"address" : <"test-list" : <>>>, "contained-in": "from"}
+9992 transform: instruction: from:address:test-list <- next-ingredient 
+9993 transform:   product: from: <address : <test-list : <>>> -- {"from": <"address" : <"test-list" : <>>>}
+9992 transform: instruction: x2:address:address:test-list <- get-address *x, next:offset
+9993 transform:   product: x2: <address : <address : <test-list : <>>>> -- {"x2": <"address" : <"address" : <"test-list" : <>>>>}
+9992 transform: instruction: reply from:address:test-list
+9991 transform: --- resolve ambiguous calls for recipe main
+9992 transform: instruction foo
+9992 transform: checking variant 0: -1
+9992 transform: checking variant 1: -1
+9992 transform: checking variant 2: -1
+9992 transform: checking variant 3: -1
+9992 transform: checking variant 4: -1
+9992 transform: checking variant 5: -1
+9992 transform: checking variant 6: -1
+9992 transform: checking variant 7: -1
+9992 transform: checking variant 8: -1
+9992 transform: checking variant 9: -1
+9992 transform: checking variant 10: -1
+9992 transform: checking variant 11: -1
+9992 transform: checking variant 12: -1
+9992 transform: checking variant 13: 99
+9991 transform: --- resolve ambiguous calls for recipe foo
+9992 transform: instruction test-next
+9992 transform: checking variant 0: 100
+9992 transform: instruction test-remove
+9992 transform: checking variant 0: 100
+9991 transform: --- resolve ambiguous calls for recipe test-next
+9991 transform: --- resolve ambiguous calls for recipe test-remove
+9991 transform: --- checking reply instructions against header for foo
+9991 transform: --- checking reply instructions against header for test-next
+9991 transform: --- checking reply instructions against header for test-remove
+9991 transform: --- collect surrounding spaces for recipe main
+9991 transform: --- collect surrounding spaces for recipe foo
+9991 transform: --- collect surrounding spaces for recipe test-next
+9991 transform: --- collect surrounding spaces for recipe test-remove
+9991 transform: --- transform names for recipe main
+9993 name: assign p 1
+9991 transform: --- transform names for recipe foo
+9993 name: assign p 1
+9993 name: assign p2 2
+9991 transform: --- transform names for recipe test-next
+9993 name: assign x 1
+9993 name: element next of type test-list is at offset 0
+9993 name: assign y 2
+9991 transform: --- transform names for recipe test-remove
+9993 name: assign x 1
+9993 name: assign from 2
+9993 name: element next of type test-list is at offset 0
+9993 name: assign x2 3
+9991 transform: --- compute instruction operations for recipe main
+9991 transform: --- compute instruction operations for recipe foo
+9991 transform: --- compute instruction operations for recipe test-next
+9991 transform: --- compute instruction operations for recipe test-remove
+9991 transform: --- perform checks for recipe main
+9991 transform: --- perform checks for recipe foo
+9991 transform: --- perform checks for recipe test-next
+9991 transform: --- perform checks for recipe test-remove
+9991 transform: --- convert 'new' to 'allocate' for recipe main
+9992 new: size of "location" is 1
+9992 new: size of "test-list" is 1
+9991 transform: --- convert 'new' to 'allocate' for recipe foo
+9992 new: size of "location" is 1
+9991 transform: --- convert 'new' to 'allocate' for recipe test-next
+9992 new: size of "location" is 1
+9991 transform: --- convert 'new' to 'allocate' for recipe test-remove
+9992 new: size of "location" is 1
+9991 transform: --- parsing any uninitialized reagents as integers

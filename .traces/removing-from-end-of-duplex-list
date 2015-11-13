@@ -1,7 +1,7 @@
 9991 parse: --- defining scenario-removing-from-end-of-duplex-list
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:duplex-list:character <- copy 0  # 1 points to head of list\n    1:address:duplex-list:character <- push-duplex 3, 1:address:duplex-list:character\n    1:address:duplex-list:character <- push-duplex 4, 1:address:duplex-list:character\n    1:address:duplex-list:character <- push-duplex 5, 1:address:duplex-list:character\n    # delete last element\n    2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character\n    2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character\n    2:address:duplex-list:character <- remove-duplex 2:address:duplex-list:character\n    3:boolean <- equal 2:address:duplex-list:character, 0\n    # check structure like before\n    2:address:duplex-list:character <- copy 1:address:duplex-list:character\n    4:character <- first-duplex 2:address:duplex-list:character\n    2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character\n    5:character <- first-duplex 2:address:duplex-list:character\n    6:address:duplex-list:character <- next-duplex 2:address:duplex-list:character\n    2:address:duplex-list:character <- prev-duplex 2:address:duplex-list:character\n    7:character <- first-duplex 2:address:duplex-list:character\n    8:boolean <- equal 1:address:duplex-list:character, 2:address:duplex-list:character\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:duplex-list:character <- copy 0  # 1 points to head of list\n    1:address:duplex-list:character <- push-duplex 3, 1:address:duplex-list:character\n    1:address:duplex-list:character <- push-duplex 4, 1:address:duplex-list:character\n    1:address:duplex-list:character <- push-duplex 5, 1:address:duplex-list:character\n    # delete last element\n    2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character\n    2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character\n    1:address:duplex-list:character <- remove-duplex 2:address:duplex-list:character, 1:address:duplex-list:character\n    3:boolean <- equal 2:address:duplex-list:character, 0\n    # check structure like before\n    2:address:duplex-list:character <- copy 1:address:duplex-list:character\n    4:character <- first-duplex 2:address:duplex-list:character\n    2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character\n    5:character <- first-duplex 2:address:duplex-list:character\n    6:address:duplex-list:character <- next-duplex 2:address:duplex-list:character\n    2:address:duplex-list:character <- prev-duplex 2:address:duplex-list:character\n    7:character <- first-duplex 2:address:duplex-list:character\n    8:boolean <- equal 1:address:duplex-list:character, 2:address:duplex-list:character\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:duplex-list:character <- copy 0  # 1 points to head of list
     1:address:duplex-list:character <- push-duplex 3, 1:address:duplex-list:character
@@ -10,7 +10,7 @@
     # delete last element
     2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
     2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character
-    2:address:duplex-list:character <- remove-duplex 2:address:duplex-list:character
+    1:address:duplex-list:character <- remove-duplex 2:address:duplex-list:character, 1:address:duplex-list:character
     3:boolean <- equal 2:address:duplex-list:character, 0
     # check structure like before
     2:address:duplex-list:character <- copy 1:address:duplex-list:character
@@ -59,7 +59,7 @@
     # delete last element
     2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
     2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character
-    2:address:duplex-list:character <- remove-duplex 2:address:duplex-list:character
+    1:address:duplex-list:character <- remove-duplex 2:address:duplex-list:character, 1:address:duplex-list:character
     3:boolean <- equal 2:address:duplex-list:character, 0
     # check structure like before
     2:address:duplex-list:character <- copy 1:address:duplex-list:character
@@ -106,10 +106,11 @@
 9993 parse:   product: {"2": <"address" : <"duplex-list" : <"character" : <>>>>}
 9992 load: after rewriting: 2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character
 9993 parse: instruction: remove-duplex
-9993 parse:   number of ingredients: 1
+9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <"character" : <>>>>}
-9993 parse:   product: {"2": <"address" : <"duplex-list" : <"character" : <>>>>}
-9992 load: after rewriting: 2:address:duplex-list:character <- remove-duplex 2:address:duplex-list:character
+9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <"character" : <>>>>}
+9993 parse:   product: {"1": <"address" : <"duplex-list" : <"character" : <>>>>}
+9992 load: after rewriting: 1:address:duplex-list:character <- remove-duplex 2:address:duplex-list:character, 1:address:duplex-list:character
 9993 parse: instruction: equal
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <"character" : <>>>>}
@@ -259,7 +260,7 @@
 9999 mem: storing 3 in location 1002
  104 run: in:address:duplex-list:_elem <- next-ingredient 
 9999 mem: storing 0 in location 1003
- 104 run: result <- new {(duplex-list _elem): type}
+ 104 run: result:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1008
 9999 mem: storing 1008 in location 1004
  104 run: val:address:_elem <- get-address *result, value:offset
@@ -293,10 +294,10 @@
 9999 mem: location 1003 is 0
 9999 mem: location 1006 is 1009
 9999 mem: storing 0 in location 1009
- 104 run: jump-if in, 1:offset
+ 104 run: jump-unless in, 
 9999 mem: location 1003 is 0
-9998 run: jump-if fell through
- 104 run: reply result:address:duplex-list:_elem
+9998 run: jumping to instruction 12
+ 104 run: reply result
 9999 mem: location 1004 is 1008
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1008
@@ -310,7 +311,7 @@
 9999 mem: storing 4 in location 1002
  104 run: in:address:duplex-list:_elem <- next-ingredient 
 9999 mem: storing 1008 in location 1003
- 104 run: result <- new {(duplex-list _elem): type}
+ 104 run: result:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1011
 9999 mem: storing 1011 in location 1004
  104 run: val:address:_elem <- get-address *result, value:offset
@@ -344,9 +345,9 @@
 9999 mem: location 1003 is 1008
 9999 mem: location 1006 is 1012
 9999 mem: storing 1008 in location 1012
- 104 run: jump-if in, 1:offset
+ 104 run: jump-unless in, 
 9999 mem: location 1003 is 1008
-9998 run: jumping to instruction 10
+9998 run: jump-unless fell through
  104 run: prev:address:address:duplex-list:_elem <- get-address *in, prev:offset
 9999 mem: location 1003 is 1008
 9999 type: checking size of type ingredient
@@ -363,7 +364,7 @@
 9999 mem: location 1004 is 1011
 9999 mem: location 1007 is 1010
 9999 mem: storing 1011 in location 1010
- 104 run: reply result:address:duplex-list:_elem
+ 104 run: reply result
 9999 mem: location 1004 is 1011
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
@@ -377,7 +378,7 @@
 9999 mem: storing 5 in location 1002
  104 run: in:address:duplex-list:_elem <- next-ingredient 
 9999 mem: storing 1011 in location 1003
- 104 run: result <- new {(duplex-list _elem): type}
+ 104 run: result:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1014
 9999 mem: storing 1014 in location 1004
  104 run: val:address:_elem <- get-address *result, value:offset
@@ -411,9 +412,9 @@
 9999 mem: location 1003 is 1011
 9999 mem: location 1006 is 1015
 9999 mem: storing 1011 in location 1015
- 104 run: jump-if in, 1:offset
+ 104 run: jump-unless in, 
 9999 mem: location 1003 is 1011
-9998 run: jumping to instruction 10
+9998 run: jump-unless fell through
  104 run: prev:address:address:duplex-list:_elem <- get-address *in, prev:offset
 9999 mem: location 1003 is 1011
 9999 type: checking size of type ingredient
@@ -430,7 +431,7 @@
 9999 mem: location 1004 is 1014
 9999 mem: location 1007 is 1013
 9999 mem: storing 1014 in location 1013
- 104 run: reply result:address:duplex-list:_elem
+ 104 run: reply result
 9999 mem: location 1004 is 1014
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1014
@@ -494,18 +495,21 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1008
 9999 mem: storing 1008 in location 2
- 103 run: 2:address:duplex-list:character <- remove-duplex_2 2:address:duplex-list:character
+ 103 run: 1:address:duplex-list:character <- remove-duplex_2 2:address:duplex-list:character, 1:address:duplex-list:character
 9999 mem: location 2 is 1008
+9999 mem: location 1 is 1014
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
-9999 mem: array size is 5
+9999 mem: array size is 6
 9999 mem: new alloc: 1021
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: x:address:duplex-list:_elem/contained-in:in <- next-ingredient 
 9999 mem: storing 1008 in location 1023
- 104 run: jump-if in, 1:offset
+ 104 run: in:address:duplex-list:_elem <- next-ingredient 
+9999 mem: storing 1014 in location 1024
+ 104 run: jump-if x, 1:offset
 9999 mem: location 1023 is 1008
-9998 run: jumping to instruction 4
- 104 run: next-node:address:duplex-list:_elem <- get *in, next:offset
+9998 run: jumping to instruction 5
+ 104 run: next-node:address:duplex-list:_elem <- get *x, next:offset
 9999 mem: location 1023 is 1008
 9999 type: checking size of type ingredient
 
@@ -518,8 +522,8 @@
 9998 run: address to copy is 1009
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1009 is 0
-9999 mem: storing 0 in location 1024
- 104 run: prev-node:address:duplex-list:_elem <- get *in, prev:offset
+9999 mem: storing 0 in location 1025
+ 104 run: prev-node:address:duplex-list:_elem <- get *x, prev:offset
 9999 mem: location 1023 is 1008
 9999 type: checking size of type ingredient
 
@@ -532,8 +536,8 @@
 9998 run: address to copy is 1010
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1010 is 1011
-9999 mem: storing 1011 in location 1025
- 104 run: x:address:address:duplex-list:_elem <- get-address *in, next:offset
+9999 mem: storing 1011 in location 1026
+ 104 run: tmp:address:address:duplex-list:_elem <- get-address *x, next:offset
 9999 mem: location 1023 is 1008
 9999 type: checking size of type ingredient
 
@@ -544,11 +548,11 @@
 9999 mem: location 1023 is 1008
 9999 type: type deduced to be character$
 9998 run: address to copy is 1009
-9999 mem: storing 1009 in location 1026
- 104 run: *x <- copy 0
-9999 mem: location 1026 is 1009
+9999 mem: storing 1009 in location 1027
+ 104 run: *tmp <- copy 0
+9999 mem: location 1027 is 1009
 9999 mem: storing 0 in location 1009
- 104 run: x <- get-address *in, prev:offset
+ 104 run: tmp <- get-address *x, prev:offset
 9999 mem: location 1023 is 1008
 9999 type: checking size of type ingredient
 
@@ -559,39 +563,39 @@
 9999 mem: location 1023 is 1008
 9999 type: type deduced to be character$
 9998 run: address to copy is 1010
-9999 mem: storing 1010 in location 1026
- 104 run: *x <- copy 0
-9999 mem: location 1026 is 1010
+9999 mem: storing 1010 in location 1027
+ 104 run: *tmp <- copy 0
+9999 mem: location 1027 is 1010
 9999 mem: storing 0 in location 1010
  104 run: jump-unless next-node, 
-9999 mem: location 1024 is 0
-9998 run: jumping to instruction 14
+9999 mem: location 1025 is 0
+9998 run: jumping to instruction 15
  104 run: jump-unless prev-node, 
-9999 mem: location 1025 is 1011
+9999 mem: location 1026 is 1011
 9998 run: jump-unless fell through
- 104 run: x <- get-address *prev-node, next:offset
-9999 mem: location 1025 is 1011
+ 104 run: tmp <- get-address *prev-node, next:offset
+9999 mem: location 1026 is 1011
 9999 type: checking size of type ingredient
 
 9999 type: type deduced to be character$
 9999 mem: location 1011 is 4
 9999 mem: location 1012 is 1008
 9999 mem: location 1013 is 1014
-9999 mem: location 1025 is 1011
+9999 mem: location 1026 is 1011
 9999 type: type deduced to be character$
 9998 run: address to copy is 1012
-9999 mem: storing 1012 in location 1026
- 104 run: *x <- copy next-node
-9999 mem: location 1024 is 0
-9999 mem: location 1026 is 1012
+9999 mem: storing 1012 in location 1027
+ 104 run: *tmp <- copy next-node
+9999 mem: location 1025 is 0
+9999 mem: location 1027 is 1012
 9999 mem: storing 0 in location 1012
- 104 run: reply prev-node
-9999 mem: location 1025 is 1011
+ 104 run: reply in:address:duplex-list:_elem
+9999 mem: location 1024 is 1014
 9999 trace: reply: decrementing callstack depth from 3
-9998 run: result 0 is 1011
-9999 mem: storing 1011 in location 2
+9998 run: result 0 is 1014
+9999 mem: storing 1014 in location 1
  103 run: 3:boolean <- equal 2:address:duplex-list:character, 0
-9999 mem: location 2 is 1011
+9999 mem: location 2 is 1008
 9999 mem: storing 0 in location 3
  103 run: 2:address:duplex-list:character <- copy 1:address:duplex-list:character
 9999 mem: location 1 is 1014
