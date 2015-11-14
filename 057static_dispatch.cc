@@ -50,7 +50,7 @@ else {
 bool header_already_exists(const recipe& rr) {
   const vector<recipe_ordinal>& variants = get(Recipe_variants, rr.name);
   for (long long int i = 0; i < SIZE(variants); ++i) {
-    if (Recipe.find(variants.at(i)) != Recipe.end()
+    if (contains_key(Recipe, variants.at(i))
         && all_reagents_match(rr, get(Recipe, variants.at(i)))) {
       return true;
     }
@@ -83,7 +83,7 @@ string next_unused_recipe_name(const string& recipe_name) {
   for (long long int i = 2; ; ++i) {
     ostringstream out;
     out << recipe_name << '_' << i;
-    if (Recipe_ordinal.find(out.str()) == Recipe_ordinal.end())
+    if (!contains_key(Recipe_ordinal, out.str()))
       return out.str();
   }
 }
