@@ -193,22 +193,12 @@ void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name) 
 }
 
 void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, const string_tree*>& mappings, const recipe& caller_recipe, bool* error) {
-  if (SIZE(exemplar.ingredients) > SIZE(inst.ingredients)) {
-    raise << maybe(caller_recipe.name) << "too few ingredients in call '" << inst.to_string() << "'\n" << end();
-    *error = true;
-    return;
-  }
   for (long long int i = 0; i < SIZE(exemplar.ingredients); ++i) {
     const reagent& exemplar_reagent = exemplar.ingredients.at(i);
     reagent ingredient = inst.ingredients.at(i);
     assert(ingredient.properties.at(0).second);
     canonize_type(ingredient);
     accumulate_type_ingredients(exemplar_reagent, ingredient, mappings, exemplar, inst, caller_recipe, error);
-  }
-  if (SIZE(exemplar.products) > SIZE(inst.products)) {
-    raise << maybe(caller_recipe.name) << "too few products in call '" << inst.to_string() << "'\n" << end();
-    *error = true;
-    return;
   }
   for (long long int i = 0; i < SIZE(exemplar.products); ++i) {
     const reagent& exemplar_reagent = exemplar.products.at(i);
@@ -227,7 +217,6 @@ void accumulate_type_ingredients(const reagent& exemplar_reagent, reagent& refin
 void accumulate_type_ingredients(const string_tree* exemplar_type, const string_tree* refinement_type, map<string, const string_tree*>& mappings, const recipe& exemplar, const reagent& exemplar_reagent, const instruction& call_instruction, const recipe& caller_recipe, bool* error) {
   if (!exemplar_type) return;
   if (!refinement_type) {
-    // todo: make this smarter; only warn if exemplar_type contains some *new* type ingredient
     raise_error << maybe(exemplar.name) << "missing type ingredient in " << exemplar_reagent.original_string << '\n' << end();
     return;
   }

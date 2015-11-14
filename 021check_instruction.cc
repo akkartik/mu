@@ -73,8 +73,6 @@ recipe main [
 +error: main: can't copy 34 to 1:address:number; types don't match
 
 :(code)
-// copy arguments because later layers will want to make changes to them
-// without perturbing the caller
 bool types_match(reagent lhs, reagent rhs) {
   // '_' never raises type error
   if (is_dummy(lhs)) return true;
