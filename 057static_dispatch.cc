@@ -33,7 +33,7 @@ for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin();
 if (contains_key(Recipe_ordinal, result.name)) {
   const recipe_ordinal r = get(Recipe_ordinal, result.name);
   if ((!contains_key(Recipe, r) || get(Recipe, r).has_header)
-      && !header_already_exists(result)) {
+      && !variant_already_exists(result)) {
     string new_name = next_unused_recipe_name(result.name);
     put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
     get(Recipe_variants, result.name).push_back(get(Recipe_ordinal, new_name));
@@ -47,7 +47,7 @@ else {
 }
 
 :(code)
-bool header_already_exists(const recipe& rr) {
+bool variant_already_exists(const recipe& rr) {
   const vector<recipe_ordinal>& variants = get(Recipe_variants, rr.name);
   for (long long int i = 0; i < SIZE(variants); ++i) {
     if (contains_key(Recipe, variants.at(i))
