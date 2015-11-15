@@ -34,8 +34,7 @@ recipe rest in:address:list:_elem -> result:address:list:_elem [
 
 scenario list-handling [
   run [
-    1:address:list:number <- copy 0
-    1:address:list:number <- push 3, 1:address:list:number
+    1:address:list:number <- push 3, 0
     1:address:list:number <- push 4, 1:address:list:number
     1:address:list:number <- push 5, 1:address:list:number
     2:number <- first 1:address:list:number

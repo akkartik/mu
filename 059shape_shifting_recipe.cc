@@ -37,7 +37,7 @@ if (Current_routine->calls.front().running_step_index == 0
 //: Make sure we don't match up literals with type ingredients without
 //: specialization.
 :(before "End valid_type_for_literal Special-cases")
-if (contains_type_ingredient_name(r)) return false;
+if (contains_type_ingredient_name(lhs)) return false;
 
 //: We'll be creating recipes without loading them from anywhere by
 //: *specializing* existing recipes, so make sure we don't clear any of those
@@ -213,6 +213,7 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
     reagent ingredient = inst.ingredients.at(i);
     assert(ingredient.properties.at(0).second);
     canonize_type(ingredient);
+    if (is_mu_address(exemplar_reagent) && ingredient.name == "0") continue;  // assume it matches
     accumulate_type_ingredients(exemplar_reagent, ingredient, mappings, exemplar, inst, caller_recipe, error);
   }
   limit = min(SIZE(inst.products), SIZE(exemplar.products));
@@ -507,3 +508,18 @@ recipe foo x:_elem -> y:_elem [
   y <- add x, 1
 ]
 +mem: storing 4 in location 1
+
+:(scenario specialize_with_literal_3)
+% Hide_errors = true;
+recipe main [
+  local-scope
+  # permit '0' to map to address to shape-shifting type-ingredient
+  1:address:character/raw <- foo 0
+]
+recipe foo x:address:_elem -> y:address:_elem [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++mem: storing 0 in location 1
+$error: 0

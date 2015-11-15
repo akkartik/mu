@@ -1,15 +1,10 @@
 9991 parse: --- defining scenario-remove-range
-9993 parse: instruction: copy
-9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"0": "literal"}
-9993 parse:   product: {"1": <"address" : <"duplex-list" : <"character" : <>>>>}
-9992 load: after rewriting: 1:address:duplex-list:character <- copy 0
 9993 parse: instruction: push-duplex
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"18": "literal"}
-9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <"character" : <>>>>}
+9993 parse:   ingredient: {"0": "literal"}
 9993 parse:   product: {"1": <"address" : <"duplex-list" : <"character" : <>>>>}
-9992 load: after rewriting: 1:address:duplex-list:character <- push-duplex 18, 1:address:duplex-list:character
+9992 load: after rewriting: 1:address:duplex-list:character <- push-duplex 18, 0
 9993 parse: instruction: push-duplex
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"17": "literal"}
@@ -42,14 +37,13 @@
 9992 load: after rewriting: 1:address:duplex-list:character <- push-duplex 13, 1:address:duplex-list:character
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    # delete 16 onwards\n    # first pointer: to the third element\n    2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character\n    2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character\n    3:address:duplex-list:character <- copy 0\n    2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 3:address:duplex-list:character/null\n    # now check the list\n    4:character <- get *1:address:duplex-list:character, value:offset\n    5:address:duplex-list:character <- next-duplex 1:address:duplex-list:character\n    6:character <- get *5:address:duplex-list:character, value:offset\n    7:address:duplex-list:character <- next-duplex 5:address:duplex-list:character\n    8:character <- get *7:address:duplex-list:character, value:offset\n    9:address:duplex-list:character <- next-duplex 7:address:duplex-list:character\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    # delete 16 onwards\n    # first pointer: to the third element\n    2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character\n    2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character\n    2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 0\n    # now check the list\n    4:character <- get *1:address:duplex-list:character, value:offset\n    5:address:duplex-list:character <- next-duplex 1:address:duplex-list:character\n    6:character <- get *5:address:duplex-list:character, value:offset\n    7:address:duplex-list:character <- next-duplex 5:address:duplex-list:character\n    8:character <- get *7:address:duplex-list:character, value:offset\n    9:address:duplex-list:character <- next-duplex 7:address:duplex-list:character\n  ": "literal-string"}
 9992 load: after rewriting: run [
     # delete 16 onwards
     # first pointer: to the third element
     2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
     2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character
-    3:address:duplex-list:character <- copy 0
-    2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 3:address:duplex-list:character/null
+    2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 0
     # now check the list
     4:character <- get *1:address:duplex-list:character, value:offset
     5:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
@@ -71,7 +65,6 @@
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe scenario-remove-range
 9991 transform: --- transform braces for recipe scenario-remove-range
-9992 transform: copy ...
 9992 transform: push-duplex ...
 9992 transform: push-duplex ...
 9992 transform: push-duplex ...
@@ -122,10 +115,7 @@
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-remove-range
- 102 run: 1:address:duplex-list:character <- copy 0
-9999 mem: storing 0 in location 1
- 102 run: 1:address:duplex-list:character <- push-duplex_2 18, 1:address:duplex-list:character
-9999 mem: location 1 is 0
+ 102 run: 1:address:duplex-list:character <- push-duplex_2 18, 0
 9999 trace: incrementing callstack depth to 2
  103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
@@ -516,8 +506,7 @@
     # first pointer: to the third element
     2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
     2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character
-    3:address:duplex-list:character <- copy 0
-    2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 3:address:duplex-list:character/null
+    2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 0
     # now check the list
     4:character <- get *1:address:duplex-list:character, value:offset
     5:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
@@ -537,17 +526,12 @@
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <"character" : <>>>>}
 9993 parse:   product: {"2": <"address" : <"duplex-list" : <"character" : <>>>>}
 9992 load: after rewriting: 2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character
-9993 parse: instruction: copy
-9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"0": "literal"}
-9993 parse:   product: {"3": <"address" : <"duplex-list" : <"character" : <>>>>}
-9992 load: after rewriting: 3:address:duplex-list:character <- copy 0
 9993 parse: instruction: remove-duplex-between
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"2": <"address" : <"duplex-list" : <"character" : <>>>>}
-9993 parse:   ingredient: {"3": <"address" : <"duplex-list" : <"character" : <>>>>, "null": <>}
+9993 parse:   ingredient: {"0": "literal"}
 9993 parse:   product: {"2": <"address" : <"duplex-list" : <"character" : <>>>>}
-9992 load: after rewriting: 2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 3:address:duplex-list:character/null
+9992 load: after rewriting: 2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 0
 9993 parse: instruction: get
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"duplex-list" : <"character" : <>>>>, "lookup": <>}
@@ -587,7 +571,6 @@
 9991 transform: --- transform braces for recipe run1001
 9992 transform: next-duplex ...
 9992 transform: next-duplex ...
-9992 transform: copy ...
 9992 transform: remove-duplex-between ...
 9992 transform: get ...
 9992 transform: next-duplex ...
@@ -697,11 +680,8 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1017
 9999 mem: storing 1017 in location 2
- 103 run: 3:address:duplex-list:character <- copy 0
-9999 mem: storing 0 in location 3
- 103 run: 2:address:duplex-list:character <- remove-duplex-between_2 2:address:duplex-list:character, 3:address:duplex-list:character/null
+ 103 run: 2:address:duplex-list:character <- remove-duplex-between_2 2:address:duplex-list:character, 0
 9999 mem: location 2 is 1017
-9999 mem: location 3 is 0
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6

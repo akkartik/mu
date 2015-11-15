@@ -79,17 +79,16 @@ bool types_match(reagent lhs, reagent rhs) {
   // to sidestep type-checking, use /raw in the source.
   // this is unsafe, and will be highlighted in red inside vim. just for some tests.
   if (is_raw(rhs)) return true;
-  // allow writing 0 to any address
-  if (rhs.name == "0" && is_mu_address(lhs)) return true;
-  if (is_literal(rhs)) return valid_type_for_literal(lhs) && size_of(rhs) == size_of(lhs);
+  if (is_literal(rhs)) return valid_type_for_literal(lhs, rhs) && size_of(rhs) == size_of(lhs);
   if (!lhs.type) return !rhs.type;
   return types_match(lhs.type, rhs.type);
 }
 
-bool valid_type_for_literal(const reagent& r) {
-  if (is_mu_array(r)) return false;
-  if (is_mu_address(r)) return false;
+bool valid_type_for_literal(const reagent& lhs, const reagent& literal_rhs) {
+  if (is_mu_array(lhs)) return false;
   // End valid_type_for_literal Special-cases
+  // allow writing 0 to any address
+  if (is_mu_address(lhs)) return literal_rhs.name == "0";
   return true;
 }
 

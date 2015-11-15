@@ -64,8 +64,7 @@ recipe new-editor s:address:array:character, screen:address:screen, left:number,
   x <- get-address *result, cursor-column:offset
   *x <- copy left
   init:address:address:duplex-list:character <- get-address *result, data:offset
-  *init <- copy 0
-  *init <- push-duplex 167/§, *init
+  *init <- push-duplex 167/§, 0/tail
   top-of-screen:address:address:duplex-list:character <- get-address *result, top-of-screen:offset
   *top-of-screen <- copy *init
   y:address:address:duplex-list:character <- get-address *result, before-cursor:offset
