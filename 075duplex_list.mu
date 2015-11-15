@@ -46,8 +46,7 @@ scenario duplex-list-handling [
     # reserve locations 0, 1 and 2 to check for missing null check
     1:number <- copy 34
     2:number <- copy 35
-    3:address:duplex-list:character <- copy 0
-    3:address:duplex-list:character <- push-duplex 3, 3:address:duplex-list:character
+    3:address:duplex-list:character <- push-duplex 3, 0
     3:address:duplex-list:character <- push-duplex 4, 3:address:duplex-list:character
     3:address:duplex-list:character <- push-duplex 5, 3:address:duplex-list:character
     4:address:duplex-list:character <- copy 3:address:duplex-list:character
@@ -110,8 +109,7 @@ recipe insert-duplex x:_elem, in:address:duplex-list:_elem -> new-node:address:d
 
 scenario inserting-into-duplex-list [
   run [
-    1:address:duplex-list:character <- copy 0  # 1 points to head of list
-    1:address:duplex-list:character <- push-duplex 3, 1:address:duplex-list:character
+    1:address:duplex-list:character <- push-duplex 3, 0
     1:address:duplex-list:character <- push-duplex 4, 1:address:duplex-list:character
     1:address:duplex-list:character <- push-duplex 5, 1:address:duplex-list:character
     2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character  # 2 points inside list
@@ -147,8 +145,7 @@ scenario inserting-into-duplex-list [
 
 scenario inserting-at-end-of-duplex-list [
   run [
-    1:address:duplex-list:character <- copy 0  # 1 points to head of list
-    1:address:duplex-list:character <- push-duplex 3, 1:address:duplex-list:character
+    1:address:duplex-list:character <- push-duplex 3, 0
     1:address:duplex-list:character <- push-duplex 4, 1:address:duplex-list:character
     1:address:duplex-list:character <- push-duplex 5, 1:address:duplex-list:character
     2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character  # 2 points inside list
@@ -185,8 +182,7 @@ scenario inserting-at-end-of-duplex-list [
 
 scenario inserting-after-start-of-duplex-list [
   run [
-    1:address:duplex-list:character <- copy 0  # 1 points to head of list
-    1:address:duplex-list:character <- push-duplex 3, 1:address:duplex-list:character
+    1:address:duplex-list:character <- push-duplex 3, 0
     1:address:duplex-list:character <- push-duplex 4, 1:address:duplex-list:character
     1:address:duplex-list:character <- push-duplex 5, 1:address:duplex-list:character
     2:address:duplex-list:character <- insert-duplex 6, 1:address:duplex-list:character
@@ -256,8 +252,7 @@ recipe remove-duplex in:address:duplex-list:_elem -> next-node:address:duplex-li
 
 scenario removing-from-duplex-list [
   run [
-    1:address:duplex-list:character <- copy 0  # 1 points to head of list
-    1:address:duplex-list:character <- push-duplex 3, 1:address:duplex-list:character
+    1:address:duplex-list:character <- push-duplex 3, 0
     1:address:duplex-list:character <- push-duplex 4, 1:address:duplex-list:character
     1:address:duplex-list:character <- push-duplex 5, 1:address:duplex-list:character
     2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character  # 2 points at second element
@@ -285,8 +280,7 @@ scenario removing-from-duplex-list [
 
 scenario removing-from-start-of-duplex-list [
   run [
-    1:address:duplex-list:character <- copy 0  # 1 points to head of list
-    1:address:duplex-list:character <- push-duplex 3, 1:address:duplex-list:character
+    1:address:duplex-list:character <- push-duplex 3, 0
     1:address:duplex-list:character <- push-duplex 4, 1:address:duplex-list:character
     1:address:duplex-list:character <- push-duplex 5, 1:address:duplex-list:character
     # removing from head? return value matters.
@@ -312,8 +306,7 @@ scenario removing-from-start-of-duplex-list [
 
 scenario removing-from-end-of-duplex-list [
   run [
-    1:address:duplex-list:character <- copy 0  # 1 points to head of list
-    1:address:duplex-list:character <- push-duplex 3, 1:address:duplex-list:character
+    1:address:duplex-list:character <- push-duplex 3, 0
     1:address:duplex-list:character <- push-duplex 4, 1:address:duplex-list:character
     1:address:duplex-list:character <- push-duplex 5, 1:address:duplex-list:character
     # delete last element
@@ -343,8 +336,7 @@ scenario removing-from-end-of-duplex-list [
 
 scenario removing-from-singleton-list [
   run [
-    1:address:duplex-list:character <- copy 0  # 1 points to singleton list
-    1:address:duplex-list:character <- push-duplex 3, 1:address:duplex-list:character
+    1:address:duplex-list:character <- push-duplex 3, 0
     2:address:duplex-list:character <- remove-duplex 1:address:duplex-list:character
     3:address:duplex-list:character <- get *1:address:duplex-list:character, next:offset
     4:address:duplex-list:character <- get *1:address:duplex-list:character, prev:offset
@@ -381,8 +373,7 @@ recipe remove-duplex-between start:address:duplex-list:_elem, end:address:duplex
 
 scenario remove-range [
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  1:address:duplex-list:character <- copy 0
-  1:address:duplex-list:character <- push-duplex 18, 1:address:duplex-list:character
+  1:address:duplex-list:character <- push-duplex 18, 0
   1:address:duplex-list:character <- push-duplex 17, 1:address:duplex-list:character
   1:address:duplex-list:character <- push-duplex 16, 1:address:duplex-list:character
   1:address:duplex-list:character <- push-duplex 15, 1:address:duplex-list:character
@@ -393,8 +384,7 @@ scenario remove-range [
     # first pointer: to the third element
     2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
     2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character
-    3:address:duplex-list:character <- copy 0
-    2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 3:address:duplex-list:character/null
+    2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 0
     # now check the list
     4:character <- get *1:address:duplex-list:character, value:offset
     5:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
@@ -413,8 +403,7 @@ scenario remove-range [
 
 scenario remove-range-to-end [
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  1:address:duplex-list:character <- copy 0
-  1:address:duplex-list:character <- push-duplex 18, 1:address:duplex-list:character
+  1:address:duplex-list:character <- push-duplex 18, 0
   1:address:duplex-list:character <- push-duplex 17, 1:address:duplex-list:character
   1:address:duplex-list:character <- push-duplex 16, 1:address:duplex-list:character
   1:address:duplex-list:character <- push-duplex 15, 1:address:duplex-list:character
@@ -448,8 +437,7 @@ scenario remove-range-to-end [
 
 scenario remove-range-empty [
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  1:address:duplex-list:character <- copy 0  # 1 points to singleton list
-  1:address:duplex-list:character <- push-duplex 14, 1:address:duplex-list:character
+  1:address:duplex-list:character <- push-duplex 14, 0
   1:address:duplex-list:character <- push-duplex 13, 1:address:duplex-list:character
   run [
     # delete 16 onwards
