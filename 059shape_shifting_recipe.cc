@@ -257,6 +257,7 @@ void accumulate_type_ingredients(const string_tree* exemplar_type, const string_
     else {
       if (!deeply_equal_types(get(mappings, exemplar_type->value), refinement_type)) {
         raise_error << maybe(caller_recipe.name) << "no call found for '" << call_instruction.to_string() << "'\n" << end();
+//?         cerr << exemplar_type->value << ": " << debug_string(get(mappings, exemplar_type->value)) << " vs " << debug_string(refinement_type) << '\n';
         *error = true;
         return;
       }
@@ -539,3 +540,14 @@ recipe foo x:address:_elem -> y:address:_elem [
 ]
 +error: foo: failed to map a type to x
 +error: foo: failed to map a type to y
+
+:(scenario specialize_with_literal_5)
+recipe main [
+  foo 3, 4  # recipe mapping two variables to literals
+]
+recipe foo x:_elem, y:_elem [
+  local-scope
+  load-ingredients
+  1:number/raw <- add x, y
+]
++mem: storing 7 in location 1
