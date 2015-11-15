@@ -467,11 +467,11 @@ string instruction::to_string<span class="Delimiter">()</span> const <span class
 
 string debug_string<span class="Delimiter">(</span>const recipe&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream out<span class="Delimiter">;</span>
-  out &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  out &lt;&lt; <span class="Constant">&quot;- recipe &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Comment">// Begin debug_string(recipe x)</span>
   for <span class="Delimiter">(</span>long long int index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     const instruction&amp; inst = x<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
-    out &lt;&lt; <span class="Constant">&quot;  inst: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    out &lt;&lt; <span class="Constant">&quot;inst: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     out &lt;&lt; <span class="Constant">&quot;  ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
     for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
       out &lt;&lt; <span class="Constant">&quot;    &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
@@ -516,6 +516,23 @@ bool deeply_equal<span class="Delimiter">(</span>const string_tree* a<span class
   <span class="Identifier">return</span> a<span class="Delimiter">-&gt;</span>value == b<span class="Delimiter">-&gt;</span>value
       &amp;&amp; deeply_equal<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span>
       &amp;&amp; deeply_equal<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+set&lt;string&gt; Literal_type_names<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
+Literal_type_names<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">);</span>
+Literal_type_names<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+Literal_type_names<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;character&quot;</span><span class="Delimiter">);</span>
+<span class="Delimiter">:(code)</span>
+bool deeply_equal_types<span class="Delimiter">(</span>const string_tree* a<span class="Delimiter">,</span> const string_tree* b<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!a<span class="Delimiter">)</span> <span class="Identifier">return</span> !b<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>!b<span class="Delimiter">)</span> <span class="Identifier">return</span> !a<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+    <span class="Identifier">return</span> Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>b<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+  <span class="Identifier">return</span> a<span class="Delimiter">-&gt;</span>value == b<span class="Delimiter">-&gt;</span>value
+      &amp;&amp; deeply_equal_types<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span>
+      &amp;&amp; deeply_equal_types<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 void dump_memory<span class="Delimiter">()</span> <span class="Delimiter">{</span>

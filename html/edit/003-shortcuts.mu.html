@@ -119,14 +119,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">load-ingredients</span>
   before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
   <span class="Comment"># if at start of text (before-cursor at § sentinel), return</span>
-  prev:address:duplex-list:character<span class="Special"> &lt;- </span>prev-duplex *before-cursor
+  prev:address:duplex-list:character<span class="Special"> &lt;- </span>prev *before-cursor
   go-render?, backspaced-cell<span class="Special"> &lt;- </span>copy <span class="Constant">0/no-more-render</span>, <span class="Constant">0/nothing-deleted</span>
   <span class="muControl">reply-unless</span> prev
   trace <span class="Constant">10</span>, <span class="Constant">[app]</span>, <span class="Constant">[delete-before-cursor]</span>
   original-row:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-row:offset</span>
   editor, scroll?:boolean<span class="Special"> &lt;- </span>move-cursor-coordinates-left editor
   backspaced-cell:address:duplex-list:character<span class="Special"> &lt;- </span>copy *before-cursor
-  remove-duplex *before-cursor  <span class="Comment"># will also neatly trim next/prev pointers in backspaced-cell/*before-cursor</span>
+  remove *before-cursor  <span class="Comment"># will also neatly trim next/prev pointers in backspaced-cell/*before-cursor</span>
   *before-cursor<span class="Special"> &lt;- </span>copy prev
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
   <span class="muControl">reply-if</span> scroll?
@@ -139,7 +139,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="muControl">reply-unless</span> same-row?
   left:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">left:offset</span>
   right:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">right:offset</span>
-  curr:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+  curr:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
   screen<span class="Special"> &lt;- </span>move-cursor screen, cursor-row, cursor-column
   curr-column:number<span class="Special"> &lt;- </span>copy cursor-column
   <span class="Delimiter">{</span>
@@ -154,7 +154,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-if</span> at-newline?
     screen<span class="Special"> &lt;- </span>print-character screen, currc
     curr-column<span class="Special"> &lt;- </span>add curr-column, <span class="Constant">1</span>
-    curr<span class="Special"> &lt;- </span>next-duplex curr
+    curr<span class="Special"> &lt;- </span>next curr
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># we're guaranteed not to be at the right margin</span>
@@ -218,7 +218,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   at-start?:boolean<span class="Special"> &lt;- </span>equal curr, start
   <span class="muControl">reply-if</span> at-start?
   <span class="Delimiter">{</span>
-    curr<span class="Special"> &lt;- </span>prev-duplex curr
+    curr<span class="Special"> &lt;- </span>prev curr
     <span class="muControl">break-unless</span> curr
     at-start?:boolean<span class="Special"> &lt;- </span>equal curr, start
     <span class="muControl">break-if</span> at-start?
@@ -367,16 +367,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
-  deleted-cell:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+  deleted-cell:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
   <span class="muControl">reply-unless</span> deleted-cell
   currc:character<span class="Special"> &lt;- </span>get *deleted-cell, <span class="Constant">value:offset</span>
-  remove-duplex deleted-cell
+  remove deleted-cell
   deleted-newline?:boolean<span class="Special"> &lt;- </span>equal currc, <span class="Constant">10/newline</span>
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
   <span class="muControl">reply-if</span> deleted-newline?
   <span class="Comment"># wasn't a newline? render rest of line</span>
-  curr:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor  <span class="Comment"># refresh after remove-duplex above</span>
+  curr:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor  <span class="Comment"># refresh after remove above</span>
   cursor-row:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-row:offset</span>
   cursor-column:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-column:offset</span>
   screen<span class="Special"> &lt;- </span>move-cursor screen, *cursor-row, *cursor-column
@@ -394,7 +394,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-if</span> at-newline?
     screen<span class="Special"> &lt;- </span>print-character screen, currc
     curr-column<span class="Special"> &lt;- </span>add curr-column, <span class="Constant">1</span>
-    curr<span class="Special"> &lt;- </span>next-duplex curr
+    curr<span class="Special"> &lt;- </span>next curr
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># we're guaranteed not to be at the right margin</span>
@@ -431,7 +431,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     move-to-next-character?:boolean<span class="Special"> &lt;- </span>equal *k, <span class="Constant">65514/right-arrow</span>
     <span class="muControl">break-unless</span> move-to-next-character?
     <span class="Comment"># if not at end of text</span>
-    next-cursor:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    next-cursor:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
     <span class="muControl">break-unless</span> next-cursor
     <span class="Comment"># scan to next character</span>
 <span class="Constant">    &lt;move-cursor-begin&gt;</span>
@@ -474,7 +474,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     at-wrap?:boolean<span class="Special"> &lt;- </span>equal *cursor-column, wrap-column
     <span class="muControl">break-unless</span> at-wrap?
     <span class="Comment"># and if next character isn't newline</span>
-    next:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex before-cursor
+    next:address:duplex-list:character<span class="Special"> &lt;- </span>next before-cursor
     <span class="muControl">break-unless</span> next
     next-character:character<span class="Special"> &lt;- </span>get *next, <span class="Constant">value:offset</span>
     newline?:boolean<span class="Special"> &lt;- </span>equal next-character, <span class="Constant">10/newline</span>
@@ -708,7 +708,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> move-to-previous-character?
     trace <span class="Constant">10</span>, <span class="Constant">[app]</span>, <span class="Constant">[left arrow]</span>
     <span class="Comment"># if not at start of text (before-cursor at § sentinel)</span>
-    prev:address:duplex-list:character<span class="Special"> &lt;- </span>prev-duplex *before-cursor
+    prev:address:duplex-list:character<span class="Special"> &lt;- </span>prev *before-cursor
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
     <span class="muControl">reply-unless</span> prev
 <span class="Constant">    &lt;move-cursor-begin&gt;</span>
@@ -954,7 +954,7 @@ d]
     <span class="Delimiter">{</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal *cursor-column, target-column
       <span class="muControl">break-if</span> done?
-      curr:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+      curr:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
       <span class="muControl">break-unless</span> curr
       currc:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
       at-newline?:boolean<span class="Special"> &lt;- </span>equal currc, <span class="Constant">10/newline</span>
@@ -1171,7 +1171,7 @@ def]
     <span class="Delimiter">{</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal *cursor-column, target-column
       <span class="muControl">break-if</span> done?
-      curr:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+      curr:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
       <span class="muControl">break-unless</span> curr
       currc:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
       at-newline?:boolean<span class="Special"> &lt;- </span>equal currc, <span class="Constant">10/newline</span>
@@ -1295,7 +1295,7 @@ def]
     prev:character<span class="Special"> &lt;- </span>get **before-cursor, <span class="Constant">value:offset</span>
     at-start-of-line?:boolean<span class="Special"> &lt;- </span>equal prev, <span class="Constant">10/newline</span>
     <span class="muControl">break-if</span> at-start-of-line?
-    *before-cursor<span class="Special"> &lt;- </span>prev-duplex *before-cursor
+    *before-cursor<span class="Special"> &lt;- </span>prev *before-cursor
     assert *before-cursor, <span class="Constant">[move-to-start-of-line tried to move before start of text]</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
@@ -1456,7 +1456,7 @@ def]
   cursor-column:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-column:offset</span>
   <span class="Comment"># while not at start of line, move </span>
   <span class="Delimiter">{</span>
-    next:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    next:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
     <span class="muControl">break-unless</span> next  <span class="Comment"># end of text</span>
     nextc:character<span class="Special"> &lt;- </span>get *next, <span class="Constant">value:offset</span>
     at-end-of-line?:boolean<span class="Special"> &lt;- </span>equal nextc, <span class="Constant">10/newline</span>
@@ -1586,20 +1586,20 @@ def]
   init:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
   before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
   start:address:duplex-list:character<span class="Special"> &lt;- </span>copy *before-cursor
-  end:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+  end:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
   <span class="Delimiter">{</span>
     at-start-of-text?:boolean<span class="Special"> &lt;- </span>equal start, init
     <span class="muControl">break-if</span> at-start-of-text?
     curr:character<span class="Special"> &lt;- </span>get *start, <span class="Constant">value:offset</span>
     at-start-of-line?:boolean<span class="Special"> &lt;- </span>equal curr, <span class="Constant">10/newline</span>
     <span class="muControl">break-if</span> at-start-of-line?
-    start<span class="Special"> &lt;- </span>prev-duplex start
+    start<span class="Special"> &lt;- </span>prev start
     assert start, <span class="Constant">[delete-to-start-of-line tried to move before start of text]</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># snip it out</span>
-  result:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex start
-  remove-duplex-between start, end
+  result:address:duplex-list:character<span class="Special"> &lt;- </span>next start
+  remove-between start, end
   <span class="Comment"># adjust cursor</span>
   *before-cursor<span class="Special"> &lt;- </span>copy start
   left:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">left:offset</span>
@@ -1718,19 +1718,19 @@ def]
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># compute range to delete</span>
   start:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">before-cursor:offset</span>
-  end:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex start
+  end:address:duplex-list:character<span class="Special"> &lt;- </span>next start
   <span class="Delimiter">{</span>
     at-end-of-text?:boolean<span class="Special"> &lt;- </span>equal end, <span class="Constant">0/null</span>
     <span class="muControl">break-if</span> at-end-of-text?
     curr:character<span class="Special"> &lt;- </span>get *end, <span class="Constant">value:offset</span>
     at-end-of-line?:boolean<span class="Special"> &lt;- </span>equal curr, <span class="Constant">10/newline</span>
     <span class="muControl">break-if</span> at-end-of-line?
-    end<span class="Special"> &lt;- </span>next-duplex end
+    end<span class="Special"> &lt;- </span>next end
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># snip it out</span>
-  result<span class="Special"> &lt;- </span>next-duplex start
-  remove-duplex-between start, end
+  result<span class="Special"> &lt;- </span>next start
+  remove-between start, end
 ]
 
 <span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-2 [
@@ -1908,7 +1908,7 @@ def]
     c:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
     at-newline?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
     <span class="muControl">break-unless</span> at-newline?
-    curr<span class="Special"> &lt;- </span>next-duplex curr
+    curr<span class="Special"> &lt;- </span>next curr
     count<span class="Special"> &lt;- </span>add count, <span class="Constant">1</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
@@ -1918,7 +1918,7 @@ def]
     c:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
     at-newline?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
     <span class="muControl">break-if</span> at-newline?
-    curr<span class="Special"> &lt;- </span>next-duplex curr
+    curr<span class="Special"> &lt;- </span>next curr
     count<span class="Special"> &lt;- </span>add count, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
@@ -2280,7 +2280,7 @@ def]
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> len
     <span class="Comment"># empty line; just skip this newline</span>
-    prev:address:duplex-list:character<span class="Special"> &lt;- </span>prev-duplex curr
+    prev:address:duplex-list:character<span class="Special"> &lt;- </span>prev curr
     <span class="muControl">reply-unless</span> prev, curr
     <span class="muControl">reply</span> prev
   <span class="Delimiter">}</span>
@@ -2296,7 +2296,7 @@ def]
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal count, max
     <span class="muControl">break-if</span> done?
-    prev:address:duplex-list:character<span class="Special"> &lt;- </span>prev-duplex curr
+    prev:address:duplex-list:character<span class="Special"> &lt;- </span>prev curr
     <span class="muControl">break-unless</span> prev
     curr<span class="Special"> &lt;- </span>copy prev
     count<span class="Special"> &lt;- </span>add count, <span class="Constant">1</span>
@@ -2682,13 +2682,13 @@ e]
   <span class="muControl">reply-unless</span> bottom-of-screen
   <span class="Comment"># if not, position cursor at final character</span>
   before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
-  *before-cursor<span class="Special"> &lt;- </span>prev-duplex bottom-of-screen
+  *before-cursor<span class="Special"> &lt;- </span>prev bottom-of-screen
   <span class="Comment"># keep one line in common with previous page</span>
   <span class="Delimiter">{</span>
     last:character<span class="Special"> &lt;- </span>get **before-cursor, <span class="Constant">value:offset</span>
     newline?:boolean<span class="Special"> &lt;- </span>equal last, <span class="Constant">10/newline</span>
     <span class="muControl">break-unless</span> newline?:boolean
-    *before-cursor<span class="Special"> &lt;- </span>prev-duplex *before-cursor
+    *before-cursor<span class="Special"> &lt;- </span>prev *before-cursor
   <span class="Delimiter">}</span>
   <span class="Comment"># move cursor and top-of-screen to start of that line</span>
   move-to-start-of-line editor
