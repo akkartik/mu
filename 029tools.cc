@@ -251,6 +251,7 @@ case _PRINT: {
       }
     }
   }
+  cout.flush();
   break;
 }
 

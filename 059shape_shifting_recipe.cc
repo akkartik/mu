@@ -31,6 +31,7 @@ if (any_type_ingredient_in_header(/*recipe_ordinal*/p->first)) continue;
 :(after "Running One Instruction")
 if (Current_routine->calls.front().running_step_index == 0
     && any_type_ingredient_in_header(Current_routine->calls.front().running_recipe)) {
+//?   DUMP("");
   raise_error << "ran into unspecialized shape-shifting recipe " << current_recipe_name() << '\n' << end();
 }
 
@@ -48,24 +49,35 @@ recently_added_types.clear();
 
 :(before "End Instruction Dispatch(inst, best_score)")
 if (best_score == -1) {
+//?   if (inst.name == "push-duplex") Trace_stream = new trace_stream;
   trace(9992, "transform") << "no variant found; searching for variant with suitable type ingredients" << end();
   recipe_ordinal exemplar = pick_matching_shape_shifting_variant(variants, inst, best_score);
   if (exemplar) {
     trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
     variants.push_back(new_variant(exemplar, inst, caller_recipe));
+//?     cerr << "-- replacing " << inst.name << " with " << get(Recipe, variants.back()).name << '\n' << debug_string(get(Recipe, variants.back()));
     inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
   }
+//?   if (inst.name == "push-duplex") {
+//?     cerr << "======== {\n";
+//?     cerr << inst.to_string() << '\n';
+//?     DUMP("");
+//?     cerr << "======== }\n";
+//?   }
 }
 
 :(code)
 recipe_ordinal pick_matching_shape_shifting_variant(vector<recipe_ordinal>& variants, const instruction& inst, long long int& best_score) {
+//?   cerr << "---- " << inst.name << ": " << non_ghost_size(variants) << '\n';
   recipe_ordinal result = 0;
   for (long long int i = 0; i < SIZE(variants); ++i) {
     if (variants.at(i) == -1) continue;  // ghost from a previous test
+//?     cerr << "-- variant " << i << "\n" << debug_string(get(Recipe, variants.at(i)));
     trace(9992, "transform") << "checking shape-shifting variant " << i << end();
     long long int current_score = shape_shifting_variant_score(inst, variants.at(i));
     trace(9992, "transform") << "final score: " << current_score << end();
+//?     cerr << get(Recipe, variants.at(i)).name << ": " << current_score << '\n';
     if (current_score > best_score) {
       trace(9992, "transform") << "matches" << end();
       result = variants.at(i);
@@ -76,6 +88,7 @@ recipe_ordinal pick_matching_shape_shifting_variant(vector<recipe_ordinal>& vari
 }
 
 long long int shape_shifting_variant_score(const instruction& inst, recipe_ordinal variant) {
+//?   cerr << "======== " << inst.to_string() << '\n';
   if (!any_type_ingredient_in_header(variant)) {
     trace(9993, "transform") << "no type ingredients" << end();
     return -1;
@@ -86,7 +99,7 @@ long long int shape_shifting_variant_score(const instruction& inst, recipe_ordin
     return -1;
   }
   for (long long int i = 0; i < SIZE(header_ingredients); ++i) {
-    if (!non_type_ingredients_match(header_ingredients.at(i), inst.ingredients.at(i))) {
+    if (!deeply_equal_concrete_types(header_ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "mismatch: ingredient " << i << end();
       return -1;
     }
@@ -97,7 +110,7 @@ long long int shape_shifting_variant_score(const instruction& inst, recipe_ordin
   }
   const vector<reagent>& header_products = get(Recipe, variant).products;
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
-    if (!non_type_ingredients_match(header_products.at(i), inst.products.at(i))) {
+    if (!deeply_equal_concrete_types(header_products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "mismatch: product " << i << end();
       return -1;
     }
@@ -119,9 +132,29 @@ bool any_type_ingredient_in_header(recipe_ordinal variant) {
   return false;
 }
 
-bool non_type_ingredients_match(const reagent& lhs, const reagent& rhs) {
-  if (contains_type_ingredient_name(lhs)) return true;
-  return types_match(lhs, rhs);
+bool deeply_equal_concrete_types(reagent lhs, reagent rhs) {
+//?   cerr << debug_string(lhs) << " vs " << debug_string(rhs) << '\n';
+//?   bool result = deeply_equal_concrete_types(lhs.properties.at(0).second, rhs.properties.at(0).second, rhs);
+//?   cerr << "  => " << result << '\n';
+//?   return result;
+//?   cerr << "== " << debug_string(lhs) << " vs " << debug_string(rhs) << '\n';
+  canonize_type(lhs);
+  canonize_type(rhs);
+  return deeply_equal_concrete_types(lhs.properties.at(0).second, rhs.properties.at(0).second, rhs);
+}
+
+bool deeply_equal_concrete_types(const string_tree* lhs, const string_tree* rhs, const reagent& rhs_reagent) {
+  if (!lhs) return !rhs;
+  if (!rhs) return !lhs;
+  if (is_type_ingredient_name(lhs->value)) return true;  // type ingredient matches anything
+  if (Literal_type_names.find(lhs->value) != Literal_type_names.end())
+    return Literal_type_names.find(rhs->value) != Literal_type_names.end();
+  if (rhs->value == "literal" && lhs->value == "address")
+    return rhs_reagent.name == "0";
+//?   cerr << lhs->value << " vs " << rhs->value << '\n';
+  return lhs->value == rhs->value
+      && deeply_equal_concrete_types(lhs->left, rhs->left, rhs_reagent)
+      && deeply_equal_concrete_types(lhs->right, rhs->right, rhs_reagent);
 }
 
 bool contains_type_ingredient_name(const reagent& x) {
@@ -347,6 +380,13 @@ void ensure_all_concrete_types(/*const*/ reagent& x, const recipe& exemplar) {
   }
 }
 
+long long int non_ghost_size(vector<recipe_ordinal>& variants) {
+  long long int result = 0;
+  for (long long int i = 0; i < SIZE(variants); ++i)
+    if (variants.at(i) != -1) ++result;
+  return result;
+}
+
 :(scenario shape_shifting_recipe_2)
 recipe main [
   10:point <- merge 14, 15
@@ -551,3 +591,61 @@ recipe foo x:_elem, y:_elem [
   1:number/raw <- add x, y
 ]
 +mem: storing 7 in location 1
+
+:(scenario multiple_shape_shifting_variants)
+# try to call two different shape-shifting recipes with the same name
+recipe main [
+  e1:d1:number <- merge 3
+  e2:d2:number <- merge 4, 5
+  1:number/raw <- foo e1
+  2:number/raw <- foo e2
+]
+# the two shape-shifting definitions
+recipe foo a:d1:_elem -> b:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+recipe foo a:d2:_elem -> b:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
+# the shape-shifting containers they use
+container d1:_elem [
+  x:_elem
+]
+container d2:_elem [
+  x:number
+  y:_elem
+]
++mem: storing 34 in location 1
++mem: storing 35 in location 2
+
+:(scenario multiple_shape_shifting_variants_2)
+# static dispatch between shape-shifting variants, _including pointer lookups_
+recipe main [
+  e1:d1:number <- merge 3
+  e2:address:d2:number <- new {(d2 number): type}
+  1:number/raw <- foo e1
+  2:number/raw <- foo *e2  # different from previous scenario
+]
+recipe foo a:d1:_elem -> b:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+recipe foo a:d2:_elem -> b:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
+container d1:_elem [
+  x:_elem
+]
+container d2:_elem [
+  x:number
+  y:_elem
+]
++mem: storing 34 in location 1
++mem: storing 35 in location 2

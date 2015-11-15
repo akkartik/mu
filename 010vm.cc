@@ -433,11 +433,11 @@ string instruction::to_string() const {
 
 string debug_string(const recipe& x) {
   ostringstream out;
-  out << "recipe " << x.name << '\n';
+  out << "- recipe " << x.name << '\n';
   // Begin debug_string(recipe x)
   for (long long int index = 0; index < SIZE(x.steps); ++index) {
     const instruction& inst = x.steps.at(index);
-    out << "  inst: " << inst.to_string() << '\n';
+    out << "inst: " << inst.to_string() << '\n';
     out << "  ingredients\n";
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i)
       out << "    " << debug_string(inst.ingredients.at(i)) << '\n';
