@@ -94,7 +94,7 @@ recipe empty-editor? editor:address:editor-data -> result:boolean [
   local-scope
   load-ingredients
   head:address:duplex-list:character <- get *editor, data:offset
-  first:address:duplex-list:character <- next-duplex head
+  first:address:duplex-list:character <- next head
   result <- not first
 ]
 

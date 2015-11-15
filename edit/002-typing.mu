@@ -79,8 +79,8 @@ recipe snap-cursor screen:address:screen, editor:address:editor-data, target-row
   screen-height:number <- screen-height screen
   # count newlines until screen row
   curr:address:duplex-list:character <- get *editor, top-of-screen:offset
-  prev:address:duplex-list:character <- copy curr  # just in case curr becomes null and we can't compute prev-duplex
-  curr <- next-duplex curr
+  prev:address:duplex-list:character <- copy curr  # just in case curr becomes null and we can't compute prev
+  curr <- next curr
   row:number <- copy 1/top
   column:number <- copy left
   cursor-row:address:number <- get-address *editor, cursor-row:offset
@@ -120,8 +120,8 @@ recipe snap-cursor screen:address:screen, editor:address:editor-data, target-row
       # skip to next line
       row <- add row, 1
       column <- copy left
-      curr <- next-duplex curr
-      prev <- next-duplex prev
+      curr <- next curr
+      prev <- next prev
       loop +next-character:label
     }
     {
@@ -134,8 +134,8 @@ recipe snap-cursor screen:address:screen, editor:address:editor-data, target-row
       # don't increment curr/prev
       loop +next-character:label
     }
-    curr <- next-duplex curr
-    prev <- next-duplex prev
+    curr <- next curr
+    prev <- next prev
     column <- add column, 1
     loop
   }
@@ -199,8 +199,8 @@ recipe insert-at-cursor editor:address:editor-data, c:character, screen:address:
   local-scope
   load-ingredients
   before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
-  insert-duplex c, *before-cursor
-  *before-cursor <- next-duplex *before-cursor
+  insert c, *before-cursor
+  *before-cursor <- next *before-cursor
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   left:number <- get *editor, left:offset
@@ -213,7 +213,7 @@ recipe insert-at-cursor editor:address:editor-data, c:character, screen:address:
   <insert-character-special-case>
   # but mostly we'll just move the cursor right
   *cursor-column <- add *cursor-column, 1
-  next:address:duplex-list:character <- next-duplex *before-cursor
+  next:address:duplex-list:character <- next *before-cursor
   {
     # at end of all text? no need to scroll? just print the character and leave
     at-end?:boolean <- equal next, 0/null
@@ -248,7 +248,7 @@ recipe insert-at-cursor editor:address:editor-data, c:character, screen:address:
       break-if at-newline?
       print-character screen, currc
       curr-column <- add curr-column, 1
-      curr <- next-duplex curr
+      curr <- next curr
       loop
     }
     go-render? <- copy 0/false
@@ -832,8 +832,8 @@ recipe insert-new-line-and-indent editor:address:editor-data, screen:address:scr
   right:number <- get *editor, right:offset
   screen-height:number <- screen-height screen
   # insert newline
-  insert-duplex 10/newline, *before-cursor
-  *before-cursor <- next-duplex *before-cursor
+  insert 10/newline, *before-cursor
+  *before-cursor <- next *before-cursor
   *cursor-row <- add *cursor-row, 1
   *cursor-column <- copy left
   # maybe scroll
@@ -848,7 +848,7 @@ recipe insert-new-line-and-indent editor:address:editor-data, screen:address:scr
   indent?:boolean <- get *editor, indent?:offset
   reply-unless indent?
   d:address:duplex-list:character <- get *editor, data:offset
-  end-of-previous-line:address:duplex-list:character <- prev-duplex *before-cursor
+  end-of-previous-line:address:duplex-list:character <- prev *before-cursor
   indent:number <- line-indent end-of-previous-line, d
   i:number <- copy 0
   {
@@ -870,7 +870,7 @@ recipe line-indent curr:address:duplex-list:character, start:address:duplex-list
   at-start?:boolean <- equal curr, start
   reply-if at-start?
   {
-    curr <- prev-duplex curr
+    curr <- prev curr
     break-unless curr
     at-start?:boolean <- equal curr, start
     break-if at-start?

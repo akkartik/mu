@@ -64,7 +64,7 @@ recipe new-editor s:address:array:character, screen:address:screen, left:number,
   x <- get-address *result, cursor-column:offset
   *x <- copy left
   init:address:address:duplex-list:character <- get-address *result, data:offset
-  *init <- push-duplex 167/§, 0/tail
+  *init <- push 167/§, 0/tail
   top-of-screen:address:address:duplex-list:character <- get-address *result, top-of-screen:offset
   *top-of-screen <- copy *init
   y:address:address:duplex-list:character <- get-address *result, before-cursor:offset
@@ -92,9 +92,9 @@ recipe insert-text editor:address:editor-data, text:address:array:character -> e
     done?:boolean <- greater-or-equal idx, len
     break-if done?
     c:character <- index *text, idx
-    insert-duplex c, curr
+    insert c, curr
     # next iter
-    curr <- next-duplex curr
+    curr <- next curr
     idx <- add idx, 1
     loop
   }
@@ -136,8 +136,8 @@ recipe render screen:address:screen, editor:address:editor-data -> last-row:numb
   right:number <- get *editor, right:offset
   # traversing editor
   curr:address:duplex-list:character <- get *editor, top-of-screen:offset
-  prev:address:duplex-list:character <- copy curr  # just in case curr becomes null and we can't compute prev-duplex
-  curr <- next-duplex curr
+  prev:address:duplex-list:character <- copy curr  # just in case curr becomes null and we can't compute prev
+  curr <- next curr
   # traversing screen
   +render-loop-initialization
   color:number <- copy 7/white
@@ -175,7 +175,7 @@ recipe render screen:address:screen, editor:address:editor-data -> last-row:numb
         left-of-cursor?:boolean <- lesser-than column, *cursor-column
         break-unless left-of-cursor?
         *cursor-column <- copy column
-        *before-cursor <- prev-duplex curr
+        *before-cursor <- prev curr
       }
       # clear rest of line in this window
       clear-line-delimited screen, column, right
@@ -183,8 +183,8 @@ recipe render screen:address:screen, editor:address:editor-data -> last-row:numb
       row <- add row, 1
       column <- copy left
       screen <- move-cursor screen, row, column
-      curr <- next-duplex curr
-      prev <- next-duplex prev
+      curr <- next curr
+      prev <- next prev
       loop +next-character:label
     }
     {
@@ -201,8 +201,8 @@ recipe render screen:address:screen, editor:address:editor-data -> last-row:numb
       loop +next-character:label
     }
     print-character screen, c, color
-    curr <- next-duplex curr
-    prev <- next-duplex prev
+    curr <- next curr
+    prev <- next prev
     column <- add column, 1
     loop
   }

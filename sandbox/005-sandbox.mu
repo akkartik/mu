@@ -136,7 +136,7 @@ recipe run-sandboxes env:address:programming-environment-data, screen:address:sc
     *dest <- copy new-sandbox
     # clear sandbox editor
     init:address:address:duplex-list:character <- get-address *current-sandbox, data:offset
-    *init <- push-duplex 167/§, 0/tail
+    *init <- push 167/§, 0/tail
     top-of-screen:address:address:duplex-list:character <- get-address *current-sandbox, top-of-screen:offset
     *top-of-screen <- copy *init
   }
@@ -406,13 +406,13 @@ recipe editor-contents editor:address:editor-data -> result:address:array:charac
   curr:address:duplex-list:character <- get *editor, data:offset
   # skip § sentinel
   assert curr, [editor without data is illegal; must have at least a sentinel]
-  curr <- next-duplex curr
+  curr <- next curr
   reply-unless curr, 0
   {
     break-unless curr
     c:character <- get *curr, value:offset
     buffer-append buf, c
-    curr <- next-duplex curr
+    curr <- next curr
     loop
   }
   result <- buffer-to-array buf

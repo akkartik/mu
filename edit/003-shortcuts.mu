@@ -85,14 +85,14 @@ recipe delete-before-cursor editor:address:editor-data, screen:address:screen ->
   load-ingredients
   before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
   # if at start of text (before-cursor at § sentinel), return
-  prev:address:duplex-list:character <- prev-duplex *before-cursor
+  prev:address:duplex-list:character <- prev *before-cursor
   go-render?, backspaced-cell <- copy 0/no-more-render, 0/nothing-deleted
   reply-unless prev
   trace 10, [app], [delete-before-cursor]
   original-row:number <- get *editor, cursor-row:offset
   editor, scroll?:boolean <- move-cursor-coordinates-left editor
   backspaced-cell:address:duplex-list:character <- copy *before-cursor
-  remove-duplex *before-cursor  # will also neatly trim next/prev pointers in backspaced-cell/*before-cursor
+  remove *before-cursor  # will also neatly trim next/prev pointers in backspaced-cell/*before-cursor
   *before-cursor <- copy prev
   go-render? <- copy 1/true
   reply-if scroll?
@@ -105,7 +105,7 @@ recipe delete-before-cursor editor:address:editor-data, screen:address:screen ->
   reply-unless same-row?
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
-  curr:address:duplex-list:character <- next-duplex *before-cursor
+  curr:address:duplex-list:character <- next *before-cursor
   screen <- move-cursor screen, cursor-row, cursor-column
   curr-column:number <- copy cursor-column
   {
@@ -120,7 +120,7 @@ recipe delete-before-cursor editor:address:editor-data, screen:address:screen ->
     break-if at-newline?
     screen <- print-character screen, currc
     curr-column <- add curr-column, 1
-    curr <- next-duplex curr
+    curr <- next curr
     loop
   }
   # we're guaranteed not to be at the right margin
@@ -184,7 +184,7 @@ recipe previous-line-length curr:address:duplex-list:character, start:address:du
   at-start?:boolean <- equal curr, start
   reply-if at-start?
   {
-    curr <- prev-duplex curr
+    curr <- prev curr
     break-unless curr
     at-start?:boolean <- equal curr, start
     break-if at-start?
@@ -333,16 +333,16 @@ recipe delete-at-cursor editor:address:editor-data, screen:address:screen -> edi
   local-scope
   load-ingredients
   before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
-  deleted-cell:address:duplex-list:character <- next-duplex *before-cursor
+  deleted-cell:address:duplex-list:character <- next *before-cursor
   go-render? <- copy 0/false
   reply-unless deleted-cell
   currc:character <- get *deleted-cell, value:offset
-  remove-duplex deleted-cell
+  remove deleted-cell
   deleted-newline?:boolean <- equal currc, 10/newline
   go-render? <- copy 1/true
   reply-if deleted-newline?
   # wasn't a newline? render rest of line
-  curr:address:duplex-list:character <- next-duplex *before-cursor  # refresh after remove-duplex above
+  curr:address:duplex-list:character <- next *before-cursor  # refresh after remove above
   cursor-row:address:number <- get-address *editor, cursor-row:offset
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   screen <- move-cursor screen, *cursor-row, *cursor-column
@@ -360,7 +360,7 @@ recipe delete-at-cursor editor:address:editor-data, screen:address:screen -> edi
     break-if at-newline?
     screen <- print-character screen, currc
     curr-column <- add curr-column, 1
-    curr <- next-duplex curr
+    curr <- next curr
     loop
   }
   # we're guaranteed not to be at the right margin
@@ -397,7 +397,7 @@ after <handle-special-key> [
     move-to-next-character?:boolean <- equal *k, 65514/right-arrow
     break-unless move-to-next-character?
     # if not at end of text
-    next-cursor:address:duplex-list:character <- next-duplex *before-cursor
+    next-cursor:address:duplex-list:character <- next *before-cursor
     break-unless next-cursor
     # scan to next character
     <move-cursor-begin>
@@ -440,7 +440,7 @@ recipe move-cursor-coordinates-right editor:address:editor-data, screen-height:n
     at-wrap?:boolean <- equal *cursor-column, wrap-column
     break-unless at-wrap?
     # and if next character isn't newline
-    next:address:duplex-list:character <- next-duplex before-cursor
+    next:address:duplex-list:character <- next before-cursor
     break-unless next
     next-character:character <- get *next, value:offset
     newline?:boolean <- equal next-character, 10/newline
@@ -674,7 +674,7 @@ after <handle-special-key> [
     break-unless move-to-previous-character?
     trace 10, [app], [left arrow]
     # if not at start of text (before-cursor at § sentinel)
-    prev:address:duplex-list:character <- prev-duplex *before-cursor
+    prev:address:duplex-list:character <- prev *before-cursor
     go-render? <- copy 0/false
     reply-unless prev
     <move-cursor-begin>
@@ -920,7 +920,7 @@ recipe move-to-previous-line editor:address:editor-data -> editor:address:editor
     {
       done?:boolean <- greater-or-equal *cursor-column, target-column
       break-if done?
-      curr:address:duplex-list:character <- next-duplex *before-cursor
+      curr:address:duplex-list:character <- next *before-cursor
       break-unless curr
       currc:character <- get *curr, value:offset
       at-newline?:boolean <- equal currc, 10/newline
@@ -1137,7 +1137,7 @@ recipe move-to-next-line editor:address:editor-data, screen-height:number -> edi
     {
       done?:boolean <- greater-or-equal *cursor-column, target-column
       break-if done?
-      curr:address:duplex-list:character <- next-duplex *before-cursor
+      curr:address:duplex-list:character <- next *before-cursor
       break-unless curr
       currc:character <- get *curr, value:offset
       at-newline?:boolean <- equal currc, 10/newline
@@ -1261,7 +1261,7 @@ recipe move-to-start-of-line editor:address:editor-data [
     prev:character <- get **before-cursor, value:offset
     at-start-of-line?:boolean <- equal prev, 10/newline
     break-if at-start-of-line?
-    *before-cursor <- prev-duplex *before-cursor
+    *before-cursor <- prev *before-cursor
     assert *before-cursor, [move-to-start-of-line tried to move before start of text]
     loop
   }
@@ -1422,7 +1422,7 @@ recipe move-to-end-of-line editor:address:editor-data [
   cursor-column:address:number <- get-address *editor, cursor-column:offset
   # while not at start of line, move 
   {
-    next:address:duplex-list:character <- next-duplex *before-cursor
+    next:address:duplex-list:character <- next *before-cursor
     break-unless next  # end of text
     nextc:character <- get *next, value:offset
     at-end-of-line?:boolean <- equal nextc, 10/newline
@@ -1552,20 +1552,20 @@ recipe delete-to-start-of-line editor:address:editor-data -> result:address:dupl
   init:address:duplex-list:character <- get *editor, data:offset
   before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
   start:address:duplex-list:character <- copy *before-cursor
-  end:address:duplex-list:character <- next-duplex *before-cursor
+  end:address:duplex-list:character <- next *before-cursor
   {
     at-start-of-text?:boolean <- equal start, init
     break-if at-start-of-text?
     curr:character <- get *start, value:offset
     at-start-of-line?:boolean <- equal curr, 10/newline
     break-if at-start-of-line?
-    start <- prev-duplex start
+    start <- prev start
     assert start, [delete-to-start-of-line tried to move before start of text]
     loop
   }
   # snip it out
-  result:address:duplex-list:character <- next-duplex start
-  remove-duplex-between start, end
+  result:address:duplex-list:character <- next start
+  remove-between start, end
   # adjust cursor
   *before-cursor <- copy start
   left:number <- get *editor, left:offset
@@ -1684,19 +1684,19 @@ recipe delete-to-end-of-line editor:address:editor-data -> result:address:duplex
   load-ingredients
   # compute range to delete
   start:address:duplex-list:character <- get *editor, before-cursor:offset
-  end:address:duplex-list:character <- next-duplex start
+  end:address:duplex-list:character <- next start
   {
     at-end-of-text?:boolean <- equal end, 0/null
     break-if at-end-of-text?
     curr:character <- get *end, value:offset
     at-end-of-line?:boolean <- equal curr, 10/newline
     break-if at-end-of-line?
-    end <- next-duplex end
+    end <- next end
     loop
   }
   # snip it out
-  result <- next-duplex start
-  remove-duplex-between start, end
+  result <- next start
+  remove-between start, end
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
@@ -1874,7 +1874,7 @@ recipe before-start-of-next-line original:address:duplex-list:character, max:num
     c:character <- get *curr, value:offset
     at-newline?:boolean <- equal c, 10/newline
     break-unless at-newline?
-    curr <- next-duplex curr
+    curr <- next curr
     count <- add count, 1
   }
   {
@@ -1884,7 +1884,7 @@ recipe before-start-of-next-line original:address:duplex-list:character, max:num
     c:character <- get *curr, value:offset
     at-newline?:boolean <- equal c, 10/newline
     break-if at-newline?
-    curr <- next-duplex curr
+    curr <- next curr
     count <- add count, 1
     loop
   }
@@ -2246,7 +2246,7 @@ recipe before-previous-line curr:address:duplex-list:character, editor:address:e
   {
     break-if len
     # empty line; just skip this newline
-    prev:address:duplex-list:character <- prev-duplex curr
+    prev:address:duplex-list:character <- prev curr
     reply-unless prev, curr
     reply prev
   }
@@ -2262,7 +2262,7 @@ recipe before-previous-line curr:address:duplex-list:character, editor:address:e
   {
     done?:boolean <- greater-or-equal count, max
     break-if done?
-    prev:address:duplex-list:character <- prev-duplex curr
+    prev:address:duplex-list:character <- prev curr
     break-unless prev
     curr <- copy prev
     count <- add count, 1
@@ -2648,13 +2648,13 @@ recipe page-down editor:address:editor-data -> editor:address:editor-data [
   reply-unless bottom-of-screen
   # if not, position cursor at final character
   before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
-  *before-cursor <- prev-duplex bottom-of-screen
+  *before-cursor <- prev bottom-of-screen
   # keep one line in common with previous page
   {
     last:character <- get **before-cursor, value:offset
     newline?:boolean <- equal last, 10/newline
     break-unless newline?:boolean
-    *before-cursor <- prev-duplex *before-cursor
+    *before-cursor <- prev *before-cursor
   }
   # move cursor and top-of-screen to start of that line
   move-to-start-of-line editor
