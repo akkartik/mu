@@ -78,14 +78,13 @@ bool run_interactive(long long int address) {
   }
   string command = trim(strip_comments(read_mu_string(address)));
   if (command.empty()) return false;
-  Recipe.erase(get(Recipe_ordinal, "interactive"));
   Name[get(Recipe_ordinal, "interactive")].clear();
   run_code_begin();
   // don't kill the current routine on parse errors
   routine* save_current_routine = Current_routine;
   Current_routine = NULL;
   // call run(string) but without the scheduling
-  load(string("recipe interactive [\n") +
+  load(string("recipe! interactive [\n") +
           "local-scope\n" +
           "screen:address:screen <- next-ingredient\n" +
           "$start-tracking-products\n" +
