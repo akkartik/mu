@@ -20,10 +20,19 @@ recipe foo a:_t -> result:_t [
 +mem: storing 14 in location 11
 +mem: storing 15 in location 12
 
-//: Before anything else, disable transforms for shape-shifting recipes.
+//: Before anything else, disable transforms for shape-shifting recipes and
+//: make sure we never try to actually run a shape-shifting recipe. We should
+//: be rewriting such instructions to *specializations* with the type
+//: ingredients filled in.
 
 :(before "End Transform Checks")
 if (any_type_ingredient_in_header(/*recipe_ordinal*/p->first)) continue;
+
+:(after "Running One Instruction")
+if (Current_routine->calls.front().running_step_index == 0
+    && any_type_ingredient_in_header(Current_routine->calls.front().running_recipe)) {
+  raise_error << "ran into unspecialized shape-shifting recipe " << current_recipe_name() << '\n' << end();
+}
 
 //: We'll be creating recipes without loading them from anywhere by
 //: *specializing* existing recipes, so make sure we don't clear any of those
@@ -442,3 +451,19 @@ recipe foo a:_t -> b:_t [
   b <- copy a
 ]
 +error: main: no call found for 'b:address:number <- foo a'
+
+:(scenario specialize_inside_recipe_without_header)
+recipe main [
+  foo 3
+]
+recipe foo [
+  local-scope
+  x:number <- next-ingredient  # ensure no header
+  1:number/raw <- bar x  # call a shape-shifting recipe
+]
+recipe bar x:_elem -> y:_elem [
+  local-scope
+  load-ingredients
+  y <- add x, 1
+]
++mem: storing 4 in location 1

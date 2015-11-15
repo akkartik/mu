@@ -111,7 +111,6 @@ Transform.push_back(resolve_ambiguous_calls);  // idempotent
 :(code)
 void resolve_ambiguous_calls(recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
-  if (!caller_recipe.has_header) return;
   trace(9991, "transform") << "--- resolve ambiguous calls for recipe " << caller_recipe.name << end();
   for (long long int index = 0; index < SIZE(caller_recipe.steps); ++index) {
     instruction& inst = caller_recipe.steps.at(index);
