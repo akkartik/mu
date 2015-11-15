@@ -150,7 +150,7 @@ before <insert-character-end> [
     previous-coalesce-tag:number <- get *typing, tag:offset
     break-unless previous-coalesce-tag
     insert-until:address:address:duplex-list:character <- get-address *typing, insert-until:offset
-    *insert-until <- next-duplex *before-cursor
+    *insert-until <- next *before-cursor
     after-row:address:number <- get-address *typing, after-row:offset
     *after-row <- copy *cursor-row
     after-column:address:number <- get-address *typing, after-column:offset
@@ -160,8 +160,8 @@ before <insert-character-end> [
     break +done-adding-insert-operation:label
   }
   # if not, create a new operation
-  insert-from:address:duplex-list:character <- next-duplex cursor-before
-  insert-to:address:duplex-list:character <- next-duplex insert-from
+  insert-from:address:duplex-list:character <- next cursor-before
+  insert-to:address:duplex-list:character <- next insert-from
   op:address:operation <- new operation:type
   *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to, 1/coalesce
   editor <- add-operation editor, op
@@ -178,8 +178,8 @@ after <insert-enter-begin> [
 before <insert-enter-end> [
   top-after:address:duplex-list:character <- get *editor, top-of-screen:offset
   # never coalesce
-  insert-from:address:duplex-list:character <- next-duplex cursor-before
-  insert-to:address:duplex-list:character <- next-duplex *before-cursor
+  insert-from:address:duplex-list:character <- next cursor-before
+  insert-to:address:duplex-list:character <- next *before-cursor
   op:address:operation <- new operation:type
   *op <- merge 0/insert-operation, cursor-row-before, cursor-column-before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to, 0/never-coalesce
   editor <- add-operation editor, op
@@ -206,8 +206,8 @@ after <handle-undo> [
     start:address:duplex-list:character <- get *typing, insert-from:offset
     end:address:duplex-list:character <- get *typing, insert-until:offset
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    *before-cursor <- prev-duplex start
-    remove-duplex-between *before-cursor, end
+    *before-cursor <- prev start
+    remove-between *before-cursor, end
     *cursor-row <- get *typing, before-row:offset
     *cursor-column <- get *typing, before-column:offset
     top:address:address:duplex-list:character <- get-address *editor, top-of-screen:offset
@@ -401,8 +401,8 @@ after <handle-redo> [
     typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
     insert-from:address:duplex-list:character <- get *typing, insert-from:offset  # ignore insert-to because it's already been spliced away
-    # assert insert-to matches next-duplex(*before-cursor)
-    insert-duplex-range *before-cursor, insert-from
+    # assert insert-to matches next(*before-cursor)
+    insert-range *before-cursor, insert-from
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     *cursor-row <- get *typing, after-row:offset
     *cursor-column <- get *typing, after-column:offset
@@ -1608,7 +1608,7 @@ before <backspace-character-end> [
       delete-from:address:address:duplex-list:character <- get-address *deletion, delete-from:offset
       *delete-from <- copy *before-cursor
       backspaced-so-far:address:address:duplex-list:character <- get-address *deletion, deleted-text:offset
-      insert-duplex-range backspaced-cell, *backspaced-so-far
+      insert-range backspaced-cell, *backspaced-so-far
       *backspaced-so-far <- copy backspaced-cell
       after-row:address:number <- get-address *deletion, after-row:offset
       *after-row <- copy *cursor-row
@@ -1620,7 +1620,7 @@ before <backspace-character-end> [
     }
     # if not, create a new operation
     op:address:operation <- new operation:type
-    deleted-until:address:duplex-list:character <- next-duplex *before-cursor
+    deleted-until:address:duplex-list:character <- next *before-cursor
     *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, backspaced-cell/deleted, *before-cursor/delete-from, deleted-until, 1/coalesce-backspace
     editor <- add-operation editor, op
     +done-adding-backspace-operation
@@ -1635,8 +1635,8 @@ after <handle-undo> [
     anchor:address:duplex-list:character <- get *deletion, delete-from:offset
     break-unless anchor
     deleted:address:duplex-list:character <- get *deletion, deleted-text:offset
-    old-cursor:address:duplex-list:character <- last-duplex deleted
-    insert-duplex-range anchor, deleted
+    old-cursor:address:duplex-list:character <- last deleted
+    insert-range anchor, deleted
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     *before-cursor <- copy old-cursor
     *cursor-row <- get *deletion, before-row:offset
@@ -1652,7 +1652,7 @@ after <handle-redo> [
     break-unless deletion
     start:address:duplex-list:character <- get *deletion, delete-from:offset
     end:address:duplex-list:character <- get *deletion, delete-until:offset
-    remove-duplex-between start, end
+    remove-between start, end
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     *cursor-row <- get *deletion, after-row:offset
     *cursor-column <- get *deletion, after-column:offset
@@ -1828,9 +1828,9 @@ before <delete-character-end> [
       coalesce?:boolean <- equal previous-coalesce-tag, 2/coalesce-delete
       break-unless coalesce?
       delete-until:address:address:duplex-list:character <- get-address *deletion, delete-until:offset
-      *delete-until <- next-duplex *before-cursor
+      *delete-until <- next *before-cursor
       deleted-so-far:address:address:duplex-list:character <- get-address *deletion, deleted-text:offset
-      *deleted-so-far <- append-duplex *deleted-so-far, deleted-cell
+      *deleted-so-far <- append *deleted-so-far, deleted-cell
       after-row:address:number <- get-address *deletion, after-row:offset
       *after-row <- copy *cursor-row
       after-column:address:number <- get-address *deletion, after-column:offset
@@ -1841,7 +1841,7 @@ before <delete-character-end> [
     }
     # if not, create a new operation
     op:address:operation <- new operation:type
-    deleted-until:address:duplex-list:character <- next-duplex *before-cursor
+    deleted-until:address:duplex-list:character <- next *before-cursor
     *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, deleted-cell/deleted, *before-cursor/delete-from, deleted-until, 2/coalesce-delete
     editor <- add-operation editor, op
     +done-adding-delete-operation
@@ -1942,7 +1942,7 @@ before <delete-to-end-of-line-end> [
     top-after:address:duplex-list:character <- get *editor, top-of-screen:offset
     undo:address:address:list:address:operation <- get-address *editor, undo:offset
     op:address:operation <- new operation:type
-    deleted-until:address:duplex-list:character <- next-duplex *before-cursor
+    deleted-until:address:duplex-list:character <- next *before-cursor
     *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, deleted-cells/deleted, *before-cursor/delete-from, deleted-until, 0/never-coalesce
     editor <- add-operation editor, op
     +done-adding-delete-operation
@@ -2043,7 +2043,7 @@ before <delete-to-start-of-line-end> [
     top-after:address:duplex-list:character <- get *editor, top-of-screen:offset
     undo:address:address:list:address:operation <- get-address *editor, undo:offset
     op:address:operation <- new operation:type
-    deleted-until:address:duplex-list:character <- next-duplex *before-cursor
+    deleted-until:address:duplex-list:character <- next *before-cursor
     *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, deleted-cells/deleted, *before-cursor/delete-from, deleted-until, 0/never-coalesce
     editor <- add-operation editor, op
     +done-adding-delete-operation
