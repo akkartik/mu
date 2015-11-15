@@ -186,7 +186,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     *dest<span class="Special"> &lt;- </span>copy new-sandbox
     <span class="Comment"># clear sandbox editor</span>
     init:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *current-sandbox, <span class="Constant">data:offset</span>
-    *init<span class="Special"> &lt;- </span>push-duplex <span class="Constant">167/§</span>, <span class="Constant">0/tail</span>
+    *init<span class="Special"> &lt;- </span>push <span class="Constant">167/§</span>, <span class="Constant">0/tail</span>
     top-of-screen:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *current-sandbox, <span class="Constant">top-of-screen:offset</span>
     *top-of-screen<span class="Special"> &lt;- </span>copy *init
   <span class="Delimiter">}</span>
@@ -509,13 +509,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   curr:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
   <span class="Comment"># skip § sentinel</span>
   assert curr, <span class="Constant">[editor without data is illegal; must have at least a sentinel]</span>
-  curr<span class="Special"> &lt;- </span>next-duplex curr
+  curr<span class="Special"> &lt;- </span>next curr
   <span class="muControl">reply-unless</span> curr, <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr
     c:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
     buffer-append buf, c
-    curr<span class="Special"> &lt;- </span>next-duplex curr
+    curr<span class="Special"> &lt;- </span>next curr
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   result<span class="Special"> &lt;- </span>buffer-to-array buf

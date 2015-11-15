@@ -99,7 +99,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   x<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">cursor-column:offset</span>
   *x<span class="Special"> &lt;- </span>copy left
   init:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
-  *init<span class="Special"> &lt;- </span>push-duplex <span class="Constant">167/§</span>, <span class="Constant">0/tail</span>
+  *init<span class="Special"> &lt;- </span>push <span class="Constant">167/§</span>, <span class="Constant">0/tail</span>
   top-of-screen:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">top-of-screen:offset</span>
   *top-of-screen<span class="Special"> &lt;- </span>copy *init
   y:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">before-cursor:offset</span>
@@ -127,9 +127,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal idx, len
     <span class="muControl">break-if</span> done?
     c:character<span class="Special"> &lt;- </span>index *text, idx
-    insert-duplex c, curr
+    insert c, curr
     <span class="Comment"># next iter</span>
-    curr<span class="Special"> &lt;- </span>next-duplex curr
+    curr<span class="Special"> &lt;- </span>next curr
     idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
@@ -171,8 +171,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   right:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">right:offset</span>
   <span class="Comment"># traversing editor</span>
   curr:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
-  prev:address:duplex-list:character<span class="Special"> &lt;- </span>copy curr  <span class="Comment"># just in case curr becomes null and we can't compute prev-duplex</span>
-  curr<span class="Special"> &lt;- </span>next-duplex curr
+  prev:address:duplex-list:character<span class="Special"> &lt;- </span>copy curr  <span class="Comment"># just in case curr becomes null and we can't compute prev</span>
+  curr<span class="Special"> &lt;- </span>next curr
   <span class="Comment"># traversing screen</span>
 <span class="Constant">  +render-loop-initialization</span>
   color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
@@ -210,7 +210,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
         left-of-cursor?:boolean<span class="Special"> &lt;- </span>lesser-than column, *cursor-column
         <span class="muControl">break-unless</span> left-of-cursor?
         *cursor-column<span class="Special"> &lt;- </span>copy column
-        *before-cursor<span class="Special"> &lt;- </span>prev-duplex curr
+        *before-cursor<span class="Special"> &lt;- </span>prev curr
       <span class="Delimiter">}</span>
       <span class="Comment"># clear rest of line in this window</span>
       clear-line-delimited screen, column, right
@@ -218,8 +218,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
       column<span class="Special"> &lt;- </span>copy left
       screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
-      curr<span class="Special"> &lt;- </span>next-duplex curr
-      prev<span class="Special"> &lt;- </span>next-duplex prev
+      curr<span class="Special"> &lt;- </span>next curr
+      prev<span class="Special"> &lt;- </span>next prev
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
@@ -236,8 +236,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
     print-character screen, c, color
-    curr<span class="Special"> &lt;- </span>next-duplex curr
-    prev<span class="Special"> &lt;- </span>next-duplex prev
+    curr<span class="Special"> &lt;- </span>next curr
+    prev<span class="Special"> &lt;- </span>next prev
     column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>

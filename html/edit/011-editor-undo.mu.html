@@ -185,7 +185,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     previous-coalesce-tag:number<span class="Special"> &lt;- </span>get *typing, <span class="Constant">tag:offset</span>
     <span class="muControl">break-unless</span> previous-coalesce-tag
     insert-until:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *typing, <span class="Constant">insert-until:offset</span>
-    *insert-until<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    *insert-until<span class="Special"> &lt;- </span>next *before-cursor
     after-row:address:number<span class="Special"> &lt;- </span>get-address *typing, <span class="Constant">after-row:offset</span>
     *after-row<span class="Special"> &lt;- </span>copy *cursor-row
     after-column:address:number<span class="Special"> &lt;- </span>get-address *typing, <span class="Constant">after-column:offset</span>
@@ -195,8 +195,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break</span> <span class="Constant">+done-adding-insert-operation:label</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if not, create a new operation</span>
-  insert-from:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex cursor-before
-  insert-to:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex insert-from
+  insert-from:address:duplex-list:character<span class="Special"> &lt;- </span>next cursor-before
+  insert-to:address:duplex-list:character<span class="Special"> &lt;- </span>next insert-from
   op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
   *op<span class="Special"> &lt;- </span>merge <span class="Constant">0/insert-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, insert-from, insert-to, <span class="Constant">1/coalesce</span>
   editor<span class="Special"> &lt;- </span>add-operation editor, op
@@ -213,8 +213,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">before</span> <span class="Constant">&lt;insert-enter-end&gt;</span> [
   top-after:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
   <span class="Comment"># never coalesce</span>
-  insert-from:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex cursor-before
-  insert-to:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+  insert-from:address:duplex-list:character<span class="Special"> &lt;- </span>next cursor-before
+  insert-to:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
   op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
   *op<span class="Special"> &lt;- </span>merge <span class="Constant">0/insert-operation</span>, cursor-row-before, cursor-column-before, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, insert-from, insert-to, <span class="Constant">0/never-coalesce</span>
   editor<span class="Special"> &lt;- </span>add-operation editor, op
@@ -241,8 +241,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     start:address:duplex-list:character<span class="Special"> &lt;- </span>get *typing, <span class="Constant">insert-from:offset</span>
     end:address:duplex-list:character<span class="Special"> &lt;- </span>get *typing, <span class="Constant">insert-until:offset</span>
     <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
-    *before-cursor<span class="Special"> &lt;- </span>prev-duplex start
-    remove-duplex-between *before-cursor, end
+    *before-cursor<span class="Special"> &lt;- </span>prev start
+    remove-between *before-cursor, end
     *cursor-row<span class="Special"> &lt;- </span>get *typing, <span class="Constant">before-row:offset</span>
     *cursor-column<span class="Special"> &lt;- </span>get *typing, <span class="Constant">before-column:offset</span>
     top:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">top-of-screen:offset</span>
@@ -436,8 +436,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     typing:address:insert-operation<span class="Special"> &lt;- </span>maybe-convert *op, <span class="Constant">typing:variant</span>
     <span class="muControl">break-unless</span> typing
     insert-from:address:duplex-list:character<span class="Special"> &lt;- </span>get *typing, <span class="Constant">insert-from:offset</span>  <span class="Comment"># ignore insert-to because it's already been spliced away</span>
-    <span class="Comment"># assert insert-to matches next-duplex(*before-cursor)</span>
-    insert-duplex-range *before-cursor, insert-from
+    <span class="Comment"># assert insert-to matches next(*before-cursor)</span>
+    insert-range *before-cursor, insert-from
     <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
     *cursor-row<span class="Special"> &lt;- </span>get *typing, <span class="Constant">after-row:offset</span>
     *cursor-column<span class="Special"> &lt;- </span>get *typing, <span class="Constant">after-column:offset</span>
@@ -1643,7 +1643,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       delete-from:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">delete-from:offset</span>
       *delete-from<span class="Special"> &lt;- </span>copy *before-cursor
       backspaced-so-far:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">deleted-text:offset</span>
-      insert-duplex-range backspaced-cell, *backspaced-so-far
+      insert-range backspaced-cell, *backspaced-so-far
       *backspaced-so-far<span class="Special"> &lt;- </span>copy backspaced-cell
       after-row:address:number<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-row:offset</span>
       *after-row<span class="Special"> &lt;- </span>copy *cursor-row
@@ -1655,7 +1655,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Delimiter">}</span>
     <span class="Comment"># if not, create a new operation</span>
     op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
     *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, backspaced-cell/deleted, *before-cursor/delete-from, deleted-until, <span class="Constant">1/coalesce-backspace</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-backspace-operation</span>
@@ -1670,8 +1670,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     anchor:address:duplex-list:character<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">delete-from:offset</span>
     <span class="muControl">break-unless</span> anchor
     deleted:address:duplex-list:character<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">deleted-text:offset</span>
-    old-cursor:address:duplex-list:character<span class="Special"> &lt;- </span>last-duplex deleted
-    insert-duplex-range anchor, deleted
+    old-cursor:address:duplex-list:character<span class="Special"> &lt;- </span>last deleted
+    insert-range anchor, deleted
     <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
     *before-cursor<span class="Special"> &lt;- </span>copy old-cursor
     *cursor-row<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">before-row:offset</span>
@@ -1687,7 +1687,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> deletion
     start:address:duplex-list:character<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">delete-from:offset</span>
     end:address:duplex-list:character<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">delete-until:offset</span>
-    remove-duplex-between start, end
+    remove-between start, end
     <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
     *cursor-row<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">after-row:offset</span>
     *cursor-column<span class="Special"> &lt;- </span>get *deletion, <span class="Constant">after-column:offset</span>
@@ -1863,9 +1863,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       coalesce?:boolean<span class="Special"> &lt;- </span>equal previous-coalesce-tag, <span class="Constant">2/coalesce-delete</span>
       <span class="muControl">break-unless</span> coalesce?
       delete-until:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">delete-until:offset</span>
-      *delete-until<span class="Special"> &lt;- </span>next-duplex *before-cursor
+      *delete-until<span class="Special"> &lt;- </span>next *before-cursor
       deleted-so-far:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">deleted-text:offset</span>
-      *deleted-so-far<span class="Special"> &lt;- </span>append-duplex *deleted-so-far, deleted-cell
+      *deleted-so-far<span class="Special"> &lt;- </span>append *deleted-so-far, deleted-cell
       after-row:address:number<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-row:offset</span>
       *after-row<span class="Special"> &lt;- </span>copy *cursor-row
       after-column:address:number<span class="Special"> &lt;- </span>get-address *deletion, <span class="Constant">after-column:offset</span>
@@ -1876,7 +1876,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Delimiter">}</span>
     <span class="Comment"># if not, create a new operation</span>
     op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
     *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, deleted-cell/deleted, *before-cursor/delete-from, deleted-until, <span class="Constant">2/coalesce-delete</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-delete-operation</span>
@@ -1977,7 +1977,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     top-after:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
     undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
     op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
     *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, deleted-cells/deleted, *before-cursor/delete-from, deleted-until, <span class="Constant">0/never-coalesce</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-delete-operation</span>
@@ -2078,7 +2078,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     top-after:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
     undo:address:address:list:address:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
     op:address:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next-duplex *before-cursor
+    deleted-until:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
     *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, *cursor-row/<span class="muRecipe">after</span>, *cursor-column/<span class="muRecipe">after</span>, top-after, deleted-cells/deleted, *before-cursor/delete-from, deleted-until, <span class="Constant">0/never-coalesce</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-delete-operation</span>
