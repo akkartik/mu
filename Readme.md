@@ -135,9 +135,10 @@ Recipes can specify headers showing their expected ingredients and products,
 separated by `->` (unlike the `<-` in *calls*).
 
 Since mu is a low-level VM language, it provides extra control at the cost of
-verbosity. You have explicit control over stack frames to isolate your recipes
-(in a type-safe manner; more on that below), but you have to explicitly
-`load-ingredients` after you set up the stack.
+verbosity. Using `local-scope`, you have explicit control over stack frames to
+isolate your recipes (in a type-safe manner; more on that below). One
+consequence: you have to explicitly `load-ingredients` after you set up the
+stack.
 
 An alternative syntax is what the above example is converted to internally:
 
