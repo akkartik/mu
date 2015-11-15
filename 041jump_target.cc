@@ -64,7 +64,7 @@ void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, co
     x.set_value(0);  // no jump by default
     return;
   }
-  assert(!x.initialized);
+  if (x.initialized) return;
   if (is_integer(x.name)) return;  // non-labels will be handled like other number operands
   if (!is_jump_target(x.name)) {
     raise_error << maybe(get(Recipe, r).name) << "can't jump to label " << x.name << '\n' << end();

@@ -34,6 +34,11 @@ if (Current_routine->calls.front().running_step_index == 0
   raise_error << "ran into unspecialized shape-shifting recipe " << current_recipe_name() << '\n' << end();
 }
 
+//: Make sure we don't match up literals with type ingredients without
+//: specialization.
+:(before "End valid_type_for_literal Special-cases")
+if (contains_type_ingredient_name(r)) return false;
+
 //: We'll be creating recipes without loading them from anywhere by
 //: *specializing* existing recipes, so make sure we don't clear any of those
 //: when we start running tests.
@@ -202,20 +207,26 @@ void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name) 
 }
 
 void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, const string_tree*>& mappings, const recipe& caller_recipe, bool* error) {
-  for (long long int i = 0; i < SIZE(exemplar.ingredients); ++i) {
+  long long int limit = min(SIZE(inst.ingredients), SIZE(exemplar.ingredients));
+  for (long long int i = 0; i < limit; ++i) {
     const reagent& exemplar_reagent = exemplar.ingredients.at(i);
     reagent ingredient = inst.ingredients.at(i);
     assert(ingredient.properties.at(0).second);
     canonize_type(ingredient);
     accumulate_type_ingredients(exemplar_reagent, ingredient, mappings, exemplar, inst, caller_recipe, error);
   }
-  for (long long int i = 0; i < SIZE(exemplar.products); ++i) {
+  limit = min(SIZE(inst.products), SIZE(exemplar.products));
+  for (long long int i = 0; i < limit; ++i) {
     const reagent& exemplar_reagent = exemplar.products.at(i);
     reagent product = inst.products.at(i);
     assert(product.properties.at(0).second);
     canonize_type(product);
     accumulate_type_ingredients(exemplar_reagent, product, mappings, exemplar, inst, caller_recipe, error);
   }
+}
+
+inline long long int min(long long int a, long long int b) {
+  return (a < b) ? a : b;
 }
 
 void accumulate_type_ingredients(const reagent& exemplar_reagent, reagent& refinement, map<string, const string_tree*>& mappings, const recipe& exemplar, const instruction& call_instruction, const recipe& caller_recipe, bool* error) {
@@ -237,10 +248,13 @@ void accumulate_type_ingredients(const string_tree* exemplar_type, const string_
     }
     if (!contains_key(mappings, exemplar_type->value)) {
       trace(9993, "transform") << "adding mapping from " << exemplar_type->value << " to " << debug_string(refinement_type) << end();
-      put(mappings, exemplar_type->value, new string_tree(*refinement_type));
+      if (refinement_type->value == "literal")
+        put(mappings, exemplar_type->value, new string_tree("number"));
+      else
+        put(mappings, exemplar_type->value, new string_tree(*refinement_type));
     }
     else {
-      if (!deeply_equal(get(mappings, exemplar_type->value), refinement_type)) {
+      if (!deeply_equal_types(get(mappings, exemplar_type->value), refinement_type)) {
         raise_error << maybe(caller_recipe.name) << "no call found for '" << call_instruction.to_string() << "'\n" << end();
         *error = true;
         return;
@@ -462,6 +476,32 @@ recipe foo [
   1:number/raw <- bar x  # call a shape-shifting recipe
 ]
 recipe bar x:_elem -> y:_elem [
+  local-scope
+  load-ingredients
+  y <- add x, 1
+]
++mem: storing 4 in location 1
+
+:(scenario specialize_with_literal)
+recipe main [
+  local-scope
+  # permit literal to map to number
+  1:number/raw <- foo 3
+]
+recipe foo x:_elem -> y:_elem [
+  local-scope
+  load-ingredients
+  y <- add x, 1
+]
++mem: storing 4 in location 1
+
+:(scenario specialize_with_literal_2)
+recipe main [
+  local-scope
+  # permit literal to map to character
+  1:character/raw <- foo 3
+]
+recipe foo x:_elem -> y:_elem [
   local-scope
   load-ingredients
   y <- add x, 1

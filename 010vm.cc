@@ -484,6 +484,16 @@ bool deeply_equal(const string_tree* a, const string_tree* b) {
       && deeply_equal(a->right, b->right);
 }
 
+bool deeply_equal_types(const string_tree* a, const string_tree* b) {
+  if (!a) return !b;
+  if (!b) return !a;
+  if (a->value == "character" && b->value == "number") return true;
+  if (a->value == "number" && b->value == "character") return true;
+  return a->value == b->value
+      && deeply_equal_types(a->left, b->left)
+      && deeply_equal_types(a->right, b->right);
+}
+
 void dump_memory() {
   for (map<long long int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
     cout << p->first << ": " << no_scientific(p->second) << '\n';

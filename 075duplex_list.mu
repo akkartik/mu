@@ -356,10 +356,8 @@ scenario removing-from-singleton-list [
   ]
 ]
 
-# l:address:duplex-list <- remove-duplex-between start:address:duplex-list, end:address:duplex-list
-# Remove values between 'start' and 'end' (both exclusive). Returns some valid
-# pointer into the rest of the list.
-# Also clear pointers back out from start/end for hygiene.
+# remove values between 'start' and 'end' (both exclusive)
+# also clear pointers back out from start/end for hygiene
 recipe remove-duplex-between start:address:duplex-list:_elem, end:address:duplex-list:_elem -> start:address:duplex-list:_elem [
   local-scope
   load-ingredients
@@ -383,7 +381,7 @@ recipe remove-duplex-between start:address:duplex-list:_elem, end:address:duplex
 
 scenario remove-range [
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  1:address:duplex-list:character <- copy 0  # 1 points to singleton list
+  1:address:duplex-list:character <- copy 0
   1:address:duplex-list:character <- push-duplex 18, 1:address:duplex-list:character
   1:address:duplex-list:character <- push-duplex 17, 1:address:duplex-list:character
   1:address:duplex-list:character <- push-duplex 16, 1:address:duplex-list:character
@@ -395,7 +393,8 @@ scenario remove-range [
     # first pointer: to the third element
     2:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
     2:address:duplex-list:character <- next-duplex 2:address:duplex-list:character
-    2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 0
+    3:address:duplex-list:character <- copy 0
+    2:address:duplex-list:character <- remove-duplex-between 2:address:duplex-list:character, 3:address:duplex-list:character/null
     # now check the list
     4:character <- get *1:address:duplex-list:character, value:offset
     5:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
@@ -414,7 +413,7 @@ scenario remove-range [
 
 scenario remove-range-to-end [
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  1:address:duplex-list:character <- copy 0  # 1 points to singleton list
+  1:address:duplex-list:character <- copy 0
   1:address:duplex-list:character <- push-duplex 18, 1:address:duplex-list:character
   1:address:duplex-list:character <- push-duplex 17, 1:address:duplex-list:character
   1:address:duplex-list:character <- push-duplex 16, 1:address:duplex-list:character
@@ -539,17 +538,4 @@ recipe dump-duplex-from x:address:duplex-list:_elem [
     loop
   }
   $print 10/newline, [---], 10/newline
-]
-
-recipe force-specialization-duplex-list-character [
-  1:address:duplex-list:character <- push-duplex 2:character, 1:address:duplex-list:character
-  2:character <- first-duplex 1:address:duplex-list:character
-  1:address:duplex-list:character <- next-duplex 1:address:duplex-list:character
-  1:address:duplex-list:character <- prev-duplex 1:address:duplex-list:character
-  1:address:duplex-list:character <- insert-duplex 2:character, 1:address:duplex-list:character
-  1:address:duplex-list:character <- remove-duplex 1:address:duplex-list:character
-  1:address:duplex-list:character <- remove-duplex-between 1:address:duplex-list:character, 1:address:duplex-list:character
-  1:address:duplex-list:character <- insert-duplex-range 1:address:duplex-list:character, 1:address:duplex-list:character
-  1:address:duplex-list:character <- append-duplex 1:address:duplex-list:character, 1:address:duplex-list:character
-  1:address:duplex-list:character <- last-duplex 1:address:duplex-list:character
 ]
