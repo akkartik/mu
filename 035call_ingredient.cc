@@ -58,11 +58,16 @@ case NEXT_INGREDIENT: {
   if (current_call().next_ingredient_to_process < SIZE(current_call().ingredient_atoms)) {
     reagent product = current_instruction().products.at(0);
     canonize_type(product);
-    if (!types_match(product,
-                     current_call().ingredient_types.at(current_call().next_ingredient_to_process),
-                     current_call().ingredient_atoms.at(current_call().next_ingredient_to_process)
-                     )) {
-      raise_error << maybe(current_recipe_name()) << "wrong type for ingredient " << current_instruction().products.at(0).original_string << '\n' << end();
+    if (current_recipe_name() == "main") {
+      // no ingredient types since the call might be implicit; assume ingredients are always strings
+      // todo: how to test this?
+      if (!is_mu_string(product))
+        raise_error << "main: wrong type for ingredient " << product.original_string << '\n' << end();
+    }
+    else if (!types_match(product,
+                          current_call().ingredient_types.at(current_call().next_ingredient_to_process),
+                          current_call().ingredient_atoms.at(current_call().next_ingredient_to_process))) {
+      raise_error << maybe(current_recipe_name()) << "wrong type for ingredient " << product.original_string << '\n' << end();
     }
     products.push_back(
         current_call().ingredient_atoms.at(current_call().next_ingredient_to_process));
