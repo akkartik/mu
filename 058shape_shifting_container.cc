@@ -97,7 +97,7 @@ long long int size_of_type_ingredient(const type_tree* element_template, const t
   assert(!curr->left);  // unimplemented
   if (!contains_key(Type, curr->value)) {
     // temporarily while we're still ironing out kinks; eventually replace with a raise_error
-    DUMP("");
+//?     DUMP("");
     cerr << "missing type " << debug_string(curr) << '\n';
     exit(0);
   }

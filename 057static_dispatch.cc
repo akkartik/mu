@@ -32,6 +32,7 @@ for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin();
 :(before "End Load Recipe Header(result)")
 if (contains_key(Recipe_ordinal, result.name)) {
   const recipe_ordinal r = get(Recipe_ordinal, result.name);
+//?   if (variant_already_exists(result)) cerr << "AAAAAAAAAAAAAAAAAA variant already exists " << result.name << '\n';
   if ((!contains_key(Recipe, r) || get(Recipe, r).has_header)
       && !variant_already_exists(result)) {
     string new_name = next_unused_recipe_name(result.name);
@@ -62,12 +63,16 @@ bool all_reagents_match(const recipe& r1, const recipe& r2) {
   if (SIZE(r1.ingredients) != SIZE(r2.ingredients)) return false;
   if (SIZE(r1.products) != SIZE(r2.products)) return false;
   for (long long int i = 0; i < SIZE(r1.ingredients); ++i) {
-    if (!exact_match(r1.ingredients.at(i).type, r2.ingredients.at(i).type))
+    if (!deeply_equal_types(r1.ingredients.at(i).properties.at(0).second,
+                            r2.ingredients.at(i).properties.at(0).second)) {
       return false;
+    }
   }
   for (long long int i = 0; i < SIZE(r1.products); ++i) {
-    if (!exact_match(r1.products.at(i).type, r2.products.at(i).type))
+    if (!deeply_equal_types(r1.products.at(i).properties.at(0).second,
+                            r2.products.at(i).properties.at(0).second)) {
       return false;
+    }
   }
   return true;
 }
@@ -119,6 +124,7 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
     assert(!get(Recipe_variants, inst.name).empty());
     replace_best_variant(inst, caller_recipe);
   }
+//?   if (caller_recipe.name == "main") cerr << "=============== " << debug_string(caller_recipe) << '\n';
 }
 
 void replace_best_variant(instruction& inst, const recipe& caller_recipe) {

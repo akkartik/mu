@@ -1,0 +1,362 @@
+9991 parse: --- defining main
+9993 parse: instruction: merge
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"3": "literal"}
+9993 parse:   product: {"e1": <"d1" : <"number" : <>>>}
+9992 load: after rewriting: e1:d1:number <- merge 3
+9993 parse: instruction: new
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"(d2 number)": "type"}
+9993 parse:   product: {"e2": <"address" : <"d2" : <"number" : <>>>>}
+9992 load: after rewriting: e2:address:d2:number <- new {(d2 number): type}
+9993 parse: instruction: foo
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"e1": <>}
+9993 parse:   product: {"1": "number", "raw": <>}
+9992 load: after rewriting: 1:number/raw <- foo e1
+9993 parse: instruction: foo
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"e2": <>, "lookup": <>}
+9993 parse:   product: {"2": "number", "raw": <>}
+9992 load: after rewriting: 2:number/raw <- foo *e2
+9999 parse: recipe main has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: a:d1:_elem
+9999 parse: header product: b:number
+9991 parse: --- defining foo
+9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: reply
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"34": "literal"}
+9992 load: after rewriting: reply 34
+9999 parse: recipe foo has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: a:d2:_elem
+9999 parse: header product: b:number
+9991 parse: --- defining foo_2
+9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: reply
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"35": "literal"}
+9992 load: after rewriting: reply 35
+9999 parse: recipe foo_2 has a header
+9999 parse: container has type ingredients; parsing
+9991 parse: --- defining container d1
+9999 parse: type number: 1000
+9993 parse:   element name: x
+9999 parse:   type: 2000
+9999 parse: container has type ingredients; parsing
+9991 parse: --- defining container d2
+9999 parse: type number: 1001
+9993 parse:   element name: x
+9993 parse:   type: 1
+9993 parse:   element name: y
+9999 parse:   type: 2000
+9990 transform: === transform_all()
+9991 transform: --- fill in reply ingredients from header for recipe main
+9991 transform: --- transform braces for recipe main
+9992 transform: merge ...
+9992 transform: new ...
+9992 transform: foo ...
+9992 transform: foo ...
+9992 transform:  ...
+9991 transform: --- deduce types for recipe main
+9992 transform: e1 => <?-1 : <number : <>>>
+9992 transform: e2 => <address : <?-1 : <number : <>>>>
+9992 transform: e1 <= <?-1 : <number : <>>>
+9992 transform: e2 <= <address : <?-1 : <number : <>>>>
+9991 transform: --- resolve ambiguous calls for recipe main
+9992 transform: instruction foo
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 0: -1
+9992 transform: checking variant 1: -1
+9992 transform: checking variant 2: -1
+9992 transform: checking variant 3: -1
+9992 transform: checking variant 4: -1
+9992 transform: checking variant 5: -1
+9992 transform: checking variant 6: -1
+9992 transform: checking variant 7: -1
+9992 transform: checking variant 8: -1
+9992 transform: checking variant 9: -1
+9992 transform: checking variant 10: -1
+9992 transform: checking variant 11: -1
+9992 transform: checking variant 12: -1
+9992 transform: checking variant 13: -1
+9992 transform: checking variant 14: -1
+9992 transform: checking variant 15: -1
+9992 transform: checking variant 16: -1
+9992 transform: checking variant 17: -1
+9992 transform: checking variant 18: -1
+9992 transform: checking variant 19: -1
+9992 transform: checking variant 20: -1
+9992 transform: checking variant 21: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 22: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 23: -1
+9992 transform: no variant found; searching for variant with suitable type ingredients
+9992 transform: checking shape-shifting variant 22
+9992 transform: final score: 100
+9992 transform: matches
+9992 transform: checking shape-shifting variant 23
+9993 transform: mismatch: ingredient 0
+9992 transform: final score: -1
+9992 transform: found variant to specialize: 1000 foo
+9993 transform: switching foo to foo_3
+9993 transform: compute type names: foo_3
+9994 transform:     checking {"a": <"d1" : <"_elem" : <>>>}: <"d1" : <"_elem" : <>>>
+9993 transform: type of a is <"d1" : <"_elem" : <>>>
+9994 transform:     checking {"b": "number"}: "number"
+9993 transform: type of b is "number"
+9993 transform:   instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9994 transform:     checking {"location": "type"}: "type"
+9993 transform: type of location is "type"
+9994 transform:     checking {"number-of-locals": "literal"}: "literal"
+9993 transform: type of number-of-locals is "literal"
+9994 transform:     checking {"default-space": <"address" : <"array" : <"location" : <>>>>}: <"address" : <"array" : <"location" : <>>>>
+9993 transform: type of default-space is <"address" : <"array" : <"location" : <>>>>
+9993 transform:   instruction: a:d1:_elem <- next-ingredient 
+9994 transform:     checking {"a": <"d1" : <"_elem" : <>>>}: <"d1" : <"_elem" : <>>>
+9993 transform:   instruction: reply 34
+9994 transform:     checking {"34": "literal"}: "literal"
+9993 transform: type of 34 is "literal"
+9993 transform: adding mapping from _elem to "number"
+9993 transform: replacing in recipe header ingredients
+9993 transform: replacing in ingredient a:d1:_elem
+9993 transform: _elem => "number"
+9993 transform:   after: <d1 : <number : <>>>
+9993 transform: replacing in recipe header products
+9993 transform: replacing in ingredient b:number
+9993 transform:   after: number
+9993 transform: replacing in instruction 'default-space:address:array:location <- new location:type, number-of-locals:literal'
+9993 transform: replacing in ingredient location:type
+9993 transform:   after: ?0
+9993 transform: replacing in ingredient number-of-locals:literal
+9993 transform:   after: ?0
+9993 transform: replacing in ingredient default-space:address:array:location
+9993 transform:   after: <address : <array : <number : <>>>>
+9993 transform: replacing in instruction 'a:d1:_elem <- next-ingredient '
+9993 transform: replacing in ingredient a:d1:_elem
+9993 transform: _elem => "number"
+9993 transform:   after: <d1 : <number : <>>>
+9993 transform: replacing in instruction 'reply 34'
+9993 transform: replacing in ingredient 34
+9993 transform:   after: ?0
+9991 transform: --- checking reply instructions against header for foo_3
+9991 transform: --- fill in reply ingredients from header for recipe foo_3
+9991 transform: --- transform braces for recipe foo_3
+9992 transform: local-scope ...
+9992 transform:  ...
+9992 transform: reply ...
+9991 transform: --- deduce types for recipe foo_3
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: a => <d1 : <number : <>>>
+9991 transform: --- deduce types from header for foo_3
+9993 transform: type of a is <d1 : <number : <>>>
+9993 transform: type of b is number
+9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 transform: instruction: a:d1:_elem <- next-ingredient 
+9993 transform:   product: a: <d1 : <number : <>>> -- {"a": <"d1" : <"number" : <>>>}
+9992 transform: instruction: reply 34
+9991 transform: --- resolve ambiguous calls for recipe foo_3
+9991 transform: --- checking reply instructions against header for foo_3
+9991 transform: --- collect surrounding spaces for recipe foo_3
+9991 transform: --- transform names for recipe foo_3
+9993 name: assign a 1
+9999 type: checking size of type ingredient
+
+9999 type: type deduced to be number$
+9991 transform: --- compute instruction operations for recipe foo_3
+9991 transform: --- perform checks for recipe foo_3
+9991 transform: --- convert 'new' to 'allocate' for recipe foo_3
+9992 new: size of "location" is 1
+9992 transform: new specialization: foo_3
+9992 transform: instruction foo
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 0: -1
+9992 transform: checking variant 1: -1
+9992 transform: checking variant 2: -1
+9992 transform: checking variant 3: -1
+9992 transform: checking variant 4: -1
+9992 transform: checking variant 5: -1
+9992 transform: checking variant 6: -1
+9992 transform: checking variant 7: -1
+9992 transform: checking variant 8: -1
+9992 transform: checking variant 9: -1
+9992 transform: checking variant 10: -1
+9992 transform: checking variant 11: -1
+9992 transform: checking variant 12: -1
+9992 transform: checking variant 13: -1
+9992 transform: checking variant 14: -1
+9992 transform: checking variant 15: -1
+9992 transform: checking variant 16: -1
+9992 transform: checking variant 17: -1
+9992 transform: checking variant 18: -1
+9992 transform: checking variant 19: -1
+9992 transform: checking variant 20: -1
+9992 transform: checking variant 21: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 22: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 23: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 24: -1
+9992 transform: no variant found; searching for variant with suitable type ingredients
+9992 transform: checking shape-shifting variant 22
+9993 transform: mismatch: ingredient 0
+9992 transform: final score: -1
+9992 transform: checking shape-shifting variant 23
+9992 transform: final score: 100
+9992 transform: matches
+9992 transform: checking shape-shifting variant 24
+9993 transform: no type ingredients
+9992 transform: final score: -1
+9992 transform: found variant to specialize: 1001 foo_2
+9993 transform: switching foo to foo_4
+9993 transform: compute type names: foo_4
+9994 transform:     checking {"a": <"d2" : <"_elem" : <>>>}: <"d2" : <"_elem" : <>>>
+9993 transform: type of a is <"d2" : <"_elem" : <>>>
+9994 transform:     checking {"b": "number"}: "number"
+9993 transform: type of b is "number"
+9993 transform:   instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9994 transform:     checking {"location": "type"}: "type"
+9993 transform: type of location is "type"
+9994 transform:     checking {"number-of-locals": "literal"}: "literal"
+9993 transform: type of number-of-locals is "literal"
+9994 transform:     checking {"default-space": <"address" : <"array" : <"location" : <>>>>}: <"address" : <"array" : <"location" : <>>>>
+9993 transform: type of default-space is <"address" : <"array" : <"location" : <>>>>
+9993 transform:   instruction: a:d2:_elem <- next-ingredient 
+9994 transform:     checking {"a": <"d2" : <"_elem" : <>>>}: <"d2" : <"_elem" : <>>>
+9993 transform:   instruction: reply 35
+9994 transform:     checking {"35": "literal"}: "literal"
+9993 transform: type of 35 is "literal"
+9993 transform: adding mapping from _elem to "number"
+9993 transform: replacing in recipe header ingredients
+9993 transform: replacing in ingredient a:d2:_elem
+9993 transform: _elem => "number"
+9993 transform:   after: <d2 : <number : <>>>
+9993 transform: replacing in recipe header products
+9993 transform: replacing in ingredient b:number
+9993 transform:   after: number
+9993 transform: replacing in instruction 'default-space:address:array:location <- new location:type, number-of-locals:literal'
+9993 transform: replacing in ingredient location:type
+9993 transform:   after: ?0
+9993 transform: replacing in ingredient number-of-locals:literal
+9993 transform:   after: ?0
+9993 transform: replacing in ingredient default-space:address:array:location
+9993 transform:   after: <address : <array : <number : <>>>>
+9993 transform: replacing in instruction 'a:d2:_elem <- next-ingredient '
+9993 transform: replacing in ingredient a:d2:_elem
+9993 transform: _elem => "number"
+9993 transform:   after: <d2 : <number : <>>>
+9993 transform: replacing in instruction 'reply 35'
+9993 transform: replacing in ingredient 35
+9993 transform:   after: ?0
+9991 transform: --- checking reply instructions against header for foo_4
+9991 transform: --- fill in reply ingredients from header for recipe foo_4
+9991 transform: --- transform braces for recipe foo_4
+9992 transform: local-scope ...
+9992 transform:  ...
+9992 transform: reply ...
+9991 transform: --- deduce types for recipe foo_4
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: a => <d2 : <number : <>>>
+9991 transform: --- deduce types from header for foo_4
+9993 transform: type of a is <d2 : <number : <>>>
+9993 transform: type of b is number
+9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 transform: instruction: a:d2:_elem <- next-ingredient 
+9993 transform:   product: a: <d2 : <number : <>>> -- {"a": <"d2" : <"number" : <>>>}
+9992 transform: instruction: reply 35
+9991 transform: --- resolve ambiguous calls for recipe foo_4
+9991 transform: --- checking reply instructions against header for foo_4
+9991 transform: --- collect surrounding spaces for recipe foo_4
+9991 transform: --- transform names for recipe foo_4
+9993 name: assign a 1
+9999 type: checking size of type ingredient
+
+9999 type: type deduced to be number$
+9991 transform: --- compute instruction operations for recipe foo_4
+9991 transform: --- perform checks for recipe foo_4
+9991 transform: --- convert 'new' to 'allocate' for recipe foo_4
+9992 new: size of "location" is 1
+9992 transform: new specialization: foo_4
+9991 transform: --- collect surrounding spaces for recipe main
+9991 transform: --- transform names for recipe main
+9993 name: assign e1 1
+9999 type: checking size of type ingredient
+
+9999 type: type deduced to be number$
+9993 name: assign e2 2
+9991 transform: --- compute instruction operations for recipe main
+9991 transform: --- perform checks for recipe main
+9991 transform: --- convert 'new' to 'allocate' for recipe main
+9999 type: checking size of type ingredient
+
+9999 type: type deduced to be number$
+9992 new: size of <"d2" : <"number" : <>>> is 2
+9991 transform: --- parsing any uninitialized reagents as integers
+9999 trace: new routine; incrementing callstack depth to 1
+9999 new: routine allocated memory from 1000 to 101000
+9990 schedule: main
+ 102 run: e1:d1:number <- merge 3
+9999 type: checking size of type ingredient
+
+9999 type: type deduced to be number$
+9999 mem: storing 3 in location 1
+ 102 run: e2:address:d2:number <- new {(d2 number): type}
+9999 mem: new alloc: 1000
+9999 mem: storing 1000 in location 2
+ 102 run: 1:number/raw <- foo_3 e1
+9999 type: checking size of type ingredient
+
+9999 type: type deduced to be number$
+9999 mem: location 1 is 3
+9999 trace: incrementing callstack depth to 2
+ 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+9999 mem: array size is 2
+9999 mem: new alloc: 1002
+ 103 run: a:d1:_elem <- next-ingredient 
+9999 type: checking size of type ingredient
+
+9999 type: type deduced to be number$
+9999 mem: storing 3 in location 1004
+ 103 run: reply 34
+9999 trace: reply: decrementing callstack depth from 2
+9998 run: result 0 is 34
+9999 mem: storing 34 in location 1
+ 102 run: 2:number/raw <- foo_4 *e2
+9999 mem: location 2 is 1000
+9999 type: checking size of type ingredient
+
+9999 type: type deduced to be number$
+9999 mem: location 1000 is 0
+9999 mem: location 1001 is 0
+9999 trace: incrementing callstack depth to 2
+ 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+9999 mem: array size is 3
+9999 mem: new alloc: 1005
+ 103 run: a:d2:_elem <- next-ingredient 
+9999 type: checking size of type ingredient
+
+9999 type: type deduced to be number$
+9999 mem: storing 0 in location 1007
+9999 mem: storing 0 in location 1008
+ 103 run: reply 35
+9999 trace: reply: decrementing callstack depth from 2
+9998 run: result 0 is 35
+9999 mem: storing 35 in location 2
+ 102 run: reply 
+9999 trace: reply: decrementing callstack depth from 1
