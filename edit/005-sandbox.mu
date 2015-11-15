@@ -151,7 +151,8 @@ recipe run-sandboxes env:address:programming-environment-data, screen:address:sc
     *dest <- copy new-sandbox
     # clear sandbox editor
     init:address:address:duplex-list:character <- get-address *current-sandbox, data:offset
-    *init <- push-duplex 167/§, 0/tail
+    *init <- copy 0
+    *init <- push-duplex 167/§, *init
     top-of-screen:address:address:duplex-list:character <- get-address *current-sandbox, top-of-screen:offset
     *top-of-screen <- copy *init
   }

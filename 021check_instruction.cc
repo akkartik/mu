@@ -81,9 +81,16 @@ bool types_match(reagent lhs, reagent rhs) {
   if (is_raw(rhs)) return true;
   // allow writing 0 to any address
   if (rhs.name == "0" && is_mu_address(lhs)) return true;
-  if (is_literal(rhs)) return !is_mu_array(lhs) && !is_mu_address(lhs) && size_of(rhs) == size_of(lhs);
+  if (is_literal(rhs)) return valid_type_for_literal(lhs) && size_of(rhs) == size_of(lhs);
   if (!lhs.type) return !rhs.type;
   return types_match(lhs.type, rhs.type);
+}
+
+bool valid_type_for_literal(const reagent& r) {
+  if (is_mu_array(r)) return false;
+  if (is_mu_address(r)) return false;
+  // End valid_type_for_literal Special-cases
+  return true;
 }
 
 // two types match if the second begins like the first
@@ -95,6 +102,8 @@ bool types_match(type_tree* lhs, type_tree* rhs) {
     if (lhs->value == get(Type_ordinal, "address")) return false;
     return size_of(rhs) == size_of(lhs);
   }
+  if (lhs->value == get(Type_ordinal, "character") && rhs->value == get(Type_ordinal, "number")) return true;
+  if (lhs->value == get(Type_ordinal, "number") && rhs->value == get(Type_ordinal, "character")) return true;
   if (lhs->value != rhs->value) return false;
   return types_match(lhs->left, rhs->left) && types_match(lhs->right, rhs->right);
 }
