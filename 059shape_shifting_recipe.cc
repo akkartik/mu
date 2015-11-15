@@ -163,7 +163,7 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
       delete p->second;
     if (error) return exemplar;
   }
-  ensure_all_concrete_types(new_recipe);
+  ensure_all_concrete_types(new_recipe, get(Recipe, exemplar));
   // finally, perform all transforms on the new specialization
   for (long long int t = 0; t < SIZE(Transform); ++t) {
     (*Transform.at(t))(new_recipe_ordinal);
@@ -320,27 +320,28 @@ void replace_type_ingredients(string_tree* type, const map<string, const string_
   replace_type_ingredients(type->right, mappings);
 }
 
-void ensure_all_concrete_types(const recipe& new_recipe) {
+void ensure_all_concrete_types(/*const*/ recipe& new_recipe, const recipe& exemplar) {
   for (long long int i = 0; i < SIZE(new_recipe.ingredients); ++i)
-    ensure_all_concrete_types(new_recipe.ingredients.at(i).type);
+    ensure_all_concrete_types(new_recipe.ingredients.at(i), exemplar);
   for (long long int i = 0; i < SIZE(new_recipe.products); ++i)
-    ensure_all_concrete_types(new_recipe.products.at(i).type);
+    ensure_all_concrete_types(new_recipe.products.at(i), exemplar);
   for (long long int i = 0; i < SIZE(new_recipe.steps); ++i) {
-    const instruction& inst = new_recipe.steps.at(i);
+    instruction& inst = new_recipe.steps.at(i);
     for (long long int j = 0; j < SIZE(inst.ingredients); ++j)
-      ensure_all_concrete_types(inst.ingredients.at(j).type);
+      ensure_all_concrete_types(inst.ingredients.at(j), exemplar);
     for (long long int j = 0; j < SIZE(inst.products); ++j)
-      ensure_all_concrete_types(inst.products.at(j).type);
+      ensure_all_concrete_types(inst.products.at(j), exemplar);
   }
 }
 
-void ensure_all_concrete_types(const type_tree* x) {
-  if (!x) {
-    raise << "null type\n" << end();
+void ensure_all_concrete_types(/*const*/ reagent& x, const recipe& exemplar) {
+  if (!x.type) {
+    raise_error << maybe(exemplar.name) << "failed to map a type to " << x.original_string << '\n' << end();
+    x.type = new type_tree(0);  // just to prevent crashes later
     return;
   }
-  if (x->value == -1) {
-    raise << "unknown type\n" << end();
+  if (x.type->value == -1) {
+    raise_error << maybe(exemplar.name) << "failed to map a type to the unknown " << x.original_string << '\n' << end();
     return;
   }
 }
@@ -523,3 +524,18 @@ recipe foo x:address:_elem -> y:address:_elem [
 ]
 +mem: storing 0 in location 1
 $error: 0
+
+:(scenario specialize_with_literal_4)
+% Hide_errors = true;
+recipe main [
+  local-scope
+  # ambiguous call: what's the type of its ingredient?!
+  foo 0
+]
+recipe foo x:address:_elem -> y:address:_elem [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++error: foo: failed to map a type to x
++error: foo: failed to map a type to y
