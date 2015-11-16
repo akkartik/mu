@@ -271,6 +271,7 @@ void accumulate_type_ingredients(const reagent& exemplar_reagent, reagent& refin
 void accumulate_type_ingredients(const string_tree* exemplar_type, const string_tree* refinement_type, map<string, const string_tree*>& mappings, const recipe& exemplar, const reagent& exemplar_reagent, const instruction& call_instruction, const recipe& caller_recipe, bool* error) {
   if (!exemplar_type) return;
   if (!refinement_type) {
+    // todo: make this smarter; only warn if exemplar_type contains some *new* type ingredient
     raise_error << maybe(exemplar.name) << "missing type ingredient in " << exemplar_reagent.original_string << '\n' << end();
     return;
   }
