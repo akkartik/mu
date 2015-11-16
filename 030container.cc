@@ -156,6 +156,7 @@ case GET: {
     raise_error << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
     break;
   }
+  if (inst.products.empty()) break;
   reagent product = inst.products.at(0);
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
@@ -241,6 +242,16 @@ recipe main [
   15:address:number <- get 12:point-number/raw, 1:offset
 ]
 +error: main: 'get' 1:offset (1) on point-number can't be saved in 15:address:number; type should be number but is <address : <number : <>>>
+
+//: we might want to call 'get' without saving the results, say in a sandbox
+
+:(scenario get_without_product)
+recipe main [
+  12:number <- copy 34
+  13:number <- copy 35
+  get 12:point/raw, 1:offset  # unsafe
+]
+# just don't die
 
 //:: To write to elements of containers, you need their address.
 

@@ -254,6 +254,18 @@ recipe main [
 ]
 +error: main: 'index' on *8:address:array:point can't be saved in 9:number; type should be point
 
+//: we might want to call 'index' without saving the results, say in a sandbox
+
+:(scenario index_without_product)
+recipe main [
+  1:array:number:3 <- create-array
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  index 1:array:number:3, 0
+]
+# just don't die
+
 //:: To write to elements of containers, you need their address.
 
 :(scenario index_address)
