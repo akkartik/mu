@@ -8,6 +8,7 @@ container list:_elem [
   next:address:list:_elem
 ]
 
+# should I say in/contained-in:result, allow ingredients to refer to products?
 recipe push x:_elem, in:address:list:_elem -> result:address:list:_elem [
   local-scope
   load-ingredients
