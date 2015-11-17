@@ -9,6 +9,13 @@ recipe main [
 ]
 +parse:   product: {"1": "number", "foo": "bar"}
 
+:(scenario load_trailing_space_after_curly_bracket)
+recipe main [
+  # line below has a space at the end
+  { 
+]
+# successfully parsed
+
 //: First augment next_word to group balanced brackets together.
 
 :(before "End next_word Special-cases")
@@ -21,14 +28,13 @@ if (start_of_dilated_reagent(in))
 :(code)
 // A curly is considered a label if it's the last thing on a line. Dilated
 // reagents should remain all on one line.
-//
-// Side-effect: This might delete some whitespace after an initial '{'.
 bool start_of_dilated_reagent(istream& in) {
   if (in.peek() != '{') return false;
+  long long int pos = in.tellg();
   in.get();  // slurp '{'
   skip_whitespace(in);
   char next = in.peek();
-  in.putback('{');
+  in.seekg(pos);
   return next != '\n';
 }
 
