@@ -12,11 +12,11 @@ recipe main [
 //: First augment next_word to group balanced brackets together.
 
 :(before "End next_word Special-cases")
-  if (in.peek() == '(')
-    return slurp_balanced_bracket(in);
-  // treat curlies mostly like parens, but don't mess up labels
-  if (start_of_dilated_reagent(in))
-    return slurp_balanced_bracket(in);
+if (in.peek() == '(')
+  return slurp_balanced_bracket(in);
+// treat curlies mostly like parens, but don't mess up labels
+if (start_of_dilated_reagent(in))
+  return slurp_balanced_bracket(in);
 
 :(code)
 // A curly is considered a label if it's the last thing on a line. Dilated
