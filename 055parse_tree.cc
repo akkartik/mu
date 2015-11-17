@@ -29,7 +29,7 @@ string_tree* parse_string_tree(const string& s) {
 
 string_tree* parse_string_tree(istream& in) {
   skip_whitespace(in);
-  if (in.eof()) return NULL;
+  if (!has_data(in)) return NULL;
   if (in.peek() == ')') {
     in.get();
     return NULL;
@@ -42,7 +42,7 @@ string_tree* parse_string_tree(istream& in) {
   string_tree* result = NULL;
   string_tree** curr = &result;
   while (in.peek() != ')') {
-    assert(!in.eof());
+    assert(has_data(in));
     *curr = new string_tree("");
     skip_whitespace(in);
     skip_ignored_characters(in);

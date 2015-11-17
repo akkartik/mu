@@ -270,7 +270,7 @@ void check_memory(const string& s) {
   set<long long int> locations_checked;
   while (true) {
     skip_whitespace_and_comments(in);
-    if (in.eof()) break;
+    if (!has_data(in)) break;
     string lhs = next_word(in);
     if (!is_integer(lhs)) {
       check_type(lhs, in);

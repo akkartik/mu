@@ -80,7 +80,7 @@ if (s.at(0) == '{') {
   istringstream in(s);
   in >> std::noskipws;
   in.get();  // skip '{'
-  while (!in.eof()) {
+  while (has_data(in)) {
     string key = slurp_key(in);
     if (key.empty()) continue;
     if (key == "}") continue;

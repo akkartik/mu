@@ -32,7 +32,7 @@ if (in.peek() == '[') {
 :(code)
 string slurp_quoted(istream& in) {
   ostringstream out;
-  assert(!in.eof());  assert(in.peek() == '[');  out << static_cast<char>(in.get());  // slurp the '['
+  assert(has_data(in));  assert(in.peek() == '[');  out << static_cast<char>(in.get());  // slurp the '['
   if (is_code_string(in, out))
     slurp_quoted_comment_aware(in, out);
   else
@@ -43,7 +43,7 @@ string slurp_quoted(istream& in) {
 // A string is a code string if it contains a newline before any non-whitespace
 // todo: support comments before the newline. But that gets messy.
 bool is_code_string(istream& in, ostream& out) {
-  while (!in.eof()) {
+  while (has_data(in)) {
     char c = in.get();
     if (!isspace(c)) {
       in.putback(c);
@@ -61,7 +61,7 @@ bool is_code_string(istream& in, ostream& out) {
 // strings.
 void slurp_quoted_comment_oblivious(istream& in, ostream& out) {
   int brace_depth = 1;
-  while (!in.eof()) {
+  while (has_data(in)) {
     char c = in.get();
     if (c == '\\') {
       out << static_cast<char>(in.get());
@@ -72,7 +72,7 @@ void slurp_quoted_comment_oblivious(istream& in, ostream& out) {
     if (c == ']') --brace_depth;
     if (brace_depth == 0) break;
   }
-  if (in.eof() && brace_depth > 0) {
+  if (!has_data(in) && brace_depth > 0) {
     raise_error << "unbalanced '['\n" << end();
     out.clear();
   }
@@ -88,7 +88,7 @@ void slurp_quoted_comment_aware(istream& in, ostream& out) {
     }
     if (c == '#') {
       out << c;
-      while (!in.eof() && in.peek() != '\n') out << static_cast<char>(in.get());
+      while (has_data(in) && in.peek() != '\n') out << static_cast<char>(in.get());
       continue;
     }
     if (c == '[') {

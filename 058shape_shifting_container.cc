@@ -49,7 +49,7 @@ void read_type_ingredients(string& name) {
     put(Type_ordinal, name, Next_type_ordinal++);
   type_info& info = get_or_insert(Type, get(Type_ordinal, name));
   long long int next_type_ordinal = START_TYPE_INGREDIENTS;
-  while (!in.eof()) {
+  while (has_data(in)) {
     string curr = slurp_until(in, ':');
     if (info.type_ingredient_names.find(curr) != info.type_ingredient_names.end()) {
       raise_error << "can't repeat type ingredient names in a single container definition\n" << end();
