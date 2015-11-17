@@ -673,3 +673,22 @@ container d1:_elem [
 +error: foo: unknown type for e (check the name for typos)
 +error: specializing foo: missing type for e
 # and it doesn't crash
+
+:(scenario missing_type_in_shape_shifting_recipe_2)
+% Hide_errors = true;
+recipe main [
+  a:d1:number <- merge 3
+  foo a
+]
+recipe foo a:d1:_elem -> b:number [
+  local-scope
+  load-ingredients
+  get e, x:offset  # unknown variable in a 'get', which does some extra checking
+  reply 34
+]
+container d1:_elem [
+  x:_elem
+]
++error: foo: unknown type for e (check the name for typos)
++error: specializing foo: missing type for e
+# and it doesn't crash
