@@ -22,12 +22,12 @@ recipe main [
 put(Type_ordinal, "literal-string", 0);
 
 :(before "End next_word Special-cases")
-  if (in.peek() == '[') {
-    string result = slurp_quoted(in);
-    skip_whitespace(in);
-    skip_comment(in);
-    return result;
-  }
+if (in.peek() == '[') {
+  string result = slurp_quoted(in);
+  skip_whitespace(in);
+  skip_comment(in);
+  return result;
+}
 
 :(code)
 string slurp_quoted(istream& in) {
