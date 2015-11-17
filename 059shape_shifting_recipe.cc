@@ -182,7 +182,6 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
   recently_added_recipes.push_back(new_recipe_ordinal);
   put(Recipe, new_recipe_ordinal, get(Recipe, exemplar));
   recipe& new_recipe = get(Recipe, new_recipe_ordinal);
-  new_recipe.name = new_name;
   // Since the exemplar never ran any transforms, we have to redo some of the
   // work of the check_types_by_name transform while supporting type-ingredients.
   compute_type_names(new_recipe);
@@ -197,7 +196,9 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
     if (error) return exemplar;
   }
   ensure_all_concrete_types(new_recipe, get(Recipe, exemplar));
-  // finally, perform all transforms on the new specialization
+  // update the name after specialization is complete (so earlier error messages look better)
+  new_recipe.name = new_name;
+  // perform all transforms on the new specialization
   for (long long int t = 0; t < SIZE(Transform); ++t) {
     (*Transform.at(t))(new_recipe_ordinal);
   }
@@ -209,20 +210,20 @@ void compute_type_names(recipe& variant) {
   trace(9993, "transform") << "compute type names: " << variant.name << end();
   map<string, string_tree*> type_names;
   for (long long int i = 0; i < SIZE(variant.ingredients); ++i)
-    save_or_deduce_type_name(variant.ingredients.at(i), type_names);
+    save_or_deduce_type_name(variant.ingredients.at(i), type_names, variant);
   for (long long int i = 0; i < SIZE(variant.products); ++i)
-    save_or_deduce_type_name(variant.products.at(i), type_names);
+    save_or_deduce_type_name(variant.products.at(i), type_names, variant);
   for (long long int i = 0; i < SIZE(variant.steps); ++i) {
     instruction& inst = variant.steps.at(i);
     trace(9993, "transform") << "  instruction: " << inst.to_string() << end();
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in)
-      save_or_deduce_type_name(inst.ingredients.at(in), type_names);
+      save_or_deduce_type_name(inst.ingredients.at(in), type_names, variant);
     for (long long int out = 0; out < SIZE(inst.products); ++out)
-      save_or_deduce_type_name(inst.products.at(out), type_names);
+      save_or_deduce_type_name(inst.products.at(out), type_names, variant);
   }
 }
 
-void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name) {
+void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name, const recipe& variant) {
   trace(9994, "transform") << "    checking " << x.to_string() << ": " << debug_string(x.properties.at(0).second) << end();
   if (!x.properties.at(0).second && contains_key(type_name, x.name)) {
     x.properties.at(0).second = new string_tree(*get(type_name, x.name));
@@ -230,7 +231,7 @@ void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name) 
     return;
   }
   if (!x.properties.at(0).second) {
-    raise << "unknown type for " << x.original_string << '\n' << end();
+    raise_error << maybe(variant.name) << "unknown type for " << x.original_string << " (check the name for typos)\n" << end();
     return;
   }
   if (contains_key(type_name, x.name)) return;
@@ -308,18 +309,18 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const string
   if (mappings.empty()) return;
   trace(9993, "transform") << "replacing in recipe header ingredients" << end();
   for (long long int i = 0; i < SIZE(new_recipe.ingredients); ++i)
-    replace_type_ingredients(new_recipe.ingredients.at(i), mappings);
+    replace_type_ingredients(new_recipe.ingredients.at(i), mappings, new_recipe);
   trace(9993, "transform") << "replacing in recipe header products" << end();
   for (long long int i = 0; i < SIZE(new_recipe.products); ++i)
-    replace_type_ingredients(new_recipe.products.at(i), mappings);
+    replace_type_ingredients(new_recipe.products.at(i), mappings, new_recipe);
   // update its body
   for (long long int i = 0; i < SIZE(new_recipe.steps); ++i) {
     instruction& inst = new_recipe.steps.at(i);
     trace(9993, "transform") << "replacing in instruction '" << inst.to_string() << "'" << end();
     for (long long int j = 0; j < SIZE(inst.ingredients); ++j)
-      replace_type_ingredients(inst.ingredients.at(j), mappings);
+      replace_type_ingredients(inst.ingredients.at(j), mappings, new_recipe);
     for (long long int j = 0; j < SIZE(inst.products); ++j)
-      replace_type_ingredients(inst.products.at(j), mappings);
+      replace_type_ingredients(inst.products.at(j), mappings, new_recipe);
     // special-case for new: replace type ingredient in first ingredient *value*
     if (inst.name == "new" && inst.ingredients.at(0).name.at(0) != '[') {
       string_tree* type_name = parse_string_tree(inst.ingredients.at(0).name);
@@ -330,10 +331,13 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const string
   }
 }
 
-void replace_type_ingredients(reagent& x, const map<string, const string_tree*>& mappings) {
+void replace_type_ingredients(reagent& x, const map<string, const string_tree*>& mappings, const recipe& caller) {
   trace(9993, "transform") << "replacing in ingredient " << x.original_string << end();
   // replace properties
-  assert(x.properties.at(0).second);
+  if (!x.properties.at(0).second) {
+    raise_error << "specializing " << caller.name << ": missing type for " << x.original_string << '\n' << end();
+    return;
+  }
   replace_type_ingredients(x.properties.at(0).second, mappings);
   // refresh types from properties
   delete x.type;
@@ -650,3 +654,22 @@ container d2:_elem [
 ]
 +mem: storing 34 in location 1
 +mem: storing 35 in location 2
+
+:(scenario missing_type_in_shape_shifting_recipe)
+% Hide_errors = true;
+recipe main [
+  a:d1:number <- merge 3
+  foo a
+]
+recipe foo a:d1:_elem -> b:number [
+  local-scope
+  load-ingredients
+  copy e  # no such variable
+  reply 34
+]
+container d1:_elem [
+  x:_elem
+]
++error: foo: unknown type for e (check the name for typos)
++error: specializing foo: missing type for e
+# and it doesn't crash
