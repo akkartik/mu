@@ -511,7 +511,7 @@ recipe main [
   # integer is not a type
   1:integer <- copy 0
 ]
-+error: main: unknown type in '1:integer <- copy 0'
++error: main: unknown type integer in '1:integer <- copy 0'
 
 :(scenario run_allows_type_definition_after_use)
 % Hide_errors = true;
@@ -522,7 +522,6 @@ recipe main [
 container bar [
   x:number
 ]
--error: unknown type: bar
 $error: 0
 
 :(after "Begin Transforms")
@@ -554,8 +553,10 @@ void check_or_set_invalid_types(type_tree* type, const string_tree* type_name, c
   if (!contains_key(Type, type->value)) {
     if (type_name && contains_key(Type_ordinal, type_name->value))
       type->value = get(Type_ordinal, type_name->value);
+    else if (type_name)
+      raise_error << block << "unknown type " << type_name->value << " in " << name << '\n' << end();
     else
-      raise_error << block << "unknown type in " << name << '\n' << end();
+      raise_error << block << "missing type in " << name << '\n' << end();
   }
   check_or_set_invalid_types(type->left, type_name ? type_name->left : NULL, block, name);
   check_or_set_invalid_types(type->right, type_name ? type_name->right : NULL, block, name);

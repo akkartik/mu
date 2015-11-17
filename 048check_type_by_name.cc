@@ -95,4 +95,4 @@ recipe main [
   y:address:charcter <- new character:type
   *y <- copy 67
 ]
-+error: main: unknown type in 'y:address:charcter <- new character:type'
++error: main: unknown type charcter in 'y:address:charcter <- new character:type'
