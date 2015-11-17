@@ -236,7 +236,7 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false), ty
   istringstream in(s);
   in >> std::noskipws;
   // properties
-  while (!in.eof()) {
+  while (has_data(in)) {
     istringstream row(slurp_until(in, '/'));
     row >> std::noskipws;
     string key = slurp_until(row, ':');
@@ -261,7 +261,7 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false), ty
 
 string_tree* parse_property_list(istream& in) {
   skip_whitespace(in);
-  if (in.eof()) return NULL;
+  if (!has_data(in)) return NULL;
   string_tree* result = new string_tree(slurp_until(in, ':'));
   result->right = parse_property_list(in);
   return result;
@@ -539,7 +539,7 @@ void dump(const string_tree* x, ostream& out) {
 }
 
 void skip_whitespace(istream& in) {
-  while (!in.eof() && isspace(in.peek()) && in.peek() != '\n') {
+  while (in && isspace(in.peek()) && in.peek() != '\n') {
     in.get();
   }
 }

@@ -415,7 +415,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   recently_added_types.push_back(get(Type_ordinal, name));
   info.name = name;
   info.kind = kind;
-  while (!in.eof()) {
+  while (has_data(in)) {
     skip_whitespace_and_comments(in);
     string element = next_word(in);
     if (element == "]") break;
@@ -424,7 +424,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     info.element_names.push_back(slurp_until(inner, ':'));
     trace(9993, "parse") << "  element name: " << info.element_names.back() << end();
     type_tree* new_type = NULL;
-    for (type_tree** curr_type = &new_type; !inner.eof(); curr_type = &(*curr_type)->right) {
+    for (type_tree** curr_type = &new_type; has_data(inner); curr_type = &(*curr_type)->right) {
       string type_name = slurp_until(inner, ':');
       // End insert_container Special Uses(type_name)
       if (!contains_key(Type_ordinal, type_name)

@@ -19,9 +19,9 @@ vector<recipe_ordinal> load(string form) {
 vector<recipe_ordinal> load(istream& in) {
   in >> std::noskipws;
   vector<recipe_ordinal> result;
-  while (!in.eof()) {
+  while (has_data(in)) {
     skip_whitespace_and_comments(in);
-    if (in.eof()) break;
+    if (!has_data(in)) break;
     string command = next_word(in);
     // Command Handlers
     if (command == "recipe") {
@@ -82,25 +82,25 @@ void slurp_body(istream& in, recipe& result) {
 
 bool next_instruction(istream& in, instruction* curr) {
   curr->clear();
-  if (in.eof()) {
+  if (!has_data(in)) {
     raise_error << "0: unbalanced '[' for recipe\n" << end();
     return false;
   }
   skip_whitespace(in);
-  if (in.eof()) {
+  if (!has_data(in)) {
     raise_error << "1: unbalanced '[' for recipe\n" << end();
     return false;
   }
   skip_whitespace_and_comments(in);
-  if (in.eof()) {
+  if (!has_data(in)) {
     raise_error << "2: unbalanced '[' for recipe\n" << end();
     return false;
   }
 
   vector<string> words;
-  while (in.peek() != '\n' && !in.eof()) {
+  while (has_data(in) && in.peek() != '\n') {
     skip_whitespace(in);
-    if (in.eof()) {
+    if (!has_data(in)) {
       raise_error << "3: unbalanced '[' for recipe\n" << end();
       return false;
     }
@@ -117,7 +117,7 @@ bool next_instruction(istream& in, instruction* curr) {
     curr->is_label = true;
     curr->label = words.at(0);
     trace(9993, "parse") << "label: " << curr->label << end();
-    if (in.eof()) {
+    if (!has_data(in)) {
       raise_error << "7: unbalanced '[' for recipe\n" << end();
       return false;
     }
@@ -151,7 +151,7 @@ bool next_instruction(istream& in, instruction* curr) {
   for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p) {
     trace(9993, "parse") << "  product: " << p->to_string() << end();
   }
-  if (in.eof()) {
+  if (!has_data(in)) {
     raise_error << "9: unbalanced '[' for recipe\n" << end();
     return false;
   }
@@ -176,7 +176,7 @@ string Ignore(",");  // meaningless except within [] strings
 :(code)
 void slurp_word(istream& in, ostream& out) {
   char c;
-  if (!in.eof() && Terminators.find(in.peek()) != string::npos) {
+  if (has_data(in) && Terminators.find(in.peek()) != string::npos) {
     in >> c;
     out << c;
     return;
@@ -198,7 +198,7 @@ void skip_ignored_characters(istream& in) {
 
 void skip_whitespace_and_comments(istream& in) {
   while (true) {
-    if (in.eof()) break;
+    if (!has_data(in)) break;
     if (isspace(in.peek())) in.get();
     else if (in.peek() == ',') in.get();
     else if (in.peek() == '#') skip_comment(in);
@@ -207,9 +207,9 @@ void skip_whitespace_and_comments(istream& in) {
 }
 
 void skip_comment(istream& in) {
-  if (!in.eof() && in.peek() == '#') {
+  if (has_data(in) && in.peek() == '#') {
     in.get();
-    while (!in.eof() && in.peek() != '\n') in.get();
+    while (has_data(in) && in.peek() != '\n') in.get();
   }
 }
 

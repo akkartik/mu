@@ -57,7 +57,7 @@ string slurp(const string& filename) {
   if (!fin) return result.str();  // don't bother checking errno
   const int N = 1024;
   char buf[N];
-  while (!fin.eof()) {
+  while (has_data(fin)) {
     bzero(buf, N);
     fin.read(buf, N-1);  // leave at least one null
     result << buf;

@@ -113,6 +113,13 @@ template<typename T> typename T::mapped_type& get_or_insert(T& map, typename T::
 }
 //: The contract: any container that relies on get_or_insert should never call
 //: contains_key.
+//:
+//: 7. istreams are a royal pain in the arse. You have to be careful about
+//: what subclass you try to putback into. You have to watch out for the pesky
+//: failbit and badbit. Just avoid eof() and use this helper instead.
+bool has_data(istream& in) {
+  return in && !in.eof();
+}
 
 :(before "End Includes")
 #include<assert.h>
