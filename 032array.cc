@@ -423,3 +423,15 @@ case LENGTH: {
 recipe_ordinal r = current_instruction().operation;
 if (r == CREATE_ARRAY || r == INDEX || r == INDEX_ADDRESS || r == LENGTH)
   return false;
+
+//: a particularly common array type is the string, or address:array:character
+:(code)
+bool is_mu_string(const reagent& x) {
+  return x.type
+    && x.type->value == get(Type_ordinal, "address")
+    && x.type->right
+    && x.type->right->value == get(Type_ordinal, "array")
+    && x.type->right->right
+    && x.type->right->right->value == get(Type_ordinal, "character")
+    && x.type->right->right->right == NULL;
+}
