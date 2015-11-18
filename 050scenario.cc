@@ -197,9 +197,13 @@ case RUN: {
 case RUN: {
   ostringstream tmp;
   tmp << "recipe run" << Next_recipe_ordinal << " [ " << current_instruction().ingredients.at(0).name << " ]";
+//?   cerr << "before load\n";
   vector<recipe_ordinal> tmp_recipe = load(tmp.str());
+//?   cerr << "before bind\n";
   bind_special_scenario_names(tmp_recipe.at(0));
+//?   cerr << "before transform\n";
   transform_all();
+//?   cerr << "end\n";
   if (Trace_stream) {
     ++Trace_stream->callstack_depth;
     trace(9998, "trace") << "run: incrementing callstack depth to " << Trace_stream->callstack_depth << end();

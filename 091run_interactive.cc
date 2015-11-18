@@ -107,6 +107,7 @@ bool run_interactive(long long int address) {
 }
 
 void run_code_begin() {
+//?   cerr << "loading new trace\n";
   // stuff to undo later, in run_code_end()
   Hide_warnings = true;
   Hide_errors = true;
@@ -119,6 +120,7 @@ void run_code_begin() {
 }
 
 void run_code_end() {
+//?   cerr << "back to old trace\n";
   Hide_warnings = false;
   Hide_errors = false;
   Disable_redefine_warnings = false;
@@ -127,6 +129,7 @@ void run_code_end() {
   Save_trace_stream = NULL;
   Trace_file = Save_trace_file;
   Save_trace_file.clear();
+  Recipe.erase(get(Recipe_ordinal, "interactive"));  // keep past sandboxes from inserting errors
 }
 
 :(before "End Load Recipes")
@@ -417,6 +420,7 @@ case RELOAD: {
 }
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
+//?   cerr << "== reload\n";
   // clear any containers in advance
   for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
     Type_ordinal.erase(get(Type, recently_added_types.at(i)).name);
@@ -427,15 +431,17 @@ case RELOAD: {
   routine* save_current_routine = Current_routine;
   Current_routine = NULL;
   vector<recipe_ordinal> recipes_reloaded = load(code);
-  for (long long int i = 0; i < SIZE(recipes_reloaded); ++i) {
+  // clear a few things from previous runs
+  // ad hoc list; we've probably missed a few
+  for (long long int i = 0; i < SIZE(recipes_reloaded); ++i)
     Name.erase(recipes_reloaded.at(i));
-  }
   transform_all();
   Trace_stream->newline();  // flush trace
   Current_routine = save_current_routine;
   products.resize(1);
   products.at(0).push_back(trace_error_warning_contents());
   run_code_end();  // wait until we're done with the trace contents
+//?   cerr << "reload done\n";
   break;
 }
 
