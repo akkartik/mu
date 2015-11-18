@@ -54,6 +54,7 @@ recipe! update-sandbox sandbox:address:sandbox-data -> sandbox:address:sandbox-d
   warnings:address:address:array:character <- get-address *sandbox, warnings:offset
   trace:address:address:array:character <- get-address *sandbox, trace:offset
   fake-screen:address:address:screen <- get-address *sandbox, screen:offset
+#?   $print [run-interactive], 10/newline
   *response, *warnings, *fake-screen, *trace, completed?:boolean <- run-interactive data
   {
     break-if *warnings
@@ -61,6 +62,7 @@ recipe! update-sandbox sandbox:address:sandbox-data -> sandbox:address:sandbox-d
     *warnings <- new [took too long!
 ]
   }
+#?   $print [done with run-interactive], 10/newline
 ]
 
 # make sure we render any trace
@@ -112,6 +114,39 @@ recipe foo [
     .foo: first ingredient of 'get' should be a contai                                                   .
     .ner, but got 123:number                                                                             .
     .                                                                                                    .
+  ]
+]
+
+scenario run-hides-warnings-from-past-sandboxes [
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 15/height
+  1:address:array:character <- new []
+  2:address:array:character <- new [get foo, x:offset]  # invalid
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  assume-console [
+    press F4  # generate error
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  ]
+  assume-console [
+    left-click 3, 80
+    press ctrl-k
+    type [add 2, 2]  # valid code
+    press F4  # error should disappear
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 

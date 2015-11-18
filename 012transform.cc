@@ -42,6 +42,7 @@ void transform_all() {
       r.transformed_until = t;
     }
   }
+//?   cerr << "wrapping up transform\n";
   parse_int_reagents();  // do this after all other transforms have run
   // End Transform All
 }
