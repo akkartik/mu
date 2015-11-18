@@ -424,16 +424,6 @@ long long int unicode_length(const string& s) {
   return result;
 }
 
-bool is_mu_string(const reagent& x) {
-  return x.type
-    && x.type->value == get(Type_ordinal, "address")
-    && x.type->right
-    && x.type->right->value == get(Type_ordinal, "array")
-    && x.type->right->right
-    && x.type->right->right->value == get(Type_ordinal, "character")
-    && x.type->right->right->right == NULL;
-}
-
 string read_mu_string(long long int address) {
   long long int size = get_or_insert(Memory, address);
   if (size == 0) return "";
