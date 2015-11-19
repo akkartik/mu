@@ -120,6 +120,17 @@ recipe test a:number, b:number -> z:number [
 ]
 +mem: storing 2 in location 7
 
+//: support recipe headers in a previous transform to fill in missing types
+:(before "End check_or_set_invalid_types")
+for (long long int i = 0; i < SIZE(caller.ingredients); ++i) {
+  check_or_set_invalid_types(caller.ingredients.at(i).type, caller.ingredients.at(i).properties.at(0).second,
+                             maybe(caller.name), "recipe header ingredient");
+}
+for (long long int i = 0; i < SIZE(caller.products); ++i) {
+  check_or_set_invalid_types(caller.products.at(i).type, caller.products.at(i).properties.at(0).second,
+                             maybe(caller.name), "recipe header product");
+}
+
 //: after filling in all missing types (because we'll be introducing 'blank' types in this transform in a later layer, for shape-shifting recipes)
 :(after "End Type Modifying Transforms")
 Transform.push_back(resolve_ambiguous_calls);  // idempotent
@@ -285,6 +296,38 @@ recipe test a:number, b:number -> z:point [
   local-scope
   load-ingredients
   z <- merge a, b
+]
+$error: 0
+
+:(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_first_use)
+% Hide_errors = true;
+recipe main [
+  x:address:foo <- new foo:type
+  test x
+]
+container foo [
+  x:number
+]
+recipe test a:address:foo -> z:number [
+  local-scope
+  load-ingredients
+  z:number <- get *a, x:offset
+]
+$error: 0
+
+:(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_second_use)
+% Hide_errors = true;
+recipe main [
+  x:address:foo <- new foo:type
+  test x
+]
+recipe test a:address:foo -> z:number [
+  local-scope
+  load-ingredients
+  z:number <- get *a, x:offset
+]
+container foo [
+  x:number
 ]
 $error: 0
 

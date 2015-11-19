@@ -534,17 +534,19 @@ Transform.push_back(check_or_set_invalid_types);  // idempotent
 
 :(code)
 void check_or_set_invalid_types(const recipe_ordinal r) {
-  for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
-    const instruction& inst = get(Recipe, r).steps.at(index);
+  recipe& caller = get(Recipe, r);
+  for (long long int index = 0; index < SIZE(caller.steps); ++index) {
+    instruction& inst = caller.steps.at(index);
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
       check_or_set_invalid_types(inst.ingredients.at(i).type, inst.ingredients.at(i).properties.at(0).second,
-                                 maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
+                                 maybe(caller.name), "'"+inst.to_string()+"'");
     }
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
       check_or_set_invalid_types(inst.products.at(i).type, inst.products.at(i).properties.at(0).second,
-                                 maybe(get(Recipe, r).name), "'"+inst.to_string()+"'");
+                                 maybe(caller.name), "'"+inst.to_string()+"'");
     }
   }
+  // End check_or_set_invalid_types
 }
 
 void check_or_set_invalid_types(type_tree* type, const string_tree* type_name, const string& block, const string& name) {
