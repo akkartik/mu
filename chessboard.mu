@@ -240,7 +240,7 @@ container move [
 ]
 
 # prints only error messages to screen
-recipe read-move stdin:address:channel, screen:address:screen -> result:address:move, quit?:boolean, error?:boolean [
+recipe read-move stdin:address:channel, screen:address:screen -> result:address:move, quit?:boolean, error?:boolean, stdin:address:channel, screen:address:screen [
   local-scope
   load-ingredients
   from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
@@ -270,7 +270,7 @@ recipe read-move stdin:address:channel, screen:address:screen -> result:address:
 ]
 
 # valid values for file: 0-7
-recipe read-file stdin:address:channel, screen:address:screen -> file:number, quit:boolean, error:boolean [
+recipe read-file stdin:address:channel, screen:address:screen -> file:number, quit:boolean, error:boolean, stdin:address:channel, screen:address:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
@@ -363,7 +363,7 @@ recipe read-rank stdin:address:channel, screen:address:screen -> rank:number, qu
 
 # read a character from the given channel and check that it's what we expect
 # return true on error
-recipe expect-from-channel stdin:address:channel, expected:character, screen:address:screen -> result:boolean [
+recipe expect-from-channel stdin:address:channel, expected:character, screen:address:screen -> result:boolean, stdin:address:channel, screen:address:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
