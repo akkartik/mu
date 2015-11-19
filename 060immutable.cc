@@ -66,6 +66,21 @@ recipe bar p:address:point -> p:address:point [
 ]
 +warn: foo: cannot modify ingredient p at instruction 'bar p' because it's not also a product of foo
 
+:(scenario cannot_modify_copies_of_immutable_ingredients)
+% Hide_warnings = true;
+recipe main [
+  local-scope
+  p:address:point <- new point:type
+  foo p
+]
+recipe foo p:address:point [
+  local-scope
+  load-ingredients
+  q:address:point <- copy p
+  x:address:number <- get-address *q, x:offset
+]
++warn: foo: cannot modify ingredient q after instruction 'x:address:number <- get-address *q, x:offset' because it's not also a product of foo
+
 :(scenario can_traverse_immutable_ingredients)
 % Hide_warnings = true;
 container test-list [
@@ -103,27 +118,50 @@ void check_immutable_ingredients(recipe_ordinal r) {
     if (!is_mu_address(current_ingredient)) continue;  // will be copied
     if (is_present_in_products(caller, current_ingredient.name)) continue;  // not expected to be immutable
     // End Immutable Ingredients Special-cases
+    set<string> immutable_vars;
+    immutable_vars.insert(current_ingredient.name);
     for (long long int i = 0; i < SIZE(caller.steps); ++i) {
-      check_immutable_ingredient_in_instruction(caller.steps.at(i), current_ingredient.name, caller);
+      const instruction& inst = caller.steps.at(i);
+      check_immutable_ingredient_in_instruction(inst, immutable_vars, caller);
+      update_aliases(inst, immutable_vars);
     }
   }
 }
 
-void check_immutable_ingredient_in_instruction(const instruction& inst, const string& current_ingredient_name, const recipe& caller) {
-  long long int current_ingredient_index = find_ingredient_index(inst, current_ingredient_name);
-  if (current_ingredient_index == -1) return;  // ingredient not found in call
-  reagent current_ingredient = inst.ingredients.at(current_ingredient_index);
-  canonize_type(current_ingredient);
+void update_aliases(const instruction& inst, set<string>& current_ingredient_and_aliases) {
   if (!contains_key(Recipe, inst.operation)) {
     // primitive recipe
-    if (inst.operation == GET_ADDRESS || inst.operation == INDEX_ADDRESS)
-      raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << inst.to_string() << "' because it's not also a product of " << caller.name << '\n' << end();
+    if (inst.operation == COPY) {
+      set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
+      for (set<long long int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p) {
+        current_ingredient_and_aliases.insert(inst.products.at(*p).name);
+      }
+    }
   }
   else {
     // defined recipe
-    if (!is_mu_address(current_ingredient)) return;  // making a copy is ok
-    if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller))
-      raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << inst.to_string() << "' because it's not also a product of " << caller.name << '\n' << end();
+  }
+}
+
+void check_immutable_ingredient_in_instruction(const instruction& inst, const set<string>& current_ingredient_and_aliases, const recipe& caller) {
+  set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
+  if (current_ingredient_indices.empty()) return;  // ingredient not found in call
+  for (set<long long int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p) {
+    const long long int current_ingredient_index = *p;
+    reagent current_ingredient = inst.ingredients.at(current_ingredient_index);
+    canonize_type(current_ingredient);
+    const string& current_ingredient_name = current_ingredient.name;
+    if (!contains_key(Recipe, inst.operation)) {
+      // primitive recipe
+      if (inst.operation == GET_ADDRESS || inst.operation == INDEX_ADDRESS)
+        raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << inst.to_string() << "' because it's not also a product of " << caller.name << '\n' << end();
+    }
+    else {
+      // defined recipe
+      if (!is_mu_address(current_ingredient)) return;  // making a copy is ok
+      if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller))
+        raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << inst.to_string() << "' because it's not also a product of " << caller.name << '\n' << end();
+    }
   }
 }
 
@@ -152,12 +190,13 @@ bool is_present_in_ingredients(const recipe& callee, const string& ingredient_na
   return false;
 }
 
-long long int find_ingredient_index(const instruction& inst, const string& ingredient_name) {
+set<long long int> ingredient_indices(const instruction& inst, const set<string>& ingredient_names) {
+  set<long long int> result;
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-    if (inst.ingredients.at(i).name == ingredient_name)
-      return i;
+    if (ingredient_names.find(inst.ingredients.at(i).name) != ingredient_names.end())
+      result.insert(i);
   }
-  return -1;
+  return result;
 }
 
 //: Sometimes you want to pass in two addresses, one pointing inside the
