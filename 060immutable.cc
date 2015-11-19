@@ -129,10 +129,10 @@ void check_immutable_ingredients(recipe_ordinal r) {
 }
 
 void update_aliases(const instruction& inst, set<string>& current_ingredient_and_aliases) {
+  set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
   if (!contains_key(Recipe, inst.operation)) {
     // primitive recipe
     if (inst.operation == COPY) {
-      set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
       for (set<long long int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p) {
         current_ingredient_and_aliases.insert(inst.products.at(*p).name);
       }
@@ -140,9 +140,54 @@ void update_aliases(const instruction& inst, set<string>& current_ingredient_and
   }
   else {
     // defined recipe
+    set<long long int> contained_in_product_indices = scan_contained_in_product_indices(inst, current_ingredient_indices);
+    for (set<long long int>::iterator p = contained_in_product_indices.begin(); p != contained_in_product_indices.end(); ++p) {
+      if (*p < SIZE(inst.products))
+        current_ingredient_and_aliases.insert(inst.products.at(*p).name);
+    }
   }
 }
 
+set<long long int> scan_contained_in_product_indices(const instruction& inst, set<long long int>& ingredient_indices) {
+  set<string> selected_ingredient_names;
+  const recipe& callee = get(Recipe, inst.operation);
+  for (set<long long int>::iterator p = ingredient_indices.begin(); p != ingredient_indices.end(); ++p)
+    selected_ingredient_names.insert(callee.ingredients.at(*p).name);
+  set<long long int> result;
+  for (long long int i = 0; i < SIZE(callee.products); ++i) {
+    const reagent& current_product = callee.products.at(i);
+    const string_tree* contained_in_name = property(current_product, "contained-in");
+    if (contained_in_name && selected_ingredient_names.find(contained_in_name->value) != selected_ingredient_names.end())
+      result.insert(i);
+  }
+  return result;
+}
+
+:(scenarios transform)
+:(scenario immutability_infects_contained_in_variables)
+% Hide_warnings = true;
+container test-list [
+  next:address:test-list
+]
+recipe main [
+  local-scope
+  p:address:test-list <- new test-list:type
+  foo p
+]
+recipe foo p:address:test-list [  # p is immutable
+  local-scope
+  load-ingredients
+  p2:address:test-list <- test-next p  # p2 is immutable
+  p3:address:address:test-list <- get-address *p2, next:offset  # signal modification of p2
+]
+recipe test-next x:address:test-list -> y:address:test-list/contained-in:x [
+  local-scope
+  load-ingredients
+  y <- get *x, next:offset
+]
+$warn: 1
+
+:(code)
 void check_immutable_ingredient_in_instruction(const instruction& inst, const set<string>& current_ingredient_and_aliases, const recipe& caller) {
   set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
   if (current_ingredient_indices.empty()) return;  // ingredient not found in call
@@ -212,7 +257,7 @@ set<long long int> ingredient_indices(const instruction& inst, const set<string>
 
 :(scenarios transform)
 :(scenario can_modify_contained_in_addresses)
-#% Hide_warnings = true;
+% Hide_warnings = true;
 container test-list [
   next:address:test-list
 ]
