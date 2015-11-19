@@ -84,6 +84,7 @@ recipe delete-before-cursor editor:address:editor-data, screen:address:screen ->
   local-scope
   load-ingredients
   before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
+  data:address:duplex-list:character <- get *editor, data:offset
   # if at start of text (before-cursor at § sentinel), return
   prev:address:duplex-list:character <- prev *before-cursor
   go-render?, backspaced-cell <- copy 0/no-more-render, 0/nothing-deleted
@@ -92,7 +93,7 @@ recipe delete-before-cursor editor:address:editor-data, screen:address:screen ->
   original-row:number <- get *editor, cursor-row:offset
   editor, scroll?:boolean <- move-cursor-coordinates-left editor
   backspaced-cell:address:duplex-list:character <- copy *before-cursor
-  remove *before-cursor  # will also neatly trim next/prev pointers in backspaced-cell/*before-cursor
+  data <- remove *before-cursor, data  # will also neatly trim next/prev pointers in backspaced-cell/*before-cursor
   *before-cursor <- copy prev
   go-render? <- copy 1/true
   reply-if scroll?
@@ -333,11 +334,12 @@ recipe delete-at-cursor editor:address:editor-data, screen:address:screen -> edi
   local-scope
   load-ingredients
   before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
+  data:address:duplex-list:character <- get *editor, data:offset
   deleted-cell:address:duplex-list:character <- next *before-cursor
   go-render? <- copy 0/false
   reply-unless deleted-cell
   currc:character <- get *deleted-cell, value:offset
-  remove deleted-cell
+  data <- remove deleted-cell, data
   deleted-newline?:boolean <- equal currc, 10/newline
   go-render? <- copy 1/true
   reply-if deleted-newline?
@@ -1244,7 +1246,7 @@ after <handle-special-key> [
   }
 ]
 
-recipe move-to-start-of-line editor:address:editor-data [
+recipe move-to-start-of-line editor:address:editor-data -> editor:address:editor-data [
   local-scope
   load-ingredients
   # update cursor column
@@ -1415,7 +1417,7 @@ after <handle-special-key> [
   }
 ]
 
-recipe move-to-end-of-line editor:address:editor-data [
+recipe move-to-end-of-line editor:address:editor-data -> editor:address:editor-data [
   local-scope
   load-ingredients
   before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
@@ -1545,7 +1547,7 @@ after <handle-special-character> [
   }
 ]
 
-recipe delete-to-start-of-line editor:address:editor-data -> result:address:duplex-list:character [
+recipe delete-to-start-of-line editor:address:editor-data -> result:address:duplex-list:character, editor:address:editor-data [
   local-scope
   load-ingredients
   # compute range to delete
@@ -1679,7 +1681,7 @@ after <handle-special-character> [
   }
 ]
 
-recipe delete-to-end-of-line editor:address:editor-data -> result:address:duplex-list:character [
+recipe delete-to-end-of-line editor:address:editor-data -> result:address:duplex-list:character, editor:address:editor-data [
   local-scope
   load-ingredients
   # compute range to delete
