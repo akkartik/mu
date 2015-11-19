@@ -14,13 +14,14 @@ container screen-cell [
   color:number
 ]
 
-recipe new-fake-screen [
+recipe new-fake-screen w:number, h:number -> result:address:screen [
   local-scope
-  result:address:screen <- new screen:type
+  load-ingredients
+  result <- new screen:type
   width:address:number <- get-address *result, num-columns:offset
-  *width <- next-ingredient
+  *width <- copy w
   height:address:number <- get-address *result, num-rows:offset
-  *height <- next-ingredient
+  *height <- copy h
   row:address:number <- get-address *result, cursor-row:offset
   *row <- copy 0
   column:address:number <- get-address *result, cursor-column:offset
@@ -28,18 +29,17 @@ recipe new-fake-screen [
   bufsize:number <- multiply *width, *height
   buf:address:address:array:screen-cell <- get-address *result, data:offset
   *buf <- new screen-cell:type, bufsize
-  clear-screen result
-  reply result
+  result <- clear-screen result
 ]
 
-recipe clear-screen [
+recipe clear-screen screen:address:screen -> screen:address:screen [
   local-scope
-  sc:address:screen <- next-ingredient
+  load-ingredients
   # if x exists
   {
-    break-unless sc
+    break-unless screen
     # clear fake screen
-    buf:address:array:screen-cell <- get *sc, data:offset
+    buf:address:array:screen-cell <- get *screen, data:offset
     max:number <- length *buf
     i:number <- copy 0
     {
@@ -54,32 +54,31 @@ recipe clear-screen [
       loop
     }
     # reset cursor
-    x:address:number <- get-address *sc, cursor-row:offset
+    x:address:number <- get-address *screen, cursor-row:offset
     *x <- copy 0
-    x <- get-address *sc, cursor-column:offset
+    x <- get-address *screen, cursor-column:offset
     *x <- copy 0
-    reply sc/same-as-ingredient:0
+    reply
   }
   # otherwise, real screen
   clear-display
-  reply sc/same-as-ingredient:0
 ]
 
-recipe sync-screen [
+recipe sync-screen screen:address:screen -> screen:address:screen [
   local-scope
-  sc:address:screen <- next-ingredient
+  screen:address:screen <- next-ingredient
   {
-    break-if sc
+    break-if screen
     sync-display
   }
   # do nothing for fake screens
 ]
 
-recipe fake-screen-is-empty? [
+recipe fake-screen-is-empty? screen:address:screen -> result:boolean [
   local-scope
-  sc:address:screen <- next-ingredient
-  reply-unless sc, 1/true
-  buf:address:array:screen-cell <- get *sc, data:offset
+  load-ingredients
+  reply-unless screen, 1/true
+  buf:address:array:screen-cell <- get *screen, data:offset
   i:number <- copy 0
   len:number <- length *buf
   {
@@ -95,10 +94,9 @@ recipe fake-screen-is-empty? [
   reply 1/true
 ]
 
-recipe print-character [
+recipe print-character screen:address:screen, c:character -> screen:address:screen [
   local-scope
-  sc:address:screen <- next-ingredient
-  c:character <- next-ingredient
+  load-ingredients
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
@@ -115,20 +113,20 @@ recipe print-character [
   {
     # if x exists
     # (handle special cases exactly like in the real screen)
-    break-unless sc
-    width:number <- get *sc, num-columns:offset
-    height:number <- get *sc, num-rows:offset
+    break-unless screen
+    width:number <- get *screen, num-columns:offset
+    height:number <- get *screen, num-rows:offset
     # if cursor is out of bounds, silently exit
-    row:address:number <- get-address *sc, cursor-row:offset
+    row:address:number <- get-address *screen, cursor-row:offset
     legal?:boolean <- greater-or-equal *row, 0
-    reply-unless legal?, sc
+    reply-unless legal?
     legal? <- lesser-than *row, height
-    reply-unless legal?, sc
-    column:address:number <- get-address *sc, cursor-column:offset
+    reply-unless legal?
+    column:address:number <- get-address *screen, cursor-column:offset
     legal? <- greater-or-equal *column, 0
-    reply-unless legal?, sc
+    reply-unless legal?
     legal? <- lesser-than *column, width
-    reply-unless legal?, sc
+    reply-unless legal?
     # special-case: newline
     {
       newline?:boolean <- equal c, 10/newline
@@ -142,12 +140,12 @@ recipe print-character [
         *column <- copy 0
         *row <- add *row, 1
       }
-      reply sc/same-as-ingredient:0
+      reply
     }
     # save character in fake screen
     index:number <- multiply *row, width
     index <- add index, *column
-    buf:address:array:screen-cell <- get *sc, data:offset
+    buf:address:array:screen-cell <- get *screen, data:offset
     len:number <- length *buf
     # special-case: backspace
     {
@@ -166,7 +164,7 @@ recipe print-character [
         cursor-color:address:number <- get-address *cursor, color:offset
         *cursor-color <- copy 7/white
       }
-      reply sc/same-as-ingredient:0
+      reply
     }
     cursor:address:screen-cell <- index-address *buf, index
     cursor-contents:address:character <- get-address *cursor, contents:offset
@@ -180,11 +178,10 @@ recipe print-character [
       break-if at-right?
       *column <- add *column, 1
     }
-    reply sc/same-as-ingredient:0
+    reply
   }
   # otherwise, real screen
   print-character-to-display c, color, bg-color
-  reply sc/same-as-ingredient:0
 ]
 
 scenario print-character-at-top-left [
@@ -340,63 +337,58 @@ scenario print-at-bottom-right [
   ]
 ]
 
-recipe clear-line [
+recipe clear-line screen:address:screen -> screen:address:screen [
   local-scope
-  sc:address:screen <- next-ingredient
+  load-ingredients
   # if x exists, clear line in fake screen
   {
-    break-unless sc
-    width:number <- get *sc, num-columns:offset
-    column:address:number <- get-address *sc, cursor-column:offset
+    break-unless screen
+    width:number <- get *screen, num-columns:offset
+    column:address:number <- get-address *screen, cursor-column:offset
     original-column:number <- copy *column
     # space over the entire line
     {
       right:number <- subtract width, 1
       done?:boolean <- greater-or-equal *column, right
       break-if done?
-      print-character sc, [ ]  # implicitly updates 'column'
+      print-character screen, [ ]  # implicitly updates 'column'
       loop
     }
     # now back to where the cursor was
     *column <- copy original-column
-    reply sc/same-as-ingredient:0
+    reply
   }
   # otherwise, real screen
   clear-line-on-display
-  reply sc/same-as-ingredient:0
 ]
 
-recipe cursor-position [
+recipe cursor-position screen:address:screen -> row:number, column:number [
   local-scope
-  sc:address:screen <- next-ingredient
+  load-ingredients
   # if x exists, lookup cursor in fake screen
   {
-    break-unless sc
-    row:number <- get *sc, cursor-row:offset
-    column:number <- get *sc, cursor-column:offset
-    reply row, column, sc/same-as-ingredient:0
+    break-unless screen
+    row:number <- get *screen, cursor-row:offset
+    column:number <- get *screen, cursor-column:offset
+    reply
   }
   row, column <- cursor-position-on-display
-  reply row, column, sc/same-as-ingredient:0
 ]
 
-recipe move-cursor [
+recipe move-cursor screen:address:screen, new-row:number, new-column:number -> screen:address:screen [
   local-scope
-  sc:address:screen <- next-ingredient
-  new-row:number <- next-ingredient
-  new-column:number <- next-ingredient
+  load-ingredients
   # if x exists, move cursor in fake screen
   {
-    break-unless sc
-    row:address:number <- get-address *sc, cursor-row:offset
+    break-unless screen
+    row:address:number <- get-address *screen, cursor-row:offset
     *row <- copy new-row
-    column:address:number <- get-address *sc, cursor-column:offset
+    column:address:number <- get-address *screen, cursor-column:offset
     *column <- copy new-column
-    reply sc/same-as-ingredient:0
+    reply
   }
   # otherwise, real screen
   move-cursor-on-display new-row, new-column
-  reply sc/same-as-ingredient:0
 ]
 
 scenario clear-line-erases-printed-characters [
@@ -429,193 +421,180 @@ scenario clear-line-erases-printed-characters [
   ]
 ]
 
-recipe cursor-down [
+recipe cursor-down screen:address:screen -> screen:address:screen [
   local-scope
-  sc:address:screen <- next-ingredient
+  load-ingredients
   # if x exists, move cursor in fake screen
   {
-    break-unless sc
+    break-unless screen
     {
       # increment row unless it's already all the way down
-      height:number <- get *sc, num-rows:offset
-      row:address:number <- get-address *sc, cursor-row:offset
+      height:number <- get *screen, num-rows:offset
+      row:address:number <- get-address *screen, cursor-row:offset
       max:number <- subtract height, 1
       at-bottom?:boolean <- greater-or-equal *row, max
       break-if at-bottom?
       *row <- add *row, 1
     }
-    reply sc/same-as-ingredient:0
+    reply
   }
   # otherwise, real screen
   move-cursor-down-on-display
-  reply sc/same-as-ingredient:0
 ]
 
-recipe cursor-up [
+recipe cursor-up screen:address:screen -> screen:address:screen [
   local-scope
-  sc:address:screen <- next-ingredient
+  load-ingredients
   # if x exists, move cursor in fake screen
   {
-    break-unless sc
+    break-unless screen
     {
       # decrement row unless it's already all the way up
-      row:address:number <- get-address *sc, cursor-row:offset
+      row:address:number <- get-address *screen, cursor-row:offset
       at-top?:boolean <- lesser-or-equal *row, 0
       break-if at-top?
       *row <- subtract *row, 1
     }
-    reply sc/same-as-ingredient:0
+    reply
   }
   # otherwise, real screen
   move-cursor-up-on-display
-  reply sc/same-as-ingredient:0
 ]
 
-recipe cursor-right [
+recipe cursor-right screen:address:screen -> screen:address:screen [
   local-scope
-  sc:address:screen <- next-ingredient
+  load-ingredients
   # if x exists, move cursor in fake screen
   {
-    break-unless sc
+    break-unless screen
     {
       # increment column unless it's already all the way to the right
-      width:number <- get *sc, num-columns:offset
-      column:address:number <- get-address *sc, cursor-column:offset
+      width:number <- get *screen, num-columns:offset
+      column:address:number <- get-address *screen, cursor-column:offset
       max:number <- subtract width, 1
       at-bottom?:boolean <- greater-or-equal *column, max
       break-if at-bottom?
       *column <- add *column, 1
     }
-    reply sc/same-as-ingredient:0
+    reply
   }
   # otherwise, real screen
   move-cursor-right-on-display
-  reply sc/same-as-ingredient:0
 ]
 
-recipe cursor-left [
+recipe cursor-left screen:address:screen -> screen:address:screen [
   local-scope
-  sc:address:screen <- next-ingredient
+  load-ingredients
   # if x exists, move cursor in fake screen
   {
-    break-unless sc
+    break-unless screen
     {
       # decrement column unless it's already all the way to the left
-      column:address:number <- get-address *sc, cursor-column:offset
+      column:address:number <- get-address *screen, cursor-column:offset
       at-top?:boolean <- lesser-or-equal *column, 0
       break-if at-top?
       *column <- subtract *column, 1
     }
-    reply sc/same-as-ingredient:0
+    reply
   }
   # otherwise, real screen
   move-cursor-left-on-display
-  reply sc/same-as-ingredient:0
 ]
 
-recipe cursor-to-start-of-line [
+recipe cursor-to-start-of-line screen:address:screen -> screen:address:screen [
   local-scope
-  sc:address:screen <- next-ingredient
-  row:number, _, sc <- cursor-position sc
+  load-ingredients
+  row:number <- cursor-position screen
   column:number <- copy 0
-  sc <- move-cursor sc, row, column
-  reply sc/same-as-ingredient:0
+  screen <- move-cursor screen, row, column
 ]
 
-recipe cursor-to-next-line [
+recipe cursor-to-next-line screen:address:screen -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
+  load-ingredients
   screen <- cursor-down screen
   screen <- cursor-to-start-of-line screen
-  reply screen/same-as-ingredient:0
 ]
 
-recipe screen-width [
+recipe screen-width screen:address:screen -> width:number [
   local-scope
-  sc:address:screen <- next-ingredient
+  load-ingredients
   # if x exists, move cursor in fake screen
   {
-    break-unless sc
-    width:number <- get *sc, num-columns:offset
-    reply width
+    break-unless screen
+    width <- get *screen, num-columns:offset
+    reply
   }
   # otherwise, real screen
-  width:number <- display-width
-  reply width
+  width <- display-width
 ]
 
-recipe screen-height [
+recipe screen-height screen:address:screen -> height:number [
   local-scope
-  sc:address:screen <- next-ingredient
+  load-ingredients
   # if x exists, move cursor in fake screen
   {
-    break-unless sc
-    height:number <- get *sc, num-rows:offset
-    reply height
+    break-unless screen
+    height <- get *screen, num-rows:offset
+    reply
   }
   # otherwise, real screen
-  height:number <- display-height
-  reply height
+  height <- display-height
 ]
 
-recipe hide-cursor [
+recipe hide-cursor screen:address:screen -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
+  load-ingredients
   # if x exists (not real display), do nothing
   {
     break-unless screen
-    reply screen
+    reply
   }
   # otherwise, real screen
   hide-cursor-on-display
-  reply screen
 ]
 
-recipe show-cursor [
+recipe show-cursor screen:address:screen -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
+  load-ingredients
   # if x exists (not real display), do nothing
   {
     break-unless screen
-    reply screen
+    reply
   }
   # otherwise, real screen
   show-cursor-on-display
-  reply screen
 ]
 
-recipe hide-screen [
+recipe hide-screen screen:address:screen -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
+  load-ingredients
   # if x exists (not real display), do nothing
   # todo: help test this
   {
     break-unless screen
-    reply screen
+    reply
   }
   # otherwise, real screen
   hide-display
-  reply screen
 ]
 
-recipe show-screen [
+recipe show-screen screen:address:screen -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
+  load-ingredients
   # if x exists (not real display), do nothing
   # todo: help test this
   {
     break-unless screen
-    reply screen
+    reply
   }
   # otherwise, real screen
   show-display
-  reply screen
 ]
 
-recipe print-string [
+recipe print-string screen:address:screen, s:address:array:character -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  s:address:array:character <- next-ingredient
+  load-ingredients
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
@@ -638,7 +617,6 @@ recipe print-string [
     i <- add i, 1
     loop
   }
-  reply screen/same-as-ingredient:0
 ]
 
 scenario print-string-stops-at-right-margin [
@@ -661,7 +639,7 @@ scenario print-string-stops-at-right-margin [
   ]
 ]
 
-recipe print-integer [
+recipe print-integer screen:address:screen, n:number -> screen:address:screen [
   local-scope
   screen:address:screen <- next-ingredient
   n:number <- next-ingredient
@@ -679,6 +657,5 @@ recipe print-integer [
   }
   # todo: other bases besides decimal
   s:address:array:character <- integer-to-decimal-string n
-  print-string screen, s, color, bg-color
-  reply screen/same-as-ingredient:0
+  screen <- print-string screen, s, color, bg-color
 ]

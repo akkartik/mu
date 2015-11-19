@@ -4,41 +4,38 @@ container stream [
   data:address:array:character
 ]
 
-recipe new-stream [
+recipe new-stream s:address:array:character -> result:address:stream [
   local-scope
-  result:address:stream <- new stream:type
+  load-ingredients
+  result <- new stream:type
   i:address:number <- get-address *result, index:offset
   *i <- copy 0
   d:address:address:array:character <- get-address *result, data:offset
-  *d <- next-ingredient
-  reply result
+  *d <- copy s
 ]
 
-recipe rewind-stream [
+recipe rewind-stream in:address:stream -> in:address:stream [
   local-scope
-  in:address:stream <- next-ingredient
+  load-ingredients
   x:address:number <- get-address *in, index:offset
   *x <- copy 0
-  reply in/same-as-arg:0
 ]
 
-recipe read-line [
+recipe read-line in:address:stream -> result:address:array:character, in:address:stream [
   local-scope
-  in:address:stream <- next-ingredient
+  load-ingredients
   idx:address:number <- get-address *in, index:offset
   s:address:array:character <- get *in, data:offset
   next-idx:number <- find-next s, 10/newline, *idx
-  result:address:array:character <- string-copy s, *idx, next-idx
+  result <- string-copy s, *idx, next-idx
   *idx <- add next-idx, 1  # skip newline
-  reply result
 ]
 
-recipe end-of-stream? [
+recipe end-of-stream? in:address:stream -> result:boolean [
   local-scope
-  in:address:stream <- next-ingredient
+  load-ingredients
   idx:number <- get *in, index:offset
   s:address:array:character <- get *in, data:offset
   len:number <- length *s
-  result:boolean <- greater-or-equal idx, len
-  reply result
+  result <- greater-or-equal idx, len
 ]

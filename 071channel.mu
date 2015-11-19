@@ -32,10 +32,10 @@ container channel [
 ]
 
 # result:address:channel <- new-channel capacity:number
-recipe new-channel [
+recipe new-channel capacity:number -> result:address:channel [
   local-scope
-  # result = new channel
-  result:address:channel <- new channel:type
+  load-ingredients
+  result <- new channel:type
   # result.first-full = 0
   full:address:number <- get-address *result, first-full:offset
   *full <- copy 0
@@ -43,18 +43,14 @@ recipe new-channel [
   free:address:number <- get-address *result, first-free:offset
   *free <- copy 0
   # result.data = new location[ingredient+1]
-  capacity:number <- next-ingredient
   capacity <- add capacity, 1  # unused slot for 'full?' below
   dest:address:address:array:character <- get-address *result, data:offset
   *dest <- new character:type, capacity
-  reply result
 ]
 
-# chan <- write chan:address:channel, val:character
-recipe write [
+recipe write chan:address:channel, val:character -> chan:address:channel [
   local-scope
-  chan:address:channel <- next-ingredient
-  val:character <- next-ingredient
+  load-ingredients
   {
     # block if chan is full
     full:boolean <- channel-full? chan
@@ -76,13 +72,11 @@ recipe write [
     break-unless at-end?
     *free <- copy 0
   }
-  reply chan/same-as-ingredient:0
 ]
 
-# result:character, chan <- read chan:address:channel
-recipe read [
+recipe read chan:address:channel -> result:character, chan:address:channel [
   local-scope
-  chan:address:channel <- next-ingredient
+  load-ingredients
   {
     # block if chan is empty
     empty?:boolean <- channel-empty? chan
@@ -93,7 +87,7 @@ recipe read [
   # read result
   full:address:number <- get-address *chan, first-full:offset
   circular-buffer:address:array:character <- get *chan, data:offset
-  result:character <- index *circular-buffer, *full
+  result <- index *circular-buffer, *full
   # mark its slot as empty
   *full <- add *full, 1
   {
@@ -103,18 +97,16 @@ recipe read [
     break-unless at-end?
     *full <- copy 0
   }
-  reply result, chan/same-as-ingredient:0
 ]
 
-recipe clear-channel [
+recipe clear-channel chan:address:channel -> chan:address:channel [
   local-scope
-  chan:address:channel <- next-ingredient
+  load-ingredients
   {
     empty?:boolean <- channel-empty? chan
     break-if empty?
     _, chan <- read chan
   }
-  reply chan/same-as-ingredient:0
 ]
 
 scenario channel-initialization [
@@ -184,21 +176,20 @@ scenario channel-wrap [
 ## helpers
 
 # An empty channel has first-empty and first-full both at the same value.
-recipe channel-empty? [
+recipe channel-empty? chan:address:channel -> result:boolean [
   local-scope
-  chan:address:channel <- next-ingredient
+  load-ingredients
   # return chan.first-full == chan.first-free
   full:number <- get *chan, first-full:offset
   free:number <- get *chan, first-free:offset
-  result:boolean <- equal full, free
-  reply result
+  result <- equal full, free
 ]
 
 # A full channel has first-empty just before first-full, wasting one slot.
 # (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
-recipe channel-full? [
+recipe channel-full? chan:address:channel -> result:boolean [
   local-scope
-  chan:address:channel <- next-ingredient
+  load-ingredients
   # tmp = chan.first-free + 1
   tmp:number <- get *chan, first-free:offset
   tmp <- add tmp, 1
@@ -211,17 +202,15 @@ recipe channel-full? [
   }
   # return chan.first-full == tmp
   full:number <- get *chan, first-full:offset
-  result:boolean <- equal full, tmp
-  reply result
+  result <- equal full, tmp
 ]
 
 # result:number <- channel-capacity chan:address:channel
-recipe channel-capacity [
+recipe channel-capacity chan:address:channel -> result:number [
   local-scope
-  chan:address:channel <- next-ingredient
+  load-ingredients
   q:address:array:character <- get *chan, data:offset
-  result:number <- length *q
-  reply result
+  result <- length *q
 ]
 
 scenario channel-new-empty-not-full [
@@ -277,11 +266,9 @@ scenario channel-read-not-full [
 ]
 
 # helper for channels of characters in particular
-# out <- buffer-lines in:address:channel, out:address:channel
-recipe buffer-lines [
+recipe buffer-lines in:address:channel, out:address:channel -> out:address:channel, in:address:channel [
   local-scope
-  in:address:channel <- next-ingredient
-  out:address:channel <- next-ingredient
+  load-ingredients
   # repeat forever
   {
     line:address:buffer <- new-buffer, 30
@@ -327,7 +314,6 @@ recipe buffer-lines [
     }
     loop
   }
-  reply out/same-as-ingredient:1
 ]
 
 scenario buffer-lines-blocks-until-newline [
