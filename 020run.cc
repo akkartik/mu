@@ -67,9 +67,7 @@ void run_current_routine()
       raise_error << "something wrote to location 0; this should never happen\n" << end();
       put(Memory, 0, 0);
     }
-    // Read all ingredients from memory.
-    // Each ingredient loads a vector of values rather than a single value; mu
-    // permits operating on reagents spanning multiple locations.
+    // read all ingredients from memory, each potentially spanning multiple locations
     vector<vector<double> > ingredients;
     if (should_copy_ingredients()) {
       for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
@@ -78,7 +76,7 @@ void run_current_routine()
 //?         Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back());
       }
     }
-    // Instructions below will write to 'products'.
+    // instructions below will write to 'products'
     vector<vector<double> > products;
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
