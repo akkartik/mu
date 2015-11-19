@@ -239,7 +239,7 @@ recipe! render-sandbox-side screen:address:screen, env:address:programming-envir
   clear-rest-of-screen screen, row, left, left, right
 ]
 
-recipe render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:number, right:number, row:number -> row:number, screen:address:screen [
+recipe render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:number, right:number, row:number -> row:number, screen:address:screen, sandbox:address:sandbox-data [
   local-scope
   load-ingredients
   reply-unless sandbox
