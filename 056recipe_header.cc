@@ -145,9 +145,7 @@ void check_reply_instructions_against_header(const recipe_ordinal r) {
   for (long long int i = 0; i < SIZE(caller_recipe.steps); ++i) {
     const instruction& inst = caller_recipe.steps.at(i);
     if (inst.name != "reply") continue;
-    if (SIZE(caller_recipe.products) != SIZE(inst.ingredients))
-      raise_error << maybe(caller_recipe.name) << "tried to reply the wrong number of products in '" << inst.to_string() << "'\n" << end();
-    for (long long int i = 0; i < SIZE(caller_recipe.products); ++i) {
+    for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
       if (!types_match(caller_recipe.products.at(i), inst.ingredients.at(i)))
         raise_error << maybe(caller_recipe.name) << "replied with the wrong type at '" << inst.to_string() << "'\n" << end();
     }

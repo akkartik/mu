@@ -17,7 +17,7 @@ recipe main [
   #
   # Here the console and screen are both 0, which usually indicates real
   # hardware rather than a fake for testing as you'll see below.
-  0/screen, 0/console <- chessboard 0/screen, 0/console
+  chessboard 0/screen, 0/console
 
   close-console  # cleanup screen, keyboard and mouse
 ]
@@ -66,10 +66,9 @@ scenario print-board-and-read-move [
 
 ## Here's how 'chessboard' is implemented.
 
-recipe chessboard [
+recipe chessboard screen:address:screen, console:address:console -> screen:address:screen, console:address:console [
   local-scope
-  screen:address:screen <- next-ingredient
-  console:address:console <- next-ingredient
+  load-ingredients
   board:address:array:address:array:character <- initial-position
   # hook up stdin
   stdin:address:channel <- new-channel 10/capacity
@@ -94,14 +93,14 @@ recipe chessboard [
     {
       cursor-to-next-line screen
       msg <- new [move: ]
-      print-string screen, msg
+      screen <- print-string screen, msg
       m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin, screen
       break-if quit, +quit:label
       buffered-stdin <- clear-channel buffered-stdin  # cleanup after error. todo: test this?
       loop-if error
     }
     board <- make-move board, m
-    clear-screen screen
+    screen <- clear-screen screen
     loop
   }
   +quit
@@ -109,15 +108,15 @@ recipe chessboard [
 
 ## a board is an array of files, a file is an array of characters (squares)
 
-recipe new-board [
+recipe new-board initial-position:address:array:character -> board:address:array:address:array:character [
   local-scope
-  initial-position:address:array:character <- next-ingredient
+  load-ingredients
   # assert(length(initial-position) == 64)
   len:number <- length *initial-position
   correct-length?:boolean <- equal len, 64
   assert correct-length?, [chessboard had incorrect size]
   # board is an array of pointers to files; file is an array of characters
-  board:address:array:address:array:character <- new location:type, 8
+  board <- new location:type, 8
   col:number <- copy 0
   {
     done?:boolean <- equal col, 8
@@ -127,15 +126,13 @@ recipe new-board [
     col <- add col, 1
     loop
   }
-  reply board
 ]
 
-recipe new-file [
+recipe new-file position:address:array:character, index:number -> result:address:array:character [
   local-scope
-  position:address:array:character <- next-ingredient
-  index:number <- next-ingredient
+  load-ingredients
   index <- multiply index, 8
-  result:address:array:character <- new character:type, 8
+  result <- new character:type, 8
   row:number <- copy 0
   {
     done?:boolean <- equal row, 8
@@ -146,13 +143,11 @@ recipe new-file [
     index <- add index, 1
     loop
   }
-  reply result
 ]
 
-recipe print-board [
+recipe print-board screen:address:screen, board:address:array:address:array:character -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
-  board:address:array:address:array:character <- next-ingredient
+  load-ingredients
   row:number <- copy 7  # start printing from the top of the board
   # print each row
   {
@@ -188,8 +183,7 @@ recipe print-board [
   screen <- cursor-to-next-line screen
 ]
 
-# board:address:array:address:array:character <- initial-position
-recipe initial-position [
+recipe initial-position -> board:address:array:address:array:character [
   local-scope
   # layout in memory (in raster order):
   #   R P _ _ _ _ p r
@@ -209,8 +203,7 @@ recipe initial-position [
 #?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b,
 #?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,
 #?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r
-  board:address:array:address:array:character <- new-board initial-position
-  reply board
+  board <- new-board initial-position
 ]
 
 scenario printing-the-board [
@@ -246,12 +239,10 @@ container move [
   to-rank:number
 ]
 
-# result:address:move, quit?:boolean, error?:boolean <- read-move stdin:address:channel, screen:address:screen
 # prints only error messages to screen
-recipe read-move [
+recipe read-move stdin:address:channel, screen:address:screen -> result:address:move, quit?:boolean, error?:boolean [
   local-scope
-  stdin:address:channel <- next-ingredient
-  screen:address:screen <- next-ingredient
+  load-ingredients
   from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
   reply-if quit?, 0/dummy, quit?, error?
   reply-if error?, 0/dummy, quit?, error?
@@ -278,12 +269,10 @@ recipe read-move [
   reply result, quit?, error?
 ]
 
-# file:number, quit:boolean, error:boolean <- read-file stdin:address:channel, screen:address:screen
 # valid values for file: 0-7
-recipe read-file [
+recipe read-file stdin:address:channel, screen:address:screen -> file:number, quit:boolean, error:boolean [
   local-scope
-  stdin:address:channel <- next-ingredient
-  screen:address:screen <- next-ingredient
+  load-ingredients
   c:character, stdin <- read stdin
   {
     q-pressed?:boolean <- equal c, 81/Q
@@ -329,12 +318,10 @@ recipe read-file [
   reply file, 0/quit, 0/error
 ]
 
-# rank:number <- read-rank stdin:address:channel, screen:address:screen
 # valid values: 0-7, -1 (quit), -2 (error)
-recipe read-rank [
+recipe read-rank stdin:address:channel, screen:address:screen -> rank:number, quit?:boolean, error?:boolean, stdin:address:channel, screen:address:screen [
   local-scope
-  stdin:address:channel <- next-ingredient
-  screen:address:screen <- next-ingredient
+  load-ingredients
   c:character, stdin <- read stdin
   {
     q-pressed?:boolean <- equal c, 8/Q
@@ -376,11 +363,9 @@ recipe read-rank [
 
 # read a character from the given channel and check that it's what we expect
 # return true on error
-recipe expect-from-channel [
+recipe expect-from-channel stdin:address:channel, expected:character, screen:address:screen -> result:boolean [
   local-scope
-  stdin:address:channel <- next-ingredient
-  expected:character <- next-ingredient
-  screen:address:screen <- next-ingredient
+  load-ingredients
   c:character, stdin <- read stdin
   {
     match?:boolean <- equal c, expected
@@ -388,8 +373,7 @@ recipe expect-from-channel [
     s:address:array:character <- new [expected character not found]
     print-string screen, s
   }
-  result:boolean <- not match?
-  reply result
+  result <- not match?
 ]
 
 scenario read-move-blocking [
@@ -556,21 +540,19 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
   ]
 ]
 
-recipe make-move [
+recipe make-move board:address:array:address:array:character, m:address:move -> board:address:array:address:array:character [
   local-scope
-  b:address:array:address:array:character <- next-ingredient
-  m:address:move <- next-ingredient
+  load-ingredients
   from-file:number <- get *m, from-file:offset
   from-rank:number <- get *m, from-rank:offset
   to-file:number <- get *m, to-file:offset
   to-rank:number <- get *m, to-rank:offset
-  f:address:array:character <- index *b, from-file
+  f:address:array:character <- index *board, from-file
   src:address:character/square <- index-address *f, from-rank
-  f <- index *b, to-file
+  f <- index *board, to-file
   dest:address:character/square <- index-address *f, to-rank
   *dest <- copy *src
   *src <- copy 32/space
-  reply b/same-as-ingredient:0
 ]
 
 scenario making-a-move [

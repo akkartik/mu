@@ -74,6 +74,10 @@
 9992 transform:  ...
 9991 transform: --- deduce types for recipe run1001
 9991 transform: --- resolve ambiguous calls for recipe run1001
+9992 transform: instruction new-channel
+9992 transform: checking variant 0: 100
+9992 transform: instruction write
+9992 transform: checking variant 0: 100
 9991 transform: --- collect surrounding spaces for recipe run1001
 9991 transform: --- transform names for recipe run1001
 9993 name: element first-full of type channel is at offset 0
@@ -88,52 +92,52 @@
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
- 104 run: result:address:channel <- new channel:type
+ 104 run: capacity:number <- next-ingredient 
+9999 mem: storing 3 in location 1002
+ 104 run: result <- new channel:type
 9999 mem: new alloc: 1007
-9999 mem: storing 1007 in location 1002
+9999 mem: storing 1007 in location 1003
  104 run: full:address:number <- get-address *result, first-full:offset
-9999 mem: location 1002 is 1007
+9999 mem: location 1003 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
 9999 mem: location 1009 is 0
-9999 mem: location 1002 is 1007
-9998 run: address to copy is 1007
-9999 mem: storing 1007 in location 1003
- 104 run: *full <- copy 0
 9999 mem: location 1003 is 1007
+9998 run: address to copy is 1007
+9999 mem: storing 1007 in location 1004
+ 104 run: *full <- copy 0
+9999 mem: location 1004 is 1007
 9999 mem: storing 0 in location 1007
  104 run: free:address:number <- get-address *result, first-free:offset
-9999 mem: location 1002 is 1007
+9999 mem: location 1003 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
 9999 mem: location 1009 is 0
-9999 mem: location 1002 is 1007
+9999 mem: location 1003 is 1007
 9998 run: address to copy is 1008
-9999 mem: storing 1008 in location 1004
+9999 mem: storing 1008 in location 1005
  104 run: *free <- copy 0
-9999 mem: location 1004 is 1008
+9999 mem: location 1005 is 1008
 9999 mem: storing 0 in location 1008
- 104 run: capacity:number <- next-ingredient 
-9999 mem: storing 3 in location 1005
  104 run: capacity <- add capacity, 1
-9999 mem: location 1005 is 3
-9999 mem: storing 4 in location 1005
+9999 mem: location 1002 is 3
+9999 mem: storing 4 in location 1002
  104 run: dest:address:address:array:character <- get-address *result, data:offset
-9999 mem: location 1002 is 1007
+9999 mem: location 1003 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
 9999 mem: location 1009 is 0
-9999 mem: location 1002 is 1007
+9999 mem: location 1003 is 1007
 9998 run: address to copy is 1009
 9999 mem: storing 1009 in location 1006
  104 run: *dest <- new character:type, capacity
-9999 mem: location 1005 is 4
+9999 mem: location 1002 is 4
 9999 mem: array size is 4
 9999 mem: new alloc: 1010
 9999 mem: location 1006 is 1009
 9999 mem: storing 1010 in location 1009
- 104 run: reply result
-9999 mem: location 1002 is 1007
+ 104 run: reply result:address:channel
+9999 mem: location 1003 is 1007
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
@@ -186,10 +190,10 @@
 9998 run: its type is <address : <array : <character : <>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1037
- 106 run: result:number <- length *q
+ 106 run: result <- length *q
 9999 mem: location 1037 is 1010
 9999 mem: storing 4 in location 1038
- 106 run: reply result
+ 106 run: reply result:number
 9999 mem: location 1038 is 4
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 4
@@ -211,11 +215,11 @@
 9998 run: its type is number
 9999 mem: location 1007 is 0
 9999 mem: storing 0 in location 1032
- 105 run: result:boolean <- equal full, tmp
+ 105 run: result <- equal full, tmp
 9999 mem: location 1032 is 0
 9999 mem: location 1029 is 1
 9999 mem: storing 0 in location 1033
- 105 run: reply result
+ 105 run: reply result:boolean
 9999 mem: location 1033 is 0
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 0
@@ -266,7 +270,7 @@
  104 run: jump-unless at-end?, 
 9999 mem: location 1025 is 0
 9998 run: jumping to instruction 19
- 104 run: reply chan/same-as-ingredient:0
+ 104 run: reply chan:address:channel
 9999 mem: location 1017 is 1007
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1007

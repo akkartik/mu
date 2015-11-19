@@ -25,45 +25,45 @@ container console [
   data:address:array:event
 ]
 
-recipe new-fake-console [
+recipe new-fake-console events:address:array:event -> result:address:console [
   local-scope
+  load-ingredients
   result:address:console <- new console:type
   buf:address:address:array:event <- get-address *result, data:offset
-  *buf <- next-ingredient
+  *buf <- copy events
   idx:address:number <- get-address *result, index:offset
   *idx <- copy 0
-  reply result
 ]
 
-recipe read-event [
+recipe read-event console:address:console -> result:event, console:address:console, found?:boolean, quit?:boolean [
   local-scope
-  x:address:console <- next-ingredient
+  load-ingredients
   {
-    break-unless x
-    idx:address:number <- get-address *x, index:offset
-    buf:address:array:event <- get *x, data:offset
+    break-unless console
+    idx:address:number <- get-address *console, index:offset
+    buf:address:array:event <- get *console, data:offset
     {
       max:number <- length *buf
       done?:boolean <- greater-or-equal *idx, max
       break-unless done?
       dummy:address:event <- new event:type
-      reply *dummy, x/same-as-ingredient:0, 1/found, 1/quit
+      reply *dummy, console/same-as-ingredient:0, 1/found, 1/quit
     }
-    result:event <- index *buf, *idx
+    result <- index *buf, *idx
     *idx <- add *idx, 1
-    reply result, x/same-as-ingredient:0, 1/found, 0/quit
+    reply result, console/same-as-ingredient:0, 1/found, 0/quit
   }
   switch  # real event source is infrequent; avoid polling it too much
   result:event, found?:boolean <- check-for-interaction
-  reply result, x/same-as-ingredient:0, found?, 0/quit
+  reply result, console/same-as-ingredient:0, found?, 0/quit
 ]
 
 # variant of read-event for just keyboard events. Discards everything that
 # isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get
 # newlines, tabs, ctrl-d..
-recipe read-key [
+recipe read-key console:address:console -> result:character, console:address:console, found?:boolean, quit?:boolean [
   local-scope
-  console:address:console <- next-ingredient
+  load-ingredients
   x:event, console, found?:boolean, quit?:boolean <- read-event console
   reply-if quit?, 0, console/same-as-ingredient:0, found?, quit?
   reply-unless found?, 0, console/same-as-ingredient:0, found?, quit?
@@ -72,11 +72,9 @@ recipe read-key [
   reply *c, console/same-as-ingredient:0, 1/found, 0/quit
 ]
 
-recipe send-keys-to-channel [
+recipe send-keys-to-channel console:address:console, chan:address:channel, screen:address:screen -> console:address:console, chan:address:channel, screen:address:screen [
   local-scope
-  console:address:console <- next-ingredient
-  chan:address:channel <- next-ingredient
-  screen:address:screen <- next-ingredient
+  load-ingredients
   {
     c:character, console, found?:boolean, quit?:boolean <- read-key console
     loop-unless found?
@@ -86,28 +84,25 @@ recipe send-keys-to-channel [
     chan <- write chan, c
     loop
   }
-  reply console/same-as-ingredient:0, chan/same-as-ingredient:1, screen/same-as-ingredient:2
 ]
 
-recipe wait-for-event [
+recipe wait-for-event console:address:console -> console:address:console [
   local-scope
-  console:address:console <- next-ingredient
+  load-ingredients
   {
     _, console, found?:boolean <- read-event console
     loop-unless found?
   }
-  reply console/same-as-ingredient:0
 ]
 
 # use this helper to skip rendering if there's lots of other events queued up
-recipe has-more-events? [
+recipe has-more-events? console:address:console -> result:boolean [
   local-scope
-  console:address:console <- next-ingredient
+  load-ingredients
   {
     break-unless console
     # fake consoles should be plenty fast; never skip
     reply 0/false
   }
-  result:boolean <- interactions-left?
-  reply result
+  result <- interactions-left?
 ]

@@ -1,9 +1,9 @@
 # example program: communicating between routines using channels
 
-recipe producer [
+recipe producer chan:address:channel -> chan:address:channel [
   # produce characters 1 to 5 on a channel
   local-scope
-  chan:address:channel <- next-ingredient
+  load-ingredients
   # n = 0
   n:character <- copy 0
   {
@@ -18,10 +18,10 @@ recipe producer [
   }
 ]
 
-recipe consumer [
+recipe consumer chan:address:channel -> chan:address:channel [
   # consume and print integers from a channel
   local-scope
-  chan:address:channel <- next-ingredient
+  load-ingredients
   {
     # read an integer from the channel
     n:character, chan:address:channel <- read chan
