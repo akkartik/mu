@@ -153,6 +153,9 @@ void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
     }
   }
   // End Instruction Dispatch(inst, best_score)
+  if (best_score == -1 && get(Recipe_ordinal, inst.name) >= MAX_PRIMITIVE_RECIPES) {
+    raise_error << maybe(caller_recipe.name) << "failed to find a matching call for '" << inst.to_string() << "'\n" << end();
+  }
 }
 
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {
@@ -200,6 +203,7 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
   }
   const vector<reagent>& header_products = get(Recipe, variant).products;
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
+    if (is_dummy(inst.products.at(i))) continue;
     if (!types_match(header_products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "mismatch: product " << i << end();
 //?       cerr << "mismatch: product " << i << '\n';
@@ -266,6 +270,23 @@ recipe equal x:number, y:number -> z:boolean [
 +mem: storing 0 in location 3
 # comparing booleans continues to use primitive
 +mem: storing 1 in location 6
+
+:(scenario static_dispatch_works_with_dummy_results_for_containers)
+% Hide_errors = true;
+recipe main [
+  _ <- test 3, 4
+]
+recipe test a:number -> z:point [
+  local-scope
+  load-ingredients
+  z <- merge a, 0
+]
+recipe test a:number, b:number -> z:point [
+  local-scope
+  load-ingredients
+  z <- merge a, b
+]
+$error: 0
 
 :(scenario static_dispatch_prefers_literals_to_be_numbers_rather_than_addresses)
 recipe main [

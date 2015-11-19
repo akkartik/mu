@@ -72,6 +72,7 @@ if (best_score == -1) {
 //?   cerr << "no variant found for " << inst.name << "; searching for variant with suitable type ingredients" << '\n';
   recipe_ordinal exemplar = pick_matching_shape_shifting_variant(variants, inst, best_score);
   if (exemplar) {
+//?     cerr << "specializing " << inst.name << '\n';
     trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
 //?     cerr << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << '\n';
     recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
@@ -89,6 +90,16 @@ if (best_score == -1) {
     trace(9992, "transform") << "new specialization: " << inst.name << end();
 //?     cerr << "new specialization: " << inst.name << '\n';
   }
+}
+
+//: make sure we have no unspecialized shape-shifting recipes being called
+//: before running mu programs
+
+:(before "End Instruction Operation Checks")
+if (contains_key(Recipe, inst.operation)
+    && any_type_ingredient_in_header(inst.operation)) {
+  raise_error << maybe(caller.name) << "instruction " << inst.name << " has no valid specialization\n" << end();
+  return;
 }
 
 :(code)
@@ -138,6 +149,7 @@ long long int shape_shifting_variant_score(const instruction& inst, recipe_ordin
   }
   const vector<reagent>& header_products = get(Recipe, variant).products;
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
+    if (is_dummy(inst.products.at(i))) continue;
     if (!deeply_equal_concrete_types(header_products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "mismatch: product " << i << end();
 //?       cerr << "mismatch: product " << i << '\n';
