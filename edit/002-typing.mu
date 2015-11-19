@@ -11,7 +11,7 @@ recipe! main text:address:array:character [
   close-console
 ]
 
-recipe editor-event-loop screen:address:screen, console:address:console, editor:address:editor-data [
+recipe editor-event-loop screen:address:screen, console:address:console, editor:address:editor-data -> screen:address:screen, console:address:console, editor:address:editor-data [
   local-scope
   load-ingredients
   {
@@ -45,7 +45,7 @@ recipe editor-event-loop screen:address:screen, console:address:console, editor:
 ]
 
 # process click, return if it was on current editor
-recipe move-cursor-in-editor screen:address:screen, editor:address:editor-data, t:touch-event -> in-focus?:boolean [
+recipe move-cursor-in-editor screen:address:screen, editor:address:editor-data, t:touch-event -> in-focus?:boolean, editor:address:editor-data [
   local-scope
   load-ingredients
   reply-unless editor, 0/false
@@ -259,7 +259,7 @@ recipe insert-at-cursor editor:address:editor-data, c:character, screen:address:
 ]
 
 # helper for tests
-recipe editor-render screen:address:screen, editor:address:editor-data -> screen:address:screen [
+recipe editor-render screen:address:screen, editor:address:editor-data -> screen:address:screen, editor:address:editor-data [
   local-scope
   load-ingredients
   left:number <- get *editor, left:offset
@@ -1012,7 +1012,7 @@ after <handle-special-key> [
 
 ## helpers
 
-recipe draw-horizontal screen:address:screen, row:number, x:number, right:number [
+recipe draw-horizontal screen:address:screen, row:number, x:number, right:number -> screen:address:screen [
   local-scope
   load-ingredients
   style:character, style-found?:boolean <- next-ingredient
