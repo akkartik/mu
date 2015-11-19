@@ -21,7 +21,7 @@ container programming-environment-data [
   sandbox-in-focus?:boolean  # false => cursor in recipes; true => cursor in current-sandbox
 ]
 
-recipe new-programming-environment screen:address:screen, initial-recipe-contents:address:array:character, initial-sandbox-contents:address:array:character -> result:address:programming-environment-data [
+recipe new-programming-environment screen:address:screen, initial-recipe-contents:address:array:character, initial-sandbox-contents:address:array:character -> result:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   width:number <- screen-width screen
@@ -47,7 +47,7 @@ recipe new-programming-environment screen:address:screen, initial-recipe-content
   *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
 ]
 
-recipe event-loop screen:address:screen, console:address:console, env:address:programming-environment-data [
+recipe event-loop screen:address:screen, console:address:console, env:address:programming-environment-data -> screen:address:screen, console:address:console, env:address:programming-environment-data [
   local-scope
   load-ingredients
   recipes:address:editor-data <- get *env, recipes:offset
@@ -106,7 +106,7 @@ recipe event-loop screen:address:screen, console:address:console, env:address:pr
       }
       {
         break-if more-events?
-        env <- resize screen, env
+        env, screen <- resize screen, env
         screen <- render-all screen, env
         render-all-on-no-more-events? <- copy 0/false  # full render done
       }
@@ -179,7 +179,7 @@ recipe event-loop screen:address:screen, console:address:console, env:address:pr
   }
 ]
 
-recipe resize screen:address:screen, env:address:programming-environment-data -> env:address:programming-environment-data [
+recipe resize screen:address:screen, env:address:programming-environment-data -> env:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   clear-screen screen  # update screen dimensions
@@ -598,7 +598,7 @@ after <global-type> [
 
 ## helpers
 
-recipe draw-vertical screen:address:screen, col:number, y:number, bottom:number [
+recipe draw-vertical screen:address:screen, col:number, y:number, bottom:number -> screen:address:screen [
   local-scope
   load-ingredients
   style:character, style-found?:boolean <- next-ingredient
