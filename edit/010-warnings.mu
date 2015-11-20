@@ -150,6 +150,55 @@ scenario run-hides-warnings-from-past-sandboxes [
   ]
 ]
 
+scenario run-updates-warnings-for-shape-shifting-recipes [
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 15/height
+  # define a shape-shifting recipe with an error
+  1:address:array:character <- new [recipe foo x:_elem -> z:_elem [
+local-scope
+load-ingredients
+z <- add x, [a]
+]]
+  2:address:array:character <- new [foo 2]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
+    .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .load-ingredients                                  ┊                                                x.
+    .z <- add x, [a]                                   ┊foo 2                                            .
+    .]                                                 ┊foo_3: 'add' requires number ingredients, but go↩.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+  # now rerun everything
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  ]
+  # error should remain unchanged
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
+    .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .load-ingredients                                  ┊                                                x.
+    .z <- add x, [a]                                   ┊foo 2                                            .
+    .]                                                 ┊foo_3: 'add' requires number ingredients, but go↩.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+]
+
 scenario run-shows-missing-type-warnings [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
