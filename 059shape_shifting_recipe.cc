@@ -41,11 +41,23 @@ if (Current_routine->calls.front().running_step_index == 0
 if (contains_type_ingredient_name(lhs)) return false;
 
 //: We'll be creating recipes without loading them from anywhere by
-//: *specializing* existing recipes, so make sure we don't clear any of those
-//: when we start running tests.
+//: *specializing* existing recipes.
+//:
+//: Keep track of these new recipes in a separate variable in addition to
+//: recently_added_recipes, so that edit/ can clear them before reloading to
+//: regenerate errors.
+:(before "End Globals")
+vector<recipe_ordinal> recently_added_shape_shifting_recipes;
+:(before "End Setup")
+//? cerr << "setup: clearing recently-added shape-shifting recipes\n";
+recently_added_shape_shifting_recipes.clear();
+
+//: make sure we don't clear any of these recipes when we start running tests
 :(before "End Loading .mu Files")
 recently_added_recipes.clear();
 recently_added_types.clear();
+//? cerr << "clearing recently-added shape-shifting recipes\n";
+recently_added_shape_shifting_recipes.clear();
 
 :(before "End Instruction Dispatch(inst, best_score)")
 if (best_score == -1) {
@@ -180,6 +192,7 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
   assert(contains_key(Recipe, exemplar));
   assert(!contains_key(Recipe, new_recipe_ordinal));
   recently_added_recipes.push_back(new_recipe_ordinal);
+  recently_added_shape_shifting_recipes.push_back(new_recipe_ordinal);
   put(Recipe, new_recipe_ordinal, get(Recipe, exemplar));
   recipe& new_recipe = get(Recipe, new_recipe_ordinal);
   // Since the exemplar never ran any transforms, we have to redo some of the
