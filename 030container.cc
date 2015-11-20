@@ -161,7 +161,7 @@ case GET: {
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
   if (!types_match(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get' " << offset.original_string << " (" << offset_value << ") on " << get(Type, base_type).name << " can't be saved in " << product.original_string << "; type should be " << debug_string(element.type) << " but is " << debug_string(product.type) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << debug_string(element.type) << " but " << product.name << " has type " << debug_string(product.type) << '\n' << end();
     break;
   }
   break;
@@ -241,7 +241,7 @@ recipe main [
   14:number <- copy 36
   15:address:number <- get 12:point-number/raw, 1:offset
 ]
-+error: main: 'get' 1:offset (1) on point-number can't be saved in 15:address:number; type should be number but is <address : <number : <>>>
++error: main: 'get 12:point-number/raw, 1:offset' should write to number but 15 has type <address : <number : <>>>
 
 //: we might want to call 'get' without saving the results, say in a sandbox
 
@@ -303,7 +303,7 @@ case GET_ADDRESS: {
   // ..except for an address at the start
   element.type = new type_tree(get(Type_ordinal, "address"), element.type);
   if (!types_match(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get-address' " << offset.original_string << " (" << offset_value << ") on " << get(Type, base_type).name << " can't be saved in " << product.original_string << "; type should be " << debug_string(element.type) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << debug_string(element.type) << " but " << product.name << " has type " << debug_string(product.type) << '\n' << end();
     break;
   }
   break;
@@ -359,7 +359,7 @@ recipe main [
   14:number <- copy 36
   15:number <- get-address 12:point-number/raw, 1:offset
 ]
-+error: main: 'get-address' 1:offset (1) on point-number can't be saved in 15:number; type should be <address : <number : <>>>
++error: main: 'get-address 12:point-number/raw, 1:offset' should write to <address : <number : <>>> but 15 has type number
 
 //:: Allow containers to be defined in mu code.
 
