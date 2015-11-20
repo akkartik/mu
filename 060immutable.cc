@@ -79,7 +79,7 @@ recipe foo p:address:point [
   q:address:point <- copy p
   x:address:number <- get-address *q, x:offset
 ]
-+warn: foo: cannot modify ingredient q after instruction 'x:address:number <- get-address *q, x:offset' because it's not also a product of foo
++warn: foo: cannot modify q after instruction 'x:address:number <- get-address *q, x:offset' because that would modify ingredient p which is not also a product of foo
 
 :(scenario can_traverse_immutable_ingredients)
 % Hide_warnings = true;
@@ -122,7 +122,7 @@ void check_immutable_ingredients(recipe_ordinal r) {
     immutable_vars.insert(current_ingredient.name);
     for (long long int i = 0; i < SIZE(caller.steps); ++i) {
       const instruction& inst = caller.steps.at(i);
-      check_immutable_ingredient_in_instruction(inst, immutable_vars, caller);
+      check_immutable_ingredient_in_instruction(inst, immutable_vars, current_ingredient.name, caller);
       update_aliases(inst, immutable_vars);
     }
   }
@@ -185,10 +185,10 @@ recipe test-next x:address:test-list -> y:address:test-list/contained-in:x [
   load-ingredients
   y <- get *x, next:offset
 ]
-$warn: 1
++warn: foo: cannot modify p2 after instruction 'p3:address:address:test-list <- get-address *p2, next:offset' because that would modify ingredient p which is not also a product of foo
 
 :(code)
-void check_immutable_ingredient_in_instruction(const instruction& inst, const set<string>& current_ingredient_and_aliases, const recipe& caller) {
+void check_immutable_ingredient_in_instruction(const instruction& inst, const set<string>& current_ingredient_and_aliases, const string& original_ingredient_name, const recipe& caller) {
   set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
   if (current_ingredient_indices.empty()) return;  // ingredient not found in call
   for (set<long long int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p) {
@@ -198,14 +198,22 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
     const string& current_ingredient_name = current_ingredient.name;
     if (!contains_key(Recipe, inst.operation)) {
       // primitive recipe
-      if (inst.operation == GET_ADDRESS || inst.operation == INDEX_ADDRESS)
-        raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << inst.to_string() << "' because it's not also a product of " << caller.name << '\n' << end();
+      if (inst.operation == GET_ADDRESS || inst.operation == INDEX_ADDRESS) {
+        if (current_ingredient_name == original_ingredient_name)
+          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << inst.to_string() << "' because it's not also a product of " << caller.name << '\n' << end();
+        else
+          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << inst.to_string() << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
+      }
     }
     else {
       // defined recipe
       if (!is_mu_address(current_ingredient)) return;  // making a copy is ok
-      if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller))
-        raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << inst.to_string() << "' because it's not also a product of " << caller.name << '\n' << end();
+      if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller)) {
+        if (current_ingredient_name == original_ingredient_name)
+          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << inst.to_string() << "' because it's not also a product of " << caller.name << '\n' << end();
+        else
+          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << inst.to_string() << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
+      }
     }
   }
 }
