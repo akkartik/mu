@@ -30,14 +30,14 @@ recipe first in:address:duplex-list:_elem -> result:_elem [
   result <- get *in, value:offset
 ]
 
-recipe next in:address:duplex-list:_elem -> result:address:duplex-list:_elem [
+recipe next in:address:duplex-list:_elem -> result:address:duplex-list:_elem/contained-in:in [
   local-scope
   load-ingredients
   reply-unless in, 0
   result <- get *in, next:offset
 ]
 
-recipe prev in:address:duplex-list:_elem -> result:address:duplex-list:_elem [
+recipe prev in:address:duplex-list:_elem -> result:address:duplex-list:_elem/contained-in:in [
   local-scope
   load-ingredients
   reply-unless in, 0

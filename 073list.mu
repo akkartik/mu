@@ -8,16 +8,15 @@ container list:_elem [
   next:address:list:_elem
 ]
 
-# should I say in/contained-in:result, allow ingredients to refer to products?
-recipe push x:_elem, in:address:list:_elem -> result:address:list:_elem [
+recipe push x:_elem, in:address:list:_elem -> in:address:list:_elem [
   local-scope
   load-ingredients
-  result <- new {(list _elem): type}
+  result:address:list:_elem <- new {(list _elem): type}
   val:address:_elem <- get-address *result, value:offset
   *val <- copy x
   next:address:address:list:_elem <- get-address *result, next:offset
   *next <- copy in
-  reply result
+  reply result  # needed explicitly because we need to replace 'in' with 'result'
 ]
 
 recipe first in:address:list:_elem -> result:_elem [
@@ -26,8 +25,7 @@ recipe first in:address:list:_elem -> result:_elem [
   result <- get *in, value:offset
 ]
 
-# result:address:list <- rest in:address:list
-recipe rest in:address:list:_elem -> result:address:list:_elem [
+recipe rest in:address:list:_elem -> result:address:list:_elem/contained-in:in [
   local-scope
   load-ingredients
   result <- get *in, next:offset
