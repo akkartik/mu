@@ -1,6 +1,6 @@
 ## the basic editor data structure, and how it displays text to the screen
 
-# temporary main for this layer: just render the given string at the given
+# temporary main for this layer: just render the given text at the given
 # screen dimensions, then stop
 recipe! main text:address:array:character [
   local-scope
@@ -13,7 +13,7 @@ recipe! main text:address:array:character [
   close-console
 ]
 
-scenario editor-initially-prints-string-to-screen [
+scenario editor-initially-prints-text-to-screen [
   assume-screen 10/width, 5/height
   run [
     1:address:array:character <- new [abc]
@@ -47,7 +47,7 @@ container editor-data [
 # creates a new editor widget and renders its initial appearance to screen
 #   top/left/right constrain the screen area available to the new editor
 #   right is exclusive
-recipe new-editor s:address:array:character, screen:address:screen, left:number, right:number -> result:address:editor-data [
+recipe new-editor s:address:array:character, screen:address:screen, left:number, right:number -> result:address:editor-data, screen:address:screen [
   local-scope
   load-ingredients
   # no clipping of bounds
@@ -224,13 +224,13 @@ recipe render screen:address:screen, editor:address:editor-data -> last-row:numb
   reply row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
-recipe clear-line-delimited screen:address:screen, column:number, right:number [
+recipe clear-line-delimited screen:address:screen, column:number, right:number -> screen:address:screen [
   local-scope
   load-ingredients
   {
     done?:boolean <- greater-than column, right
     break-if done?
-    print-character screen, 32/space
+    screen <- print-character screen, 32/space
     column <- add column, 1
     loop
   }

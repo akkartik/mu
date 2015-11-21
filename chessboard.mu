@@ -79,21 +79,21 @@ recipe chessboard screen:address:screen, console:address:console -> screen:addre
   {
     msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
 ]
-    print-string screen, msg
+    print screen, msg
     cursor-to-next-line screen
     print-board screen, board
     cursor-to-next-line screen
     msg <- new [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
 ]
-    print-string screen, msg
+    print screen, msg
     cursor-to-next-line screen
     msg <- new [Hit 'q' to exit.
 ]
-    print-string screen, msg
+    print screen, msg
     {
       cursor-to-next-line screen
       msg <- new [move: ]
-      screen <- print-string screen, msg
+      screen <- print screen, msg
       m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin, screen
       break-if quit, +quit:label
       buffered-stdin <- clear-channel buffered-stdin  # cleanup after error. todo: test this?
@@ -157,7 +157,7 @@ recipe print-board screen:address:screen, board:address:array:address:array:char
     rank:number <- add row, 1
     print-integer screen, rank
     s:address:array:character <- new [ | ]
-    print-string screen, s
+    print screen, s
     # print each square in the row
     col:number <- copy 0
     {
@@ -176,10 +176,10 @@ recipe print-board screen:address:screen, board:address:array:address:array:char
   }
   # print file letters as legend
   s <- new [  +----------------]
-  print-string screen, s
+  print screen, s
   screen <- cursor-to-next-line screen
   s <- new [    a b c d e f g h]
-  screen <- print-string screen, s
+  screen <- print screen, s
   screen <- cursor-to-next-line screen
 ]
 
@@ -293,7 +293,7 @@ recipe read-file stdin:address:channel, screen:address:screen -> file:number, qu
     newline?:boolean <- equal c, 10/newline
     break-unless newline?
     error-message:address:array:character <- new [that's not enough]
-    print-string screen, error-message
+    print screen, error-message
     reply 0/dummy, 0/quit, 1/error
   }
   file:number <- subtract c, 97/a
@@ -302,7 +302,7 @@ recipe read-file stdin:address:channel, screen:address:screen -> file:number, qu
     above-min:boolean <- greater-or-equal file, 0
     break-if above-min
     error-message:address:array:character <- new [file too low: ]
-    print-string screen, error-message
+    print screen, error-message
     print-character screen, c
     cursor-to-next-line screen
     reply 0/dummy, 0/quit, 1/error
@@ -311,7 +311,7 @@ recipe read-file stdin:address:channel, screen:address:screen -> file:number, qu
     below-max:boolean <- lesser-than file, 8
     break-if below-max
     error-message <- new [file too high: ]
-    print-string screen, error-message
+    print screen, error-message
     print-character screen, c
     reply 0/dummy, 0/quit, 1/error
   }
@@ -337,7 +337,7 @@ recipe read-rank stdin:address:channel, screen:address:screen -> rank:number, qu
     newline?:boolean <- equal c, 10  # newline
     break-unless newline?
     error-message:address:array:character <- new [that's not enough]
-    print-string screen, error-message
+    print screen, error-message
     reply 0/dummy, 0/quit, 1/error
   }
   rank:number <- subtract c, 49/'1'
@@ -346,7 +346,7 @@ recipe read-rank stdin:address:channel, screen:address:screen -> rank:number, qu
     above-min:boolean <- greater-or-equal rank, 0
     break-if above-min
     error-message <- new [rank too low: ]
-    print-string screen, error-message
+    print screen, error-message
     print-character screen, c
     reply 0/dummy, 0/quit, 1/error
   }
@@ -354,7 +354,7 @@ recipe read-rank stdin:address:channel, screen:address:screen -> rank:number, qu
     below-max:boolean <- lesser-or-equal rank, 7
     break-if below-max
     error-message <- new [rank too high: ]
-    print-string screen, error-message
+    print screen, error-message
     print-character screen, c
     reply 0/dummy, 0/quit, 1/error
   }
@@ -371,7 +371,7 @@ recipe expect-from-channel stdin:address:channel, expected:character, screen:add
     match?:boolean <- equal c, expected
     break-if match?
     s:address:array:character <- new [expected character not found]
-    print-string screen, s
+    print screen, s
   }
   result <- not match?
 ]

@@ -30,7 +30,7 @@ scenario scenario_with_multiple_comments_in_mu [
   ]
 ]
 
-scenario check_string_in_memory [
+scenario check_text_in_memory [
   run [
     1:number <- copy 3
     2:character <- copy 97  # 'a'

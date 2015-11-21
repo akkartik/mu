@@ -1,0 +1,246 @@
+9991 parse: --- defining scenario-text-equal-identical
+9993 parse: instruction: run
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"\n    default-space:address:array:location <- new location:type, 30\n    x:address:array:character <- new [abc]\n    y:address:array:character <- new [abc]\n    3:boolean/raw <- text-equal x, y\n  ": "literal-string"}
+9992 load: after rewriting: run [
+    default-space:address:array:location <- new location:type, 30
+    x:address:array:character <- new [abc]
+    y:address:array:character <- new [abc]
+    3:boolean/raw <- text-equal x, y
+  ]
+9993 parse: instruction: memory-should-contain
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"\n    3 <- 1  # abc == abc\n  ": "literal-string"}
+9992 load: after rewriting: memory-should-contain [
+    3 <- 1  # abc == abc
+  ]
+9999 parse: recipe scenario-text-equal-identical has a header
+9990 transform: === transform_all()
+9991 transform: --- fill in reply ingredients from header for recipe scenario-text-equal-identical
+9991 transform: --- transform braces for recipe scenario-text-equal-identical
+9992 transform: run ...
+9992 transform: memory-should-contain ...
+9992 transform:  ...
+9991 transform: --- deduce types for recipe scenario-text-equal-identical
+9991 transform: --- resolve ambiguous calls for recipe scenario-text-equal-identical
+9991 transform: --- collect surrounding spaces for recipe scenario-text-equal-identical
+9991 transform: --- transform names for recipe scenario-text-equal-identical
+9991 transform: --- compute instruction operations for recipe scenario-text-equal-identical
+9991 transform: --- perform checks for recipe scenario-text-equal-identical
+9991 transform: --- convert 'new' to 'allocate' for recipe scenario-text-equal-identical
+9991 transform: --- parsing any uninitialized reagents as integers
+9999 trace: new routine; incrementing callstack depth to 1
+9999 new: routine allocated memory from 1000 to 101000
+9990 schedule: scenario-text-equal-identical
+ 102 run: run [
+    default-space:address:array:location <- new location:type, 30
+    x:address:array:character <- new [abc]
+    y:address:array:character <- new [abc]
+    3:boolean/raw <- text-equal x, y
+  ]
+9991 parse: --- defining run1001
+9993 parse: instruction: new
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"location": "type"}
+9993 parse:   ingredient: {"30": "literal"}
+9993 parse:   product: {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 load: after rewriting: default-space:address:array:location <- new location:type, 30
+9993 parse: instruction: new
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"abc": "literal-string"}
+9993 parse:   product: {"x": <"address" : <"array" : <"character" : <>>>>}
+9992 load: after rewriting: x:address:array:character <- new [abc]
+9993 parse: instruction: new
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"abc": "literal-string"}
+9993 parse:   product: {"y": <"address" : <"array" : <"character" : <>>>>}
+9992 load: after rewriting: y:address:array:character <- new [abc]
+9993 parse: instruction: text-equal
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"x": <>}
+9993 parse:   ingredient: {"y": <>}
+9993 parse:   product: {"3": "boolean", "raw": <>}
+9992 load: after rewriting: 3:boolean/raw <- text-equal x, y
+9999 parse: recipe run1001 has a header
+9990 transform: === transform_all()
+9991 transform: --- fill in reply ingredients from header for recipe run1001
+9991 transform: --- transform braces for recipe run1001
+9992 transform: new ...
+9992 transform: new ...
+9992 transform: new ...
+9992 transform: text-equal ...
+9992 transform:  ...
+9991 transform: --- deduce types for recipe run1001
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: x => <address : <array : <character : <>>>>
+9992 transform: y => <address : <array : <character : <>>>>
+9992 transform: x <= <address : <array : <character : <>>>>
+9992 transform: y <= <address : <array : <character : <>>>>
+9991 transform: --- resolve ambiguous calls for recipe run1001
+9992 transform: instruction text-equal
+9992 transform: checking variant 0: 100
+9991 transform: --- collect surrounding spaces for recipe run1001
+9991 transform: --- transform names for recipe run1001
+9993 name: assign x 1
+9993 name: assign y 2
+9991 transform: --- compute instruction operations for recipe run1001
+9991 transform: --- perform checks for recipe run1001
+9991 transform: --- convert 'new' to 'allocate' for recipe run1001
+9992 new: size of "location" is 1
+9991 transform: --- parsing any uninitialized reagents as integers
+9998 trace: run: incrementing callstack depth to 2
+ 103 run: default-space:address:array:location <- new location:type, 30
+9999 mem: array size is 30
+9999 mem: new alloc: 1000
+ 103 run: x:address:array:character <- new [abc]
+9999 mem: storing 1031 in location 1002
+ 103 run: y:address:array:character <- new [abc]
+9999 mem: storing 1035 in location 1003
+ 103 run: 3:boolean/raw <- text-equal x, y
+9999 mem: location 1002 is 1031
+9999 mem: location 1003 is 1035
+9999 trace: incrementing callstack depth to 3
+ 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+9999 mem: array size is 11
+9999 mem: new alloc: 1039
+ 104 run: a:address:array:character <- next-ingredient 
+9999 mem: storing 1031 in location 1041
+ 104 run: b:address:array:character <- next-ingredient 
+9999 mem: storing 1035 in location 1042
+ 104 run: a-len:number <- length *a
+9999 mem: location 1041 is 1031
+9999 mem: storing 3 in location 1043
+ 104 run: b-len:number <- length *b
+9999 mem: location 1042 is 1035
+9999 mem: storing 3 in location 1044
+ 104 run: trace 99, [text-equal], [comparing lengths]
+  99 text-equal: comparing lengths 
+ 104 run: length-equal?:boolean <- equal a-len, b-len
+9999 mem: location 1043 is 3
+9999 mem: location 1044 is 3
+9999 mem: storing 1 in location 1045
+ 104 run: jump-if length-equal?, 
+9999 mem: location 1045 is 1
+9998 run: jumping to instruction 10
+ 104 run: trace 99, [text-equal], [comparing characters]
+  99 text-equal: comparing characters 
+ 104 run: i:number <- copy 0
+9999 mem: storing 0 in location 1046
+ 104 run: done?:boolean <- greater-or-equal i, a-len
+9999 mem: location 1046 is 0
+9999 mem: location 1043 is 3
+9999 mem: storing 0 in location 1047
+ 104 run: jump-if done?, 
+9999 mem: location 1047 is 0
+9998 run: jump-if fell through
+ 104 run: a2:character <- index *a, i
+9999 mem: location 1041 is 1031
+9999 mem: location 1046 is 0
+9998 run: address to copy is 1032
+9998 run: its type is character
+9999 mem: location 1032 is 97
+9999 mem: storing 97 in location 1048
+ 104 run: b2:character <- index *b, i
+9999 mem: location 1042 is 1035
+9999 mem: location 1046 is 0
+9998 run: address to copy is 1036
+9998 run: its type is character
+9999 mem: location 1036 is 97
+9999 mem: storing 97 in location 1049
+ 104 run: chars-match?:boolean <- equal a2, b2
+9999 mem: location 1048 is 97
+9999 mem: location 1049 is 97
+9999 mem: storing 1 in location 1050
+ 104 run: jump-if chars-match?, 
+9999 mem: location 1050 is 1
+9998 run: jumping to instruction 22
+ 104 run: i <- add i, 1
+9999 mem: location 1046 is 0
+9999 mem: storing 1 in location 1046
+ 104 run: jump 
+9998 run: jumping to instruction 14
+ 104 run: done?:boolean <- greater-or-equal i, a-len
+9999 mem: location 1046 is 1
+9999 mem: location 1043 is 3
+9999 mem: storing 0 in location 1047
+ 104 run: jump-if done?, 
+9999 mem: location 1047 is 0
+9998 run: jump-if fell through
+ 104 run: a2:character <- index *a, i
+9999 mem: location 1041 is 1031
+9999 mem: location 1046 is 1
+9998 run: address to copy is 1033
+9998 run: its type is character
+9999 mem: location 1033 is 98
+9999 mem: storing 98 in location 1048
+ 104 run: b2:character <- index *b, i
+9999 mem: location 1042 is 1035
+9999 mem: location 1046 is 1
+9998 run: address to copy is 1037
+9998 run: its type is character
+9999 mem: location 1037 is 98
+9999 mem: storing 98 in location 1049
+ 104 run: chars-match?:boolean <- equal a2, b2
+9999 mem: location 1048 is 98
+9999 mem: location 1049 is 98
+9999 mem: storing 1 in location 1050
+ 104 run: jump-if chars-match?, 
+9999 mem: location 1050 is 1
+9998 run: jumping to instruction 22
+ 104 run: i <- add i, 1
+9999 mem: location 1046 is 1
+9999 mem: storing 2 in location 1046
+ 104 run: jump 
+9998 run: jumping to instruction 14
+ 104 run: done?:boolean <- greater-or-equal i, a-len
+9999 mem: location 1046 is 2
+9999 mem: location 1043 is 3
+9999 mem: storing 0 in location 1047
+ 104 run: jump-if done?, 
+9999 mem: location 1047 is 0
+9998 run: jump-if fell through
+ 104 run: a2:character <- index *a, i
+9999 mem: location 1041 is 1031
+9999 mem: location 1046 is 2
+9998 run: address to copy is 1034
+9998 run: its type is character
+9999 mem: location 1034 is 99
+9999 mem: storing 99 in location 1048
+ 104 run: b2:character <- index *b, i
+9999 mem: location 1042 is 1035
+9999 mem: location 1046 is 2
+9998 run: address to copy is 1038
+9998 run: its type is character
+9999 mem: location 1038 is 99
+9999 mem: storing 99 in location 1049
+ 104 run: chars-match?:boolean <- equal a2, b2
+9999 mem: location 1048 is 99
+9999 mem: location 1049 is 99
+9999 mem: storing 1 in location 1050
+ 104 run: jump-if chars-match?, 
+9999 mem: location 1050 is 1
+9998 run: jumping to instruction 22
+ 104 run: i <- add i, 1
+9999 mem: location 1046 is 2
+9999 mem: storing 3 in location 1046
+ 104 run: jump 
+9998 run: jumping to instruction 14
+ 104 run: done?:boolean <- greater-or-equal i, a-len
+9999 mem: location 1046 is 3
+9999 mem: location 1043 is 3
+9999 mem: storing 1 in location 1047
+ 104 run: jump-if done?, 
+9999 mem: location 1047 is 1
+9998 run: jumping to instruction 25
+ 104 run: reply 1
+9999 trace: reply: decrementing callstack depth from 3
+9998 run: result 0 is 1
+9999 mem: storing 1 in location 3
+ 103 run: reply 
+9999 trace: reply: decrementing callstack depth from 2
+ 102 run: memory-should-contain [
+    3 <- 1  # abc == abc
+  ]
+9999 run: checking location 3
+ 102 run: reply 
+9999 trace: reply: decrementing callstack depth from 1

@@ -38,7 +38,7 @@ before <render-recipe-components-end> [
   {
     recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
     break-unless recipe-warnings
-    row, screen <- render-string screen, recipe-warnings, left, right, 1/red, row
+    row, screen <- render screen, recipe-warnings, left, right, 1/red, row
   }
 ]
 
@@ -71,7 +71,7 @@ after <render-sandbox-trace-done> [
     sandbox-warnings:address:array:character <- get *sandbox, warnings:offset
     break-unless sandbox-warnings
     *response-starting-row <- copy 0  # no response
-    row, screen <- render-string screen, sandbox-warnings, left, right, 1/red, row
+    row, screen <- render screen, sandbox-warnings, left, right, 1/red, row
     # don't try to print anything more for this sandbox
     jump +render-sandbox-end:label
   }
@@ -232,7 +232,7 @@ scenario run-shows-unbalanced-bracket-warnings [
 recipe foo «
   x <- copy 0
 ]
-  string-replace 1:address:array:character, 171/«, 91  # '['
+  replace 1:address:array:character, 171/«, 91  # '['
   2:address:array:character <- new [foo]
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   assume-console [

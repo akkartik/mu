@@ -592,7 +592,7 @@ recipe show-screen screen:address:screen -> screen:address:screen [
   show-display
 ]
 
-recipe print-string screen:address:screen, s:address:array:character -> screen:address:screen [
+recipe print screen:address:screen, s:address:array:character -> screen:address:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient
@@ -619,11 +619,11 @@ recipe print-string screen:address:screen, s:address:array:character -> screen:a
   }
 ]
 
-scenario print-string-stops-at-right-margin [
+scenario print-text-stops-at-right-margin [
   run [
     1:address:screen <- new-fake-screen 3/width, 2/height
     2:address:array:character <- new [abcd]
-    1:address:screen <- print-string 1:address:screen, 2:address:array:character
+    1:address:screen <- print 1:address:screen, 2:address:array:character
     3:address:array:screen-cell <- get *1:address:screen, data:offset
     4:array:screen-cell <- copy *3:address:array:screen-cell
   ]
@@ -656,6 +656,6 @@ recipe print-integer screen:address:screen, n:number -> screen:address:screen [
     bg-color <- copy 0/black
   }
   # todo: other bases besides decimal
-  s:address:array:character <- integer-to-decimal-string n
-  screen <- print-string screen, s, color, bg-color
+  s:address:array:character <- integer-to-decimal-text n
+  screen <- print screen, s, color, bg-color
 ]
