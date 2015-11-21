@@ -267,7 +267,7 @@ scenario edit-multiple-editors [
   ]
   # show the cursor at the right window
   run [
-    print-character screen:address:screen, 9251/␣/cursor
+    print screen:address:screen, 9251/␣/cursor
   ]
   screen-should-contain [
     .           run (F4)           .
@@ -307,7 +307,7 @@ scenario editor-in-focus-keeps-cursor [
   assume-console []
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
-    print-character screen:address:screen, 9251/␣/cursor
+    print screen:address:screen, 9251/␣/cursor
   ]
   # is cursor at the right place?
   screen-should-contain [
@@ -322,7 +322,7 @@ scenario editor-in-focus-keeps-cursor [
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
-    print-character screen:address:screen, 9251/␣/cursor
+    print screen:address:screen, 9251/␣/cursor
   ]
   # cursor should still be right
   screen-should-contain [
@@ -356,7 +356,7 @@ def]
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
-    print-character screen:address:screen, 9251/␣/cursor
+    print screen:address:screen, 9251/␣/cursor
   ]
   # cursor moves to end of old line
   screen-should-contain [
@@ -473,7 +473,7 @@ recipe render screen:address:screen, s:address:array:character, left:number, rig
       at-right?:boolean <- equal column, right
       break-unless at-right?
       # print wrap icon
-      print-character screen, 8617/loop-back-to-left, 245/grey
+      print screen, 8617/loop-back-to-left, 245/grey
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
@@ -488,7 +488,7 @@ recipe render screen:address:screen, s:address:array:character, left:number, rig
       {
         done?:boolean <- greater-than column, right
         break-if done?
-        print-character screen, 32/space
+        print screen, 32/space
         column <- add column, 1
         loop
       }
@@ -497,7 +497,7 @@ recipe render screen:address:screen, s:address:array:character, left:number, rig
       screen <- move-cursor screen, row, column
       loop +next-character:label
     }
-    print-character screen, c, color
+    print screen, c, color
     column <- add column, 1
     loop
   }
@@ -534,7 +534,7 @@ recipe render-code screen:address:screen, s:address:array:character, left:number
       at-right?:boolean <- equal column, right
       break-unless at-right?
       # print wrap icon
-      print-character screen, 8617/loop-back-to-left, 245/grey
+      print screen, 8617/loop-back-to-left, 245/grey
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
@@ -549,7 +549,7 @@ recipe render-code screen:address:screen, s:address:array:character, left:number
       {
         done?:boolean <- greater-than column, right
         break-if done?
-        print-character screen, 32/space
+        print screen, 32/space
         column <- add column, 1
         loop
       }
@@ -558,7 +558,7 @@ recipe render-code screen:address:screen, s:address:array:character, left:number
       screen <- move-cursor screen, row, column
       loop +next-character:label
     }
-    print-character screen, c, color
+    print screen, c, color
     column <- add column, 1
     loop
   }
@@ -616,7 +616,7 @@ recipe draw-vertical screen:address:screen, col:number, y:number, bottom:number 
     continue?:boolean <- lesser-than y, bottom
     break-unless continue?
     screen <- move-cursor screen, y, col
-    print-character screen, style, color
+    print screen, style, color
     y <- add y, 1
     loop
   }

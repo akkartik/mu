@@ -193,14 +193,14 @@ recipe render screen:address:screen, editor:address:editor-data -> last-row:numb
       at-right?:boolean <- equal column, right
       break-unless at-right?
       # print wrap icon
-      print-character screen, 8617/loop-back-to-left, 245/grey
+      print screen, 8617/loop-back-to-left, 245/grey
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
       # don't increment curr
       loop +next-character:label
     }
-    print-character screen, c, color
+    print screen, c, color
     curr <- next curr
     prev <- next prev
     column <- add column, 1
@@ -230,7 +230,7 @@ recipe clear-line-delimited screen:address:screen, column:number, right:number -
   {
     done?:boolean <- greater-than column, right
     break-if done?
-    screen <- print-character screen, 32/space
+    screen <- print screen, 32/space
     column <- add column, 1
     loop
   }

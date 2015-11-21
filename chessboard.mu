@@ -36,7 +36,7 @@ scenario print-board-and-read-move [
   run [
     screen:address:screen, console:address:console <- chessboard screen:address:screen, console:address:console
     # icon for the cursor
-    screen <- print-character screen, 9251/␣
+    screen <- print screen, 9251/␣
   ]
   screen-should-contain [
   #            1         2         3         4         5         6         7         8         9         10        11
@@ -165,8 +165,8 @@ recipe print-board screen:address:screen, board:address:array:address:array:char
       break-if done?:boolean
       f:address:array:character <- index *board, col
       c:character <- index *f, row
-      print-character screen, c
-      print-character screen, 32/space
+      print screen, c
+      print screen, 32/space
       col <- add col, 1
       loop
     }
@@ -303,7 +303,7 @@ recipe read-file stdin:address:channel, screen:address:screen -> file:number, qu
     break-if above-min
     error-message:address:array:character <- new [file too low: ]
     print screen, error-message
-    print-character screen, c
+    print screen, c
     cursor-to-next-line screen
     reply 0/dummy, 0/quit, 1/error
   }
@@ -312,7 +312,7 @@ recipe read-file stdin:address:channel, screen:address:screen -> file:number, qu
     break-if below-max
     error-message <- new [file too high: ]
     print screen, error-message
-    print-character screen, c
+    print screen, c
     reply 0/dummy, 0/quit, 1/error
   }
   reply file, 0/quit, 0/error
@@ -347,7 +347,7 @@ recipe read-rank stdin:address:channel, screen:address:screen -> rank:number, qu
     break-if above-min
     error-message <- new [rank too low: ]
     print screen, error-message
-    print-character screen, c
+    print screen, c
     reply 0/dummy, 0/quit, 1/error
   }
   {
@@ -355,7 +355,7 @@ recipe read-rank stdin:address:channel, screen:address:screen -> rank:number, qu
     break-if below-max
     error-message <- new [rank too high: ]
     print screen, error-message
-    print-character screen, c
+    print screen, c
     reply 0/dummy, 0/quit, 1/error
   }
   reply rank, 0/quit, 0/error

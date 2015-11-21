@@ -80,7 +80,7 @@ recipe send-keys-to-channel console:address:console, chan:address:channel, scree
     loop-unless found?
     break-if quit?
     assert c, [invalid event, expected text]
-    screen <- print-character screen, c
+    screen <- print screen, c
     chan <- write chan, c
     loop
   }
