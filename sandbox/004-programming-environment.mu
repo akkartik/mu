@@ -223,7 +223,7 @@ recipe render screen:address:screen, s:address:array:character, left:number, rig
       at-right?:boolean <- equal column, right
       break-unless at-right?
       # print wrap icon
-      print-character screen, 8617/loop-back-to-left, 245/grey
+      print screen, 8617/loop-back-to-left, 245/grey
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
@@ -238,7 +238,7 @@ recipe render screen:address:screen, s:address:array:character, left:number, rig
       {
         done?:boolean <- greater-than column, right
         break-if done?
-        print-character screen, 32/space
+        print screen, 32/space
         column <- add column, 1
         loop
       }
@@ -247,7 +247,7 @@ recipe render screen:address:screen, s:address:array:character, left:number, rig
       screen <- move-cursor screen, row, column
       loop +next-character:label
     }
-    print-character screen, c, color
+    print screen, c, color
     column <- add column, 1
     loop
   }
@@ -284,7 +284,7 @@ recipe render-code screen:address:screen, s:address:array:character, left:number
       at-right?:boolean <- equal column, right
       break-unless at-right?
       # print wrap icon
-      print-character screen, 8617/loop-back-to-left, 245/grey
+      print screen, 8617/loop-back-to-left, 245/grey
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
@@ -299,7 +299,7 @@ recipe render-code screen:address:screen, s:address:array:character, left:number
       {
         done?:boolean <- greater-than column, right
         break-if done?
-        print-character screen, 32/space
+        print screen, 32/space
         column <- add column, 1
         loop
       }
@@ -308,7 +308,7 @@ recipe render-code screen:address:screen, s:address:array:character, left:number
       screen <- move-cursor screen, row, column
       loop +next-character:label
     }
-    print-character screen, c, color
+    print screen, c, color
     column <- add column, 1
     loop
   }

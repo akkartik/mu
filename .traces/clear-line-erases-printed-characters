@@ -1,11 +1,11 @@
 9991 parse: --- defining scenario-clear-line-erases-printed-characters
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:screen <- new-fake-screen 3/width, 2/height\n    # print a character\n    1:address:screen <- print-character 1:address:screen, 97  # 'a'\n    # move cursor to start of line\n    1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column\n    # clear line\n    1:address:screen <- clear-line 1:address:screen\n    2:address:array:screen-cell <- get *1:address:screen, data:offset\n    3:array:screen-cell <- copy *2:address:array:screen-cell\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:screen <- new-fake-screen 3/width, 2/height\n    # print a character\n    1:address:screen <- print 1:address:screen, 97  # 'a'\n    # move cursor to start of line\n    1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column\n    # clear line\n    1:address:screen <- clear-line 1:address:screen\n    2:address:array:screen-cell <- get *1:address:screen, data:offset\n    3:array:screen-cell <- copy *2:address:array:screen-cell\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:screen <- new-fake-screen 3/width, 2/height
     # print a character
-    1:address:screen <- print-character 1:address:screen, 97  # 'a'
+    1:address:screen <- print 1:address:screen, 97  # 'a'
     # move cursor to start of line
     1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column
     # clear line
@@ -52,7 +52,7 @@
  102 run: run [
     1:address:screen <- new-fake-screen 3/width, 2/height
     # print a character
-    1:address:screen <- print-character 1:address:screen, 97  # 'a'
+    1:address:screen <- print 1:address:screen, 97  # 'a'
     # move cursor to start of line
     1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column
     # clear line
@@ -67,12 +67,12 @@
 9993 parse:   ingredient: {"2": "literal", "height": <>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- new-fake-screen 3/width, 2/height
-9993 parse: instruction: print-character
+9993 parse: instruction: print
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
 9993 parse:   ingredient: {"97": "literal"}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
-9992 load: after rewriting: 1:address:screen <- print-character 1:address:screen, 97
+9992 load: after rewriting: 1:address:screen <- print 1:address:screen, 97
 9993 parse: instruction: move-cursor
 9993 parse:   number of ingredients: 3
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
@@ -101,7 +101,7 @@
 9991 transform: --- fill in reply ingredients from header for recipe run1001
 9991 transform: --- transform braces for recipe run1001
 9992 transform: new-fake-screen ...
-9992 transform: print-character ...
+9992 transform: print ...
 9992 transform: move-cursor ...
 9992 transform: clear-line ...
 9992 transform: get ...
@@ -111,8 +111,10 @@
 9991 transform: --- resolve ambiguous calls for recipe run1001
 9992 transform: instruction new-fake-screen
 9992 transform: checking variant 0: 100
-9992 transform: instruction print-character
+9992 transform: instruction print
 9992 transform: checking variant 0: 100
+9993 transform: mismatch: ingredient 1
+9992 transform: checking variant 1: -1
 9992 transform: instruction move-cursor
 9992 transform: checking variant 0: 100
 9992 transform: instruction clear-line
@@ -500,7 +502,7 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1
- 103 run: 1:address:screen <- print-character 1:address:screen, 97
+ 103 run: 1:address:screen <- print 1:address:screen, 97
 9999 mem: location 1 is 1011
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
@@ -786,7 +788,7 @@
  104 run: jump-if done?, 
 9999 mem: location 1080 is 0
 9998 run: jump-if fell through
- 104 run: print-character screen, [ ]
+ 104 run: print screen, [ ]
 9999 mem: location 1075 is 1011
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
@@ -986,7 +988,7 @@
  104 run: jump-if done?, 
 9999 mem: location 1080 is 0
 9998 run: jump-if fell through
- 104 run: print-character screen, [ ]
+ 104 run: print screen, [ ]
 9999 mem: location 1075 is 1011
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal

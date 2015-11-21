@@ -118,13 +118,13 @@ recipe delete-before-cursor editor:address:editor-data, screen:address:screen ->
     currc:character <- get *curr, value:offset
     at-newline?:boolean <- equal currc, 10/newline
     break-if at-newline?
-    screen <- print-character screen, currc
+    screen <- print screen, currc
     curr-column <- add curr-column, 1
     curr <- next curr
     loop
   }
   # we're guaranteed not to be at the right margin
-  screen <- print-character screen, 32/space
+  screen <- print screen, 32/space
   go-render? <- copy 0/false
 ]
 
@@ -358,13 +358,13 @@ recipe delete-at-cursor editor:address:editor-data, screen:address:screen -> edi
     currc:character <- get *curr, value:offset
     at-newline?:boolean <- equal currc, 10/newline
     break-if at-newline?
-    screen <- print-character screen, currc
+    screen <- print screen, currc
     curr-column <- add curr-column, 1
     curr <- next curr
     loop
   }
   # we're guaranteed not to be at the right margin
-  screen <- print-character screen, 32/space
+  screen <- print screen, 32/space
   go-render? <- copy 0/false
 ]
 

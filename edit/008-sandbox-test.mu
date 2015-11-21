@@ -45,7 +45,7 @@ recipe foo [
   ]
   # cursor should remain unmoved
   run [
-    print-character screen:address:screen, 9251/␣/cursor
+    print screen:address:screen, 9251/␣/cursor
   ]
   screen-should-contain [
     .                     run (F4)           .

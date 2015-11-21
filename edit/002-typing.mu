@@ -224,7 +224,7 @@ recipe insert-at-cursor editor:address:editor-data, c:character, screen:address:
     overflow?:boolean <- and at-bottom?, at-right?
     break-if overflow?
     move-cursor screen, save-row, save-column
-    print-character screen, c
+    print screen, c
     go-render? <- copy 0/false
     reply
   }
@@ -246,7 +246,7 @@ recipe insert-at-cursor editor:address:editor-data, c:character, screen:address:
       currc:character <- get *curr, value:offset
       at-newline?:boolean <- equal currc, 10/newline
       break-if at-newline?
-      print-character screen, currc
+      print screen, currc
       curr-column <- add curr-column, 1
       curr <- next curr
       loop
@@ -1035,7 +1035,7 @@ recipe draw-horizontal screen:address:screen, row:number, x:number, right:number
   {
     continue?:boolean <- lesser-or-equal x, right  # right is inclusive, to match editor-data semantics
     break-unless continue?
-    print-character screen, style, color, bg-color
+    print screen, style, color, bg-color
     x <- add x, 1
     loop
   }

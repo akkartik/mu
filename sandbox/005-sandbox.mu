@@ -234,7 +234,7 @@ recipe render-sandboxes screen:address:screen, sandbox:address:sandbox-data, lef
   row <- add row, 1
   screen <- move-cursor screen, row, left
   clear-line-delimited screen, left, right
-  print-character screen, 120/x, 245/grey
+  print screen, 120/x, 245/grey
   # save menu row so we can detect clicks to it later
   starting-row:address:number <- get-address *sandbox, starting-row-on-screen:offset
   *starting-row <- copy row
@@ -330,9 +330,9 @@ recipe render-screen screen:address:screen, sandbox-screen:address:screen, left:
     column <- copy left
     screen <- move-cursor screen, row, column
     # initial leader for each row: two spaces and a '.'
-    print-character screen, 32/space, 245/grey
-    print-character screen, 32/space, 245/grey
-    print-character screen, 46/full-stop, 245/grey
+    print screen, 32/space, 245/grey
+    print screen, 32/space, 245/grey
+    print screen, 46/full-stop, 245/grey
     column <- add left, 3
     {
       # print row
@@ -347,19 +347,19 @@ recipe render-screen screen:address:screen, sandbox-screen:address:screen, left:
         break-unless white?
         color <- copy 245/grey
       }
-      print-character screen, c, color
+      print screen, c, color
       column <- add column, 1
       i <- add i, 1
       loop
     }
     # print final '.'
-    print-character screen, 46/full-stop, 245/grey
+    print screen, 46/full-stop, 245/grey
     column <- add column, 1
     {
       # clear rest of current line
       line-done?:boolean <- greater-than column, right
       break-if line-done?
-      print-character screen, 32/space
+      print screen, 32/space
       column <- add column, 1
       loop
     }
