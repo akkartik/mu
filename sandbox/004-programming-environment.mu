@@ -32,7 +32,7 @@ recipe new-programming-environment screen:address:screen, initial-sandbox-conten
   assert button-on-screen?, [screen too narrow for menu]
   screen <- move-cursor screen, 0/row, button-start
   run-button:address:array:character <- new [ run (F4) ]
-  print-string screen, run-button, 255/white, 161/reddish
+  print screen, run-button, 255/white, 161/reddish
   # sandbox editor
   current-sandbox:address:address:editor-data <- get-address *result, current-sandbox:offset
   *current-sandbox <- new-editor initial-sandbox-contents, screen, 0, width/right
@@ -165,7 +165,7 @@ recipe render-all screen:address:screen, env:address:programming-environment-dat
   assert button-on-screen?, [screen too narrow for menu]
   screen <- move-cursor screen, 0/row, button-start
   run-button:address:array:character <- new [ run (F4) ]
-  print-string screen, run-button, 255/white, 161/reddish
+  print screen, run-button, 255/white, 161/reddish
   #
   screen <- render-sandbox-side screen, env
   <render-components-end>
@@ -200,9 +200,9 @@ recipe update-cursor screen:address:screen, current-sandbox:address:editor-data 
   screen <- move-cursor screen, cursor-row, cursor-column
 ]
 
-# print a string 's' to 'editor' in 'color' starting at 'row'
+# print a text 's' to 'editor' in 'color' starting at 'row'
 # clear rest of last line, move cursor to next line
-recipe render-string screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
+recipe render screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
   local-scope
   load-ingredients
   reply-unless s
@@ -260,8 +260,8 @@ recipe render-string screen:address:screen, s:address:array:character, left:numb
   move-cursor screen, row, left
 ]
 
-# like 'render-string' but with colorization for comments like in the editor
-recipe render-code-string screen:address:screen, s:address:array:character, left:number, right:number, row:number -> row:number, screen:address:screen [
+# like 'render' for texts, but with colorization for comments like in the editor
+recipe render-code screen:address:screen, s:address:array:character, left:number, right:number, row:number -> row:number, screen:address:screen [
   local-scope
   load-ingredients
   reply-unless s
@@ -278,7 +278,7 @@ recipe render-code-string screen:address:screen, s:address:array:character, left
     done? <- greater-or-equal row, screen-height
     break-if done?
     c:character <- index *s, i
-    <character-c-received>  # only line different from render-string
+    <character-c-received>  # only line different from render
     {
       # at right? wrap.
       at-right?:boolean <- equal column, right

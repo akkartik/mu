@@ -157,14 +157,14 @@ after <render-sandbox-response> [
     break-unless sandbox-response
     expected-response:address:array:character <- get *sandbox, expected-response:offset
     break-unless expected-response  # fall-through to print in grey
-    response-is-expected?:boolean <- string-equal expected-response, sandbox-response
+    response-is-expected?:boolean <- text-equal expected-response, sandbox-response
     {
       break-if response-is-expected?:boolean
-      row, screen <- render-string screen, sandbox-response, left, right, 1/red, row
+      row, screen <- render screen, sandbox-response, left, right, 1/red, row
     }
     {
       break-unless response-is-expected?:boolean
-      row, screen <- render-string screen, sandbox-response, left, right, 2/green, row
+      row, screen <- render screen, sandbox-response, left, right, 2/green, row
     }
     jump +render-sandbox-end:label
   }

@@ -177,7 +177,7 @@ recipe update-status screen:address:screen, msg:address:array:character, color:n
   local-scope
   load-ingredients
   screen <- move-cursor screen, 0, 2
-  screen <- print-string screen, msg, color, 238/grey/background
+  screen <- print screen, msg, color, 238/grey/background
 ]
 
 recipe save-sandboxes env:address:programming-environment-data [
@@ -192,12 +192,12 @@ recipe save-sandboxes env:address:programming-environment-data [
   {
     break-unless curr
     data:address:array:character <- get *curr, data:offset
-    filename:address:array:character <- integer-to-decimal-string idx
+    filename:address:array:character <- integer-to-decimal-text idx
     save filename, data
     {
       expected-response:address:array:character <- get *curr, expected-response:offset
       break-unless expected-response
-      filename <- string-append filename, suffix
+      filename <- append filename, suffix
       save filename, expected-response
     }
     idx <- add idx, 1
@@ -242,7 +242,7 @@ recipe render-sandboxes screen:address:screen, sandbox:address:sandbox-data, lef
   row <- add row, 1
   screen <- move-cursor screen, row, left
   sandbox-data:address:array:character <- get *sandbox, data:offset
-  row, screen <- render-code-string screen, sandbox-data, left, right, row
+  row, screen <- render-code screen, sandbox-data, left, right, row
   code-ending-row:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
   *code-ending-row <- copy row
   # render sandbox warnings, screen or response, in that order
@@ -259,7 +259,7 @@ recipe render-sandboxes screen:address:screen, sandbox:address:sandbox-data, lef
     break-unless empty-screen?
     *response-starting-row <- copy row
     <render-sandbox-response>
-    row, screen <- render-string screen, sandbox-response, left, right, 245/grey, row
+    row, screen <- render screen, sandbox-response, left, right, 245/grey, row
   }
   +render-sandbox-end
   at-bottom?:boolean <- greater-or-equal row, screen-height
@@ -280,7 +280,7 @@ recipe restore-sandboxes env:address:programming-environment-data -> env:address
   idx:number <- copy 0
   curr:address:address:sandbox-data <- get-address *env, sandbox:offset
   {
-    filename:address:array:character <- integer-to-decimal-string idx
+    filename:address:array:character <- integer-to-decimal-text idx
     contents:address:array:character <- restore filename
     break-unless contents  # stop at first error; assuming file didn't exist
     # create new sandbox for file
@@ -289,7 +289,7 @@ recipe restore-sandboxes env:address:programming-environment-data -> env:address
     *data <- copy contents
     # restore expected output for sandbox if it exists
     {
-      filename <- string-append filename, suffix
+      filename <- append filename, suffix
       contents <- restore filename
       break-unless contents
       expected-response:address:address:array:character <- get-address **curr, expected-response:offset
@@ -310,7 +310,7 @@ recipe render-screen screen:address:screen, sandbox-screen:address:screen, left:
   reply-unless sandbox-screen
   # print 'screen:'
   header:address:array:character <- new [screen:]
-  row <- render-string screen, header, left, right, 245/grey, row
+  row <- render screen, header, left, right, 245/grey, row
   screen <- move-cursor screen, row, left
   # start printing sandbox-screen
   column:number <- copy left

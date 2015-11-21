@@ -253,7 +253,7 @@ case _CLEANUP_RUN_INTERACTIVE: {
   break;
 }
 
-:(scenario "run_interactive_returns_stringified_result")
+:(scenario "run_interactive_converts_result_to_text")
 recipe main [
   # try to interactively add 2 and 2
   1:address:array:character <- new [add 2, 2]
@@ -263,13 +263,13 @@ recipe main [
 # first letter in the output should be '4' in unicode
 +mem: storing 52 in location 11
 
-:(scenario "run_interactive_returns_string")
+:(scenario "run_interactive_returns_text")
 recipe main [
   # try to interactively add 2 and 2
   1:address:array:character <- new [
     x:address:array:character <- new [a]
     y:address:array:character <- new [b]
-    z:address:array:character <- string-append x:address:array:character, y:address:array:character
+    z:address:array:character <- append x:address:array:character, y:address:array:character
   ]
   2:address:array:character <- run-interactive 1:address:array:character
   10:array:character <- copy 2:address:array:character/lookup

@@ -1,6 +1,6 @@
 ## the basic editor data structure, and how it displays text to the screen
 
-# temporary main for this layer: just render the given string at the given
+# temporary main for this layer: just render the given text at the given
 # screen dimensions, then stop
 recipe! main text:address:array:character [
   local-scope
@@ -13,7 +13,7 @@ recipe! main text:address:array:character [
   close-console
 ]
 
-scenario editor-initially-prints-string-to-screen [
+scenario editor-initially-prints-text-to-screen [
   assume-screen 10/width, 5/height
   run [
     1:address:array:character <- new [abc]

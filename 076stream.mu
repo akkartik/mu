@@ -1,4 +1,4 @@
-# new type to help incrementally read strings
+# new type to help incrementally read texts (arrays of characters)
 container stream [
   index:number
   data:address:array:character
@@ -27,7 +27,7 @@ recipe read-line in:address:stream -> result:address:array:character, in:address
   idx:address:number <- get-address *in, index:offset
   s:address:array:character <- get *in, data:offset
   next-idx:number <- find-next s, 10/newline, *idx
-  result <- string-copy s, *idx, next-idx
+  result <- text-copy s, *idx, next-idx
   *idx <- add next-idx, 1  # skip newline
 ]
 
