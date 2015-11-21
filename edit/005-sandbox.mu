@@ -500,6 +500,6 @@ scenario editor-provides-edited-contents [
     4:array:character <- copy *3:address:array:character
   ]
   memory-should-contain [
-    4:string <- [abdefc]
+    4:array:character <- [abdefc]
   ]
 ]

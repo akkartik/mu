@@ -38,7 +38,7 @@ scenario check_string_in_memory [
     4:character <- copy 99  # 'c'
   ]
   memory-should-contain [
-    1:string <- [abc]
+    1:array:character <- [abc]
   ]
 ]
 

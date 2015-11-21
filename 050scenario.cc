@@ -309,7 +309,10 @@ void check_memory(const string& s) {
 
 void check_type(const string& lhs, istream& in) {
   reagent x(lhs);
-  if (x.properties.at(0).second->value == "string") {
+  const string_tree* type_name = x.properties.at(0).second;
+  if (type_name->value == "array"
+      && type_name->right && type_name->right->value == "character"
+      && !type_name->right->right) {
     x.set_value(to_integer(x.name));
     skip_whitespace_and_comments(in);
     string _assign = next_word(in);
@@ -380,7 +383,7 @@ recipe main [
   3:number <- copy 98  # 'b'
   4:number <- copy 99  # 'c'
   memory-should-contain [
-    1:string <- [ab]
+    1:array:character <- [ab]
   ]
 ]
 +error: expected location 1 to contain length 2 of string [ab] but saw 3
@@ -392,7 +395,7 @@ recipe main [
   3:number <- copy 98  # 'b'
   4:number <- copy 99  # 'c'
   memory-should-contain [
-    1:string <- [abc]
+    1:array:character <- [abc]
   ]
 ]
 +run: checking string length at 1

@@ -308,7 +308,7 @@ scenario integer-to-decimal-digit-zero [
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
   memory-should-contain [
-    2:string <- [0]
+    2:array:character <- [0]
   ]
 ]
 
@@ -318,7 +318,7 @@ scenario integer-to-decimal-digit-positive [
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
   memory-should-contain [
-    2:string <- [234]
+    2:array:character <- [234]
   ]
 ]
 
@@ -381,7 +381,7 @@ scenario string-append-1 [
     4:array:character/raw <- copy *3:address:array:character/raw
   ]
   memory-should-contain [
-    4:string <- [hello, world!]
+    4:array:character <- [hello, world!]
   ]
 ]
 
@@ -392,7 +392,7 @@ scenario replace-character-in-string [
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
   memory-should-contain [
-    2:string <- [azc]
+    2:array:character <- [azc]
   ]
 ]
 
@@ -417,7 +417,7 @@ scenario replace-character-at-start [
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
   memory-should-contain [
-    2:string <- [zbc]
+    2:array:character <- [zbc]
   ]
 ]
 
@@ -428,7 +428,7 @@ scenario replace-character-at-end [
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
   memory-should-contain [
-    2:string <- [abz]
+    2:array:character <- [abz]
   ]
 ]
 
@@ -439,7 +439,7 @@ scenario replace-character-missing [
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
   memory-should-contain [
-    2:string <- [abc]
+    2:array:character <- [abc]
   ]
 ]
 
@@ -450,7 +450,7 @@ scenario replace-all-characters [
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
   memory-should-contain [
-    2:string <- [bznznz]
+    2:array:character <- [bznznz]
   ]
 ]
 
@@ -539,7 +539,7 @@ scenario interpolate-works [
     4:array:character/raw <- copy *3:address:array:character/raw
   ]
   memory-should-contain [
-    4:string <- [abc def]
+    4:array:character <- [abc def]
   ]
 ]
 
@@ -551,7 +551,7 @@ scenario interpolate-at-start [
     4:array:character/raw <- copy *3:address:array:character/raw
   ]
   memory-should-contain [
-    4:string <- [abc, hello!]
+    4:array:character <- [abc, hello!]
     16 <- 0  # out of bounds
   ]
 ]
@@ -564,7 +564,7 @@ scenario interpolate-at-end [
     4:array:character/raw <- copy *3:address:array:character/raw
   ]
   memory-should-contain [
-    4:string <- [hello, abc]
+    4:array:character <- [hello, abc]
   ]
 ]
 
@@ -687,7 +687,7 @@ scenario trim-unmodified [
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
-    3:string <- [abc]
+    3:array:character <- [abc]
   ]
 ]
 
@@ -698,7 +698,7 @@ scenario trim-left [
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
-    3:string <- [abc]
+    3:array:character <- [abc]
   ]
 ]
 
@@ -709,7 +709,7 @@ scenario trim-right [
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
-    3:string <- [abc]
+    3:array:character <- [abc]
   ]
 ]
 
@@ -720,7 +720,7 @@ scenario trim-left-right [
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
-    3:string <- [abc]
+    3:array:character <- [abc]
   ]
 ]
 
@@ -732,7 +732,7 @@ scenario trim-newline-tab [
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
-    3:string <- [abc]
+    3:array:character <- [abc]
   ]
 ]
 
@@ -1094,8 +1094,8 @@ scenario string-split-1 [
   ]
   memory-should-contain [
     3 <- 2  # length of result
-    10:string <- [a]
-    20:string <- [b]
+    10:array:character <- [a]
+    20:array:character <- [b]
   ]
 ]
 
@@ -1113,9 +1113,9 @@ scenario string-split-2 [
   ]
   memory-should-contain [
     3 <- 3  # length of result
-    10:string <- [a]
-    20:string <- [b]
-    30:string <- [c]
+    10:array:character <- [a]
+    20:array:character <- [b]
+    30:array:character <- [c]
   ]
 ]
 
@@ -1129,7 +1129,7 @@ scenario string-split-missing [
   ]
   memory-should-contain [
     3 <- 1  # length of result
-    10:string <- [abc]
+    10:array:character <- [abc]
   ]
 ]
 
@@ -1160,10 +1160,10 @@ scenario string-split-empty-piece [
   ]
   memory-should-contain [
     3 <- 4  # length of result
-    10:string <- [a]
-    20:string <- [b]
-    30:string <- []
-    40:string <- [c]
+    10:array:character <- [a]
+    20:array:character <- [b]
+    30:array:character <- []
+    40:array:character <- [c]
   ]
 ]
 
@@ -1193,8 +1193,8 @@ scenario string-split-first [
     20:array:character <- copy *3:address:array:character
   ]
   memory-should-contain [
-    10:string <- [a]
-    20:string <- [b]
+    10:array:character <- [a]
+    20:array:character <- [b]
   ]
 ]
 
@@ -1230,7 +1230,7 @@ scenario string-copy-copies-substring [
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
-    3:string <- [bc]
+    3:array:character <- [bc]
   ]
 ]
 
@@ -1241,7 +1241,7 @@ scenario string-copy-out-of-bounds [
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
-    3:string <- [c]
+    3:array:character <- [c]
   ]
 ]
 
@@ -1252,7 +1252,7 @@ scenario string-copy-out-of-bounds-2 [
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
-    3:string <- []
+    3:array:character <- []
   ]
 ]
 
