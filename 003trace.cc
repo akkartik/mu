@@ -160,10 +160,8 @@ trace_stream* Trace_stream = NULL;
 
 // Top-level helper. IMPORTANT: can't nest.
 #define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
-// Errors and warnings should go straight to cerr by default since calls to trace() have
-// some unfriendly constraints (they delay printing, they can't nest)
-#define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Warning_depth, "warn"))
-#define raise_error  ((!Trace_stream || !Hide_errors) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
+#define raise  (!Trace_stream ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Warning_depth, "warn"))
+#define raise_error  (!Trace_stream ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
 
 :(before "End Types")
 struct end {};
