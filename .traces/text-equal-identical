@@ -1,12 +1,12 @@
 9991 parse: --- defining scenario-text-equal-identical
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    default-space:address:array:location <- new location:type, 30\n    x:address:array:character <- new [abc]\n    y:address:array:character <- new [abc]\n    3:boolean/raw <- text-equal x, y\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    default-space:address:array:location <- new location:type, 30\n    x:address:array:character <- new [abc]\n    y:address:array:character <- new [abc]\n    3:boolean/raw <- equal x, y\n  ": "literal-string"}
 9992 load: after rewriting: run [
     default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abc]
-    3:boolean/raw <- text-equal x, y
+    3:boolean/raw <- equal x, y
   ]
 9993 parse: instruction: memory-should-contain
 9993 parse:   number of ingredients: 1
@@ -36,7 +36,7 @@
     default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abc]
-    3:boolean/raw <- text-equal x, y
+    3:boolean/raw <- equal x, y
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new
@@ -55,12 +55,12 @@
 9993 parse:   ingredient: {"abc": "literal-string"}
 9993 parse:   product: {"y": <"address" : <"array" : <"character" : <>>>>}
 9992 load: after rewriting: y:address:array:character <- new [abc]
-9993 parse: instruction: text-equal
+9993 parse: instruction: equal
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <>}
 9993 parse:   ingredient: {"y": <>}
 9993 parse:   product: {"3": "boolean", "raw": <>}
-9992 load: after rewriting: 3:boolean/raw <- text-equal x, y
+9992 load: after rewriting: 3:boolean/raw <- equal x, y
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
@@ -68,7 +68,7 @@
 9992 transform: new ...
 9992 transform: new ...
 9992 transform: new ...
-9992 transform: text-equal ...
+9992 transform: equal ...
 9992 transform:  ...
 9991 transform: --- deduce types for recipe run1001
 9992 transform: default-space => <address : <array : <number : <>>>>
@@ -77,8 +77,9 @@
 9992 transform: x <= <address : <array : <character : <>>>>
 9992 transform: y <= <address : <array : <character : <>>>>
 9991 transform: --- resolve ambiguous calls for recipe run1001
-9992 transform: instruction text-equal
+9992 transform: instruction equal
 9992 transform: checking variant 0: 100
+9992 transform: checking variant 1: -1
 9991 transform: --- collect surrounding spaces for recipe run1001
 9991 transform: --- transform names for recipe run1001
 9993 name: assign x 1
@@ -96,7 +97,7 @@
 9999 mem: storing 1031 in location 1002
  103 run: y:address:array:character <- new [abc]
 9999 mem: storing 1035 in location 1003
- 103 run: 3:boolean/raw <- text-equal x, y
+ 103 run: 3:boolean/raw <- equal_2 x, y
 9999 mem: location 1002 is 1031
 9999 mem: location 1003 is 1035
 9999 trace: incrementing callstack depth to 3
