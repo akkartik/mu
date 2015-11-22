@@ -3,7 +3,7 @@
 
 :(scenario copy_indirect)
 recipe main [
-  1:address:number <- copy 2/raw
+  1:address:number <- copy 2/unsafe
   2:number <- copy 34
   # This loads location 1 as an address and looks up *that* location.
   3:number <- copy 1:address:number/lookup
@@ -17,7 +17,7 @@ canonize(x);
 //: 'lookup' property
 :(scenario store_indirect)
 recipe main [
-  1:address:number <- copy 2/raw
+  1:address:number <- copy 2/unsafe
   1:address:number/lookup <- copy 34
 ]
 +mem: storing 34 in location 2
@@ -126,7 +126,7 @@ recipe main [
   1:number <- copy 2
   2:number <- copy 34
   3:number <- copy 35
-  4:address:number <- copy 5/raw
+  4:address:number <- copy 5/unsafe
   *4:address:number <- get 1:address:point/lookup, 0:offset
 ]
 +mem: storing 34 in location 5
@@ -168,7 +168,7 @@ canonize(base);
 
 :(scenario lookup_abbreviation)
 recipe main [
-  1:address:number <- copy 2/raw
+  1:address:number <- copy 2/unsafe
   2:number <- copy 34
   3:number <- copy *1:address:number
 ]

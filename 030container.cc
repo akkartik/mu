@@ -516,7 +516,7 @@ recipe main [
 :(scenario run_allows_type_definition_after_use)
 % Hide_errors = true;
 recipe main [
-  1:bar <- copy 0/raw
+  1:bar <- copy 0/unsafe
 ]
 
 container bar [

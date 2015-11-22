@@ -215,8 +215,8 @@ if (inst.name == "get" || inst.name == "get-address") {
 :(scenarios transform)
 :(scenario transform_names_handles_containers)
 recipe main [
-  a:point <- copy 0/raw
-  b:number <- copy 0/raw
+  a:point <- copy 0/unsafe
+  b:number <- copy 0/unsafe
 ]
 +name: assign a 1
 +name: assign b 3

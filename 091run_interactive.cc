@@ -12,7 +12,7 @@ recipe main [
 
 :(scenario run_interactive_empty)
 recipe main [
-  1:address:array:character <- copy 0/raw
+  1:address:array:character <- copy 0/unsafe
   2:address:array:character <- run-interactive 1:address:array:character
 ]
 # result is null

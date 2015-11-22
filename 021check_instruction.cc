@@ -78,9 +78,9 @@ recipe main [
 bool types_match(reagent lhs, reagent rhs) {
   // '_' never raises type error
   if (is_dummy(lhs)) return true;
-  // to sidestep type-checking, use /raw in the source.
-  // this is unsafe, and will be highlighted in red inside vim. just for some tests.
-  if (is_raw(rhs)) return true;
+  // to sidestep type-checking, use /unsafe in the source.
+  // this will be highlighted in red inside vim. just for setting up some tests.
+  if (is_unsafe(rhs)) return true;
   if (is_literal(rhs)) return valid_type_for_literal(lhs, rhs) && size_of(rhs) == size_of(lhs);
   if (!lhs.type) return !rhs.type;
   return types_match(lhs.type, rhs.type);
@@ -123,6 +123,10 @@ bool types_match(const reagent lhs, const type_tree* rhs, const vector<double>& 
 
 bool is_raw(const reagent& r) {
   return has_property(r, "raw");
+}
+
+bool is_unsafe(const reagent& r) {
+  return has_property(r, "unsafe");
 }
 
 bool is_mu_array(reagent r) {

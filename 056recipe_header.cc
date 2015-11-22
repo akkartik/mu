@@ -128,7 +128,7 @@ if (curr.name == "load-ingredients") {
 recipe add2 x:number, y:number -> z:number [
   local-scope
   load-ingredients
-  z:address:number <- copy 0/raw
+  z:address:number <- copy 0/unsafe
   reply z
 ]
 +error: add2: replied with the wrong type at 'reply z'
