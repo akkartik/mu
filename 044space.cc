@@ -7,7 +7,7 @@
 # then location 0 is really location 11, location 1 is really location 12, and so on.
 recipe main [
   10:number <- copy 5  # pretend array; in practice we'll use new
-  default-space:address:array:location <- copy 10/raw
+  default-space:address:array:location <- copy 10/unsafe
   1:number <- copy 23
 ]
 +mem: storing 23 in location 12
@@ -19,8 +19,8 @@ recipe main [
   # pretend array
   1000:number <- copy 5
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000/raw
-  1:address:number <- copy 3/raw
+  default-space:address:array:location <- copy 1000/unsafe
+  1:address:number <- copy 3/unsafe
   8:number/raw <- copy *1:address:number
 ]
 +mem: storing 34 in location 8
@@ -70,8 +70,8 @@ recipe main [
   # pretend array
   1000:number <- copy 5
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000/raw
-  1:address:point <- copy 12/raw
+  default-space:address:array:location <- copy 1000/unsafe
+  1:address:point <- copy 12/unsafe
   9:number/raw <- get *1:address:point, 1:offset
 ]
 +mem: storing 35 in location 9
@@ -90,8 +90,8 @@ recipe main [
   # pretend array
   1000:number <- copy 5
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000/raw
-  1:address:array:number <- copy 12/raw
+  default-space:address:array:location <- copy 1000/unsafe
+  1:address:array:number <- copy 12/unsafe
   9:number/raw <- index *1:address:array:number, 1
 ]
 +mem: storing 35 in location 9
@@ -224,7 +224,7 @@ long long int address(long long int offset, long long int base) {
 
 :(scenario get_default_space)
 recipe main [
-  default-space:address:array:location <- copy 10/raw
+  default-space:address:array:location <- copy 10/unsafe
   1:address:array:location/raw <- copy default-space:address:array:location
 ]
 +mem: storing 10 in location 1

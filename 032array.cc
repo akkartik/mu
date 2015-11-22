@@ -85,7 +85,7 @@ recipe main [
   2:number <- copy 14
   3:number <- copy 15
   4:number <- copy 16
-  5:address:array:number <- copy 1/raw
+  5:address:array:number <- copy 1/unsafe
   6:array:number <- copy *5:address:array:number
 ]
 +mem: storing 3 in location 6
@@ -204,7 +204,7 @@ recipe main [
   2:number <- copy 14
   3:number <- copy 15
   4:number <- copy 16
-  5:address:array:number <- copy 1/raw
+  5:address:array:number <- copy 1/unsafe
   6:number <- index *5:address:array:number, 1
 ]
 +mem: storing 15 in location 6
@@ -234,7 +234,7 @@ recipe main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1/raw
+  8:address:array:point <- copy 1/unsafe
   index *8:address:array:point, -1
 ]
 +error: main: invalid index -1
@@ -249,7 +249,7 @@ recipe main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1/raw
+  8:address:array:point <- copy 1/unsafe
   9:number <- index *8:address:array:point, 0
 ]
 +error: main: 'index' on *8:address:array:point can't be saved in 9:number; type should be point
@@ -354,7 +354,7 @@ recipe main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1/raw
+  8:address:array:point <- copy 1/unsafe
   index-address *8:address:array:point, -1
 ]
 +error: main: invalid index -1
@@ -369,7 +369,7 @@ recipe main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1/raw
+  8:address:array:point <- copy 1/unsafe
   9:address:number <- index-address *8:address:array:point, 0
 ]
 +error: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be <address : <point : <>>>
