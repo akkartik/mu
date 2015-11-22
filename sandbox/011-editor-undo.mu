@@ -2070,7 +2070,3 @@ scenario editor-can-undo-and-redo-ctrl-u-2 [
     .          .
   ]
 ]
-
-# todo:
-# operations for recipe side and each sandbox-data
-# undo delete sandbox as a separate primitive on the status bar
