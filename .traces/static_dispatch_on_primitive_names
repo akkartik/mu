@@ -1,0 +1,151 @@
+9991 parse: --- defining main
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"34": "literal"}
+9993 parse:   product: {"1": "number"}
+9992 load: after rewriting: 1:number <- copy 34
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"34": "literal"}
+9993 parse:   product: {"2": "number"}
+9992 load: after rewriting: 2:number <- copy 34
+9993 parse: instruction: equal
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"1": "number"}
+9993 parse:   ingredient: {"2": "number"}
+9993 parse:   product: {"3": "boolean"}
+9992 load: after rewriting: 3:boolean <- equal 1:number, 2:number
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"0": "literal", "false": <>}
+9993 parse:   product: {"4": "boolean"}
+9992 load: after rewriting: 4:boolean <- copy 0/false
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"0": "literal", "false": <>}
+9993 parse:   product: {"5": "boolean"}
+9992 load: after rewriting: 5:boolean <- copy 0/false
+9993 parse: instruction: equal
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"4": "boolean"}
+9993 parse:   ingredient: {"5": "boolean"}
+9993 parse:   product: {"6": "boolean"}
+9992 load: after rewriting: 6:boolean <- equal 4:boolean, 5:boolean
+9999 parse: recipe main has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: x:number
+9999 parse: header ingredient: y:number
+9999 parse: header product: z:boolean
+9991 parse: --- defining equal_2
+9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"0": "literal", "false": <>}
+9993 parse:   product: {"z": <>}
+9992 load: after rewriting: z <- copy 0/false
+9999 parse: recipe equal_2 has a header
+9990 transform: === transform_all()
+9991 transform: --- checking reply instructions against header for equal_2
+9991 transform: --- fill in reply ingredients from header for recipe main
+9991 transform: --- fill in reply ingredients from header for recipe equal_2
+9991 transform: --- transform braces for recipe main
+9992 transform: copy ...
+9992 transform: copy ...
+9992 transform: equal ...
+9992 transform: copy ...
+9992 transform: copy ...
+9992 transform: equal ...
+9992 transform:  ...
+9991 transform: --- transform braces for recipe equal_2
+9992 transform: local-scope ...
+9992 transform:  ...
+9992 transform:  ...
+9992 transform: copy ...
+9992 transform:  ...
+9991 transform: --- deduce types for recipe main
+9991 transform: --- deduce types for recipe equal_2
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: x => number
+9992 transform: y => number
+9992 transform: z => boolean
+9991 transform: --- deduce types from header for equal_2
+9993 transform: type of x is number
+9993 transform: type of y is number
+9993 transform: type of z is boolean
+9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 transform: instruction: x:number <- next-ingredient 
+9993 transform:   product: x: number -- {"x": "number"}
+9992 transform: instruction: y:number <- next-ingredient 
+9993 transform:   product: y: number -- {"y": "number"}
+9992 transform: instruction: z <- copy 0/false
+9993 transform:   product: z: NULLNULLNULL -- {"z": <>}
+9993 transform: type of z is boolean
+9992 transform: instruction: reply z:boolean
+9991 transform: --- resolve ambiguous calls for recipe main
+9992 transform: instruction equal
+9992 transform: checking variant 0: 100
+9992 transform: instruction equal
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 0: -1
+9992 transform: no variant found; searching for variant with suitable type ingredients
+9992 transform: checking shape-shifting variant 0
+9993 transform: no type ingredients
+9992 transform: final score: -1
+9991 transform: --- resolve ambiguous calls for recipe equal_2
+9991 transform: --- checking reply instructions against header for equal_2
+9991 transform: --- collect surrounding spaces for recipe main
+9991 transform: --- collect surrounding spaces for recipe equal_2
+9991 transform: --- transform names for recipe main
+9991 transform: --- transform names for recipe equal_2
+9993 name: assign x 1
+9993 name: assign y 2
+9993 name: assign z 3
+9991 transform: --- compute instruction operations for recipe main
+9991 transform: --- compute instruction operations for recipe equal_2
+9991 transform: --- perform checks for recipe main
+9991 transform: --- perform checks for recipe equal_2
+9991 transform: --- convert 'new' to 'allocate' for recipe main
+9991 transform: --- convert 'new' to 'allocate' for recipe equal_2
+9992 new: size of "location" is 1
+9991 transform: --- parsing any uninitialized reagents as integers
+9999 trace: new routine; incrementing callstack depth to 1
+9999 new: routine allocated memory from 1000 to 101000
+9990 schedule: main
+ 102 run: 1:number <- copy 34
+9999 mem: storing 34 in location 1
+ 102 run: 2:number <- copy 34
+9999 mem: storing 34 in location 2
+ 102 run: 3:boolean <- equal_2 1:number, 2:number
+9999 mem: location 1 is 34
+9999 mem: location 2 is 34
+9999 trace: incrementing callstack depth to 2
+ 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+9999 mem: array size is 4
+9999 mem: new alloc: 1000
+ 103 run: x:number <- next-ingredient 
+9999 mem: storing 34 in location 1002
+ 103 run: y:number <- next-ingredient 
+9999 mem: storing 34 in location 1003
+ 103 run: z <- copy 0/false
+9999 mem: storing 0 in location 1004
+ 103 run: reply z:boolean
+9999 mem: location 1004 is 0
+9999 trace: reply: decrementing callstack depth from 2
+9998 run: result 0 is 0
+9999 mem: storing 0 in location 3
+ 102 run: 4:boolean <- copy 0/false
+9999 mem: storing 0 in location 4
+ 102 run: 5:boolean <- copy 0/false
+9999 mem: storing 0 in location 5
+ 102 run: 6:boolean <- equal 4:boolean, 5:boolean
+9999 mem: location 4 is 0
+9999 mem: location 5 is 0
+9999 mem: storing 1 in location 6
+ 102 run: reply 
+9999 trace: reply: decrementing callstack depth from 1

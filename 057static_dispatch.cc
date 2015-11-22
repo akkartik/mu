@@ -37,7 +37,7 @@ if (contains_key(Recipe_ordinal, result.name)) {
       && !variant_already_exists(result)) {
     string new_name = next_unused_recipe_name(result.name);
     put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
-    get(Recipe_variants, result.name).push_back(get(Recipe_ordinal, new_name));
+    get_or_insert(Recipe_variants, result.name).push_back(get(Recipe_ordinal, new_name));
     result.name = new_name;
   }
 }
@@ -49,7 +49,7 @@ else {
 
 :(code)
 bool variant_already_exists(const recipe& rr) {
-  const vector<recipe_ordinal>& variants = get(Recipe_variants, rr.name);
+  const vector<recipe_ordinal>& variants = get_or_insert(Recipe_variants, rr.name);
   for (long long int i = 0; i < SIZE(variants); ++i) {
     if (contains_key(Recipe, variants.at(i))
         && all_reagents_match(rr, get(Recipe, variants.at(i)))) {
@@ -121,7 +121,7 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
     instruction& inst = caller_recipe.steps.at(index);
     if (inst.is_label) continue;
     if (!contains_key(Recipe_variants, inst.name)) continue;
-    assert(!get(Recipe_variants, inst.name).empty());
+    if (get(Recipe_variants, inst.name).empty()) continue;
     replace_best_variant(inst, caller_recipe);
   }
 //?   if (caller_recipe.name == "main") cerr << "=============== " << debug_string(caller_recipe) << '\n';
@@ -144,6 +144,10 @@ void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
 
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {
   if (variant == -1) return -1;  // ghost from a previous test
+  if (!contains_key(Recipe, variant)) {
+    assert(variant < MAX_PRIMITIVE_RECIPES);
+    return -1;
+  }
   const vector<reagent>& header_ingredients = get(Recipe, variant).ingredients;
   if (SIZE(inst.ingredients) < SIZE(header_ingredients)) {
     trace(9993, "transform") << "too few ingredients" << end();
@@ -190,3 +194,24 @@ recipe test a:number -> z:number [
   z <- copy 1
 ]
 +warn: redefining recipe test
+
+:(scenario static_dispatch_on_primitive_names)
+recipe main [
+  1:number <- copy 34
+  2:number <- copy 34
+  3:boolean <- equal 1:number, 2:number
+  4:boolean <- copy 0/false
+  5:boolean <- copy 0/false
+  6:boolean <- equal 4:boolean, 5:boolean
+]
+
+# temporarily hardcode number equality to always fail
+recipe equal x:number, y:number -> z:boolean [
+  local-scope
+  load-ingredients
+  z <- copy 0/false
+]
+# comparing numbers used overload
++mem: storing 0 in location 3
+# comparing booleans continues to use primitive
++mem: storing 1 in location 6
