@@ -61,7 +61,6 @@ recently_added_shape_shifting_recipes.clear();
 
 :(before "End Instruction Dispatch(inst, best_score)")
 if (best_score == -1) {
-//?   if (inst.name == "push-duplex") Trace_stream = new trace_stream;
   trace(9992, "transform") << "no variant found; searching for variant with suitable type ingredients" << end();
   recipe_ordinal exemplar = pick_matching_shape_shifting_variant(variants, inst, best_score);
   if (exemplar) {
@@ -71,12 +70,6 @@ if (best_score == -1) {
     inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
   }
-//?   if (inst.name == "push-duplex") {
-//?     cerr << "======== {\n";
-//?     cerr << inst.to_string() << '\n';
-//?     DUMP("");
-//?     cerr << "======== }\n";
-//?   }
 }
 
 :(code)
@@ -145,11 +138,6 @@ bool any_type_ingredient_in_header(recipe_ordinal variant) {
 }
 
 bool deeply_equal_concrete_types(reagent lhs, reagent rhs) {
-//?   cerr << debug_string(lhs) << " vs " << debug_string(rhs) << '\n';
-//?   bool result = deeply_equal_concrete_types(lhs.properties.at(0).second, rhs.properties.at(0).second, rhs);
-//?   cerr << "  => " << result << '\n';
-//?   return result;
-//?   cerr << "== " << debug_string(lhs) << " vs " << debug_string(rhs) << '\n';
   canonize_type(lhs);
   canonize_type(rhs);
   return deeply_equal_concrete_types(lhs.properties.at(0).second, rhs.properties.at(0).second, rhs);
