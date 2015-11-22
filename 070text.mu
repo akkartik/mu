@@ -1,7 +1,6 @@
 # Some useful helpers for dealing with text (arrays of characters)
 
-# todo: rename to 'equal' once we can overload primitives
-recipe text-equal a:address:array:character, b:address:array:character -> result:boolean [
+recipe equal a:address:array:character, b:address:array:character -> result:boolean [
   local-scope
   load-ingredients
   a-len:number <- length *a
@@ -36,7 +35,7 @@ scenario text-equal-reflexive [
   run [
     default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
-    3:boolean/raw <- text-equal x, x
+    3:boolean/raw <- equal x, x
   ]
   memory-should-contain [
     3 <- 1  # x == x for all x
@@ -48,7 +47,7 @@ scenario text-equal-identical [
     default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abc]
-    3:boolean/raw <- text-equal x, y
+    3:boolean/raw <- equal x, y
   ]
   memory-should-contain [
     3 <- 1  # abc == abc
@@ -60,7 +59,7 @@ scenario text-equal-distinct-lengths [
     default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abcd]
-    3:boolean/raw <- text-equal x, y
+    3:boolean/raw <- equal x, y
   ]
   memory-should-contain [
     3 <- 0  # abc != abcd
@@ -78,7 +77,7 @@ scenario text-equal-with-empty [
     default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new []
     y:address:array:character <- new [abcd]
-    3:boolean/raw <- text-equal x, y
+    3:boolean/raw <- equal x, y
   ]
   memory-should-contain [
     3 <- 0  # "" != abcd
@@ -90,7 +89,7 @@ scenario text-equal-common-lengths-but-distinct [
     default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abd]
-    3:boolean/raw <- text-equal x, y
+    3:boolean/raw <- equal x, y
   ]
   memory-should-contain [
     3 <- 0  # abc != abd
@@ -1075,7 +1074,7 @@ recipe split s:address:array:character, delim:character -> result:address:array:
     end:number <- find-next s, delim, start
     # copy start..end into result[curr-result]
     dest:address:address:array:character <- index-address *result, curr-result
-    *dest <- text-copy s, start, end
+    *dest <- copy s, start, end
     # slide over to next slice
     start <- add end, 1
     curr-result <- add curr-result, 1
@@ -1181,9 +1180,9 @@ recipe split-first text:address:array:character, delim:character -> x:address:ar
     reply
   }
   idx:number <- find-next text, delim, 0
-  x:address:array:character <- text-copy text, 0, idx
+  x:address:array:character <- copy text, 0, idx
   idx <- add idx, 1
-  y:address:array:character <- text-copy text, idx, len
+  y:address:array:character <- copy text, idx, len
 ]
 
 scenario text-split-first [
@@ -1199,8 +1198,7 @@ scenario text-split-first [
   ]
 ]
 
-# todo: rename to 'copy' once we can overload primitives
-recipe text-copy buf:address:array:character, start:number, end:number -> result:address:array:character [
+recipe copy buf:address:array:character, start:number, end:number -> result:address:array:character [
   local-scope
   load-ingredients
   # if end is out of bounds, trim it
@@ -1227,7 +1225,7 @@ recipe text-copy buf:address:array:character, start:number, end:number -> result
 scenario text-copy-copies-partial-text [
   run [
     1:address:array:character <- new [abc]
-    2:address:array:character <- text-copy 1:address:array:character, 1, 3
+    2:address:array:character <- copy 1:address:array:character, 1, 3
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
@@ -1238,7 +1236,7 @@ scenario text-copy-copies-partial-text [
 scenario text-copy-out-of-bounds [
   run [
     1:address:array:character <- new [abc]
-    2:address:array:character <- text-copy 1:address:array:character, 2, 4
+    2:address:array:character <- copy 1:address:array:character, 2, 4
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
@@ -1249,7 +1247,7 @@ scenario text-copy-out-of-bounds [
 scenario text-copy-out-of-bounds-2 [
   run [
     1:address:array:character <- new [abc]
-    2:address:array:character <- text-copy 1:address:array:character, 3, 3
+    2:address:array:character <- copy 1:address:array:character, 3, 3
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [

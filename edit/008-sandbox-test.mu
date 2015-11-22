@@ -157,7 +157,7 @@ after <render-sandbox-response> [
     break-unless sandbox-response
     expected-response:address:array:character <- get *sandbox, expected-response:offset
     break-unless expected-response  # fall-through to print in grey
-    response-is-expected?:boolean <- text-equal expected-response, sandbox-response
+    response-is-expected?:boolean <- equal expected-response, sandbox-response
     {
       break-if response-is-expected?:boolean
       row, screen <- render screen, sandbox-response, left, right, 1/red, row
