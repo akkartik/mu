@@ -32,7 +32,6 @@ for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin();
 :(before "End Load Recipe Header(result)")
 if (contains_key(Recipe_ordinal, result.name)) {
   const recipe_ordinal r = get(Recipe_ordinal, result.name);
-//?   if (variant_already_exists(result)) cerr << "AAAAAAAAAAAAAAAAAA variant already exists " << result.name << '\n';
   if ((!contains_key(Recipe, r) || get(Recipe, r).has_header)
       && !variant_already_exists(result)) {
     string new_name = next_unused_recipe_name(result.name);
@@ -124,7 +123,6 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
     if (get(Recipe_variants, inst.name).empty()) continue;
     replace_best_variant(inst, caller_recipe);
   }
-//?   if (caller_recipe.name == "main") cerr << "=============== " << debug_string(caller_recipe) << '\n';
 }
 
 void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
