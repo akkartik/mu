@@ -1,0 +1,148 @@
+9991 parse: --- defining container test-list
+9999 parse: type number: 1000
+9993 parse:   element name: value
+9993 parse:   type: 1
+9993 parse:   element name: next
+9993 parse:   type: 2
+9993 parse:   type: 1000
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: x:address:test-list
+9991 parse: --- defining test-cleanup
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: label: {
+9992 load: after rewriting: {
+9993 parse: instruction: test-next
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"x": <>}
+9993 parse:   product: {"next": <"address" : <"test-list" : <>>>}
+9992 load: after rewriting: next:address:test-list <- test-next x
+9993 parse: instruction: test-abandon
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"x": <>}
+9992 load: after rewriting: test-abandon x
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"next": <>}
+9993 parse:   product: {"x": <>}
+9992 load: after rewriting: x <- copy next
+9993 parse: instruction: loop
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: loop 
+9993 parse: label: }
+9992 load: after rewriting: }
+9999 parse: recipe test-cleanup has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: x:address:test-list
+9999 parse: header product: result:address:test-list/contained-in:x
+9991 parse: --- defining test-next
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: get
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"x": <>, "lookup": <>}
+9993 parse:   ingredient: {"next": "offset"}
+9993 parse:   product: {"result": <>}
+9992 load: after rewriting: result <- get *x, next:offset
+9999 parse: recipe test-next has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: x:address:test-list
+9991 parse: --- defining test-abandon
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: abandon
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"x": <>}
+9992 load: after rewriting: abandon x
+9999 parse: recipe test-abandon has a header
+9990 transform: === transform_all()
+9991 transform: --- checking reply instructions against header for test-next
+9991 transform: --- fill in reply ingredients from header for recipe test-cleanup
+9991 transform: --- fill in reply ingredients from header for recipe test-next
+9991 transform: --- fill in reply ingredients from header for recipe test-abandon
+9991 transform: --- transform braces for recipe test-cleanup
+9993 transform: test-cleanup: push (open, 1)
+9993 transform: push (close, 6)
+9992 transform:  ...
+9992 transform: test-next ...
+9992 transform: test-abandon ...
+9992 transform: copy ...
+9992 transform: jump -4:offset
+9992 transform:  ...
+9991 transform: --- transform braces for recipe test-next
+9992 transform:  ...
+9992 transform: get ...
+9992 transform:  ...
+9991 transform: --- transform braces for recipe test-abandon
+9992 transform:  ...
+9992 transform: abandon ...
+9992 transform:  ...
+9991 transform: --- deduce types for recipe test-cleanup
+9992 transform: x => <address : <test-list : <>>>
+9992 transform: x <= <address : <test-list : <>>>
+9992 transform: next => <address : <test-list : <>>>
+9992 transform: x <= <address : <test-list : <>>>
+9992 transform: next <= <address : <test-list : <>>>
+9992 transform: x <= <address : <test-list : <>>>
+9991 transform: --- deduce types for recipe test-next
+9992 transform: x => <address : <test-list : <>>>
+9992 transform: x <= <address : <test-list : <>>>
+9992 transform: result => <address : <test-list : <>>>
+9991 transform: --- deduce types for recipe test-abandon
+9992 transform: x => <address : <test-list : <>>>
+9992 transform: x <= <address : <test-list : <>>>
+9991 transform: --- deduce types from header for test-next
+9993 transform: type of x is <address : <test-list : <>>>
+9993 transform: type of result is <address : <test-list : <>>>
+9992 transform: instruction: x:address:test-list <- next-ingredient 
+9993 transform:   product: x: <address : <test-list : <>>> -- {"x": <"address" : <"test-list" : <>>>}
+9992 transform: instruction: result <- get *x, next:offset
+9993 transform:   product: result: NULLNULLNULL -- {"result": <>}
+9993 transform: type of result is <address : <test-list : <>>>
+9992 transform: instruction: reply result:address:test-list/contained-in:x
+9991 transform: --- resolve ambiguous calls for recipe test-cleanup
+9992 transform: instruction test-next
+9992 transform: checking variant 0: -1
+9992 transform: checking variant 1: -1
+9992 transform: checking variant 2: 100
+9992 transform: instruction test-abandon
+9992 transform: checking variant 0: -1
+9992 transform: checking variant 1: -1
+9992 transform: checking variant 2: -1
+9992 transform: checking variant 3: -1
+9992 transform: checking variant 4: 100
+9992 transform: instruction copy
+9993 transform: too few ingredients
+9992 transform: checking variant 0: -1
+9992 transform: no variant found; searching for variant with suitable type ingredients
+9992 transform: checking shape-shifting variant 0
+9993 transform: no type ingredients
+9992 transform: final score: -1
+9991 transform: --- resolve ambiguous calls for recipe test-next
+9991 transform: --- resolve ambiguous calls for recipe test-abandon
+9991 transform: --- checking reply instructions against header for test-next
+9991 transform: --- collect surrounding spaces for recipe test-cleanup
+9991 transform: --- collect surrounding spaces for recipe test-next
+9991 transform: --- collect surrounding spaces for recipe test-abandon
+9991 transform: --- transform names for recipe test-cleanup
+9993 name: assign x 1
+9993 name: assign next 2
+9991 transform: --- transform names for recipe test-next
+9993 name: assign x 1
+9993 name: element next of type test-list is at offset 1
+9993 name: assign result 2
+9991 transform: --- transform names for recipe test-abandon
+9993 name: assign x 1
+9991 transform: --- compute instruction operations for recipe test-cleanup
+9991 transform: --- compute instruction operations for recipe test-next
+9991 transform: --- compute instruction operations for recipe test-abandon
+9991 transform: --- perform checks for recipe test-cleanup
+9991 transform: --- perform checks for recipe test-next
+9991 transform: --- perform checks for recipe test-abandon
+9991 transform: --- convert 'new' to 'allocate' for recipe test-cleanup
+9991 transform: --- convert 'new' to 'allocate' for recipe test-next
+9991 transform: --- convert 'new' to 'allocate' for recipe test-abandon
+9991 transform: --- parsing any uninitialized reagents as integers
