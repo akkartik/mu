@@ -411,7 +411,7 @@ recipe editor-contents editor:address:editor-data -> result:address:array:charac
   {
     break-unless curr
     c:character <- get *curr, value:offset
-    buffer-append buf, c
+    buf <- append buf, c
     curr <- next curr
     loop
   }

@@ -144,7 +144,7 @@ recipe buffer-full? in:address:buffer -> result:boolean [
   result <- greater-or-equal len, capacity
 ]
 
-recipe buffer-append in:address:buffer, c:character -> in:address:buffer [
+recipe append in:address:buffer, c:character -> in:address:buffer [
   local-scope
   load-ingredients
   len:address:number <- get-address *in, length:offset
@@ -174,14 +174,14 @@ scenario buffer-append-works [
     local-scope
     x:address:buffer <- new-buffer 3
     s1:address:array:character <- get *x:address:buffer, data:offset
-    x:address:buffer <- buffer-append x:address:buffer, 97  # 'a'
-    x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'
-    x:address:buffer <- buffer-append x:address:buffer, 99  # 'c'
+    x:address:buffer <- append x:address:buffer, 97  # 'a'
+    x:address:buffer <- append x:address:buffer, 98  # 'b'
+    x:address:buffer <- append x:address:buffer, 99  # 'c'
     s2:address:array:character <- get *x:address:buffer, data:offset
     1:boolean/raw <- equal s1:address:array:character, s2:address:array:character
     2:array:character/raw <- copy *s2:address:array:character
     +buffer-filled
-    x:address:buffer <- buffer-append x:address:buffer, 100  # 'd'
+    x:address:buffer <- append x:address:buffer, 100  # 'd'
     s3:address:array:character <- get *x:address:buffer, data:offset
     10:boolean/raw <- equal s1:address:array:character, s3:address:array:character
     11:number/raw <- get *x:address:buffer, length:offset
@@ -211,9 +211,9 @@ scenario buffer-append-handles-backspace [
   run [
     local-scope
     x:address:buffer <- new-buffer 3
-    x <- buffer-append x, 97  # 'a'
-    x <- buffer-append x, 98  # 'b'
-    x <- buffer-append x, 8/backspace
+    x <- append x, 97  # 'a'
+    x <- append x, 98  # 'b'
+    x <- append x, 8/backspace
     s:address:array:character <- buffer-to-array x
     1:array:character/raw <- copy *s
   ]
@@ -250,13 +250,13 @@ recipe integer-to-decimal-text n:number -> result:address:array:character [
     break-if done?
     n, digit:number <- divide-with-remainder n, 10
     c:character <- add digit-base, digit
-    tmp:address:buffer <- buffer-append tmp, c
+    tmp:address:buffer <- append tmp, c
     loop
   }
   # add sign
   {
     break-unless negate-result:boolean
-    tmp <- buffer-append tmp, 45  # '-'
+    tmp <- append tmp, 45  # '-'
   }
   # reverse buffer into text result
   len:number <- get *tmp, length:offset
