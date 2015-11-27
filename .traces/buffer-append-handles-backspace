@@ -1,13 +1,13 @@
 9991 parse: --- defining scenario-buffer-append-handles-backspace
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    local-scope\n    x:address:buffer <- new-buffer 3\n    x <- buffer-append x, 97  # 'a'\n    x <- buffer-append x, 98  # 'b'\n    x <- buffer-append x, 8/backspace\n    s:address:array:character <- buffer-to-array x\n    1:array:character/raw <- copy *s\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    local-scope\n    x:address:buffer <- new-buffer 3\n    x <- append x, 97  # 'a'\n    x <- append x, 98  # 'b'\n    x <- append x, 8/backspace\n    s:address:array:character <- buffer-to-array x\n    1:array:character/raw <- copy *s\n  ": "literal-string"}
 9992 load: after rewriting: run [
     local-scope
     x:address:buffer <- new-buffer 3
-    x <- buffer-append x, 97  # 'a'
-    x <- buffer-append x, 98  # 'b'
-    x <- buffer-append x, 8/backspace
+    x <- append x, 97  # 'a'
+    x <- append x, 98  # 'b'
+    x <- append x, 8/backspace
     s:address:array:character <- buffer-to-array x
     1:array:character/raw <- copy *s
   ]
@@ -40,9 +40,9 @@
  102 run: run [
     local-scope
     x:address:buffer <- new-buffer 3
-    x <- buffer-append x, 97  # 'a'
-    x <- buffer-append x, 98  # 'b'
-    x <- buffer-append x, 8/backspace
+    x <- append x, 97  # 'a'
+    x <- append x, 98  # 'b'
+    x <- append x, 8/backspace
     s:address:array:character <- buffer-to-array x
     1:array:character/raw <- copy *s
   ]
@@ -55,24 +55,24 @@
 9993 parse:   ingredient: {"3": "literal"}
 9993 parse:   product: {"x": <"address" : <"buffer" : <>>>}
 9992 load: after rewriting: x:address:buffer <- new-buffer 3
-9993 parse: instruction: buffer-append
+9993 parse: instruction: append
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <>}
 9993 parse:   ingredient: {"97": "literal"}
 9993 parse:   product: {"x": <>}
-9992 load: after rewriting: x <- buffer-append x, 97
-9993 parse: instruction: buffer-append
+9992 load: after rewriting: x <- append x, 97
+9993 parse: instruction: append
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <>}
 9993 parse:   ingredient: {"98": "literal"}
 9993 parse:   product: {"x": <>}
-9992 load: after rewriting: x <- buffer-append x, 98
-9993 parse: instruction: buffer-append
+9992 load: after rewriting: x <- append x, 98
+9993 parse: instruction: append
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <>}
 9993 parse:   ingredient: {"8": "literal", "backspace": <>}
 9993 parse:   product: {"x": <>}
-9992 load: after rewriting: x <- buffer-append x, 8/backspace
+9992 load: after rewriting: x <- append x, 8/backspace
 9993 parse: instruction: buffer-to-array
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"x": <>}
@@ -89,9 +89,9 @@
 9991 transform: --- transform braces for recipe run1001
 9992 transform: local-scope ...
 9992 transform: new-buffer ...
-9992 transform: buffer-append ...
-9992 transform: buffer-append ...
-9992 transform: buffer-append ...
+9992 transform: append ...
+9992 transform: append ...
+9992 transform: append ...
 9992 transform: buffer-to-array ...
 9992 transform: copy ...
 9992 transform:  ...
@@ -110,12 +110,30 @@
 9991 transform: --- resolve ambiguous calls for recipe run1001
 9992 transform: instruction new-buffer
 9992 transform: checking variant 0: 100
-9992 transform: instruction buffer-append
+9992 transform: instruction append
 9992 transform: checking variant 0: 100
-9992 transform: instruction buffer-append
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 1: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 2: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 3: -1
+9992 transform: instruction append
 9992 transform: checking variant 0: 100
-9992 transform: instruction buffer-append
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 1: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 2: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 3: -1
+9992 transform: instruction append
 9992 transform: checking variant 0: 100
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 1: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 2: -1
+9993 transform: mismatch: ingredient 0
+9992 transform: checking variant 3: -1
 9992 transform: instruction buffer-to-array
 9992 transform: checking variant 0: 100
 9992 transform: instruction copy
@@ -176,7 +194,7 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1010
 9999 mem: storing 1010 in location 1002
- 103 run: x <- buffer-append x, 97
+ 103 run: x <- append x, 97
 9999 mem: location 1002 is 1010
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
@@ -268,7 +286,7 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1010
 9999 mem: storing 1010 in location 1002
- 103 run: x <- buffer-append x, 98
+ 103 run: x <- append x, 98
 9999 mem: location 1002 is 1010
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
@@ -358,7 +376,7 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1010
 9999 mem: storing 1010 in location 1002
- 103 run: x <- buffer-append x, 8/backspace
+ 103 run: x <- append x, 8/backspace
 9999 mem: location 1002 is 1010
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
