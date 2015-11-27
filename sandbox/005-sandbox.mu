@@ -192,7 +192,7 @@ recipe save-sandboxes env:address:programming-environment-data [
   {
     break-unless curr
     data:address:array:character <- get *curr, data:offset
-    filename:address:array:character <- integer-to-decimal-text idx
+    filename:address:array:character <- to-text idx
     save filename, data
     {
       expected-response:address:array:character <- get *curr, expected-response:offset
@@ -280,7 +280,7 @@ recipe restore-sandboxes env:address:programming-environment-data -> env:address
   idx:number <- copy 0
   curr:address:address:sandbox-data <- get-address *env, sandbox:offset
   {
-    filename:address:array:character <- integer-to-decimal-text idx
+    filename:address:array:character <- to-text idx
     contents:address:array:character <- restore filename
     break-unless contents  # stop at first error; assuming file didn't exist
     # create new sandbox for file
