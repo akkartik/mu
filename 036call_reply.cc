@@ -40,7 +40,7 @@ case REPLY: {
     break;
   }
   for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
-    if (!types_match(caller_instruction.products.at(i), reply_inst.ingredients.at(i))) {
+    if (!types_coercible(caller_instruction.products.at(i), reply_inst.ingredients.at(i))) {
       raise_error << maybe(callee) << "reply ingredient " << reply_inst.ingredients.at(i).original_string << " can't be saved in " << caller_instruction.products.at(i).original_string << '\n' << end();
       reagent lhs = reply_inst.ingredients.at(i);
       canonize_type(lhs);

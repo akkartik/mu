@@ -1,33 +1,20 @@
-9991 parse: --- defining container boolbool
-9999 parse: type number: 1000
-9993 parse:   element name: x
-9993 parse:   type: 3
-9993 parse:   element name: y
-9993 parse:   type: 3
 9991 parse: --- defining main
 9993 parse: instruction: copy
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"1": "literal"}
-9993 parse:   product: {"12": "boolean"}
-9992 load: after rewriting: 12:boolean <- copy 1
+9993 parse:   ingredient: {"12": "literal", "unsafe": <>}
+9993 parse:   product: {"1": <"address" : <"number" : <>>>}
+9992 load: after rewriting: 1:address:number <- copy 12/unsafe
 9993 parse: instruction: copy
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"0": "literal"}
-9993 parse:   product: {"13": "boolean"}
-9992 load: after rewriting: 13:boolean <- copy 0
-9993 parse: instruction: get-address
-9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"12": "boolbool"}
-9993 parse:   ingredient: {"1": "offset"}
-9993 parse:   product: {"15": "boolean"}
-9992 load: after rewriting: 15:boolean <- get-address 12:boolbool, 1:offset
+9993 parse:   ingredient: {"1": <"address" : <"number" : <>>>}
+9993 parse:   product: {"2": "number"}
+9992 load: after rewriting: 2:number <- copy 1:address:number
 9999 parse: recipe main has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe main
 9991 transform: --- transform braces for recipe main
 9992 transform: copy ...
 9992 transform: copy ...
-9992 transform: get-address ...
 9992 transform:  ...
 9991 transform: --- deduce types for recipe main
 9991 transform: --- resolve ambiguous calls for recipe main
@@ -49,21 +36,15 @@
 9991 transform: --- transform names for recipe main
 9991 transform: --- compute instruction operations for recipe main
 9991 transform: --- perform checks for recipe main
-   0 error: main: 'get-address 12:boolbool, 1:offset' should write to <address : <boolean : <>>> but 15 has type boolean
-
 9991 transform: --- convert 'new' to 'allocate' for recipe main
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: main
- 102 run: 12:boolean <- copy 1
-9999 mem: storing 1 in location 12
- 102 run: 13:boolean <- copy 0
-9999 mem: storing 0 in location 13
- 102 run: 15:boolean <- get-address 12:boolbool, 1:offset
-9999 mem: location 12 is 1
-9999 mem: location 13 is 0
-9998 run: address to copy is 13
-9999 mem: storing 13 in location 15
+ 102 run: 1:address:number <- copy 12/unsafe
+9999 mem: storing 12 in location 1
+ 102 run: 2:number <- copy 1:address:number
+9999 mem: location 1 is 12
+9999 mem: storing 12 in location 2
  102 run: reply 
 9999 trace: reply: decrementing callstack depth from 1

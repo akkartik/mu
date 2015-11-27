@@ -27,7 +27,7 @@ void check_instruction(const recipe_ordinal r) {
           break;
         }
         for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-          if (!types_match(inst.products.at(i), inst.ingredients.at(i))) {
+          if (!types_coercible(inst.products.at(i), inst.ingredients.at(i))) {
             raise_error << maybe(get(Recipe, r).name) << "can't copy " << inst.ingredients.at(i).original_string << " to " << inst.products.at(i).original_string << "; types don't match\n" << end();
             goto finish_checking_instruction;
           }
@@ -72,6 +72,15 @@ recipe main [
 ]
 +error: main: can't copy 34 to 1:address:number; types don't match
 
+:(scenario write_address_to_number_allowed)
+% Hide_errors = true;
+recipe main [
+  1:address:number <- copy 12/unsafe
+  2:number <- copy 1:address:number
+]
++mem: storing 12 in location 2
+$error: 0
+
 :(code)
 // copy arguments because later layers will want to make changes to them
 // without perturbing the caller
@@ -84,6 +93,14 @@ bool types_match(reagent lhs, reagent rhs) {
   if (is_literal(rhs)) return valid_type_for_literal(lhs, rhs) && size_of(rhs) == size_of(lhs);
   if (!lhs.type) return !rhs.type;
   return types_match(lhs.type, rhs.type);
+}
+
+// types_match with some special-cases
+bool types_coercible(const reagent& lhs, const reagent& rhs) {
+  if (types_match(lhs, rhs)) return true;
+  if (is_mu_address(rhs) && is_mu_number(lhs)) return true;
+  // End types_coercible Special-cases
+  return false;
 }
 
 bool valid_type_for_literal(const reagent& lhs, const reagent& literal_rhs) {
