@@ -656,6 +656,6 @@ recipe print-integer screen:address:screen, n:number -> screen:address:screen [
     bg-color <- copy 0/black
   }
   # todo: other bases besides decimal
-  s:address:array:character <- integer-to-decimal-text n
+  s:address:array:character <- to-text n
   screen <- print screen, s, color, bg-color
 ]

@@ -224,8 +224,7 @@ scenario buffer-append-handles-backspace [
   ]
 ]
 
-# result:address:array:character <- integer-to-decimal-text n:number
-recipe integer-to-decimal-text n:number -> result:address:array:character [
+recipe to-text n:number -> result:address:array:character [
   local-scope
   load-ingredients
   # is n zero?
@@ -304,7 +303,7 @@ recipe buffer-to-array in:address:buffer -> result:address:array:character [
 
 scenario integer-to-decimal-digit-zero [
   run [
-    1:address:array:character/raw <- integer-to-decimal-text 0
+    1:address:array:character/raw <- to-text 0
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
   memory-should-contain [
@@ -314,7 +313,7 @@ scenario integer-to-decimal-digit-zero [
 
 scenario integer-to-decimal-digit-positive [
   run [
-    1:address:array:character/raw <- integer-to-decimal-text 234
+    1:address:array:character/raw <- to-text 234
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
   memory-should-contain [
@@ -324,7 +323,7 @@ scenario integer-to-decimal-digit-positive [
 
 scenario integer-to-decimal-digit-negative [
   run [
-    1:address:array:character/raw <- integer-to-decimal-text -1
+    1:address:array:character/raw <- to-text -1
     2:array:character/raw <- copy *1:address:array:character/raw
   ]
   memory-should-contain [
