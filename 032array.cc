@@ -160,7 +160,7 @@ case INDEX: {
   canonize_type(product);
   reagent element;
   element.type = new type_tree(*array_element(base.type));
-  if (!types_match(product, element)) {
+  if (!types_coercible(product, element)) {
     raise_error << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << debug_string(element.type) << '\n' << end();
     break;
   }
@@ -300,7 +300,7 @@ case INDEX_ADDRESS: {
   reagent element;
   element.type = new type_tree(*array_element(base.type));
   element.type = new type_tree(get(Type_ordinal, "address"), element.type);
-  if (!types_match(product, element)) {
+  if (!types_coercible(product, element)) {
     raise_error << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << debug_string(element.type) << '\n' << end();
     break;
   }

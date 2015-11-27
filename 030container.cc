@@ -160,7 +160,7 @@ case GET: {
   reagent product = inst.products.at(0);
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
-  if (!types_match(product, element)) {
+  if (!types_coercible(product, element)) {
     raise_error << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << debug_string(element.type) << " but " << product.name << " has type " << debug_string(product.type) << '\n' << end();
     break;
   }
@@ -302,7 +302,7 @@ case GET_ADDRESS: {
   reagent element = element_type(base, offset_value);
   // ..except for an address at the start
   element.type = new type_tree(get(Type_ordinal, "address"), element.type);
-  if (!types_match(product, element)) {
+  if (!types_coercible(product, element)) {
     raise_error << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << debug_string(element.type) << " but " << product.name << " has type " << debug_string(product.type) << '\n' << end();
     break;
   }
@@ -353,13 +353,16 @@ recipe main [
 
 :(scenario get_address_product_type_mismatch)
 % Hide_errors = true;
-recipe main [
-  12:number <- copy 34
-  13:number <- copy 35
-  14:number <- copy 36
-  15:number <- get-address 12:point-number/raw, 1:offset
+container boolbool [
+  x:boolean
+  y:boolean
 ]
-+error: main: 'get-address 12:point-number/raw, 1:offset' should write to <address : <number : <>>> but 15 has type number
+recipe main [
+  12:boolean <- copy 1
+  13:boolean <- copy 0
+  15:boolean <- get-address 12:boolbool, 1:offset
+]
++error: main: 'get-address 12:boolbool, 1:offset' should write to <address : <boolean : <>>> but 15 has type boolean
 
 //:: Allow containers to be defined in mu code.
 
