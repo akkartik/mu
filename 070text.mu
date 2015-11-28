@@ -1,5 +1,13 @@
 # Some useful helpers for dealing with text (arrays of characters)
 
+# to-text gets called implicitly in various places
+recipe to-text x:address:array:character -> y:address:array:character [
+  local-scope
+  load-ingredients
+#?   $print [to-text text], 10/newline
+  reply x
+]
+
 recipe equal a:address:array:character, b:address:array:character -> result:boolean [
   local-scope
   load-ingredients
@@ -144,8 +152,27 @@ recipe buffer-full? in:address:buffer -> result:boolean [
   result <- greater-or-equal len, capacity
 ]
 
+# most broadly applicable definition of append to a buffer: just call to-text
+recipe append buf:address:buffer, x:_elem -> buf:address:buffer [
+  local-scope
+#?   $print [append _elem to buffer], 10/newline
+  load-ingredients
+  text:address:array:character <- to-text x
+  len:number <- length *text
+  i:number <- copy 0
+  {
+    done?:boolean <- greater-or-equal i, len
+    break-if done?
+    c:character <- index *text, i
+    buf <- append buf, c
+    i <- add i, 1
+    loop
+  }
+]
+
 recipe append in:address:buffer, c:character -> in:address:buffer [
   local-scope
+#?   $print [append character to buffer], 10/newline
   load-ingredients
   len:address:number <- get-address *in, length:offset
   {
@@ -335,6 +362,7 @@ scenario integer-to-decimal-digit-negative [
 
 recipe append a:address:array:character, b:address:array:character -> result:address:array:character [
   local-scope
+#?   $print [append text to text], 10/newline
   load-ingredients
   # result = new character[a.length + b.length]
   a-len:number <- length *a

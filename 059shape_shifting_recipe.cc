@@ -69,12 +69,17 @@ result.original_name = result.name;
 :(before "End Instruction Dispatch(inst, best_score)")
 if (best_score == -1) {
   trace(9992, "transform") << "no variant found; searching for variant with suitable type ingredients" << end();
+//?   cerr << "no variant found for " << inst.name << "; searching for variant with suitable type ingredients" << '\n';
   recipe_ordinal exemplar = pick_matching_shape_shifting_variant(variants, inst, best_score);
   if (exemplar) {
     trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
+//?     cerr << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << '\n';
     recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
     variants.push_back(new_recipe_ordinal);
     // perform all transforms on the new specialization
+    const string& new_name = get(Recipe, variants.back()).name;
+    trace(9992, "transform") << "transforming new specialization: " << new_name << end();
+//?     cerr << "transforming new specialization: " << new_name << '\n';
     for (long long int t = 0; t < SIZE(Transform); ++t) {
       (*Transform.at(t))(new_recipe_ordinal);
     }
@@ -82,6 +87,7 @@ if (best_score == -1) {
 //?     cerr << "-- replacing " << inst.name << " with " << get(Recipe, variants.back()).name << '\n' << debug_string(get(Recipe, variants.back()));
     inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
+//?     cerr << "new specialization: " << inst.name << '\n';
   }
 }
 
@@ -109,27 +115,32 @@ long long int shape_shifting_variant_score(const instruction& inst, recipe_ordin
 //?   cerr << "======== " << inst.to_string() << '\n';
   if (!any_type_ingredient_in_header(variant)) {
     trace(9993, "transform") << "no type ingredients" << end();
+//?     cerr << "no type ingredients\n";
     return -1;
   }
   const vector<reagent>& header_ingredients = get(Recipe, variant).ingredients;
   if (SIZE(inst.ingredients) < SIZE(header_ingredients)) {
     trace(9993, "transform") << "too few ingredients" << end();
+//?     cerr << "too few ingredients\n";
     return -1;
   }
   for (long long int i = 0; i < SIZE(header_ingredients); ++i) {
     if (!deeply_equal_concrete_types(header_ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "mismatch: ingredient " << i << end();
+//?       cerr << "mismatch: ingredient " << i << ": " << debug_string(header_ingredients.at(i)) << " vs " << debug_string(inst.ingredients.at(i)) << '\n';
       return -1;
     }
   }
   if (SIZE(inst.products) > SIZE(get(Recipe, variant).products)) {
     trace(9993, "transform") << "too few products" << end();
+//?     cerr << "too few products\n";
     return -1;
   }
   const vector<reagent>& header_products = get(Recipe, variant).products;
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
     if (!deeply_equal_concrete_types(header_products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "mismatch: product " << i << end();
+//?       cerr << "mismatch: product " << i << '\n';
       return -1;
     }
   }
@@ -160,8 +171,14 @@ bool deeply_equal_concrete_types(const string_tree* lhs, const string_tree* rhs,
   if (!lhs) return !rhs;
   if (!rhs) return !lhs;
   if (is_type_ingredient_name(lhs->value)) return true;  // type ingredient matches anything
-  if (Literal_type_names.find(lhs->value) != Literal_type_names.end())
-    return Literal_type_names.find(rhs->value) != Literal_type_names.end();
+  if (lhs->value == "literal" && rhs->value == "literal")
+    return true;
+  if (lhs->value == "literal"
+      && Literal_type_names.find(rhs->value) != Literal_type_names.end())
+    return true;
+  if (rhs->value == "literal"
+      && Literal_type_names.find(lhs->value) != Literal_type_names.end())
+    return true;
   if (rhs->value == "literal" && lhs->value == "address")
     return rhs_reagent.name == "0";
 //?   cerr << lhs->value << " vs " << rhs->value << '\n';
@@ -292,10 +309,7 @@ void accumulate_type_ingredients(const string_tree* exemplar_type, const string_
     }
     if (!contains_key(mappings, exemplar_type->value)) {
       trace(9993, "transform") << "adding mapping from " << exemplar_type->value << " to " << debug_string(refinement_type) << end();
-      if (refinement_type->value == "literal")
-        put(mappings, exemplar_type->value, new string_tree("number"));
-      else
-        put(mappings, exemplar_type->value, new string_tree(*refinement_type));
+      put(mappings, exemplar_type->value, new string_tree(*refinement_type));
     }
     else {
       if (!deeply_equal_types(get(mappings, exemplar_type->value), refinement_type)) {
@@ -303,6 +317,11 @@ void accumulate_type_ingredients(const string_tree* exemplar_type, const string_
 //?         cerr << exemplar_type->value << ": " << debug_string(get(mappings, exemplar_type->value)) << " vs " << debug_string(refinement_type) << '\n';
         *error = true;
         return;
+      }
+//?       cerr << exemplar_type->value << ": " << debug_string(get(mappings, exemplar_type->value)) << " <= " << debug_string(refinement_type) << '\n';
+      if (get(mappings, exemplar_type->value)->value == "literal") {
+        delete get(mappings, exemplar_type->value);
+        put(mappings, exemplar_type->value, new string_tree(*refinement_type));
       }
     }
   }
@@ -330,7 +349,7 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const string
     for (long long int j = 0; j < SIZE(inst.products); ++j)
       replace_type_ingredients(inst.products.at(j), mappings, new_recipe);
     // special-case for new: replace type ingredient in first ingredient *value*
-    if (inst.name == "new" && inst.ingredients.at(0).name.at(0) != '[') {
+    if (inst.name == "new" && inst.ingredients.at(0).properties.at(0).second->value != "literal-string") {
       string_tree* type_name = parse_string_tree(inst.ingredients.at(0).name);
       replace_type_ingredients(type_name, mappings);
       inst.ingredients.at(0).name = type_name->to_string();
@@ -359,7 +378,10 @@ void replace_type_ingredients(string_tree* type, const map<string, const string_
   if (is_type_ingredient_name(type->value) && contains_key(mappings, type->value)) {
     const string_tree* replacement = get(mappings, type->value);
     trace(9993, "transform") << type->value << " => " << debug_string(replacement) << end();
-    type->value = replacement->value;
+    if (replacement->value == "literal")
+      type->value = "number";
+    else
+      type->value = replacement->value;
     if (replacement->left) type->left = new string_tree(*replacement->left);
     if (replacement->right) type->right = new string_tree(*replacement->right);
   }
