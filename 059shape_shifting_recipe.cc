@@ -59,6 +59,13 @@ recently_added_types.clear();
 //? cerr << "clearing recently-added shape-shifting recipes\n";
 recently_added_shape_shifting_recipes.clear();
 
+//: save original name of specialized recipes
+:(before "End recipe Fields")
+string original_name;
+//: original name is only set during load
+:(before "End recipe Refinements")
+result.original_name = result.name;
+
 :(before "End Instruction Dispatch(inst, best_score)")
 if (best_score == -1) {
   trace(9992, "transform") << "no variant found; searching for variant with suitable type ingredients" << end();
@@ -189,6 +196,7 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
   recently_added_shape_shifting_recipes.push_back(new_recipe_ordinal);
   put(Recipe, new_recipe_ordinal, get(Recipe, exemplar));
   recipe& new_recipe = get(Recipe, new_recipe_ordinal);
+  new_recipe.name = new_name;
   // Since the exemplar never ran any transforms, we have to redo some of the
   // work of the check_types_by_name transform while supporting type-ingredients.
   compute_type_names(new_recipe);
@@ -203,8 +211,6 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
     if (error) return exemplar;
   }
   ensure_all_concrete_types(new_recipe, get(Recipe, exemplar));
-  // update the name after specialization is complete (so earlier error messages look better)
-  new_recipe.name = new_name;
   return new_recipe_ordinal;
 }
 
@@ -233,7 +239,7 @@ void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name, 
     return;
   }
   if (!x.properties.at(0).second) {
-    raise_error << maybe(variant.name) << "unknown type for " << x.original_string << " (check the name for typos)\n" << end();
+    raise_error << maybe(variant.original_name) << "unknown type for " << x.original_string << " (check the name for typos)\n" << end();
     return;
   }
   if (contains_key(type_name, x.name)) return;
@@ -337,7 +343,7 @@ void replace_type_ingredients(reagent& x, const map<string, const string_tree*>&
   trace(9993, "transform") << "replacing in ingredient " << x.original_string << end();
   // replace properties
   if (!x.properties.at(0).second) {
-    raise_error << "specializing " << caller.name << ": missing type for " << x.original_string << '\n' << end();
+    raise_error << "specializing " << caller.original_name << ": missing type for " << x.original_string << '\n' << end();
     return;
   }
   replace_type_ingredients(x.properties.at(0).second, mappings);
@@ -710,4 +716,5 @@ recipe foo x:_elem -> y:number [
   }
   reply y
 ]
++transform: new specialization: foo_2
 # transform terminates

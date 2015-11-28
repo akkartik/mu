@@ -173,7 +173,7 @@ z <- add x, [a]
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .load-ingredients                                  ┊                                                x.
     .z <- add x, [a]                                   ┊foo 2                                            .
-    .]                                                 ┊foo_3: 'add' requires number ingredients, but go↩.
+    .]                                                 ┊foo_2: 'add' requires number ingredients, but go↩.
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
@@ -192,7 +192,7 @@ z <- add x, [a]
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .load-ingredients                                  ┊                                                x.
     .z <- add x, [a]                                   ┊foo 2                                            .
-    .]                                                 ┊foo_3: 'add' requires number ingredients, but go↩.
+    .]                                                 ┊foo_2: 'add' requires number ingredients, but go↩.
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
