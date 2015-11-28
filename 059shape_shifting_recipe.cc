@@ -146,16 +146,18 @@ long long int shape_shifting_variant_score(const instruction& inst, recipe_ordin
   }
   // the greater the number of unused ingredients, the lower the score
   return 100 - (SIZE(get(Recipe, variant).products)-SIZE(inst.products))
-             - (SIZE(inst.ingredients)-SIZE(get(Recipe, variant).ingredients));  // ok to go negative
+             - (SIZE(inst.ingredients)-SIZE(get(Recipe, variant).ingredients))  // ok to go negative
+             + number_of_concrete_types(variant);
 }
 
 bool any_type_ingredient_in_header(recipe_ordinal variant) {
-  for (long long int i = 0; i < SIZE(get(Recipe, variant).ingredients); ++i) {
-    if (contains_type_ingredient_name(get(Recipe, variant).ingredients.at(i)))
+  const recipe& caller = get(Recipe, variant);
+  for (long long int i = 0; i < SIZE(caller.ingredients); ++i) {
+    if (contains_type_ingredient_name(caller.ingredients.at(i)))
       return true;
   }
-  for (long long int i = 0; i < SIZE(get(Recipe, variant).products); ++i) {
-    if (contains_type_ingredient_name(get(Recipe, variant).products.at(i)))
+  for (long long int i = 0; i < SIZE(caller.products); ++i) {
+    if (contains_type_ingredient_name(caller.products.at(i)))
       return true;
   }
   return false;
@@ -165,6 +167,30 @@ bool deeply_equal_concrete_types(reagent lhs, reagent rhs) {
   canonize_type(lhs);
   canonize_type(rhs);
   return deeply_equal_concrete_types(lhs.properties.at(0).second, rhs.properties.at(0).second, rhs);
+}
+
+long long int number_of_concrete_types(recipe_ordinal r) {
+  const recipe& caller = get(Recipe, r);
+  long long int result = 0;
+  for (long long int i = 0; i < SIZE(caller.ingredients); ++i)
+    result += number_of_concrete_types(caller.ingredients.at(i));
+  for (long long int i = 0; i < SIZE(caller.products); ++i)
+    result += number_of_concrete_types(caller.products.at(i));
+  return result;
+}
+
+long long int number_of_concrete_types(const reagent& r) {
+  return number_of_concrete_types(r.properties.at(0).second);
+}
+
+long long int number_of_concrete_types(const string_tree* type) {
+  if (!type) return 0;
+  long long int result = 0;
+  if (!type->value.empty() && !is_type_ingredient_name(type->value))
+    result++;
+  result += number_of_concrete_types(type->left);
+  result += number_of_concrete_types(type->right);
+  return result;
 }
 
 bool deeply_equal_concrete_types(const string_tree* lhs, const string_tree* rhs, const reagent& rhs_reagent) {
@@ -740,3 +766,21 @@ recipe foo x:_elem -> y:number [
 ]
 +transform: new specialization: foo_2
 # transform terminates
+
+:(scenarios run)
+:(scenario specialize_most_similar_variant)
+recipe main [
+  1:address:number <- new number:type
+  2:number <- foo 1:address:number
+]
+recipe foo x:_elem -> y:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+recipe foo x:address:_elem -> y:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
++mem: storing 35 in location 2
