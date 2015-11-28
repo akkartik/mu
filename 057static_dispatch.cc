@@ -119,8 +119,7 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
   for (long long int index = 0; index < SIZE(caller_recipe.steps); ++index) {
     instruction& inst = caller_recipe.steps.at(index);
     if (inst.is_label) continue;
-    if (!contains_key(Recipe_variants, inst.name)) continue;
-    if (get(Recipe_variants, inst.name).empty()) continue;
+    if (get_or_insert(Recipe_variants, inst.name).empty()) continue;
     replace_best_variant(inst, caller_recipe);
   }
 }
