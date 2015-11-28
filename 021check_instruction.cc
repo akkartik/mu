@@ -91,9 +91,15 @@ bool types_coercible(const reagent& lhs, const reagent& rhs) {
 }
 
 bool types_match(const reagent& lhs, const reagent& rhs) {
-  if (!is_unsafe(rhs)) {
-    if (is_mu_address(lhs) && is_literal(rhs)) return rhs.name == "0";
-    if (is_literal(rhs)) return valid_type_for_literal(lhs, rhs) && size_of(rhs) == size_of(lhs);
+  // to sidestep type-checking, use /unsafe in the source.
+  // this will be highlighted in red inside vim. just for setting up some tests.
+  if (is_unsafe(rhs)) return true;
+  if (is_literal(rhs)) {
+    if (is_mu_array(lhs)) return false;
+    // End Matching Types For Literal(lhs)
+    // allow writing 0 to any address
+    if (is_mu_address(lhs)) return rhs.name == "0";
+    return size_of(lhs) == 1;  // literals are always scalars
   }
   return types_strictly_match(lhs, rhs);
 }
@@ -101,11 +107,11 @@ bool types_match(const reagent& lhs, const reagent& rhs) {
 // copy arguments because later layers will want to make changes to them
 // without perturbing the caller
 bool types_strictly_match(reagent lhs, reagent rhs) {
-  // '_' never raises type error
-  if (is_dummy(lhs)) return true;
   // to sidestep type-checking, use /unsafe in the source.
   // this will be highlighted in red inside vim. just for setting up some tests.
   if (is_unsafe(rhs)) return true;
+  // '_' never raises type error
+  if (is_dummy(lhs)) return true;
   if (!lhs.type) return !rhs.type;
   return types_match(lhs.type, rhs.type);
 }
@@ -121,14 +127,6 @@ bool types_match(type_tree* lhs, type_tree* rhs) {
   }
   if (lhs->value != rhs->value) return false;
   return types_match(lhs->left, rhs->left) && types_match(lhs->right, rhs->right);
-}
-
-bool valid_type_for_literal(const reagent& lhs, const reagent& literal_rhs) {
-  if (is_mu_array(lhs)) return false;
-  // End valid_type_for_literal Special-cases
-  // allow writing 0 to any address
-  if (is_mu_address(lhs)) return literal_rhs.name == "0";
-  return true;
 }
 
 bool is_raw(const reagent& r) {
