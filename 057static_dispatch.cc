@@ -140,6 +140,7 @@ void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
 }
 
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {
+  long long int result = 100;
   if (variant == -1) return -1;  // ghost from a previous test
   if (!contains_key(Recipe, variant)) {
     assert(variant < MAX_PRIMITIVE_RECIPES);
@@ -155,6 +156,14 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
       trace(9993, "transform") << "mismatch: ingredient " << i << end();
       return -1;
     }
+    if (types_strictly_match(header_ingredients.at(i), inst.ingredients.at(i))) {
+      trace(9993, "transform") << "strict match: ingredient " << i << end();
+    }
+    else {
+      // slight penalty for things like coercing literal 0 to an address
+      trace(9993, "transform") << "non-strict match: ingredient " << i << end();
+      result--;
+    }
   }
   if (SIZE(inst.products) > SIZE(get(Recipe, variant).products)) {
     trace(9993, "transform") << "too few products" << end();
@@ -166,10 +175,18 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
       trace(9993, "transform") << "mismatch: product " << i << end();
       return -1;
     }
+    if (types_strictly_match(header_products.at(i), inst.products.at(i))) {
+      trace(9993, "transform") << "strict match: ingredient " << i << end();
+    }
+    else {
+      // slight penalty for things like coercing literal 0 to an address
+      trace(9993, "transform") << "non-strict match: ingredient " << i << end();
+      result--;
+    }
   }
   // the greater the number of unused ingredients, the lower the score
-  return 100 - (SIZE(get(Recipe, variant).products)-SIZE(inst.products))
-             - (SIZE(inst.ingredients)-SIZE(get(Recipe, variant).ingredients));  // ok to go negative
+  return result - (SIZE(get(Recipe, variant).products)-SIZE(inst.products))
+                - (SIZE(inst.ingredients)-SIZE(get(Recipe, variant).ingredients));  // ok to go negative
 }
 
 :(scenario static_dispatch_disabled_on_headerless_definition)
@@ -212,3 +229,15 @@ recipe equal x:number, y:number -> z:boolean [
 +mem: storing 0 in location 3
 # comparing booleans continues to use primitive
 +mem: storing 1 in location 6
+
+:(scenario static_dispatch_prefers_literals_to_be_numbers_rather_than_addresses)
+recipe main [
+  1:number <- foo 0
+]
+recipe foo x:address:number -> y:number [
+  reply 34
+]
+recipe foo x:number -> y:number [
+  reply 35
+]
++mem: storing 35 in location 1

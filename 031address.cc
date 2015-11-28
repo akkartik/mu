@@ -61,7 +61,7 @@ void lookup_memory(reagent& x) {
   drop_one_lookup(x);
 }
 
-:(after "bool types_match(reagent lhs, reagent rhs)")
+:(after "bool types_strictly_match(reagent lhs, reagent rhs)")
   if (!canonize_type(lhs)) return false;
   if (!canonize_type(rhs)) return false;
 

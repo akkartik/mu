@@ -82,15 +82,19 @@ recipe main [
 $error: 0
 
 :(code)
+bool types_match(const reagent& lhs, const reagent& rhs) {
+  if (!is_unsafe(rhs) && is_literal(rhs)) return valid_type_for_literal(lhs, rhs) && size_of(rhs) == size_of(lhs);
+  return types_strictly_match(lhs, rhs);
+}
+
 // copy arguments because later layers will want to make changes to them
 // without perturbing the caller
-bool types_match(reagent lhs, reagent rhs) {
+bool types_strictly_match(reagent lhs, reagent rhs) {
   // '_' never raises type error
   if (is_dummy(lhs)) return true;
   // to sidestep type-checking, use /unsafe in the source.
   // this will be highlighted in red inside vim. just for setting up some tests.
   if (is_unsafe(rhs)) return true;
-  if (is_literal(rhs)) return valid_type_for_literal(lhs, rhs) && size_of(rhs) == size_of(lhs);
   if (!lhs.type) return !rhs.type;
   return types_match(lhs.type, rhs.type);
 }
