@@ -82,8 +82,19 @@ recipe main [
 $error: 0
 
 :(code)
+// types_match with some special-cases
+bool types_coercible(const reagent& lhs, const reagent& rhs) {
+  if (types_match(lhs, rhs)) return true;
+  if (is_mu_address(rhs) && is_mu_number(lhs)) return true;
+  // End types_coercible Special-cases
+  return false;
+}
+
 bool types_match(const reagent& lhs, const reagent& rhs) {
-  if (!is_unsafe(rhs) && is_literal(rhs)) return valid_type_for_literal(lhs, rhs) && size_of(rhs) == size_of(lhs);
+  if (!is_unsafe(rhs)) {
+    if (is_mu_address(lhs) && is_literal(rhs)) return rhs.name == "0";
+    if (is_literal(rhs)) return valid_type_for_literal(lhs, rhs) && size_of(rhs) == size_of(lhs);
+  }
   return types_strictly_match(lhs, rhs);
 }
 
@@ -97,22 +108,6 @@ bool types_strictly_match(reagent lhs, reagent rhs) {
   if (is_unsafe(rhs)) return true;
   if (!lhs.type) return !rhs.type;
   return types_match(lhs.type, rhs.type);
-}
-
-// types_match with some special-cases
-bool types_coercible(const reagent& lhs, const reagent& rhs) {
-  if (types_match(lhs, rhs)) return true;
-  if (is_mu_address(rhs) && is_mu_number(lhs)) return true;
-  // End types_coercible Special-cases
-  return false;
-}
-
-bool valid_type_for_literal(const reagent& lhs, const reagent& literal_rhs) {
-  if (is_mu_array(lhs)) return false;
-  // End valid_type_for_literal Special-cases
-  // allow writing 0 to any address
-  if (is_mu_address(lhs)) return literal_rhs.name == "0";
-  return true;
 }
 
 // two types match if the second begins like the first
@@ -130,16 +125,12 @@ bool types_match(type_tree* lhs, type_tree* rhs) {
   return types_match(lhs->left, rhs->left) && types_match(lhs->right, rhs->right);
 }
 
-// hacky version that allows 0 addresses
-bool types_match(const reagent lhs, const type_tree* rhs, const vector<double>& data) {
-  if (is_dummy(lhs)) return true;
-  if (rhs->value == 0) {
-    if (lhs.type->value == get(Type_ordinal, "array")) return false;
-    if (lhs.type->value == get(Type_ordinal, "address")) return scalar(data) && data.at(0) == 0;
-    return size_of(rhs) == size_of(lhs);
-  }
-  if (lhs.type->value != rhs->value) return false;
-  return types_match(lhs.type->left, rhs->left) && types_match(lhs.type->right, rhs->right);
+bool valid_type_for_literal(const reagent& lhs, const reagent& literal_rhs) {
+  if (is_mu_array(lhs)) return false;
+  // End valid_type_for_literal Special-cases
+  // allow writing 0 to any address
+  if (is_mu_address(lhs)) return literal_rhs.name == "0";
+  return true;
 }
 
 bool is_raw(const reagent& r) {

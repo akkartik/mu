@@ -22,7 +22,7 @@ recipe f [
 
 :(before "End call Fields")
 vector<vector<double> > ingredient_atoms;
-vector<type_tree*> ingredient_types;
+vector<reagent> ingredients;
 long long int next_ingredient_to_process;
 :(before "End call Constructor")
 next_ingredient_to_process = 0;
@@ -32,12 +32,8 @@ for (long long int i = 0; i < SIZE(ingredients); ++i) {
   current_call().ingredient_atoms.push_back(ingredients.at(i));
   reagent ingredient = call_instruction.ingredients.at(i);
   canonize_type(ingredient);
-  current_call().ingredient_types.push_back(ingredient.type);
+  current_call().ingredients.push_back(ingredient);
   ingredient.type = NULL;  // release long-lived pointer
-}
-:(before "End call Destructor")
-for (long long int i = 0; i < SIZE(ingredient_types); ++i) {
-  delete ingredient_types.at(i);
 }
 
 :(before "End Primitive Recipe Declarations")
@@ -65,8 +61,7 @@ case NEXT_INGREDIENT: {
         raise_error << "main: wrong type for ingredient " << product.original_string << '\n' << end();
     }
     else if (!types_match(product,
-                          current_call().ingredient_types.at(current_call().next_ingredient_to_process),
-                          current_call().ingredient_atoms.at(current_call().next_ingredient_to_process))) {
+                          current_call().ingredients.at(current_call().next_ingredient_to_process))) {
       raise_error << maybe(current_recipe_name()) << "wrong type for ingredient " << product.original_string << '\n' << end();
     }
     products.push_back(
