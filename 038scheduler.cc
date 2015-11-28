@@ -166,7 +166,6 @@ case START_RUNNING: {
     reagent ingredient = current_instruction().ingredients.at(i);
     canonize_type(ingredient);
     new_routine->calls.front().ingredients.push_back(ingredient);
-    ingredient.type = NULL;  // release long-lived pointer
   }
   Routines.push_back(new_routine);
   products.resize(1);
