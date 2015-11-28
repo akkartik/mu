@@ -60,6 +60,7 @@ struct reagent {
   reagent(string s);
   reagent();
   ~reagent();
+  void clear();
   reagent(const reagent& old);
   reagent& operator=(const reagent& old);
   void set_value(double v) { value = v; initialized = true; }
@@ -319,9 +320,18 @@ reagent& reagent::operator=(const reagent& old) {
 }
 
 reagent::~reagent() {
-  for (long long int i = 0; i < SIZE(properties); ++i)
-    if (properties.at(i).second) delete properties.at(i).second;
+  clear();
+}
+
+void reagent::clear() {
+  for (long long int i = 0; i < SIZE(properties); ++i) {
+    if (properties.at(i).second) {
+      delete properties.at(i).second;
+      properties.at(i).second = NULL;
+    }
+  }
   delete type;
+  type = NULL;
 }
 type_tree::~type_tree() {
   delete left;
