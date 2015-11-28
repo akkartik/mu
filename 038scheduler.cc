@@ -111,7 +111,7 @@ Current_routine = NULL;
 //: special case for the very first routine
 :(replace{} "void run_main(int argc, char* argv[])")
 void run_main(int argc, char* argv[]) {
-  recipe_ordinal r = get(Recipe_ordinal, string("main"));
+  recipe_ordinal r = get(Recipe_ordinal, "main");
   if (r) {
     routine* main_routine = new routine(r);
     // Update main_routine
