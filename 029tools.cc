@@ -38,7 +38,7 @@ case TRACE: {
   break;
 }
 
-//: a smarter but more limited version of 'trace'
+//: simpler limited version of 'trace'
 
 :(before "End Primitive Recipe Declarations")
 STASH,
