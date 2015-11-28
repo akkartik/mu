@@ -152,14 +152,14 @@ if (argc > 1) {
   }
   transform_all();
 //?   dump_recipe("handle-keyboard-event"),  exit(0);
-  if (Run_tests) Recipe.erase(get(Recipe_ordinal, string("main")));
+  if (Run_tests) Recipe.erase(get(Recipe_ordinal, "main"));
   // End Loading .mu Files
 }
 
 //: Step 3: if we aren't running tests, locate a recipe called 'main' and
 //: start running it.
 :(before "End Main")
-if (!Run_tests && contains_key(Recipe_ordinal, string("main")) && contains_key(Recipe, get(Recipe_ordinal, string("main")))) {
+if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, get(Recipe_ordinal, "main"))) {
   setup();
 //?   Trace_file = "interactive";
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
@@ -170,7 +170,7 @@ if (!Run_tests && contains_key(Recipe_ordinal, string("main")) && contains_key(R
 
 :(code)
 void run_main(int argc, char* argv[]) {
-  recipe_ordinal r = get(Recipe_ordinal, string("main"));
+  recipe_ordinal r = get(Recipe_ordinal, "main");
   if (r) run(r);
 }
 
