@@ -65,7 +65,13 @@ if (best_score == -1) {
   recipe_ordinal exemplar = pick_matching_shape_shifting_variant(variants, inst, best_score);
   if (exemplar) {
     trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
-    variants.push_back(new_variant(exemplar, inst, caller_recipe));
+    recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
+    variants.push_back(new_recipe_ordinal);
+    // perform all transforms on the new specialization
+    for (long long int t = 0; t < SIZE(Transform); ++t) {
+      (*Transform.at(t))(new_recipe_ordinal);
+    }
+    get(Recipe, new_recipe_ordinal).transformed_until = SIZE(Transform)-1;
 //?     cerr << "-- replacing " << inst.name << " with " << get(Recipe, variants.back()).name << '\n' << debug_string(get(Recipe, variants.back()));
     inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
@@ -199,11 +205,6 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
   ensure_all_concrete_types(new_recipe, get(Recipe, exemplar));
   // update the name after specialization is complete (so earlier error messages look better)
   new_recipe.name = new_name;
-  // perform all transforms on the new specialization
-  for (long long int t = 0; t < SIZE(Transform); ++t) {
-    (*Transform.at(t))(new_recipe_ordinal);
-  }
-  new_recipe.transformed_until = SIZE(Transform)-1;
   return new_recipe_ordinal;
 }
 
@@ -693,3 +694,20 @@ container d1:_elem [
 +error: foo: unknown type for e (check the name for typos)
 +error: specializing foo: missing type for e
 # and it doesn't crash
+
+:(scenarios transform)
+:(scenario specialize_recursive_shape_shifting_recipe)
+recipe main [
+  1:number <- copy 34
+  2:number <- foo 1:number
+]
+recipe foo x:_elem -> y:number [
+  local-scope
+  load-ingredients
+  {
+    break
+    y:number <- foo x
+  }
+  reply y
+]
+# transform terminates
