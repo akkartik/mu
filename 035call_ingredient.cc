@@ -33,7 +33,6 @@ for (long long int i = 0; i < SIZE(ingredients); ++i) {
   reagent ingredient = call_instruction.ingredients.at(i);
   canonize_type(ingredient);
   current_call().ingredients.push_back(ingredient);
-  ingredient.type = NULL;  // release long-lived pointer
 }
 
 :(before "End Primitive Recipe Declarations")
