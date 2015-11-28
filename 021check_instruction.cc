@@ -119,8 +119,6 @@ bool types_match(type_tree* lhs, type_tree* rhs) {
     if (lhs->value == get(Type_ordinal, "address")) return false;
     return size_of(rhs) == size_of(lhs);
   }
-//?   if (lhs->value == get(Type_ordinal, "character") && rhs->value == get(Type_ordinal, "number")) return true;
-//?   if (lhs->value == get(Type_ordinal, "number") && rhs->value == get(Type_ordinal, "character")) return true;
   if (lhs->value != rhs->value) return false;
   return types_match(lhs->left, rhs->left) && types_match(lhs->right, rhs->right);
 }
