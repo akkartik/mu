@@ -613,8 +613,7 @@ recipe foo x:address:_elem -> y:address:_elem [
   load-ingredients
   y <- copy x
 ]
-+error: foo: failed to map a type to x
-+error: foo: failed to map a type to y
++error: ran into unspecialized shape-shifting recipe foo
 
 :(scenario specialize_with_literal_5)
 recipe main [
