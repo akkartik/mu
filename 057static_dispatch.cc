@@ -116,6 +116,7 @@ Transform.push_back(resolve_ambiguous_calls);  // idempotent
 void resolve_ambiguous_calls(recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   trace(9991, "transform") << "--- resolve ambiguous calls for recipe " << caller_recipe.name << end();
+//?   cerr << "--- resolve ambiguous calls for recipe " << caller_recipe.name << '\n';
   for (long long int index = 0; index < SIZE(caller_recipe.steps); ++index) {
     instruction& inst = caller_recipe.steps.at(index);
     if (inst.is_label) continue;
@@ -142,6 +143,7 @@ void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {
   long long int result = 100;
   if (variant == -1) return -1;  // ghost from a previous test
+//?   cerr << "variant score: " << inst.to_string() << '\n';
   if (!contains_key(Recipe, variant)) {
     assert(variant < MAX_PRIMITIVE_RECIPES);
     return -1;
@@ -149,42 +151,52 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
   const vector<reagent>& header_ingredients = get(Recipe, variant).ingredients;
   if (SIZE(inst.ingredients) < SIZE(header_ingredients)) {
     trace(9993, "transform") << "too few ingredients" << end();
+//?     cerr << "too few ingredients\n";
     return -1;
   }
+//?   cerr << "=== checking ingredients\n";
   for (long long int i = 0; i < SIZE(header_ingredients); ++i) {
     if (!types_match(header_ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "mismatch: ingredient " << i << end();
+//?       cerr << "mismatch: ingredient " << i << '\n';
       return -1;
     }
     if (types_strictly_match(header_ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "strict match: ingredient " << i << end();
+//?       cerr << "strict match: ingredient " << i << '\n';
     }
     else {
-      // slight penalty for things like coercing literal 0 to an address
+      // slight penalty for modifying type
       trace(9993, "transform") << "non-strict match: ingredient " << i << end();
+//?       cerr << "non-strict match: ingredient " << i << '\n';
       result--;
     }
   }
+//?   cerr << "=== done checking ingredients\n";
   if (SIZE(inst.products) > SIZE(get(Recipe, variant).products)) {
     trace(9993, "transform") << "too few products" << end();
+//?     cerr << "too few products\n";
     return -1;
   }
   const vector<reagent>& header_products = get(Recipe, variant).products;
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
     if (!types_match(header_products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "mismatch: product " << i << end();
+//?       cerr << "mismatch: product " << i << '\n';
       return -1;
     }
     if (types_strictly_match(header_products.at(i), inst.products.at(i))) {
-      trace(9993, "transform") << "strict match: ingredient " << i << end();
+      trace(9993, "transform") << "strict match: product " << i << end();
+//?       cerr << "strict match: product " << i << '\n';
     }
     else {
-      // slight penalty for things like coercing literal 0 to an address
-      trace(9993, "transform") << "non-strict match: ingredient " << i << end();
+      // slight penalty for modifying type
+      trace(9993, "transform") << "non-strict match: product " << i << end();
+//?       cerr << "non-strict match: product " << i << '\n';
       result--;
     }
   }
-  // the greater the number of unused ingredients, the lower the score
+  // the greater the number of unused ingredients/products, the lower the score
   return result - (SIZE(get(Recipe, variant).products)-SIZE(inst.products))
                 - (SIZE(inst.ingredients)-SIZE(get(Recipe, variant).ingredients));  // ok to go negative
 }
@@ -241,3 +253,17 @@ recipe foo x:number -> y:number [
   reply 35
 ]
 +mem: storing 35 in location 1
+
+:(scenario static_dispatch_on_non_literal_character_ignores_variant_with_numbers)
+% Hide_errors = true;
+recipe main [
+  local-scope
+  x:character <- copy 10/newline
+  1:number/raw <- foo x
+]
+recipe foo x:number -> y:number [
+  load-ingredients
+  reply 34
+]
++error: foo: wrong type for ingredient x:number
+-mem: storing 34 in location 1

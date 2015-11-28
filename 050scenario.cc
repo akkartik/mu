@@ -333,7 +333,7 @@ void check_string(long long int address, const string& literal) {
   trace(9999, "run") << "checking string length at " << address << end();
   if (get_or_insert(Memory, address) != SIZE(literal)) {
     if (Current_scenario && !Scenario_testing_scenario)
-      raise_error << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
+      raise_error << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << " (" << read_mu_string(address) << ")\n" << end();
     else
       raise_error << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
     if (!Scenario_testing_scenario) {
@@ -348,7 +348,7 @@ void check_string(long long int address, const string& literal) {
     if (get_or_insert(Memory, address+i) != literal.at(i)) {
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise_error << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, address+i)) << '\n' << end();
+        raise_error << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, address+i)) << " ('" << static_cast<char>(get_or_insert(Memory, address+i)) << "')\n" << end();
       }
       else {
         // just testing scenario support
