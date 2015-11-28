@@ -76,11 +76,24 @@ bool all_reagents_match(const recipe& r1, const recipe& r2) {
   return true;
 }
 
-bool exact_match(type_tree* a, type_tree* b) {
-  if (a == b) return true;
+:(before "End Globals")
+set<string> Literal_type_names;
+:(before "End One-time Setup")
+Literal_type_names.insert("number");
+Literal_type_names.insert("character");
+:(code)
+bool deeply_equal_types(const string_tree* a, const string_tree* b) {
+  if (!a) return !b;
+  if (!b) return !a;
+  if (a->value == "literal" && b->value == "literal")
+    return true;
+  if (a->value == "literal")
+    return Literal_type_names.find(b->value) != Literal_type_names.end();
+  if (b->value == "literal")
+    return Literal_type_names.find(a->value) != Literal_type_names.end();
   return a->value == b->value
-      && exact_match(a->left, b->left)
-      && exact_match(a->right, b->right);
+      && deeply_equal_types(a->left, b->left)
+      && deeply_equal_types(a->right, b->right);
 }
 
 string next_unused_recipe_name(const string& recipe_name) {

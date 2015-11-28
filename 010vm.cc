@@ -476,34 +476,6 @@ string_tree* property(const reagent& r, const string& name) {
   return NULL;
 }
 
-bool deeply_equal(const string_tree* a, const string_tree* b) {
-  if (!a) return !b;
-  if (!b) return !a;
-  return a->value == b->value
-      && deeply_equal(a->left, b->left)
-      && deeply_equal(a->right, b->right);
-}
-
-:(before "End Globals")
-set<string> Literal_type_names;
-:(before "End One-time Setup")
-Literal_type_names.insert("number");
-Literal_type_names.insert("character");
-:(code)
-bool deeply_equal_types(const string_tree* a, const string_tree* b) {
-  if (!a) return !b;
-  if (!b) return !a;
-  if (a->value == "literal" && b->value == "literal")
-    return true;
-  if (a->value == "literal")
-    return Literal_type_names.find(b->value) != Literal_type_names.end();
-  if (b->value == "literal")
-    return Literal_type_names.find(a->value) != Literal_type_names.end();
-  return a->value == b->value
-      && deeply_equal_types(a->left, b->left)
-      && deeply_equal_types(a->right, b->right);
-}
-
 void dump_memory() {
   for (map<long long int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
     cout << p->first << ": " << no_scientific(p->second) << '\n';
