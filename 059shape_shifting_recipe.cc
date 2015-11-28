@@ -37,7 +37,7 @@ if (Current_routine->calls.front().running_step_index == 0
 
 //: Make sure we don't match up literals with type ingredients without
 //: specialization.
-:(before "End valid_type_for_literal Special-cases")
+:(before "End Matching Types For Literal(lhs)")
 if (contains_type_ingredient_name(lhs)) return false;
 
 //: We'll be creating recipes without loading them from anywhere by
@@ -613,7 +613,8 @@ recipe foo x:address:_elem -> y:address:_elem [
   load-ingredients
   y <- copy x
 ]
-+error: ran into unspecialized shape-shifting recipe foo
++error: foo: failed to map a type to x
++error: foo: failed to map a type to y
 
 :(scenario specialize_with_literal_5)
 recipe main [
