@@ -15,10 +15,10 @@ recipe main [
 +error: main: x used with multiple types
 
 :(after "Begin Instruction Modifying Transforms")
-Transform.push_back(check_types_by_name);  // idempotent
+Transform.push_back(check_or_set_types_by_name);  // idempotent
 
 :(code)
-void check_types_by_name(const recipe_ordinal r) {
+void check_or_set_types_by_name(const recipe_ordinal r) {
   trace(9991, "transform") << "--- deduce types for recipe " << get(Recipe, r).name << end();
 //?   cerr << "--- deduce types for recipe " << get(Recipe, r).name << '\n';
   map<string, type_tree*> type;
