@@ -30,31 +30,32 @@ for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
 
 :(code)
 void transform_names(const recipe_ordinal r) {
-  trace(9991, "transform") << "--- transform names for recipe " << get(Recipe, r).name << end();
-//?   cerr << "--- transform names for recipe " << get(Recipe, r).name << '\n';
+  recipe& caller = get(Recipe, r);
+  trace(9991, "transform") << "--- transform names for recipe " << caller.name << end();
+//?   cerr << "--- transform names for recipe " << caller.name << '\n';
   bool names_used = false;
   bool numeric_locations_used = false;
   map<string, long long int>& names = Name[r];
   // store the indices 'used' so far in the map
   long long int& curr_idx = names[""];
   ++curr_idx;  // avoid using index 0, benign skip in some other cases
-  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
-    instruction& inst = get(Recipe, r).steps.at(i);
+  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+    instruction& inst = caller.steps.at(i);
     // End transform_names(inst) Special-cases
     // map names to addresses
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
       if (is_numeric_location(inst.ingredients.at(in))) numeric_locations_used = true;
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
-      if (disqualified(inst.ingredients.at(in), inst, get(Recipe, r).name)) continue;
+      if (disqualified(inst.ingredients.at(in), inst, caller.name)) continue;
       if (!already_transformed(inst.ingredients.at(in), names)) {
-        raise_error << maybe(get(Recipe, r).name) << "use before set: " << inst.ingredients.at(in).name << '\n' << end();
+        raise_error << maybe(caller.name) << "use before set: " << inst.ingredients.at(in).name << '\n' << end();
       }
       inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
     }
     for (long long int out = 0; out < SIZE(inst.products); ++out) {
       if (is_numeric_location(inst.products.at(out))) numeric_locations_used = true;
       if (is_named_location(inst.products.at(out))) names_used = true;
-      if (disqualified(inst.products.at(out), inst, get(Recipe, r).name)) continue;
+      if (disqualified(inst.products.at(out), inst, caller.name)) continue;
       if (names.find(inst.products.at(out).name) == names.end()) {
         trace(9993, "name") << "assign " << inst.products.at(out).name << " " << curr_idx << end();
         names[inst.products.at(out).name] = curr_idx;
@@ -64,7 +65,7 @@ void transform_names(const recipe_ordinal r) {
     }
   }
   if (names_used && numeric_locations_used)
-    raise_error << maybe(get(Recipe, r).name) << "mixing variable names and numeric addresses\n" << end();
+    raise_error << maybe(caller.name) << "mixing variable names and numeric addresses\n" << end();
 }
 
 bool disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
