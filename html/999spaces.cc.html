@@ -61,6 +61,57 @@ assert<span class="Delimiter">(</span>Next_recipe_ordinal == <span class="Consta
 assert<span class="Delimiter">(</span>Initial_callstack_depth == <span class="Constant">101</span><span class="Delimiter">);</span>
 assert<span class="Delimiter">(</span>Max_callstack_depth == <span class="Constant">9989</span><span class="Delimiter">);</span>
 <span class="Comment">//: 9990-9999 - intra-instruction lines (mostly label mem)</span>
+
+<span class="SalientComment">//:: Summary of transforms and their dependencies</span>
+<span class="Comment">//: begin transforms</span>
+<span class="Comment">//:   begin instruction inserting transforms</span>
+<span class="Comment">//:     52 insert fragments</span>
+<span class="Comment">//:      ↳ 52.2 check fragments</span>
+<span class="Comment">//:   ---</span>
+<span class="Comment">//:     53 rewrite 'stash' instructions</span>
+<span class="Comment">//:   end instruction inserting transforms</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   begin instruction modifying transforms</span>
+<span class="Comment">//:     56.2 check header ingredients</span>
+<span class="Comment">//:      ↳ 56.4 fill in reply ingredients</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:     begin type modifying transforms</span>
+<span class="Comment">//:       56.3 deduce types from header</span>
+<span class="Comment">//:       48 check or set types by name</span>
+<span class="Comment">//:     ---</span>
+<span class="Comment">//:       30 check or set invalid containers</span>
+<span class="Comment">//:     end type modifying transforms</span>
+<span class="Comment">//:      ↳ 57 static dispatch</span>
+<span class="Comment">//:   ---</span>
+<span class="Comment">//:     13 update instruction operation</span>
+<span class="Comment">//:     40 transform braces</span>
+<span class="Comment">//:     41 transform labels</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:      ↱ 46 collect surrounding spaces</span>
+<span class="Comment">//:     42 transform names</span>
+<span class="Comment">//:   end instruction modifying transforms</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   begin checks</span>
+<span class="Comment">//:   ---</span>
+<span class="Comment">//:     21 check instruction</span>
+<span class="Comment">//:     ↳ 43 transform 'new' to 'allocate'</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:     56 check reply instructions against header</span>
+<span class="Comment">//:   end checks</span>
+<span class="Comment">//: end transforms</span>
+
+<span class="SalientComment">//:: Summary of type-checking in different phases</span>
+<span class="Comment">//: when dispatching instructions we accept first recipe that:</span>
+<span class="Comment">//:   strictly matches all types</span>
+<span class="Comment">//:   maps literal 0 or literal 1 to boolean for some ingredients</span>
+<span class="Comment">//:   performs some other acceptable type conversion</span>
+<span class="Comment">//:     literal 0 -&gt; address</span>
+<span class="Comment">//:     literal -&gt; character</span>
+<span class="Comment">//: when checking instructions we ensure that types match, and that literals map to some scalar</span>
+<span class="Comment">//:   (address can only map to literal 0)</span>
+<span class="Comment">//:   (boolean can only map to literal 0 or literal 1)</span>
+<span class="Comment">//:     (but conditionals can take any scalar)</span>
+<span class="Comment">//: at runtime we perform no checks</span>
 </pre>
 </body>
 </html>

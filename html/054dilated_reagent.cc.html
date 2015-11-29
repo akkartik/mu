@@ -15,11 +15,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
+.PreProc { color: #c000c0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
 .Constant { color: #00a0a0; }
+.Error { color: #ffffff; background-color: #ff6060; padding-bottom: 1px; }
 -->
 </style>
 
@@ -42,26 +44,32 @@ recipe main [
 ]
 <span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;, &quot;foo&quot;: &quot;bar&quot;}</span>
 
+<span class="Delimiter">:(scenario load_trailing_space_after_curly_bracket)</span>
+recipe main [
+<span class="PreProc">  </span><span class="Comment"># line below has a space at the end</span>
+  <span class="Delimiter">{</span><span class="Error"> </span>
+]
+<span class="Comment"># successfully parsed</span>
+
 <span class="Comment">//: First augment next_word to group balanced brackets together.</span>
 
 <span class="Delimiter">:(before &quot;End next_word Special-cases&quot;)</span>
-  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">)</span>
-    <span class="Identifier">return</span> slurp_balanced_bracket<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  <span class="Comment">// treat curlies mostly like parens, but don't mess up labels</span>
-  if <span class="Delimiter">(</span>start_of_dilated_reagent<span class="Delimiter">(</span>in<span class="Delimiter">))</span>
-    <span class="Identifier">return</span> slurp_balanced_bracket<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">)</span>
+  <span class="Identifier">return</span> slurp_balanced_bracket<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span class="Comment">// treat curlies mostly like parens, but don't mess up labels</span>
+if <span class="Delimiter">(</span>start_of_dilated_reagent<span class="Delimiter">(</span>in<span class="Delimiter">))</span>
+  <span class="Identifier">return</span> slurp_balanced_bracket<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// A curly is considered a label if it's the last thing on a line. Dilated</span>
 <span class="Comment">// reagents should remain all on one line.</span>
-<span class="Comment">//</span>
-<span class="Comment">// Side-effect: This might delete some whitespace after an initial '{'.</span>
 bool start_of_dilated_reagent<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'{'</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  long long int pos = in<span class="Delimiter">.</span>tellg<span class="Delimiter">();</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// slurp '{'</span>
   skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   char next = in<span class="Delimiter">.</span>peek<span class="Delimiter">();</span>
-  in<span class="Delimiter">.</span>putback<span class="Delimiter">(</span><span class="Constant">'{'</span><span class="Delimiter">);</span>
+  in<span class="Delimiter">.</span>seekg<span class="Delimiter">(</span>pos<span class="Delimiter">);</span>
   <span class="Identifier">return</span> next != <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -107,7 +115,7 @@ if <span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span clas
   istringstream in<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip '{'</span>
-  while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     string key = slurp_key<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>key<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>key == <span class="Constant">&quot;}&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>

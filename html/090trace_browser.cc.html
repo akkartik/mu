@@ -29,6 +29,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </head>
 <body>
 <pre id='vimCodeElement'>
+<span class="Comment">//: A debugging helper that lets you zoom in/out on a trace.</span>
+
+<span class="Comment">//: browse the trace we just created</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 _BROWSE_TRACE<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
@@ -41,6 +44,14 @@ case _BROWSE_TRACE: <span class="Delimiter">{</span>
 case _BROWSE_TRACE: <span class="Delimiter">{</span>
   start_trace_browser<span class="Delimiter">();</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: browse a trace loaded from a file</span>
+<span class="Delimiter">:(after &quot;Commandline Parsing&quot;)</span>
+if <span class="Delimiter">(</span>argc == <span class="Constant">3</span> &amp;&amp; is_equal<span class="Delimiter">(</span>argv[<span class="Constant">1</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;browse-trace&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  load_trace<span class="Delimiter">(</span>argv[<span class="Constant">2</span>]<span class="Delimiter">);</span>
+  start_trace_browser<span class="Delimiter">();</span>
+  <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
@@ -240,6 +251,25 @@ void render_line<span class="Delimiter">(</span>int screen_row<span class="Delim
   <span class="Delimiter">}</span>
   for <span class="Delimiter">(;</span> col &lt; tb_width<span class="Delimiter">();</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     tb_change_cell<span class="Delimiter">(</span>col<span class="Delimiter">,</span> screen_row<span class="Delimiter">,</span> <span class="Constant">' '</span><span class="Delimiter">,</span> TB_WHITE<span class="Delimiter">,</span> TB_BLACK<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+void load_trace<span class="Delimiter">(</span>const char* filename<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  ifstream tin<span class="Delimiter">(</span>filename<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!tin<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    cerr &lt;&lt; <span class="Constant">&quot;no such file: &quot;</span> &lt;&lt; filename &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  Trace_stream = new trace_stream<span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>tin<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    int depth<span class="Delimiter">;</span>
+    tin &gt;&gt; depth<span class="Delimiter">;</span>
+    string label<span class="Delimiter">;</span>
+    tin &gt;&gt; label<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>*--label<span class="Delimiter">.</span>end<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span> label<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>--label<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+    string line<span class="Delimiter">;</span>
+    getline<span class="Delimiter">(</span>tin<span class="Delimiter">,</span> line<span class="Delimiter">);</span>
+    Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>depth<span class="Delimiter">,</span> label<span class="Delimiter">,</span> line<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 </pre>

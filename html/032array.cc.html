@@ -119,7 +119,7 @@ recipe main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/<span class="Special">raw</span>
+  <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
   <span class="Constant">6</span>:array:number<span class="Special"> &lt;- </span>copy *<span class="Constant">5</span>:address:array:number
 ]
 <span class="traceContains">+mem: storing 3 in location 6</span>
@@ -194,7 +194,7 @@ case INDEX: <span class="Delimiter">{</span>
   canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
   reagent element<span class="Delimiter">;</span>
   element<span class="Delimiter">.</span>type = new type_tree<span class="Delimiter">(</span>*array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
-  if <span class="Delimiter">(</span>!types_match<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'index' on &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; can't be saved in &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;; type should be &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -238,7 +238,7 @@ recipe main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/<span class="Special">raw</span>
+  <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>index *<span class="Constant">5</span>:address:array:number<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 15 in location 6</span>
@@ -268,7 +268,7 @@ recipe main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/<span class="Special">raw</span>
+  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
   index *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> -<span class="Constant">1</span>
 ]
 <span class="traceContains">+error: main: invalid index -1</span>
@@ -283,10 +283,22 @@ recipe main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/<span class="Special">raw</span>
+  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
   <span class="Constant">9</span>:number<span class="Special"> &lt;- </span>index *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> <span class="Constant">0</span>
 ]
 <span class="traceContains">+error: main: 'index' on *8:address:array:point can't be saved in 9:number; type should be point</span>
+
+<span class="Comment">//: we might want to call 'index' without saving the results, say in a sandbox</span>
+
+<span class="Delimiter">:(scenario index_without_product)</span>
+recipe main [
+  <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  index <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">0</span>
+]
+<span class="Comment"># just don't die</span>
 
 <span class="SalientComment">//:: To write to elements of containers, you need their address.</span>
 
@@ -322,7 +334,7 @@ case INDEX_ADDRESS: <span class="Delimiter">{</span>
   reagent element<span class="Delimiter">;</span>
   element<span class="Delimiter">.</span>type = new type_tree<span class="Delimiter">(</span>*array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
   element<span class="Delimiter">.</span>type = new type_tree<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">),</span> element<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>!types_match<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'index' on &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; can't be saved in &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;; type should be &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -376,7 +388,7 @@ recipe main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/<span class="Special">raw</span>
+  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
   index-address *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> -<span class="Constant">1</span>
 ]
 <span class="traceContains">+error: main: invalid index -1</span>
@@ -391,7 +403,7 @@ recipe main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/<span class="Special">raw</span>
+  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
   <span class="Constant">9</span>:address:number<span class="Special"> &lt;- </span>index-address *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> <span class="Constant">0</span>
 ]
 <span class="traceContains">+error: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be &lt;address : &lt;point : &lt;&gt;&gt;&gt;</span>
@@ -445,6 +457,18 @@ case LENGTH: <span class="Delimiter">{</span>
 recipe_ordinal r = current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">;</span>
 if <span class="Delimiter">(</span>r == CREATE_ARRAY || r == INDEX || r == INDEX_ADDRESS || r == LENGTH<span class="Delimiter">)</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+
+<span class="Comment">//: a particularly common array type is the string, or address:array:character</span>
+<span class="Delimiter">:(code)</span>
+bool is_mu_string<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> x<span class="Delimiter">.</span>type
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span>
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span>
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;character&quot;</span><span class="Delimiter">)</span>
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right == <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

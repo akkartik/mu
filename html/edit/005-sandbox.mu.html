@@ -229,7 +229,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   screen<span class="Special"> &lt;- </span>move-cursor screen, <span class="Constant">0</span>, <span class="Constant">2</span>
-  screen<span class="Special"> &lt;- </span>print-string screen, msg, color, <span class="Constant">238/grey/background</span>
+  screen<span class="Special"> &lt;- </span>print screen, msg, color, <span class="Constant">238/grey/background</span>
 ]
 
 <span class="muRecipe">recipe</span> save-sandboxes env:address:programming-environment-data [
@@ -244,12 +244,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr
     data:address:array:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">data:offset</span>
-    filename:address:array:character<span class="Special"> &lt;- </span>integer-to-decimal-string idx
+    filename:address:array:character<span class="Special"> &lt;- </span>to-text idx
     save filename, data
     <span class="Delimiter">{</span>
       expected-response:address:array:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">expected-response:offset</span>
       <span class="muControl">break-unless</span> expected-response
-      filename<span class="Special"> &lt;- </span>string-append filename, suffix
+      filename<span class="Special"> &lt;- </span>append filename, suffix
       save filename, expected-response
     <span class="Delimiter">}</span>
     idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
@@ -285,7 +285,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, left
   clear-line-delimited screen, left, right
-  print-character screen, <span class="Constant">120/x</span>, <span class="Constant">245/grey</span>
+  print screen, <span class="Constant">120/x</span>, <span class="Constant">245/grey</span>
   <span class="Comment"># save menu row so we can detect clicks to it later</span>
   starting-row:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
   *starting-row<span class="Special"> &lt;- </span>copy row
@@ -293,7 +293,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, left
   sandbox-data:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
-  row, screen<span class="Special"> &lt;- </span>render-code-string screen, sandbox-data, left, right, row
+  row, screen<span class="Special"> &lt;- </span>render-code screen, sandbox-data, left, right, row
   code-ending-row:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>
   *code-ending-row<span class="Special"> &lt;- </span>copy row
   <span class="Comment"># render sandbox warnings, screen or response, in that order</span>
@@ -310,7 +310,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> empty-screen?
     *response-starting-row<span class="Special"> &lt;- </span>copy row
 <span class="Constant">    &lt;render-sandbox-response&gt;</span>
-    row, screen<span class="Special"> &lt;- </span>render-string screen, sandbox-response, left, right, <span class="Constant">245/grey</span>, row
+    row, screen<span class="Special"> &lt;- </span>render screen, sandbox-response, left, right, <span class="Constant">245/grey</span>, row
   <span class="Delimiter">}</span>
 <span class="Constant">  +render-sandbox-end</span>
   at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row, screen-height
@@ -331,7 +331,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   curr:address:address:sandbox-data<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">sandbox:offset</span>
   <span class="Delimiter">{</span>
-    filename:address:array:character<span class="Special"> &lt;- </span>integer-to-decimal-string idx
+    filename:address:array:character<span class="Special"> &lt;- </span>to-text idx
     contents:address:array:character<span class="Special"> &lt;- </span>restore filename
     <span class="muControl">break-unless</span> contents  <span class="Comment"># stop at first error; assuming file didn't exist</span>
     <span class="Comment"># create new sandbox for file</span>
@@ -340,7 +340,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     *data<span class="Special"> &lt;- </span>copy contents
     <span class="Comment"># restore expected output for sandbox if it exists</span>
     <span class="Delimiter">{</span>
-      filename<span class="Special"> &lt;- </span>string-append filename, suffix
+      filename<span class="Special"> &lt;- </span>append filename, suffix
       contents<span class="Special"> &lt;- </span>restore filename
       <span class="muControl">break-unless</span> contents
       expected-response:address:address:array:character<span class="Special"> &lt;- </span>get-address **curr, <span class="Constant">expected-response:offset</span>
@@ -361,7 +361,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="muControl">reply-unless</span> sandbox-screen
   <span class="Comment"># print 'screen:'</span>
   header:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[screen:]</span>
-  row<span class="Special"> &lt;- </span>render-string screen, header, left, right, <span class="Constant">245/grey</span>, row
+  row<span class="Special"> &lt;- </span>render screen, header, left, right, <span class="Constant">245/grey</span>, row
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, left
   <span class="Comment"># start printing sandbox-screen</span>
   column:number<span class="Special"> &lt;- </span>copy left
@@ -381,9 +381,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     column<span class="Special"> &lt;- </span>copy left
     screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
     <span class="Comment"># initial leader for each row: two spaces and a '.'</span>
-    print-character screen, <span class="Constant">32/space</span>, <span class="Constant">245/grey</span>
-    print-character screen, <span class="Constant">32/space</span>, <span class="Constant">245/grey</span>
-    print-character screen, <span class="Constant">46/full-stop</span>, <span class="Constant">245/grey</span>
+    print screen, <span class="Constant">32/space</span>, <span class="Constant">245/grey</span>
+    print screen, <span class="Constant">32/space</span>, <span class="Constant">245/grey</span>
+    print screen, <span class="Constant">46/full-stop</span>, <span class="Constant">245/grey</span>
     column<span class="Special"> &lt;- </span>add left, <span class="Constant">3</span>
     <span class="Delimiter">{</span>
       <span class="Comment"># print row</span>
@@ -398,19 +398,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
         <span class="muControl">break-unless</span> white?
         color<span class="Special"> &lt;- </span>copy <span class="Constant">245/grey</span>
       <span class="Delimiter">}</span>
-      print-character screen, c, color
+      print screen, c, color
       column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
       i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># print final '.'</span>
-    print-character screen, <span class="Constant">46/full-stop</span>, <span class="Constant">245/grey</span>
+    print screen, <span class="Constant">46/full-stop</span>, <span class="Constant">245/grey</span>
     column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
     <span class="Delimiter">{</span>
       <span class="Comment"># clear rest of current line</span>
       line-done?:boolean<span class="Special"> &lt;- </span>greater-than column, right
       <span class="muControl">break-if</span> line-done?
-      print-character screen, <span class="Constant">32/space</span>
+      print screen, <span class="Constant">32/space</span>
       column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
@@ -514,7 +514,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr
     c:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
-    buffer-append buf, c
+    buf<span class="Special"> &lt;- </span>append buf, c
     curr<span class="Special"> &lt;- </span>next curr
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
@@ -535,7 +535,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Constant">4</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:array:character
   ]
   memory-should-contain [
-    <span class="Constant">4</span>:string<span class="Special"> &lt;- </span><span class="Constant">[abdefc]</span>
+    <span class="Constant">4</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abdefc]</span>
   ]
 ]
 </pre>

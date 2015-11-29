@@ -16,7 +16,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .traceContains { color: #008000; }
 .SalientComment { color: #00ffff; }
 .cSpecial { color: #008000; }
-.traceAbsent { color: #c00000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -191,11 +190,12 @@ case GET: <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;invalid offset &quot;</span> &lt;&lt; offset_value &lt;&lt; <span class="Constant">&quot; for &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   reagent product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// Update GET product in Check</span>
   const reagent element = element_type<span class="Delimiter">(</span>base<span class="Delimiter">,</span> offset_value<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>!types_match<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'get' &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; (&quot;</span> &lt;&lt; offset_value &lt;&lt; <span class="Constant">&quot;) on &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; can't be saved in &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;; type should be &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but is &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>product<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'get &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' should write to &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has type &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>product<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -275,7 +275,17 @@ recipe main [
   <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
   <span class="Constant">15</span>:address:number<span class="Special"> &lt;- </span>get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset
 ]
-<span class="traceContains">+error: main: 'get' 1:offset (1) on point-number can't be saved in 15:address:number; type should be number but is &lt;address : &lt;number : &lt;&gt;&gt;&gt;</span>
+<span class="traceContains">+error: main: 'get 12:point-number/raw, 1:offset' should write to number but 15 has type &lt;address : &lt;number : &lt;&gt;&gt;&gt;</span>
+
+<span class="Comment">//: we might want to call 'get' without saving the results, say in a sandbox</span>
+
+<span class="Delimiter">:(scenario get_without_product)</span>
+recipe main [
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  get <span class="Constant">12</span>:point/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset  <span class="Comment"># unsafe</span>
+]
+<span class="Comment"># just don't die</span>
 
 <span class="SalientComment">//:: To write to elements of containers, you need their address.</span>
 
@@ -326,8 +336,8 @@ case GET_ADDRESS: <span class="Delimiter">{</span>
   reagent element = element_type<span class="Delimiter">(</span>base<span class="Delimiter">,</span> offset_value<span class="Delimiter">);</span>
   <span class="Comment">// ..except for an address at the start</span>
   element<span class="Delimiter">.</span>type = new type_tree<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">),</span> element<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>!types_match<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'get-address' &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; (&quot;</span> &lt;&lt; offset_value &lt;&lt; <span class="Constant">&quot;) on &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; can't be saved in &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;; type should be &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'get-address &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' should write to &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has type &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>product<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -377,13 +387,16 @@ recipe main [
 
 <span class="Delimiter">:(scenario get_address_product_type_mismatch)</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">15</span>:number<span class="Special"> &lt;- </span>get-address <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+container boolbool [
+  x:boolean
+  y:boolean
 ]
-<span class="traceContains">+error: main: 'get-address' 1:offset (1) on point-number can't be saved in 15:number; type should be &lt;address : &lt;number : &lt;&gt;&gt;&gt;</span>
+recipe main [
+  <span class="Constant">12</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">13</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">15</span>:boolean<span class="Special"> &lt;- </span>get-address <span class="Constant">12</span>:boolbool<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+]
+<span class="traceContains">+error: main: 'get-address 12:boolbool, 1:offset' should write to &lt;address : &lt;boolean : &lt;&gt;&gt;&gt; but 15 has type boolean</span>
 
 <span class="SalientComment">//:: Allow containers to be defined in mu code.</span>
 
@@ -439,7 +452,7 @@ void insert_container<span class="Delimiter">(</span>const string&amp; command<s
   recently_added_types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">));</span>
   info<span class="Delimiter">.</span>name = name<span class="Delimiter">;</span>
   info<span class="Delimiter">.</span>kind = kind<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     string element = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>element == <span class="Constant">&quot;]&quot;</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -448,7 +461,7 @@ void insert_container<span class="Delimiter">(</span>const string&amp; command<s
     info<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>slurp_until<span class="Delimiter">(</span>inner<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">));</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  element name: &quot;</span> &lt;&lt; info<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>back<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
     type_tree* new_type = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-    for <span class="Delimiter">(</span>type_tree** curr_type = &amp;new_type<span class="Delimiter">;</span> !inner<span class="Delimiter">.</span>eof<span class="Delimiter">();</span> curr_type = &amp;<span class="Delimiter">(</span>*curr_type<span class="Delimiter">)-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    for <span class="Delimiter">(</span>type_tree** curr_type = &amp;new_type<span class="Delimiter">;</span> has_data<span class="Delimiter">(</span>inner<span class="Delimiter">);</span> curr_type = &amp;<span class="Delimiter">(</span>*curr_type<span class="Delimiter">)-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       string type_name = slurp_until<span class="Delimiter">(</span>inner<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">);</span>
       <span class="Comment">// End insert_container Special Uses(type_name)</span>
       if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">)</span>
@@ -535,22 +548,23 @@ recipe main [
   <span class="Comment"># integer is not a type</span>
   <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-<span class="traceContains">+error: main: unknown type in '1:integer &lt;- copy 0'</span>
+<span class="traceContains">+error: main: unknown type integer in '1:integer &lt;- copy 0'</span>
 
 <span class="Delimiter">:(scenario run_allows_type_definition_after_use)</span>
 <span class="Special">% Hide_errors = true;</span>
 recipe main [
-  <span class="Constant">1</span>:bar<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Special">raw</span>
+  <span class="Constant">1</span>:bar<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
 ]
 
 container bar [
   x:number
 ]
-<span class="traceAbsent">-error: unknown type: bar</span>
 $error: <span class="Constant">0</span>
 
-<span class="Delimiter">:(after &quot;Begin Transforms&quot;)</span>
+<span class="Delimiter">:(after &quot;Begin Instruction Modifying Transforms&quot;)</span>
+<span class="Comment">// Begin Type Modifying Transforms</span>
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_or_set_invalid_types<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span class="Comment">// End Type Modifying Transforms</span>
 
 <span class="Delimiter">:(code)</span>
 void check_or_set_invalid_types<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -578,8 +592,10 @@ void check_or_set_invalid_types<span class="Delimiter">(</span>type_tree* type<s
   if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>type_name &amp;&amp; contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span>
       type<span class="Delimiter">-&gt;</span>value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+    else if <span class="Delimiter">(</span>type_name<span class="Delimiter">)</span>
+      raise_error &lt;&lt; block &lt;&lt; <span class="Constant">&quot;unknown type &quot;</span> &lt;&lt; type_name<span class="Delimiter">-&gt;</span>value &lt;&lt; <span class="Constant">&quot; in &quot;</span> &lt;&lt; name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     else
-      raise_error &lt;&lt; block &lt;&lt; <span class="Constant">&quot;unknown type in &quot;</span> &lt;&lt; name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise_error &lt;&lt; block &lt;&lt; <span class="Constant">&quot;missing type in &quot;</span> &lt;&lt; name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   check_or_set_invalid_types<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> type_name ? type_name<span class="Delimiter">-&gt;</span>left : <span class="Constant">NULL</span><span class="Delimiter">,</span> block<span class="Delimiter">,</span> name<span class="Delimiter">);</span>
   check_or_set_invalid_types<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> type_name ? type_name<span class="Delimiter">-&gt;</span>right : <span class="Constant">NULL</span><span class="Delimiter">,</span> block<span class="Delimiter">,</span> name<span class="Delimiter">);</span>

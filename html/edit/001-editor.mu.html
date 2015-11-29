@@ -35,7 +35,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <pre id='vimCodeElement'>
 <span class="SalientComment">## the basic editor data structure, and how it displays text to the screen</span>
 
-<span class="Comment"># temporary main for this layer: just render the given string at the given</span>
+<span class="Comment"># temporary main for this layer: just render the given text at the given</span>
 <span class="Comment"># screen dimensions, then stop</span>
 <span class="muRecipe">recipe!</span> main text:address:array:character [
   <span class="Constant">local-scope</span>
@@ -48,7 +48,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   close-console
 ]
 
-<span class="muScenario">scenario</span> editor-initially-prints-string-to-screen [
+<span class="muScenario">scenario</span> editor-initially-prints-text-to-screen [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   run [
     <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
@@ -82,7 +82,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># creates a new editor widget and renders its initial appearance to screen</span>
 <span class="Comment">#   top/left/right constrain the screen area available to the new editor</span>
 <span class="Comment">#   right is exclusive</span>
-<span class="muRecipe">recipe</span> new-editor s:address:array:character, screen:address:screen, left:number, right:number<span class="muRecipe"> -&gt; </span>result:address:editor-data [
+<span class="muRecipe">recipe</span> new-editor s:address:array:character, screen:address:screen, left:number, right:number<span class="muRecipe"> -&gt; </span>result:address:editor-data, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># no clipping of bounds</span>
@@ -228,14 +228,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       at-right?:boolean<span class="Special"> &lt;- </span>equal column, right
       <span class="muControl">break-unless</span> at-right?
       <span class="Comment"># print wrap icon</span>
-      print-character screen, <span class="Constant">8617/loop-back-to-left</span>, <span class="Constant">245/grey</span>
+      print screen, <span class="Constant">8617/loop-back-to-left</span>, <span class="Constant">245/grey</span>
       column<span class="Special"> &lt;- </span>copy left
       row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
       screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
       <span class="Comment"># don't increment curr</span>
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
-    print-character screen, c, color
+    print screen, c, color
     curr<span class="Special"> &lt;- </span>next curr
     prev<span class="Special"> &lt;- </span>next prev
     column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
@@ -259,13 +259,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="muControl">reply</span> row, column, screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>
 ]
 
-<span class="muRecipe">recipe</span> clear-line-delimited screen:address:screen, column:number, right:number [
+<span class="muRecipe">recipe</span> clear-line-delimited screen:address:screen, column:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-than column, right
     <span class="muControl">break-if</span> done?
-    print-character screen, <span class="Constant">32/space</span>
+    screen<span class="Special"> &lt;- </span>print screen, <span class="Constant">32/space</span>
     column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>

@@ -67,10 +67,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># result:address:channel &lt;- new-channel capacity:number</span>
-<span class="muRecipe">recipe</span> new-channel [
+<span class="muRecipe">recipe</span> new-channel capacity:number<span class="muRecipe"> -&gt; </span>result:address:channel [
   <span class="Constant">local-scope</span>
-  <span class="Comment"># result = new channel</span>
-  result:address:channel<span class="Special"> &lt;- </span>new <span class="Constant">channel:type</span>
+  <span class="Constant">load-ingredients</span>
+  result<span class="Special"> &lt;- </span>new <span class="Constant">channel:type</span>
   <span class="Comment"># result.first-full = 0</span>
   full:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">first-full:offset</span>
   *full<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -78,18 +78,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   free:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">first-free:offset</span>
   *free<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Comment"># result.data = new location[ingredient+1]</span>
-  capacity:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   capacity<span class="Special"> &lt;- </span>add capacity, <span class="Constant">1</span>  <span class="Comment"># unused slot for 'full?' below</span>
   dest:address:address:array:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
   *dest<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, capacity
-  <span class="muControl">reply</span> result
 ]
 
-<span class="Comment"># chan &lt;- write chan:address:channel, val:character</span>
-<span class="muRecipe">recipe</span> write [
+<span class="muRecipe">recipe</span> write chan:address:channel, val:character<span class="muRecipe"> -&gt; </span>chan:address:channel [
   <span class="Constant">local-scope</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  val:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># block if chan is full</span>
     full:boolean<span class="Special"> &lt;- </span>channel-full? chan
@@ -111,13 +107,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> at-end?
     *free<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> chan/same-as-ingredient:<span class="Constant">0</span>
 ]
 
-<span class="Comment"># result:character, chan &lt;- read chan:address:channel</span>
-<span class="muRecipe">recipe</span> read [
+<span class="muRecipe">recipe</span> read chan:address:channel<span class="muRecipe"> -&gt; </span>result:character, chan:address:channel [
   <span class="Constant">local-scope</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># block if chan is empty</span>
     empty?:boolean<span class="Special"> &lt;- </span>channel-empty? chan
@@ -128,7 +122,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># read result</span>
   full:address:number<span class="Special"> &lt;- </span>get-address *chan, <span class="Constant">first-full:offset</span>
   circular-buffer:address:array:character<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
-  result:character<span class="Special"> &lt;- </span>index *circular-buffer, *full
+  result<span class="Special"> &lt;- </span>index *circular-buffer, *full
   <span class="Comment"># mark its slot as empty</span>
   *full<span class="Special"> &lt;- </span>add *full, <span class="Constant">1</span>
   <span class="Delimiter">{</span>
@@ -138,18 +132,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> at-end?
     *full<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> result, chan/same-as-ingredient:<span class="Constant">0</span>
 ]
 
-<span class="muRecipe">recipe</span> clear-channel [
+<span class="muRecipe">recipe</span> clear-channel chan:address:channel<span class="muRecipe"> -&gt; </span>chan:address:channel [
   <span class="Constant">local-scope</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     empty?:boolean<span class="Special"> &lt;- </span>channel-empty? chan
     <span class="muControl">break-if</span> empty?
     _, chan<span class="Special"> &lt;- </span>read chan
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> chan/same-as-ingredient:<span class="Constant">0</span>
 ]
 
 <span class="muScenario">scenario</span> channel-initialization [
@@ -219,21 +211,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="SalientComment">## helpers</span>
 
 <span class="Comment"># An empty channel has first-empty and first-full both at the same value.</span>
-<span class="muRecipe">recipe</span> channel-empty? [
+<span class="muRecipe">recipe</span> channel-empty? chan:address:channel<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   <span class="Comment"># return chan.first-full == chan.first-free</span>
   full:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
   free:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
-  result:boolean<span class="Special"> &lt;- </span>equal full, free
-  <span class="muControl">reply</span> result
+  result<span class="Special"> &lt;- </span>equal full, free
 ]
 
 <span class="Comment"># A full channel has first-empty just before first-full, wasting one slot.</span>
 <span class="Comment"># (Other alternatives: <a href="https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)">https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)</a></span>
-<span class="muRecipe">recipe</span> channel-full? [
+<span class="muRecipe">recipe</span> channel-full? chan:address:channel<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   <span class="Comment"># tmp = chan.first-free + 1</span>
   tmp:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
   tmp<span class="Special"> &lt;- </span>add tmp, <span class="Constant">1</span>
@@ -246,17 +237,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
   <span class="Comment"># return chan.first-full == tmp</span>
   full:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
-  result:boolean<span class="Special"> &lt;- </span>equal full, tmp
-  <span class="muControl">reply</span> result
+  result<span class="Special"> &lt;- </span>equal full, tmp
 ]
 
 <span class="Comment"># result:number &lt;- channel-capacity chan:address:channel</span>
-<span class="muRecipe">recipe</span> channel-capacity [
+<span class="muRecipe">recipe</span> channel-capacity chan:address:channel<span class="muRecipe"> -&gt; </span>result:number [
   <span class="Constant">local-scope</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   q:address:array:character<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
-  result:number<span class="Special"> &lt;- </span>length *q
-  <span class="muControl">reply</span> result
+  result<span class="Special"> &lt;- </span>length *q
 ]
 
 <span class="muScenario">scenario</span> channel-new-empty-not-full [
@@ -312,11 +301,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># helper for channels of characters in particular</span>
-<span class="Comment"># out &lt;- buffer-lines in:address:channel, out:address:channel</span>
-<span class="muRecipe">recipe</span> buffer-lines [
+<span class="muRecipe">recipe</span> buffer-lines in:address:channel, out:address:channel<span class="muRecipe"> -&gt; </span>out:address:channel, in:address:channel [
   <span class="Constant">local-scope</span>
-  in:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  out:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   <span class="Comment"># repeat forever</span>
   <span class="Delimiter">{</span>
     line:address:buffer<span class="Special"> &lt;- </span>new-buffer, <span class="Constant">30</span>
@@ -340,7 +327,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
         <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
       <span class="Delimiter">}</span>
       <span class="Comment"># append anything else</span>
-      line<span class="Special"> &lt;- </span>buffer-append line, c
+      line<span class="Special"> &lt;- </span>append line, c
       line-done?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
       <span class="muControl">break-if</span> line-done?
       <span class="Comment"># stop buffering on eof (currently only generated by fake console)</span>
@@ -362,7 +349,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Delimiter">}</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> out/same-as-ingredient:<span class="Constant">1</span>
 ]
 
 <span class="muScenario">scenario</span> buffer-lines-blocks-until-newline [

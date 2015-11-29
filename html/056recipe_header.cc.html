@@ -164,12 +164,12 @@ if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <
 recipe add2 x:number<span class="Delimiter">,</span> y:number <span class="Delimiter">-&gt;</span> z:number [
   local-scope
   load-ingredients
-  z:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Special">raw</span>
+  z:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
   reply z
 ]
 <span class="traceContains">+error: add2: replied with the wrong type at 'reply z'</span>
 
-<span class="Delimiter">:(after &quot;Transform.push_back(check_types_by_name)&quot;)</span>
+<span class="Delimiter">:(before &quot;End Checks&quot;)</span>
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_reply_instructions_against_header<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(code)</span>
@@ -181,9 +181,7 @@ void check_reply_instructions_against_header<span class="Delimiter">(</span>cons
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     const instruction&amp; inst = caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name != <span class="Constant">&quot;reply&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">))</span>
-      raise_error &lt;&lt; maybe<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;tried to reply the wrong number of products in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       if <span class="Delimiter">(</span>!types_match<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
         raise_error &lt;&lt; maybe<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;replied with the wrong type at '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
@@ -202,11 +200,11 @@ recipe add2 x:number<span class="Delimiter">,</span> x:number <span class="Delim
 <span class="Delimiter">:(before &quot;End recipe Fields&quot;)</span>
 map&lt;string<span class="Delimiter">,</span> int&gt; ingredient_index<span class="Delimiter">;</span>
 
-<span class="Delimiter">:(after &quot;Transform.push_back(insert_fragments)&quot;)</span>
-Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_and_update_header_reagents<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span class="Delimiter">:(after &quot;Begin Instruction Modifying Transforms&quot;)</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_header_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(code)</span>
-void check_and_update_header_reagents<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void check_header_ingredients<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- checking reply instructions against header for &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
@@ -232,7 +230,7 @@ recipe add2 x:number<span class="Delimiter">,</span> y:number <span class="Delim
 ]
 <span class="traceContains">+mem: storing 8 in location 1</span>
 
-<span class="Delimiter">:(before &quot;Transform.push_back(check_reply_instructions_against_header)&quot;)</span>
+<span class="Delimiter">:(after &quot;Begin Type Modifying Transforms&quot;)</span>
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>deduce_types_from_header<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(code)</span>
@@ -299,7 +297,7 @@ recipe add2 x:number<span class="Delimiter">,</span> y:number <span class="Delim
 ]
 <span class="traceContains">+mem: storing 8 in location 1</span>
 
-<span class="Delimiter">:(after &quot;Transform.push_back(check_and_update_header_reagents)&quot;)</span>
+<span class="Delimiter">:(after &quot;Transform.push_back(check_header_ingredients)&quot;)</span>
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>fill_in_reply_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(code)</span>

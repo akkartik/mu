@@ -55,7 +55,7 @@ recipe f [
 
 <span class="Delimiter">:(before &quot;End call Fields&quot;)</span>
 vector&lt;vector&lt;double&gt; &gt; ingredient_atoms<span class="Delimiter">;</span>
-vector&lt;type_tree*&gt; ingredient_types<span class="Delimiter">;</span>
+vector&lt;reagent&gt; ingredients<span class="Delimiter">;</span>
 long long int next_ingredient_to_process<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End call Constructor&quot;)</span>
 next_ingredient_to_process = <span class="Constant">0</span><span class="Delimiter">;</span>
@@ -65,12 +65,7 @@ for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</
   current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   reagent ingredient = call_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
   canonize_type<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
-  current_call<span class="Delimiter">().</span>ingredient_types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredient<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
-  ingredient<span class="Delimiter">.</span>type = <span class="Constant">NULL</span><span class="Delimiter">;</span>  <span class="Comment">// release long-lived pointer</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End call Destructor&quot;)</span>
-for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredient_types<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  delete ingredient_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+  current_call<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
@@ -97,10 +92,10 @@ case NEXT_INGREDIENT: <span class="Delimiter">{</span>
       if <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>product<span class="Delimiter">))</span>
         raise_error &lt;&lt; <span class="Constant">&quot;main: wrong type for ingredient &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
-    else if <span class="Delimiter">(</span>!types_match<span class="Delimiter">(</span>product<span class="Delimiter">,</span>
-                          current_call<span class="Delimiter">().</span>ingredient_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">),</span>
-                          current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>at<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    else if <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span>
+                              current_call<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
       raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;wrong type for ingredient &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Comment">// End next-ingredient Type Mismatch Error</span>
     <span class="Delimiter">}</span>
     products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>
         current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>at<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">));</span>

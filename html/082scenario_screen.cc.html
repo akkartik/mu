@@ -21,6 +21,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
 .Constant { color: #00a0a0; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -43,7 +44,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 scenario screen-in-scenario [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address:screen<span class="Special"> &lt;- </span>print-character screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
+    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
   ]
   screen-should-contain [
   <span class="Comment">#  01234</span>
@@ -57,8 +58,8 @@ scenario screen-in-scenario [
 scenario screen-in-scenario-unicode-color [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address:screen<span class="Special"> &lt;- </span>print-character screen:address:screen<span class="Delimiter">,</span> <span class="Constant">955</span>/greek-small-lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
-    screen:address:screen<span class="Special"> &lt;- </span>print-character screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>/a
+    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">955</span>/greek-small-lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
+    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>/a
   ]
   screen-should-contain [
   <span class="Comment">#  01234</span>
@@ -73,8 +74,8 @@ scenario screen-in-scenario-unicode-color [
 scenario screen-in-scenario-color [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address:screen<span class="Special"> &lt;- </span>print-character screen:address:screen<span class="Delimiter">,</span> <span class="Constant">955</span>/greek-small-lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
-    screen:address:screen<span class="Special"> &lt;- </span>print-character screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">7</span>/white
+    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">955</span>/greek-small-lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
+    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">7</span>/white
   ]
   <span class="Comment"># screen-should-contain shows everything</span>
   screen-should-contain [
@@ -106,7 +107,7 @@ scenario screen-in-scenario-color [
 scenario screen-in-scenario-error [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address:screen<span class="Special"> &lt;- </span>print-character screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
+    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
   ]
   screen-should-contain [
   <span class="Comment">#  01234</span>
@@ -124,7 +125,7 @@ scenario screen-in-scenario-error [
 scenario screen-in-scenario-color [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address:screen<span class="Special"> &lt;- </span>print-character screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>/red
+    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>/red
   ]
   screen-should-contain-in-color <span class="Constant">2</span>/green<span class="Delimiter">,</span> [
   <span class="Comment">#  01234</span>
@@ -192,6 +193,8 @@ case SCREEN_SHOULD_CONTAIN: <span class="Delimiter">{</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case SCREEN_SHOULD_CONTAIN: <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; SIZE(get(Recipe_variants, &quot;insert&quot;)) &lt;&lt; '\n';</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; debug_string(get(Recipe, get(Recipe_ordinal, &quot;insert_4&quot;))) &lt;&lt; '\n';</span>
   if <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   check_screen<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">,</span> -<span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>

@@ -20,6 +20,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
+.CommentedCode { color: #6c6c6c; }
 .Delimiter { color: #a04060; }
 .muScenario { color: #00af00; }
 -->
@@ -73,7 +74,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     recipe-warnings:address:array:character<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-warnings:offset</span>
     <span class="muControl">break-unless</span> recipe-warnings
-    row, screen<span class="Special"> &lt;- </span>render-string screen, recipe-warnings, left, right, <span class="Constant">1/red</span>, row
+    row, screen<span class="Special"> &lt;- </span>render screen, recipe-warnings, left, right, <span class="Constant">1/red</span>, row
   <span class="Delimiter">}</span>
 ]
 
@@ -89,6 +90,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   warnings:address:address:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">warnings:offset</span>
   trace:address:address:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">trace:offset</span>
   fake-screen:address:address:screen<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">screen:offset</span>
+<span class="CommentedCode">#?   $print [run-interactive], 10/newline</span>
   *response, *warnings, *fake-screen, *trace, completed?:boolean<span class="Special"> &lt;- </span>run-interactive data
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> *warnings
@@ -96,6 +98,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     *warnings<span class="Special"> &lt;- </span>new <span class="Constant">[took too long!</span>
 <span class="Constant">]</span>
   <span class="Delimiter">}</span>
+<span class="CommentedCode">#?   $print [done with run-interactive], 10/newline</span>
 ]
 
 <span class="Comment"># make sure we render any trace</span>
@@ -104,7 +107,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     sandbox-warnings:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">warnings:offset</span>
     <span class="muControl">break-unless</span> sandbox-warnings
     *response-starting-row<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># no response</span>
-    row, screen<span class="Special"> &lt;- </span>render-string screen, sandbox-warnings, left, right, <span class="Constant">1/red</span>, row
+    row, screen<span class="Special"> &lt;- </span>render screen, sandbox-warnings, left, right, <span class="Constant">1/red</span>, row
     <span class="Comment"># don't try to print anything more for this sandbox</span>
     <span class="muControl">jump</span> <span class="Constant">+render-sandbox-end:label</span>
   <span class="Delimiter">}</span>
@@ -150,6 +153,88 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
+<span class="muScenario">scenario</span> run-hides-warnings-from-past-sandboxes [
+  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[get foo, x:offset]</span>  <span class="Comment"># invalid</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  assume-console [
+    press F4  <span class="Comment"># generate error</span>
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  assume-console [
+    left-click <span class="Constant">3</span>, <span class="Constant">80</span>
+    press ctrl-k
+    type <span class="Constant">[add 2, 2]</span>  <span class="Comment"># valid code</span>
+    press F4  <span class="Comment"># error should disappear</span>
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-updates-warnings-for-shape-shifting-recipes [
+  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
+  <span class="Comment"># define a shape-shifting recipe with an error</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo x:_elem -&gt; z:_elem [</span>
+<span class="Constant">local-scope</span>
+<span class="Constant">load-ingredients</span>
+<span class="Constant">z &lt;- add x, [a]</span>
+]]
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo 2]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .recipe foo x:_elem -&gt; z:_elem [                   ┊                                                 .</span>
+   <span class="Constant"> .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .load-ingredients                                  ┊                                                x.</span>
+   <span class="Constant"> .z &lt;- add x, [a]                                   ┊foo 2                                            .</span>
+   <span class="Constant"> .]                                                 ┊foo_2: 'add' requires number ingredients, but go↩.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># now rerun everything</span>
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># error should remain unchanged</span>
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .recipe foo x:_elem -&gt; z:_elem [                   ┊                                                 .</span>
+   <span class="Constant"> .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .load-ingredients                                  ┊                                                x.</span>
+   <span class="Constant"> .z &lt;- add x, [a]                                   ┊foo 2                                            .</span>
+   <span class="Constant"> .]                                                 ┊foo_2: 'add' requires number ingredients, but go↩.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
 <span class="muScenario">scenario</span> run-shows-missing-type-warnings [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
@@ -183,7 +268,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Constant">recipe foo «</span>
 <span class="Constant">  x &lt;- copy 0</span>
 <span class="Constant">]</span>
-  string-replace <span class="Constant">1</span>:address:array:character, <span class="Constant">171/«</span>, <span class="Constant">91</span>  <span class="Comment"># '['</span>
+  replace <span class="Constant">1</span>:address:array:character, <span class="Constant">171/«</span>, <span class="Constant">91</span>  <span class="Comment"># '['</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
   assume-console [
