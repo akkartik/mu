@@ -343,3 +343,53 @@ recipe foo x:number -> y:number [
 ]
 # number variant is preferred
 +mem: storing 35 in location 1
+
+//: after we make all attempts to dispatch, any unhandled cases will end up at
+//: some wrong variant and trigger an error while trying to load-ingredients
+
+:(scenario static_dispatch_shows_clear_error_on_missing_variant)
+% Hide_errors = true;
+recipe main [
+  1:number <- foo 34
+]
+recipe foo x:boolean -> y:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
++error: foo: wrong type for ingredient x:boolean
++error:   (we're inside recipe foo x:boolean -> y:number)
++error:   (we're trying to call 1:number <- foo 34)
+
+:(before "End next-ingredient Type Mismatch Error")
+raise_error << "   (we're inside " << header_label(current_call().running_recipe) << ")\n" << end();
+raise_error << "   (we're trying to call " << to_instruction(*++Current_routine->calls.begin()).to_string() << ")\n" << end();
+
+:(scenario static_dispatch_shows_clear_error_on_missing_variant_2)
+% Hide_errors = true;
+recipe main [
+  1:boolean <- foo 34
+]
+recipe foo x:number -> y:number [
+  local-scope
+  load-ingredients
+  reply x
+]
++error: foo: reply ingredient x can't be saved in 1:boolean
++error:   (we just returned from recipe foo x:number -> y:number)
+
+:(before "End reply Type Mismatch Error")
+raise_error << "   (we just returned from " << header_label(caller_instruction.operation) << ")\n" << end();
+
+:(code)
+string header_label(recipe_ordinal r) {
+  const recipe& caller = get(Recipe, r);
+  ostringstream out;
+  out << "recipe " << caller.name << ' ';
+  for (long long int i = 0; i < SIZE(caller.ingredients); ++i)
+    out << caller.ingredients.at(i).original_string << ' ';
+  if (!caller.products.empty()) out << "->";
+  for (long long int i = 0; i < SIZE(caller.products); ++i)
+    out << ' ' << caller.products.at(i).original_string;
+  return out.str();
+}

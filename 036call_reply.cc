@@ -47,6 +47,7 @@ case REPLY: {
       reagent rhs = caller_instruction.products.at(i);
       canonize_type(rhs);
       raise_error << debug_string(lhs.type) << " vs " << debug_string(rhs.type) << '\n' << end();
+      // End reply Type Mismatch Error
       goto finish_reply;
     }
   }
