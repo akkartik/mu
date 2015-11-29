@@ -36,13 +36,14 @@ assert(Max_callstack_depth == 9989);
 //: begin transforms
 //:   begin instruction inserting transforms
 //:     52 insert fragments
-//:      ↳ 56.2 update header reagents
-//:      ↓ ↳ 56.4 fill in reply ingredients
 //:      ↳ 52.2 check fragments
 //:   ---
 //:   end instruction inserting transforms
 //:
 //:   begin instruction modifying transforms
+//:     56.2 update header reagents
+//:      ↳ 56.4 fill in reply ingredients
+//:
 //:      ↱ 48 check types by name
 //:      ↑ ↓ ↱ 56.3 deduce types from header
 //:      ↑ ↓ ↑ ↳ 57 static dispatch
@@ -57,6 +58,7 @@ assert(Max_callstack_depth == 9989);
 //:   end instruction modifying transforms
 //:
 //:   begin checks
+//:   ---
 //:     21 check instruction
 //:     ↳ 43 transform 'new' to 'allocate'
 //:   end checks
