@@ -359,11 +359,11 @@ recipe foo x:boolean -> y:number [
 ]
 +error: foo: wrong type for ingredient x:boolean
 +error:   (we're inside recipe foo x:boolean -> y:number)
-+error:   (we're trying to call 1:number <- foo 34)
++error:   (we're trying to call '1:number <- foo 34' inside recipe main)
 
 :(before "End next-ingredient Type Mismatch Error")
 raise_error << "   (we're inside " << header_label(current_call().running_recipe) << ")\n" << end();
-raise_error << "   (we're trying to call " << to_instruction(*++Current_routine->calls.begin()).to_string() << ")\n" << end();
+raise_error << "   (we're trying to call '" << to_instruction(*++Current_routine->calls.begin()).to_string() << "' inside " << header_label((++Current_routine->calls.begin())->running_recipe) << ")\n" << end();
 
 :(scenario static_dispatch_shows_clear_error_on_missing_variant_2)
 % Hide_errors = true;
@@ -385,10 +385,10 @@ raise_error << "   (we just returned from " << header_label(caller_instruction.o
 string header_label(recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   ostringstream out;
-  out << "recipe " << caller.name << ' ';
+  out << "recipe " << caller.name;
   for (long long int i = 0; i < SIZE(caller.ingredients); ++i)
-    out << caller.ingredients.at(i).original_string << ' ';
-  if (!caller.products.empty()) out << "->";
+    out << ' ' << caller.ingredients.at(i).original_string;
+  if (!caller.products.empty()) out << " ->";
   for (long long int i = 0; i < SIZE(caller.products); ++i)
     out << ' ' << caller.products.at(i).original_string;
   return out.str();
