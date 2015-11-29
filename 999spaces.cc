@@ -45,9 +45,7 @@ assert(Max_callstack_depth == 9989);
 //:      ↳ 56.4 fill in reply ingredients
 //:
 //:     begin type modifying transforms
-//:     ---
 //:       48 check types by name
-//:     ---
 //:        ↱ 56.3 deduce types from header
 //:       56 check reply instructions against header
 //:     end type modifying transforms
