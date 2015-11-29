@@ -1,3 +1,6 @@
+//: A debugging helper that lets you zoom in/out on a trace.
+
+//: browse the trace we just created
 :(before "End Primitive Recipe Declarations")
 _BROWSE_TRACE,
 :(before "End Primitive Recipe Numbers")
@@ -10,6 +13,14 @@ case _BROWSE_TRACE: {
 case _BROWSE_TRACE: {
   start_trace_browser();
   break;
+}
+
+//: browse a trace loaded from a file
+:(after "Commandline Parsing")
+if (argc == 3 && is_equal(argv[1], "browse-trace")) {
+  load_trace(argv[2]);
+  start_trace_browser();
+  return 0;
 }
 
 :(before "End Globals")
@@ -209,5 +220,24 @@ void render_line(int screen_row, const string& s) {
   }
   for (; col < tb_width(); ++col) {
     tb_change_cell(col, screen_row, ' ', TB_WHITE, TB_BLACK);
+  }
+}
+
+void load_trace(const char* filename) {
+  ifstream tin(filename);
+  if (!tin) {
+    cerr << "no such file: " << filename << '\n';
+    exit(1);
+  }
+  Trace_stream = new trace_stream;
+  while (has_data(tin)) {
+    int depth;
+    tin >> depth;
+    string label;
+    tin >> label;
+    if (*--label.end() == ':') label.erase(--label.end());
+    string line;
+    getline(tin, line);
+    Trace_stream->past_lines.push_back(trace_line(depth, label, line));
   }
 }
