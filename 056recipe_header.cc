@@ -133,7 +133,7 @@ recipe add2 x:number, y:number -> z:number [
 ]
 +error: add2: replied with the wrong type at 'reply z'
 
-:(after "Begin Type Modifying Transforms")
+:(before "End Checks")
 Transform.push_back(check_reply_instructions_against_header);  // idempotent
 
 :(code)
@@ -194,7 +194,7 @@ recipe add2 x:number, y:number -> z:number [
 ]
 +mem: storing 8 in location 1
 
-:(before "Transform.push_back(check_reply_instructions_against_header)")
+:(after "Begin Type Modifying Transforms")
 Transform.push_back(deduce_types_from_header);  // idempotent
 
 :(code)
