@@ -1,7 +1,7 @@
 //: Once all code is loaded, save operation ids of instructions and check that
 //: nothing's undefined.
 
-:(before "End Transforms")
+:(before "End Instruction Modifying Transforms")
 Transform.push_back(update_instruction_operations);  // idempotent
 
 :(code)

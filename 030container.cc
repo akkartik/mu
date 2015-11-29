@@ -527,7 +527,7 @@ container bar [
 ]
 $error: 0
 
-:(after "Begin Transforms")
+:(after "Begin Instruction Modifying Transforms")
 Transform.push_back(check_or_set_invalid_types);  // idempotent
 
 :(code)

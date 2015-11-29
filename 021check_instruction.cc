@@ -8,7 +8,7 @@
 //: sophisticated layer system I'd introduce the simpler version first and
 //: transform it in a separate layer or set of layers.
 
-:(before "End Transforms")
+:(before "End Checks")
 Transform.push_back(check_instruction);  // idempotent
 
 :(code)

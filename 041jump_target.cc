@@ -18,7 +18,7 @@ recipe main [
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "label", 0);
 
-:(after "Begin Transforms")
+:(before "End Instruction Modifying Transforms")
 Transform.push_back(transform_labels);  // idempotent
 
 :(code)

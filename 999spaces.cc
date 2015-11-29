@@ -34,23 +34,30 @@ assert(Max_callstack_depth == 9989);
 
 //:: Summary of transforms and their dependencies
 //: begin transforms
-//: 52 insert fragments
-//:  ↳ 56.2 update header reagents
-//:  ↓ ↳ 56.4 fill in reply ingredients
-//:  ↳ 52.2 check fragments
+//:   begin instruction inserting transforms
+//:     52 insert fragments
+//:      ↳ 56.2 update header reagents
+//:      ↓ ↳ 56.4 fill in reply ingredients
+//:      ↳ 52.2 check fragments
+//:   ---
+//:   end instruction inserting transforms
 //:
-//: 41 transform labels
-//: 40 transform braces
+//:   begin instruction modifying transforms
+//:      ↱ 48 check types by name
+//:      ↑ ↓ ↱ 56.3 deduce types from header
+//:      ↑ ↓ ↑ ↳ 57 static dispatch
+//:      ↑ ↳ 56 check reply instructions against header
+//:     30 check or set invalid containers
+//:     ---
+//:     13 update instruction operation
+//:     40 transform braces
+//:     41 transform labels
+//:      ↱ 46 collect surrounding spaces
+//:     42 transform names
+//:   end instruction modifying transforms
 //:
-//:  ↱ 48 check types by name
-//:  ↑ ↓ ↱ 56.3 deduce types from header
-//:  ↑ ↓ ↑ ↳ 57 static dispatch
-//:  ↑ ↳ 56 check reply instructions against header
-//: 30 check or set invalid containers
-//:  ↓ ↱ 46 collect surrounding spaces
-//:  ↳ 42 transform names
-//: ---
-//: 13 update inst.operation
-//: 21 check inst
-//: ↳ 43 transform 'new' to 'allocate'
+//:   begin checks
+//:     21 check instruction
+//:     ↳ 43 transform 'new' to 'allocate'
+//:   end checks
 //: end transforms

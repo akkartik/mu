@@ -26,7 +26,15 @@ vector<transform_fn> Transform;
 
 :(after "int main")
   // Begin Transforms
+    // Begin Instruction Inserting/Deleting Transforms
+    // End Instruction Inserting/Deleting Transforms
+
+    // Begin Instruction Modifying Transforms
+    // End Instruction Modifying Transforms
   // End Transforms
+
+  // Begin Checks
+  // End Checks
 
 :(code)
 void transform_all() {
