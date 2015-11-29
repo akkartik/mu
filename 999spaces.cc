@@ -41,7 +41,7 @@ assert(Max_callstack_depth == 9989);
 //:   end instruction inserting transforms
 //:
 //:   begin instruction modifying transforms
-//:     56.2 update header reagents
+//:     56.2 check header ingredients
 //:      ↳ 56.4 fill in reply ingredients
 //:
 //:     48 check types by name
