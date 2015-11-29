@@ -45,14 +45,13 @@ assert(Max_callstack_depth == 9989);
 //:      ↳ 56.4 fill in reply ingredients
 //:
 //:     begin type modifying transforms
-//:       48 check types by name
 //:        ↱ 56.3 deduce types from header
 //:       56 check reply instructions against header
+//:       48 check types by name
+//:     ---
+//:       30 check or set invalid containers
 //:     end type modifying transforms
-//:
-//:     57 static dispatch
-//:
-//:     30 check or set invalid containers
+//:      ↳ 57 static dispatch
 //:   ---
 //:     13 update instruction operation
 //:     40 transform braces
