@@ -31,3 +31,26 @@ assert(Next_recipe_ordinal == 1000);
 assert(Initial_callstack_depth == 101);
 assert(Max_callstack_depth == 9989);
 //: 9990-9999 - intra-instruction lines (mostly label mem)
+
+//:: Summary of transforms and their dependencies
+//: begin transforms
+//: 52 insert fragments
+//:  ↳ 56.2 update header reagents
+//:  ↓ ↳ 56.4 fill in reply ingredients
+//:  ↳ 52.2 check fragments
+//:
+//:  ↱ 41 transform labels
+//: 40 transform braces
+//:
+//:  ↱ 48 check types by name
+//:  ↑ ↓ ↱ 56.3 deduce types from header
+//:  ↑ ↓ ↑ ↳ 57 static dispatch
+//:  ↑ ↳ 56 check reply instructions against header
+//: 30 check or set invalid containers
+//:  ↓ ↱ 46 collect surrounding spaces
+//:  ↳ 42 transform names
+//: ---
+//: 13 update inst.operation
+//:  ↳ 21 check inst
+//:    ↳ 43 transform 'new' to 'allocate'
+//: end transforms
