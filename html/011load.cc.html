@@ -53,9 +53,9 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>string form<spa
 vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   vector&lt;recipe_ordinal&gt; result<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     string command = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Comment">// Command Handlers</span>
     if <span class="Delimiter">(</span>command == <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -116,25 +116,25 @@ void slurp_body<span class="Delimiter">(</span>istream&amp; in<span class="Delim
 
 bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> instruction* curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   curr<span class="Delimiter">-&gt;</span>clear<span class="Delimiter">();</span>
-  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; <span class="Constant">&quot;0: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; <span class="Constant">&quot;1: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; <span class="Constant">&quot;2: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
   vector&lt;string&gt; words<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span> &amp;&amp; !in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       raise_error &lt;&lt; <span class="Constant">&quot;3: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -151,7 +151,7 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
     curr<span class="Delimiter">-&gt;</span>is_label = <span class="Constant">true</span><span class="Delimiter">;</span>
     curr<span class="Delimiter">-&gt;</span>label = words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;label: &quot;</span> &lt;&lt; curr<span class="Delimiter">-&gt;</span>label &lt;&lt; end<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       raise_error &lt;&lt; <span class="Constant">&quot;7: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -185,7 +185,7 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
   for <span class="Delimiter">(</span>vector&lt;reagent&gt;::iterator p = curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  product: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>to_string<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; <span class="Constant">&quot;9: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -210,7 +210,7 @@ string Ignore<span class="Delimiter">(</span><span class="Constant">&quot;,&quot
 <span class="Delimiter">:(code)</span>
 void slurp_word<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   char c<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">()</span> &amp;&amp; Terminators<span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; Terminators<span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     in &gt;&gt; c<span class="Delimiter">;</span>
     out &lt;&lt; c<span class="Delimiter">;</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
@@ -232,7 +232,7 @@ void skip_ignored_characters<span class="Delimiter">(</span>istream&amp; in<span
 
 void skip_whitespace_and_comments<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   while <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
     else if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">','</span><span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
     else if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
@@ -241,9 +241,9 @@ void skip_whitespace_and_comments<span class="Delimiter">(</span>istream&amp; in
 <span class="Delimiter">}</span>
 
 void skip_comment<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">()</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-    while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">()</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 

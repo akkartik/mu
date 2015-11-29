@@ -15,6 +15,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -45,7 +46,7 @@ recipe main [
 
 <span class="Delimiter">:(scenario run_interactive_empty)</span>
 recipe main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Special">raw</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
 ]
 <span class="Comment"># result is null</span>
@@ -140,6 +141,7 @@ bool run_interactive<span class="Delimiter">(</span>long long int address<span c
 <span class="Delimiter">}</span>
 
 void run_code_begin<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;loading new trace\n&quot;;</span>
   <span class="Comment">// stuff to undo later, in run_code_end()</span>
   Hide_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
   Hide_errors = <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -152,6 +154,7 @@ void run_code_begin<span class="Delimiter">()</span> <span class="Delimiter">{</
 <span class="Delimiter">}</span>
 
 void run_code_end<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;back to old trace\n&quot;;</span>
   Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
   Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
   Disable_redefine_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -160,6 +163,7 @@ void run_code_end<span class="Delimiter">()</span> <span class="Delimiter">{</sp
   Save_trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   Trace_file = Save_trace_file<span class="Delimiter">;</span>
   Save_trace_file<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">));</span>  <span class="Comment">// keep past sandboxes from inserting errors</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Load Recipes&quot;)</span>
@@ -283,7 +287,7 @@ case _CLEANUP_RUN_INTERACTIVE: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(scenario &quot;run_interactive_returns_stringified_result&quot;)</span>
+<span class="Delimiter">:(scenario &quot;run_interactive_converts_result_to_text&quot;)</span>
 recipe main [
   <span class="Comment"># try to interactively add 2 and 2</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
@@ -293,13 +297,13 @@ recipe main [
 <span class="Comment"># first letter in the output should be '4' in unicode</span>
 <span class="traceContains">+mem: storing 52 in location 11</span>
 
-<span class="Delimiter">:(scenario &quot;run_interactive_returns_string&quot;)</span>
+<span class="Delimiter">:(scenario &quot;run_interactive_returns_text&quot;)</span>
 recipe main [
   <span class="Comment"># try to interactively add 2 and 2</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [
     x:address:array:character<span class="Special"> &lt;- </span>new [a]
     y:address:array:character<span class="Special"> &lt;- </span>new [b]
-    z:address:array:character<span class="Special"> &lt;- </span>string-append x:address:array:character<span class="Delimiter">,</span> y:address:array:character
+    z:address:array:character<span class="Special"> &lt;- </span>append x:address:array:character<span class="Delimiter">,</span> y:address:array:character
   ]
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
   <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:array:character/lookup
@@ -450,25 +454,45 @@ case RELOAD: <span class="Delimiter">{</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case RELOAD: <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;== reload\n&quot;;</span>
   <span class="Comment">// clear any containers in advance</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Type_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
     Type<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
+  for <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt; &gt;::iterator p = Recipe_variants<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Recipe_variants<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; p-&gt;first &lt;&lt; &quot;:\n&quot;;</span>
+    vector&lt;recipe_ordinal&gt;&amp; variants = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
+    for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      if <span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>find<span class="Delimiter">(</span>recently_added_shape_shifting_recipes<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> recently_added_shape_shifting_recipes<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> != recently_added_shape_shifting_recipes<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?         cerr &lt;&lt; &quot;  &quot; &lt;&lt; variants.at(i) &lt;&lt; ' ' &lt;&lt; get(Recipe, variants.at(i)).name &lt;&lt; '\n';</span>
+        variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> = -<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// ghost</span>
+      <span class="Delimiter">}</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recently_added_shape_shifting_recipes<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;erasing &quot; &lt;&lt; get(Recipe, recently_added_shape_shifting_recipes.at(i)).name &lt;&lt; '\n';</span>
+    Recipe_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> recently_added_shape_shifting_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
+    Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recently_added_shape_shifting_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  recently_added_shape_shifting_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   string code = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   run_code_begin<span class="Delimiter">();</span>
   routine* save_current_routine = Current_routine<span class="Delimiter">;</span>
   Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   vector&lt;recipe_ordinal&gt; recipes_reloaded = load<span class="Delimiter">(</span>code<span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recipes_reloaded<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// clear a few things from previous runs</span>
+  <span class="Comment">// ad hoc list; we've probably missed a few</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recipes_reloaded<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     Name<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recipes_reloaded<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-  <span class="Delimiter">}</span>
   transform_all<span class="Delimiter">();</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>  <span class="Comment">// flush trace</span>
   Current_routine = save_current_routine<span class="Delimiter">;</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_error_warning_contents<span class="Delimiter">());</span>
   run_code_end<span class="Delimiter">();</span>  <span class="Comment">// wait until we're done with the trace contents</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;reload done\n&quot;;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

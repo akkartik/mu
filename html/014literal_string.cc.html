@@ -55,17 +55,17 @@ recipe main [
 put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
 
 <span class="Delimiter">:(before &quot;End next_word Special-cases&quot;)</span>
-  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    string result = slurp_quoted<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
+if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  string result = slurp_quoted<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
 string slurp_quoted<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream out<span class="Delimiter">;</span>
-  assert<span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">());</span>  assert<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>  out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>  <span class="Comment">// slurp the '['</span>
+  assert<span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>  assert<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>  out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>  <span class="Comment">// slurp the '['</span>
   if <span class="Delimiter">(</span>is_code_string<span class="Delimiter">(</span>in<span class="Delimiter">,</span> out<span class="Delimiter">))</span>
     slurp_quoted_comment_aware<span class="Delimiter">(</span>in<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
   else
@@ -76,7 +76,7 @@ string slurp_quoted<span class="Delimiter">(</span>istream&amp; in<span class="D
 <span class="Comment">// A string is a code string if it contains a newline before any non-whitespace</span>
 <span class="Comment">// todo: support comments before the newline. But that gets messy.</span>
 bool is_code_string<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     char c = in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
     if <span class="Delimiter">(</span>!isspace<span class="Delimiter">(</span>c<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       in<span class="Delimiter">.</span>putback<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
@@ -94,7 +94,7 @@ bool is_code_string<span class="Delimiter">(</span>istream&amp; in<span class="D
 <span class="Comment">// strings.</span>
 void slurp_quoted_comment_oblivious<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   int brace_depth = <span class="Constant">1</span><span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     char c = in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
     if <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>
@@ -105,7 +105,7 @@ void slurp_quoted_comment_oblivious<span class="Delimiter">(</span>istream&amp; 
     if <span class="Delimiter">(</span>c == <span class="Constant">']'</span><span class="Delimiter">)</span> --brace_depth<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>brace_depth == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">()</span> &amp;&amp; brace_depth &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; brace_depth &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; <span class="Constant">&quot;unbalanced '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     out<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
@@ -121,7 +121,7 @@ void slurp_quoted_comment_aware<span class="Delimiter">(</span>istream&amp; in<s
     <span class="Delimiter">}</span>
     if <span class="Delimiter">(</span>c == <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       out &lt;&lt; c<span class="Delimiter">;</span>
-      while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">()</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>
+      while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     if <span class="Delimiter">(</span>c == <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>

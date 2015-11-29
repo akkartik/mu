@@ -13,10 +13,8 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.cSpecial { color: #008000; }
-.Constant { color: #00a0a0; }
-.Delimiter { color: #a04060; }
-.Identifier { color: #804000; }
+.Comment { color: #9090ff; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -28,39 +26,42 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Delimiter">:(before &quot;End Transform All&quot;)</span>
-check_type_pointers<span class="Delimiter">();</span>
-
-<span class="Delimiter">:(code)</span>
-void check_type_pointers<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt;::iterator p = Recipe<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Recipe<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>any_type_ingredient_in_header<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    const recipe&amp; r = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
-    for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      const instruction&amp; inst = r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-      for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-          raise_error &lt;&lt; maybe<span class="Delimiter">(</span>r<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;' -- &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot; has no type</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-          <span class="Identifier">return</span><span class="Delimiter">;</span>
-        <span class="Delimiter">}</span>
-        if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-          raise_error &lt;&lt; maybe<span class="Delimiter">(</span>r<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;' -- &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot; has no type name</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-          <span class="Identifier">return</span><span class="Delimiter">;</span>
-        <span class="Delimiter">}</span>
-      <span class="Delimiter">}</span>
-      for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-          raise_error &lt;&lt; maybe<span class="Delimiter">(</span>r<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;' -- &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot; has no type</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-          <span class="Identifier">return</span><span class="Delimiter">;</span>
-        <span class="Delimiter">}</span>
-        if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-          raise_error &lt;&lt; maybe<span class="Delimiter">(</span>r<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;' -- &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot; has no type name</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-          <span class="Identifier">return</span><span class="Delimiter">;</span>
-        <span class="Delimiter">}</span>
-      <span class="Delimiter">}</span>
-    <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
+<span class="Comment">//: enable this when tracking down null types</span>
+<span class="Comment">//: (but it interferes with edit/; since recipes created in the environment</span>
+<span class="Comment">//: can raise warnings here which will stop running the entire environment)</span>
+<span class="CommentedCode">//? :(before &quot;End Transform All&quot;)</span>
+<span class="CommentedCode">//? check_type_pointers();</span>
+<span class="CommentedCode">//? </span>
+<span class="CommentedCode">//? :(code)</span>
+<span class="CommentedCode">//? void check_type_pointers() {</span>
+<span class="CommentedCode">//?   for (map&lt;recipe_ordinal, recipe&gt;::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {</span>
+<span class="CommentedCode">//?     if (any_type_ingredient_in_header(p-&gt;first)) continue;</span>
+<span class="CommentedCode">//?     const recipe&amp; r = p-&gt;second;</span>
+<span class="CommentedCode">//?     for (long long int i = 0; i &lt; SIZE(r.steps); ++i) {</span>
+<span class="CommentedCode">//?       const instruction&amp; inst = r.steps.at(i);</span>
+<span class="CommentedCode">//?       for (long long int j = 0; j &lt; SIZE(inst.ingredients); ++j) {</span>
+<span class="CommentedCode">//?         if (!inst.ingredients.at(j).type) {</span>
+<span class="CommentedCode">//?           raise_error &lt;&lt; maybe(r.name) &lt;&lt; &quot; '&quot; &lt;&lt; inst.to_string() &lt;&lt; &quot;' -- &quot; &lt;&lt; inst.ingredients.at(j).to_string() &lt;&lt; &quot; has no type\n&quot; &lt;&lt; end();</span>
+<span class="CommentedCode">//?           return;</span>
+<span class="CommentedCode">//?         }</span>
+<span class="CommentedCode">//?         if (!inst.ingredients.at(j).properties.at(0).second) {</span>
+<span class="CommentedCode">//?           raise_error &lt;&lt; maybe(r.name) &lt;&lt; &quot; '&quot; &lt;&lt; inst.to_string() &lt;&lt; &quot;' -- &quot; &lt;&lt; inst.ingredients.at(j).to_string() &lt;&lt; &quot; has no type name\n&quot; &lt;&lt; end();</span>
+<span class="CommentedCode">//?           return;</span>
+<span class="CommentedCode">//?         }</span>
+<span class="CommentedCode">//?       }</span>
+<span class="CommentedCode">//?       for (long long int j = 0; j &lt; SIZE(inst.products); ++j) {</span>
+<span class="CommentedCode">//?         if (!inst.products.at(j).type) {</span>
+<span class="CommentedCode">//?           raise_error &lt;&lt; maybe(r.name) &lt;&lt; &quot; '&quot; &lt;&lt; inst.to_string() &lt;&lt; &quot;' -- &quot; &lt;&lt; inst.products.at(j).to_string() &lt;&lt; &quot; has no type\n&quot; &lt;&lt; end();</span>
+<span class="CommentedCode">//?           return;</span>
+<span class="CommentedCode">//?         }</span>
+<span class="CommentedCode">//?         if (!inst.products.at(j).properties.at(0).second) {</span>
+<span class="CommentedCode">//?           raise_error &lt;&lt; maybe(r.name) &lt;&lt; &quot; '&quot; &lt;&lt; inst.to_string() &lt;&lt; &quot;' -- &quot; &lt;&lt; inst.products.at(j).to_string() &lt;&lt; &quot; has no type name\n&quot; &lt;&lt; end();</span>
+<span class="CommentedCode">//?           return;</span>
+<span class="CommentedCode">//?         }</span>
+<span class="CommentedCode">//?       }</span>
+<span class="CommentedCode">//?     }</span>
+<span class="CommentedCode">//?   }</span>
+<span class="CommentedCode">//? }</span>
 </pre>
 </body>
 </html>

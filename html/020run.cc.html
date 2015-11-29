@@ -104,9 +104,7 @@ void run_current_routine<span class="Delimiter">()</span>
       raise_error &lt;&lt; <span class="Constant">&quot;something wrote to location 0; this should never happen</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
-    <span class="Comment">// Read all ingredients from memory.</span>
-    <span class="Comment">// Each ingredient loads a vector of values rather than a single value; mu</span>
-    <span class="Comment">// permits operating on reagents spanning multiple locations.</span>
+    <span class="Comment">// read all ingredients from memory, each potentially spanning multiple locations</span>
     vector&lt;vector&lt;double&gt; &gt; ingredients<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>should_copy_ingredients<span class="Delimiter">())</span> <span class="Delimiter">{</span>
       for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -115,7 +113,7 @@ void run_current_routine<span class="Delimiter">()</span>
 <span class="CommentedCode">//?         Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back());</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
-    <span class="Comment">// Instructions below will write to 'products'.</span>
+    <span class="Comment">// instructions below will write to 'products'</span>
     vector&lt;vector&lt;double&gt; &gt; products<span class="Delimiter">;</span>
     switch <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// Primitive Recipe Implementations</span>
@@ -191,14 +189,14 @@ if <span class="Delimiter">(</span>argc &gt; <span class="Constant">1</span><spa
   <span class="Delimiter">}</span>
   transform_all<span class="Delimiter">();</span>
 <span class="CommentedCode">//?   dump_recipe(&quot;handle-keyboard-event&quot;),  exit(0);</span>
-  if <span class="Delimiter">(</span>Run_tests<span class="Delimiter">)</span> Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">)));</span>
+  if <span class="Delimiter">(</span>Run_tests<span class="Delimiter">)</span> Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">));</span>
   <span class="Comment">// End Loading .mu Files</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: Step 3: if we aren't running tests, locate a recipe called 'main' and</span>
 <span class="Comment">//: start running it.</span>
 <span class="Delimiter">:(before &quot;End Main&quot;)</span>
-if <span class="Delimiter">(</span>!Run_tests &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">))</span> &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">))))</span> <span class="Delimiter">{</span>
+if <span class="Delimiter">(</span>!Run_tests &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span> &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
   setup<span class="Delimiter">();</span>
 <span class="CommentedCode">//?   Trace_file = &quot;interactive&quot;;</span>
 <span class="CommentedCode">//?   START_TRACING_UNTIL_END_OF_SCOPE;</span>
@@ -209,7 +207,7 @@ if <span class="Delimiter">(</span>!Run_tests &amp;&amp; contains_key<span class
 
 <span class="Delimiter">:(code)</span>
 void run_main<span class="Delimiter">(</span>int argc<span class="Delimiter">,</span> char* argv[]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  recipe_ordinal r = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">));</span>
+  recipe_ordinal r = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>r<span class="Delimiter">)</span> run<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 

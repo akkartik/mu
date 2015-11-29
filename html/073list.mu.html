@@ -20,6 +20,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
+.CommentedCode { color: #6c6c6c; }
 .Delimiter { color: #a04060; }
 -->
 </style>
@@ -83,6 +84,92 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">5</span>
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
     <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+  ]
+]
+
+<span class="muRecipe">recipe</span> to-text in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:array:character [
+  <span class="Constant">local-scope</span>
+<span class="CommentedCode">#?   $print [to text: list], 10/newline</span>
+  <span class="Constant">load-ingredients</span>
+  buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
+  buf<span class="Special"> &lt;- </span>to-buffer in, buf
+  result<span class="Special"> &lt;- </span>buffer-to-array buf
+]
+
+<span class="Comment"># variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)</span>
+<span class="muRecipe">recipe</span> to-text-line in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:array:character [
+  <span class="Constant">local-scope</span>
+<span class="CommentedCode">#?   $print [to text line: list], 10/newline</span>
+  <span class="Constant">load-ingredients</span>
+  buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
+  buf<span class="Special"> &lt;- </span>to-buffer in, buf, <span class="Constant">6</span>  <span class="Comment"># max elements to display</span>
+  result<span class="Special"> &lt;- </span>buffer-to-array buf
+]
+
+<span class="muRecipe">recipe</span> to-buffer in:address:list:_elem, buf:address:buffer<span class="muRecipe"> -&gt; </span>buf:address:buffer [
+  <span class="Constant">local-scope</span>
+<span class="CommentedCode">#?   $print [to buffer: list], 10/newline</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> in
+    $print <span class="Constant">[000]</span>, <span class="Constant">10/newline</span>
+    buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">48/0</span>
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># append in.value to buf</span>
+  val:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
+  buf<span class="Special"> &lt;- </span>append buf, val
+  <span class="Comment"># now prepare next</span>
+  next:address:list:_elem<span class="Special"> &lt;- </span>rest in
+  nextn:number<span class="Special"> &lt;- </span>copy next
+<span class="CommentedCode">#?   buf &lt;- append buf, nextn</span>
+  <span class="muControl">reply-unless</span> next
+  space:character<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
+  buf<span class="Special"> &lt;- </span>append buf, space:character
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[-&gt; ]</span>
+  n:number<span class="Special"> &lt;- </span>length *s
+  buf<span class="Special"> &lt;- </span>append buf, s
+  <span class="Comment"># and recurse</span>
+  remaining:number, optional-ingredient-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> optional-ingredient-found?
+    <span class="Comment"># unlimited recursion</span>
+    buf<span class="Special"> &lt;- </span>to-buffer next, buf
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> remaining
+    <span class="Comment"># limited recursion</span>
+    remaining<span class="Special"> &lt;- </span>subtract remaining, <span class="Constant">1</span>
+    buf<span class="Special"> &lt;- </span>to-buffer next, buf, remaining
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># past recursion depth; insert ellipses and stop</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[...]</span>
+  append buf, s
+]
+
+<span class="muScenario">scenario</span> stash-on-list-converts-to-text [
+  run [
+    x:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, <span class="Constant">0</span>
+    x<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, x
+    x<span class="Special"> &lt;- </span>push <span class="Constant">6</span>, x
+    stash <span class="Constant">[foo foo]</span>, x
+  ]
+  trace-should-contain [
+    app: foo foo <span class="Constant">6</span><span class="muRecipe"> -&gt; </span><span class="Constant">5</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> stash-handles-list-with-cycle [
+  run [
+    x:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, <span class="Constant">0</span>
+    y:address:address:list:number<span class="Special"> &lt;- </span>get-address *x, <span class="Constant">next:offset</span>
+    *y<span class="Special"> &lt;- </span>copy x
+    stash <span class="Constant">[foo foo]</span>, x
+  ]
+  trace-should-contain [
+    app: foo foo <span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span>...
   ]
 ]
 </pre>

@@ -79,7 +79,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
   <span class="Comment"># cursor should remain unmoved</span>
   run [
-    print-character screen:address:screen, <span class="Constant">9251/␣/cursor</span>
+    print screen:address:screen, <span class="Constant">9251/␣/cursor</span>
   ]
   screen-should-contain [
    <span class="Constant"> .                     run (F4)           .</span>
@@ -191,14 +191,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> sandbox-response
     expected-response:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>
     <span class="muControl">break-unless</span> expected-response  <span class="Comment"># fall-through to print in grey</span>
-    response-is-expected?:boolean<span class="Special"> &lt;- </span>string-equal expected-response, sandbox-response
+    response-is-expected?:boolean<span class="Special"> &lt;- </span>equal expected-response, sandbox-response
     <span class="Delimiter">{</span>
       <span class="muControl">break-if</span> response-is-expected?:boolean
-      row, screen<span class="Special"> &lt;- </span>render-string screen, sandbox-response, left, right, <span class="Constant">1/red</span>, row
+      row, screen<span class="Special"> &lt;- </span>render screen, sandbox-response, left, right, <span class="Constant">1/red</span>, row
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
       <span class="muControl">break-unless</span> response-is-expected?:boolean
-      row, screen<span class="Special"> &lt;- </span>render-string screen, sandbox-response, left, right, <span class="Constant">2/green</span>, row
+      row, screen<span class="Special"> &lt;- </span>render screen, sandbox-response, left, right, <span class="Constant">2/green</span>, row
     <span class="Delimiter">}</span>
     <span class="muControl">jump</span> <span class="Constant">+render-sandbox-end:label</span>
   <span class="Delimiter">}</span>
