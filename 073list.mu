@@ -88,27 +88,14 @@ recipe to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer
   buf <- to-buffer next, buf
 ]
 
-scenario display-list [
-  assume-screen 40/width, 10/height
-  run [
-    1:address:list:number <- push 4, 0
-    1:address:list:number <- push 5, 1:address:list:number
-    1:address:list:number <- push 6, 1:address:list:number
-    2:address:array:character <- to-text 1:address:list:number
-    3:array:character <- copy *2:address:array:character
-  ]
-  memory-should-contain [
-    3:array:character <- [6 -> 5 -> 4]
-  ]
-]
-
 scenario stash-on-list-converts-to-text [
   run [
     x:address:list:number <- push 4, 0
     x <- push 5, x
+    x <- push 6, x
     stash [foo foo], x
   ]
   trace-should-contain [
-    app: foo foo 5 -> 4
+    app: foo foo 6 -> 5 -> 4
   ]
 ]
