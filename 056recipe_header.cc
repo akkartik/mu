@@ -165,10 +165,10 @@ recipe add2 x:number, x:number -> z:number [
 map<string, int> ingredient_index;
 
 :(after "Begin Instruction Modifying Transforms")
-Transform.push_back(check_and_update_header_reagents);  // idempotent
+Transform.push_back(check_header_ingredients);  // idempotent
 
 :(code)
-void check_and_update_header_reagents(const recipe_ordinal r) {
+void check_header_ingredients(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   if (caller_recipe.products.empty()) return;
   trace(9991, "transform") << "--- checking reply instructions against header for " << caller_recipe.name << end();
@@ -261,7 +261,7 @@ recipe add2 x:number, y:number -> z:number [
 ]
 +mem: storing 8 in location 1
 
-:(after "Transform.push_back(check_and_update_header_reagents)")
+:(after "Transform.push_back(check_header_ingredients)")
 Transform.push_back(fill_in_reply_ingredients);  // idempotent
 
 :(code)
