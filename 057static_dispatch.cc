@@ -120,9 +120,8 @@ recipe test a:number, b:number -> z:number [
 ]
 +mem: storing 2 in location 7
 
-//: after insert_fragments (tangle) and before computing operation ids
 //: after filling in all missing types (because we'll be introducing 'blank' types in this transform in a later layer, for shape-shifting recipes)
-:(after "Transform.push_back(deduce_types_from_header)")
+:(after "End Type Modifying Transforms")
 Transform.push_back(resolve_ambiguous_calls);  // idempotent
 
 :(code)
