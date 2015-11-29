@@ -59,8 +59,8 @@ case NEXT_INGREDIENT: {
       if (!is_mu_string(product))
         raise_error << "main: wrong type for ingredient " << product.original_string << '\n' << end();
     }
-    else if (!types_match(product,
-                          current_call().ingredients.at(current_call().next_ingredient_to_process))) {
+    else if (!types_coercible(product,
+                              current_call().ingredients.at(current_call().next_ingredient_to_process))) {
       raise_error << maybe(current_recipe_name()) << "wrong type for ingredient " << product.original_string << '\n' << end();
       // End next-ingredient Type Mismatch Error
     }
