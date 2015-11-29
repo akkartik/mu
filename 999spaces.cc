@@ -39,7 +39,7 @@ assert(Max_callstack_depth == 9989);
 //:  ↓ ↳ 56.4 fill in reply ingredients
 //:  ↳ 52.2 check fragments
 //:
-//:  ↱ 41 transform labels
+//: 41 transform labels
 //: 40 transform braces
 //:
 //:  ↱ 48 check types by name
@@ -51,6 +51,6 @@ assert(Max_callstack_depth == 9989);
 //:  ↳ 42 transform names
 //: ---
 //: 13 update inst.operation
-//:  ↳ 21 check inst
-//:    ↳ 43 transform 'new' to 'allocate'
+//: 21 check inst
+//: ↳ 43 transform 'new' to 'allocate'
 //: end transforms
