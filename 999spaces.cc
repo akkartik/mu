@@ -69,3 +69,16 @@ assert(Max_callstack_depth == 9989);
 //:     56 check reply instructions against header
 //:   end checks
 //: end transforms
+
+//:: Summary of type-checking in different phases
+//: when dispatching instructions we accept first recipe that:
+//:   strictly matches all types
+//:   maps literal 0 or literal 1 to boolean for some ingredients
+//:   performs some other acceptable type conversion
+//:     literal 0 -> address
+//:     literal -> character
+//: when checking instructions we ensure that types match, and that literals map to some scalar
+//:   (address can only map to literal 0)
+//:   (boolean can only map to literal 0 or literal 1)
+//:     (but conditionals can take any scalar)
+//: at runtime we perform no checks

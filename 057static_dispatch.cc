@@ -140,10 +140,13 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
 void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
   trace(9992, "transform") << "instruction " << inst.name << end();
   vector<recipe_ordinal>& variants = get(Recipe_variants, inst.name);
+//?   trace(9992, "transform") << "checking base: " << get(Recipe_ordinal, inst.name) << end();
   long long int best_score = variant_score(inst, get(Recipe_ordinal, inst.name));
+  trace(9992, "transform") << "score for base: " << best_score << end();
   for (long long int i = 0; i < SIZE(variants); ++i) {
+//?     trace(9992, "transform") << "checking variant " << i << ": " << variants.at(i) << end();
     long long int current_score = variant_score(inst, variants.at(i));
-    trace(9992, "transform") << "checking variant " << i << ": " << current_score << end();
+    trace(9992, "transform") << "score for variant " << i << ": " << current_score << end();
     if (current_score > best_score) {
       inst.name = get(Recipe, variants.at(i)).name;
       best_score = current_score;
@@ -153,7 +156,7 @@ void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
 }
 
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {
-  long long int result = 100;
+  long long int result = 1000;
   if (variant == -1) return -1;  // ghost from a previous test
 //?   cerr << "variant score: " << inst.to_string() << '\n';
   if (!contains_key(Recipe, variant)) {
@@ -177,11 +180,16 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
       trace(9993, "transform") << "strict match: ingredient " << i << end();
 //?       cerr << "strict match: ingredient " << i << '\n';
     }
+    else if (boolean_matches_literal(header_ingredients.at(i), inst.ingredients.at(i))) {
+      // slight penalty for coercing literal to boolean (prefer direct conversion to number if possible)
+      trace(9993, "transform") << "boolean matches literal: ingredient " << i << end();
+      result--;
+    }
     else {
-      // slight penalty for modifying type
+      // slightly larger penalty for modifying type in other ways
       trace(9993, "transform") << "non-strict match: ingredient " << i << end();
 //?       cerr << "non-strict match: ingredient " << i << '\n';
-      result--;
+      result-=10;
     }
   }
 //?   cerr << "=== done checking ingredients\n";
@@ -201,11 +209,16 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
       trace(9993, "transform") << "strict match: product " << i << end();
 //?       cerr << "strict match: product " << i << '\n';
     }
+    else if (boolean_matches_literal(header_products.at(i), inst.products.at(i))) {
+      // slight penalty for coercing literal to boolean (prefer direct conversion to number if possible)
+      trace(9993, "transform") << "boolean matches literal: product " << i << end();
+      result--;
+    }
     else {
-      // slight penalty for modifying type
+      // slightly larger penalty for modifying type in other ways
       trace(9993, "transform") << "non-strict match: product " << i << end();
 //?       cerr << "non-strict match: product " << i << '\n';
-      result--;
+      result-=10;
     }
   }
   // the greater the number of unused ingredients/products, the lower the score
@@ -279,3 +292,54 @@ recipe foo x:number -> y:number [
 ]
 +error: foo: wrong type for ingredient x:number
 -mem: storing 34 in location 1
+
+:(scenario static_dispatch_dispatches_literal_to_boolean_before_character)
+recipe main [
+  1:number/raw <- foo 0  # valid literal for boolean
+]
+recipe foo x:character -> y:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+recipe foo x:boolean -> y:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
+# boolean variant is preferred
++mem: storing 35 in location 1
+
+:(scenario static_dispatch_dispatches_literal_to_character_when_out_of_boolean_range)
+recipe main [
+  1:number/raw <- foo 97  # not a valid literal for boolean
+]
+recipe foo x:character -> y:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+recipe foo x:boolean -> y:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
+# character variant is preferred
++mem: storing 34 in location 1
+
+:(scenario static_dispatch_dispatches_literal_to_number_if_at_all_possible)
+recipe main [
+  1:number/raw <- foo 97
+]
+recipe foo x:character -> y:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+recipe foo x:number -> y:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
+# number variant is preferred
++mem: storing 35 in location 1

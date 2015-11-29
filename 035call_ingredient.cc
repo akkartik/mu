@@ -62,6 +62,7 @@ case NEXT_INGREDIENT: {
     else if (!types_match(product,
                           current_call().ingredients.at(current_call().next_ingredient_to_process))) {
       raise_error << maybe(current_recipe_name()) << "wrong type for ingredient " << product.original_string << '\n' << end();
+      // End next-ingredient Type Mismatch Error
     }
     products.push_back(
         current_call().ingredient_atoms.at(current_call().next_ingredient_to_process));

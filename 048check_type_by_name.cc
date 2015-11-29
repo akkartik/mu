@@ -57,7 +57,7 @@ void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_n
   if (!contains_key(type_name, x.name)) {
     type_name[x.name] = x.properties.at(0).second;
   }
-  if (!types_match(type[x.name], x.type))
+  if (!types_strictly_match(type[x.name], x.type))
     raise_error << maybe(get(Recipe, r).name) << x.name << " used with multiple types\n" << end();
 }
 
