@@ -438,25 +438,22 @@ case TRACE_SHOULD_CONTAIN: {
 :(code)
 // simplified version of check_trace_contents() that emits errors rather
 // than just printing to stderr
-bool check_trace(const string& expected) {
+void check_trace(const string& expected) {
   Trace_stream->newline();
   vector<trace_line> expected_lines = parse_trace(expected);
-  if (expected_lines.empty()) return true;
+  if (expected_lines.empty()) return;
   long long int curr_expected_line = 0;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (expected_lines.at(curr_expected_line).label != p->label) continue;
     if (expected_lines.at(curr_expected_line).contents != trim(p->contents)) continue;
     // match
     ++curr_expected_line;
-    if (curr_expected_line == SIZE(expected_lines)) {
-      return true;
-    }
+    if (curr_expected_line == SIZE(expected_lines)) return;
   }
 
   raise_error << "missing [" << expected_lines.at(curr_expected_line).contents << "] "
               << "in trace with label " << expected_lines.at(curr_expected_line).label << '\n' << end();
   Passed = false;
-  return false;
 }
 
 vector<trace_line> parse_trace(const string& expected) {

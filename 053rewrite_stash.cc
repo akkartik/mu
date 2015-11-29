@@ -35,7 +35,7 @@ void rewrite_stashes_to_text_named(recipe& caller) {
         if (is_literal(inst.ingredients.at(j))) continue;
         if (is_mu_string(inst.ingredients.at(j))) continue;
         instruction def;
-        def.name = "to-text";
+        def.name = "to-text-line";
         def.ingredients.push_back(inst.ingredients.at(j));
         ostringstream ingredient_name;
         ingredient_name << "stash_" << stash_instruction_idx << '_' << j << ":address:array:character";
