@@ -31,7 +31,7 @@ recipe main [
 +transform: jump 1:offset
 +transform: copy ...
 
-:(after "Begin Transforms")
+:(before "End Instruction Modifying Transforms")
 Transform.push_back(transform_braces);  // idempotent
 
 :(code)

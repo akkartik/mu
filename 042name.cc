@@ -18,7 +18,7 @@ recipe main [
 +error: main: use before set: y
 # todo: detect conditional defines
 
-:(after "Transform.push_back(check_or_set_invalid_types")  // there'll be other transforms relating to types; they all need to happen first
+:(before "End Instruction Modifying Transforms")
 Transform.push_back(transform_names);  // idempotent
 
 :(before "End Globals")

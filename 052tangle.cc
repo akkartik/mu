@@ -54,7 +54,7 @@ else if (command == "after") {
 
 //: after all recipes are loaded, insert fragments at appropriate labels.
 
-:(after "Begin Transforms")
+:(after "Begin Instruction Inserting/Deleting Transforms")
 Transform.push_back(insert_fragments);  // NOT idempotent
 
 //: We might need to perform multiple passes, in case inserted fragments
