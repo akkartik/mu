@@ -528,7 +528,9 @@ container bar [
 $error: 0
 
 :(after "Begin Instruction Modifying Transforms")
+// Begin Type Modifying Transforms
 Transform.push_back(check_or_set_invalid_types);  // idempotent
+// End Type Modifying Transforms
 
 :(code)
 void check_or_set_invalid_types(const recipe_ordinal r) {

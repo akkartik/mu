@@ -15,9 +15,7 @@ recipe main [
 +error: main: x used with multiple types
 
 :(after "Begin Instruction Modifying Transforms")
-// Begin Type Modifying Transforms
 Transform.push_back(check_types_by_name);  // idempotent
-// End Type Modifying Transforms
 
 :(code)
 void check_types_by_name(const recipe_ordinal r) {
