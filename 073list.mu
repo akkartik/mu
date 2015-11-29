@@ -101,3 +101,14 @@ scenario display-list [
     3:array:character <- [6 -> 5 -> 4]
   ]
 ]
+
+scenario stash-on-list-converts-to-text [
+  run [
+    x:address:list:number <- push 4, 0
+    x <- push 5, x
+    stash [foo foo], x
+  ]
+  trace-should-contain [
+    app: foo foo 5 -> 4
+  ]
+]

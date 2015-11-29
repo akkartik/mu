@@ -38,6 +38,7 @@ assert(Max_callstack_depth == 9989);
 //:     52 insert fragments
 //:      ↳ 52.2 check fragments
 //:   ---
+//:     53 rewrite 'stash' instructions
 //:   end instruction inserting transforms
 //:
 //:   begin instruction modifying transforms
