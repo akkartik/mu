@@ -47,7 +47,6 @@ void deduce_missing_type(map<string, type_tree*>& type, map<string, string_tree*
 
 void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, const reagent& x, const recipe_ordinal r) {
   if (is_literal(x)) return;
-  if (is_raw(x)) return;  // TODO: delete this
   // if you use raw locations you're probably doing something unsafe
   if (is_integer(x.name)) return;
   if (!x.type) return;  // will throw a more precise error elsewhere
