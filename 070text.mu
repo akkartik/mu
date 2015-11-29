@@ -1,6 +1,14 @@
 # Some useful helpers for dealing with text (arrays of characters)
 
-# to-text gets called implicitly in various places
+# to-text-line gets called implicitly in various places
+# define it to be identical to 'to-text' by default
+recipe to-text-line x:_elem -> y:address:array:character [
+  local-scope
+  load-ingredients
+  y <- to-text x
+]
+
+# to-text on text is just the identity function
 recipe to-text x:address:array:character -> y:address:array:character [
   local-scope
   load-ingredients

@@ -61,6 +61,16 @@ recipe to-text in:address:list:_elem -> result:address:array:character [
   result <- buffer-to-array buf
 ]
 
+# variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)
+recipe to-text-line in:address:list:_elem -> result:address:array:character [
+  local-scope
+#?   $print [to text line: list], 10/newline
+  load-ingredients
+  buf:address:buffer <- new-buffer 80
+  buf <- to-buffer in, buf, 6  # max elements to display
+  result <- buffer-to-array buf
+]
+
 recipe to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer [
   local-scope
 #?   $print [to buffer: list], 10/newline
@@ -85,7 +95,23 @@ recipe to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer
   n:number <- length *s
   buf <- append buf, s
   # and recurse
-  buf <- to-buffer next, buf
+  remaining:number, optional-ingredient-found?:boolean <- next-ingredient
+  {
+    break-if optional-ingredient-found?
+    # unlimited recursion
+    buf <- to-buffer next, buf
+    reply
+  }
+  {
+    break-unless remaining
+    # limited recursion
+    remaining <- subtract remaining, 1
+    buf <- to-buffer next, buf, remaining
+    reply
+  }
+  # past recursion depth; insert ellipses and stop
+  s:address:array:character <- new [...]
+  append buf, s
 ]
 
 scenario stash-on-list-converts-to-text [
@@ -97,5 +123,17 @@ scenario stash-on-list-converts-to-text [
   ]
   trace-should-contain [
     app: foo foo 6 -> 5 -> 4
+  ]
+]
+
+scenario stash-handles-list-with-cycle [
+  run [
+    x:address:list:number <- push 4, 0
+    y:address:address:list:number <- get-address *x, next:offset
+    *y <- copy x
+    stash [foo foo], x
+  ]
+  trace-should-contain [
+    app: foo foo 4 -> 4 -> 4 -> 4 -> 4 -> 4 -> 4 -> ...
   ]
 ]
