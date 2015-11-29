@@ -164,7 +164,7 @@ recipe add2 x:number, x:number -> z:number [
 :(before "End recipe Fields")
 map<string, int> ingredient_index;
 
-:(after "Transform.push_back(insert_fragments)")
+:(after "Begin Instruction Modifying Transforms")
 Transform.push_back(check_and_update_header_reagents);  // idempotent
 
 :(code)
