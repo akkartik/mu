@@ -82,7 +82,7 @@ recipe main [
 $error: 0
 
 :(code)
-// types_match with some special-cases
+// types_match with some leniency
 bool types_coercible(const reagent& lhs, const reagent& rhs) {
   if (types_match(lhs, rhs)) return true;
   if (is_mu_address(rhs) && is_mu_number(lhs)) return true;
@@ -99,34 +99,41 @@ bool types_match(const reagent& lhs, const reagent& rhs) {
     // End Matching Types For Literal(lhs)
     // allow writing 0 to any address
     if (is_mu_address(lhs)) return rhs.name == "0";
+    if (!lhs.type) return false;
+    if (lhs.type->value == get(Type_ordinal, "boolean"))
+      return boolean_matches_literal(lhs, rhs);
     return size_of(lhs) == 1;  // literals are always scalars
   }
   return types_strictly_match(lhs, rhs);
 }
 
+bool boolean_matches_literal(const reagent& lhs, const reagent& rhs) {
+  if (!is_literal(rhs)) return false;
+  if (!lhs.type) return false;
+  if (lhs.type->value != get(Type_ordinal, "boolean")) return false;
+  return rhs.name == "0" || rhs.name == "1";
+}
+
 // copy arguments because later layers will want to make changes to them
 // without perturbing the caller
 bool types_strictly_match(reagent lhs, reagent rhs) {
+  if (is_literal(rhs) && lhs.type->value == get(Type_ordinal, "number")) return true;
   // to sidestep type-checking, use /unsafe in the source.
   // this will be highlighted in red inside vim. just for setting up some tests.
   if (is_unsafe(rhs)) return true;
   // '_' never raises type error
   if (is_dummy(lhs)) return true;
   if (!lhs.type) return !rhs.type;
-  return types_match(lhs.type, rhs.type);
+  return types_strictly_match(lhs.type, rhs.type);
 }
 
 // two types match if the second begins like the first
 // (trees perform the same check recursively on each subtree)
-bool types_match(type_tree* lhs, type_tree* rhs) {
+bool types_strictly_match(type_tree* lhs, type_tree* rhs) {
   if (!lhs) return true;
-  if (!rhs || rhs->value == 0) {
-    if (lhs->value == get(Type_ordinal, "array")) return false;
-    if (lhs->value == get(Type_ordinal, "address")) return false;
-    return size_of(rhs) == size_of(lhs);
-  }
+  if (!rhs) return lhs->value == 0;
   if (lhs->value != rhs->value) return false;
-  return types_match(lhs->left, rhs->left) && types_match(lhs->right, rhs->right);
+  return types_strictly_match(lhs->left, rhs->left) && types_strictly_match(lhs->right, rhs->right);
 }
 
 bool is_raw(const reagent& r) {
