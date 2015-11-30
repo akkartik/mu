@@ -31,6 +31,26 @@ recipe foo p:address:point -> p:address:point [
 ]
 $warn: 0
 
+:(scenario ignore_literal_ingredients_for_immutability_checks)
+% Hide_warnings = true;
+recipe main [
+  local-scope
+  p:address:d1 <- new d1:type
+  q:number <- foo p
+]
+recipe foo p:address:d1 -> q:number [
+  local-scope
+  load-ingredients
+  x:address:d1 <- new d1:type
+  y:address:number <- get-address *x, p:offset  # ignore this 'p'
+  q <- copy 34
+]
+container d1 [
+  p:number
+  q:number
+]
+$warn: 0
+
 :(scenario cannot_take_address_inside_immutable_ingredients)
 % Hide_warnings = true;
 recipe main [
@@ -246,6 +266,7 @@ bool is_present_in_ingredients(const recipe& callee, const string& ingredient_na
 set<long long int> ingredient_indices(const instruction& inst, const set<string>& ingredient_names) {
   set<long long int> result;
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+    if (is_literal(inst.ingredients.at(i))) continue;
     if (ingredient_names.find(inst.ingredients.at(i).name) != ingredient_names.end())
       result.insert(i);
   }
