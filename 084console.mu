@@ -21,17 +21,17 @@ container resize-event [
 ]
 
 container console [
-  index:number
-  data:address:array:event
+  current-event-index:number
+  events:address:array:event
 ]
 
 recipe new-fake-console events:address:array:event -> result:address:console [
   local-scope
   load-ingredients
   result:address:console <- new console:type
-  buf:address:address:array:event <- get-address *result, data:offset
+  buf:address:address:array:event <- get-address *result, events:offset
   *buf <- copy events
-  idx:address:number <- get-address *result, index:offset
+  idx:address:number <- get-address *result, current-event-index:offset
   *idx <- copy 0
 ]
 
@@ -40,17 +40,17 @@ recipe read-event console:address:console -> result:event, console:address:conso
   load-ingredients
   {
     break-unless console
-    idx:address:number <- get-address *console, index:offset
-    buf:address:array:event <- get *console, data:offset
+    current-event-index:address:number <- get-address *console, current-event-index:offset
+    buf:address:array:event <- get *console, events:offset
     {
       max:number <- length *buf
-      done?:boolean <- greater-or-equal *idx, max
+      done?:boolean <- greater-or-equal *current-event-index, max
       break-unless done?
       dummy:address:event <- new event:type
       reply *dummy, console/same-as-ingredient:0, 1/found, 1/quit
     }
-    result <- index *buf, *idx
-    *idx <- add *idx, 1
+    result <- index *buf, *current-event-index
+    *current-event-index <- add *current-event-index, 1
     reply result, console/same-as-ingredient:0, 1/found, 0/quit
   }
   switch  # real event source is infrequent; avoid polling it too much
