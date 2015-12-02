@@ -32,14 +32,14 @@ if (in.peek() != '[') {
 :(code)
 void load_recipe_header(istream& in, recipe& result) {
   result.has_header = true;
-  while (in.peek() != '[') {
+  while (has_data(in) && in.peek() != '[' && in.peek() != '\n') {
     string s = next_word(in);
     if (s == "->") break;
     result.ingredients.push_back(reagent(s));
     trace(9999, "parse") << "header ingredient: " << result.ingredients.back().original_string << end();
     skip_whitespace_and_comments(in);
   }
-  while (in.peek() != '[') {
+  while (has_data(in) && in.peek() != '[' && in.peek() != '\n') {
     string s = next_word(in);
     result.products.push_back(reagent(s));
     trace(9999, "parse") << "header product: " << result.products.back().original_string << end();
@@ -71,6 +71,12 @@ recipe bar [
   1:number/raw <- add 2, 3
 ]
 +mem: storing 4 in location 1
+
+:(scenario recipe_handles_missing_bracket)
+% Hide_errors = true;
+recipe main
+]
++error: recipe body must begin with '['
 
 :(after "Begin debug_string(recipe x)")
 out << "ingredients:\n";
