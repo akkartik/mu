@@ -88,6 +88,17 @@ recipe main
 -parse: header ingredient: local-scope
 +error: recipe body must begin with '['
 
+:(scenario recipe_handles_missing_bracket_3)
+% Hide_errors = true;
+recipe main  # comment
+  local-scope
+  {
+  }
+]
+# doesn't overflow line when reading header
+-parse: header ingredient: local-scope
++error: recipe body must begin with '['
+
 :(after "Begin debug_string(recipe x)")
 out << "ingredients:\n";
 for (long long int i = 0; i < SIZE(x.ingredients); ++i)
