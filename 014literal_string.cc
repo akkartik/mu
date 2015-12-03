@@ -24,8 +24,7 @@ put(Type_ordinal, "literal-string", 0);
 :(before "End next_word Special-cases")
 if (in.peek() == '[') {
   string result = slurp_quoted(in);
-  skip_whitespace(in);
-  skip_comment(in);
+  skip_whitespace_and_comments_but_not_newline(in);
   return result;
 }
 

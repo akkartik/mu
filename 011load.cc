@@ -43,7 +43,7 @@ vector<recipe_ordinal> load(istream& in) {
 long long int slurp_recipe(istream& in) {
   recipe result;
   result.name = next_word(in);
-  skip_whitespace_and_comments(in);
+  skip_whitespace_and_comments_but_not_newline(in);
   // End recipe Refinements
   if (result.name.empty())
     raise_error << "empty result.name\n" << end();
@@ -82,31 +82,22 @@ void slurp_body(istream& in, recipe& result) {
 
 bool next_instruction(istream& in, instruction* curr) {
   curr->clear();
-  if (!has_data(in)) {
-    raise_error << "0: unbalanced '[' for recipe\n" << end();
-    return false;
-  }
-  skip_whitespace(in);
-  if (!has_data(in)) {
-    raise_error << "1: unbalanced '[' for recipe\n" << end();
-    return false;
-  }
   skip_whitespace_and_comments(in);
   if (!has_data(in)) {
-    raise_error << "2: unbalanced '[' for recipe\n" << end();
+    raise_error << "0: unbalanced '[' for recipe\n" << end();
     return false;
   }
 
   vector<string> words;
   while (has_data(in) && in.peek() != '\n') {
-    skip_whitespace(in);
+    skip_whitespace_but_not_newline(in);
     if (!has_data(in)) {
-      raise_error << "3: unbalanced '[' for recipe\n" << end();
+      raise_error << "1: unbalanced '[' for recipe\n" << end();
       return false;
     }
     string word = next_word(in);
     words.push_back(word);
-    skip_whitespace(in);
+    skip_whitespace_but_not_newline(in);
   }
   skip_whitespace_and_comments(in);
   if (SIZE(words) == 1 && words.at(0) == "]") {
@@ -159,20 +150,17 @@ bool next_instruction(istream& in, instruction* curr) {
 }
 
 string next_word(istream& in) {
-  skip_whitespace(in);
-  skip_ignored_characters(in);
+  skip_whitespace_and_comments_but_not_newline(in);
   // End next_word Special-cases
   ostringstream out;
   slurp_word(in, out);
-  skip_whitespace(in);
-  skip_comment(in);
+  skip_whitespace_and_comments_but_not_newline(in);
   return out.str();
 }
 
 :(before "End Globals")
 // word boundaries
-string Terminators("(){}");
-string Ignore(",");  // meaningless except within [] strings
+const string Terminators("(){}");
 :(code)
 void slurp_word(istream& in, ostream& out) {
   char c;
@@ -190,17 +178,11 @@ void slurp_word(istream& in, ostream& out) {
   }
 }
 
-void skip_ignored_characters(istream& in) {
-  while (isspace(in.peek()) || Ignore.find(in.peek()) != string::npos) {
-    in.get();
-  }
-}
-
 void skip_whitespace_and_comments(istream& in) {
   while (true) {
     if (!has_data(in)) break;
     if (isspace(in.peek())) in.get();
-    else if (in.peek() == ',') in.get();
+    else if (Ignore.find(in.peek()) != string::npos) in.get();
     else if (in.peek() == '#') skip_comment(in);
     else break;
   }
