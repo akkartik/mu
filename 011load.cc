@@ -43,7 +43,7 @@ vector<recipe_ordinal> load(istream& in) {
 long long int slurp_recipe(istream& in) {
   recipe result;
   result.name = next_word(in);
-  skip_whitespace_and_comments_but_not_newline(in);
+  skip_whitespace_but_not_newline(in);
   // End recipe Refinements
   if (result.name.empty())
     raise_error << "empty result.name\n" << end();
@@ -67,10 +67,10 @@ long long int slurp_recipe(istream& in) {
 
 void slurp_body(istream& in, recipe& result) {
   in >> std::noskipws;
-  skip_whitespace_and_comments(in);
+  skip_whitespace_but_not_newline(in);
   if (in.get() != '[')
     raise_error << "recipe body must begin with '['\n" << end();
-  skip_whitespace_and_comments(in);
+  skip_whitespace_and_comments(in);  // permit trailing comment after '['
   instruction curr;
   while (next_instruction(in, &curr)) {
     // End Rewrite Instruction(curr, recipe result)
@@ -150,7 +150,7 @@ bool next_instruction(istream& in, instruction* curr) {
 }
 
 string next_word(istream& in) {
-  skip_whitespace_and_comments_but_not_newline(in);
+  skip_whitespace_but_not_newline(in);
   // End next_word Special-cases
   ostringstream out;
   slurp_word(in, out);
@@ -181,6 +181,18 @@ void slurp_word(istream& in, ostream& out) {
 void skip_whitespace_and_comments(istream& in) {
   while (true) {
     if (!has_data(in)) break;
+    if (isspace(in.peek())) in.get();
+    else if (Ignore.find(in.peek()) != string::npos) in.get();
+    else if (in.peek() == '#') skip_comment(in);
+    else break;
+  }
+}
+
+// confusing; move to the next line only to skip a comment, but never otherwise
+void skip_whitespace_and_comments_but_not_newline(istream& in) {
+  while (true) {
+    if (!has_data(in)) break;
+    if (in.peek() == '\n') break;
     if (isspace(in.peek())) in.get();
     else if (Ignore.find(in.peek()) != string::npos) in.get();
     else if (in.peek() == '#') skip_comment(in);
