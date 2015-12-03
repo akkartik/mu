@@ -77,7 +77,6 @@ recipe to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer
   load-ingredients
   {
     break-if in
-    $print [000], 10/newline
     buf <- append buf, 48/0
     reply
   }
