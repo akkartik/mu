@@ -261,7 +261,7 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false), ty
 }
 
 string_tree* parse_property_list(istream& in) {
-  skip_whitespace(in);
+  skip_whitespace_but_not_newline(in);
   if (!has_data(in)) return NULL;
   string_tree* result = new string_tree(slurp_until(in, ':'));
   result->right = parse_property_list(in);
@@ -523,9 +523,16 @@ void dump(const string_tree* x, ostream& out) {
   out << ')';
 }
 
-void skip_whitespace(istream& in) {
-  while (in && isspace(in.peek()) && in.peek() != '\n') {
-    in.get();
+:(before "End Globals")
+const string Ignore(",");  // commas are ignored in mu except within [] strings
+:(code)
+void skip_whitespace_but_not_newline(istream& in) {
+  while (true) {
+    if (!has_data(in)) break;
+    else if (in.peek() == '\n') break;
+    else if (isspace(in.peek())) in.get();
+    else if (Ignore.find(in.peek()) != string::npos) in.get();
+    else break;
   }
 }
 

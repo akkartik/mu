@@ -23,7 +23,6 @@ vector<reagent> products;
 has_header = false;
 
 :(before "End recipe Refinements")
-skip_whitespace(in);
 if (in.peek() != '[') {
   trace(9999, "parse") << "recipe has a header; parsing" << end();
   load_recipe_header(in, result);
@@ -37,15 +36,26 @@ void load_recipe_header(istream& in, recipe& result) {
     if (s == "->") break;
     result.ingredients.push_back(reagent(s));
     trace(9999, "parse") << "header ingredient: " << result.ingredients.back().original_string << end();
-    skip_whitespace_and_comments(in);
+    skip_whitespace_and_comments_but_not_newline(in);
   }
   while (has_data(in) && in.peek() != '[' && in.peek() != '\n') {
     string s = next_word(in);
     result.products.push_back(reagent(s));
     trace(9999, "parse") << "header product: " << result.products.back().original_string << end();
-    skip_whitespace_and_comments(in);
+    skip_whitespace_and_comments_but_not_newline(in);
   }
   // End Load Recipe Header(result)
+}
+
+void skip_whitespace_and_comments_but_not_newline(istream& in) {
+  while (true) {
+    if (!has_data(in)) break;
+    if (in.peek() == '\n') break;
+    if (isspace(in.peek())) in.get();
+    else if (Ignore.find(in.peek()) != string::npos) in.get();
+    else if (in.peek() == '#') skip_comment(in);
+    else break;
+  }
 }
 
 :(scenario recipe_handles_stray_comma)
@@ -76,6 +86,17 @@ recipe bar [
 % Hide_errors = true;
 recipe main
 ]
++error: recipe body must begin with '['
+
+:(scenario recipe_handles_missing_bracket_2)
+% Hide_errors = true;
+recipe main
+  local-scope
+  {
+  }
+]
+# doesn't overflow line when reading header
+-parse: header ingredient: local-scope
 +error: recipe body must begin with '['
 
 :(after "Begin debug_string(recipe x)")

@@ -404,7 +404,7 @@ else if (command == "container") {
 
 :(code)
 void insert_container(const string& command, kind_of_type kind, istream& in) {
-  skip_whitespace(in);
+  skip_whitespace_but_not_newline(in);
   string name = next_word(in);
   // End container Name Refinements
   trace(9991, "parse") << "--- defining " << command << ' ' << name << end();

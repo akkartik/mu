@@ -28,7 +28,7 @@ string_tree* parse_string_tree(const string& s) {
 }
 
 string_tree* parse_string_tree(istream& in) {
-  skip_whitespace(in);
+  skip_whitespace_but_not_newline(in);
   if (!has_data(in)) return NULL;
   if (in.peek() == ')') {
     in.get();
@@ -44,8 +44,7 @@ string_tree* parse_string_tree(istream& in) {
   while (in.peek() != ')') {
     assert(has_data(in));
     *curr = new string_tree("");
-    skip_whitespace(in);
-    skip_ignored_characters(in);
+    skip_whitespace_but_not_newline(in);
     if (in.peek() == '(')
       (*curr)->left = parse_string_tree(in);
     else

@@ -32,7 +32,7 @@ bool start_of_dilated_reagent(istream& in) {
   if (in.peek() != '{') return false;
   long long int pos = in.tellg();
   in.get();  // slurp '{'
-  skip_whitespace(in);
+  skip_whitespace_but_not_newline(in);
   char next = in.peek();
   in.seekg(pos);
   return next != '\n';
