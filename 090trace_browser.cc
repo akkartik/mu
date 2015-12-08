@@ -32,14 +32,14 @@ map<int, long long int> Trace_index;  // screen row -> trace index
 :(code)
 void start_trace_browser() {
   if (!Trace_stream) return;
-  cerr << "computing depth to display\n";
+  cerr << "computing min depth to display\n";
   long long int min_depth = 9999;
   for (long long int i = 0; i < SIZE(Trace_stream->past_lines); ++i) {
     trace_line& curr_line = Trace_stream->past_lines.at(i);
     if (curr_line.depth == 0) continue;
     if (curr_line.depth < min_depth) min_depth = curr_line.depth;
   }
-  cerr << "depth is " << min_depth << '\n';
+  cerr << "min depth is " << min_depth << '\n';
   cerr << "computing lines to display\n";
   for (long long int i = 0; i < SIZE(Trace_stream->past_lines); ++i) {
     if (Trace_stream->past_lines.at(i).depth == min_depth)
@@ -231,6 +231,14 @@ void load_trace(const char* filename) {
   }
   Trace_stream = new trace_stream;
   while (has_data(tin)) {
+    tin >> std::noskipws;
+      skip_whitespace_but_not_newline(tin);
+      if (!isdigit(tin.peek())) {
+        string dummy;
+        getline(tin, dummy);
+        continue;
+      }
+    tin >> std::skipws;
     int depth;
     tin >> depth;
     string label;
@@ -240,4 +248,5 @@ void load_trace(const char* filename) {
     getline(tin, line);
     Trace_stream->past_lines.push_back(trace_line(depth, label, line));
   }
+  cerr << "lines read: " << Trace_stream->past_lines.size() << '\n';
 }
