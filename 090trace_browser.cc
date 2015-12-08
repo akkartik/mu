@@ -184,7 +184,7 @@ void render() {
       long long int delta = lines_hidden(screen_row);
       // home-brew escape sequence for red
       if (delta > 999) out << "{";
-      out << " (" << lines_hidden(screen_row) << ")";
+      out << " (" << delta << ")";
       if (delta > 999) out << "}";
     }
     render_line(screen_row, out.str());
