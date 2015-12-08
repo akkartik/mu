@@ -28,7 +28,10 @@ case REPLY: {
   if (Trace_stream) {
     trace(9999, "trace") << "reply: decrementing callstack depth from " << Trace_stream->callstack_depth << end();
     --Trace_stream->callstack_depth;
-    assert(Trace_stream->callstack_depth >= 0);
+    if (Trace_stream->callstack_depth < 0) {
+      Current_routine->state = COMPLETED;
+      goto stop_running_current_routine;
+    }
   }
   Current_routine->calls.pop_front();
   // just in case 'main' returns a value, drop it for now
