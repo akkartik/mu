@@ -137,7 +137,7 @@ case GET: {
   }
   reagent base = inst.ingredients.at(0);  // new copy for every invocation
   // Update GET base in Check
-  if (!base.type || !base.type->value || get(Type, base.type->value).kind != CONTAINER) {
+  if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
     raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
@@ -275,7 +275,7 @@ case GET_ADDRESS: {
   }
   reagent base = inst.ingredients.at(0);
   // Update GET_ADDRESS base in Check
-  if (!base.type || get(Type, base.type->value).kind != CONTAINER) {
+  if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
     raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
