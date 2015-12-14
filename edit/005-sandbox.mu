@@ -114,6 +114,7 @@ after <global-keypress> [
   {
     do-run?:boolean <- equal *k, 65532/F4
     break-unless do-run?
+#?     $log [F4 pressed]
     status:address:array:character <- new [running...  ]
     screen <- update-status screen, status, 245/grey
     error?:boolean, env, screen <- run-sandboxes env, screen
@@ -226,6 +227,7 @@ recipe save-sandboxes env:address:programming-environment-data [
 recipe! render-sandbox-side screen:address:screen, env:address:programming-environment-data -> screen:address:screen [
   local-scope
   load-ingredients
+#?   $log [render sandbox side]
   trace 11, [app], [render sandbox side]
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
@@ -242,6 +244,7 @@ recipe! render-sandbox-side screen:address:screen, env:address:programming-envir
 recipe render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:number, right:number, row:number -> row:number, screen:address:screen, sandbox:address:sandbox-data [
   local-scope
   load-ingredients
+#?   $log [render sandbox]
   reply-unless sandbox
   screen-height:number <- screen-height screen
   at-bottom?:boolean <- greater-or-equal row, screen-height

@@ -61,6 +61,7 @@ long long int slurp_recipe(istream& in) {
   // End recipe Body(result)
   get_or_insert(Recipe, get(Recipe_ordinal, result.name)) = result;
   // track added recipes because we may need to undo them in tests; see below
+//?   LOG << "recently added recipe: " << result.name << ' ' << get(Recipe_ordinal, result.name) << '\n';
   Recently_added_recipes.push_back(get(Recipe_ordinal, result.name));
   return get(Recipe_ordinal, result.name);
 }
@@ -237,16 +238,20 @@ void show_rest_of_stream(istream& in) {
 vector<recipe_ordinal> Recently_added_recipes;
 long long int Reserved_for_tests = 1000;
 :(before "End Setup")
-for (long long int i = 0; i < SIZE(Recently_added_recipes); ++i) {
-  if (Recently_added_recipes.at(i) >= Reserved_for_tests  // don't renumber existing recipes, like 'interactive'
-      && contains_key(Recipe, Recently_added_recipes.at(i)))  // in case previous test had duplicate definitions
-    Recipe_ordinal.erase(get(Recipe, Recently_added_recipes.at(i)).name);
-  Recipe.erase(Recently_added_recipes.at(i));
-}
-// Clear Other State For Recently_added_recipes
-Recently_added_recipes.clear();
-
+clear_recently_added_recipes();
 :(code)
+void clear_recently_added_recipes() {
+  for (long long int i = 0; i < SIZE(Recently_added_recipes); ++i) {
+    if (Recently_added_recipes.at(i) >= Reserved_for_tests  // don't renumber existing recipes, like 'interactive'
+        && contains_key(Recipe, Recently_added_recipes.at(i)))  // in case previous test had duplicate definitions
+      Recipe_ordinal.erase(get(Recipe, Recently_added_recipes.at(i)).name);
+//?   LOG << "erase recipe " << Recently_added_recipes.at(i) << ' ' << get(Recipe, Recently_added_recipes.at(i)).name << '\n';
+    Recipe.erase(Recently_added_recipes.at(i));
+  }
+  // Clear Other State For Recently_added_recipes
+  Recently_added_recipes.clear();
+}
+
 :(scenario parse_comment_outside_recipe)
 # this comment will be dropped by the tangler, so we need a dummy recipe to stop that
 recipe f1 [ ]

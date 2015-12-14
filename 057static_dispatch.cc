@@ -21,10 +21,10 @@ recipe test a:number, b:number -> z:number [
 map<string, vector<recipe_ordinal> > Recipe_variants;
 :(before "End One-time Setup")
 put(Recipe_variants, "main", vector<recipe_ordinal>());  // since we manually added main to Recipe_ordinal
-:(before "End Setup")
+:(before "Clear Other State For Recently_added_recipes")
 for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin(); p != Recipe_variants.end(); ++p) {
   for (long long int i = 0; i < SIZE(p->second); ++i) {
-    if (p->second.at(i) >= Reserved_for_tests)
+    if (find(Recently_added_recipes.begin(), Recently_added_recipes.end(), p->second.at(i)) != Recently_added_recipes.end())
       p->second.at(i) = -1;  // just leave a ghost
   }
 }
@@ -32,30 +32,41 @@ for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin();
 :(before "End Load Recipe Header(result)")
 if (contains_key(Recipe_ordinal, result.name)) {
   const recipe_ordinal r = get(Recipe_ordinal, result.name);
-  if ((!contains_key(Recipe, r) || get(Recipe, r).has_header)
-      && !variant_already_exists(result)) {
-    string new_name = next_unused_recipe_name(result.name);
-    put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
-    get_or_insert(Recipe_variants, result.name).push_back(get(Recipe_ordinal, new_name));
+//?   LOG << "checking " << r << " " << result.name << '\n';
+//?   cerr << result.name << ": " << contains_key(Recipe, r) << (contains_key(Recipe, r) ? get(Recipe, r).has_header : 0) << matching_variant_name(result) << '\n';
+  if (!contains_key(Recipe, r) || get(Recipe, r).has_header) {
+    string new_name = matching_variant_name(result);
+    if (new_name.empty()) {
+      // variant doesn't already exist
+      new_name = next_unused_recipe_name(result.name);
+//?       LOG << "adding a variant of " << result.name << ": " << new_name << " is now " << Next_recipe_ordinal << '\n';
+      put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
+      get_or_insert(Recipe_variants, result.name).push_back(get(Recipe_ordinal, new_name));
+    }
     result.name = new_name;
+//?     cerr << "=> " << new_name << '\n';
   }
 }
 else {
   // save first variant
+//?   LOG << "saving first variant of " << result.name << ": " << Next_recipe_ordinal << '\n';
   put(Recipe_ordinal, result.name, Next_recipe_ordinal++);
   get_or_insert(Recipe_variants, result.name).push_back(get(Recipe_ordinal, result.name));
 }
 
 :(code)
-bool variant_already_exists(const recipe& rr) {
+string matching_variant_name(const recipe& rr) {
   const vector<recipe_ordinal>& variants = get_or_insert(Recipe_variants, rr.name);
   for (long long int i = 0; i < SIZE(variants); ++i) {
-    if (contains_key(Recipe, variants.at(i))
-        && all_reagents_match(rr, get(Recipe, variants.at(i)))) {
-      return true;
-    }
+//?     LOG << "checking variant " << variants.at(i) << " of " << rr.name << '\n';
+    if (!contains_key(Recipe, variants.at(i))) continue;
+    const recipe& candidate = get(Recipe, variants.at(i));
+    if (!all_reagents_match(rr, candidate)) continue;
+//?     LOG << "  exists\n";
+    return candidate.name;
   }
-  return false;
+//?   LOG << "  does not exist\n";
+  return "";
 }
 
 bool all_reagents_match(const recipe& r1, const recipe& r2) {
@@ -457,3 +468,27 @@ string header_label(recipe_ordinal r) {
     out << ' ' << caller.products.at(i).original_string;
   return out.str();
 }
+
+:(scenario reload_variant_retains_other_variants)
+recipe main [
+  1:number <- copy 34
+  2:number <- foo 1:number
+]
+recipe foo x:number -> y:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+recipe foo x:address:number -> y:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
+recipe! foo x:address:number -> y:number [
+  local-scope
+  load-ingredients
+  reply 36
+]
++mem: storing 34 in location 2
+$error: 0
+$warn: 0

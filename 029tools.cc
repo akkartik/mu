@@ -301,3 +301,29 @@ case _DUMP_MEMORY: {
   dump_memory();
   break;
 }
+
+//: In times of real extremis we need to create a whole new modality for debug
+//: logs, independent of other changes to the screen or Trace_stream.
+
+:(before "End Globals")
+ofstream LOG;
+:(before "End One-time Setup")
+//? LOG.open("log");
+
+:(before "End Primitive Recipe Declarations")
+_LOG,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "$log", _LOG);
+:(before "End Primitive Recipe Checks")
+case _LOG: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case _LOG: {
+  ostringstream out;
+  for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
+    out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
+  }
+  LOG << out.str() << "(length: " << get(Recipe_ordinal, "length") << '/' << contains_key(Recipe, get(Recipe_ordinal, "length")) << ")\n";
+  break;
+}
