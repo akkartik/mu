@@ -27,7 +27,7 @@ case REPLY: {
     trace(9999, "trace") << "reply: decrementing callstack depth from " << Trace_stream->callstack_depth << end();
     --Trace_stream->callstack_depth;
     if (Trace_stream->callstack_depth < 0) {
-      Current_routine->state = COMPLETED;
+      Current_routine->calls.clear();
       goto stop_running_current_routine;
     }
   }
