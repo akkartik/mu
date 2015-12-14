@@ -412,7 +412,11 @@ case CHECK_FOR_INTERACTION: {
   // treat keys within ascii as unicode characters
   if (event_type == TB_EVENT_KEY && event.key < 0xff) {
     products.at(0).push_back(/*text event*/0);
-    if (event.key == TB_KEY_CTRL_C) tb_shutdown(), exit(1);
+    if (event.key == TB_KEY_CTRL_C) {
+      tb_shutdown();
+//?       LOG << "exit\n";
+      exit(1);
+    }
     if (event.key == TB_KEY_BACKSPACE2) event.key = TB_KEY_BACKSPACE;
     if (event.key == TB_KEY_CARRIAGE_RETURN) event.key = TB_KEY_NEWLINE;
     products.at(0).push_back(event.key);

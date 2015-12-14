@@ -74,21 +74,21 @@ if (best_score == -1) {
   if (exemplar) {
 //?     cerr << "specializing " << inst.name << '\n';
     trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
-//?     cerr << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << '\n';
+    LOG << "found variant to specialize: " << exemplar << ' ' << header(get(Recipe, exemplar)) << '\n';
     recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
     variants.push_back(new_recipe_ordinal);
     // perform all transforms on the new specialization
     const string& new_name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "transforming new specialization: " << new_name << end();
-//?     cerr << "transforming new specialization: " << new_name << '\n';
+    LOG << "transforming new specialization: " << header(get(Recipe, variants.back())) << '\n';
     for (long long int t = 0; t < SIZE(Transform); ++t) {
       (*Transform.at(t))(new_recipe_ordinal);
     }
     get(Recipe, new_recipe_ordinal).transformed_until = SIZE(Transform)-1;
-//?     cerr << "-- replacing " << inst.name << " with " << get(Recipe, variants.back()).name << '\n' << debug_string(get(Recipe, variants.back()));
+    LOG << "replacing " << inst.name << " with " << get(Recipe, variants.back()).name << '\n';
     inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
-//?     cerr << "new specialization: " << inst.name << '\n';
+    LOG << "new specialization: " << inst.name << '\n';
   }
 }
 
@@ -96,13 +96,34 @@ if (best_score == -1) {
 //: before running mu programs
 
 :(before "End Instruction Operation Checks")
-if (contains_key(Recipe, inst.operation)
+//? LOG << inst.operation << " " << contains_key(Recipe, inst.operation) << '\n';
+if (contains_key(Recipe, inst.operation) && inst.operation >= MAX_PRIMITIVE_RECIPES
     && any_type_ingredient_in_header(inst.operation)) {
+//?   LOG << header(caller) << "instruction " << inst.name << " has no valid specialization\n";
   raise_error << maybe(caller.name) << "instruction " << inst.name << " has no valid specialization\n" << end();
   return;
 }
 
 :(code)
+string header(const recipe& caller) {
+  if (!caller.has_header) return maybe(caller.name);
+  ostringstream out;
+  out << caller.name;
+  for (long long int i = 0; i < SIZE(caller.ingredients); ++i) {
+    if (i > 0) out << ',';
+    out << ' ' << debug_string(caller.ingredients.at(i));
+  }
+  if (!caller.products.empty()) {
+    out << " ->";
+    for (long long int i = 0; i < SIZE(caller.products); ++i) {
+      if (i > 0) out << ',';
+      out << ' ' << debug_string(caller.products.at(i));
+    }
+  }
+  out << ": ";
+  return out.str();
+}
+
 recipe_ordinal pick_matching_shape_shifting_variant(vector<recipe_ordinal>& variants, const instruction& inst, long long int& best_score) {
 //?   cerr << "---- " << inst.name << ": " << non_ghost_size(variants) << '\n';
   recipe_ordinal result = 0;

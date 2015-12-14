@@ -8,6 +8,7 @@ container programming-environment-data [
 recipe! update-recipes env:address:programming-environment-data, screen:address:screen -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
+#?   $log [update recipes]
   recipes:address:editor-data <- get *env, recipes:offset
   in:address:array:character <- editor-contents recipes
   save [recipes.mu], in
@@ -49,6 +50,7 @@ container sandbox-data [
 recipe! update-sandbox sandbox:address:sandbox-data -> sandbox:address:sandbox-data [
   local-scope
   load-ingredients
+#?   $log [update sandbox]
   data:address:array:character <- get *sandbox, data:offset
   response:address:address:array:character <- get-address *sandbox, response:offset
   warnings:address:address:array:character <- get-address *sandbox, warnings:offset
@@ -196,6 +198,66 @@ z <- add x, [a]
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
+  ]
+]
+
+scenario run-avoids-spurious-warnings-on-reloading-shape-shifting-recipes [
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 15/height
+  # overload a well-known shape-shifting recipe
+  1:address:array:character <- new [recipe length l:address:list:_elem -> n:number [
+]]
+  # call code that uses other variants of it, but not it itself
+  2:address:array:character <- new [x:address:list:number <- copy 0
+to-text x]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  # run it once
+  assume-console [
+    press F4
+  ]
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  # no errors anywhere on screen (can't check anything else, since to-text will return an address)
+  screen-should-contain-in-color 1/red, [
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                         <-                         .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+  ]
+  # rerun everything
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  ]
+  # still no errors
+  screen-should-contain-in-color 1/red, [
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                         <-                         .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
   ]
 ]
 
