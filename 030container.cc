@@ -415,7 +415,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   trace(9999, "parse") << "type number: " << get(Type_ordinal, name) << end();
   skip_bracket(in, "'container' must begin with '['");
   type_info& info = get_or_insert(Type, get(Type_ordinal, name));
-  recently_added_types.push_back(get(Type_ordinal, name));
+  Recently_added_types.push_back(get(Type_ordinal, name));
   info.name = name;
   info.kind = kind;
   while (has_data(in)) {
@@ -471,22 +471,22 @@ recipe main [
 
 //: ensure types created in one scenario don't leak outside it.
 :(before "End Globals")
-vector<type_ordinal> recently_added_types;
+vector<type_ordinal> Recently_added_types;
 :(before "End load_permanently")  //: for non-tests
-recently_added_types.clear();
+Recently_added_types.clear();
 :(before "End Setup")  //: for tests
-for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
-  if (!contains_key(Type, recently_added_types.at(i))) continue;
-  Type_ordinal.erase(get(Type, recently_added_types.at(i)).name);
+for (long long int i = 0; i < SIZE(Recently_added_types); ++i) {
+  if (!contains_key(Type, Recently_added_types.at(i))) continue;
+  Type_ordinal.erase(get(Type, Recently_added_types.at(i)).name);
   // todo: why do I explicitly need to provide this?
-  for (long long int j = 0; j < SIZE(Type.at(recently_added_types.at(i)).elements); ++j) {
-    delete Type.at(recently_added_types.at(i)).elements.at(j);
+  for (long long int j = 0; j < SIZE(Type.at(Recently_added_types.at(i)).elements); ++j) {
+    delete Type.at(Recently_added_types.at(i)).elements.at(j);
   }
-  Type.erase(recently_added_types.at(i));
+  Type.erase(Recently_added_types.at(i));
 }
-recently_added_types.clear();
+Recently_added_types.clear();
 // delete recent type references
-// can't rely on recently_added_types to cleanup Type_ordinal, because of deliberately misbehaving tests with references to undefined types
+// can't rely on Recently_added_types to cleanup Type_ordinal, because of deliberately misbehaving tests with references to undefined types
 map<string, type_ordinal>::iterator p = Type_ordinal.begin();
 while(p != Type_ordinal.end()) {
   // save current item

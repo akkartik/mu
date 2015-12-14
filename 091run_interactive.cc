@@ -151,7 +151,7 @@ load(string(
   "reply output, warnings, screen, stashes, completed?\n" +
 "]\n");
 transform_all();
-recently_added_recipes.clear();
+Recently_added_recipes.clear();
 
 //: adjust errors/warnings in the sandbox
 :(after "string maybe(string s)")
@@ -422,27 +422,27 @@ case RELOAD: {
 case RELOAD: {
 //?   cerr << "== reload\n";
   // clear any containers in advance
-  for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
-    Type_ordinal.erase(get(Type, recently_added_types.at(i)).name);
-    Type.erase(recently_added_types.at(i));
+  for (long long int i = 0; i < SIZE(Recently_added_types); ++i) {
+    Type_ordinal.erase(get(Type, Recently_added_types.at(i)).name);
+    Type.erase(Recently_added_types.at(i));
   }
   for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin(); p != Recipe_variants.end(); ++p) {
 //?     cerr << p->first << ":\n";
     vector<recipe_ordinal>& variants = p->second;
     for (long long int i = 0; i < SIZE(p->second); ++i) {
       if (variants.at(i) == -1) continue;
-      if (find(recently_added_shape_shifting_recipes.begin(), recently_added_shape_shifting_recipes.end(), variants.at(i)) != recently_added_shape_shifting_recipes.end()) {
+      if (find(Recently_added_shape_shifting_recipes.begin(), Recently_added_shape_shifting_recipes.end(), variants.at(i)) != Recently_added_shape_shifting_recipes.end()) {
 //?         cerr << "  " << variants.at(i) << ' ' << get(Recipe, variants.at(i)).name << '\n';
         variants.at(i) = -1;  // ghost
       }
     }
   }
-  for (long long int i = 0; i < SIZE(recently_added_shape_shifting_recipes); ++i) {
-//?     cerr << "erasing " << get(Recipe, recently_added_shape_shifting_recipes.at(i)).name << '\n';
-    Recipe_ordinal.erase(get(Recipe, recently_added_shape_shifting_recipes.at(i)).name);
-    Recipe.erase(recently_added_shape_shifting_recipes.at(i));
+  for (long long int i = 0; i < SIZE(Recently_added_shape_shifting_recipes); ++i) {
+//?     cerr << "erasing " << get(Recipe, Recently_added_shape_shifting_recipes.at(i)).name << '\n';
+    Recipe_ordinal.erase(get(Recipe, Recently_added_shape_shifting_recipes.at(i)).name);
+    Recipe.erase(Recently_added_shape_shifting_recipes.at(i));
   }
-  recently_added_shape_shifting_recipes.clear();
+  Recently_added_shape_shifting_recipes.clear();
   string code = read_mu_string(ingredients.at(0).at(0));
   run_code_begin();
   routine* save_current_routine = Current_routine;
