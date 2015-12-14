@@ -219,7 +219,7 @@ void load_permanently(string filename) {
   load(fin);
   fin.close();
   // freeze everything so it doesn't get cleared by tests
-  recently_added_recipes.clear();
+  Recently_added_recipes.clear();
   // End load_permanently.
 }
 

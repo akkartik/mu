@@ -23,9 +23,9 @@ Transform.push_back(transform_names);  // idempotent
 
 :(before "End Globals")
 map<recipe_ordinal, map<string, long long int> > Name;
-:(after "Clear Other State For recently_added_recipes")
-for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
-  Name.erase(recently_added_recipes.at(i));
+:(after "Clear Other State For Recently_added_recipes")
+for (long long int i = 0; i < SIZE(Recently_added_recipes); ++i) {
+  Name.erase(Recently_added_recipes.at(i));
 }
 
 :(code)
