@@ -18,13 +18,11 @@ REPLY,
 put(Recipe_ordinal, "reply", REPLY);
 :(before "End Primitive Recipe Checks")
 case REPLY: {
-  break;  // continue to process rest of *caller* instruction
+  break;  // checks will be performed by a transform below
 }
 :(before "End Primitive Recipe Implementations")
 case REPLY: {
   // Starting Reply
-  const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
-  const string& callee = current_recipe_name();
   if (Trace_stream) {
     trace(9999, "trace") << "reply: decrementing callstack depth from " << Trace_stream->callstack_depth << end();
     --Trace_stream->callstack_depth;
@@ -37,44 +35,12 @@ case REPLY: {
   // just in case 'main' returns a value, drop it for now
   if (Current_routine->calls.empty()) goto stop_running_current_routine;
   const instruction& caller_instruction = current_instruction();
-  // check types with the caller
-  if (SIZE(caller_instruction.products) > SIZE(ingredients)) {
-    raise_error << "too few values replied from " << callee << '\n' << end();
-    break;
-  }
-  for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
-    if (!types_coercible(caller_instruction.products.at(i), reply_inst.ingredients.at(i))) {
-      raise_error << maybe(callee) << "reply ingredient " << reply_inst.ingredients.at(i).original_string << " can't be saved in " << caller_instruction.products.at(i).original_string << '\n' << end();
-      reagent lhs = reply_inst.ingredients.at(i);
-      canonize_type(lhs);
-      reagent rhs = caller_instruction.products.at(i);
-      canonize_type(rhs);
-      raise_error << debug_string(lhs.type) << " vs " << debug_string(rhs.type) << '\n' << end();
-      // End reply Type Mismatch Error
-      goto finish_reply;
-    }
-  }
+  for (long long int i = 0; i < SIZE(caller_instruction.products); ++i)
+    trace(9998, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
+
   // make reply products available to caller
   copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
-  // check that any reply ingredients with /same-as-ingredient connect up
-  // the corresponding ingredient and product in the caller.
-  for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
-    trace(9998, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
-    if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
-      string_tree* tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
-      if (!tmp || tmp->right) {
-        raise_error << maybe(current_recipe_name()) << "'same-as-ingredient' metadata should take exactly one value in " << reply_inst.to_string() << '\n' << end();
-        goto finish_reply;
-      }
-      long long int ingredient_index = to_integer(tmp->value);
-      if (ingredient_index >= SIZE(caller_instruction.ingredients))
-        raise_error << maybe(current_recipe_name()) << "'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
-      if (!is_dummy(caller_instruction.products.at(i)) && caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
-        raise_error << maybe(current_recipe_name()) << "'" << caller_instruction.to_string() << "' should write to " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
-    }
-  }
   // End Reply
-  finish_reply:
   break;  // continue to process rest of *caller* instruction
 }
 
@@ -91,6 +57,60 @@ recipe f [
 +run: result 0 is [2, 35]
 +mem: storing 2 in location 3
 +mem: storing 35 in location 4
+
+//: Types in reply instructions are checked ahead of time.
+
+:(before "End Checks")
+Transform.push_back(check_types_of_reply_instructions);
+:(code)
+void check_types_of_reply_instructions(recipe_ordinal r) {
+  const recipe& caller = get(Recipe, r);
+  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+    const instruction& caller_instruction = caller.steps.at(i);
+    if (caller_instruction.is_label) continue;
+    if (caller_instruction.products.empty()) continue;
+    if (caller_instruction.operation < MAX_PRIMITIVE_RECIPES) continue;
+    const recipe& callee = get(Recipe, caller_instruction.operation);
+    for (long long int i = 0; i < SIZE(callee.steps); ++i) {
+      const instruction& reply_inst = callee.steps.at(i);
+      if (reply_inst.operation != REPLY) continue;
+      // check types with the caller
+      if (SIZE(caller_instruction.products) > SIZE(reply_inst.ingredients)) {
+        raise_error << maybe(caller.name) << "too few values replied from " << callee.name << '\n' << end();
+        break;
+      }
+      for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
+        if (!types_coercible(caller_instruction.products.at(i), reply_inst.ingredients.at(i))) {
+          raise_error << maybe(callee.name) << "reply ingredient " << reply_inst.ingredients.at(i).original_string << " can't be saved in " << caller_instruction.products.at(i).original_string << '\n' << end();
+          reagent lhs = reply_inst.ingredients.at(i);
+          canonize_type(lhs);
+          reagent rhs = caller_instruction.products.at(i);
+          canonize_type(rhs);
+          raise_error << debug_string(lhs.type) << " vs " << debug_string(rhs.type) << '\n' << end();
+          // End reply Type Mismatch Error
+          goto finish_reply_check;
+        }
+      }
+      // check that any reply ingredients with /same-as-ingredient connect up
+      // the corresponding ingredient and product in the caller.
+      for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
+        if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
+          string_tree* tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
+          if (!tmp || tmp->right) {
+            raise_error << maybe(caller.name) << "'same-as-ingredient' metadata should take exactly one value in " << reply_inst.to_string() << '\n' << end();
+            goto finish_reply_check;
+          }
+          long long int ingredient_index = to_integer(tmp->value);
+          if (ingredient_index >= SIZE(caller_instruction.ingredients))
+            raise_error << maybe(caller.name) << "'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
+          if (!is_dummy(caller_instruction.products.at(i)) && caller_instruction.products.at(i).name != caller_instruction.ingredients.at(ingredient_index).name)
+            raise_error << maybe(caller.name) << "'" << caller_instruction.to_string() << "' should write to " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
+        }
+      }
+      finish_reply_check:;
+    }
+  }
+}
 
 :(scenario reply_type_mismatch)
 % Hide_errors = true;
