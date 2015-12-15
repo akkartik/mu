@@ -171,7 +171,7 @@ case GET: <span class="Delimiter">{</span>
   <span class="Delimiter">}</span>
   reagent base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// new copy for every invocation</span>
   <span class="Comment">// Update GET base in Check</span>
-  if <span class="Delimiter">(</span>!base<span class="Delimiter">.</span>type || !base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value || get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind != CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!base<span class="Delimiter">.</span>type || !base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value || !contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> || get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind != CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'get' should be a container, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -309,7 +309,7 @@ case GET_ADDRESS: <span class="Delimiter">{</span>
   <span class="Delimiter">}</span>
   reagent base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// Update GET_ADDRESS base in Check</span>
-  if <span class="Delimiter">(</span>!base<span class="Delimiter">.</span>type || get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind != CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!base<span class="Delimiter">.</span>type || !base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value || !contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> || get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind != CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'get-address' should be a container, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -438,7 +438,7 @@ else if <span class="Delimiter">(</span>command == <span class="Constant">&quot;
 
 <span class="Delimiter">:(code)</span>
 void insert_container<span class="Delimiter">(</span>const string&amp; command<span class="Delimiter">,</span> kind_of_type kind<span class="Delimiter">,</span> istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   string name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Comment">// End container Name Refinements</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- defining &quot;</span> &lt;&lt; command &lt;&lt; <span class="Constant">' '</span> &lt;&lt; name &lt;&lt; end<span class="Delimiter">();</span>
@@ -449,7 +449,7 @@ void insert_container<span class="Delimiter">(</span>const string&amp; command<s
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type number: &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
   skip_bracket<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">&quot;'container' must begin with '['&quot;</span><span class="Delimiter">);</span>
   type_info&amp; info = get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">));</span>
-  recently_added_types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">));</span>
+  Recently_added_types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">));</span>
   info<span class="Delimiter">.</span>name = name<span class="Delimiter">;</span>
   info<span class="Delimiter">.</span>kind = kind<span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
@@ -505,22 +505,22 @@ recipe main [
 
 <span class="Comment">//: ensure types created in one scenario don't leak outside it.</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-vector&lt;type_ordinal&gt; recently_added_types<span class="Delimiter">;</span>
+vector&lt;type_ordinal&gt; Recently_added_types<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End load_permanently&quot;)</span>  <span class="Comment">//: for non-tests</span>
-recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+Recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>  <span class="Comment">//: for tests</span>
-for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-  Type_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
+for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recently_added_types<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+  Type_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
   <span class="Comment">// todo: why do I explicitly need to provide this?</span>
-  for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>Type<span class="Delimiter">.</span>at<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>elements<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    delete Type<span class="Delimiter">.</span>at<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
+  for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>Type<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>elements<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    delete Type<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-  Type<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  Type<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
-recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+Recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Comment">// delete recent type references</span>
-<span class="Comment">// can't rely on recently_added_types to cleanup Type_ordinal, because of deliberately misbehaving tests with references to undefined types</span>
+<span class="Comment">// can't rely on Recently_added_types to cleanup Type_ordinal, because of deliberately misbehaving tests with references to undefined types</span>
 map&lt;string<span class="Delimiter">,</span> type_ordinal&gt;::iterator p = Type_ordinal<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>
 while<span class="Delimiter">(</span>p != Type_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
   <span class="Comment">// save current item</span>
@@ -568,17 +568,19 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Delimiter">:(code)</span>
 void check_or_set_invalid_types<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>long long int index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    const instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
+  recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  for <span class="Delimiter">(</span>long long int index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
     for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       check_or_set_invalid_types<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">,</span>
-                                 maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">),</span> <span class="Constant">&quot;'&quot;</span>+inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span>+<span class="Constant">&quot;'&quot;</span><span class="Delimiter">);</span>
+                                 maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">),</span> <span class="Constant">&quot;'&quot;</span>+inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span>+<span class="Constant">&quot;'&quot;</span><span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
     for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       check_or_set_invalid_types<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">,</span>
-                                 maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">),</span> <span class="Constant">&quot;'&quot;</span>+inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span>+<span class="Constant">&quot;'&quot;</span><span class="Delimiter">);</span>
+                                 maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">),</span> <span class="Constant">&quot;'&quot;</span>+inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span>+<span class="Constant">&quot;'&quot;</span><span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
+  <span class="Comment">// End check_or_set_invalid_types</span>
 <span class="Delimiter">}</span>
 
 void check_or_set_invalid_types<span class="Delimiter">(</span>type_tree* type<span class="Delimiter">,</span> const string_tree* type_name<span class="Delimiter">,</span> const string&amp; block<span class="Delimiter">,</span> const string&amp; name<span class="Delimiter">)</span> <span class="Delimiter">{</span>

@@ -96,6 +96,13 @@ void lookup_memory<span class="Delimiter">(</span>reagent&amp; x<span class="Del
   drop_one_lookup<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="Delimiter">:(scenario canonize_non_pointer_fails_without_crashing)</span>
+<span class="Special">% Hide_errors = true;</span>
+recipe foo [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>get-address *p<span class="Delimiter">,</span> x:offset
+]
+<span class="Comment"># don't crash</span>
+
 <span class="Delimiter">:(after &quot;bool types_strictly_match(reagent lhs, reagent rhs)&quot;)</span>
   if <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>lhs<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>rhs<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -123,6 +130,10 @@ bool canonize_type<span class="Delimiter">(</span>reagent&amp; r<span class="Del
 <span class="Delimiter">}</span>
 
 void drop_address_from_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;can't drop address from &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   type_tree* tmp = r<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
   r<span class="Delimiter">.</span>type = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
   tmp<span class="Delimiter">-&gt;</span>right = <span class="Constant">NULL</span><span class="Delimiter">;</span>

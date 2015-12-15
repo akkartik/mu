@@ -79,20 +79,20 @@ if <span class="Delimiter">(</span>contains_type_ingredient_name<span class="Del
 <span class="Comment">//: *specializing* existing recipes.</span>
 <span class="Comment">//:</span>
 <span class="Comment">//: Keep track of these new recipes in a separate variable in addition to</span>
-<span class="Comment">//: recently_added_recipes, so that edit/ can clear them before reloading to</span>
+<span class="Comment">//: Recently_added_recipes, so that edit/ can clear them before reloading to</span>
 <span class="Comment">//: regenerate errors.</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-vector&lt;recipe_ordinal&gt; recently_added_shape_shifting_recipes<span class="Delimiter">;</span>
+vector&lt;recipe_ordinal&gt; Recently_added_shape_shifting_recipes<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 <span class="CommentedCode">//? cerr &lt;&lt; &quot;setup: clearing recently-added shape-shifting recipes\n&quot;;</span>
-recently_added_shape_shifting_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 
 <span class="Comment">//: make sure we don't clear any of these recipes when we start running tests</span>
 <span class="Delimiter">:(before &quot;End Loading .mu Files&quot;)</span>
-recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+Recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+Recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="CommentedCode">//? cerr &lt;&lt; &quot;clearing recently-added shape-shifting recipes\n&quot;;</span>
-recently_added_shape_shifting_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 
 <span class="Comment">//: save original name of specialized recipes</span>
 <span class="Delimiter">:(before &quot;End recipe Fields&quot;)</span>
@@ -107,26 +107,58 @@ if <span class="Delimiter">(</span>best_score == -<span class="Constant">1</span
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;no variant found for &quot; &lt;&lt; inst.name &lt;&lt; &quot;; searching for variant with suitable type ingredients&quot; &lt;&lt; '\n';</span>
   recipe_ordinal exemplar = pick_matching_shape_shifting_variant<span class="Delimiter">(</span>variants<span class="Delimiter">,</span> inst<span class="Delimiter">,</span> best_score<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>exemplar<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;specializing &quot; &lt;&lt; inst.name &lt;&lt; '\n';</span>
     trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;found variant to specialize: &quot;</span> &lt;&lt; exemplar &lt;&lt; <span class="Constant">' '</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> exemplar<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;found variant to specialize: &quot; &lt;&lt; exemplar &lt;&lt; ' ' &lt;&lt; get(Recipe, exemplar).name &lt;&lt; '\n';</span>
+    LOG &lt;&lt; <span class="Constant">&quot;found variant to specialize: &quot;</span> &lt;&lt; exemplar &lt;&lt; <span class="Constant">' '</span> &lt;&lt; header<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> exemplar<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     recipe_ordinal new_recipe_ordinal = new_variant<span class="Delimiter">(</span>exemplar<span class="Delimiter">,</span> inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
     variants<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_recipe_ordinal<span class="Delimiter">);</span>
     <span class="Comment">// perform all transforms on the new specialization</span>
     const string&amp; new_name = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>back<span class="Delimiter">()).</span>name<span class="Delimiter">;</span>
     trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;transforming new specialization: &quot;</span> &lt;&lt; new_name &lt;&lt; end<span class="Delimiter">();</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;transforming new specialization: &quot; &lt;&lt; new_name &lt;&lt; '\n';</span>
+    LOG &lt;&lt; <span class="Constant">&quot;transforming new specialization: &quot;</span> &lt;&lt; header<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>back<span class="Delimiter">()))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     for <span class="Delimiter">(</span>long long int t = <span class="Constant">0</span><span class="Delimiter">;</span> t &lt; SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">);</span> ++t<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Delimiter">(</span>*Transform<span class="Delimiter">.</span>at<span class="Delimiter">(</span>t<span class="Delimiter">))(</span>new_recipe_ordinal<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
     get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> new_recipe_ordinal<span class="Delimiter">).</span>transformed_until = SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">;</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;-- replacing &quot; &lt;&lt; inst.name &lt;&lt; &quot; with &quot; &lt;&lt; get(Recipe, variants.back()).name &lt;&lt; '\n' &lt;&lt; debug_string(get(Recipe, variants.back()));</span>
+    LOG &lt;&lt; <span class="Constant">&quot;replacing &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; with &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>back<span class="Delimiter">()).</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     inst<span class="Delimiter">.</span>name = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>back<span class="Delimiter">()).</span>name<span class="Delimiter">;</span>
     trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new specialization: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;new specialization: &quot; &lt;&lt; inst.name &lt;&lt; '\n';</span>
+    LOG &lt;&lt; <span class="Constant">&quot;new specialization: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: make sure we have no unspecialized shape-shifting recipes being called</span>
+<span class="Comment">//: before running mu programs</span>
+
+<span class="Delimiter">:(before &quot;End Instruction Operation Checks&quot;)</span>
+<span class="CommentedCode">//? LOG &lt;&lt; inst.operation &lt;&lt; &quot; &quot; &lt;&lt; contains_key(Recipe, inst.operation) &lt;&lt; '\n';</span>
+if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">)</span> &amp;&amp; inst<span class="Delimiter">.</span>operation &gt;= MAX_PRIMITIVE_RECIPES
+    &amp;&amp; any_type_ingredient_in_header<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   LOG &lt;&lt; header(caller) &lt;&lt; &quot;instruction &quot; &lt;&lt; inst.name &lt;&lt; &quot; has no valid specialization\n&quot;;</span>
+  raise_error &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has no valid specialization</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
 <span class="Delimiter">:(code)</span>
+string header<span class="Delimiter">(</span>const recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!caller<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Identifier">return</span> maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
+  ostringstream out<span class="Delimiter">;</span>
+  out &lt;&lt; caller<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">','</span><span class="Delimiter">;</span>
+    out &lt;&lt; <span class="Constant">' '</span> &lt;&lt; debug_string<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>!caller<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    out &lt;&lt; <span class="Constant">&quot; -&gt;&quot;</span><span class="Delimiter">;</span>
+    for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      if <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">','</span><span class="Delimiter">;</span>
+      out &lt;&lt; <span class="Constant">' '</span> &lt;&lt; debug_string<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  out &lt;&lt; <span class="Constant">&quot;: &quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
 recipe_ordinal pick_matching_shape_shifting_variant<span class="Delimiter">(</span>vector&lt;recipe_ordinal&gt;&amp; variants<span class="Delimiter">,</span> const instruction&amp; inst<span class="Delimiter">,</span> long long int&amp; best_score<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;---- &quot; &lt;&lt; inst.name &lt;&lt; &quot;: &quot; &lt;&lt; non_ghost_size(variants) &lt;&lt; '\n';</span>
   recipe_ordinal result = <span class="Constant">0</span><span class="Delimiter">;</span>
@@ -173,6 +205,7 @@ long long int shape_shifting_variant_score<span class="Delimiter">(</span>const 
   <span class="Delimiter">}</span>
   const vector&lt;reagent&gt;&amp; header_products = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variant<span class="Delimiter">).</span>products<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>is_dummy<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>!deeply_equal_concrete_types<span class="Delimiter">(</span>header_products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
       trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;mismatch: product &quot;</span> &lt;&lt; i &lt;&lt; end<span class="Delimiter">();</span>
 <span class="CommentedCode">//?       cerr &lt;&lt; &quot;mismatch: product &quot; &lt;&lt; i &lt;&lt; '\n';</span>
@@ -270,8 +303,8 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
   <span class="Comment">// make a copy</span>
   assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> exemplar<span class="Delimiter">));</span>
   assert<span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> new_recipe_ordinal<span class="Delimiter">));</span>
-  recently_added_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_recipe_ordinal<span class="Delimiter">);</span>
-  recently_added_shape_shifting_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_recipe_ordinal<span class="Delimiter">);</span>
+  Recently_added_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_recipe_ordinal<span class="Delimiter">);</span>
+  Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_recipe_ordinal<span class="Delimiter">);</span>
   put<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> new_recipe_ordinal<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> exemplar<span class="Delimiter">));</span>
   recipe&amp; new_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> new_recipe_ordinal<span class="Delimiter">);</span>
   new_recipe<span class="Delimiter">.</span>name = new_name<span class="Delimiter">;</span>

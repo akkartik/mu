@@ -63,14 +63,13 @@ map&lt;int<span class="Delimiter">,</span> long long int&gt; Trace_index<span cl
 <span class="Delimiter">:(code)</span>
 void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  cerr &lt;&lt; <span class="Constant">&quot;computing depth to display</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  cerr &lt;&lt; <span class="Constant">&quot;computing min depth to display</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   long long int min_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     trace_line&amp; curr_line = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth &lt; min_depth<span class="Delimiter">)</span> min_depth = curr_line<span class="Delimiter">.</span>depth<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  cerr &lt;&lt; <span class="Constant">&quot;depth is &quot;</span> &lt;&lt; min_depth &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  cerr &lt;&lt; <span class="Constant">&quot;min depth is &quot;</span> &lt;&lt; min_depth &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   cerr &lt;&lt; <span class="Constant">&quot;computing lines to display</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>depth == min_depth<span class="Delimiter">)</span>
@@ -123,7 +122,7 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
         while <span class="Delimiter">(</span>Top_of_screen &gt; <span class="Constant">0</span> &amp;&amp; !contains_key<span class="Delimiter">(</span>Visible<span class="Delimiter">,</span> Top_of_screen<span class="Delimiter">))</span>
           --Top_of_screen<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
-      if <span class="Delimiter">(</span>Top_of_screen &gt; <span class="Constant">0</span><span class="Delimiter">)</span>
+      if <span class="Delimiter">(</span>Top_of_screen &gt;= <span class="Constant">0</span><span class="Delimiter">)</span>
         refresh_screen_rows<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     if <span class="Delimiter">(</span>key == <span class="Constant">'G'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -150,7 +149,6 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
       for <span class="Delimiter">(</span>index = start_index+<span class="Constant">1</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Visible<span class="Delimiter">,</span> index<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
         trace_line&amp; curr_line = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
-        if <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
         assert<span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth &gt; Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>start_index<span class="Delimiter">).</span>depth<span class="Delimiter">);</span>
         if <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth &lt; min_depth<span class="Delimiter">)</span> min_depth = curr_line<span class="Delimiter">.</span>depth<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
@@ -174,7 +172,6 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
       for <span class="Delimiter">(</span>index = start_index+<span class="Constant">1</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Visible<span class="Delimiter">,</span> index<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
         trace_line&amp; curr_line = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
-        if <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
         if <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth &lt;= initial_depth<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
       long long int end_index = index<span class="Delimiter">;</span>
@@ -215,7 +212,7 @@ void render<span class="Delimiter">()</span> <span class="Delimiter">{</span>
       long long int delta = lines_hidden<span class="Delimiter">(</span>screen_row<span class="Delimiter">);</span>
       <span class="Comment">// home-brew escape sequence for red</span>
       if <span class="Delimiter">(</span>delta &gt; <span class="Constant">999</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;{&quot;</span><span class="Delimiter">;</span>
-      out &lt;&lt; <span class="Constant">&quot; (&quot;</span> &lt;&lt; lines_hidden<span class="Delimiter">(</span>screen_row<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;)&quot;</span><span class="Delimiter">;</span>
+      out &lt;&lt; <span class="Constant">&quot; (&quot;</span> &lt;&lt; delta &lt;&lt; <span class="Constant">&quot;)&quot;</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>delta &gt; <span class="Constant">999</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;}&quot;</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     render_line<span class="Delimiter">(</span>screen_row<span class="Delimiter">,</span> out<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
@@ -262,6 +259,14 @@ void load_trace<span class="Delimiter">(</span>const char* filename<span class="
   <span class="Delimiter">}</span>
   Trace_stream = new trace_stream<span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>tin<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    tin &gt;&gt; std::noskipws<span class="Delimiter">;</span>
+      skip_whitespace_but_not_newline<span class="Delimiter">(</span>tin<span class="Delimiter">);</span>
+      if <span class="Delimiter">(</span>!isdigit<span class="Delimiter">(</span>tin<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
+        string dummy<span class="Delimiter">;</span>
+        getline<span class="Delimiter">(</span>tin<span class="Delimiter">,</span> dummy<span class="Delimiter">);</span>
+        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+    tin &gt;&gt; std::skipws<span class="Delimiter">;</span>
     int depth<span class="Delimiter">;</span>
     tin &gt;&gt; depth<span class="Delimiter">;</span>
     string label<span class="Delimiter">;</span>
@@ -271,6 +276,7 @@ void load_trace<span class="Delimiter">(</span>const char* filename<span class="
     getline<span class="Delimiter">(</span>tin<span class="Delimiter">,</span> line<span class="Delimiter">);</span>
     Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>depth<span class="Delimiter">,</span> label<span class="Delimiter">,</span> line<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
+  cerr &lt;&lt; <span class="Constant">&quot;lines read: &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>

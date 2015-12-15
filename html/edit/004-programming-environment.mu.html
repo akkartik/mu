@@ -56,7 +56,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   sandbox-in-focus?:boolean  <span class="Comment"># false =&gt; cursor in recipes; true =&gt; cursor in current-sandbox</span>
 ]
 
-<span class="muRecipe">recipe</span> new-programming-environment screen:address:screen, initial-recipe-contents:address:array:character, initial-sandbox-contents:address:array:character<span class="muRecipe"> -&gt; </span>result:address:programming-environment-data [
+<span class="muRecipe">recipe</span> new-programming-environment screen:address:screen, initial-recipe-contents:address:array:character, initial-sandbox-contents:address:array:character<span class="muRecipe"> -&gt; </span>result:address:programming-environment-data, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   width:number<span class="Special"> &lt;- </span>screen-width screen
@@ -82,7 +82,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   *current-sandbox<span class="Special"> &lt;- </span>new-editor initial-sandbox-contents, screen, new-left, width/right
 ]
 
-<span class="muRecipe">recipe</span> event-loop screen:address:screen, console:address:console, env:address:programming-environment-data [
+<span class="muRecipe">recipe</span> event-loop screen:address:screen, console:address:console, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:screen, console:address:console, env:address:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   recipes:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
@@ -141,7 +141,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       <span class="Delimiter">}</span>
       <span class="Delimiter">{</span>
         <span class="muControl">break-if</span> more-events?
-        env<span class="Special"> &lt;- </span>resize screen, env
+        env, screen<span class="Special"> &lt;- </span>resize screen, env
         screen<span class="Special"> &lt;- </span>render-all screen, env
         render-all-on-no-more-events?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>  <span class="Comment"># full render done</span>
       <span class="Delimiter">}</span>
@@ -214,7 +214,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> resize screen:address:screen, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>env:address:programming-environment-data [
+<span class="muRecipe">recipe</span> resize screen:address:screen, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>env:address:programming-environment-data, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   clear-screen screen  <span class="Comment"># update screen dimensions</span>
@@ -633,7 +633,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="SalientComment">## helpers</span>
 
-<span class="muRecipe">recipe</span> draw-vertical screen:address:screen, col:number, y:number, bottom:number [
+<span class="muRecipe">recipe</span> draw-vertical screen:address:screen, col:number, y:number, bottom:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   style:character, style-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>

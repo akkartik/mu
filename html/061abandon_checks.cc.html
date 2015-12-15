@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 061abandon_checks.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1.05em; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Delimiter">:(scenarios transform)</span>  <span class="Comment">// many of the tests below are *extremely* unsafe</span>
+<span class="Delimiter">:(scenario abandon_in_same_recipe_as_new)</span>
+recipe test [
+  x:address:number<span class="Special"> &lt;- </span>new number:type
+  abandon x
+]
+<span class="Comment"># no warnings</span>
+
+<span class="Delimiter">:(scenario abandon_in_separate_recipe_from_new)</span>
+recipe test [
+  x:address:number<span class="Special"> &lt;- </span>test-new
+  test-abandon x
+]
+recipe test-new <span class="Delimiter">-&gt;</span> result:address:number [
+  result<span class="Special"> &lt;- </span>new number:type
+]
+recipe test-abandon x:address:number [
+  load-ingredients
+  abandon x
+]
+<span class="Comment"># no warnings</span>
+
+<span class="Delimiter">:(scenario define_after_abandon_in_same_recipe_as_new)</span>
+recipe test [
+  x:address:number<span class="Special"> &lt;- </span>new number:type
+  abandon x
+  x<span class="Special"> &lt;- </span>new number:type
+  reply x
+]
+<span class="Comment"># no warnings</span>
+
+<span class="Delimiter">:(scenario define_after_abandon_in_separate_recipe_from_new)</span>
+recipe test [
+  x:address:number<span class="Special"> &lt;- </span>test-new
+  test-abandon x
+  x<span class="Special"> &lt;- </span>test-new
+  reply x
+]
+recipe test-new <span class="Delimiter">-&gt;</span> result:address:number [
+  result<span class="Special"> &lt;- </span>new number:type
+]
+recipe test-abandon x:address:number [
+  load-ingredients
+  abandon x
+]
+<span class="Comment"># no warnings</span>
+
+<span class="Delimiter">:(scenario abandon_inside_loop_initializing_variable)</span>
+recipe test [
+  <span class="Delimiter">{</span>
+    x:address:number<span class="Special"> &lt;- </span>new number:type
+    abandon x
+    loop
+  <span class="Delimiter">}</span>
+]
+<span class="Comment"># no warnings</span>
+
+<span class="Delimiter">:(scenario abandon_inside_loop_initializing_variable_2)</span>
+recipe test [
+  <span class="Delimiter">{</span>
+    x:address:number<span class="Special"> &lt;- </span>test-new
+    test-abandon x
+    loop
+  <span class="Delimiter">}</span>
+]
+recipe test-new <span class="Delimiter">-&gt;</span> result:address:number [
+  result<span class="Special"> &lt;- </span>new number:type
+]
+recipe test-abandon x:address:number [
+  load-ingredients
+  abandon x
+]
+<span class="Comment"># no warnings</span>
+
+<span class="Delimiter">:(scenario abandon_inside_loop_initializing_variable_3)</span>
+recipe test [
+  <span class="Delimiter">{</span>
+    x:address:number<span class="Special"> &lt;- </span>test-new
+    test-abandon x
+    x:address:number<span class="Special"> &lt;- </span>test-new  <span class="Comment"># modify x to a new value</span>
+    y:address:number<span class="Special"> &lt;- </span>copy x  <span class="Comment"># use x after reinitialization</span>
+    loop
+  <span class="Delimiter">}</span>
+]
+recipe test-new <span class="Delimiter">-&gt;</span> result:address:number [
+  result<span class="Special"> &lt;- </span>new number:type
+]
+recipe test-abandon x:address:number [
+  load-ingredients
+  abandon x
+]
+<span class="Comment"># no warnings</span>
+
+<span class="Delimiter">:(scenario abandon_inside_loop_initializing_variable_4)</span>
+container test-list [
+  value:number
+  next:address:test-list
+]
+recipe test-cleanup x:address:test-list [
+  load-ingredients
+  <span class="Delimiter">{</span>
+    next:address:test-list<span class="Special"> &lt;- </span>test-next x
+    test-abandon x
+    x<span class="Special"> &lt;- </span>copy next
+    loop
+  <span class="Delimiter">}</span>
+]
+recipe test-next x:address:test-list <span class="Delimiter">-&gt;</span> result:address:test-list/contained-in:x [
+  load-ingredients
+  result<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> next:offset
+]
+recipe test-abandon x:address:test-list [
+  load-ingredients
+  abandon x
+]
+<span class="Comment"># no warnings</span>
+
+<span class="Delimiter">:(scenario abandon_non_unique_address_after_define)</span>
+recipe test [
+  x:address:number<span class="Special"> &lt;- </span>new number:type
+  y:address:number<span class="Special"> &lt;- </span>copy x
+  abandon x
+  y:address:number<span class="Special"> &lt;- </span>new number:type  <span class="Comment"># overwrite alias</span>
+  z:address:number<span class="Special"> &lt;- </span>copy y
+]
+<span class="Comment"># no warnings</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

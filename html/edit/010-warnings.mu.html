@@ -44,6 +44,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">recipe!</span> update-recipes env:address:programming-environment-data, screen:address:screen<span class="muRecipe"> -&gt; </span>errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+<span class="CommentedCode">#?   $log [update recipes]</span>
   recipes:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
   in:address:array:character<span class="Special"> &lt;- </span>editor-contents recipes
   save <span class="Constant">[recipes.mu]</span>, in
@@ -85,6 +86,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">recipe!</span> update-sandbox sandbox:address:sandbox-data<span class="muRecipe"> -&gt; </span>sandbox:address:sandbox-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+<span class="CommentedCode">#?   $log [update sandbox]</span>
   data:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
   response:address:address:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response:offset</span>
   warnings:address:address:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">warnings:offset</span>
@@ -232,6 +234,66 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
    <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-avoids-spurious-warnings-on-reloading-shape-shifting-recipes [
+  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
+  <span class="Comment"># overload a well-known shape-shifting recipe</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[recipe length l:address:list:_elem -&gt; n:number [</span>
+<span class="Constant">]</span>]
+  <span class="Comment"># call code that uses other variants of it, but not it itself</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[x:address:list:number &lt;- copy 0</span>
+<span class="Constant">to-text x]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Comment"># run it once</span>
+  assume-console [
+    press F4
+  ]
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  <span class="Comment"># no errors anywhere on screen (can't check anything else, since to-text will return an address)</span>
+  screen-should-contain-in-color <span class="Constant">1/red</span>, [
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                         &lt;-                         .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+  ]
+  <span class="Comment"># rerun everything</span>
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># still no errors</span>
+  screen-should-contain-in-color <span class="Constant">1/red</span>, [
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                         &lt;-                         .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
   ]
 ]
 

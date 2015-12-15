@@ -118,6 +118,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
+  data:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
   <span class="Comment"># if at start of text (before-cursor at § sentinel), return</span>
   prev:address:duplex-list:character<span class="Special"> &lt;- </span>prev *before-cursor
   go-render?, backspaced-cell<span class="Special"> &lt;- </span>copy <span class="Constant">0/no-more-render</span>, <span class="Constant">0/nothing-deleted</span>
@@ -126,7 +127,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   original-row:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-row:offset</span>
   editor, scroll?:boolean<span class="Special"> &lt;- </span>move-cursor-coordinates-left editor
   backspaced-cell:address:duplex-list:character<span class="Special"> &lt;- </span>copy *before-cursor
-  remove *before-cursor  <span class="Comment"># will also neatly trim next/prev pointers in backspaced-cell/*before-cursor</span>
+  data<span class="Special"> &lt;- </span>remove *before-cursor, data  <span class="Comment"># will also neatly trim next/prev pointers in backspaced-cell/*before-cursor</span>
   *before-cursor<span class="Special"> &lt;- </span>copy prev
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
   <span class="muControl">reply-if</span> scroll?
@@ -367,11 +368,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
+  data:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
   deleted-cell:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
   <span class="muControl">reply-unless</span> deleted-cell
   currc:character<span class="Special"> &lt;- </span>get *deleted-cell, <span class="Constant">value:offset</span>
-  remove deleted-cell
+  data<span class="Special"> &lt;- </span>remove deleted-cell, data
   deleted-newline?:boolean<span class="Special"> &lt;- </span>equal currc, <span class="Constant">10/newline</span>
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
   <span class="muControl">reply-if</span> deleted-newline?
@@ -1278,7 +1280,7 @@ def]
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> move-to-start-of-line editor:address:editor-data [
+<span class="muRecipe">recipe</span> move-to-start-of-line editor:address:editor-data<span class="muRecipe"> -&gt; </span>editor:address:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># update cursor column</span>
@@ -1449,7 +1451,7 @@ def]
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> move-to-end-of-line editor:address:editor-data [
+<span class="muRecipe">recipe</span> move-to-end-of-line editor:address:editor-data<span class="muRecipe"> -&gt; </span>editor:address:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
@@ -1579,7 +1581,7 @@ def]
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> delete-to-start-of-line editor:address:editor-data<span class="muRecipe"> -&gt; </span>result:address:duplex-list:character [
+<span class="muRecipe">recipe</span> delete-to-start-of-line editor:address:editor-data<span class="muRecipe"> -&gt; </span>result:address:duplex-list:character, editor:address:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># compute range to delete</span>
@@ -1713,7 +1715,7 @@ def]
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> delete-to-end-of-line editor:address:editor-data<span class="muRecipe"> -&gt; </span>result:address:duplex-list:character [
+<span class="muRecipe">recipe</span> delete-to-end-of-line editor:address:editor-data<span class="muRecipe"> -&gt; </span>result:address:duplex-list:character, editor:address:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># compute range to delete</span>
