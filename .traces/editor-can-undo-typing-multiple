@@ -88,19 +88,19 @@
 9992 transform: instruction editor-render
 9993 transform: strict match: ingredient 0
 9993 transform: strict match: ingredient 1
-9992 transform: score for base: 999
+9992 transform: score for base: 998
 9993 transform: strict match: ingredient 0
 9993 transform: strict match: ingredient 1
-9992 transform: score for variant 0: 999
+9992 transform: score for variant 0: 998
 9992 transform: instruction editor-event-loop
 9993 transform: strict match: ingredient 0
 9993 transform: strict match: ingredient 1
 9993 transform: strict match: ingredient 2
-9992 transform: score for base: 1000
+9992 transform: score for base: 997
 9993 transform: strict match: ingredient 0
 9993 transform: strict match: ingredient 1
 9993 transform: strict match: ingredient 2
-9992 transform: score for variant 0: 1000
+9992 transform: score for variant 0: 997
 9991 transform: --- compute instruction operations for recipe scenario-editor-can-undo-typing-multiple
 9991 transform: --- transform braces for recipe scenario-editor-can-undo-typing-multiple
 9992 transform: assume-screen ...
@@ -2207,7 +2207,7 @@
 9999 mem: storing 167 in location 1143
  104 run: in:address:duplex-list:_elem <- next-ingredient 
 9999 mem: storing 0 in location 1144
- 104 run: result <- new {(duplex-list _elem): type}
+ 104 run: result:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1149
 9999 mem: storing 1149 in location 1145
  104 run: val:address:_elem <- get-address *result, value:offset
@@ -2241,10 +2241,10 @@
 9999 mem: location 1144 is 0
 9999 mem: location 1147 is 1150
 9999 mem: storing 0 in location 1150
- 104 run: jump-if in, 1:offset
+ 104 run: jump-unless in, 
 9999 mem: location 1144 is 0
-9998 run: jump-if fell through
- 104 run: reply result:address:duplex-list:_elem
+9998 run: jumping to instruction 12
+ 104 run: reply result
 9999 mem: location 1145 is 1149
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1149
@@ -2461,7 +2461,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1150 is 0
 9999 mem: storing 0 in location 1191
- 105 run: reply result:address:duplex-list:_elem
+ 105 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 0
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 0
@@ -2836,7 +2836,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1150 is 0
 9999 mem: storing 0 in location 1191
- 105 run: reply result:address:duplex-list:_elem
+ 105 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 0
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 0
@@ -4222,12 +4222,12 @@
  105 run: jump-if at-right?, 
 9999 mem: location 1230 is 0
 9998 run: jump-if fell through
+9990 schedule: print/clear-line-delimited/editor-render/scenario-editor-can-undo-typing-multiple
  105 run: *column <- add *column, 1
 9999 mem: location 1217 is 1014
 9999 mem: location 1014 is 5
 9999 mem: location 1217 is 1014
 9999 mem: storing 6 in location 1014
-9990 schedule: print/clear-line-delimited/editor-render/scenario-editor-can-undo-typing-multiple
  105 run: reply screen:address:screen
 9999 mem: location 1207 is 1011
 9999 trace: reply: decrementing callstack depth from 4
@@ -5955,10 +5955,10 @@
  105 run: jump-if color-found?, 
 9999 mem: location 1210 is 1
 9998 run: jumping to instruction 7
+9990 schedule: print/draw-horizontal/editor-render/scenario-editor-can-undo-typing-multiple
  105 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1211
 9999 mem: storing 1 in location 1212
-9990 schedule: print/draw-horizontal/editor-render/scenario-editor-can-undo-typing-multiple
  105 run: jump-if bg-color-found?, 
 9999 mem: location 1212 is 1
 9998 run: jumping to instruction 12
@@ -7121,7 +7121,8 @@
  104 run: jump-unless continue?, 
 9999 mem: location 1243 is 0
 9998 run: jumping to instruction 27
- 104 run: reply 
+ 104 run: reply screen:address:screen
+9999 mem: location 1233 is 1011
 9999 trace: reply: decrementing callstack depth from 3
  103 run: row <- add row, 1
 9999 mem: location 1147 is 2
@@ -7731,12 +7732,12 @@
  106 run: jump-unless newline?, 
 9999 mem: location 1218 is 0
 9998 run: jumping to instruction 43
+9990 schedule: print/clear-line-delimited/clear-screen-from/editor-render/scenario-editor-can-undo-typing-multiple
  106 run: index:number <- multiply *row, width
 9999 mem: location 1215 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1213 is 10
 9999 mem: storing 30 in location 1221
-9990 schedule: print/clear-line-delimited/clear-screen-from/editor-render/scenario-editor-can-undo-typing-multiple
  106 run: index <- add index, *column
 9999 mem: location 1221 is 30
 9999 mem: location 1217 is 1014
@@ -9493,6 +9494,7 @@
 9999 mem: location 1217 is 1014
 9999 mem: location 1014 is 0
 9999 mem: storing 1 in location 1216
+9990 schedule: print/clear-line-delimited/clear-rest-of-screen/clear-screen-from/editor-render/scenario-editor-can-undo-typing-multiple
  107 run: jump-if legal?, 1:offset
 9999 mem: location 1216 is 1
 9998 run: jumping to instruction 29
@@ -9501,7 +9503,6 @@
 9999 mem: location 1014 is 0
 9999 mem: location 1213 is 10
 9999 mem: storing 1 in location 1216
-9990 schedule: print/clear-line-delimited/clear-rest-of-screen/clear-screen-from/editor-render/scenario-editor-can-undo-typing-multiple
  107 run: jump-if legal?, 1:offset
 9999 mem: location 1216 is 1
 9998 run: jumping to instruction 32
@@ -11234,10 +11235,10 @@
 9998 run: jump-if fell through
  107 run: bg-color <- copy 0/black
 9999 mem: storing 0 in location 1211
+9990 schedule: print/clear-line-delimited/clear-rest-of-screen/clear-screen-from/editor-render/scenario-editor-can-undo-typing-multiple
  107 run: trace 90, [print-character], c
 9999 mem: location 1208 is 32
   90 print-character: 32 
-9990 schedule: print/clear-line-delimited/clear-rest-of-screen/clear-screen-from/editor-render/scenario-editor-can-undo-typing-multiple
  107 run: jump-unless screen, 
 9999 mem: location 1207 is 1011
 9998 run: jump-unless fell through
@@ -11421,13 +11422,15 @@
  105 run: jump-if at-bottom-of-screen?, 
 9999 mem: location 1258 is 1
 9998 run: jumping to instruction 15
- 105 run: reply 
+ 105 run: reply screen:address:screen
+9999 mem: location 1253 is 1011
 9999 trace: reply: decrementing callstack depth from 4
  104 run: reply screen/same-as-ingredient:0
 9999 mem: location 1194 is 1011
 9999 trace: reply: decrementing callstack depth from 3
- 103 run: reply screen:address:screen
+ 103 run: reply screen:address:screen, editor:address:editor-data
 9999 mem: location 1143 is 1011
+9999 mem: location 1144 is 1000
 9999 trace: reply: decrementing callstack depth from 2
  102 run: assume-console [
     type [012]
@@ -11961,7 +11964,7 @@
 9999 mem: storing 48 in location 1143
  106 run: in:address:duplex-list:_elem <- next-ingredient 
 9999 mem: storing 1149 in location 1144
- 106 run: new-node <- new {(duplex-list _elem): type}
+ 106 run: new-node:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1407
 9999 mem: storing 1407 in location 1145
  106 run: val:address:_elem <- get-address *new-node, value:offset
@@ -12044,8 +12047,8 @@
  106 run: jump-if next-node, 1:offset
 9999 mem: location 1147 is 0
 9998 run: jump-if fell through
- 106 run: reply new-node
-9999 mem: location 1145 is 1407
+ 106 run: reply in:address:duplex-list:_elem
+9999 mem: location 1144 is 1149
 9999 trace: reply: decrementing callstack depth from 5
  105 run: *before-cursor <- next_2 *before-cursor
 9999 mem: location 1380 is 1003
@@ -12072,7 +12075,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1150 is 1407
 9999 mem: storing 1407 in location 1191
- 106 run: reply result:address:duplex-list:_elem
+ 106 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 1407
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1407
@@ -12249,7 +12252,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1408 is 0
 9999 mem: storing 0 in location 1191
- 106 run: reply result:address:duplex-list:_elem
+ 106 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 0
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 0
@@ -12588,7 +12591,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1150 is 1407
 9999 mem: storing 1407 in location 1191
- 105 run: reply result:address:duplex-list:_elem
+ 105 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 1407
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 1407
@@ -12617,7 +12620,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1408 is 0
 9999 mem: storing 0 in location 1191
- 105 run: reply result:address:duplex-list:_elem
+ 105 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 0
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 0
@@ -12684,7 +12687,7 @@
 9999 mem: storing 1117 in location 1194
  106 run: in:address:list:_elem <- next-ingredient 
 9999 mem: storing 0 in location 1195
- 106 run: result <- new {(list _elem): type}
+ 106 run: result:address:list:_elem <- new {(list _elem): type}
 9999 mem: new alloc: 1410
 9999 mem: storing 1410 in location 1196
  106 run: val:address:_elem <- get-address *result, value:offset
@@ -13271,7 +13274,7 @@
 9999 mem: storing 49 in location 1143
  106 run: in:address:duplex-list:_elem <- next-ingredient 
 9999 mem: storing 1407 in location 1144
- 106 run: new-node <- new {(duplex-list _elem): type}
+ 106 run: new-node:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1412
 9999 mem: storing 1412 in location 1145
  106 run: val:address:_elem <- get-address *new-node, value:offset
@@ -13315,6 +13318,7 @@
 9999 type: type deduced to be character$
 9998 run: address to copy is 1408
 9999 mem: storing 1408 in location 1148
+9990 schedule: insert_2/insert-at-cursor/handle-keyboard-event/editor-event-loop/scenario-editor-can-undo-typing-multiple
  106 run: *y <- copy new-node
 9999 mem: location 1145 is 1412
 9999 mem: location 1148 is 1408
@@ -13331,7 +13335,6 @@
 9999 type: type deduced to be character$
 9998 run: address to copy is 1414
 9999 mem: storing 1414 in location 1148
-9990 schedule: insert_2/insert-at-cursor/handle-keyboard-event/editor-event-loop/scenario-editor-can-undo-typing-multiple
  106 run: *y <- copy in
 9999 mem: location 1144 is 1407
 9999 mem: location 1148 is 1414
@@ -13355,8 +13358,8 @@
  106 run: jump-if next-node, 1:offset
 9999 mem: location 1147 is 0
 9998 run: jump-if fell through
- 106 run: reply new-node
-9999 mem: location 1145 is 1412
+ 106 run: reply in:address:duplex-list:_elem
+9999 mem: location 1144 is 1407
 9999 trace: reply: decrementing callstack depth from 5
  105 run: *before-cursor <- next_2 *before-cursor
 9999 mem: location 1380 is 1003
@@ -13383,7 +13386,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1408 is 1412
 9999 mem: storing 1412 in location 1191
- 106 run: reply result:address:duplex-list:_elem
+ 106 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 1412
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1412
@@ -13560,7 +13563,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1413 is 0
 9999 mem: storing 0 in location 1191
- 106 run: reply result:address:duplex-list:_elem
+ 106 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 0
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 0
@@ -13976,7 +13979,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1413 is 0
 9999 mem: storing 0 in location 1191
- 105 run: reply result:address:duplex-list:_elem
+ 105 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 0
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 0
@@ -14580,7 +14583,7 @@
 9999 mem: storing 50 in location 1143
  106 run: in:address:duplex-list:_elem <- next-ingredient 
 9999 mem: storing 1412 in location 1144
- 106 run: new-node <- new {(duplex-list _elem): type}
+ 106 run: new-node:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1415
 9999 mem: storing 1415 in location 1145
  106 run: val:address:_elem <- get-address *new-node, value:offset
@@ -14663,8 +14666,8 @@
  106 run: jump-if next-node, 1:offset
 9999 mem: location 1147 is 0
 9998 run: jump-if fell through
- 106 run: reply new-node
-9999 mem: location 1145 is 1415
+ 106 run: reply in:address:duplex-list:_elem
+9999 mem: location 1144 is 1412
 9999 trace: reply: decrementing callstack depth from 5
  105 run: *before-cursor <- next_2 *before-cursor
 9999 mem: location 1380 is 1003
@@ -14691,7 +14694,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1413 is 1415
 9999 mem: storing 1415 in location 1191
- 106 run: reply result:address:duplex-list:_elem
+ 106 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 1415
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1415
@@ -14868,7 +14871,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1416 is 0
 9999 mem: storing 0 in location 1191
- 106 run: reply result:address:duplex-list:_elem
+ 106 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 0
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 0
@@ -15284,7 +15287,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1416 is 0
 9999 mem: storing 0 in location 1191
- 105 run: reply result:address:duplex-list:_elem
+ 105 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1191 is 0
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 0
@@ -15528,7 +15531,10 @@
  103 run: jump-if quit?, 
 9999 mem: location 1286 is 1
 9998 run: jumping to instruction 28
- 103 run: reply 
+ 103 run: reply screen:address:screen, console:address:console, editor:address:editor-data
+9999 mem: location 1276 is 1011
+9999 mem: location 1277 is 1272
+9999 mem: location 1278 is 1000
 9999 trace: reply: decrementing callstack depth from 2
  102 run: assume-console [
     press ctrl-z
@@ -15558,11 +15564,11 @@
 9993 transform: strict match: ingredient 0
 9993 transform: strict match: ingredient 1
 9993 transform: strict match: ingredient 2
-9992 transform: score for base: 1000
+9992 transform: score for base: 997
 9993 transform: strict match: ingredient 0
 9993 transform: strict match: ingredient 1
 9993 transform: strict match: ingredient 2
-9992 transform: score for variant 0: 1000
+9992 transform: score for variant 0: 997
 9991 transform: --- compute instruction operations for recipe run1001
 9991 transform: --- transform braces for recipe run1001
 9992 transform: editor-event-loop ...
@@ -15662,6 +15668,7 @@
 9999 mem: location 1194 is 1011
 9998 run: address to copy is 1014
 9999 mem: storing 1014 in location 1198
+9990 schedule: move-cursor/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  105 run: *column <- copy new-column
 9999 mem: location 1196 is 3
 9999 mem: location 1198 is 1014
@@ -15671,7 +15678,6 @@
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1276
-9990 schedule: editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  104 run: e:event, console:address:console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1277 is 1423
 9999 trace: incrementing callstack depth to 4
@@ -16028,7 +16034,7 @@
 9998 run: its type is <address : <list : <address : <operation : <>>>>>
 9999 mem: location 1411 is 0
 9999 mem: storing 0 in location 1428
- 106 run: reply result:address:list:_elem
+ 106 run: reply result:address:list:_elem/contained-in:in
 9999 mem: location 1428 is 0
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 0
@@ -16061,7 +16067,7 @@
 9999 mem: storing 1117 in location 1194
  106 run: in:address:list:_elem <- next-ingredient 
 9999 mem: storing 0 in location 1195
- 106 run: result <- new {(list _elem): type}
+ 106 run: result:address:list:_elem <- new {(list _elem): type}
 9999 mem: new alloc: 1429
 9999 mem: storing 1429 in location 1196
  106 run: val:address:_elem <- get-address *result, value:offset
@@ -16224,7 +16230,7 @@
 9999 mem: array size is 6
  106 run: start:address:duplex-list:_elem <- next-ingredient 
 9999 mem: storing 1149 in location 1194
- 106 run: end:address:duplex-list:_elem <- next-ingredient 
+ 106 run: end:address:duplex-list:_elem/contained-in:start <- next-ingredient 
 9999 mem: storing 0 in location 1195
  106 run: jump-if start, 1:offset
 9999 mem: location 1194 is 1149
@@ -16523,7 +16529,7 @@
 9998 run: its type is <address : <duplex-list : <character : <>>>>
 9999 mem: location 1150 is 0
 9999 mem: storing 0 in location 1428
- 107 run: reply result:address:duplex-list:_elem
+ 107 run: reply result:address:duplex-list:_elem/contained-in:in
 9999 mem: location 1428 is 0
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 0
@@ -17751,9 +17757,9 @@
  107 run: jump-if bg-color-found?, 
 9999 mem: location 1212 is 0
 9998 run: jump-if fell through
+9990 schedule: print/clear-line-delimited/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  107 run: bg-color <- copy 0/black
 9999 mem: storing 0 in location 1211
-9990 schedule: print/clear-line-delimited/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  107 run: trace 90, [print-character], c
 9999 mem: location 1208 is 32
   90 print-character: 32 
@@ -19519,6 +19525,7 @@
  107 run: jump-if legal?, 1:offset
 9999 mem: location 1216 is 1
 9998 run: jumping to instruction 29
+9990 schedule: print/draw-horizontal/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  107 run: legal? <- lesser-than *column, width
 9999 mem: location 1217 is 1014
 9999 mem: location 1014 is 3
@@ -19527,7 +19534,6 @@
  107 run: jump-if legal?, 1:offset
 9999 mem: location 1216 is 1
 9998 run: jumping to instruction 32
-9990 schedule: print/draw-horizontal/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  107 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1208 is 9480
 9999 mem: storing 0 in location 1218
@@ -20805,7 +20811,8 @@
  106 run: jump-unless continue?, 
 9999 mem: location 1243 is 0
 9998 run: jumping to instruction 27
- 106 run: reply 
+ 106 run: reply screen:address:screen
+9999 mem: location 1233 is 1011
 9999 trace: reply: decrementing callstack depth from 5
  105 run: row <- add row, 1
 9999 mem: location 1147 is 2
@@ -21286,12 +21293,12 @@
 9999 mem: location 1014 is 1
 9999 mem: location 1217 is 1014
 9999 mem: storing 2 in location 1014
+9990 schedule: print/clear-line-delimited/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  108 run: reply screen:address:screen
 9999 mem: location 1207 is 1011
 9999 trace: reply: decrementing callstack depth from 7
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1201
-9990 schedule: clear-line-delimited/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  107 run: column <- add column, 1
 9999 mem: location 1202 is 1
 9999 mem: storing 2 in location 1202
@@ -23038,6 +23045,7 @@
 9999 mem: location 1246 is 1011
 9998 run: address to copy is 1013
 9999 mem: storing 1013 in location 1249
+9990 schedule: move-cursor/clear-rest-of-screen/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  108 run: *row <- copy new-row
 9999 mem: location 1247 is 4
 9999 mem: location 1249 is 1013
@@ -23052,7 +23060,6 @@
 9999 mem: location 1246 is 1011
 9998 run: address to copy is 1014
 9999 mem: storing 1014 in location 1250
-9990 schedule: move-cursor/clear-rest-of-screen/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  108 run: *column <- copy new-column
 9999 mem: location 1248 is 0
 9999 mem: location 1250 is 1014
@@ -24801,12 +24808,12 @@
  109 run: jump-unless newline?, 
 9999 mem: location 1218 is 0
 9998 run: jumping to instruction 43
+9990 schedule: print/clear-line-delimited/clear-rest-of-screen/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  109 run: index:number <- multiply *row, width
 9999 mem: location 1215 is 1013
 9999 mem: location 1013 is 4
 9999 mem: location 1213 is 10
 9999 mem: storing 40 in location 1221
-9990 schedule: print/clear-line-delimited/clear-rest-of-screen/clear-screen-from/editor-render/editor-event-loop/run1001/scenario-editor-can-undo-typing-multiple
  109 run: index <- add index, *column
 9999 mem: location 1221 is 40
 9999 mem: location 1217 is 1014
@@ -25103,13 +25110,15 @@
  107 run: jump-if at-bottom-of-screen?, 
 9999 mem: location 1258 is 1
 9998 run: jumping to instruction 15
- 107 run: reply 
+ 107 run: reply screen:address:screen
+9999 mem: location 1253 is 1011
 9999 trace: reply: decrementing callstack depth from 6
  106 run: reply screen/same-as-ingredient:0
 9999 mem: location 1194 is 1011
 9999 trace: reply: decrementing callstack depth from 5
- 105 run: reply screen:address:screen
+ 105 run: reply screen:address:screen, editor:address:editor-data
 9999 mem: location 1143 is 1011
+9999 mem: location 1144 is 1000
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1276
@@ -25264,7 +25273,10 @@
  104 run: jump-if quit?, 
 9999 mem: location 1286 is 1
 9998 run: jumping to instruction 28
- 104 run: reply 
+ 104 run: reply screen:address:screen, console:address:console, editor:address:editor-data
+9999 mem: location 1276 is 1011
+9999 mem: location 1277 is 1423
+9999 mem: location 1278 is 1000
 9999 trace: reply: decrementing callstack depth from 3
  103 run: reply 
 9999 trace: reply: decrementing callstack depth from 2
