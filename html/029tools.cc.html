@@ -16,6 +16,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .traceContains { color: #008000; }
 .SalientComment { color: #00ffff; }
 .cSpecial { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -333,6 +334,32 @@ case _DUMP_MEMORY: <span class="Delimiter">{</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case _DUMP_MEMORY: <span class="Delimiter">{</span>
   dump_memory<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: In times of real extremis we need to create a whole new modality for debug</span>
+<span class="Comment">//: logs, independent of other changes to the screen or Trace_stream.</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+ofstream LOG<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
+<span class="CommentedCode">//? LOG.open(&quot;log&quot;);</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_LOG<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$log&quot;</span><span class="Delimiter">,</span> _LOG<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+case _LOG: <span class="Delimiter">{</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _LOG: <span class="Delimiter">{</span>
+  ostringstream out<span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    out &lt;&lt; print_mu<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  LOG &lt;&lt; out<span class="Delimiter">.</span>str<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;(length: &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;length&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">'/'</span> &lt;&lt; contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;length&quot;</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>

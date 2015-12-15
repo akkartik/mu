@@ -43,15 +43,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   next:address:list:_elem
 ]
 
-<span class="muRecipe">recipe</span> push x:_elem, in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:list:_elem [
+<span class="muRecipe">recipe</span> push x:_elem, in:address:list:_elem<span class="muRecipe"> -&gt; </span>in:address:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
+  result:address:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
   val:address:_elem<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">value:offset</span>
   *val<span class="Special"> &lt;- </span>copy x
   next:address:address:list:_elem<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">next:offset</span>
   *next<span class="Special"> &lt;- </span>copy in
-  <span class="muControl">reply</span> result
+  <span class="muControl">reply</span> result  <span class="Comment"># needed explicitly because we need to replace 'in' with 'result'</span>
 ]
 
 <span class="muRecipe">recipe</span> first in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
@@ -60,8 +60,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
 ]
 
-<span class="Comment"># result:address:list &lt;- rest in:address:list</span>
-<span class="muRecipe">recipe</span> rest in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:list:_elem [
+<span class="muRecipe">recipe</span> rest in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:list:_elem/contained-in:in [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
@@ -112,7 +111,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> in
-    $print <span class="Constant">[000]</span>, <span class="Constant">10/newline</span>
     buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">48/0</span>
     <span class="muControl">reply</span>
   <span class="Delimiter">}</span>

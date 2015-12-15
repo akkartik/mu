@@ -295,7 +295,7 @@ reagent::reagent<span class="Delimiter">(</span>string s<span class="Delimiter">
 <span class="Delimiter">}</span>
 
 string_tree* parse_property_list<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
   string_tree* result = new string_tree<span class="Delimiter">(</span>slurp_until<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">));</span>
   result<span class="Delimiter">-&gt;</span>right = parse_property_list<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
@@ -557,9 +557,16 @@ void dump<span class="Delimiter">(</span>const string_tree* x<span class="Delimi
   out &lt;&lt; <span class="Constant">')'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-void skip_whitespace<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  while <span class="Delimiter">(</span>in &amp;&amp; isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+const string Ignore<span class="Delimiter">(</span><span class="Constant">&quot;,&quot;</span><span class="Delimiter">);</span>  <span class="Comment">// commas are ignored in mu except within [] strings</span>
+<span class="Delimiter">:(code)</span>
+void skip_whitespace_but_not_newline<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    else if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    else if <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    else if <span class="Delimiter">(</span>Ignore<span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    else <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 

@@ -20,6 +20,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
+.CommentedCode { color: #6c6c6c; }
 .Delimiter { color: #a04060; }
 .muScenario { color: #00af00; }
 -->
@@ -149,6 +150,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     do-run?:boolean<span class="Special"> &lt;- </span>equal *k, <span class="Constant">65532/F4</span>
     <span class="muControl">break-unless</span> do-run?
+<span class="CommentedCode">#?     $log [F4 pressed]</span>
     status:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[running...  ]</span>
     screen<span class="Special"> &lt;- </span>update-status screen, status, <span class="Constant">245/grey</span>
     error?:boolean, env, screen<span class="Special"> &lt;- </span>run-sandboxes env, screen
@@ -261,6 +263,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">recipe!</span> render-sandbox-side screen:address:screen, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+<span class="CommentedCode">#?   $log [render sandbox side]</span>
   trace <span class="Constant">11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render sandbox side]</span>
   current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   left:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">left:offset</span>
@@ -274,9 +277,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   clear-rest-of-screen screen, row, left, left, right
 ]
 
-<span class="muRecipe">recipe</span> render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:number, right:number, row:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:screen [
+<span class="muRecipe">recipe</span> render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:number, right:number, row:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:screen, sandbox:address:sandbox-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+<span class="CommentedCode">#?   $log [render sandbox]</span>
   <span class="muControl">reply-unless</span> sandbox
   screen-height:number<span class="Special"> &lt;- </span>screen-height screen
   at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row, screen-height

@@ -13,16 +13,17 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .SalientComment { color: #00ffff; }
-.cSpecial { color: #008000; }
-.traceAbsent { color: #c00000; }
-.Comment { color: #9090ff; }
+.CommentedCode { color: #6c6c6c; }
+.Error { color: #ffffff; background-color: #ff6060; padding-bottom: 1px; }
 .Delimiter { color: #a04060; }
+.traceContains { color: #008000; }
+.traceAbsent { color: #c00000; }
+.cSpecial { color: #008000; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
-.Constant { color: #00a0a0; }
-.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -59,7 +60,6 @@ vector&lt;reagent&gt; products<span class="Delimiter">;</span>
 has_header = <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End recipe Refinements&quot;)</span>
-skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
 if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;recipe has a header; parsing&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   load_recipe_header<span class="Delimiter">(</span>in<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
@@ -68,18 +68,18 @@ if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span c
 <span class="Delimiter">:(code)</span>
 void load_recipe_header<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> recipe&amp; result<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   result<span class="Delimiter">.</span>has_header = <span class="Constant">true</span><span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'['</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     string s = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>s == <span class="Constant">&quot;-&gt;&quot;</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     result<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>s<span class="Delimiter">));</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;header ingredient: &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>back<span class="Delimiter">().</span>original_string &lt;&lt; end<span class="Delimiter">();</span>
-    skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-  while <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'['</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     string s = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     result<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>s<span class="Delimiter">));</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;header product: &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>products<span class="Delimiter">.</span>back<span class="Delimiter">().</span>original_string &lt;&lt; end<span class="Delimiter">();</span>
-    skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// End Load Recipe Header(result)</span>
 <span class="Delimiter">}</span>
@@ -107,6 +107,34 @@ recipe bar [
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">3</span>
 ]
 <span class="traceContains">+mem: storing 4 in location 1</span>
+
+<span class="Delimiter">:(scenario recipe_handles_missing_bracket)</span>
+<span class="Special">% Hide_errors = true;</span>
+recipe main
+<span class="Error">]</span>
+<span class="traceContains">+error: recipe body must begin with '['</span>
+
+<span class="Delimiter">:(scenario recipe_handles_missing_bracket_2)</span>
+<span class="Special">% Hide_errors = true;</span>
+recipe main
+  local-scope
+  <span class="Delimiter">{</span>
+  <span class="Delimiter">}</span>
+<span class="Error">]</span>
+<span class="Comment"># doesn't overflow line when reading header</span>
+<span class="traceAbsent">-parse: header ingredient: local-scope</span>
+<span class="traceContains">+error: recipe body must begin with '['</span>
+
+<span class="Delimiter">:(scenario recipe_handles_missing_bracket_3)</span>
+<span class="Special">% Hide_errors = true;</span>
+recipe main  <span class="Comment"># comment</span>
+  local-scope
+  <span class="Delimiter">{</span>
+  <span class="Delimiter">}</span>
+<span class="Error">]</span>
+<span class="Comment"># doesn't overflow line when reading header</span>
+<span class="traceAbsent">-parse: header ingredient: local-scope</span>
+<span class="traceContains">+error: recipe body must begin with '['</span>
 
 <span class="Delimiter">:(after &quot;Begin debug_string(recipe x)&quot;)</span>
 out &lt;&lt; <span class="Constant">&quot;ingredients:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
