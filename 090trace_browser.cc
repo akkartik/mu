@@ -36,7 +36,6 @@ void start_trace_browser() {
   long long int min_depth = 9999;
   for (long long int i = 0; i < SIZE(Trace_stream->past_lines); ++i) {
     trace_line& curr_line = Trace_stream->past_lines.at(i);
-    if (curr_line.depth == 0) continue;
     if (curr_line.depth < min_depth) min_depth = curr_line.depth;
   }
   cerr << "min depth is " << min_depth << '\n';
@@ -92,7 +91,7 @@ void start_trace_browser() {
         while (Top_of_screen > 0 && !contains_key(Visible, Top_of_screen))
           --Top_of_screen;
       }
-      if (Top_of_screen > 0)
+      if (Top_of_screen >= 0)
         refresh_screen_rows();
     }
     if (key == 'G') {
@@ -119,7 +118,6 @@ void start_trace_browser() {
       for (index = start_index+1; index < SIZE(Trace_stream->past_lines); ++index) {
         if (contains_key(Visible, index)) break;
         trace_line& curr_line = Trace_stream->past_lines.at(index);
-        if (curr_line.depth == 0) continue;
         assert(curr_line.depth > Trace_stream->past_lines.at(start_index).depth);
         if (curr_line.depth < min_depth) min_depth = curr_line.depth;
       }
@@ -143,7 +141,6 @@ void start_trace_browser() {
       for (index = start_index+1; index < SIZE(Trace_stream->past_lines); ++index) {
         if (!contains_key(Visible, index)) continue;
         trace_line& curr_line = Trace_stream->past_lines.at(index);
-        if (curr_line.depth == 0) continue;
         if (curr_line.depth <= initial_depth) break;
       }
       long long int end_index = index;
