@@ -224,12 +224,12 @@ void check_screen(const string& expected_contents, const int color) {
         // filter out other colors
         continue;
       }
-      if (get_or_insert(Memory, addr) != 0 && Memory[addr] == curr) {
+      if (get_or_insert(Memory, addr) != 0 && get_or_insert(Memory, addr) == curr) {
         if (color == -1 || color == get_or_insert(Memory, addr+cell_color_offset)) continue;
         // contents match but color is off
         if (Current_scenario && !Scenario_testing_scenario) {
           // genuine test in a mu file
-          raise_error << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(get_or_insert(Memory, addr)) << ") to be in color " << color << " instead of " << no_scientific(Memory[addr+cell_color_offset]) << "\n" << end();
+          raise_error << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(get_or_insert(Memory, addr)) << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << "\n" << end();
         }
         else {
           // just testing check_screen
@@ -250,7 +250,7 @@ void check_screen(const string& expected_contents, const int color) {
         expected_pretty[0] = ' ', expected_pretty[1] = '(', expected_pretty[2] = '\'', expected_pretty[3] = static_cast<unsigned char>(curr), expected_pretty[4] = '\'', expected_pretty[5] = ')', expected_pretty[6] = '\0';
       }
       char actual_pretty[10] = {0};
-      if (get_or_insert(Memory, addr) < 256 && !iscntrl(Memory[addr])) {
+      if (get_or_insert(Memory, addr) < 256 && !iscntrl(get_or_insert(Memory, addr))) {
         // " ('<curr>')"
         actual_pretty[0] = ' ', actual_pretty[1] = '(', actual_pretty[2] = '\'', actual_pretty[3] = static_cast<unsigned char>(get_or_insert(Memory, addr)), actual_pretty[4] = '\'', actual_pretty[5] = ')', actual_pretty[6] = '\0';
       }
