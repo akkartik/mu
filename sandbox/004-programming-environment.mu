@@ -19,7 +19,7 @@ container programming-environment-data [
   current-sandbox:address:editor-data
 ]
 
-recipe new-programming-environment screen:address:screen, initial-sandbox-contents:address:array:character -> result:address:programming-environment-data [
+recipe new-programming-environment screen:address:screen, initial-sandbox-contents:address:array:character -> result:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   width:number <- screen-width screen
@@ -38,7 +38,7 @@ recipe new-programming-environment screen:address:screen, initial-sandbox-conten
   *current-sandbox <- new-editor initial-sandbox-contents, screen, 0, width/right
 ]
 
-recipe event-loop screen:address:screen, console:address:console, env:address:programming-environment-data [
+recipe event-loop screen:address:screen, console:address:console, env:address:programming-environment-data -> screen:address:screen, console:address:console, env:address:programming-environment-data [
   local-scope
   load-ingredients
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
@@ -135,7 +135,7 @@ recipe event-loop screen:address:screen, console:address:console, env:address:pr
   }
 ]
 
-recipe resize screen:address:screen, env:address:programming-environment-data -> env:address:programming-environment-data [
+recipe resize screen:address:screen, env:address:programming-environment-data -> env:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   clear-screen screen  # update screen dimensions

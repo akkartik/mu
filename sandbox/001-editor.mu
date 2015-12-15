@@ -252,7 +252,7 @@ recipe clear-screen-from screen:address:screen, row:number, column:number, left:
   reply screen/same-as-ingredient:0
 ]
 
-recipe clear-rest-of-screen screen:address:screen, row:number, left:number, right:number [
+recipe clear-rest-of-screen screen:address:screen, row:number, left:number, right:number -> screen:address:screen [
   local-scope
   load-ingredients
   row <- add row, 1

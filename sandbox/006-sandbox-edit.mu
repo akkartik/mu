@@ -98,7 +98,7 @@ recipe empty-editor? editor:address:editor-data -> result:boolean [
   result <- not first
 ]
 
-recipe extract-sandbox env:address:programming-environment-data, click-row:number -> result:address:sandbox-data [
+recipe extract-sandbox env:address:programming-environment-data, click-row:number -> result:address:sandbox-data, env:address:programming-environment-data [
   local-scope
   load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
