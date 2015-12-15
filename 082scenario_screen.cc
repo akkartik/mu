@@ -161,6 +161,7 @@ case SCREEN_SHOULD_CONTAIN: {
 //?   cerr << SIZE(get(Recipe_variants, "insert")) << '\n';
 //?   cerr << debug_string(get(Recipe, get(Recipe_ordinal, "insert_4"))) << '\n';
   if (!Passed) break;
+  assert(scalar(ingredients.at(0)));
   check_screen(current_instruction().ingredients.at(0).name, -1);
   break;
 }
@@ -177,6 +178,7 @@ case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
 case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
   if (!Passed) break;
   assert(scalar(ingredients.at(0)));
+  assert(scalar(ingredients.at(1)));
   check_screen(current_instruction().ingredients.at(1).name, ingredients.at(0).at(0));
   break;
 }
