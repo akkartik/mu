@@ -18,7 +18,7 @@ recipe main [
 +error: main: use before set: y
 # todo: detect conditional defines
 
-:(before "End Instruction Modifying Transforms")
+:(after "End Type Modifying Transforms")
 Transform.push_back(transform_names);  // idempotent
 
 :(before "End Globals")
