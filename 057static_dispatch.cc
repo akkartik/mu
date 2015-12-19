@@ -143,7 +143,7 @@ for (long long int i = 0; i < SIZE(caller.products); ++i) {
 }
 
 //: after filling in all missing types (because we'll be introducing 'blank' types in this transform in a later layer, for shape-shifting recipes)
-:(after "End Type Modifying Transforms")
+:(after "Transform.push_back(transform_names)")
 Transform.push_back(resolve_ambiguous_calls);  // idempotent
 
 :(code)
@@ -492,3 +492,21 @@ recipe! foo x:address:number -> y:number [
 +mem: storing 34 in location 2
 $error: 0
 $warn: 0
+
+:(scenario dispatch_errors_come_after_unknown_name_errors)
+% Hide_errors = true;
+recipe main [
+  y:number <- foo x
+]
+recipe foo a:number -> b:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+recipe foo a:boolean -> b:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
++error: main: missing type for x in 'y:number <- foo x'
++error: main: failed to find a matching call for 'y:number <- foo x'
