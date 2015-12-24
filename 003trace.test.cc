@@ -10,6 +10,12 @@ void test_trace_check_ignores_other_layers() {
   CHECK_TRACE_DOESNT_CONTAIN("test layer 2: foo");
 }
 
+void test_trace_check_ignores_leading_whitespace() {
+  trace("test layer 1") << " foo" << end();
+  CHECK(trace_count("test layer 1", /*too little whitespace*/"foo") == 1);
+  CHECK(trace_count("test layer 1", /*too much whitespace*/"  foo") == 1);
+}
+
 void test_trace_check_ignores_other_lines() {
   trace("test layer 1") << "foo" << end();
   trace("test layer 1") << "bar" << end();

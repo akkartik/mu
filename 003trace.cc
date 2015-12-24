@@ -255,7 +255,7 @@ int trace_count(string label, string line) {
   long result = 0;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (label == p->label) {
-      if (line == "" || line == trim(p->contents))
+      if (line == "" || trim(line) == trim(p->contents))
         ++result;
     }
   }
