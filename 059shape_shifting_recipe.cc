@@ -74,21 +74,21 @@ if (best_score == -1) {
   if (exemplar) {
 //?     cerr << "specializing " << inst.name << '\n';
     trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
-    LOG << "found variant to specialize: " << exemplar << ' ' << header(get(Recipe, exemplar)) << '\n';
+//?     LOG << "found variant to specialize: " << exemplar << ' ' << header(get(Recipe, exemplar)) << '\n';
     recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
     variants.push_back(new_recipe_ordinal);
     // perform all transforms on the new specialization
     const string& new_name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "transforming new specialization: " << new_name << end();
-    LOG << "transforming new specialization: " << header(get(Recipe, variants.back())) << '\n';
+//?     LOG << "transforming new specialization: " << header(get(Recipe, variants.back())) << '\n';
     for (long long int t = 0; t < SIZE(Transform); ++t) {
       (*Transform.at(t))(new_recipe_ordinal);
     }
     get(Recipe, new_recipe_ordinal).transformed_until = SIZE(Transform)-1;
-    LOG << "replacing " << inst.name << " with " << get(Recipe, variants.back()).name << '\n';
+//?     LOG << "replacing " << inst.name << " with " << get(Recipe, variants.back()).name << '\n';
     inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
-    LOG << "new specialization: " << inst.name << '\n';
+//?     LOG << "new specialization: " << inst.name << '\n';
   }
 }
 
