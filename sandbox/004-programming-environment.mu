@@ -223,7 +223,8 @@ recipe render screen:address:screen, s:address:array:character, left:number, rig
       at-right?:boolean <- equal column, right
       break-unless at-right?
       # print wrap icon
-      print screen, 8617/loop-back-to-left, 245/grey
+      wrap-icon:character <- copy 8617/loop-back-to-left
+      print screen, wrap-icon, 245/grey
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
@@ -238,7 +239,8 @@ recipe render screen:address:screen, s:address:array:character, left:number, rig
       {
         done?:boolean <- greater-than column, right
         break-if done?
-        print screen, 32/space
+        space:character <- copy 32/space
+        print screen, space
         column <- add column, 1
         loop
       }
@@ -284,7 +286,8 @@ recipe render-code screen:address:screen, s:address:array:character, left:number
       at-right?:boolean <- equal column, right
       break-unless at-right?
       # print wrap icon
-      print screen, 8617/loop-back-to-left, 245/grey
+      wrap-icon:character <- copy 8617/loop-back-to-left
+      print screen, wrap-icon, 245/grey
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
@@ -299,7 +302,8 @@ recipe render-code screen:address:screen, s:address:array:character, left:number
       {
         done?:boolean <- greater-than column, right
         break-if done?
-        print screen, 32/space
+        space:character <- copy 32/space
+        print screen, space
         column <- add column, 1
         loop
       }

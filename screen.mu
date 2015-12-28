@@ -5,7 +5,8 @@
 
 recipe main [
   open-console
-  print 0/screen, 97/a, 2/red
+  10:character <- copy 97/a
+  print 0/screen, 10:character/a, 2/red
   1:number/raw, 2:number/raw <- cursor-position 0/screen
   wait-for-event 0/console
   clear-screen 0/screen

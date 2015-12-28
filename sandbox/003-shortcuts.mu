@@ -125,7 +125,8 @@ recipe delete-before-cursor editor:address:editor-data, screen:address:screen ->
     loop
   }
   # we're guaranteed not to be at the right margin
-  screen <- print screen, 32/space
+  space:character <- copy 32/space
+  screen <- print screen, space
   go-render? <- copy 0/false
 ]
 
@@ -366,7 +367,8 @@ recipe delete-at-cursor editor:address:editor-data, screen:address:screen -> edi
     loop
   }
   # we're guaranteed not to be at the right margin
-  screen <- print screen, 32/space
+  space:character <- copy 32/space
+  screen <- print screen, space
   go-render? <- copy 0/false
 ]
 

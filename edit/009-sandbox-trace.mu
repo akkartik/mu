@@ -30,7 +30,8 @@ recipe foo [
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
-    print screen:address:screen, 9251/␣/cursor
+    4:character/cursor-icon <- copy 9251/␣
+    print screen:address:screen, 4:character/cursor-icon
   ]
   # trace now printed and cursor shouldn't have budged
   screen-should-contain [
@@ -59,7 +60,7 @@ recipe foo [
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
-    print screen:address:screen, 9251/␣/cursor
+    print screen:address:screen, 4:character/cursor-icon
   ]
   # trace hidden again
   screen-should-contain [
