@@ -390,7 +390,7 @@ recipe main [
 :(before "End print Special-cases(reagent r, data)")
 if (is_mu_string(r)) {
   assert(scalar(data));
-  return read_mu_string(data.at(0));
+  return read_mu_string(data.at(0))+' ';
 }
 
 :(scenario unicode_string)
@@ -399,6 +399,13 @@ recipe main [
   stash [foo:], x:address:array:character
 ]
 +app: foo: ♠
+
+:(scenario stash_space_after_string)
+recipe main [
+  1:address:array:character <- new [abc]
+  stash 1:address:array:character [foo]
+]
++app: abc foo
 
 //: Allocate more to routine when initializing a literal string
 :(scenario new_string_overflow)
