@@ -25,7 +25,8 @@ scenario sandbox-click-on-code-toggles-app-trace [
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
-    print screen:address:screen, 9251/␣/cursor
+    4:character/cursor-icon <- copy 9251/␣
+    print screen:address:screen, 4:character/cursor-icon
   ]
   # trace now printed and cursor shouldn't have budged
   screen-should-contain [
@@ -54,7 +55,7 @@ scenario sandbox-click-on-code-toggles-app-trace [
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
-    print screen:address:screen, 9251/␣/cursor
+    print screen:address:screen, 4:character/cursor-icon
   ]
   # trace hidden again
   screen-should-contain [

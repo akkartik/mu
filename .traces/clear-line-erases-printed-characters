@@ -1,35 +1,36 @@
 9991 parse: --- defining scenario-clear-line-erases-printed-characters
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:screen <- new-fake-screen 3/width, 2/height\n    # print a character\n    1:address:screen <- print 1:address:screen, 97  # 'a'\n    # move cursor to start of line\n    1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column\n    # clear line\n    1:address:screen <- clear-line 1:address:screen\n    2:address:array:screen-cell <- get *1:address:screen, data:offset\n    3:array:screen-cell <- copy *2:address:array:screen-cell\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:screen <- new-fake-screen 3/width, 2/height\n    # print a character\n    10:character <- copy 97/a\n    1:address:screen <- print 1:address:screen, 10:character/a\n    # move cursor to start of line\n    1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column\n    # clear line\n    1:address:screen <- clear-line 1:address:screen\n    2:address:array:screen-cell <- get *1:address:screen, data:offset\n    20:array:screen-cell <- copy *2:address:array:screen-cell\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:screen <- new-fake-screen 3/width, 2/height
     # print a character
-    1:address:screen <- print 1:address:screen, 97  # 'a'
+    10:character <- copy 97/a
+    1:address:screen <- print 1:address:screen, 10:character/a
     # move cursor to start of line
     1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column
     # clear line
     1:address:screen <- clear-line 1:address:screen
     2:address:array:screen-cell <- get *1:address:screen, data:offset
-    3:array:screen-cell <- copy *2:address:array:screen-cell
+    20:array:screen-cell <- copy *2:address:array:screen-cell
   ]
 9993 parse: instruction: memory-should-contain
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    3 <- 6  # width*height\n    4 <- 0\n    5 <- 7\n    6 <- 0\n    7 <- 7\n    8 <- 0\n    9 <- 7\n    10 <- 0\n    11 <- 7\n    12 <- 0\n    13 <- 7\n    14 <- 0\n    15 <- 7\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    20 <- 6  # width*height\n    21 <- 0\n    22 <- 7\n    23 <- 0\n    24 <- 7\n    25 <- 0\n    26 <- 7\n    27 <- 0\n    28 <- 7\n    29 <- 0\n    30 <- 7\n    31 <- 0\n    32 <- 7\n  ": "literal-string"}
 9992 load: after rewriting: memory-should-contain [
-    3 <- 6  # width*height
-    4 <- 0
-    5 <- 7
-    6 <- 0
-    7 <- 7
-    8 <- 0
-    9 <- 7
-    10 <- 0
-    11 <- 7
-    12 <- 0
-    13 <- 7
-    14 <- 0
-    15 <- 7
+    20 <- 6  # width*height
+    21 <- 0
+    22 <- 7
+    23 <- 0
+    24 <- 7
+    25 <- 0
+    26 <- 7
+    27 <- 0
+    28 <- 7
+    29 <- 0
+    30 <- 7
+    31 <- 0
+    32 <- 7
   ]
 9999 parse: recipe scenario-clear-line-erases-printed-characters has a header
 9990 transform: === transform_all()
@@ -52,13 +53,14 @@
  102 run: run [
     1:address:screen <- new-fake-screen 3/width, 2/height
     # print a character
-    1:address:screen <- print 1:address:screen, 97  # 'a'
+    10:character <- copy 97/a
+    1:address:screen <- print 1:address:screen, 10:character/a
     # move cursor to start of line
     1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column
     # clear line
     1:address:screen <- clear-line 1:address:screen
     2:address:array:screen-cell <- get *1:address:screen, data:offset
-    3:array:screen-cell <- copy *2:address:array:screen-cell
+    20:array:screen-cell <- copy *2:address:array:screen-cell
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new-fake-screen
@@ -67,12 +69,17 @@
 9993 parse:   ingredient: {"2": "literal", "height": <>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- new-fake-screen 3/width, 2/height
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"97": "literal", "a": <>}
+9993 parse:   product: {"10": "character"}
+9992 load: after rewriting: 10:character <- copy 97/a
 9993 parse: instruction: print
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"97": "literal"}
+9993 parse:   ingredient: {"10": "character", "a": <>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
-9992 load: after rewriting: 1:address:screen <- print 1:address:screen, 97
+9992 load: after rewriting: 1:address:screen <- print 1:address:screen, 10:character/a
 9993 parse: instruction: move-cursor
 9993 parse:   number of ingredients: 3
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
@@ -94,8 +101,8 @@
 9993 parse: instruction: copy
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": <"address" : <"array" : <"screen-cell" : <>>>>, "lookup": <>}
-9993 parse:   product: {"3": <"array" : <"screen-cell" : <>>>}
-9992 load: after rewriting: 3:array:screen-cell <- copy *2:address:array:screen-cell
+9993 parse:   product: {"20": <"array" : <"screen-cell" : <>>>}
+9992 load: after rewriting: 20:array:screen-cell <- copy *2:address:array:screen-cell
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
@@ -113,18 +120,29 @@
 9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
 9992 transform: score for variant 0: 1000
+9992 transform: instruction copy
+9992 transform: score for base: -1
+9993 transform: too few ingredients
+9992 transform: score for variant 0: -1
+9992 transform: no variant found; searching for variant with suitable type ingredients
+9992 transform: checking shape-shifting variant 0
+9993 transform: no type ingredients
+9992 transform: final score: -1
 9992 transform: instruction print
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for base: 990
+9992 transform: score for base: 1000
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for variant 0: 990
+9992 transform: score for variant 0: 1000
 9993 transform: strict match: ingredient 0
 9993 transform: mismatch: ingredient 1
 9992 transform: score for variant 1: -1
+9993 transform: strict match: ingredient 0
+9993 transform: mismatch: ingredient 1
+9992 transform: score for variant 2: -1
 9992 transform: instruction move-cursor
 9993 transform: strict match: ingredient 0
 9993 transform: strict match: ingredient 1
@@ -154,6 +172,7 @@
 9991 transform: --- compute instruction operations for recipe run1001
 9991 transform: --- transform braces for recipe run1001
 9992 transform: new-fake-screen ...
+9992 transform: copy ...
 9992 transform: print ...
 9992 transform: move-cursor ...
 9992 transform: clear-line ...
@@ -539,8 +558,11 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1
- 103 run: 1:address:screen <- print 1:address:screen, 97
+ 103 run: 10:character <- copy 97/a
+9999 mem: storing 97 in location 10
+ 103 run: 1:address:screen <- print 1:address:screen, 10:character/a
 9999 mem: location 1 is 1011
+9999 mem: location 10 is 97
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -781,10 +803,12 @@
 9999 mem: location 1 is 1011
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
-9999 mem: array size is 7
+9999 mem: array size is 8
 9999 mem: new alloc: 1073
  104 run: screen:address:screen <- next-ingredient 
 9999 mem: storing 1011 in location 1075
+ 104 run: space:character <- copy 0/nul
+9999 mem: storing 0 in location 1076
  104 run: jump-unless screen, 
 9999 mem: location 1075 is 1011
 9998 run: jump-unless fell through
@@ -799,7 +823,7 @@
 9998 run: address to copy is 1012
 9998 run: its type is number
 9999 mem: location 1012 is 3
-9999 mem: storing 3 in location 1076
+9999 mem: storing 3 in location 1077
  104 run: column:address:number <- get-address *screen, cursor-column:offset
 9999 mem: location 1075 is 1011
 9999 mem: location 1011 is 2
@@ -809,24 +833,25 @@
 9999 mem: location 1015 is 1016
 9999 mem: location 1075 is 1011
 9998 run: address to copy is 1014
-9999 mem: storing 1014 in location 1077
+9999 mem: storing 1014 in location 1078
  104 run: original-column:number <- copy *column
-9999 mem: location 1077 is 1014
+9999 mem: location 1078 is 1014
 9999 mem: location 1014 is 0
-9999 mem: storing 0 in location 1078
+9999 mem: storing 0 in location 1079
  104 run: right:number <- subtract width, 1
-9999 mem: location 1076 is 3
-9999 mem: storing 2 in location 1079
+9999 mem: location 1077 is 3
+9999 mem: storing 2 in location 1080
  104 run: done?:boolean <- greater-or-equal *column, right
-9999 mem: location 1077 is 1014
+9999 mem: location 1078 is 1014
 9999 mem: location 1014 is 0
-9999 mem: location 1079 is 2
-9999 mem: storing 0 in location 1080
+9999 mem: location 1080 is 2
+9999 mem: storing 0 in location 1081
  104 run: jump-if done?, 
-9999 mem: location 1080 is 0
+9999 mem: location 1081 is 0
 9998 run: jump-if fell through
- 104 run: print screen, [ ]
+ 104 run: print screen, space
 9999 mem: location 1075 is 1011
+9999 mem: location 1076 is 0
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -1013,20 +1038,21 @@
 9999 mem: location 1042 is 1011
 9999 trace: reply: decrementing callstack depth from 4
  104 run: jump 
-9998 run: jumping to instruction 8
+9998 run: jumping to instruction 9
  104 run: right:number <- subtract width, 1
-9999 mem: location 1076 is 3
-9999 mem: storing 2 in location 1079
+9999 mem: location 1077 is 3
+9999 mem: storing 2 in location 1080
  104 run: done?:boolean <- greater-or-equal *column, right
-9999 mem: location 1077 is 1014
+9999 mem: location 1078 is 1014
 9999 mem: location 1014 is 1
-9999 mem: location 1079 is 2
-9999 mem: storing 0 in location 1080
+9999 mem: location 1080 is 2
+9999 mem: storing 0 in location 1081
  104 run: jump-if done?, 
-9999 mem: location 1080 is 0
+9999 mem: location 1081 is 0
 9998 run: jump-if fell through
- 104 run: print screen, [ ]
+ 104 run: print screen, space
 9999 mem: location 1075 is 1011
+9999 mem: location 1076 is 0
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -1213,21 +1239,21 @@
 9999 mem: location 1042 is 1011
 9999 trace: reply: decrementing callstack depth from 4
  104 run: jump 
-9998 run: jumping to instruction 8
+9998 run: jumping to instruction 9
  104 run: right:number <- subtract width, 1
-9999 mem: location 1076 is 3
-9999 mem: storing 2 in location 1079
+9999 mem: location 1077 is 3
+9999 mem: storing 2 in location 1080
  104 run: done?:boolean <- greater-or-equal *column, right
-9999 mem: location 1077 is 1014
+9999 mem: location 1078 is 1014
 9999 mem: location 1014 is 2
-9999 mem: location 1079 is 2
-9999 mem: storing 1 in location 1080
+9999 mem: location 1080 is 2
+9999 mem: storing 1 in location 1081
  104 run: jump-if done?, 
-9999 mem: location 1080 is 1
-9998 run: jumping to instruction 13
+9999 mem: location 1081 is 1
+9998 run: jumping to instruction 14
  104 run: *column <- copy original-column
-9999 mem: location 1078 is 0
-9999 mem: location 1077 is 1014
+9999 mem: location 1079 is 0
+9999 mem: location 1078 is 1014
 9999 mem: storing 0 in location 1014
  104 run: reply screen:address:screen
 9999 mem: location 1075 is 1011
@@ -1246,7 +1272,7 @@
 9998 run: its type is <address : <array : <screen-cell : <>>>>
 9999 mem: location 1015 is 1016
 9999 mem: storing 1016 in location 2
- 103 run: 3:array:screen-cell <- copy *2:address:array:screen-cell
+ 103 run: 20:array:screen-cell <- copy *2:address:array:screen-cell
 9999 mem: location 2 is 1016
 9999 mem: location 1016 is 6
 9999 mem: location 1017 is 0
@@ -1261,48 +1287,48 @@
 9999 mem: location 1026 is 7
 9999 mem: location 1027 is 0
 9999 mem: location 1028 is 7
-9999 mem: storing 6 in location 3
-9999 mem: storing 0 in location 4
-9999 mem: storing 7 in location 5
-9999 mem: storing 0 in location 6
-9999 mem: storing 7 in location 7
-9999 mem: storing 0 in location 8
-9999 mem: storing 7 in location 9
-9999 mem: storing 0 in location 10
-9999 mem: storing 7 in location 11
-9999 mem: storing 0 in location 12
-9999 mem: storing 7 in location 13
-9999 mem: storing 0 in location 14
-9999 mem: storing 7 in location 15
+9999 mem: storing 6 in location 20
+9999 mem: storing 0 in location 21
+9999 mem: storing 7 in location 22
+9999 mem: storing 0 in location 23
+9999 mem: storing 7 in location 24
+9999 mem: storing 0 in location 25
+9999 mem: storing 7 in location 26
+9999 mem: storing 0 in location 27
+9999 mem: storing 7 in location 28
+9999 mem: storing 0 in location 29
+9999 mem: storing 7 in location 30
+9999 mem: storing 0 in location 31
+9999 mem: storing 7 in location 32
  103 run: reply 
 9999 trace: reply: decrementing callstack depth from 2
  102 run: memory-should-contain [
-    3 <- 6  # width*height
-    4 <- 0
-    5 <- 7
-    6 <- 0
-    7 <- 7
-    8 <- 0
-    9 <- 7
-    10 <- 0
-    11 <- 7
-    12 <- 0
-    13 <- 7
-    14 <- 0
-    15 <- 7
+    20 <- 6  # width*height
+    21 <- 0
+    22 <- 7
+    23 <- 0
+    24 <- 7
+    25 <- 0
+    26 <- 7
+    27 <- 0
+    28 <- 7
+    29 <- 0
+    30 <- 7
+    31 <- 0
+    32 <- 7
   ]
-9999 run: checking location 3
-9999 run: checking location 4
-9999 run: checking location 5
-9999 run: checking location 6
-9999 run: checking location 7
-9999 run: checking location 8
-9999 run: checking location 9
-9999 run: checking location 10
-9999 run: checking location 11
-9999 run: checking location 12
-9999 run: checking location 13
-9999 run: checking location 14
-9999 run: checking location 15
+9999 run: checking location 20
+9999 run: checking location 21
+9999 run: checking location 22
+9999 run: checking location 23
+9999 run: checking location 24
+9999 run: checking location 25
+9999 run: checking location 26
+9999 run: checking location 27
+9999 run: checking location 28
+9999 run: checking location 29
+9999 run: checking location 30
+9999 run: checking location 31
+9999 run: checking location 32
  102 run: reply 
 9999 trace: reply: decrementing callstack depth from 1

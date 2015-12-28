@@ -1,12 +1,15 @@
 9991 parse: --- defining scenario-print-character-at-right-margin
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:screen <- new-fake-screen 2/width, 2/height\n    1:address:screen <- print 1:address:screen, 97  # 'a'\n    1:address:screen <- print 1:address:screen, 98  # 'b'\n    1:address:screen <- print 1:address:screen, 99  # 'c'\n    2:number <- get *1:address:screen, cursor-column:offset\n    3:address:array:screen-cell <- get *1:address:screen, data:offset\n    4:array:screen-cell <- copy *3:address:array:screen-cell\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:screen <- new-fake-screen 2/width, 2/height\n    11:character <- copy 97/a\n    1:address:screen <- print 1:address:screen, 11:character/a\n    12:character <- copy 98/b\n    1:address:screen <- print 1:address:screen, 12:character/b\n    13:character <- copy 99/b\n    1:address:screen <- print 1:address:screen, 13:character/c\n    2:number <- get *1:address:screen, cursor-column:offset\n    3:address:array:screen-cell <- get *1:address:screen, data:offset\n    4:array:screen-cell <- copy *3:address:array:screen-cell\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:screen <- new-fake-screen 2/width, 2/height
-    1:address:screen <- print 1:address:screen, 97  # 'a'
-    1:address:screen <- print 1:address:screen, 98  # 'b'
-    1:address:screen <- print 1:address:screen, 99  # 'c'
+    11:character <- copy 97/a
+    1:address:screen <- print 1:address:screen, 11:character/a
+    12:character <- copy 98/b
+    1:address:screen <- print 1:address:screen, 12:character/b
+    13:character <- copy 99/b
+    1:address:screen <- print 1:address:screen, 13:character/c
     2:number <- get *1:address:screen, cursor-column:offset
     3:address:array:screen-cell <- get *1:address:screen, data:offset
     4:array:screen-cell <- copy *3:address:array:screen-cell
@@ -43,9 +46,12 @@
 9990 schedule: scenario-print-character-at-right-margin
  102 run: run [
     1:address:screen <- new-fake-screen 2/width, 2/height
-    1:address:screen <- print 1:address:screen, 97  # 'a'
-    1:address:screen <- print 1:address:screen, 98  # 'b'
-    1:address:screen <- print 1:address:screen, 99  # 'c'
+    11:character <- copy 97/a
+    1:address:screen <- print 1:address:screen, 11:character/a
+    12:character <- copy 98/b
+    1:address:screen <- print 1:address:screen, 12:character/b
+    13:character <- copy 99/b
+    1:address:screen <- print 1:address:screen, 13:character/c
     2:number <- get *1:address:screen, cursor-column:offset
     3:address:array:screen-cell <- get *1:address:screen, data:offset
     4:array:screen-cell <- copy *3:address:array:screen-cell
@@ -57,24 +63,39 @@
 9993 parse:   ingredient: {"2": "literal", "height": <>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
 9992 load: after rewriting: 1:address:screen <- new-fake-screen 2/width, 2/height
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"97": "literal", "a": <>}
+9993 parse:   product: {"11": "character"}
+9992 load: after rewriting: 11:character <- copy 97/a
 9993 parse: instruction: print
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"97": "literal"}
+9993 parse:   ingredient: {"11": "character", "a": <>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
-9992 load: after rewriting: 1:address:screen <- print 1:address:screen, 97
+9992 load: after rewriting: 1:address:screen <- print 1:address:screen, 11:character/a
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"98": "literal", "b": <>}
+9993 parse:   product: {"12": "character"}
+9992 load: after rewriting: 12:character <- copy 98/b
 9993 parse: instruction: print
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"98": "literal"}
+9993 parse:   ingredient: {"12": "character", "b": <>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
-9992 load: after rewriting: 1:address:screen <- print 1:address:screen, 98
+9992 load: after rewriting: 1:address:screen <- print 1:address:screen, 12:character/b
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"99": "literal", "b": <>}
+9993 parse:   product: {"13": "character"}
+9992 load: after rewriting: 13:character <- copy 99/b
 9993 parse: instruction: print
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"99": "literal"}
+9993 parse:   ingredient: {"13": "character", "c": <>}
 9993 parse:   product: {"1": <"address" : <"screen" : <>>>}
-9992 load: after rewriting: 1:address:screen <- print 1:address:screen, 99
+9992 load: after rewriting: 1:address:screen <- print 1:address:screen, 13:character/c
 9993 parse: instruction: get
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": <"address" : <"screen" : <>>>, "lookup": <>}
@@ -110,42 +131,75 @@
 9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
 9992 transform: score for variant 0: 1000
+9992 transform: instruction copy
+9992 transform: score for base: -1
+9993 transform: too few ingredients
+9992 transform: score for variant 0: -1
+9992 transform: no variant found; searching for variant with suitable type ingredients
+9992 transform: checking shape-shifting variant 0
+9993 transform: no type ingredients
+9992 transform: final score: -1
 9992 transform: instruction print
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for base: 990
+9992 transform: score for base: 1000
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for variant 0: 990
+9992 transform: score for variant 0: 1000
 9993 transform: strict match: ingredient 0
 9993 transform: mismatch: ingredient 1
 9992 transform: score for variant 1: -1
+9993 transform: strict match: ingredient 0
+9993 transform: mismatch: ingredient 1
+9992 transform: score for variant 2: -1
+9992 transform: instruction copy
+9992 transform: score for base: -1
+9993 transform: too few ingredients
+9992 transform: score for variant 0: -1
+9992 transform: no variant found; searching for variant with suitable type ingredients
+9992 transform: checking shape-shifting variant 0
+9993 transform: no type ingredients
+9992 transform: final score: -1
 9992 transform: instruction print
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for base: 990
+9992 transform: score for base: 1000
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for variant 0: 990
+9992 transform: score for variant 0: 1000
 9993 transform: strict match: ingredient 0
 9993 transform: mismatch: ingredient 1
 9992 transform: score for variant 1: -1
+9993 transform: strict match: ingredient 0
+9993 transform: mismatch: ingredient 1
+9992 transform: score for variant 2: -1
+9992 transform: instruction copy
+9992 transform: score for base: -1
+9993 transform: too few ingredients
+9992 transform: score for variant 0: -1
+9992 transform: no variant found; searching for variant with suitable type ingredients
+9992 transform: checking shape-shifting variant 0
+9993 transform: no type ingredients
+9992 transform: final score: -1
 9992 transform: instruction print
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for base: 990
+9992 transform: score for base: 1000
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for variant 0: 990
+9992 transform: score for variant 0: 1000
 9993 transform: strict match: ingredient 0
 9993 transform: mismatch: ingredient 1
 9992 transform: score for variant 1: -1
+9993 transform: strict match: ingredient 0
+9993 transform: mismatch: ingredient 1
+9992 transform: score for variant 2: -1
 9992 transform: instruction copy
 9992 transform: score for base: -1
 9993 transform: too few ingredients
@@ -157,8 +211,11 @@
 9991 transform: --- compute instruction operations for recipe run1001
 9991 transform: --- transform braces for recipe run1001
 9992 transform: new-fake-screen ...
+9992 transform: copy ...
 9992 transform: print ...
+9992 transform: copy ...
 9992 transform: print ...
+9992 transform: copy ...
 9992 transform: print ...
 9992 transform: get ...
 9992 transform: get ...
@@ -471,8 +528,11 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1
- 103 run: 1:address:screen <- print 1:address:screen, 97
+ 103 run: 11:character <- copy 97/a
+9999 mem: storing 97 in location 11
+ 103 run: 1:address:screen <- print 1:address:screen, 11:character/a
 9999 mem: location 1 is 1011
+9999 mem: location 11 is 97
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -661,8 +721,11 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1
- 103 run: 1:address:screen <- print 1:address:screen, 98
+ 103 run: 12:character <- copy 98/b
+9999 mem: storing 98 in location 12
+ 103 run: 1:address:screen <- print 1:address:screen, 12:character/b
 9999 mem: location 1 is 1011
+9999 mem: location 12 is 98
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -845,8 +908,11 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1
- 103 run: 1:address:screen <- print 1:address:screen, 99
+ 103 run: 13:character <- copy 99/b
+9999 mem: storing 99 in location 13
+ 103 run: 1:address:screen <- print 1:address:screen, 13:character/c
 9999 mem: location 1 is 1011
+9999 mem: location 13 is 99
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25

@@ -6,10 +6,12 @@
 9992 load: after rewriting: screen:address:screen <- new-fake-screen 5/width, 3/height
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    screen:address:screen <- print screen:address:screen, 955/greek-small-lambda, 1/red\n    screen:address:screen <- print screen:address:screen, 97/a\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:character <- copy 955/greek-small-lambda\n    screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red\n    2:character <- copy 97/a\n    screen:address:screen <- print screen:address:screen, 2:character/a\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    screen:address:screen <- print screen:address:screen, 955/greek-small-lambda, 1/red
-    screen:address:screen <- print screen:address:screen, 97/a
+    1:character <- copy 955/greek-small-lambda
+    screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red
+    2:character <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 2:character/a
   ]
 9993 parse: instruction: screen-should-contain
 9993 parse:   number of ingredients: 1
@@ -749,23 +751,35 @@
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 900
  102 run: run [
-    screen:address:screen <- print screen:address:screen, 955/greek-small-lambda, 1/red
-    screen:address:screen <- print screen:address:screen, 97/a
+    1:character <- copy 955/greek-small-lambda
+    screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red
+    2:character <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 2:character/a
   ]
 9991 parse: --- defining run1001
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"955": "literal", "greek-small-lambda": <>}
+9993 parse:   product: {"1": "character"}
+9992 load: after rewriting: 1:character <- copy 955/greek-small-lambda
 9993 parse: instruction: print
 9993 parse:   number of ingredients: 3
 9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"955": "literal", "greek-small-lambda": <>}
+9993 parse:   ingredient: {"1": "character", "lambda": <>}
 9993 parse:   ingredient: {"1": "literal", "red": <>}
 9993 parse:   product: {"screen": <"address" : <"screen" : <>>>}
-9992 load: after rewriting: screen:address:screen <- print screen:address:screen, 955/greek-small-lambda, 1/red
+9992 load: after rewriting: screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"97": "literal", "a": <>}
+9993 parse:   product: {"2": "character"}
+9992 load: after rewriting: 2:character <- copy 97/a
 9993 parse: instruction: print
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"97": "literal", "a": <>}
+9993 parse:   ingredient: {"2": "character", "a": <>}
 9993 parse:   product: {"screen": <"address" : <"screen" : <>>>}
-9992 load: after rewriting: screen:address:screen <- print screen:address:screen, 97/a
+9992 load: after rewriting: screen:address:screen <- print screen:address:screen, 2:character/a
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
@@ -774,41 +788,68 @@
 9991 transform: --- collect surrounding spaces for recipe run1001
 9991 transform: --- transform names for recipe run1001
 9991 transform: --- resolve ambiguous calls for recipe run1001
+9992 transform: instruction copy
+9992 transform: score for base: -1
+9993 transform: too few ingredients
+9992 transform: score for variant 0: -1
+9992 transform: no variant found; searching for variant with suitable type ingredients
+9992 transform: checking shape-shifting variant 0
+9993 transform: no type ingredients
+9992 transform: final score: -1
 9992 transform: instruction print
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for base: 989
+9992 transform: score for base: 999
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for variant 0: 989
+9992 transform: score for variant 0: 999
 9993 transform: strict match: ingredient 0
 9993 transform: mismatch: ingredient 1
 9992 transform: score for variant 1: -1
+9993 transform: strict match: ingredient 0
+9993 transform: mismatch: ingredient 1
+9992 transform: score for variant 2: -1
+9992 transform: instruction copy
+9992 transform: score for base: -1
+9993 transform: too few ingredients
+9992 transform: score for variant 0: -1
+9992 transform: no variant found; searching for variant with suitable type ingredients
+9992 transform: checking shape-shifting variant 0
+9993 transform: no type ingredients
+9992 transform: final score: -1
 9992 transform: instruction print
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for base: 990
+9992 transform: score for base: 1000
 9993 transform: strict match: ingredient 0
-9993 transform: non-strict match: ingredient 1
+9993 transform: strict match: ingredient 1
 9993 transform: strict match: product 0
-9992 transform: score for variant 0: 990
+9992 transform: score for variant 0: 1000
 9993 transform: strict match: ingredient 0
 9993 transform: mismatch: ingredient 1
 9992 transform: score for variant 1: -1
+9993 transform: strict match: ingredient 0
+9993 transform: mismatch: ingredient 1
+9992 transform: score for variant 2: -1
 9991 transform: --- compute instruction operations for recipe run1001
 9991 transform: --- transform braces for recipe run1001
+9992 transform: copy ...
 9992 transform: print ...
+9992 transform: copy ...
 9992 transform: print ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe run1001
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: screen:address:screen <- print screen:address:screen, 955/greek-small-lambda, 1/red
+ 103 run: 1:character <- copy 955/greek-small-lambda
+9999 mem: storing 955 in location 1
+ 103 run: screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red
 9999 mem: location 900 is 1011
+9999 mem: location 1 is 955
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
@@ -995,8 +1036,11 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 900
- 103 run: screen:address:screen <- print screen:address:screen, 97/a
+ 103 run: 2:character <- copy 97/a
+9999 mem: storing 97 in location 2
+ 103 run: screen:address:screen <- print screen:address:screen, 2:character/a
 9999 mem: location 900 is 1011
+9999 mem: location 2 is 97
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25

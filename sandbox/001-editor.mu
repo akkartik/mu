@@ -193,7 +193,8 @@ recipe render screen:address:screen, editor:address:editor-data -> last-row:numb
       at-right?:boolean <- equal column, right
       break-unless at-right?
       # print wrap icon
-      print screen, 8617/loop-back-to-left, 245/grey
+      wrap-icon:character <- copy 8617/loop-back-to-left
+      print screen, wrap-icon, 245/grey
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
@@ -227,10 +228,11 @@ recipe render screen:address:screen, editor:address:editor-data -> last-row:numb
 recipe clear-line-delimited screen:address:screen, column:number, right:number -> screen:address:screen [
   local-scope
   load-ingredients
+  space:character <- copy 32/space
   {
     done?:boolean <- greater-than column, right
     break-if done?
-    screen <- print screen, 32/space
+    screen <- print screen, space
     column <- add column, 1
     loop
   }

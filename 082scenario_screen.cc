@@ -9,7 +9,8 @@
 scenario screen-in-scenario [
   assume-screen 5/width, 3/height
   run [
-    screen:address:screen <- print screen:address:screen, 97  # 'a'
+    1:character <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 1:character/a
   ]
   screen-should-contain [
   #  01234
@@ -23,8 +24,10 @@ scenario screen-in-scenario [
 scenario screen-in-scenario-unicode-color [
   assume-screen 5/width, 3/height
   run [
-    screen:address:screen <- print screen:address:screen, 955/greek-small-lambda, 1/red
-    screen:address:screen <- print screen:address:screen, 97/a
+    1:character <- copy 955/greek-small-lambda
+    screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red
+    2:character <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 2:character/a
   ]
   screen-should-contain [
   #  01234
@@ -39,8 +42,10 @@ scenario screen-in-scenario-unicode-color [
 scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
   run [
-    screen:address:screen <- print screen:address:screen, 955/greek-small-lambda, 1/red
-    screen:address:screen <- print screen:address:screen, 97/a, 7/white
+    1:character <- copy 955/greek-small-lambda
+    screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red
+    2:character <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 2:character/a, 7/white
   ]
   # screen-should-contain shows everything
   screen-should-contain [
@@ -72,7 +77,8 @@ scenario screen-in-scenario-color [
 scenario screen-in-scenario-error [
   assume-screen 5/width, 3/height
   run [
-    screen:address:screen <- print screen:address:screen, 97  # 'a'
+    1:character <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 1:character/a
   ]
   screen-should-contain [
   #  01234
@@ -90,7 +96,8 @@ scenario screen-in-scenario-error [
 scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
   run [
-    screen:address:screen <- print screen:address:screen, 97/a, 1/red
+    1:character <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 1:character/a, 1/red
   ]
   screen-should-contain-in-color 2/green, [
   #  01234

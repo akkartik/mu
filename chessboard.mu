@@ -149,6 +149,7 @@ recipe print-board screen:address:screen, board:address:array:address:array:char
   local-scope
   load-ingredients
   row:number <- copy 7  # start printing from the top of the board
+  space:character <- copy 32/space
   # print each row
   {
     done?:boolean <- lesser-than row, 0
@@ -166,7 +167,7 @@ recipe print-board screen:address:screen, board:address:array:address:array:char
       f:address:array:character <- index *board, col
       c:character <- index *f, row
       print screen, c
-      print screen, 32/space
+      print screen, space
       col <- add col, 1
       loop
     }
