@@ -198,6 +198,7 @@ Transform.push_back(check_header_ingredients);  // idempotent
 void check_header_ingredients(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   if (caller_recipe.products.empty()) return;
+  caller_recipe.ingredient_index.clear();
   trace(9991, "transform") << "--- checking reply instructions against header for " << caller_recipe.name << end();
   for (long long int i = 0; i < SIZE(caller_recipe.ingredients); ++i) {
     if (contains_key(caller_recipe.ingredient_index, caller_recipe.ingredients.at(i).name))
