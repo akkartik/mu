@@ -61,7 +61,6 @@ long long int slurp_recipe(istream& in) {
   // End recipe Body(result)
   get_or_insert(Recipe, get(Recipe_ordinal, result.name)) = result;
   // track added recipes because we may need to undo them in tests; see below
-//?   LOG << "recently added recipe: " << result.name << ' ' << get(Recipe_ordinal, result.name) << '\n';
   Recently_added_recipes.push_back(get(Recipe_ordinal, result.name));
   return get(Recipe_ordinal, result.name);
 }
@@ -245,7 +244,6 @@ void clear_recently_added_recipes() {
     if (Recently_added_recipes.at(i) >= Reserved_for_tests  // don't renumber existing recipes, like 'interactive'
         && contains_key(Recipe, Recently_added_recipes.at(i)))  // in case previous test had duplicate definitions
       Recipe_ordinal.erase(get(Recipe, Recently_added_recipes.at(i)).name);
-//?   LOG << "erase recipe " << Recently_added_recipes.at(i) << ' ' << get(Recipe, Recently_added_recipes.at(i)).name << '\n';
     Recipe.erase(Recently_added_recipes.at(i));
   }
   // Clear Other State For Recently_added_recipes

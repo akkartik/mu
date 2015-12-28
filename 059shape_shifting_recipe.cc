@@ -74,32 +74,28 @@ if (best_score == -1) {
   if (exemplar) {
 //?     cerr << "specializing " << inst.name << '\n';
     trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
-//?     LOG << "found variant to specialize: " << exemplar << ' ' << header(get(Recipe, exemplar)) << '\n';
     recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
+    if (new_recipe_ordinal == 0) goto done_constructing_variant;
     variants.push_back(new_recipe_ordinal);
     // perform all transforms on the new specialization
     const string& new_name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "transforming new specialization: " << new_name << end();
-//?     LOG << "transforming new specialization: " << header(get(Recipe, variants.back())) << '\n';
     for (long long int t = 0; t < SIZE(Transform); ++t) {
       (*Transform.at(t))(new_recipe_ordinal);
     }
     get(Recipe, new_recipe_ordinal).transformed_until = SIZE(Transform)-1;
-//?     LOG << "replacing " << inst.name << " with " << get(Recipe, variants.back()).name << '\n';
     inst.name = get(Recipe, variants.back()).name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
-//?     LOG << "new specialization: " << inst.name << '\n';
   }
+  done_constructing_variant:;
 }
 
 //: make sure we have no unspecialized shape-shifting recipes being called
 //: before running mu programs
 
 :(before "End Instruction Operation Checks")
-//? LOG << inst.operation << " " << contains_key(Recipe, inst.operation) << '\n';
 if (contains_key(Recipe, inst.operation) && inst.operation >= MAX_PRIMITIVE_RECIPES
     && any_type_ingredient_in_header(inst.operation)) {
-//?   LOG << header(caller) << "instruction " << inst.name << " has no valid specialization\n";
   raise_error << maybe(caller.name) << "instruction " << inst.name << " has no valid specialization\n" << end();
   return;
 }
@@ -284,7 +280,7 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
     if (!error) replace_type_ingredients(new_recipe, mappings);
     for (map<string, const string_tree*>::iterator p = mappings.begin(); p != mappings.end(); ++p)
       delete p->second;
-    if (error) return exemplar;
+    if (error) return 0;  // todo: delete new_recipe_ordinal from Recipes and other global state
   }
   ensure_all_concrete_types(new_recipe, get(Recipe, exemplar));
   return new_recipe_ordinal;

@@ -414,7 +414,6 @@ case CHECK_FOR_INTERACTION: {
     products.at(0).push_back(/*text event*/0);
     if (event.key == TB_KEY_CTRL_C) {
       tb_shutdown();
-//?       LOG << "exit\n";
       exit(1);
     }
     if (event.key == TB_KEY_BACKSPACE2) event.key = TB_KEY_BACKSPACE;
