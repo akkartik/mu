@@ -478,7 +478,6 @@ case RELOAD: {
     }
   }
   for (long long int i = 0; i < SIZE(Recently_added_shape_shifting_recipes); ++i) {
-//?     LOG << "erasing " << get(Recipe, Recently_added_shape_shifting_recipes.at(i)).name << '\n';
     Recipe_ordinal.erase(get(Recipe, Recently_added_shape_shifting_recipes.at(i)).name);
     Recipe.erase(Recently_added_shape_shifting_recipes.at(i));
   }
