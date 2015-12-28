@@ -158,9 +158,11 @@ bool is_mu_address(reagent r) {
 
 bool is_mu_number(reagent r) {
   if (!r.type) return false;
-  if (is_literal(r))
+  if (is_literal(r)) {
+    if (!r.properties.at(0).second) return false;
     return r.properties.at(0).second->value == "literal-number"
         || r.properties.at(0).second->value == "literal";
+  }
   if (r.type->value == get(Type_ordinal, "character")) return true;  // permit arithmetic on unicode code points
   return r.type->value == get(Type_ordinal, "number");
 }
