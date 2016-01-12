@@ -219,7 +219,7 @@ recipe main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1
+  8:address:array:point <- copy 1/unsafe
   index *8:address:array:point, 4  # less than size of array in locations, but larger than its length in elements
 ]
 +error: main: invalid index 4
@@ -339,7 +339,7 @@ recipe main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1  # unsafe
+  8:address:array:point <- copy 1/unsafe
   index-address *8:address:array:point, 4  # less than size of array in locations, but larger than its length in elements
 ]
 +error: main: invalid index 4

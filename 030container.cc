@@ -21,7 +21,7 @@ get(Type, point).element_names.push_back("y");
 recipe main [
   1:number <- copy 34
   2:number <- copy 35
-  3:point <- copy 1:point/raw  # unsafe
+  3:point <- copy 1:point/unsafe
 ]
 +mem: storing 34 in location 3
 +mem: storing 35 in location 4
@@ -51,7 +51,7 @@ recipe main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
-  15:point-number <- copy 12:point-number/raw  # unsafe
+  15:point-number <- copy 12:point-number/unsafe
 ]
 +mem: storing 36 in location 17
 
@@ -66,7 +66,7 @@ recipe main [
   4:number <- copy 34  # second
   5:number <- copy 35
   6:number <- copy 36
-  7:boolean <- equal 1:point-number/raw, 4:point-number/raw  # unsafe
+  7:boolean <- equal 1:point-number/raw, 4:point-number/unsafe
 ]
 +mem: storing 1 in location 7
 
@@ -78,7 +78,7 @@ recipe main [
   4:number <- copy 34  # second
   5:number <- copy 35
   6:number <- copy 37  # different
-  7:boolean <- equal 1:point-number/raw, 4:point-number/raw  # unsafe
+  7:boolean <- equal 1:point-number/raw, 4:point-number/unsafe
 ]
 +mem: storing 0 in location 7
 

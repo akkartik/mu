@@ -186,7 +186,7 @@ get(Type, point).element_names.push_back("x");
 get(Type, point).element_names.push_back("y");
 :(scenario transform_names_transforms_container_elements)
 recipe main [
-  p:address:point <- copy 0  # unsafe
+  p:address:point <- copy 0
   a:number <- get *p:address:point, y:offset
   b:number <- get *p:address:point, x:offset
 ]
@@ -230,7 +230,7 @@ recipe main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
-  20:address:point <- maybe-convert 12:number-or-point/raw, p:variant  # unsafe
+  20:address:point <- maybe-convert 12:number-or-point/unsafe, p:variant
 ]
 +name: variant p of type number-or-point has tag 1
 +mem: storing 13 in location 20
