@@ -138,8 +138,9 @@ if (result.has_header) {
 :(before "End Rewrite Instruction(curr, recipe result)")
 if (curr.name == "load-ingredients") {
   curr.clear();
+  recipe_ordinal op = get(Recipe_ordinal, "next-ingredient");
   for (long long int i = 0; i < SIZE(result.ingredients); ++i) {
-    curr.operation = get(Recipe_ordinal, "next-ingredient");
+    curr.operation = op;
     curr.name = "next-ingredient";
     curr.products.push_back(result.ingredients.at(i));
     result.steps.push_back(curr);
