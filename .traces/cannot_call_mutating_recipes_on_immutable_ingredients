@@ -72,7 +72,7 @@
 9993 transform: type of p is <address : <point : <>>>
 9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
 9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 transform: instruction: p:address:point <- next-ingredient 
+9992 transform: instruction: p:address:point <- next-ingredient-without-typechecking 
 9993 transform:   product: p: <address : <point : <>>> -- {"p": <"address" : <"point" : <>>>}
 9992 transform: instruction: x:address:number <- get-address *p, x:offset
 9993 transform:   product: x: <address : <number : <>>> -- {"x": <"address" : <"number" : <>>>}
@@ -200,6 +200,9 @@
 9991 transform: --- perform checks for recipe main
 9991 transform: --- perform checks for recipe foo
 9991 transform: --- perform checks for recipe bar
+9991 transform: --- type-check calls inside recipe main
+9991 transform: --- type-check calls inside recipe foo
+9991 transform: --- type-check calls inside recipe bar
 9991 transform: --- convert 'new' to 'allocate' for recipe main
 9992 new: size of "location" is 1
 9992 new: size of "point" is 2
@@ -224,7 +227,7 @@
  103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 2
 9999 mem: new alloc: 1005
- 103 run: p:address:point <- next-ingredient 
+ 103 run: p:address:point <- next-ingredient-without-typechecking 
 9999 mem: storing 1003 in location 1007
  103 run: bar p
 9999 mem: location 1007 is 1003
@@ -232,7 +235,7 @@
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1008
- 104 run: p:address:point <- next-ingredient 
+ 104 run: p:address:point <- next-ingredient-without-typechecking 
 9999 mem: storing 1003 in location 1010
  104 run: x:address:number <- get-address *p, x:offset
 9999 mem: location 1010 is 1003

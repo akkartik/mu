@@ -38,6 +38,7 @@
 9992 transform: editor-event-loop ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe run1001
+9991 transform: --- type-check calls inside recipe run1001
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
@@ -49,11 +50,11 @@
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 14
 9999 mem: new alloc: 1269
- 104 run: screen:address:screen <- next-ingredient 
+ 104 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1271
- 104 run: console:address:console <- next-ingredient 
+ 104 run: console:address:console <- next-ingredient-without-typechecking 
 9999 mem: storing 1267 in location 1272
- 104 run: editor:address:editor-data <- next-ingredient 
+ 104 run: editor:address:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1273
  104 run: cursor-row:number <- get *editor, cursor-row:offset
 9999 mem: location 1273 is 1000
@@ -98,11 +99,11 @@
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 105 run: screen:address:screen <- next-ingredient 
+ 105 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1195
- 105 run: new-row:number <- next-ingredient 
+ 105 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1196
- 105 run: new-column:number <- next-ingredient 
+ 105 run: new-column:number <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1197
  105 run: jump-unless screen, 
 9999 mem: location 1195 is 1011
@@ -145,7 +146,7 @@
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 12
- 105 run: console:address:console <- next-ingredient 
+ 105 run: console:address:console <- next-ingredient-without-typechecking 
 9999 mem: storing 1267 in location 1228
  105 run: jump-unless console, 
 9999 mem: location 1228 is 1267
@@ -245,11 +246,11 @@
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 85
 9999 mem: new alloc: 1284
- 105 run: screen:address:screen <- next-ingredient 
+ 105 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1286
- 105 run: editor:address:editor-data <- next-ingredient 
+ 105 run: editor:address:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1287
- 105 run: e:event <- next-ingredient 
+ 105 run: e:event <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1288
 9999 mem: storing 97 in location 1289
 9999 mem: storing 0 in location 1290
@@ -264,7 +265,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: screen:address:screen <- next-ingredient 
+ 106 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  106 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -291,7 +292,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: screen:address:screen <- next-ingredient 
+ 106 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  106 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -534,11 +535,11 @@
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 31
 9999 mem: new alloc: 1370
- 106 run: editor:address:editor-data <- next-ingredient 
+ 106 run: editor:address:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1372
- 106 run: c:character <- next-ingredient 
+ 106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1373
- 106 run: screen:address:screen <- next-ingredient 
+ 106 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1374
  106 run: before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
 9999 mem: location 1372 is 1000
@@ -563,9 +564,9 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 107 run: x:_elem <- next-ingredient 
+ 107 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1143
- 107 run: in:address:duplex-list:_elem <- next-ingredient 
+ 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1149 in location 1144
  107 run: new-node:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1402
@@ -659,7 +660,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient 
+ 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1149 in location 1191
  107 run: jump-if in, 1:offset
 9999 mem: location 1191 is 1149
@@ -765,7 +766,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  107 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -792,7 +793,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  107 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -836,7 +837,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient 
+ 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1402 in location 1191
  107 run: jump-if in, 1:offset
 9999 mem: location 1191 is 1402
@@ -891,11 +892,11 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1195
- 107 run: new-row:number <- next-ingredient 
+ 107 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1196
- 107 run: new-column:number <- next-ingredient 
+ 107 run: new-column:number <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1197
  107 run: jump-unless screen, 
 9999 mem: location 1195 is 1011
@@ -937,9 +938,9 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1202
- 107 run: c:character <- next-ingredient 
+ 107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1203
  107 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1204
@@ -1175,7 +1176,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: in:address:duplex-list:_elem <- next-ingredient 
+ 106 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1149 in location 1191
  106 run: jump-if in, 1:offset
 9999 mem: location 1191 is 1149
@@ -1204,7 +1205,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: in:address:duplex-list:_elem <- next-ingredient 
+ 106 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1402 in location 1191
  106 run: jump-if in, 1:offset
 9999 mem: location 1191 is 1402
@@ -1260,9 +1261,9 @@
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
 9999 mem: new alloc: 1405
- 106 run: editor:address:editor-data <- next-ingredient 
+ 106 run: editor:address:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1407
- 106 run: op:address:operation <- next-ingredient 
+ 106 run: op:address:operation <- next-ingredient-without-typechecking 
 9999 mem: storing 1117 in location 1408
  106 run: undo:address:address:list:address:operation <- get-address *editor, undo:offset
 9999 mem: location 1407 is 1000
@@ -1287,9 +1288,9 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 107 run: x:_elem <- next-ingredient 
+ 107 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1117 in location 1195
- 107 run: in:address:list:_elem <- next-ingredient 
+ 107 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1196
  107 run: result:address:list:_elem <- new {(list _elem): type}
 9999 mem: new alloc: 1411
@@ -1412,11 +1413,11 @@
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 105 run: screen:address:screen <- next-ingredient 
+ 105 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1195
- 105 run: new-row:number <- next-ingredient 
+ 105 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1196
- 105 run: new-column:number <- next-ingredient 
+ 105 run: new-column:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1197
  105 run: jump-unless screen, 
 9999 mem: location 1195 is 1011
@@ -1459,7 +1460,7 @@
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 12
- 105 run: console:address:console <- next-ingredient 
+ 105 run: console:address:console <- next-ingredient-without-typechecking 
 9999 mem: storing 1267 in location 1228
  105 run: jump-unless console, 
 9999 mem: location 1228 is 1267
@@ -1558,11 +1559,11 @@
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 85
- 105 run: screen:address:screen <- next-ingredient 
+ 105 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1286
- 105 run: editor:address:editor-data <- next-ingredient 
+ 105 run: editor:address:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1287
- 105 run: e:event <- next-ingredient 
+ 105 run: e:event <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1288
 9999 mem: storing 98 in location 1289
 9999 mem: storing 0 in location 1290
@@ -1577,7 +1578,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: screen:address:screen <- next-ingredient 
+ 106 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  106 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -1604,7 +1605,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: screen:address:screen <- next-ingredient 
+ 106 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  106 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -1845,11 +1846,11 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 31
- 106 run: editor:address:editor-data <- next-ingredient 
+ 106 run: editor:address:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1372
- 106 run: c:character <- next-ingredient 
+ 106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 98 in location 1373
- 106 run: screen:address:screen <- next-ingredient 
+ 106 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1374
  106 run: before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
 9999 mem: location 1372 is 1000
@@ -1874,9 +1875,9 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 107 run: x:_elem <- next-ingredient 
+ 107 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 98 in location 1143
- 107 run: in:address:duplex-list:_elem <- next-ingredient 
+ 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1402 in location 1144
  107 run: new-node:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1413
@@ -1970,7 +1971,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient 
+ 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1402 in location 1191
  107 run: jump-if in, 1:offset
 9999 mem: location 1191 is 1402
@@ -2076,7 +2077,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  107 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -2103,7 +2104,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  107 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -2147,7 +2148,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient 
+ 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1413 in location 1191
  107 run: jump-if in, 1:offset
 9999 mem: location 1191 is 1413
@@ -2202,11 +2203,11 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1195
- 107 run: new-row:number <- next-ingredient 
+ 107 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1196
- 107 run: new-column:number <- next-ingredient 
+ 107 run: new-column:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1197
  107 run: jump-unless screen, 
 9999 mem: location 1195 is 1011
@@ -2248,9 +2249,9 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1202
- 107 run: c:character <- next-ingredient 
+ 107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 98 in location 1203
  107 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1204
@@ -2488,7 +2489,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: in:address:list:_elem <- next-ingredient 
+ 106 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1411 in location 1191
  106 run: result <- get *in, value:offset
 9999 mem: location 1191 is 1411
@@ -2564,7 +2565,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: in:address:duplex-list:_elem <- next-ingredient 
+ 106 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1413 in location 1191
  106 run: jump-if in, 1:offset
 9999 mem: location 1191 is 1413
@@ -2721,11 +2722,11 @@
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 105 run: screen:address:screen <- next-ingredient 
+ 105 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1195
- 105 run: new-row:number <- next-ingredient 
+ 105 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1196
- 105 run: new-column:number <- next-ingredient 
+ 105 run: new-column:number <- next-ingredient-without-typechecking 
 9999 mem: storing 2 in location 1197
  105 run: jump-unless screen, 
 9999 mem: location 1195 is 1011
@@ -2768,7 +2769,7 @@
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 12
- 105 run: console:address:console <- next-ingredient 
+ 105 run: console:address:console <- next-ingredient-without-typechecking 
 9999 mem: storing 1267 in location 1228
  105 run: jump-unless console, 
 9999 mem: location 1228 is 1267
@@ -2867,11 +2868,11 @@
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 85
- 105 run: screen:address:screen <- next-ingredient 
+ 105 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1286
- 105 run: editor:address:editor-data <- next-ingredient 
+ 105 run: editor:address:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1287
- 105 run: e:event <- next-ingredient 
+ 105 run: e:event <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1288
 9999 mem: storing 99 in location 1289
 9999 mem: storing 0 in location 1290
@@ -2886,7 +2887,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: screen:address:screen <- next-ingredient 
+ 106 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  106 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -2913,7 +2914,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: screen:address:screen <- next-ingredient 
+ 106 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  106 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -3154,11 +3155,11 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 31
- 106 run: editor:address:editor-data <- next-ingredient 
+ 106 run: editor:address:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1372
- 106 run: c:character <- next-ingredient 
+ 106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 99 in location 1373
- 106 run: screen:address:screen <- next-ingredient 
+ 106 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1374
  106 run: before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
 9999 mem: location 1372 is 1000
@@ -3183,9 +3184,9 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 107 run: x:_elem <- next-ingredient 
+ 107 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 99 in location 1143
- 107 run: in:address:duplex-list:_elem <- next-ingredient 
+ 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1413 in location 1144
  107 run: new-node:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1416
@@ -3279,7 +3280,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient 
+ 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1413 in location 1191
  107 run: jump-if in, 1:offset
 9999 mem: location 1191 is 1413
@@ -3385,7 +3386,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  107 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -3412,7 +3413,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1191
  107 run: jump-unless screen, 
 9999 mem: location 1191 is 1011
@@ -3456,7 +3457,7 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient 
+ 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1416 in location 1191
  107 run: jump-if in, 1:offset
 9999 mem: location 1191 is 1416
@@ -3511,11 +3512,11 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1195
- 107 run: new-row:number <- next-ingredient 
+ 107 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1196
- 107 run: new-column:number <- next-ingredient 
+ 107 run: new-column:number <- next-ingredient-without-typechecking 
 9999 mem: storing 2 in location 1197
  107 run: jump-unless screen, 
 9999 mem: location 1195 is 1011
@@ -3557,9 +3558,9 @@
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
- 107 run: screen:address:screen <- next-ingredient 
+ 107 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1202
- 107 run: c:character <- next-ingredient 
+ 107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 99 in location 1203
  107 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1204
@@ -3796,7 +3797,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: in:address:list:_elem <- next-ingredient 
+ 106 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1411 in location 1191
  106 run: result <- get *in, value:offset
 9999 mem: location 1191 is 1411
@@ -3872,7 +3873,7 @@
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 106 run: in:address:duplex-list:_elem <- next-ingredient 
+ 106 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1416 in location 1191
  106 run: jump-if in, 1:offset
 9999 mem: location 1191 is 1416
@@ -4029,11 +4030,11 @@
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 105 run: screen:address:screen <- next-ingredient 
+ 105 run: screen:address:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1195
- 105 run: new-row:number <- next-ingredient 
+ 105 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1196
- 105 run: new-column:number <- next-ingredient 
+ 105 run: new-column:number <- next-ingredient-without-typechecking 
 9999 mem: storing 3 in location 1197
  105 run: jump-unless screen, 
 9999 mem: location 1195 is 1011
@@ -4076,7 +4077,7 @@
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 12
- 105 run: console:address:console <- next-ingredient 
+ 105 run: console:address:console <- next-ingredient-without-typechecking 
 9999 mem: storing 1267 in location 1228
  105 run: jump-unless console, 
 9999 mem: location 1228 is 1267

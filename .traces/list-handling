@@ -35,6 +35,7 @@
 9992 transform: memory-should-contain ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe scenario-list-handling
+9991 transform: --- type-check calls inside recipe scenario-list-handling
 9991 transform: --- convert 'new' to 'allocate' for recipe scenario-list-handling
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
@@ -148,9 +149,9 @@
 9993 transform: type of number-of-locals is "literal"
 9994 transform:     checking {"default-space": <"address" : <"array" : <"location" : <>>>>}: <"address" : <"array" : <"location" : <>>>>
 9993 transform: type of default-space is <"address" : <"array" : <"location" : <>>>>
-9993 transform:   instruction: x:_elem <- next-ingredient 
+9993 transform:   instruction: x:_elem <- next-ingredient-without-typechecking 
 9994 transform:     checking {"x": "_elem"}: "_elem"
-9993 transform:   instruction: in:address:list:_elem <- next-ingredient 
+9993 transform:   instruction: in:address:list:_elem <- next-ingredient-without-typechecking 
 9994 transform:     checking {"in": <"address" : <"list" : <"_elem" : <>>>>}: <"address" : <"list" : <"_elem" : <>>>>
 9993 transform:   instruction: result:address:list:_elem <- new {(list _elem): type}
 9994 transform:     checking {"(list _elem)": "type"}: "type"
@@ -201,11 +202,11 @@
 9993 transform:   after: ?0
 9993 transform: replacing in ingredient default-space:address:array:location
 9993 transform:   after: <address : <array : <number : <>>>>
-9993 transform: replacing in instruction 'x:_elem <- next-ingredient '
+9993 transform: replacing in instruction 'x:_elem <- next-ingredient-without-typechecking '
 9993 transform: replacing in ingredient x:_elem
 9993 transform: _elem => "number"
 9993 transform:   after: number
-9993 transform: replacing in instruction 'in:address:list:_elem <- next-ingredient '
+9993 transform: replacing in instruction 'in:address:list:_elem <- next-ingredient-without-typechecking '
 9993 transform: replacing in ingredient in:address:list:_elem
 9993 transform: _elem => "number"
 9993 transform:   after: <address : <list : <number : <>>>>
@@ -268,9 +269,9 @@
 9993 transform: type of in is <address : <list : <number : <>>>>
 9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
 9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 transform: instruction: x:_elem <- next-ingredient 
+9992 transform: instruction: x:_elem <- next-ingredient-without-typechecking 
 9993 transform:   product: x: number -- {"x": "number"}
-9992 transform: instruction: in:address:list:_elem <- next-ingredient 
+9992 transform: instruction: in:address:list:_elem <- next-ingredient-without-typechecking 
 9993 transform:   product: in: <address : <list : <number : <>>>> -- {"in": <"address" : <"list" : <"number" : <>>>>}
 9992 transform: instruction: result:address:list:_elem <- new {(list _elem): type}
 9993 transform:   product: result: <address : <list : <number : <>>>> -- {"result": <"address" : <"list" : <"number" : <>>>>}
@@ -321,6 +322,7 @@
 9992 transform: copy ...
 9992 transform: reply ...
 9991 transform: --- perform checks for recipe push_5
+9991 transform: --- type-check calls inside recipe push_5
 9991 transform: --- convert 'new' to 'allocate' for recipe push_5
 9992 new: size of "location" is 1
 9999 type: checking size of type ingredient
@@ -394,7 +396,7 @@
 9993 transform: type of number-of-locals is "literal"
 9994 transform:     checking {"default-space": <"address" : <"array" : <"location" : <>>>>}: <"address" : <"array" : <"location" : <>>>>
 9993 transform: type of default-space is <"address" : <"array" : <"location" : <>>>>
-9993 transform:   instruction: in:address:list:_elem <- next-ingredient 
+9993 transform:   instruction: in:address:list:_elem <- next-ingredient-without-typechecking 
 9994 transform:     checking {"in": <"address" : <"list" : <"_elem" : <>>>>}: <"address" : <"list" : <"_elem" : <>>>>
 9993 transform:   instruction: result <- get *in, value:offset
 9994 transform:     checking {"in": <>, "lookup": <>}: <>
@@ -418,7 +420,7 @@
 9993 transform:   after: ?0
 9993 transform: replacing in ingredient default-space:address:array:location
 9993 transform:   after: <address : <array : <number : <>>>>
-9993 transform: replacing in instruction 'in:address:list:_elem <- next-ingredient '
+9993 transform: replacing in instruction 'in:address:list:_elem <- next-ingredient-without-typechecking '
 9993 transform: replacing in ingredient in:address:list:_elem
 9993 transform: _elem => "number"
 9993 transform:   after: <address : <list : <number : <>>>>
@@ -443,7 +445,7 @@
 9993 transform: type of result is number
 9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
 9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 transform: instruction: in:address:list:_elem <- next-ingredient 
+9992 transform: instruction: in:address:list:_elem <- next-ingredient-without-typechecking 
 9993 transform:   product: in: <address : <list : <number : <>>>> -- {"in": <"address" : <"list" : <"number" : <>>>>}
 9992 transform: instruction: result <- get *in, value:offset
 9993 transform:   product: result: number -- {"result": "number"}
@@ -461,6 +463,7 @@
 9992 transform: get ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe first_4
+9991 transform: --- type-check calls inside recipe first_4
 9991 transform: --- convert 'new' to 'allocate' for recipe first_4
 9992 new: size of "location" is 1
 9991 transform: --- checking reply instructions against header for first_4
@@ -493,7 +496,7 @@
 9993 transform: type of number-of-locals is "literal"
 9994 transform:     checking {"default-space": <"address" : <"array" : <"location" : <>>>>}: <"address" : <"array" : <"location" : <>>>>
 9993 transform: type of default-space is <"address" : <"array" : <"location" : <>>>>
-9993 transform:   instruction: in:address:list:_elem <- next-ingredient 
+9993 transform:   instruction: in:address:list:_elem <- next-ingredient-without-typechecking 
 9994 transform:     checking {"in": <"address" : <"list" : <"_elem" : <>>>>}: <"address" : <"list" : <"_elem" : <>>>>
 9993 transform:   instruction: result <- get *in, next:offset
 9994 transform:     checking {"in": <>, "lookup": <>}: <>
@@ -517,7 +520,7 @@
 9993 transform:   after: ?0
 9993 transform: replacing in ingredient default-space:address:array:location
 9993 transform:   after: <address : <array : <number : <>>>>
-9993 transform: replacing in instruction 'in:address:list:_elem <- next-ingredient '
+9993 transform: replacing in instruction 'in:address:list:_elem <- next-ingredient-without-typechecking '
 9993 transform: replacing in ingredient in:address:list:_elem
 9993 transform: _elem => "number"
 9993 transform:   after: <address : <list : <number : <>>>>
@@ -542,7 +545,7 @@
 9993 transform: type of result is <address : <list : <number : <>>>>
 9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
 9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 transform: instruction: in:address:list:_elem <- next-ingredient 
+9992 transform: instruction: in:address:list:_elem <- next-ingredient-without-typechecking 
 9993 transform:   product: in: <address : <list : <number : <>>>> -- {"in": <"address" : <"list" : <"number" : <>>>>}
 9992 transform: instruction: result <- get *in, next:offset
 9993 transform:   product: result: <address : <list : <number : <>>>> -- {"result": <"address" : <"list" : <"number" : <>>>>}
@@ -560,6 +563,7 @@
 9992 transform: get ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe rest_3
+9991 transform: --- type-check calls inside recipe rest_3
 9991 transform: --- convert 'new' to 'allocate' for recipe rest_3
 9992 new: size of "location" is 1
 9991 transform: --- checking reply instructions against header for rest_3
@@ -621,6 +625,7 @@
 9992 transform: rest ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe run1001
+9991 transform: --- type-check calls inside recipe run1001
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
@@ -629,9 +634,9 @@
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
- 104 run: x:_elem <- next-ingredient 
+ 104 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 3 in location 1002
- 104 run: in:address:list:_elem <- next-ingredient 
+ 104 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1003
  104 run: result:address:list:_elem <- new {(list _elem): type}
 9999 mem: new alloc: 1007
@@ -675,9 +680,9 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 104 run: x:_elem <- next-ingredient 
+ 104 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 4 in location 1002
- 104 run: in:address:list:_elem <- next-ingredient 
+ 104 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1003
  104 run: result:address:list:_elem <- new {(list _elem): type}
 9999 mem: new alloc: 1009
@@ -721,9 +726,9 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 104 run: x:_elem <- next-ingredient 
+ 104 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 5 in location 1002
- 104 run: in:address:list:_elem <- next-ingredient 
+ 104 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1009 in location 1003
  104 run: result:address:list:_elem <- new {(list _elem): type}
 9999 mem: new alloc: 1011
@@ -768,7 +773,7 @@
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1013
- 104 run: in:address:list:_elem <- next-ingredient 
+ 104 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1015
  104 run: result <- get *in, value:offset
 9999 mem: location 1015 is 1011
@@ -792,7 +797,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:list:_elem <- next-ingredient 
+ 104 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1015
  104 run: result <- get *in, next:offset
 9999 mem: location 1015 is 1011
@@ -817,7 +822,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:list:_elem <- next-ingredient 
+ 104 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1009 in location 1015
  104 run: result <- get *in, value:offset
 9999 mem: location 1015 is 1009
@@ -841,7 +846,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:list:_elem <- next-ingredient 
+ 104 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1009 in location 1015
  104 run: result <- get *in, next:offset
 9999 mem: location 1015 is 1009
@@ -866,7 +871,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:list:_elem <- next-ingredient 
+ 104 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1015
  104 run: result <- get *in, value:offset
 9999 mem: location 1015 is 1007
@@ -890,7 +895,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:list:_elem <- next-ingredient 
+ 104 run: in:address:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1015
  104 run: result <- get *in, next:offset
 9999 mem: location 1015 is 1007

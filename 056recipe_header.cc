@@ -138,14 +138,95 @@ if (result.has_header) {
 :(before "End Rewrite Instruction(curr, recipe result)")
 if (curr.name == "load-ingredients") {
   curr.clear();
-  recipe_ordinal op = get(Recipe_ordinal, "next-ingredient");
+  recipe_ordinal op = get(Recipe_ordinal, "next-ingredient-without-typechecking");
   for (long long int i = 0; i < SIZE(result.ingredients); ++i) {
     curr.operation = op;
-    curr.name = "next-ingredient";
+    curr.name = "next-ingredient-without-typechecking";
     curr.products.push_back(result.ingredients.at(i));
     result.steps.push_back(curr);
     curr.clear();
   }
+}
+
+//: internal version of next-ingredient; don't call this directly
+:(before "End Primitive Recipe Declarations")
+NEXT_INGREDIENT_WITHOUT_TYPECHECKING,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "next-ingredient-without-typechecking", NEXT_INGREDIENT_WITHOUT_TYPECHECKING);
+:(before "End Primitive Recipe Checks")
+case NEXT_INGREDIENT_WITHOUT_TYPECHECKING: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case NEXT_INGREDIENT_WITHOUT_TYPECHECKING: {
+  assert(!Current_routine->calls.empty());
+  if (current_call().next_ingredient_to_process < SIZE(current_call().ingredient_atoms)) {
+    products.push_back(
+        current_call().ingredient_atoms.at(current_call().next_ingredient_to_process));
+    assert(SIZE(products) == 1);  products.resize(2);  // push a new vector
+    products.at(1).push_back(1);
+    ++current_call().next_ingredient_to_process;
+  }
+  else {
+    raise_error << maybe(current_recipe_name()) << "no ingredient to save in " << current_instruction().products.at(0).original_string << '\n' << end();
+    products.resize(2);
+    products.at(0).push_back(0);
+    products.at(1).push_back(0);
+  }
+  break;
+}
+
+//:: Check all calls against headers.
+
+:(scenario show_clear_error_on_bad_call)
+% Hide_errors = true;
+recipe main [
+  1:number <- foo 34
+]
+recipe foo x:boolean -> y:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
++error: main: ingredient 0 has the wrong type at '1:number <- foo 34'
+
+:(scenario show_clear_error_on_bad_call_2)
+% Hide_errors = true;
+recipe main [
+  1:boolean <- foo 34
+]
+recipe foo x:number -> y:number [
+  local-scope
+  load-ingredients
+  reply x
+]
++error: main: product 0 has the wrong type at '1:boolean <- foo 34'
+
+:(after "Transform.push_back(check_instruction)")
+Transform.push_back(check_calls_against_header);  // idempotent
+:(code)
+void check_calls_against_header(const recipe_ordinal r) {
+  trace(9991, "transform") << "--- type-check calls inside recipe " << get(Recipe, r).name << end();
+  const recipe& caller = get(Recipe, r);
+  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+    const instruction& inst = caller.steps.at(i);
+    if (inst.operation < MAX_PRIMITIVE_RECIPES) continue;
+    const recipe& callee = get(Recipe, inst.operation);
+    if (!callee.has_header) continue;
+    for (long int i = 0; i < smaller(SIZE(inst.ingredients), SIZE(callee.ingredients)); ++i) {
+      if (!types_coercible(callee.ingredients.at(i), inst.ingredients.at(i)))
+        raise_error << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << inst.to_string() << "'\n" << end();
+    }
+    for (long int i = 0; i < smaller(SIZE(inst.products), SIZE(callee.products)); ++i) {
+      if (is_dummy(inst.products.at(i))) continue;
+      if (!types_coercible(callee.products.at(i), inst.products.at(i)))
+        raise_error << maybe(caller.name) << "product " << i << " has the wrong type at '" << inst.to_string() << "'\n" << end();
+    }
+  }
+}
+
+inline long long int smaller(long long int a, long long int b) {
+  return a < b ? a : b;
 }
 
 //:: Check types going in and out of all recipes with headers.

@@ -57,6 +57,7 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
 9992 transform: trace-should-contain ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe scenario-buffer-lines-blocks-until-newline
+9991 transform: --- type-check calls inside recipe scenario-buffer-lines-blocks-until-newline
 9991 transform: --- convert 'new' to 'allocate' for recipe scenario-buffer-lines-blocks-until-newline
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
@@ -340,6 +341,7 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
 9992 transform: trace ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe run1001
+9991 transform: --- type-check calls inside recipe run1001
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
@@ -348,7 +350,7 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
- 104 run: capacity:number <- next-ingredient 
+ 104 run: capacity:number <- next-ingredient-without-typechecking 
 9999 mem: storing 10 in location 1002
  104 run: result <- new channel:type
 9999 mem: new alloc: 1007
@@ -401,7 +403,7 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 104 run: capacity:number <- next-ingredient 
+ 104 run: capacity:number <- next-ingredient-without-typechecking 
 9999 mem: storing 10 in location 1002
  104 run: result <- new channel:type
 9999 mem: new alloc: 1022
@@ -456,7 +458,7 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
 9999 mem: new alloc: 1037
- 104 run: chan:address:channel <- next-ingredient 
+ 104 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1039
  104 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1022
@@ -503,15 +505,15 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 14
 9999 mem: new alloc: 101000
- 104 run: in:address:channel <- next-ingredient 
+ 104 run: in:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 101002
- 104 run: out:address:channel <- next-ingredient 
+ 104 run: out:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 101003
  104 run: line:address:buffer <- new-buffer 30
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 105 run: capacity:number <- next-ingredient 
+ 105 run: capacity:number <- next-ingredient-without-typechecking 
 9999 mem: storing 30 in location 1039
  105 run: result <- new buffer:type
 9999 mem: new alloc: 101015
@@ -550,14 +552,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
 9999 mem: new alloc: 101048
- 105 run: chan:address:channel <- next-ingredient 
+ 105 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 101050
  105 run: empty?:boolean <- channel-empty? chan
 9999 mem: location 101050 is 1007
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1007
@@ -611,7 +613,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1022
@@ -651,9 +653,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1043
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1045
- 106 run: val:character <- next-ingredient 
+ 106 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1046
  106 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1007
@@ -661,7 +663,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1054
- 107 run: chan:address:channel <- next-ingredient 
+ 107 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1056
  107 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1007
@@ -682,7 +684,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  108 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
 9999 mem: new alloc: 1062
- 108 run: chan:address:channel <- next-ingredient 
+ 108 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1064
  108 run: q:address:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1007
@@ -847,9 +849,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: in:address:buffer <- next-ingredient 
+ 105 run: in:address:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 101050
- 105 run: c:character <- next-ingredient 
+ 105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 101051
  105 run: len:address:number <- get-address *in, length:offset
 9999 mem: location 101050 is 101015
@@ -869,7 +871,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 106 run: in:address:buffer <- next-ingredient 
+ 106 run: in:address:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 1002
  106 run: len:number <- get *in, length:offset
 9999 mem: location 1002 is 101015
@@ -951,14 +953,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: chan:address:channel <- next-ingredient 
+ 105 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 101050
  105 run: empty?:boolean <- channel-empty? chan
 9999 mem: location 101050 is 1007
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1007
@@ -1012,7 +1014,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1022
@@ -1051,16 +1053,16 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1045
- 106 run: val:character <- next-ingredient 
+ 106 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 98 in location 1046
  106 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1007
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 107 run: chan:address:channel <- next-ingredient 
+ 107 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1056
  107 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1007
@@ -1080,7 +1082,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 trace: incrementing callstack depth to 7
  108 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 108 run: chan:address:channel <- next-ingredient 
+ 108 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1064
  108 run: q:address:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1007
@@ -1245,9 +1247,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: in:address:buffer <- next-ingredient 
+ 105 run: in:address:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 101050
- 105 run: c:character <- next-ingredient 
+ 105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 98 in location 101051
  105 run: len:address:number <- get-address *in, length:offset
 9999 mem: location 101050 is 101015
@@ -1267,7 +1269,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 106 run: in:address:buffer <- next-ingredient 
+ 106 run: in:address:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 1002
  106 run: len:number <- get *in, length:offset
 9999 mem: location 1002 is 101015
@@ -1349,14 +1351,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: chan:address:channel <- next-ingredient 
+ 105 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 101050
  105 run: empty?:boolean <- channel-empty? chan
 9999 mem: location 101050 is 1007
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1007
@@ -1410,7 +1412,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1022
@@ -1449,16 +1451,16 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1045
- 106 run: val:character <- next-ingredient 
+ 106 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 10 in location 1046
  106 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1007
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 107 run: chan:address:channel <- next-ingredient 
+ 107 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1056
  107 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1007
@@ -1478,7 +1480,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 7
  108 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 108 run: chan:address:channel <- next-ingredient 
+ 108 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1064
  108 run: q:address:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1007
@@ -1643,9 +1645,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: in:address:buffer <- next-ingredient 
+ 105 run: in:address:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 101050
- 105 run: c:character <- next-ingredient 
+ 105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 10 in location 101051
  105 run: len:address:number <- get-address *in, length:offset
 9999 mem: location 101050 is 101015
@@ -1665,7 +1667,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 106 run: in:address:buffer <- next-ingredient 
+ 106 run: in:address:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 1002
  106 run: len:number <- get *in, length:offset
 9999 mem: location 1002 is 101015
@@ -1774,16 +1776,16 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 105 run: chan:address:channel <- next-ingredient 
+ 105 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1045
- 105 run: val:character <- next-ingredient 
+ 105 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1046
  105 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1022
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1056
  106 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1022
@@ -1803,7 +1805,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 107 run: chan:address:channel <- next-ingredient 
+ 107 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1064
  107 run: q:address:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1022
@@ -1925,16 +1927,16 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 105 run: chan:address:channel <- next-ingredient 
+ 105 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1045
- 105 run: val:character <- next-ingredient 
+ 105 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 98 in location 1046
  105 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1022
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1056
  106 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1022
@@ -1954,7 +1956,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 107 run: chan:address:channel <- next-ingredient 
+ 107 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1064
  107 run: q:address:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1022
@@ -2076,16 +2078,16 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 105 run: chan:address:channel <- next-ingredient 
+ 105 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1045
- 105 run: val:character <- next-ingredient 
+ 105 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 10 in location 1046
  105 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1022
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1056
  106 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1022
@@ -2105,7 +2107,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 6
  107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 107 run: chan:address:channel <- next-ingredient 
+ 107 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1064
  107 run: q:address:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1022
@@ -2220,7 +2222,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 105 run: capacity:number <- next-ingredient 
+ 105 run: capacity:number <- next-ingredient-without-typechecking 
 9999 mem: storing 30 in location 1039
  105 run: result <- new buffer:type
 9999 mem: new alloc: 101058
@@ -2258,14 +2260,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 4
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: chan:address:channel <- next-ingredient 
+ 105 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 101050
  105 run: empty?:boolean <- channel-empty? chan
 9999 mem: location 101050 is 1007
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1007
@@ -2319,7 +2321,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 trace: incrementing callstack depth to 5
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1022

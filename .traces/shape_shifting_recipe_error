@@ -79,7 +79,7 @@
 9993 transform: type of a is "_t"
 9994 transform:     checking {"b": "_t"}: "_t"
 9993 transform: type of b is "_t"
-9993 transform:   instruction: a:_t <- next-ingredient 
+9993 transform:   instruction: a:_t <- next-ingredient-without-typechecking 
 9994 transform:     checking {"a": "_t"}: "_t"
 9993 transform:   instruction: b <- copy a
 9994 transform:     checking {"a": <>}: <>
@@ -99,26 +99,10 @@
 9991 transform: --- perform checks for recipe main
    0 error: main: undefined operation in 'reply '
 
+9991 transform: --- type-check calls inside recipe main
+   0 error: main: ingredient 0 has the wrong type at 'b:address:number <- foo a'
+
+   0 error: main: product 0 has the wrong type at 'b:address:number <- foo a'
+
 9991 transform: --- convert 'new' to 'allocate' for recipe main
 9991 transform: --- parsing any uninitialized reagents as integers
-9999 trace: new routine; incrementing callstack depth to 1
-9999 new: routine allocated memory from 1000 to 101000
-9990 schedule: main
- 102 run: a:number <- copy 3
-9999 mem: storing 3 in location 1
- 102 run: b:address:number <- foo a
-9999 mem: location 1 is 3
-9999 trace: incrementing callstack depth to 2
-   0 error: ran into unspecialized shape-shifting recipe foo
-
- 103 run: a:_t <- next-ingredient 
-   0 error: foo: wrong type for ingredient a:_t
-
-   0 error:    (we're inside recipe foo a:_t -> b:_t)
-
-   0 error:    (we're trying to call 'b:address:number <- foo a' inside recipe main)
-
-   0 error: a:_t <- next-ingredient : reagent not initialized: a:_t
-
-   0 error: can't write to location 0 in 'a:_t <- next-ingredient '
-

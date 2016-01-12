@@ -28,6 +28,7 @@
 9992 transform: memory-should-contain ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe scenario-channel-write-increments-free
+9991 transform: --- type-check calls inside recipe scenario-channel-write-increments-free
 9991 transform: --- convert 'new' to 'allocate' for recipe scenario-channel-write-increments-free
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
@@ -96,6 +97,7 @@
 9992 transform: get ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe run1001
+9991 transform: --- type-check calls inside recipe run1001
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
@@ -104,7 +106,7 @@
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
- 104 run: capacity:number <- next-ingredient 
+ 104 run: capacity:number <- next-ingredient-without-typechecking 
 9999 mem: storing 3 in location 1002
  104 run: result <- new channel:type
 9999 mem: new alloc: 1007
@@ -159,9 +161,9 @@
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1015
- 104 run: chan:address:channel <- next-ingredient 
+ 104 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1017
- 104 run: val:character <- next-ingredient 
+ 104 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 34 in location 1018
  104 run: full:boolean <- channel-full? chan
 9999 mem: location 1017 is 1007
@@ -169,7 +171,7 @@
  105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1026
- 105 run: chan:address:channel <- next-ingredient 
+ 105 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1028
  105 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1028 is 1007
@@ -190,7 +192,7 @@
  106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
 9999 mem: new alloc: 1034
- 106 run: chan:address:channel <- next-ingredient 
+ 106 run: chan:address:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1036
  106 run: q:address:array:character <- get *chan, data:offset
 9999 mem: location 1036 is 1007

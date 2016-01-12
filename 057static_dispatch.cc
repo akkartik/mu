@@ -359,7 +359,7 @@ recipe foo x:number -> y:number [
   load-ingredients
   reply 34
 ]
-+error: foo: wrong type for ingredient x:number
++error: main: ingredient 0 has the wrong type at '1:number/raw <- foo x'
 -mem: storing 34 in location 1
 
 :(scenario static_dispatch_dispatches_literal_to_boolean_before_character)
@@ -412,43 +412,6 @@ recipe foo x:number -> y:number [
 ]
 # number variant is preferred
 +mem: storing 35 in location 1
-
-//: after we make all attempts to dispatch, any unhandled cases will end up at
-//: some wrong variant and trigger an error while trying to load-ingredients
-
-:(scenario static_dispatch_shows_clear_error_on_missing_variant)
-% Hide_errors = true;
-recipe main [
-  1:number <- foo 34
-]
-recipe foo x:boolean -> y:number [
-  local-scope
-  load-ingredients
-  reply 35
-]
-+error: foo: wrong type for ingredient x:boolean
-+error:   (we're inside recipe foo x:boolean -> y:number)
-+error:   (we're trying to call '1:number <- foo 34' inside recipe main)
-
-:(before "End next-ingredient Type Mismatch Error")
-raise_error << "   (we're inside " << header_label(current_call().running_recipe) << ")\n" << end();
-raise_error << "   (we're trying to call '" << to_instruction(*++Current_routine->calls.begin()).to_string() << "' inside " << header_label((++Current_routine->calls.begin())->running_recipe) << ")\n" << end();
-
-:(scenario static_dispatch_shows_clear_error_on_missing_variant_2)
-% Hide_errors = true;
-recipe main [
-  1:boolean <- foo 34
-]
-recipe foo x:number -> y:number [
-  local-scope
-  load-ingredients
-  reply x
-]
-+error: foo: reply ingredient x can't be saved in 1:boolean
-+error:   (we just returned from recipe foo x:number -> y:number)
-
-:(before "End reply Type Mismatch Error")
-raise_error << "   (we just returned from " << header_label(caller_instruction.operation) << ")\n" << end();
 
 :(code)
 string header_label(recipe_ordinal r) {

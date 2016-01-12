@@ -51,6 +51,7 @@
 9992 transform: memory-should-contain ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe scenario-inserting-into-duplex-list
+9991 transform: --- type-check calls inside recipe scenario-inserting-into-duplex-list
 9991 transform: --- convert 'new' to 'allocate' for recipe scenario-inserting-into-duplex-list
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
@@ -300,7 +301,7 @@
 9993 transform: type of number-of-locals is "literal"
 9994 transform:     checking {"default-space": <"address" : <"array" : <"location" : <>>>>}: <"address" : <"array" : <"location" : <>>>>
 9993 transform: type of default-space is <"address" : <"array" : <"location" : <>>>>
-9993 transform:   instruction: in:address:duplex-list:_elem <- next-ingredient 
+9993 transform:   instruction: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9994 transform:     checking {"in": <"address" : <"duplex-list" : <"_elem" : <>>>>}: <"address" : <"duplex-list" : <"_elem" : <>>>>
 9993 transform:   instruction: jump-if in, 1:offset
 9994 transform:     checking {"in": <>}: <>
@@ -331,7 +332,7 @@
 9993 transform:   after: ?0
 9993 transform: replacing in ingredient default-space:address:array:location
 9993 transform:   after: <address : <array : <number : <>>>>
-9993 transform: replacing in instruction 'in:address:duplex-list:_elem <- next-ingredient '
+9993 transform: replacing in instruction 'in:address:duplex-list:_elem <- next-ingredient-without-typechecking '
 9993 transform: replacing in ingredient in:address:duplex-list:_elem
 9993 transform: _elem => "character"
 9993 transform:   after: <address : <duplex-list : <character : <>>>>
@@ -365,7 +366,7 @@
 9993 transform: type of result is character
 9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
 9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 transform: instruction: in:address:duplex-list:_elem <- next-ingredient 
+9992 transform: instruction: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9993 transform:   product: in: <address : <duplex-list : <character : <>>>> -- {"in": <"address" : <"duplex-list" : <"character" : <>>>>}
 9992 transform: instruction: jump-if in, 1:offset
 9992 transform: instruction: reply 0
@@ -387,6 +388,7 @@
 9992 transform: get ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe first_4
+9991 transform: --- type-check calls inside recipe first_4
 9991 transform: --- convert 'new' to 'allocate' for recipe first_4
 9992 new: size of "location" is 1
 9991 transform: --- checking reply instructions against header for first_4
@@ -556,6 +558,7 @@
 9992 transform: equal ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe run1001
+9991 transform: --- type-check calls inside recipe run1001
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
@@ -564,9 +567,9 @@
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1000
- 104 run: x:_elem <- next-ingredient 
+ 104 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 3 in location 1002
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1003
  104 run: result:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1008
@@ -615,9 +618,9 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 104 run: x:_elem <- next-ingredient 
+ 104 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 4 in location 1002
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1008 in location 1003
  104 run: result:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1011
@@ -682,9 +685,9 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 104 run: x:_elem <- next-ingredient 
+ 104 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 5 in location 1002
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1003
  104 run: result:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1014
@@ -750,7 +753,7 @@
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1017
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1014 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1014
@@ -779,9 +782,9 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 104 run: x:_elem <- next-ingredient 
+ 104 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 6 in location 1002
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1003
  104 run: new-node:address:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: new alloc: 1021
@@ -895,7 +898,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1014 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1014
@@ -923,7 +926,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1014 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1014
@@ -952,7 +955,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1011
@@ -980,7 +983,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1011
@@ -1009,7 +1012,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1021 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1021
@@ -1037,7 +1040,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1021 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1021
@@ -1066,7 +1069,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1008 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1008
@@ -1094,7 +1097,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1008 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1008
@@ -1123,7 +1126,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1021 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1021
@@ -1151,7 +1154,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1021 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1021
@@ -1180,7 +1183,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1011
@@ -1208,7 +1211,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1011
@@ -1237,7 +1240,7 @@
 9999 trace: incrementing callstack depth to 3
  104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 104 run: in:address:duplex-list:_elem <- next-ingredient 
+ 104 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1014 in location 1019
  104 run: jump-if in, 1:offset
 9999 mem: location 1019 is 1014

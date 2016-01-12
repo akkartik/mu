@@ -53,7 +53,7 @@
 9993 transform: type of y is number
 9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
 9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 transform: instruction: x:character <- next-ingredient 
+9992 transform: instruction: x:character <- next-ingredient-without-typechecking 
 9993 transform:   product: x: character -- {"x": "character"}
 9992 transform: instruction: reply 34
 9991 transform: --- deduce types from header for foo_2
@@ -61,7 +61,7 @@
 9993 transform: type of y is number
 9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
 9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 transform: instruction: x:boolean <- next-ingredient 
+9992 transform: instruction: x:boolean <- next-ingredient-without-typechecking 
 9993 transform:   product: x: boolean -- {"x": "boolean"}
 9992 transform: instruction: reply 35
 9991 transform: --- collect surrounding spaces for recipe main
@@ -80,12 +80,14 @@
 9992 transform: score for variant 0: -1
 9992 transform: score for variant 1: -1
 9992 transform: score for variant 2: -1
+9992 transform: score for variant 3: -1
+9992 transform: score for variant 4: -1
 9993 transform: non-strict match: ingredient 0
 9993 transform: strict match: product 0
-9992 transform: score for variant 3: 990
+9992 transform: score for variant 5: 990
 9993 transform: boolean matches literal: ingredient 0
 9993 transform: strict match: product 0
-9992 transform: score for variant 4: 999
+9992 transform: score for variant 6: 999
 9991 transform: --- resolve ambiguous calls for recipe foo
 9991 transform: --- resolve ambiguous calls for recipe foo_2
 9991 transform: --- compute instruction operations for recipe main
@@ -105,6 +107,9 @@
 9991 transform: --- perform checks for recipe main
 9991 transform: --- perform checks for recipe foo
 9991 transform: --- perform checks for recipe foo_2
+9991 transform: --- type-check calls inside recipe main
+9991 transform: --- type-check calls inside recipe foo
+9991 transform: --- type-check calls inside recipe foo_2
 9991 transform: --- convert 'new' to 'allocate' for recipe main
 9991 transform: --- convert 'new' to 'allocate' for recipe foo
 9992 new: size of "location" is 1
@@ -121,7 +126,7 @@
  103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 2
 9999 mem: new alloc: 1000
- 103 run: x:boolean <- next-ingredient 
+ 103 run: x:boolean <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1002
  103 run: reply 35
 9999 trace: reply: decrementing callstack depth from 2

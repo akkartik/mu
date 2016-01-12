@@ -81,7 +81,7 @@
 9993 transform: type of number-of-locals is "literal"
 9994 transform:     checking {"default-space": <"address" : <"array" : <"location" : <>>>>}: <"address" : <"array" : <"location" : <>>>>
 9993 transform: type of default-space is <"address" : <"array" : <"location" : <>>>>
-9993 transform:   instruction: x:address:_elem <- next-ingredient 
+9993 transform:   instruction: x:address:_elem <- next-ingredient-without-typechecking 
 9994 transform:     checking {"x": <"address" : <"_elem" : <>>>}: <"address" : <"_elem" : <>>>
 9993 transform:   instruction: y <- copy x
 9994 transform:     checking {"x": <>}: <>
@@ -104,12 +104,12 @@
 9993 transform: type of y is <address : <?-1 : <>>>
 9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
 9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 transform: instruction: x:address:_elem <- next-ingredient 
+9992 transform: instruction: x:address:_elem <- next-ingredient-without-typechecking 
 9993 transform:   product: x: <address : <?-1 : <>>> -- {"x": <"address" : <"_elem" : <>>>}
 9992 transform: instruction: y <- copy x
 9993 transform:   product: y: ?0 -- {"y": <"address" : <"_elem" : <>>>}
 9992 transform: instruction: reply y:address:_elem
-   0 error: foo_2: unknown type _elem in 'x:address:_elem <- next-ingredient '
+   0 error: foo_2: unknown type _elem in 'x:address:_elem <- next-ingredient-without-typechecking '
 
    0 error: foo_2: unknown type _elem in 'reply y:address:_elem'
 
@@ -140,6 +140,7 @@
 9991 transform: --- perform checks for recipe foo_2
    0 error: foo_2: can't copy x to y; types don't match
 
+9991 transform: --- type-check calls inside recipe foo_2
 9991 transform: --- convert 'new' to 'allocate' for recipe foo_2
 9992 new: size of "location" is 1
 9991 transform: --- checking reply instructions against header for foo_2
@@ -154,19 +155,9 @@
 9991 transform: --- perform checks for recipe main
    0 error: main: undefined operation in 'reply '
 
+9991 transform: --- type-check calls inside recipe main
+   0 error: main: ingredient 0 has the wrong type at 'foo_2 0'
+
 9991 transform: --- convert 'new' to 'allocate' for recipe main
 9992 new: size of "location" is 1
 9991 transform: --- parsing any uninitialized reagents as integers
-9999 trace: new routine; incrementing callstack depth to 1
-9999 new: routine allocated memory from 1000 to 101000
-9990 schedule: main
- 102 run: default-space:address:array:location <- new location:type, number-of-locals:literal
-9999 mem: array size is 1
-9999 mem: new alloc: 1000
- 102 run: foo_2 0
-9999 trace: incrementing callstack depth to 2
-   0 error: ran into unspecialized shape-shifting recipe foo_2
-
- 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
-9999 mem: array size is 2
-9999 mem: new alloc: 1002
