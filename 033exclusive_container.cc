@@ -26,7 +26,7 @@ recipe main [
   1:number <- copy 1  # 'point' variant
   2:number <- copy 34
   3:number <- copy 35
-  4:number-or-point <- copy 1:number-or-point/raw  # unsafe
+  4:number-or-point <- copy 1:number-or-point/unsafe
 ]
 +mem: storing 1 in location 4
 +mem: storing 34 in location 5
@@ -60,7 +60,7 @@ recipe main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
-  20:address:point <- maybe-convert 12:number-or-point/raw, 1:variant  # unsafe
+  20:address:point <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
 +mem: storing 13 in location 20
 
@@ -69,7 +69,7 @@ recipe main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
-  20:address:point <- maybe-convert 12:number-or-point/raw, 0:variant  # unsafe
+  20:address:point <- maybe-convert 12:number-or-point/unsafe, 0:variant
 ]
 +mem: storing 0 in location 20
 
