@@ -325,6 +325,7 @@ void run(string form) {
   vector<recipe_ordinal> tmp = load(form);
   transform_all();
   if (tmp.empty()) return;
+  if (trace_count("error") > 0) return;
   run(tmp.front());
 }
 

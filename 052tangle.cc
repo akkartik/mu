@@ -182,12 +182,6 @@ before +label1 [
   2:number <- copy 0
 ]
 +error: can't tangle before label +label1
-+mem: storing 0 in location 1
-+mem: storing 0 in location 4
-# label1
--mem: storing 0 in location 2
-# nothing else
-$mem: 2
 
 :(scenario tangle_keeps_labels_separate)
 recipe main [

@@ -77,9 +77,8 @@ case NEXT_INGREDIENT: {
     products.resize(2);
     // pad the first product with sufficient zeros to match its type
     long long int size = size_of(current_instruction().products.at(0));
-    for (long long int i = 0; i < size; ++i) {
+    for (long long int i = 0; i < size; ++i)
       products.at(0).push_back(0);
-    }
     products.at(1).push_back(0);
   }
   break;
