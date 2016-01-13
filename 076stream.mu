@@ -27,7 +27,7 @@ recipe read-line in:address:stream -> result:address:array:character, in:address
   idx:address:number <- get-address *in, index:offset
   s:address:array:character <- get *in, data:offset
   next-idx:number <- find-next s, 10/newline, *idx
-  result <- copy s, *idx, next-idx
+  result <- copy-range s, *idx, next-idx
   *idx <- add next-idx, 1  # skip newline
 ]
 

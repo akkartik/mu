@@ -431,10 +431,9 @@ scenario replace-character-in-text [
   ]
 ]
 
-recipe replace s:address:array:character, oldc:character, newc:character -> s:address:array:character [
+recipe replace s:address:array:character, oldc:character, newc:character, from:number/optional -> s:address:array:character [
   local-scope
   load-ingredients
-  from:number, _ <- next-ingredient  # default to 0
   len:number <- length *s
   i:number <- find-next s, oldc, from
   done?:boolean <- greater-or-equal i, len
@@ -773,9 +772,7 @@ scenario trim-newline-tab [
 
 recipe find-next text:address:array:character, pattern:character, idx:number -> next-index:number [
   local-scope
-  text:address:array:character <- next-ingredient
-  pattern:character <- next-ingredient
-  idx:number <- next-ingredient
+  load-ingredients
   len:number <- length *text
   {
     eof?:boolean <- greater-or-equal idx, len
@@ -1109,7 +1106,7 @@ recipe split s:address:array:character, delim:character -> result:address:array:
     end:number <- find-next s, delim, start
     # copy start..end into result[curr-result]
     dest:address:address:array:character <- index-address *result, curr-result
-    *dest <- copy s, start, end
+    *dest <- copy-range s, start, end
     # slide over to next slice
     start <- add end, 1
     curr-result <- add curr-result, 1
@@ -1215,9 +1212,9 @@ recipe split-first text:address:array:character, delim:character -> x:address:ar
     reply
   }
   idx:number <- find-next text, delim, 0
-  x:address:array:character <- copy text, 0, idx
+  x:address:array:character <- copy-range text, 0, idx
   idx <- add idx, 1
-  y:address:array:character <- copy text, idx, len
+  y:address:array:character <- copy-range text, idx, len
 ]
 
 scenario text-split-first [
@@ -1233,7 +1230,7 @@ scenario text-split-first [
   ]
 ]
 
-recipe copy buf:address:array:character, start:number, end:number -> result:address:array:character [
+recipe copy-range buf:address:array:character, start:number, end:number -> result:address:array:character [
   local-scope
   load-ingredients
   # if end is out of bounds, trim it
@@ -1260,7 +1257,7 @@ recipe copy buf:address:array:character, start:number, end:number -> result:addr
 scenario text-copy-copies-partial-text [
   run [
     1:address:array:character <- new [abc]
-    2:address:array:character <- copy 1:address:array:character, 1, 3
+    2:address:array:character <- copy-range 1:address:array:character, 1, 3
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
@@ -1271,7 +1268,7 @@ scenario text-copy-copies-partial-text [
 scenario text-copy-out-of-bounds [
   run [
     1:address:array:character <- new [abc]
-    2:address:array:character <- copy 1:address:array:character, 2, 4
+    2:address:array:character <- copy-range 1:address:array:character, 2, 4
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [
@@ -1282,7 +1279,7 @@ scenario text-copy-out-of-bounds [
 scenario text-copy-out-of-bounds-2 [
   run [
     1:address:array:character <- new [abc]
-    2:address:array:character <- copy 1:address:array:character, 3, 3
+    2:address:array:character <- copy-range 1:address:array:character, 3, 3
     3:array:character <- copy *2:address:array:character
   ]
   memory-should-contain [

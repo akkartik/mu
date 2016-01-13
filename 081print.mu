@@ -66,7 +66,7 @@ recipe clear-screen screen:address:screen -> screen:address:screen [
 
 recipe sync-screen screen:address:screen -> screen:address:screen [
   local-scope
-  screen:address:screen <- next-ingredient
+  load-ingredients
   {
     break-if screen
     sync-display
