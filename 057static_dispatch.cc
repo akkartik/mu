@@ -183,13 +183,8 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
     return -1;
   }
   const vector<reagent>& header_ingredients = get(Recipe, variant).ingredients;
-  if (SIZE(inst.ingredients) < SIZE(header_ingredients)) {
-    trace(9993, "transform") << "too few ingredients" << end();
-//?     cerr << "too few ingredients\n";
-    return -1;
-  }
 //?   cerr << "=== checking ingredients\n";
-  for (long long int i = 0; i < SIZE(header_ingredients); ++i) {
+  for (long long int i = 0; i < min(SIZE(inst.ingredients), SIZE(header_ingredients)); ++i) {
     if (!types_match(header_ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "mismatch: ingredient " << i << end();
 //?       cerr << "mismatch: ingredient " << i << '\n';
@@ -212,13 +207,8 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
     }
   }
 //?   cerr << "=== done checking ingredients\n";
-  if (SIZE(inst.products) > SIZE(get(Recipe, variant).products)) {
-    trace(9993, "transform") << "too few products" << end();
-//?     cerr << "too few products\n";
-    return -1;
-  }
   const vector<reagent>& header_products = get(Recipe, variant).products;
-  for (long long int i = 0; i < SIZE(inst.products); ++i) {
+  for (long long int i = 0; i < min(SIZE(header_products), SIZE(inst.products)); ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!types_match(header_products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "mismatch: product " << i << end();
@@ -242,8 +232,8 @@ long long int variant_score(const instruction& inst, recipe_ordinal variant) {
     }
   }
   // the greater the number of unused ingredients/products, the lower the score
-  return result - (SIZE(get(Recipe, variant).products)-SIZE(inst.products))
-                - (SIZE(inst.ingredients)-SIZE(get(Recipe, variant).ingredients));  // ok to go negative
+  return result - abs(SIZE(get(Recipe, variant).products)-SIZE(inst.products))
+                - abs(SIZE(inst.ingredients)-SIZE(get(Recipe, variant).ingredients));
 }
 
 :(scenario static_dispatch_disabled_on_headerless_definition)

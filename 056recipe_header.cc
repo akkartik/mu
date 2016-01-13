@@ -168,9 +168,11 @@ case NEXT_INGREDIENT_WITHOUT_TYPECHECKING: {
     ++current_call().next_ingredient_to_process;
   }
   else {
-    raise_error << maybe(current_recipe_name()) << "no ingredient to save in " << current_instruction().products.at(0).original_string << '\n' << end();
     products.resize(2);
-    products.at(0).push_back(0);
+    // pad the first product with sufficient zeros to match its type
+    long long int size = size_of(current_instruction().products.at(0));
+    for (long long int i = 0; i < size; ++i)
+      products.at(0).push_back(0);
     products.at(1).push_back(0);
   }
   break;
