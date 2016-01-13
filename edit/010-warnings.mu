@@ -571,12 +571,14 @@ reply b
   # screen prints error message
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .recipe foo \\\[                                      ┊                                                 .
+    .recipe foo [                                      ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .a:number <- next-ingredient                       ┊                                                x.
     .b:number <- next-ingredient                       ┊foo 4, 0                                         .
     .stash [dividing by], b                            ┊foo: divide by zero in '_, c:number <- divide-wi↩.
     ._, c:number <- divide-with-remainder a, b         ┊th-remainder a, b'                               .
+    .reply b                                           ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .]                                                 ┊                                                 .
   ]
   # click on the call in the sandbox
   assume-console [
@@ -588,12 +590,13 @@ reply b
   # screen should expand trace
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .recipe foo \\\[                                      ┊                                                 .
+    .recipe foo [                                      ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .a:number <- next-ingredient                       ┊                                                x.
     .b:number <- next-ingredient                       ┊foo 4, 0                                         .
     .stash [dividing by], b                            ┊dividing by 0                                    .
     ._, c:number <- divide-with-remainder a, b         ┊foo: divide by zero in '_, c:number <- divide-wi↩.
     .reply b                                           ┊th-remainder a, b'                               .
+    .]                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
   ]
 ]

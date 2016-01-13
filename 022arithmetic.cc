@@ -269,6 +269,9 @@ case DIVIDE_WITH_REMAINDER: {
   long long int b = static_cast<long long int>(ingredients.at(1).at(0));
   if (b == 0) {
     raise_error << maybe(current_recipe_name()) << "divide by zero in '" << current_instruction().to_string() << "'\n" << end();
+    products.resize(2);
+    products.at(0).push_back(0);
+    products.at(1).push_back(0);
     break;
   }
   long long int quotient = a / b;
