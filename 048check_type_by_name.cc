@@ -47,16 +47,14 @@ void deduce_missing_type(map<string, type_tree*>& type, map<string, string_tree*
 
 void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, const reagent& x, const recipe_ordinal r) {
   if (is_literal(x)) return;
-  // if you use raw locations you're probably doing something unsafe
-  if (is_integer(x.name)) return;
-  if (!x.type) return;  // will throw a more precise error elsewhere
+  if (is_integer(x.name)) return;  // if you use raw locations you're probably doing something unsafe
+  if (!x.type) return;  // might get filled in by other logic later
   if (!contains_key(type, x.name)) {
     trace(9992, "transform") << x.name << " => " << debug_string(x.type) << end();
     type[x.name] = x.type;
   }
-  if (!contains_key(type_name, x.name)) {
+  if (!contains_key(type_name, x.name))
     type_name[x.name] = x.properties.at(0).second;
-  }
   if (!types_strictly_match(type[x.name], x.type))
     raise_error << maybe(get(Recipe, r).name) << x.name << " used with multiple types\n" << end();
 }
