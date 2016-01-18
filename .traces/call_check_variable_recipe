@@ -1,0 +1,84 @@
+9991 parse: --- defining main
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"f": <>}
+9993 parse:   product: {"1": <"recipe" : <"boolean" : <"->" : <"boolean" : <>>>>>}
+9992 load: after rewriting: {1: (recipe boolean -> boolean)} <- copy f
+9993 parse: instruction: call
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"1": <"recipe" : <"boolean" : <"->" : <"boolean" : <>>>>>}
+9993 parse:   ingredient: {"34": "literal"}
+9993 parse:   product: {"2": "number"}
+9992 load: after rewriting: 2:number <- call {1: (recipe boolean -> boolean)}, 34
+9999 parse: recipe main has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: x:boolean
+9999 parse: header product: y:boolean
+9991 parse: --- defining f
+9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"x": <>}
+9993 parse:   product: {"y": <>}
+9992 load: after rewriting: y <- copy x
+9999 parse: recipe f has a header
+9990 transform: === transform_all()
+9991 transform: --- checking reply instructions against header for f
+9991 transform: --- fill in reply ingredients from header for recipe main
+9991 transform: --- fill in reply ingredients from header for recipe f
+9991 transform: --- deduce types for recipe main
+9991 transform: --- deduce types for recipe f
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: x => boolean
+9992 transform: x <= boolean
+9992 transform: y => boolean
+9991 transform: --- deduce types from header for f
+9993 transform: type of x is boolean
+9993 transform: type of y is boolean
+9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 transform: instruction: x:boolean <- next-ingredient-without-typechecking 
+9993 transform:   product: x: boolean -- {"x": "boolean"}
+9992 transform: instruction: y <- copy x
+9993 transform:   product: y: NULLNULLNULL -- {"y": <>}
+9993 transform: type of y is boolean
+9992 transform: instruction: reply y:boolean
+9991 transform: --- collect surrounding spaces for recipe main
+9991 transform: --- collect surrounding spaces for recipe f
+9991 transform: --- transform names for recipe main
+9991 transform: --- transform names for recipe f
+9993 name: assign x 1
+9993 name: assign y 2
+9991 transform: --- resolve ambiguous calls for recipe main
+9991 transform: --- resolve ambiguous calls for recipe f
+9991 transform: --- compute instruction operations for recipe main
+9991 transform: --- compute instruction operations for recipe f
+9991 transform: --- transform braces for recipe main
+9992 transform: copy ...
+9992 transform: call ...
+9992 transform:  ...
+9991 transform: --- transform braces for recipe f
+9992 transform: local-scope ...
+9992 transform:  ...
+9992 transform: copy ...
+9992 transform:  ...
+9991 transform: --- perform checks for recipe main
+9991 transform: --- perform checks for recipe f
+9991 transform: --- type-check 'call' instructions inside recipe main
+   0 error: main: ingredient 0 has the wrong type at '2:number <- call {1: (recipe boolean -> boolean)}, 34'
+
+   0 error: main: product 0 has the wrong type at '2:number <- call {1: (recipe boolean -> boolean)}, 34'
+
+9991 transform: --- type-check 'call' instructions inside recipe f
+9991 transform: --- type-check calls inside recipe main
+9991 transform: --- type-check calls inside recipe f
+9991 transform: --- convert 'new' to 'allocate' for recipe main
+9991 transform: --- convert 'new' to 'allocate' for recipe f
+9992 new: size of "location" is 1
+9991 transform: --- checking reply instructions against header for f
+9991 transform: --- parsing any uninitialized reagents as integers

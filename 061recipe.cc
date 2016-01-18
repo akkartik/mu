@@ -85,6 +85,20 @@ recipe f x:boolean -> y:boolean [
 +error: main: ingredient 0 has the wrong type at '1:number <- call f, 34'
 +error: main: product 0 has the wrong type at '1:number <- call f, 34'
 
+:(scenario call_check_variable_recipe)
+% Hide_errors = true;
+recipe main [
+  {1: (recipe boolean -> boolean)} <- copy f
+  2:number <- call {1: (recipe boolean -> boolean)}, 34
+]
+recipe f x:boolean -> y:boolean [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++error: main: ingredient 0 has the wrong type at '2:number <- call {1: (recipe boolean -> boolean)}, 34'
++error: main: product 0 has the wrong type at '2:number <- call {1: (recipe boolean -> boolean)}, 34'
+
 :(after "Transform.push_back(check_instruction)")
 Transform.push_back(check_indirect_calls_against_header);  // idempotent
 :(code)
@@ -114,7 +128,17 @@ void check_indirect_calls_against_header(const recipe_ordinal r) {
 recipe from_reagent(const reagent& r) {
   assert(r.properties.at(0).second->value == "recipe");
   recipe result_header;  // will contain only ingredients and products, nothing else
-  for (const string_tree* curr = r.properties.at(0).second->right; curr; curr=curr->right) {
+  result_header.has_header = true;
+  const string_tree* curr = r.properties.at(0).second->right;
+  for (; curr; curr=curr->right) {
+    if (curr->value == "->") {
+      curr = curr->right;  // skip delimiter
+      break;
+    }
+    result_header.ingredients.push_back("recipe:"+curr->value);
+  }
+  for (; curr; curr=curr->right) {
+    result_header.products.push_back("recipe:"+curr->value);
   }
   return result_header;
 }
