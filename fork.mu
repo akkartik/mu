@@ -1,7 +1,7 @@
 # example program: running multiple routines
 
 recipe main [
-  start-running thread2:recipe
+  start-running thread2
   {
     $print 34
     loop

@@ -332,10 +332,8 @@ void deduce_types_from_header(const recipe_ordinal r) {
     trace(9992, "transform") << "instruction: " << inst.to_string() << end();
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
       if (inst.ingredients.at(i).type) continue;
-      if (header_type.find(inst.ingredients.at(i).name) == header_type.end()) {
-        raise << maybe(caller_recipe.name) << "unknown variable " << inst.ingredients.at(i).name << " in '" << inst.to_string() << "'\n" << end();
+      if (header_type.find(inst.ingredients.at(i).name) == header_type.end())
         continue;
-      }
       if (!inst.ingredients.at(i).type)
         inst.ingredients.at(i).type = new type_tree(*get(header_type, inst.ingredients.at(i).name));
       if (!inst.ingredients.at(i).properties.at(0).second)
@@ -345,10 +343,8 @@ void deduce_types_from_header(const recipe_ordinal r) {
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
       trace(9993, "transform") << "  product: " << debug_string(inst.products.at(i)) << end();
       if (inst.products.at(i).type) continue;
-      if (header_type.find(inst.products.at(i).name) == header_type.end()) {
-        raise << maybe(caller_recipe.name) << "unknown variable " << inst.products.at(i).name << " in '" << inst.to_string() << "'\n" << end();
+      if (header_type.find(inst.products.at(i).name) == header_type.end())
         continue;
-      }
       if (!inst.products.at(i).type)
         inst.products.at(i).type = new type_tree(*get(header_type, inst.products.at(i).name));
       if (!inst.products.at(i).properties.at(0).second)

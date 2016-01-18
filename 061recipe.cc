@@ -3,23 +3,24 @@
 //: recipes, return recipes from recipes and so on.
 
 :(before "End Mu Types Initialization")
-// 'recipe' is a literal
-put(Type_ordinal, "recipe", 0);
-// 'recipe-ordinal' is the literal that can store recipe literals
-type_ordinal recipe_ordinal = put(Type_ordinal, "recipe-ordinal", Next_type_ordinal++);
-get_or_insert(Type, recipe_ordinal).name = "recipe-ordinal";
+put(Type_ordinal, "recipe-literal", 0);
+// 'recipe' variables can store recipe-literal
+type_ordinal recipe = put(Type_ordinal, "recipe", Next_type_ordinal++);
+get_or_insert(Type, recipe).name = "recipe";
 
-:(before "End Reagent-parsing Exceptions")
-if (r.properties.at(0).second && r.properties.at(0).second->value == "recipe") {
-  r.set_value(get(Recipe_ordinal, r.name));
-  return;
+:(before "End transform_names Exceptions")
+if (!x.properties.at(0).second && contains_key(Recipe_ordinal, x.name)) {
+  x.properties.at(0).second = new string_tree("recipe-literal");
+  x.type = new type_tree(get(Type_ordinal, "recipe-literal"));
+  x.set_value(get(Recipe_ordinal, x.name));
+  return true;
 }
 
 :(code)
 bool is_mu_recipe(reagent r) {
   if (!r.type) return false;
-  if (r.type->value == get(Type_ordinal, "recipe")) return true;
-  if (r.type->value == get(Type_ordinal, "recipe-ordinal")) return true;
+  if (r.properties.at(0).second->value == "recipe") return true;
+  if (r.properties.at(0).second->value == "recipe-literal") return true;
   // End is_mu_recipe Cases
   return false;
 }

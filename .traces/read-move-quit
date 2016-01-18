@@ -6,10 +6,10 @@
 9992 load: after rewriting: screen:address:screen <- new-fake-screen 20/width, 2/height
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:channel <- new-channel 2\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting\n    assert 4:boolean/waiting?, [\nF read-move-quit: routine failed to pause after coming up (before any keys were pressed)]\n    # press 'q'\n    1:address:channel <- write 1:address:channel, 113/q\n    restart 2:number/routine\n    # 'read-move' completes\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/completed? <- equal 3:number/routine-state, 1/completed\n    assert 4:boolean/completed?, [\nF read-move-quit: routine failed to terminate on 'q']\n    trace 1, [test], [reached end]\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:channel <- new-channel 2\n    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting\n    assert 4:boolean/waiting?, [\nF read-move-quit: routine failed to pause after coming up (before any keys were pressed)]\n    # press 'q'\n    1:address:channel <- write 1:address:channel, 113/q\n    restart 2:number/routine\n    # 'read-move' completes\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/completed? <- equal 3:number/routine-state, 1/completed\n    assert 4:boolean/completed?, [\nF read-move-quit: routine failed to terminate on 'q']\n    trace 1, [test], [reached end]\n  ": "literal-string"}
 9992 load: after rewriting: run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
+    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -1664,7 +1664,7 @@ F read-move-quit: routine failed to terminate on 'q']
 9999 mem: storing 1011 in location 900
  102 run: run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
+    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -1690,11 +1690,11 @@ F read-move-quit: routine failed to terminate on 'q']
 9992 load: after rewriting: 1:address:channel <- new-channel 2
 9993 parse: instruction: start-running
 9993 parse:   number of ingredients: 3
-9993 parse:   ingredient: {"read-move": "recipe"}
+9993 parse:   ingredient: {"read-move": <>}
 9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
 9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
 9993 parse:   product: {"2": "number", "routine": <>}
-9992 load: after rewriting: 2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
+9992 load: after rewriting: 2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
 9993 parse: instruction: wait-for-routine
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": "number"}
@@ -1870,7 +1870,7 @@ F read-move-quit: routine failed to terminate on 'q']
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1115
 9999 mem: storing 1115 in location 1
- 103 run: 2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
+ 103 run: 2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
 9999 mem: location 1 is 1115
 9999 mem: location 900 is 1011
 9999 trace: new routine; incrementing callstack depth to 3

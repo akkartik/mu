@@ -6,7 +6,7 @@
 :(scenario wait_for_location)
 recipe f1 [
   1:number <- copy 0
-  start-running f2:recipe
+  start-running f2
   wait-for-location 1:number
   # now wait for f2 to run and modify location 1 before using its value
   2:number <- copy 1:number
@@ -67,7 +67,7 @@ for (long long int i = 0; i < SIZE(Routines); ++i) {
 :(scenario wait_for_routine)
 recipe f1 [
   1:number <- copy 0
-  12:number/routine <- start-running f2:recipe
+  12:number/routine <- start-running f2
   wait-for-routine 12:number/routine
   # now wait for f2 to run and modify location 1 before using its value
   3:number <- copy 1:number

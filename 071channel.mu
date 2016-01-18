@@ -324,7 +324,7 @@ scenario buffer-lines-blocks-until-newline [
     assert 3:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after init]
     # buffer stdin into buffered-stdin, try to read from buffered-stdin
-    4:number/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin
+    4:number/buffer-routine <- start-running buffer-lines, 1:address:channel/stdin, 2:address:channel/buffered-stdin
     wait-for-routine 4:number/buffer-routine
     5:boolean <- channel-empty? 2:address:channel/buffered-stdin
     assert 5:boolean, [
