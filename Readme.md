@@ -355,7 +355,7 @@ Another example, this time with concurrency.
 
   ```
   recipe main [
-    start-running thread2:recipe
+    start-running thread2
     {
       $print 34
       loop

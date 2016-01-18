@@ -3,7 +3,7 @@
 
 :(scenario scheduler)
 recipe f1 [
-  start-running f2:recipe
+  start-running f2
   # wait for f2 to run
   {
     jump-unless 1:number, -1
@@ -158,7 +158,7 @@ case START_RUNNING: {
     break;
   }
   if (!is_mu_recipe(inst.ingredients.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'start-running' should be a recipe, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'start-running' should be a recipe, but got " << debug_string(inst.ingredients.at(0)) << '\n' << end();
     break;
   }
   break;
@@ -194,7 +194,7 @@ recipe f1 [
 :(scenario scheduler_interleaves_routines)
 % Scheduling_interval = 1;
 recipe f1 [
-  start-running f2:recipe
+  start-running f2
   1:number <- copy 0
   2:number <- copy 0
 ]
@@ -203,7 +203,7 @@ recipe f2 [
   4:number <- copy 0
 ]
 +schedule: f1
-+run: start-running f2:recipe
++run: start-running f2
 +schedule: f2
 +run: 3:number <- copy 0
 +schedule: f1
@@ -215,7 +215,7 @@ recipe f2 [
 
 :(scenario start_running_takes_ingredients)
 recipe f1 [
-  start-running f2:recipe, 3
+  start-running f2, 3
   # wait for f2 to run
   {
     jump-unless 1:number, -1
@@ -229,7 +229,7 @@ recipe f2 [
 
 :(scenario start_running_returns_routine_id)
 recipe f1 [
-  1:number <- start-running f2:recipe
+  1:number <- start-running f2
 ]
 recipe f2 [
   12:number <- copy 44
@@ -272,7 +272,7 @@ recipe f1 [
 % Hide_errors = true;
 % Scheduling_interval = 2;
 recipe f1 [
-  start-running f2:recipe
+  start-running f2
   1:number <- copy 0
   2:number <- copy 0
 ]
@@ -294,7 +294,7 @@ recipe f2 [
 
 :(scenario scheduler_kills_orphans)
 recipe main [
-  start-running f1:recipe
+  start-running f1
   # f1 never actually runs because its parent completes without waiting for it
 ]
 recipe f1 [
@@ -325,7 +325,7 @@ bool has_completed_parent(long long int routine_index) {
 :(scenario routine_state_test)
 % Scheduling_interval = 2;
 recipe f1 [
-  1:number/child-id <- start-running f2:recipe
+  1:number/child-id <- start-running f2
   12:number <- copy 0  # race condition since we don't care about location 12
   # thanks to Scheduling_interval, f2's one instruction runs in between here and completes
   2:number/state <- routine-state 1:number/child-id
@@ -447,7 +447,7 @@ case _DUMP_ROUTINES: {
 :(scenario routine_discontinues_past_limit)
 % Scheduling_interval = 2;
 recipe f1 [
-  1:number/child-id <- start-running f2:recipe
+  1:number/child-id <- start-running f2
   limit-time 1:number/child-id, 10
   # padding loop just to make sure f2 has time to completed
   2:number <- copy 20
@@ -516,7 +516,7 @@ case LIMIT_TIME: {
 
 :(scenario new_concurrent)
 recipe f1 [
-  start-running f2:recipe
+  start-running f2
   1:address:number/raw <- new number:type
   # wait for f2 to complete
   {

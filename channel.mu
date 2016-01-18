@@ -36,8 +36,8 @@ recipe main [
   local-scope
   chan:address:channel <- new-channel 3
   # create two background 'routines' that communicate by a channel
-  routine1:character <- start-running producer:recipe, chan
-  routine2:character <- start-running consumer:recipe, chan
+  routine1:number <- start-running producer, chan
+  routine2:number <- start-running consumer, chan
   wait-for-routine routine1
   wait-for-routine routine2
 ]

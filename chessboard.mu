@@ -72,10 +72,10 @@ recipe chessboard screen:address:screen, console:address:console -> screen:addre
   board:address:array:address:array:character <- initial-position
   # hook up stdin
   stdin:address:channel <- new-channel 10/capacity
-  start-running send-keys-to-channel:recipe, console, stdin, screen
+  start-running send-keys-to-channel, console, stdin, screen
   # buffer lines in stdin
   buffered-stdin:address:channel <- new-channel 10/capacity
-  start-running buffer-lines:recipe, stdin, buffered-stdin
+  start-running buffer-lines, stdin, buffered-stdin
   {
     msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
 ]
@@ -381,7 +381,7 @@ scenario read-move-blocking [
   assume-screen 20/width, 2/height
   run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
+    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -453,7 +453,7 @@ scenario read-move-quit [
   assume-screen 20/width, 2/height
   run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
+    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -480,7 +480,7 @@ scenario read-move-illegal-file [
   assume-screen 20/width, 2/height
   run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
+    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -501,7 +501,7 @@ scenario read-move-illegal-rank [
   assume-screen 20/width, 2/height
   run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
+    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -523,7 +523,7 @@ scenario read-move-empty [
   assume-screen 20/width, 2/height
   run [
     1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address:screen
+    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id

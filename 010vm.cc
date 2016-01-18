@@ -248,14 +248,14 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false), ty
   name = properties.at(0).first;
   type = new_type_tree(properties.at(0).second);
   if (is_integer(name) && type == NULL) {
-    type = new type_tree(0);
     assert(!properties.at(0).second);
     properties.at(0).second = new string_tree("literal");
+    type = new type_tree(get(Type_ordinal, "literal"));
   }
   if (name == "_" && type == NULL) {
-    type = new type_tree(0);
     assert(!properties.at(0).second);
     properties.at(0).second = new string_tree("dummy");
+    type = new type_tree(get(Type_ordinal, "literal"));
   }
   // End Parsing reagent
 }

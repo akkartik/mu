@@ -52,7 +52,6 @@ highlight link muLabel Constant
 syntax match muLiteral %[^ ]\+:type/\?[^ ,]*%
 syntax match muLiteral %[^ ]\+:offset/\?[^ ,]*%
 syntax match muLiteral %[^ ]\+:variant/\?[^ ,]*%
-syntax match muLiteral %[^ ]\+:recipe/\?[^ ,]*%
 highlight link muLiteral Constant
 syntax keyword muKeyword default-space global-space new-default-space local-scope next-ingredient ingredient load-ingredients | highlight link muKeyword Constant
 
