@@ -114,7 +114,14 @@ void run_main(int argc, char* argv[]) {
   recipe_ordinal r = get(Recipe_ordinal, "main");
   if (r) {
     routine* main_routine = new routine(r);
-    // Update main_routine
+    // pass in commandline args as ingredients to main
+    // todo: test this
+    Current_routine = main_routine;
+    for (long long int i = 1; i < argc; ++i) {
+      vector<double> arg;
+      arg.push_back(new_mu_string(argv[i]));
+      current_call().ingredient_atoms.push_back(arg);
+    }
     run(main_routine);
   }
 }
@@ -504,3 +511,23 @@ case LIMIT_TIME: {
   }
   break;
 }
+
+//:: make sure that each routine gets a different alloc to start
+
+:(scenario new_concurrent)
+recipe f1 [
+  start-running f2:recipe
+  1:address:number/raw <- new number:type
+  # wait for f2 to complete
+  {
+    loop-unless 4:number/raw
+  }
+]
+recipe f2 [
+  2:address:number/raw <- new number:type
+  # hack: assumes scheduler implementation
+  3:boolean/raw <- equal 1:address:number/raw, 2:address:number/raw
+  # signal f2 complete
+  4:number/raw <- copy 1
+]
++mem: storing 0 in location 3
