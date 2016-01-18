@@ -1,0 +1,101 @@
+9991 parse: --- defining main
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"f": <>}
+9993 parse:   product: {"1": <"recipe" : <"number" : <"->" : <"number" : <>>>>>}
+9992 load: after rewriting: {1: (recipe number -> number)} <- copy f
+9993 parse: instruction: call
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"1": <"recipe" : <"number" : <"->" : <"number" : <>>>>>}
+9993 parse:   ingredient: {"34": "literal"}
+9993 parse:   product: {"2": "number"}
+9992 load: after rewriting: 2:number <- call {1: (recipe number -> number)}, 34
+9999 parse: recipe main has a header
+9999 parse: recipe has a header; parsing
+9999 parse: header ingredient: x:number
+9999 parse: header product: y:number
+9991 parse: --- defining f
+9993 parse: instruction: local-scope
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 parse: instruction: load-ingredients
+9993 parse:   number of ingredients: 0
+9992 load: after rewriting:  
+9993 parse: instruction: copy
+9993 parse:   number of ingredients: 1
+9993 parse:   ingredient: {"x": <>}
+9993 parse:   product: {"y": <>}
+9992 load: after rewriting: y <- copy x
+9999 parse: recipe f has a header
+9990 transform: === transform_all()
+9991 transform: --- checking reply instructions against header for f
+9991 transform: --- fill in reply ingredients from header for recipe main
+9991 transform: --- fill in reply ingredients from header for recipe f
+9991 transform: --- deduce types for recipe main
+9991 transform: --- deduce types for recipe f
+9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: x => number
+9992 transform: x <= number
+9992 transform: y => number
+9991 transform: --- deduce types from header for f
+9993 transform: type of x is number
+9993 transform: type of y is number
+9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 transform: instruction: x:number <- next-ingredient-without-typechecking 
+9993 transform:   product: x: number -- {"x": "number"}
+9992 transform: instruction: y <- copy x
+9993 transform:   product: y: NULLNULLNULL -- {"y": <>}
+9993 transform: type of y is number
+9992 transform: instruction: reply y:number
+9991 transform: --- collect surrounding spaces for recipe main
+9991 transform: --- collect surrounding spaces for recipe f
+9991 transform: --- transform names for recipe main
+9991 transform: --- transform names for recipe f
+9993 name: assign x 1
+9993 name: assign y 2
+9991 transform: --- resolve ambiguous calls for recipe main
+9991 transform: --- resolve ambiguous calls for recipe f
+9991 transform: --- compute instruction operations for recipe main
+9991 transform: --- compute instruction operations for recipe f
+9991 transform: --- transform braces for recipe main
+9992 transform: copy ...
+9992 transform: call ...
+9992 transform:  ...
+9991 transform: --- transform braces for recipe f
+9992 transform: local-scope ...
+9992 transform:  ...
+9992 transform: copy ...
+9992 transform:  ...
+9991 transform: --- perform checks for recipe main
+9991 transform: --- perform checks for recipe f
+9991 transform: --- type-check calls inside recipe main
+9991 transform: --- type-check calls inside recipe f
+9991 transform: --- convert 'new' to 'allocate' for recipe main
+9991 transform: --- convert 'new' to 'allocate' for recipe f
+9992 new: size of "location" is 1
+9991 transform: --- checking reply instructions against header for f
+9991 transform: --- parsing any uninitialized reagents as integers
+9999 trace: new routine; incrementing callstack depth to 1
+9999 new: routine allocated memory from 1000 to 101000
+9990 schedule: main
+ 102 run: {1: (recipe number -> number)} <- copy f
+9999 mem: storing 1000 in location 1
+ 102 run: 2:number <- call {1: (recipe number -> number)}, 34
+9999 mem: location 1 is 1000
+9999 trace: indirect 'call': incrementing callstack depth to 2
+ 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+9999 mem: array size is 3
+9999 mem: new alloc: 1000
+ 103 run: x:number <- next-ingredient-without-typechecking 
+9999 mem: storing 34 in location 1002
+ 103 run: y <- copy x
+9999 mem: location 1002 is 34
+9999 mem: storing 34 in location 1003
+ 103 run: reply y:number
+9999 mem: location 1003 is 34
+9999 trace: reply: decrementing callstack depth from 2
+9998 run: result 0 is 34
+9999 mem: storing 34 in location 2
+ 102 run: reply 
+9999 trace: reply: decrementing callstack depth from 1
