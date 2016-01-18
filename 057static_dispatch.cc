@@ -459,6 +459,4 @@ recipe foo a:boolean -> b:number [
 +error: main: failed to find a matching call for 'y:number <- foo x'
 
 :(before "End Includes")
-using std::min;
-using std::max;
 using std::abs;

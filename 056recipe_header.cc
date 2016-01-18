@@ -215,20 +215,16 @@ void check_calls_against_header(const recipe_ordinal r) {
     if (inst.operation < MAX_PRIMITIVE_RECIPES) continue;
     const recipe& callee = get(Recipe, inst.operation);
     if (!callee.has_header) continue;
-    for (long int i = 0; i < smaller(SIZE(inst.ingredients), SIZE(callee.ingredients)); ++i) {
+    for (long int i = 0; i < min(SIZE(inst.ingredients), SIZE(callee.ingredients)); ++i) {
       if (!types_coercible(callee.ingredients.at(i), inst.ingredients.at(i)))
         raise_error << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << inst.to_string() << "'\n" << end();
     }
-    for (long int i = 0; i < smaller(SIZE(inst.products), SIZE(callee.products)); ++i) {
+    for (long int i = 0; i < min(SIZE(inst.products), SIZE(callee.products)); ++i) {
       if (is_dummy(inst.products.at(i))) continue;
       if (!types_coercible(callee.products.at(i), inst.products.at(i)))
         raise_error << maybe(caller.name) << "product " << i << " has the wrong type at '" << inst.to_string() << "'\n" << end();
     }
   }
-}
-
-inline long long int smaller(long long int a, long long int b) {
-  return a < b ? a : b;
 }
 
 //:: Check types going in and out of all recipes with headers.
@@ -459,3 +455,7 @@ recipe add2 x:number, y:number -> x:number [
   load-ingredients
 ]
 +error: main: '3:number <- add2 1:number, 2:number' should write to 1:number rather than 3:number
+
+:(before "End Includes")
+using std::min;
+using std::max;
