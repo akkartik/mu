@@ -70,7 +70,55 @@ case CALL: {
   continue;
 }
 
+//:: check types for 'call' instructions
+
+:(scenario call_check_literal_recipe)
+% Hide_errors = true;
+recipe main [
+  1:number <- call f, 34
+]
+recipe f x:boolean -> y:boolean [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++error: main: ingredient 0 has the wrong type at '1:number <- call f, 34'
++error: main: product 0 has the wrong type at '1:number <- call f, 34'
+
+:(after "Transform.push_back(check_instruction)")
+Transform.push_back(check_indirect_calls_against_header);  // idempotent
 :(code)
+void check_indirect_calls_against_header(const recipe_ordinal r) {
+  trace(9991, "transform") << "--- type-check 'call' instructions inside recipe " << get(Recipe, r).name << end();
+  const recipe& caller = get(Recipe, r);
+  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+    const instruction& inst = caller.steps.at(i);
+    if (inst.operation != CALL) continue;
+    if (inst.ingredients.empty()) continue;  // error raised above
+    const reagent& callee = inst.ingredients.at(0);
+    if (!is_mu_recipe(callee)) continue;  // error raised above
+    const recipe callee_header = is_literal(callee) ? get(Recipe, callee.value) : from_reagent(inst.ingredients.at(0));
+    if (!callee_header.has_header) continue;
+    for (long int i = /*skip callee*/1; i < min(SIZE(inst.ingredients), SIZE(callee_header.ingredients)+/*skip callee*/1); ++i) {
+      if (!types_coercible(callee_header.ingredients.at(i-/*skip callee*/1), inst.ingredients.at(i)))
+        raise_error << maybe(caller.name) << "ingredient " << i-/*skip callee*/1 << " has the wrong type at '" << inst.to_string() << "'\n" << end();
+    }
+    for (long int i = 0; i < min(SIZE(inst.products), SIZE(callee_header.products)); ++i) {
+      if (is_dummy(inst.products.at(i))) continue;
+      if (!types_coercible(callee_header.products.at(i), inst.products.at(i)))
+        raise_error << maybe(caller.name) << "product " << i << " has the wrong type at '" << inst.to_string() << "'\n" << end();
+    }
+  }
+}
+
+recipe from_reagent(const reagent& r) {
+  assert(r.properties.at(0).second->value == "recipe");
+  recipe result_header;  // will contain only ingredients and products, nothing else
+  for (const string_tree* curr = r.properties.at(0).second->right; curr; curr=curr->right) {
+  }
+  return result_header;
+}
+
 bool is_mu_recipe(reagent r) {
   if (!r.type) return false;
   if (r.properties.at(0).second->value == "recipe") return true;
