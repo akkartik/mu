@@ -137,7 +137,6 @@ void run_mu_scenario(const scenario& s) {
     Trace_stream = new trace_stream;
     setup();
   }
-  assert(Routines.empty());
   vector<recipe_ordinal> tmp = load("recipe scenario-"+s.name+" [ "+s.to_run+" ]");
   bind_special_scenario_names(tmp.at(0));
   transform_all();

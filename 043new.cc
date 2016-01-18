@@ -182,25 +182,6 @@ recipe main [
 +mem: array size is 0
 +mem: storing 1 in location 3
 
-//: Make sure that each routine gets a different alloc to start.
-:(scenario new_concurrent)
-recipe f1 [
-  start-running f2:recipe
-  1:address:number/raw <- new number:type
-  # wait for f2 to complete
-  {
-    loop-unless 4:number/raw
-  }
-]
-recipe f2 [
-  2:address:number/raw <- new number:type
-  # hack: assumes scheduler implementation
-  3:boolean/raw <- equal 1:address:number/raw, 2:address:number/raw
-  # signal f2 complete
-  4:number/raw <- copy 1
-]
-+mem: storing 0 in location 3
-
 //: If a routine runs out of its initial allocation, it should allocate more.
 :(scenario new_overflow)
 % Initial_memory_per_routine = 2;
@@ -365,17 +346,6 @@ long long int new_mu_string(const string& contents) {
   }
   // mu strings are not null-terminated in memory
   return result;
-}
-
-//: pass in commandline args as ingredients to main
-//: todo: test this
-
-:(after "Update main_routine")
-Current_routine = main_routine;
-for (long long int i = 1; i < argc; ++i) {
-  vector<double> arg;
-  arg.push_back(new_mu_string(argv[i]));
-  current_call().ingredient_atoms.push_back(arg);
 }
 
 //: stash recognizes strings
