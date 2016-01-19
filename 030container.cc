@@ -553,10 +553,7 @@ void check_or_set_invalid_types(type_tree* type, const string_tree* type_name, c
   // can't assert that type_name is non-null, even at the top of a recursive call tree
   if (!type) return;  // will throw a more precise error elsewhere
   // End Container Type Checks
-  if (type->value == 0) {
-    assert(!type->left && !type->right);
-    return;
-  }
+  if (type->value == 0) return;
   if (!contains_key(Type, type->value)) {
     if (type_name && contains_key(Type_ordinal, type_name->value))
       type->value = get(Type_ordinal, type_name->value);
