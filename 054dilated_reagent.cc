@@ -16,6 +16,22 @@ recipe main [
 ]
 # successfully parsed
 
+:(scenarios run)
+:(scenario dilated_reagent_with_comment)
+% Hide_errors = true;
+recipe main [
+  {1: number, foo: bar} <- copy 34  # test comment
+]
++parse:   product: {"1": "number", "foo": "bar"}
+$error: 0
+
+:(scenario dilated_reagent_with_comment_immediately_following)
+% Hide_errors = true;
+recipe main [
+  1:number <- copy {34: literal}  # test comment
+]
+$error: 0
+
 //: First augment next_word to group balanced brackets together.
 
 :(before "End next_word Special-cases")
@@ -71,6 +87,7 @@ string slurp_balanced_bracket(istream& in) {
     result << c;
     if (open_brackets.empty()) break;
   }
+  skip_whitespace_and_comments_but_not_newline(in);
   return result.str();
 }
 
