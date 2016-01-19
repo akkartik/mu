@@ -287,7 +287,11 @@ type_tree* new_type_tree(const string_tree* properties) {
 
 //: avoid memory leaks for the type tree
 
-reagent::reagent(const reagent& old) :original_string(old.original_string), properties(old.properties), name(old.name), value(old.value), initialized(old.initialized) {
+reagent::reagent(const reagent& old) {
+  original_string = old.original_string;
+  name = old.name;
+  value = old.value;
+  initialized = old.initialized;
   properties.clear();
   for (long long int i = 0; i < SIZE(old.properties); ++i) {
     properties.push_back(pair<string, string_tree*>(old.properties.at(i).first,
@@ -296,7 +300,8 @@ reagent::reagent(const reagent& old) :original_string(old.original_string), prop
   type = old.type ? new type_tree(*old.type) : NULL;
 }
 
-type_tree::type_tree(const type_tree& old) :value(old.value) {
+type_tree::type_tree(const type_tree& old) {
+  value = old.value;
   left = old.left ? new type_tree(*old.left) : NULL;
   right = old.right ? new type_tree(*old.right) : NULL;
 }
