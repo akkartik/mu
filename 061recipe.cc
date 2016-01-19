@@ -164,3 +164,34 @@ recipe f x:number -> y:number [
   y <- copy x
 ]
 +error: main: can't copy {1: (recipe number -> number)} to {2: (recipe boolean -> boolean)}; types don't match
+
+:(scenario copy_typecheck_recipe_variable_2)
+% Hide_errors = true;
+recipe main [
+  {1: (recipe number -> number)} <- copy f  # mismatch with a recipe literal
+]
+recipe f x:boolean -> y:boolean [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++error: main: can't copy f to {1: (recipe number -> number)}; types don't match
+
+:(before "End Matching Types For Literal(lhs)")
+if (is_mu_recipe(lhs)) {
+  if (!contains_key(Recipe, rhs.value)) {
+    raise_error << "trying to store recipe " << rhs.name << " into " << debug_string(lhs) << " but there's no such recipe\n" << end();
+    return false;
+  }
+  const recipe& rrhs = get(Recipe, rhs.value);
+  const recipe& rlhs = from_reagent(lhs);
+  for (long int i = 0; i < min(SIZE(rlhs.ingredients), SIZE(rrhs.ingredients)); ++i) {
+    if (!types_match(rlhs.ingredients.at(i), rrhs.ingredients.at(i)))
+      return false;
+  }
+  for (long int i = 0; i < min(SIZE(rlhs.products), SIZE(rrhs.products)); ++i) {
+    if (!types_match(rlhs.products.at(i), rrhs.products.at(i)))
+      return false;
+  }
+  return true;
+}
