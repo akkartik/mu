@@ -352,8 +352,8 @@ long long int new_mu_string(const string& contents) {
 
 :(scenario stash_string)
 recipe main [
-  x:address:array:character <- new [abc]
-  stash [foo:], x:address:array:character
+  1:address:array:character <- new [abc]
+  stash [foo:], 1:address:array:character
 ]
 +app: foo: abc
 
@@ -365,8 +365,8 @@ if (is_mu_string(r)) {
 
 :(scenario unicode_string)
 recipe main [
-  x:address:array:character <- new [♠]
-  stash [foo:], x:address:array:character
+  1:address:array:character <- new [♠]
+  stash [foo:], 1:address:array:character
 ]
 +app: foo: ♠
 
