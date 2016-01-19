@@ -112,7 +112,7 @@ if (s.at(0) == '{') {
       // this type can't be an integer literal
     put(Type_ordinal, type_name, Next_type_ordinal++);
   }
-  type = new type_tree(get(Type_ordinal, type_name));
+  type = new_type_tree(properties.at(0).second);
   return;
 }
 

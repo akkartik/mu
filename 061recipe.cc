@@ -150,3 +150,17 @@ bool is_mu_recipe(reagent r) {
   // End is_mu_recipe Cases
   return false;
 }
+
+:(scenario copy_typecheck_recipe_variable)
+% Hide_errors = true;
+recipe main [
+  3:number <- copy 34  # abc def
+  {1: (recipe number -> number)} <- copy f  # store literal in a matching variable
+  {2: (recipe boolean -> boolean)} <- copy {1: (recipe number -> number)}  # mismatch between recipe variables
+]
+recipe f x:number -> y:number [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++error: main: can't copy {1: (recipe number -> number)} to {2: (recipe boolean -> boolean)}; types don't match
