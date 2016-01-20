@@ -52,17 +52,10 @@ case NEW: {
   }
   reagent product(inst.products.at(0));
   canonize_type(product);
-  drop_address_from_type(product);
+  drop_from_type(product, "address");
   if (SIZE(inst.ingredients) > 1) {
-    // array allocation, so drop an 'array' as well from product.type
-    type_tree* tmp = product.type;
-    if (tmp->value != get(Type_ordinal, "array")) {
-      raise_error << maybe(caller.name) << "result of 'new' should start with 'address:array:...' in " << inst.to_string() << '\n' << end();
-      break;
-    }
-    product.type = tmp->right;
-    tmp->right = NULL;
-    delete tmp;
+    // array allocation
+    drop_from_type(product, "array");
   }
   reagent expected_product("x:"+type.name);
   // End Post-processing(expected_product) When Checking 'new'
@@ -260,7 +253,7 @@ case ABANDON: {
   canonize(types);
   // lookup_memory without drop_one_lookup {
   types.set_value(get_or_insert(Memory, types.value));
-  drop_address_from_type(types);
+  drop_from_type(types, "address");
   // }
   abandon(address, size_of(types));
   break;
