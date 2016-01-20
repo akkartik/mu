@@ -272,6 +272,16 @@ int trace_count(string label, string line) {
     return; \
   }
 
+#define CHECK_TRACE_COUNT(label, count) \
+  if (trace_count(label) != (count)) { \
+    ++Num_failures; \
+    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): trace_count of " << label << " should be " << count << '\n'; \
+    cerr << "  got " << trace_count(label) << '\n';  /* multiple eval */ \
+    DUMP(label); \
+    Passed = false; \
+    return;  /* Currently we stop at the very first failure. */ \
+  }
+
 bool trace_doesnt_contain(string label, string line) {
   return trace_count(label, line) == 0;
 }

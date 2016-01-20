@@ -321,7 +321,7 @@ void test_tangle_can_check_for_count_in_scenario() {
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n  efg\\n\");");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  CHECK_EQ(trace_count(\"layer1\"), 2);");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_COUNT(\"layer1\", 2);");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
   CHECK(lines.empty());
 }
@@ -335,7 +335,7 @@ void test_tangle_can_handle_mu_comments_in_scenario() {
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n# comment1\\n  efg\\n  # indented comment 2\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer1: xyz\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_DOESNT_CONTAIN(\"layer1: z\");");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  CHECK_EQ(trace_count(\"layer1\"), 2);");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_COUNT(\"layer1\", 2);");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
   CHECK(lines.empty());
 }

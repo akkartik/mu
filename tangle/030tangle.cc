@@ -318,7 +318,7 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
       size_t pos = in.find(": ");
       string layer = in.substr(1, pos-1);
       string count = in.substr(pos+2);
-      result.push_back(Line("  CHECK_EQ(trace_count(\""+layer+"\"), "+count+");", front(lines)));
+      result.push_back(Line("  CHECK_TRACE_COUNT(\""+layer+"\", "+count+");", front(lines)));
       lines.pop_front();
     }
     if (!lines.empty() && front(lines).contents == "===") {
