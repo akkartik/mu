@@ -11,7 +11,8 @@ recipe main [
   wait-for-event 0/console
   clear-screen 0/screen
   move-cursor 0/screen, 0/row, 4/column
-  print 0/screen, 98/b
+  10:character <- copy 98/b
+  print 0/screen, 10:character
   wait-for-event 0/console
   move-cursor 0/screen, 0/row, 0/column
   clear-line 0/screen

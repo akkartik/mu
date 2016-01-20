@@ -1,12 +1,12 @@
 9991 parse: --- defining scenario-interpolate-at-end
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:array:character/raw <- new [hello, _]\n    2:address:array:character/raw <- new [abc]\n    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw\n    4:array:character/raw <- copy *3:address:array:character/raw\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:shared:array:character/raw <- new [hello, _]\n    2:address:shared:array:character/raw <- new [abc]\n    3:address:shared:array:character/raw <- interpolate 1:address:shared:array:character/raw, 2:address:shared:array:character/raw\n    4:array:character/raw <- copy *3:address:shared:array:character/raw\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    1:address:array:character/raw <- new [hello, _]
-    2:address:array:character/raw <- new [abc]
-    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
-    4:array:character/raw <- copy *3:address:array:character/raw
+    1:address:shared:array:character/raw <- new [hello, _]
+    2:address:shared:array:character/raw <- new [abc]
+    3:address:shared:array:character/raw <- interpolate 1:address:shared:array:character/raw, 2:address:shared:array:character/raw
+    4:array:character/raw <- copy *3:address:shared:array:character/raw
   ]
 9993 parse: instruction: memory-should-contain
 9993 parse:   number of ingredients: 1
@@ -35,33 +35,33 @@
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-interpolate-at-end
  102 run: run [
-    1:address:array:character/raw <- new [hello, _]
-    2:address:array:character/raw <- new [abc]
-    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
-    4:array:character/raw <- copy *3:address:array:character/raw
+    1:address:shared:array:character/raw <- new [hello, _]
+    2:address:shared:array:character/raw <- new [abc]
+    3:address:shared:array:character/raw <- interpolate 1:address:shared:array:character/raw, 2:address:shared:array:character/raw
+    4:array:character/raw <- copy *3:address:shared:array:character/raw
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"hello, _": "literal-string"}
-9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
-9992 load: after rewriting: 1:address:array:character/raw <- new [hello, _]
+9993 parse:   product: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>, "raw": <>}
+9992 load: after rewriting: 1:address:shared:array:character/raw <- new [hello, _]
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"abc": "literal-string"}
-9993 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
-9992 load: after rewriting: 2:address:array:character/raw <- new [abc]
+9993 parse:   product: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>, "raw": <>}
+9992 load: after rewriting: 2:address:shared:array:character/raw <- new [abc]
 9993 parse: instruction: interpolate
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
-9993 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
-9993 parse:   product: {"3": <"address" : <"array" : <"character" : <>>>>, "raw": <>}
-9992 load: after rewriting: 3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>, "raw": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>, "raw": <>}
+9993 parse:   product: {"3": <"address" : <"shared" : <"array" : <"character" : <>>>>>, "raw": <>}
+9992 load: after rewriting: 3:address:shared:array:character/raw <- interpolate 1:address:shared:array:character/raw, 2:address:shared:array:character/raw
 9993 parse: instruction: copy
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"3": <"address" : <"array" : <"character" : <>>>>, "raw": <>, "lookup": <>}
+9993 parse:   ingredient: {"3": <"address" : <"shared" : <"array" : <"character" : <>>>>>, "raw": <>, "lookup": <>}
 9993 parse:   product: {"4": <"array" : <"character" : <>>>, "raw": <>}
-9992 load: after rewriting: 4:array:character/raw <- copy *3:address:array:character/raw
+9992 load: after rewriting: 4:array:character/raw <- copy *3:address:shared:array:character/raw
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
@@ -89,18 +89,18 @@
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: 1:address:array:character/raw <- new [hello, _]
+ 103 run: 1:address:shared:array:character/raw <- new [hello, _]
 9999 mem: storing 1000 in location 1
- 103 run: 2:address:array:character/raw <- new [abc]
+ 103 run: 2:address:shared:array:character/raw <- new [abc]
 9999 mem: storing 1009 in location 2
- 103 run: 3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
+ 103 run: 3:address:shared:array:character/raw <- interpolate 1:address:shared:array:character/raw, 2:address:shared:array:character/raw
 9999 mem: location 1 is 1000
 9999 mem: location 2 is 1009
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 16
 9999 mem: new alloc: 1013
- 104 run: template:address:array:character <- next-ingredient-without-typechecking 
+ 104 run: template:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1015
  104 run: tem-len:number <- length *template
 9999 mem: location 1015 is 1000
@@ -108,7 +108,7 @@
  104 run: result-len:number <- copy tem-len
 9999 mem: location 1016 is 8
 9999 mem: storing 8 in location 1017
- 104 run: a:address:array:character, arg-received?:boolean <- next-ingredient 
+ 104 run: a:address:shared:array:character, arg-received?:boolean <- next-ingredient 
 9999 mem: storing 1009 in location 1018
 9999 mem: storing 1 in location 1019
  104 run: jump-unless arg-received?, 
@@ -126,7 +126,7 @@
 9999 mem: storing 10 in location 1017
  104 run: jump 
 9998 run: jumping to instruction 5
- 104 run: a:address:array:character, arg-received?:boolean <- next-ingredient 
+ 104 run: a:address:shared:array:character, arg-received?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1018
 9999 mem: storing 0 in location 1019
  104 run: jump-unless arg-received?, 
@@ -134,7 +134,7 @@
 9998 run: jumping to instruction 11
  104 run: rewind-ingredients 
  104 run: _ <- next-ingredient 
- 104 run: result:address:array:character <- new character:type, result-len
+ 104 run: result <- new character:type, result-len
 9999 mem: location 1017 is 10
 9999 mem: array size is 10
 9999 mem: new alloc: 1030
@@ -143,7 +143,7 @@
 9999 mem: storing 0 in location 1022
  104 run: i:number <- copy 0
 9999 mem: storing 0 in location 1023
- 104 run: a:address:array:character, arg-received?:boolean <- next-ingredient 
+ 104 run: a:address:shared:array:character, arg-received?:boolean <- next-ingredient 
 9999 mem: storing 1009 in location 1018
 9999 mem: storing 1 in location 1019
  104 run: jump-unless arg-received?, 
@@ -525,7 +525,7 @@
 9999 mem: storing 8 in location 1023
  104 run: jump 
 9998 run: jumping to instruction 18
- 104 run: a:address:array:character, arg-received?:boolean <- next-ingredient 
+ 104 run: a:address:shared:array:character, arg-received?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1018
 9999 mem: storing 0 in location 1019
  104 run: jump-unless arg-received?, 
@@ -538,12 +538,12 @@
  104 run: jump-if tem-done?, 
 9999 mem: location 1024 is 1
 9998 run: jumping to instruction 56
- 104 run: reply result:address:array:character
+ 104 run: reply result:address:shared:array:character
 9999 mem: location 1021 is 1030
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1030
 9999 mem: storing 1030 in location 3
- 103 run: 4:array:character/raw <- copy *3:address:array:character/raw
+ 103 run: 4:array:character/raw <- copy *3:address:shared:array:character/raw
 9999 mem: location 3 is 1030
 9999 mem: location 1030 is 10
 9999 mem: location 1031 is 104

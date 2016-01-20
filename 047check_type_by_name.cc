@@ -89,7 +89,7 @@ recipe main [
 :(scenario typo_in_address_type_fails)
 % Hide_errors = true;
 recipe main [
-  y:address:charcter <- new character:type
+  y:address:shared:charcter <- new character:type
   *y <- copy 67
 ]
-+error: main: unknown type charcter in 'y:address:charcter <- new character:type'
++error: main: unknown type charcter in 'y:address:shared:charcter <- new character:type'

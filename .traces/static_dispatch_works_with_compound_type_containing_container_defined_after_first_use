@@ -2,8 +2,8 @@
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"foo": "type"}
-9993 parse:   product: {"x": <"address" : <"foo" : <>>>}
-9992 load: after rewriting: x:address:foo <- new foo:type
+9993 parse:   product: {"x": <"address" : <"shared" : <"foo" : <>>>>}
+9992 load: after rewriting: x:address:shared:foo <- new foo:type
 9993 parse: instruction: test
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"x": <>}
@@ -14,12 +14,12 @@
 9993 parse:   element name: x
 9993 parse:   type: 1
 9999 parse: recipe has a header; parsing
-9999 parse: header ingredient: a:address:foo
+9999 parse: header ingredient: a:address:shared:foo
 9999 parse: header product: z:number
 9991 parse: --- defining test
 9993 parse: instruction: local-scope
 9993 parse:   number of ingredients: 0
-9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9992 load: after rewriting: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9993 parse: instruction: load-ingredients
 9993 parse:   number of ingredients: 0
 9992 load: after rewriting:  
@@ -35,20 +35,20 @@
 9991 transform: --- fill in reply ingredients from header for recipe main
 9991 transform: --- fill in reply ingredients from header for recipe test
 9991 transform: --- deduce types for recipe main
-9992 transform: x => <address : <?-1 : <>>>
-9992 transform: x <= <address : <?-1 : <>>>
+9992 transform: x => <address : <shared : <?-1 : <>>>>
+9992 transform: x <= <address : <shared : <?-1 : <>>>>
 9991 transform: --- deduce types for recipe test
-9992 transform: default-space => <address : <array : <number : <>>>>
-9992 transform: a => <address : <foo : <>>>
-9992 transform: a <= <address : <foo : <>>>
+9992 transform: default-space => <address : <shared : <array : <number : <>>>>>
+9992 transform: a => <address : <shared : <foo : <>>>>
+9992 transform: a <= <address : <shared : <foo : <>>>>
 9992 transform: z => number
 9991 transform: --- deduce types from header for test
-9993 transform: type of a is <address : <foo : <>>>
+9993 transform: type of a is <address : <shared : <foo : <>>>>
 9993 transform: type of z is number
-9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
-9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 transform: instruction: a:address:foo <- next-ingredient-without-typechecking 
-9993 transform:   product: a: <address : <foo : <>>> -- {"a": <"address" : <"foo" : <>>>}
+9992 transform: instruction: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <shared : <array : <number : <>>>>> -- {"default-space": <"address" : <"shared" : <"array" : <"location" : <>>>>>}
+9992 transform: instruction: a:address:shared:foo <- next-ingredient-without-typechecking 
+9993 transform:   product: a: <address : <shared : <foo : <>>>> -- {"a": <"address" : <"shared" : <"foo" : <>>>>}
 9992 transform: instruction: z:number <- get *a, x:offset
 9993 transform:   product: z: number -- {"z": "number"}
 9992 transform: instruction: reply z:number
@@ -100,16 +100,16 @@
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: main
- 102 run: x:address:foo <- new foo:type
+ 102 run: x:address:shared:foo <- new foo:type
 9999 mem: new alloc: 1000
 9999 mem: storing 1000 in location 1
  102 run: test x
 9999 mem: location 1 is 1000
 9999 trace: incrementing callstack depth to 2
- 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 103 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1001
- 103 run: a:address:foo <- next-ingredient-without-typechecking 
+ 103 run: a:address:shared:foo <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1003
  103 run: z:number <- get *a, x:offset
 9999 mem: location 1003 is 1000

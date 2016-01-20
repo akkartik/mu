@@ -5,7 +5,7 @@
 % Hide_warnings = true;
 recipe main [
   local-scope
-  p:address:point <- new point:type
+  p:address:shared:point <- new point:type
   foo *p
 ]
 recipe foo p:point [
@@ -20,10 +20,10 @@ $warn: 0
 % Hide_warnings = true;
 recipe main [
   local-scope
-  p:address:point <- new point:type
+  p:address:shared:point <- new point:type
   p <- foo p
 ]
-recipe foo p:address:point -> p:address:point [
+recipe foo p:address:shared:point -> p:address:shared:point [
   local-scope
   load-ingredients
   x:address:number <- get-address *p, x:offset
@@ -35,13 +35,13 @@ $warn: 0
 % Hide_warnings = true;
 recipe main [
   local-scope
-  p:address:d1 <- new d1:type
+  p:address:shared:d1 <- new d1:type
   q:number <- foo p
 ]
-recipe foo p:address:d1 -> q:number [
+recipe foo p:address:shared:d1 -> q:number [
   local-scope
   load-ingredients
-  x:address:d1 <- new d1:type
+  x:address:shared:d1 <- new d1:type
   y:address:number <- get-address *x, p:offset  # ignore this 'p'
   q <- copy 34
 ]
@@ -55,10 +55,10 @@ $warn: 0
 % Hide_warnings = true;
 recipe main [
   local-scope
-  p:address:point <- new point:type
+  p:address:shared:point <- new point:type
   foo p
 ]
-recipe foo p:address:point [
+recipe foo p:address:shared:point [
   local-scope
   load-ingredients
   x:address:number <- get-address *p, x:offset
@@ -70,15 +70,15 @@ recipe foo p:address:point [
 % Hide_warnings = true;
 recipe main [
   local-scope
-  p:address:point <- new point:type
+  p:address:shared:point <- new point:type
   foo p
 ]
-recipe foo p:address:point [
+recipe foo p:address:shared:point [
   local-scope
   load-ingredients
   bar p
 ]
-recipe bar p:address:point -> p:address:point [
+recipe bar p:address:shared:point -> p:address:shared:point [
   local-scope
   load-ingredients
   x:address:number <- get-address *p, x:offset
@@ -90,13 +90,13 @@ recipe bar p:address:point -> p:address:point [
 % Hide_warnings = true;
 recipe main [
   local-scope
-  p:address:point <- new point:type
+  p:address:shared:point <- new point:type
   foo p
 ]
-recipe foo p:address:point [
+recipe foo p:address:shared:point [
   local-scope
   load-ingredients
-  q:address:point <- copy p
+  q:address:shared:point <- copy p
   x:address:number <- get-address *q, x:offset
 ]
 +warn: foo: cannot modify q after instruction 'x:address:number <- get-address *q, x:offset' because that would modify ingredient p which is not also a product of foo
@@ -104,19 +104,19 @@ recipe foo p:address:point [
 :(scenario can_traverse_immutable_ingredients)
 % Hide_warnings = true;
 container test-list [
-  next:address:test-list
+  next:address:shared:test-list
 ]
 recipe main [
   local-scope
-  p:address:test-list <- new test-list:type
+  p:address:shared:test-list <- new test-list:type
   foo p
 ]
-recipe foo p:address:test-list [
+recipe foo p:address:shared:test-list [
   local-scope
   load-ingredients
-  p2:address:test-list <- bar p
+  p2:address:shared:test-list <- bar p
 ]
-recipe bar x:address:test-list -> y:address:test-list [
+recipe bar x:address:shared:test-list -> y:address:shared:test-list [
   local-scope
   load-ingredients
   y <- get *x, next:offset
@@ -126,11 +126,11 @@ $warn: 0
 :(scenario handle_optional_ingredients_in_immutability_checks)
 % Hide_warnings = true;
 recipe main [
-  k:address:number <- new number:type
+  k:address:shared:number <- new number:type
   test k
 ]
 # recipe taking an immutable address ingredient
-recipe test k:address:number [
+recipe test k:address:shared:number [
   local-scope
   load-ingredients
   foo k
@@ -139,7 +139,7 @@ recipe test k:address:number [
 recipe foo -> [
   local-scope
   load-ingredients
-  k:address:number, found?:boolean <- next-ingredient
+  k:address:shared:number, found?:boolean <- next-ingredient
 ]
 $warn: 0
 
@@ -212,25 +212,25 @@ set<long long int> scan_contained_in_product_indices(const instruction& inst, se
 :(scenario immutability_infects_contained_in_variables)
 % Hide_warnings = true;
 container test-list [
-  next:address:test-list
+  next:address:shared:test-list
 ]
 recipe main [
   local-scope
-  p:address:test-list <- new test-list:type
+  p:address:shared:test-list <- new test-list:type
   foo p
 ]
-recipe foo p:address:test-list [  # p is immutable
+recipe foo p:address:shared:test-list [  # p is immutable
   local-scope
   load-ingredients
-  p2:address:test-list <- test-next p  # p2 is immutable
-  p3:address:address:test-list <- get-address *p2, next:offset  # signal modification of p2
+  p2:address:shared:test-list <- test-next p  # p2 is immutable
+  p3:address:address:shared:test-list <- get-address *p2, next:offset  # signal modification of p2
 ]
-recipe test-next x:address:test-list -> y:address:test-list/contained-in:x [
+recipe test-next x:address:shared:test-list -> y:address:shared:test-list/contained-in:x [
   local-scope
   load-ingredients
   y <- get *x, next:offset
 ]
-+warn: foo: cannot modify p2 after instruction 'p3:address:address:test-list <- get-address *p2, next:offset' because that would modify ingredient p which is not also a product of foo
++warn: foo: cannot modify p2 after instruction 'p3:address:address:shared:test-list <- get-address *p2, next:offset' because that would modify ingredient p which is not also a product of foo
 
 :(code)
 void check_immutable_ingredient_in_instruction(const instruction& inst, const set<string>& current_ingredient_and_aliases, const string& original_ingredient_name, const recipe& caller) {
@@ -315,28 +315,28 @@ set<long long int> ingredient_indices(const instruction& inst, const set<string>
 :(scenario can_modify_contained_in_addresses)
 % Hide_warnings = true;
 container test-list [
-  next:address:test-list
+  next:address:shared:test-list
 ]
 recipe main [
   local-scope
-  p:address:test-list <- new test-list:type
+  p:address:shared:test-list <- new test-list:type
   foo p
 ]
-recipe foo p:address:test-list -> p:address:test-list [
+recipe foo p:address:shared:test-list -> p:address:shared:test-list [
   local-scope
   load-ingredients
-  p2:address:test-list <- test-next p
+  p2:address:shared:test-list <- test-next p
   p <- test-remove p2, p
 ]
-recipe test-next x:address:test-list -> y:address:test-list [
+recipe test-next x:address:shared:test-list -> y:address:shared:test-list [
   local-scope
   load-ingredients
   y <- get *x, next:offset
 ]
-recipe test-remove x:address:test-list/contained-in:from, from:address:test-list -> from:address:test-list [
+recipe test-remove x:address:shared:test-list/contained-in:from, from:address:shared:test-list -> from:address:shared:test-list [
   local-scope
   load-ingredients
-  x2:address:address:test-list <- get-address *x, next:offset  # pretend modification
+  x2:address:address:shared:test-list <- get-address *x, next:offset  # pretend modification
 ]
 $warn: 0
 

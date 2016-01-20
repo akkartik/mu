@@ -1,20 +1,20 @@
 ## handling malformed programs
 
 container programming-environment-data [
-  recipe-warnings:address:array:character
+  recipe-warnings:address:shared:array:character
 ]
 
 # copy code from recipe editor, persist, load into mu, save any warnings
-recipe! update-recipes env:address:programming-environment-data, screen:address:screen -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
+recipe! update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
-  in:address:array:character <- restore [recipes.mu]
-  recipe-warnings:address:address:array:character <- get-address *env, recipe-warnings:offset
+  in:address:shared:array:character <- restore [recipes.mu]
+  recipe-warnings:address:address:shared:array:character <- get-address *env, recipe-warnings:offset
   *recipe-warnings <- reload in
   # if recipe editor has errors, stop
   {
     break-unless *recipe-warnings
-    status:address:array:character <- new [errors found]
+    status:address:shared:array:character <- new [errors found]
     update-status screen, status, 1/red
   }
   errors-found? <- copy 0/false
@@ -22,27 +22,27 @@ recipe! update-recipes env:address:programming-environment-data, screen:address:
 
 before <render-components-end> [
   trace 11, [app], [render status]
-  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+  recipe-warnings:address:shared:array:character <- get *env, recipe-warnings:offset
   {
     break-unless recipe-warnings
-    status:address:array:character <- new [errors found]
+    status:address:shared:array:character <- new [errors found]
     update-status screen, status, 1/red
   }
 ]
 
 container sandbox-data [
-  warnings:address:array:character
+  warnings:address:shared:array:character
 ]
 
-recipe! update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data -> sandbox:address:sandbox-data [
+recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data -> sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
-  data:address:array:character <- get *sandbox, data:offset
-  response:address:address:array:character <- get-address *sandbox, response:offset
-  warnings:address:address:array:character <- get-address *sandbox, warnings:offset
-  trace:address:address:array:character <- get-address *sandbox, trace:offset
-  fake-screen:address:address:screen <- get-address *sandbox, screen:offset
-  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+  data:address:shared:array:character <- get *sandbox, data:offset
+  response:address:address:shared:array:character <- get-address *sandbox, response:offset
+  warnings:address:address:shared:array:character <- get-address *sandbox, warnings:offset
+  trace:address:address:shared:array:character <- get-address *sandbox, trace:offset
+  fake-screen:address:address:shared:screen <- get-address *sandbox, screen:offset
+  recipe-warnings:address:shared:array:character <- get *env, recipe-warnings:offset
   {
     break-unless recipe-warnings
     *warnings <- copy recipe-warnings
@@ -60,12 +60,12 @@ recipe! update-sandbox sandbox:address:sandbox-data, env:address:programming-env
 # make sure we render any trace
 after <render-sandbox-trace-done> [
   {
-    sandbox-warnings:address:array:character <- get *sandbox, warnings:offset
+    sandbox-warnings:address:shared:array:character <- get *sandbox, warnings:offset
     break-unless sandbox-warnings
     *response-starting-row <- copy 0  # no response
     {
       break-unless env
-      recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
+      recipe-warnings:address:shared:array:character <- get *env, recipe-warnings:offset
       row, screen <- render screen, recipe-warnings, left, right, 1/red, row
     }
     row, screen <- render screen, sandbox-warnings, left, right, 1/red, row
@@ -77,22 +77,22 @@ after <render-sandbox-trace-done> [
 scenario run-instruction-and-print-warnings [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
-  1:address:array:character <- new [get 1:address:point, 1:offset]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  1:address:shared:array:character <- new [get 1:address:shared:point, 1:offset]
+  2:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
   ]
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                 x.
-    .get 1:address:point, 1:offset                     .
+    .get 1:address:shared:point, 1:offset              .
     .first ingredient of 'get' should be a container, ↩.
-    .but got 1:address:point                           .
+    .but got 1:address:shared:point                    .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -103,7 +103,7 @@ scenario run-instruction-and-print-warnings [
     .                                                  .
     .                                                  .
     .first ingredient of 'get' should be a container,  .
-    .but got 1:address:point                           .
+    .but got 1:address:shared:point                    .
     .                                                  .
     .                                                  .
   ]
@@ -115,15 +115,15 @@ scenario run-instruction-and-print-warnings-only-once [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # editor contains an illegal instruction
-  1:address:array:character <- new [get 1234:number, foo:offset]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  1:address:shared:array:character <- new [get 1234:number, foo:offset]
+  2:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character
   # run the code in the editors multiple times
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
   ]
   # check that screen prints error message just once
   screen-should-contain [
@@ -144,16 +144,16 @@ scenario sandbox-can-handle-infinite-loop [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # editor contains an infinite loop
-  1:address:array:character <- new [{
+  1:address:shared:array:character <- new [{
 loop
 }]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  2:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character
   # run the sandbox
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
   ]
   screen-should-contain [
     .                               run (F4)           .

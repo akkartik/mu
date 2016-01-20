@@ -1,11 +1,11 @@
 9991 parse: --- defining scenario-text-equal-identical
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    default-space:address:array:location <- new location:type, 30\n    x:address:array:character <- new [abc]\n    y:address:array:character <- new [abc]\n    3:boolean/raw <- equal x, y\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    default-space:address:shared:array:location <- new location:type, 30\n    x:address:shared:array:character <- new [abc]\n    y:address:shared:array:character <- new [abc]\n    3:boolean/raw <- equal x, y\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    default-space:address:array:location <- new location:type, 30
-    x:address:array:character <- new [abc]
-    y:address:array:character <- new [abc]
+    default-space:address:shared:array:location <- new location:type, 30
+    x:address:shared:array:character <- new [abc]
+    y:address:shared:array:character <- new [abc]
     3:boolean/raw <- equal x, y
   ]
 9993 parse: instruction: memory-should-contain
@@ -35,9 +35,9 @@
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-text-equal-identical
  102 run: run [
-    default-space:address:array:location <- new location:type, 30
-    x:address:array:character <- new [abc]
-    y:address:array:character <- new [abc]
+    default-space:address:shared:array:location <- new location:type, 30
+    x:address:shared:array:character <- new [abc]
+    y:address:shared:array:character <- new [abc]
     3:boolean/raw <- equal x, y
   ]
 9991 parse: --- defining run1001
@@ -45,18 +45,18 @@
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"location": "type"}
 9993 parse:   ingredient: {"30": "literal"}
-9993 parse:   product: {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 load: after rewriting: default-space:address:array:location <- new location:type, 30
+9993 parse:   product: {"default-space": <"address" : <"shared" : <"array" : <"location" : <>>>>>}
+9992 load: after rewriting: default-space:address:shared:array:location <- new location:type, 30
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"abc": "literal-string"}
-9993 parse:   product: {"x": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: x:address:array:character <- new [abc]
+9993 parse:   product: {"x": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: x:address:shared:array:character <- new [abc]
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"abc": "literal-string"}
-9993 parse:   product: {"y": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: y:address:array:character <- new [abc]
+9993 parse:   product: {"y": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: y:address:shared:array:character <- new [abc]
 9993 parse: instruction: equal
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <>}
@@ -67,11 +67,11 @@
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
 9991 transform: --- deduce types for recipe run1001
-9992 transform: default-space => <address : <array : <number : <>>>>
-9992 transform: x => <address : <array : <character : <>>>>
-9992 transform: y => <address : <array : <character : <>>>>
-9992 transform: x <= <address : <array : <character : <>>>>
-9992 transform: y <= <address : <array : <character : <>>>>
+9992 transform: default-space => <address : <shared : <array : <number : <>>>>>
+9992 transform: x => <address : <shared : <array : <character : <>>>>>
+9992 transform: y => <address : <shared : <array : <character : <>>>>>
+9992 transform: x <= <address : <shared : <array : <character : <>>>>>
+9992 transform: y <= <address : <shared : <array : <character : <>>>>>
 9991 transform: --- collect surrounding spaces for recipe run1001
 9991 transform: --- transform names for recipe run1001
 9993 name: assign x 1
@@ -98,23 +98,23 @@
 9992 new: size of "location" is 1
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: default-space:address:array:location <- new location:type, 30
+ 103 run: default-space:address:shared:array:location <- new location:type, 30
 9999 mem: array size is 30
 9999 mem: new alloc: 1000
- 103 run: x:address:array:character <- new [abc]
+ 103 run: x:address:shared:array:character <- new [abc]
 9999 mem: storing 1031 in location 1002
- 103 run: y:address:array:character <- new [abc]
+ 103 run: y:address:shared:array:character <- new [abc]
 9999 mem: storing 1035 in location 1003
  103 run: 3:boolean/raw <- equal_2 x, y
 9999 mem: location 1002 is 1031
 9999 mem: location 1003 is 1035
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 11
 9999 mem: new alloc: 1039
- 104 run: a:address:array:character <- next-ingredient-without-typechecking 
+ 104 run: a:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1031 in location 1041
- 104 run: b:address:array:character <- next-ingredient-without-typechecking 
+ 104 run: b:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1035 in location 1042
  104 run: a-len:number <- length *a
 9999 mem: location 1041 is 1031

@@ -1,12 +1,12 @@
 9991 parse: --- defining main
 9993 parse: instruction: local-scope
 9993 parse:   number of ingredients: 0
-9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9992 load: after rewriting: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"d1": "type"}
-9993 parse:   product: {"p": <"address" : <"d1" : <>>>}
-9992 load: after rewriting: p:address:d1 <- new d1:type
+9993 parse:   product: {"p": <"address" : <"shared" : <"d1" : <>>>>}
+9992 load: after rewriting: p:address:shared:d1 <- new d1:type
 9993 parse: instruction: foo
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"p": <>}
@@ -14,20 +14,20 @@
 9992 load: after rewriting: q:number <- foo p
 9999 parse: recipe main has a header
 9999 parse: recipe has a header; parsing
-9999 parse: header ingredient: p:address:d1
+9999 parse: header ingredient: p:address:shared:d1
 9999 parse: header product: q:number
 9991 parse: --- defining foo
 9993 parse: instruction: local-scope
 9993 parse:   number of ingredients: 0
-9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9992 load: after rewriting: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9993 parse: instruction: load-ingredients
 9993 parse:   number of ingredients: 0
 9992 load: after rewriting:  
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"d1": "type"}
-9993 parse:   product: {"x": <"address" : <"d1" : <>>>}
-9992 load: after rewriting: x:address:d1 <- new d1:type
+9993 parse:   product: {"x": <"address" : <"shared" : <"d1" : <>>>>}
+9992 load: after rewriting: x:address:shared:d1 <- new d1:type
 9993 parse: instruction: get-address
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"x": <>, "lookup": <>}
@@ -51,26 +51,26 @@
 9991 transform: --- fill in reply ingredients from header for recipe main
 9991 transform: --- fill in reply ingredients from header for recipe foo
 9991 transform: --- deduce types for recipe main
-9992 transform: default-space => <address : <array : <number : <>>>>
-9992 transform: p => <address : <?-1 : <>>>
-9992 transform: p <= <address : <?-1 : <>>>
+9992 transform: default-space => <address : <shared : <array : <number : <>>>>>
+9992 transform: p => <address : <shared : <?-1 : <>>>>
+9992 transform: p <= <address : <shared : <?-1 : <>>>>
 9992 transform: q => number
 9991 transform: --- deduce types for recipe foo
-9992 transform: default-space => <address : <array : <number : <>>>>
-9992 transform: p => <address : <?-1 : <>>>
-9992 transform: x => <address : <?-1 : <>>>
-9992 transform: x <= <address : <?-1 : <>>>
+9992 transform: default-space => <address : <shared : <array : <number : <>>>>>
+9992 transform: p => <address : <shared : <?-1 : <>>>>
+9992 transform: x => <address : <shared : <?-1 : <>>>>
+9992 transform: x <= <address : <shared : <?-1 : <>>>>
 9992 transform: y => <address : <number : <>>>
 9992 transform: q => number
 9991 transform: --- deduce types from header for foo
-9993 transform: type of p is <address : <?-1 : <>>>
+9993 transform: type of p is <address : <shared : <?-1 : <>>>>
 9993 transform: type of q is number
-9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
-9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
-9992 transform: instruction: p:address:d1 <- next-ingredient-without-typechecking 
-9993 transform:   product: p: <address : <?-1 : <>>> -- {"p": <"address" : <"d1" : <>>>}
-9992 transform: instruction: x:address:d1 <- new d1:type
-9993 transform:   product: x: <address : <?-1 : <>>> -- {"x": <"address" : <"d1" : <>>>}
+9992 transform: instruction: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <shared : <array : <number : <>>>>> -- {"default-space": <"address" : <"shared" : <"array" : <"location" : <>>>>>}
+9992 transform: instruction: p:address:shared:d1 <- next-ingredient-without-typechecking 
+9993 transform:   product: p: <address : <shared : <?-1 : <>>>> -- {"p": <"address" : <"shared" : <"d1" : <>>>>}
+9992 transform: instruction: x:address:shared:d1 <- new d1:type
+9993 transform:   product: x: <address : <shared : <?-1 : <>>>> -- {"x": <"address" : <"shared" : <"d1" : <>>>>}
 9992 transform: instruction: y:address:number <- get-address *x, p:offset
 9993 transform:   product: y: <address : <number : <>>> -- {"y": <"address" : <"number" : <>>>}
 9992 transform: instruction: q <- copy 34
@@ -179,21 +179,21 @@
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: main
- 102 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 102 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1000
- 102 run: p:address:d1 <- new d1:type
+ 102 run: p:address:shared:d1 <- new d1:type
 9999 mem: new alloc: 1004
 9999 mem: storing 1004 in location 1002
  102 run: q:number <- foo p
 9999 mem: location 1002 is 1004
 9999 trace: incrementing callstack depth to 2
- 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 103 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
 9999 mem: new alloc: 1006
- 103 run: p:address:d1 <- next-ingredient-without-typechecking 
+ 103 run: p:address:shared:d1 <- next-ingredient-without-typechecking 
 9999 mem: storing 1004 in location 1008
- 103 run: x:address:d1 <- new d1:type
+ 103 run: x:address:shared:d1 <- new d1:type
 9999 mem: new alloc: 1012
 9999 mem: storing 1012 in location 1009
  103 run: y:address:number <- get-address *x, p:offset

@@ -7,30 +7,30 @@
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"30": "literal", "width": <>}
 9993 parse:   ingredient: {"5": "literal", "height": <>}
-9992 load: after rewriting: screen:address:screen <- new-fake-screen 30/width, 5/height
+9992 load: after rewriting: screen:address:shared:screen <- new-fake-screen 30/width, 5/height
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"": "literal-string"}
-9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 1:address:array:character <- new []
+9993 parse:   product: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 1:address:shared:array:character <- new []
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"abc\ndef": "literal-string"}
-9993 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 2:address:array:character <- new [abc
+9993 parse:   product: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 2:address:shared:array:character <- new [abc
 def]
 9993 parse: instruction: new-programming-environment
 9993 parse:   number of ingredients: 3
-9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
-9993 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>}
-9993 parse:   product: {"3": <"address" : <"programming-environment-data" : <>>>}
-9992 load: after rewriting: 3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9993 parse:   product: {"3": <"address" : <"shared" : <"programming-environment-data" : <>>>>}
+9992 load: after rewriting: 3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
 9993 parse: instruction: render-all
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"screen": <>}
-9993 parse:   ingredient: {"3": <"address" : <"programming-environment-data" : <>>>}
-9992 load: after rewriting: render-all screen, 3:address:programming-environment-data
+9993 parse:   ingredient: {"3": <"address" : <"shared" : <"programming-environment-data" : <>>>>}
+9992 load: after rewriting: render-all screen, 3:address:shared:programming-environment-data
 9993 parse: instruction: screen-should-contain
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    .           run (F4)           .\n    .               ┊abc           .\n    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊def           .\n    .               ┊━━━━━━━━━━━━━━.\n    .               ┊              .\n  ": "literal-string"}
@@ -50,11 +50,11 @@ def]
   ]
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data\n    4:character/cursor <- copy 9251/␣\n    print screen:address:screen, 4:character/cursor\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data\n    4:character/cursor <- copy 9251/␣\n    print screen:address:shared:screen, 4:character/cursor\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
     4:character/cursor <- copy 9251/␣
-    print screen:address:screen, 4:character/cursor
+    print screen:address:shared:screen, 4:character/cursor
   ]
 9993 parse: instruction: screen-should-contain
 9993 parse:   number of ingredients: 1
@@ -69,8 +69,8 @@ def]
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe scenario-backspace-in-sandbox-editor-joins-lines
 9991 transform: --- deduce types for recipe scenario-backspace-in-sandbox-editor-joins-lines
-9992 transform: screen => <address : <screen : <>>>
-9992 transform: screen <= <address : <screen : <>>>
+9992 transform: screen => <address : <shared : <screen : <>>>>
+9992 transform: screen <= <address : <shared : <screen : <>>>>
 9991 transform: --- collect surrounding spaces for recipe scenario-backspace-in-sandbox-editor-joins-lines
 9991 transform: --- transform names for recipe scenario-backspace-in-sandbox-editor-joins-lines
 9991 transform: --- resolve ambiguous calls for recipe scenario-backspace-in-sandbox-editor-joins-lines

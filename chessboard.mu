@@ -34,7 +34,7 @@ scenario print-board-and-read-move [
 ]
   ]
   run [
-    screen:address:screen, console:address:console <- chessboard screen:address:screen, console:address:console
+    screen:address:shared:screen, console:address:shared:console <- chessboard screen:address:shared:screen, console:address:shared:console
     # icon for the cursor
     screen <- print screen, 9251/␣
   ]
@@ -66,18 +66,18 @@ scenario print-board-and-read-move [
 
 ## Here's how 'chessboard' is implemented.
 
-recipe chessboard screen:address:screen, console:address:console -> screen:address:screen, console:address:console [
+recipe chessboard screen:address:shared:screen, console:address:shared:console -> screen:address:shared:screen, console:address:shared:console [
   local-scope
   load-ingredients
-  board:address:array:address:array:character <- initial-position
+  board:address:shared:array:address:shared:array:character <- initial-position
   # hook up stdin
-  stdin:address:channel <- new-channel 10/capacity
+  stdin:address:shared:channel <- new-channel 10/capacity
   start-running send-keys-to-channel, console, stdin, screen
   # buffer lines in stdin
-  buffered-stdin:address:channel <- new-channel 10/capacity
+  buffered-stdin:address:shared:channel <- new-channel 10/capacity
   start-running buffer-lines, stdin, buffered-stdin
   {
-    msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
+    msg:address:shared:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
 ]
     print screen, msg
     cursor-to-next-line screen
@@ -94,7 +94,7 @@ recipe chessboard screen:address:screen, console:address:console -> screen:addre
       cursor-to-next-line screen
       msg <- new [move: ]
       screen <- print screen, msg
-      m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin, screen
+      m:address:shared:move, quit:boolean, error:boolean <- read-move buffered-stdin, screen
       break-if quit, +quit:label
       buffered-stdin <- clear-channel buffered-stdin  # cleanup after error. todo: test this?
       loop-if error
@@ -103,12 +103,13 @@ recipe chessboard screen:address:screen, console:address:console -> screen:addre
     screen <- clear-screen screen
     loop
   }
+  msg <- copy 0
   +quit
 ]
 
 ## a board is an array of files, a file is an array of characters (squares)
 
-recipe new-board initial-position:address:array:character -> board:address:array:address:array:character [
+recipe new-board initial-position:address:shared:array:character -> board:address:shared:array:address:shared:array:character [
   local-scope
   load-ingredients
   # assert(length(initial-position) == 64)
@@ -116,19 +117,19 @@ recipe new-board initial-position:address:array:character -> board:address:array
   correct-length?:boolean <- equal len, 64
   assert correct-length?, [chessboard had incorrect size]
   # board is an array of pointers to files; file is an array of characters
-  board <- new {(address array character): type}, 8
+  board <- new {(address shared array character): type}, 8
   col:number <- copy 0
   {
     done?:boolean <- equal col, 8
     break-if done?
-    file:address:address:array:character <- index-address *board, col
+    file:address:address:shared:array:character <- index-address *board, col
     *file <- new-file initial-position, col
     col <- add col, 1
     loop
   }
 ]
 
-recipe new-file position:address:array:character, index:number -> result:address:array:character [
+recipe new-file position:address:shared:array:character, index:number -> result:address:shared:array:character [
   local-scope
   load-ingredients
   index <- multiply index, 8
@@ -145,7 +146,7 @@ recipe new-file position:address:array:character, index:number -> result:address
   }
 ]
 
-recipe print-board screen:address:screen, board:address:array:address:array:character -> screen:address:screen [
+recipe print-board screen:address:shared:screen, board:address:shared:array:address:shared:array:character -> screen:address:shared:screen [
   local-scope
   load-ingredients
   row:number <- copy 7  # start printing from the top of the board
@@ -157,14 +158,14 @@ recipe print-board screen:address:screen, board:address:array:address:array:char
     # print rank number as a legend
     rank:number <- add row, 1
     print-integer screen, rank
-    s:address:array:character <- new [ | ]
+    s:address:shared:array:character <- new [ | ]
     print screen, s
     # print each square in the row
     col:number <- copy 0
     {
       done?:boolean <- equal col:number, 8
       break-if done?:boolean
-      f:address:array:character <- index *board, col
+      f:address:shared:array:character <- index *board, col
       c:character <- index *f, row
       print screen, c
       print screen, space
@@ -184,7 +185,7 @@ recipe print-board screen:address:screen, board:address:array:address:array:char
   screen <- cursor-to-next-line screen
 ]
 
-recipe initial-position -> board:address:array:address:array:character [
+recipe initial-position -> board:address:shared:array:address:shared:array:character [
   local-scope
   # layout in memory (in raster order):
   #   R P _ _ _ _ p r
@@ -195,7 +196,7 @@ recipe initial-position -> board:address:array:address:array:character [
   #   B P _ _ _ _ p B
   #   N P _ _ _ _ p n
   #   R P _ _ _ _ p r
-  initial-position:address:array:character <- new-array 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 81/Q, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 113/q, 75/K, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 107/k, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r
+  initial-position:address:shared:array:character <- new-array 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 81/Q, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 113/q, 75/K, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 107/k, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r
 #?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r,
 #?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,
 #?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 
@@ -210,8 +211,8 @@ recipe initial-position -> board:address:array:address:array:character [
 scenario printing-the-board [
   assume-screen 30/width, 12/height
   run [
-    1:address:array:address:array:character/board <- initial-position
-    screen:address:screen <- print-board screen:address:screen, 1:address:array:address:array:character/board
+    1:address:shared:array:address:shared:array:character/board <- initial-position
+    screen:address:shared:screen <- print-board screen:address:shared:screen, 1:address:shared:array:address:shared:array:character/board
   ]
   screen-should-contain [
   #  012345678901234567890123456789
@@ -241,14 +242,14 @@ container move [
 ]
 
 # prints only error messages to screen
-recipe read-move stdin:address:channel, screen:address:screen -> result:address:move, quit?:boolean, error?:boolean, stdin:address:channel, screen:address:screen [
+recipe read-move stdin:address:shared:channel, screen:address:shared:screen -> result:address:shared:move, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   local-scope
   load-ingredients
   from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
   reply-if quit?, 0/dummy, quit?, error?
   reply-if error?, 0/dummy, quit?, error?
   # construct the move object
-  result:address:move <- new move:type
+  result:address:shared:move <- new move:type
   x:address:number <- get-address *result, from-file:offset
   *x <- copy from-file
   x <- get-address *result, from-rank:offset
@@ -271,7 +272,7 @@ recipe read-move stdin:address:channel, screen:address:screen -> result:address:
 ]
 
 # valid values for file: 0-7
-recipe read-file stdin:address:channel, screen:address:screen -> file:number, quit:boolean, error:boolean, stdin:address:channel, screen:address:screen [
+recipe read-file stdin:address:shared:channel, screen:address:shared:screen -> file:number, quit:boolean, error:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
@@ -293,7 +294,7 @@ recipe read-file stdin:address:channel, screen:address:screen -> file:number, qu
   {
     newline?:boolean <- equal c, 10/newline
     break-unless newline?
-    error-message:address:array:character <- new [that's not enough]
+    error-message:address:shared:array:character <- new [that's not enough]
     print screen, error-message
     reply 0/dummy, 0/quit, 1/error
   }
@@ -302,7 +303,7 @@ recipe read-file stdin:address:channel, screen:address:screen -> file:number, qu
   {
     above-min:boolean <- greater-or-equal file, 0
     break-if above-min
-    error-message:address:array:character <- new [file too low: ]
+    error-message:address:shared:array:character <- new [file too low: ]
     print screen, error-message
     print screen, c
     cursor-to-next-line screen
@@ -320,7 +321,7 @@ recipe read-file stdin:address:channel, screen:address:screen -> file:number, qu
 ]
 
 # valid values: 0-7, -1 (quit), -2 (error)
-recipe read-rank stdin:address:channel, screen:address:screen -> rank:number, quit?:boolean, error?:boolean, stdin:address:channel, screen:address:screen [
+recipe read-rank stdin:address:shared:channel, screen:address:shared:screen -> rank:number, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
@@ -337,7 +338,7 @@ recipe read-rank stdin:address:channel, screen:address:screen -> rank:number, qu
   {
     newline?:boolean <- equal c, 10  # newline
     break-unless newline?
-    error-message:address:array:character <- new [that's not enough]
+    error-message:address:shared:array:character <- new [that's not enough]
     print screen, error-message
     reply 0/dummy, 0/quit, 1/error
   }
@@ -364,14 +365,14 @@ recipe read-rank stdin:address:channel, screen:address:screen -> rank:number, qu
 
 # read a character from the given channel and check that it's what we expect
 # return true on error
-recipe expect-from-channel stdin:address:channel, expected:character, screen:address:screen -> result:boolean, stdin:address:channel, screen:address:screen [
+recipe expect-from-channel stdin:address:shared:channel, expected:character, screen:address:shared:screen -> result:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
   {
     match?:boolean <- equal c, expected
     break-if match?
-    s:address:array:character <- new [expected character not found]
+    s:address:shared:array:character <- new [expected character not found]
     print screen, s
   }
   result <- not match?
@@ -380,8 +381,8 @@ recipe expect-from-channel stdin:address:channel, expected:character, screen:add
 scenario read-move-blocking [
   assume-screen 20/width, 2/height
   run [
-    1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
+    1:address:shared:channel <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -389,7 +390,7 @@ scenario read-move-blocking [
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
     # press 'a'
-    1:address:channel <- write 1:address:channel, 97/a
+    1:address:shared:channel <- write 1:address:shared:channel, 97/a
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
@@ -398,7 +399,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
-    1:address:channel <- write 1:address:channel, 50/'2'
+    1:address:shared:channel <- write 1:address:shared:channel, 50/'2'
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
@@ -407,7 +408,7 @@ F read-move-blocking: routine failed to pause after rank 'a']
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after file 'a2']
     # press '-'
-    1:address:channel <- write 1:address:channel, 45/'-'
+    1:address:shared:channel <- write 1:address:shared:channel, 45/'-'
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
@@ -416,7 +417,7 @@ F read-move-blocking: routine failed to pause after file 'a2']
     assert 4:boolean/waiting?/routine-state, [
 F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # press 'a'
-    1:address:channel <- write 1:address:channel, 97/a
+    1:address:shared:channel <- write 1:address:shared:channel, 97/a
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
@@ -425,7 +426,7 @@ F read-move-blocking: routine failed to pause after hyphen 'a2-']
     assert 4:boolean/waiting?/routine-state, [
 F read-move-blocking: routine failed to pause after rank 'a2-a']
     # press '4'
-    1:address:channel <- write 1:address:channel, 52/'4'
+    1:address:shared:channel <- write 1:address:shared:channel, 52/'4'
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
@@ -434,7 +435,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after file 'a2-a4']
     # press 'newline'
-    1:address:channel <- write 1:address:channel, 10  # newline
+    1:address:shared:channel <- write 1:address:shared:channel, 10  # newline
     restart 2:number/routine
     # 'read-move' now completes
     wait-for-routine 2:number
@@ -452,8 +453,8 @@ F read-move-blocking: routine failed to terminate on newline]
 scenario read-move-quit [
   assume-screen 20/width, 2/height
   run [
-    1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
+    1:address:shared:channel <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -461,7 +462,7 @@ scenario read-move-quit [
     assert 4:boolean/waiting?, [
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
     # press 'q'
-    1:address:channel <- write 1:address:channel, 113/q
+    1:address:shared:channel <- write 1:address:shared:channel, 113/q
     restart 2:number/routine
     # 'read-move' completes
     wait-for-routine 2:number
@@ -479,15 +480,15 @@ F read-move-quit: routine failed to terminate on 'q']
 scenario read-move-illegal-file [
   assume-screen 20/width, 2/height
   run [
-    1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
+    1:address:shared:channel <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
-    1:address:channel <- write 1:address:channel, 50/'2'
+    1:address:shared:channel <- write 1:address:shared:channel, 50/'2'
     restart 2:number/routine
     wait-for-routine 2:number
   ]
@@ -500,16 +501,16 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 scenario read-move-illegal-rank [
   assume-screen 20/width, 2/height
   run [
-    1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
+    1:address:shared:channel <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
-    1:address:channel <- write 1:address:channel, 97/a
-    1:address:channel <- write 1:address:channel, 97/a
+    1:address:shared:channel <- write 1:address:shared:channel, 97/a
+    1:address:shared:channel <- write 1:address:shared:channel, 97/a
     restart 2:number/routine
     wait-for-routine 2:number
   ]
@@ -522,16 +523,16 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 scenario read-move-empty [
   assume-screen 20/width, 2/height
   run [
-    1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
+    1:address:shared:channel <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
-    1:address:channel <- write 1:address:channel, 10/newline
-    1:address:channel <- write 1:address:channel, 97/a
+    1:address:shared:channel <- write 1:address:shared:channel, 10/newline
+    1:address:shared:channel <- write 1:address:shared:channel, 97/a
     restart 2:number/routine
     wait-for-routine 2:number
   ]
@@ -541,14 +542,14 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
   ]
 ]
 
-recipe make-move board:address:array:address:array:character, m:address:move -> board:address:array:address:array:character [
+recipe make-move board:address:shared:array:address:shared:array:character, m:address:shared:move -> board:address:shared:array:address:shared:array:character [
   local-scope
   load-ingredients
   from-file:number <- get *m, from-file:offset
   from-rank:number <- get *m, from-rank:offset
   to-file:number <- get *m, to-file:offset
   to-rank:number <- get *m, to-rank:offset
-  f:address:array:character <- index *board, from-file
+  f:address:shared:array:character <- index *board, from-file
   src:address:character/square <- index-address *f, from-rank
   f <- index *board, to-file
   dest:address:character/square <- index-address *f, to-rank
@@ -559,18 +560,18 @@ recipe make-move board:address:array:address:array:character, m:address:move -> 
 scenario making-a-move [
   assume-screen 30/width, 12/height
   run [
-    2:address:array:address:array:character/board <- initial-position
-    3:address:move <- new move:type
-    4:address:number <- get-address *3:address:move, from-file:offset
+    2:address:shared:array:address:shared:array:character/board <- initial-position
+    3:address:shared:move <- new move:type
+    4:address:number <- get-address *3:address:shared:move, from-file:offset
     *4:address:number <- copy 6/g
-    5:address:number <- get-address *3:address:move, from-rank:offset
+    5:address:number <- get-address *3:address:shared:move, from-rank:offset
     *5:address:number <- copy 1/'2'
-    6:address:number <- get-address *3:address:move, to-file:offset
+    6:address:number <- get-address *3:address:shared:move, to-file:offset
     *6:address:number <- copy 6/g
-    7:address:number <- get-address *3:address:move, to-rank:offset
+    7:address:number <- get-address *3:address:shared:move, to-rank:offset
     *7:address:number <- copy 3/'4'
-    2:address:array:address:array:character/board <- make-move 2:address:array:address:array:character/board, 3:address:move
-    screen:address:screen <- print-board screen:address:screen, 2:address:array:address:array:character/board
+    2:address:shared:array:address:shared:array:character/board <- make-move 2:address:shared:array:address:shared:array:character/board, 3:address:shared:move
+    screen:address:shared:screen <- print-board screen:address:shared:screen, 2:address:shared:array:address:shared:array:character/board
   ]
   screen-should-contain [
   #  012345678901234567890123456789

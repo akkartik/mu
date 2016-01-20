@@ -2,19 +2,19 @@
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"# ab\nadd 2, 2": "literal-string"}
-9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 1:address:array:character <- new [# ab
+9993 parse:   product: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 1:address:shared:array:character <- new [# ab
 add 2, 2]
 9993 parse: instruction: run-interactive
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
-9993 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 2:address:array:character <- run-interactive 1:address:array:character
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9993 parse:   product: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 2:address:shared:array:character <- run-interactive 1:address:shared:array:character
 9993 parse: instruction: copy
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>, "lookup": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>, "lookup": <>}
 9993 parse:   product: {"3": <"array" : <"character" : <>>>}
-9992 load: after rewriting: 3:array:character <- copy *2:address:array:character
+9992 load: after rewriting: 3:array:character <- copy *2:address:shared:array:character
 9999 parse: recipe main has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe main
@@ -36,10 +36,10 @@ add 2, 2]
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: main
- 102 run: 1:address:array:character <- new [# ab
+ 102 run: 1:address:shared:array:character <- new [# ab
 add 2, 2]
 9999 mem: storing 1000 in location 1
- 102 run: 2:address:array:character <- run-interactive 1:address:array:character
+ 102 run: 2:address:shared:array:character <- run-interactive 1:address:shared:array:character
 9999 mem: location 1 is 1000
  103 run: reply output, warnings, screen, stashes, completed?
 9999 mem: location 1020 is 1351
@@ -50,7 +50,7 @@ add 2, 2]
 9999 trace: reply: decrementing callstack depth from 2
 9998 run: result 0 is 1351
 9999 mem: storing 1351 in location 2
- 102 run: 3:array:character <- copy *2:address:array:character
+ 102 run: 3:array:character <- copy *2:address:shared:array:character
 9999 mem: location 2 is 1351
 9999 mem: location 1351 is 3
 9999 mem: location 1352 is 52

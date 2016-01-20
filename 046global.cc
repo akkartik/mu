@@ -9,8 +9,8 @@ recipe main [
   10:number <- copy 5
   20:number <- copy 5
   # actual start of this recipe
-  global-space:address:array:location <- copy 20/unsafe
-  default-space:address:array:location <- copy 10/unsafe
+  global-space:address:shared:array:location <- copy 20/unsafe
+  default-space:address:shared:array:location <- copy 10/unsafe
   1:number <- copy 23
   1:number/space:global <- copy 24
 ]
@@ -35,11 +35,13 @@ global_space = 0;
         || !x.type
         || x.type->value != get(Type_ordinal, "address")
         || !x.type->right
-        || x.type->right->value != get(Type_ordinal, "array")
+        || x.type->right->value != get(Type_ordinal, "shared")
         || !x.type->right->right
-        || x.type->right->right->value != get(Type_ordinal, "location")
-        || x.type->right->right->right) {
-      raise_error << maybe(current_recipe_name()) << "'global-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
+        || x.type->right->right->value != get(Type_ordinal, "array")
+        || !x.type->right->right->right
+        || x.type->right->right->right->value != get(Type_ordinal, "location")
+        || x.type->right->right->right->right) {
+      raise_error << maybe(current_recipe_name()) << "'global-space' should be of type address:shared:array:location, but tried to write " << to_string(data) << '\n' << end();
     }
     if (Current_routine->global_space)
       raise_error << "routine already has a global-space; you can't over-write your globals" << end();
@@ -61,7 +63,7 @@ global_space = 0;
 :(scenario global_space_with_names)
 % Hide_errors = true;
 recipe main [
-  global-space:address:array:location <- new location:type, 10
+  global-space:address:shared:array:location <- new location:type, 10
   x:number <- copy 23
   1:number/space:global <- copy 24
 ]

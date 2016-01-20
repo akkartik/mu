@@ -1,38 +1,38 @@
 9991 parse: --- defining scenario-buffer-lines-blocks-until-newline
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:channel/stdin <- new-channel 10/capacity\n    2:address:channel/buffered-stdin <- new-channel 10/capacity\n    3:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 3:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after init]\n    # buffer stdin into buffered-stdin, try to read from buffered-stdin\n    4:number/buffer-routine <- start-running buffer-lines, 1:address:channel/stdin, 2:address:channel/buffered-stdin\n    wait-for-routine 4:number/buffer-routine\n    5:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 5:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]\n    # write 'a'\n    1:address:channel <- write 1:address:channel, 97/a\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    6:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 6:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a']\n    # write 'b'\n    1:address:channel <- write 1:address:channel, 98/b\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    7:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 7:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b']\n    # write newline\n    1:address:channel <- write 1:address:channel, 10/newline\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    8:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    9:boolean/completed? <- not 8:boolean\n    assert 9:boolean/completed?, [\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline]\n    trace 1, [test], [reached end]\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:shared:channel/stdin <- new-channel 10/capacity\n    2:address:shared:channel/buffered-stdin <- new-channel 10/capacity\n    3:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin\n    assert 3:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after init]\n    # buffer stdin into buffered-stdin, try to read from buffered-stdin\n    4:number/buffer-routine <- start-running buffer-lines, 1:address:shared:channel/stdin, 2:address:shared:channel/buffered-stdin\n    wait-for-routine 4:number/buffer-routine\n    5:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin\n    assert 5:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]\n    # write 'a'\n    1:address:shared:channel <- write 1:address:shared:channel, 97/a\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    6:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin\n    assert 6:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a']\n    # write 'b'\n    1:address:shared:channel <- write 1:address:shared:channel, 98/b\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    7:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin\n    assert 7:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b']\n    # write newline\n    1:address:shared:channel <- write 1:address:shared:channel, 10/newline\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    8:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin\n    9:boolean/completed? <- not 8:boolean\n    assert 9:boolean/completed?, [\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline]\n    trace 1, [test], [reached end]\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    1:address:channel/stdin <- new-channel 10/capacity
-    2:address:channel/buffered-stdin <- new-channel 10/capacity
-    3:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    1:address:shared:channel/stdin <- new-channel 10/capacity
+    2:address:shared:channel/buffered-stdin <- new-channel 10/capacity
+    3:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
     assert 3:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after init]
     # buffer stdin into buffered-stdin, try to read from buffered-stdin
-    4:number/buffer-routine <- start-running buffer-lines, 1:address:channel/stdin, 2:address:channel/buffered-stdin
+    4:number/buffer-routine <- start-running buffer-lines, 1:address:shared:channel/stdin, 2:address:shared:channel/buffered-stdin
     wait-for-routine 4:number/buffer-routine
-    5:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    5:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
     assert 5:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
     # write 'a'
-    1:address:channel <- write 1:address:channel, 97/a
+    1:address:shared:channel <- write 1:address:shared:channel, 97/a
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
-    6:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    6:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
     assert 6:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     # write 'b'
-    1:address:channel <- write 1:address:channel, 98/b
+    1:address:shared:channel <- write 1:address:shared:channel, 98/b
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
-    7:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    7:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
     assert 7:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
-    1:address:channel <- write 1:address:channel, 10/newline
+    1:address:shared:channel <- write 1:address:shared:channel, 10/newline
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
-    8:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    8:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
     9:boolean/completed? <- not 8:boolean
     assert 9:boolean/completed?, [
 F buffer-lines-blocks-until-newline: channel should contain data after writing newline]
@@ -65,36 +65,36 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-buffer-lines-blocks-until-newline
  102 run: run [
-    1:address:channel/stdin <- new-channel 10/capacity
-    2:address:channel/buffered-stdin <- new-channel 10/capacity
-    3:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    1:address:shared:channel/stdin <- new-channel 10/capacity
+    2:address:shared:channel/buffered-stdin <- new-channel 10/capacity
+    3:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
     assert 3:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after init]
     # buffer stdin into buffered-stdin, try to read from buffered-stdin
-    4:number/buffer-routine <- start-running buffer-lines, 1:address:channel/stdin, 2:address:channel/buffered-stdin
+    4:number/buffer-routine <- start-running buffer-lines, 1:address:shared:channel/stdin, 2:address:shared:channel/buffered-stdin
     wait-for-routine 4:number/buffer-routine
-    5:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    5:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
     assert 5:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
     # write 'a'
-    1:address:channel <- write 1:address:channel, 97/a
+    1:address:shared:channel <- write 1:address:shared:channel, 97/a
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
-    6:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    6:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
     assert 6:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     # write 'b'
-    1:address:channel <- write 1:address:channel, 98/b
+    1:address:shared:channel <- write 1:address:shared:channel, 98/b
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
-    7:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    7:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
     assert 7:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
-    1:address:channel <- write 1:address:channel, 10/newline
+    1:address:shared:channel <- write 1:address:shared:channel, 10/newline
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
-    8:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    8:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
     9:boolean/completed? <- not 8:boolean
     assert 9:boolean/completed?, [
 F buffer-lines-blocks-until-newline: channel should contain data after writing newline]
@@ -104,18 +104,18 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
 9993 parse: instruction: new-channel
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"10": "literal", "capacity": <>}
-9993 parse:   product: {"1": <"address" : <"channel" : <>>>, "stdin": <>}
-9992 load: after rewriting: 1:address:channel/stdin <- new-channel 10/capacity
+9993 parse:   product: {"1": <"address" : <"shared" : <"channel" : <>>>>, "stdin": <>}
+9992 load: after rewriting: 1:address:shared:channel/stdin <- new-channel 10/capacity
 9993 parse: instruction: new-channel
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"10": "literal", "capacity": <>}
-9993 parse:   product: {"2": <"address" : <"channel" : <>>>, "buffered-stdin": <>}
-9992 load: after rewriting: 2:address:channel/buffered-stdin <- new-channel 10/capacity
+9993 parse:   product: {"2": <"address" : <"shared" : <"channel" : <>>>>, "buffered-stdin": <>}
+9992 load: after rewriting: 2:address:shared:channel/buffered-stdin <- new-channel 10/capacity
 9993 parse: instruction: channel-empty?
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"2": <"address" : <"channel" : <>>>, "buffered-stdin": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"channel" : <>>>>, "buffered-stdin": <>}
 9993 parse:   product: {"3": "boolean"}
-9992 load: after rewriting: 3:boolean <- channel-empty? 2:address:channel/buffered-stdin
+9992 load: after rewriting: 3:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
 9993 parse: instruction: assert
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"3": "boolean"}
@@ -125,19 +125,19 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
 9993 parse: instruction: start-running
 9993 parse:   number of ingredients: 3
 9993 parse:   ingredient: {"buffer-lines": <>}
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>, "stdin": <>}
-9993 parse:   ingredient: {"2": <"address" : <"channel" : <>>>, "buffered-stdin": <>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>, "stdin": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"channel" : <>>>>, "buffered-stdin": <>}
 9993 parse:   product: {"4": "number", "buffer-routine": <>}
-9992 load: after rewriting: 4:number/buffer-routine <- start-running buffer-lines, 1:address:channel/stdin, 2:address:channel/buffered-stdin
+9992 load: after rewriting: 4:number/buffer-routine <- start-running buffer-lines, 1:address:shared:channel/stdin, 2:address:shared:channel/buffered-stdin
 9993 parse: instruction: wait-for-routine
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"4": "number", "buffer-routine": <>}
 9992 load: after rewriting: wait-for-routine 4:number/buffer-routine
 9993 parse: instruction: channel-empty?
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"2": <"address" : <"channel" : <>>>, "buffered-stdin": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"channel" : <>>>>, "buffered-stdin": <>}
 9993 parse:   product: {"5": "boolean"}
-9992 load: after rewriting: 5:boolean <- channel-empty? 2:address:channel/buffered-stdin
+9992 load: after rewriting: 5:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
 9993 parse: instruction: assert
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"5": "boolean"}
@@ -146,10 +146,10 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
 9993 parse: instruction: write
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>}
 9993 parse:   ingredient: {"97": "literal", "a": <>}
-9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9992 load: after rewriting: 1:address:channel <- write 1:address:channel, 97/a
+9993 parse:   product: {"1": <"address" : <"shared" : <"channel" : <>>>>}
+9992 load: after rewriting: 1:address:shared:channel <- write 1:address:shared:channel, 97/a
 9993 parse: instruction: restart
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"4": "number", "buffer-routine": <>}
@@ -160,9 +160,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9992 load: after rewriting: wait-for-routine 4:number/buffer-routine
 9993 parse: instruction: channel-empty?
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"2": <"address" : <"channel" : <>>>, "buffered-stdin": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"channel" : <>>>>, "buffered-stdin": <>}
 9993 parse:   product: {"6": "boolean"}
-9992 load: after rewriting: 6:boolean <- channel-empty? 2:address:channel/buffered-stdin
+9992 load: after rewriting: 6:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
 9993 parse: instruction: assert
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"6": "boolean"}
@@ -171,10 +171,10 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9993 parse: instruction: write
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>}
 9993 parse:   ingredient: {"98": "literal", "b": <>}
-9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9992 load: after rewriting: 1:address:channel <- write 1:address:channel, 98/b
+9993 parse:   product: {"1": <"address" : <"shared" : <"channel" : <>>>>}
+9992 load: after rewriting: 1:address:shared:channel <- write 1:address:shared:channel, 98/b
 9993 parse: instruction: restart
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"4": "number", "buffer-routine": <>}
@@ -185,9 +185,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9992 load: after rewriting: wait-for-routine 4:number/buffer-routine
 9993 parse: instruction: channel-empty?
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"2": <"address" : <"channel" : <>>>, "buffered-stdin": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"channel" : <>>>>, "buffered-stdin": <>}
 9993 parse:   product: {"7": "boolean"}
-9992 load: after rewriting: 7:boolean <- channel-empty? 2:address:channel/buffered-stdin
+9992 load: after rewriting: 7:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
 9993 parse: instruction: assert
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"7": "boolean"}
@@ -196,10 +196,10 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9993 parse: instruction: write
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>}
 9993 parse:   ingredient: {"10": "literal", "newline": <>}
-9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9992 load: after rewriting: 1:address:channel <- write 1:address:channel, 10/newline
+9993 parse:   product: {"1": <"address" : <"shared" : <"channel" : <>>>>}
+9992 load: after rewriting: 1:address:shared:channel <- write 1:address:shared:channel, 10/newline
 9993 parse: instruction: restart
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"4": "number", "buffer-routine": <>}
@@ -210,9 +210,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9992 load: after rewriting: wait-for-routine 4:number/buffer-routine
 9993 parse: instruction: channel-empty?
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"2": <"address" : <"channel" : <>>>, "buffered-stdin": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"channel" : <>>>>, "buffered-stdin": <>}
 9993 parse:   product: {"8": "boolean"}
-9992 load: after rewriting: 8:boolean <- channel-empty? 2:address:channel/buffered-stdin
+9992 load: after rewriting: 8:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
 9993 parse: instruction: not
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"8": "boolean"}
@@ -347,9 +347,9 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: 1:address:channel/stdin <- new-channel 10/capacity
+ 103 run: 1:address:shared:channel/stdin <- new-channel 10/capacity
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
  104 run: capacity:number <- next-ingredient-without-typechecking 
@@ -382,7 +382,7 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
  104 run: capacity <- add capacity, 1
 9999 mem: location 1002 is 10
 9999 mem: storing 11 in location 1002
- 104 run: dest:address:address:array:character <- get-address *result, data:offset
+ 104 run: dest:address:address:shared:array:character <- get-address *result, data:offset
 9999 mem: location 1003 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -396,14 +396,14 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
 9999 mem: new alloc: 1010
 9999 mem: location 1006 is 1009
 9999 mem: storing 1010 in location 1009
- 104 run: reply result:address:channel
+ 104 run: reply result:address:shared:channel
 9999 mem: location 1003 is 1007
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
- 103 run: 2:address:channel/buffered-stdin <- new-channel 10/capacity
+ 103 run: 2:address:shared:channel/buffered-stdin <- new-channel 10/capacity
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
  104 run: capacity:number <- next-ingredient-without-typechecking 
 9999 mem: storing 10 in location 1002
@@ -435,7 +435,7 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
  104 run: capacity <- add capacity, 1
 9999 mem: location 1002 is 10
 9999 mem: storing 11 in location 1002
- 104 run: dest:address:address:array:character <- get-address *result, data:offset
+ 104 run: dest:address:address:shared:array:character <- get-address *result, data:offset
 9999 mem: location 1003 is 1022
 9999 mem: location 1022 is 0
 9999 mem: location 1023 is 0
@@ -449,18 +449,18 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
 9999 mem: new alloc: 1025
 9999 mem: location 1006 is 1024
 9999 mem: storing 1025 in location 1024
- 104 run: reply result:address:channel
+ 104 run: reply result:address:shared:channel
 9999 mem: location 1003 is 1022
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1022
 9999 mem: storing 1022 in location 2
- 103 run: 3:boolean <- channel-empty? 2:address:channel/buffered-stdin
+ 103 run: 3:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
 9999 mem: location 2 is 1022
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
 9999 mem: new alloc: 1037
- 104 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 104 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1039
  104 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1022
@@ -494,7 +494,7 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
  103 run: assert 3:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after init]
 9999 mem: location 3 is 1
- 103 run: 4:number/buffer-routine <- start-running buffer-lines, 1:address:channel/stdin, 2:address:channel/buffered-stdin
+ 103 run: 4:number/buffer-routine <- start-running buffer-lines, 1:address:shared:channel/stdin, 2:address:shared:channel/buffered-stdin
 9999 mem: location 1 is 1007
 9999 mem: location 2 is 1022
 9999 trace: new routine; incrementing callstack depth to 3
@@ -504,16 +504,16 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
 9999 mem: location 4 is 2
 9998 run: waiting for routine 2
 9990 schedule: buffer-lines
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 14
 9999 mem: new alloc: 101000
- 104 run: in:address:channel <- next-ingredient-without-typechecking 
+ 104 run: in:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 101002
- 104 run: out:address:channel <- next-ingredient-without-typechecking 
+ 104 run: out:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 101003
- 104 run: line:address:buffer <- new-buffer 30
+ 104 run: line:address:shared:buffer <- new-buffer 30
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
  105 run: capacity:number <- next-ingredient-without-typechecking 
 9999 mem: storing 30 in location 1039
@@ -530,7 +530,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
  105 run: *len:address:number <- copy 0
 9999 mem: location 1041 is 101015
 9999 mem: storing 0 in location 101015
- 105 run: s:address:address:array:character <- get-address *result, data:offset
+ 105 run: s:address:address:shared:array:character <- get-address *result, data:offset
 9999 mem: location 1040 is 101015
 9999 mem: location 101015 is 0
 9999 mem: location 101016 is 0
@@ -551,17 +551,17 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
  104 run: c:character, in <- read in
 9999 mem: location 101002 is 1007
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
 9999 mem: new alloc: 101048
- 105 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 105 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 101050
  105 run: empty?:boolean <- channel-empty? chan
 9999 mem: location 101050 is 1007
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1007
@@ -610,12 +610,12 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
 9998 run: waiting for location 1008 to change from 0
 9999 schedule: waking up routine 1
 9990 schedule: run1001/scenario-buffer-lines-blocks-until-newline
- 105 run: 5:boolean <- channel-empty? 2:address:channel/buffered-stdin
+ 105 run: 5:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
 9999 mem: location 2 is 1022
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1022
@@ -649,23 +649,23 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
  105 run: assert 5:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
 9999 mem: location 5 is 1
- 105 run: 1:address:channel <- write 1:address:channel, 97/a
+ 105 run: 1:address:shared:channel <- write 1:address:shared:channel, 97/a
 9999 mem: location 1 is 1007
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1043
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1045
  106 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1046
  106 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1007
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1054
- 107 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 107 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1056
  107 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1007
@@ -683,19 +683,19 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  107 run: len:number <- channel-capacity chan
 9999 mem: location 1056 is 1007
 9999 trace: incrementing callstack depth to 7
- 108 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 108 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
 9999 mem: new alloc: 1062
- 108 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 108 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1064
- 108 run: q:address:array:character <- get *chan, data:offset
+ 108 run: q:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
 9999 mem: location 1009 is 1010
 9999 mem: location 1064 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1065
  108 run: result <- length *q
@@ -735,14 +735,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  106 run: jump-unless full, 
 9999 mem: location 1047 is 0
 9998 run: jumping to instruction 8
- 106 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 106 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1045 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
 9999 mem: location 1009 is 1010
 9999 mem: location 1045 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1049
  106 run: free:address:number <- get-address *chan, first-free:offset
@@ -778,7 +778,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  106 run: jump-unless at-end?, 
 9999 mem: location 1053 is 0
 9998 run: jumping to instruction 19
- 106 run: reply chan:address:channel
+ 106 run: reply chan:address:shared:channel
 9999 mem: location 1045 is 1007
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1007
@@ -797,14 +797,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9999 mem: location 101050 is 1007
 9998 run: address to copy is 1007
 9999 mem: storing 1007 in location 101053
- 105 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 105 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 101050 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 1
 9999 mem: location 1009 is 1010
 9999 mem: location 101050 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 101054
  105 run: result <- index *circular-buffer, *full
@@ -831,7 +831,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  105 run: jump-unless at-end?, 
 9999 mem: location 101057 is 0
 9998 run: jumping to instruction 17
- 105 run: reply result:character, chan:address:channel
+ 105 run: reply result:character, chan:address:shared:channel
 9999 mem: location 101055 is 97
 9999 mem: location 101050 is 1007
 9999 trace: reply: decrementing callstack depth from 4
@@ -849,9 +849,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9999 mem: location 101004 is 101015
 9999 mem: location 101005 is 97
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: in:address:buffer <- next-ingredient-without-typechecking 
+ 105 run: in:address:shared:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 101050
  105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 101051
@@ -871,9 +871,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  105 run: full?:boolean <- buffer-full? in
 9999 mem: location 101050 is 101015
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 106 run: in:address:buffer <- next-ingredient-without-typechecking 
+ 106 run: in:address:shared:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 1002
  106 run: len:number <- get *in, length:offset
 9999 mem: location 1002 is 101015
@@ -884,13 +884,13 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9998 run: its type is number
 9999 mem: location 101015 is 0
 9999 mem: storing 0 in location 1003
- 106 run: s:address:array:character <- get *in, data:offset
+ 106 run: s:address:shared:array:character <- get *in, data:offset
 9999 mem: location 1002 is 101015
 9999 mem: location 101015 is 0
 9999 mem: location 101016 is 101017
 9999 mem: location 1002 is 101015
 9998 run: address to copy is 101016
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 101016 is 101017
 9999 mem: storing 101017 in location 1004
  106 run: capacity:number <- length *s
@@ -908,13 +908,13 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  105 run: jump-unless full?, 
 9999 mem: location 101055 is 0
 9998 run: jumping to instruction 17
- 105 run: s:address:array:character <- get *in, data:offset
+ 105 run: s:address:shared:array:character <- get *in, data:offset
 9999 mem: location 101050 is 101015
 9999 mem: location 101015 is 0
 9999 mem: location 101016 is 101017
 9999 mem: location 101050 is 101015
 9998 run: address to copy is 101016
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 101016 is 101017
 9999 mem: storing 101017 in location 101056
  105 run: dest:address:character <- index-address *s, *len
@@ -931,7 +931,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9999 mem: location 101015 is 0
 9999 mem: location 101052 is 101015
 9999 mem: storing 1 in location 101015
- 105 run: reply in:address:buffer
+ 105 run: reply in:address:shared:buffer
 9999 mem: location 101050 is 101015
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 101015
@@ -953,16 +953,16 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  104 run: c:character, in <- read in
 9999 mem: location 101002 is 1007
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 105 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 101050
  105 run: empty?:boolean <- channel-empty? chan
 9999 mem: location 101050 is 1007
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1007
@@ -1011,12 +1011,12 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9998 run: waiting for location 1008 to change from 1
 9999 schedule: waking up routine 1
 9990 schedule: run1001/scenario-buffer-lines-blocks-until-newline
- 105 run: 6:boolean <- channel-empty? 2:address:channel/buffered-stdin
+ 105 run: 6:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
 9999 mem: location 2 is 1022
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1022
@@ -1050,21 +1050,21 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
  105 run: assert 6:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 mem: location 6 is 1
- 105 run: 1:address:channel <- write 1:address:channel, 98/b
+ 105 run: 1:address:shared:channel <- write 1:address:shared:channel, 98/b
 9999 mem: location 1 is 1007
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1045
  106 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 98 in location 1046
  106 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1007
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 107 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 107 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1056
  107 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1007
@@ -1082,18 +1082,18 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
  107 run: len:number <- channel-capacity chan
 9999 mem: location 1056 is 1007
 9999 trace: incrementing callstack depth to 7
- 108 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 108 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 108 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 108 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1064
- 108 run: q:address:array:character <- get *chan, data:offset
+ 108 run: q:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 1
 9999 mem: location 1009 is 1010
 9999 mem: location 1064 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1065
  108 run: result <- length *q
@@ -1133,14 +1133,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
  106 run: jump-unless full, 
 9999 mem: location 1047 is 0
 9998 run: jumping to instruction 8
- 106 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 106 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1045 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 1
 9999 mem: location 1009 is 1010
 9999 mem: location 1045 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1049
  106 run: free:address:number <- get-address *chan, first-free:offset
@@ -1176,7 +1176,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
  106 run: jump-unless at-end?, 
 9999 mem: location 1053 is 0
 9998 run: jumping to instruction 19
- 106 run: reply chan:address:channel
+ 106 run: reply chan:address:shared:channel
 9999 mem: location 1045 is 1007
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1007
@@ -1195,14 +1195,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 mem: location 101050 is 1007
 9998 run: address to copy is 1007
 9999 mem: storing 1007 in location 101053
- 105 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 105 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 101050 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 2
 9999 mem: location 1009 is 1010
 9999 mem: location 101050 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 101054
  105 run: result <- index *circular-buffer, *full
@@ -1229,7 +1229,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
  105 run: jump-unless at-end?, 
 9999 mem: location 101057 is 0
 9998 run: jumping to instruction 17
- 105 run: reply result:character, chan:address:channel
+ 105 run: reply result:character, chan:address:shared:channel
 9999 mem: location 101055 is 98
 9999 mem: location 101050 is 1007
 9999 trace: reply: decrementing callstack depth from 4
@@ -1247,9 +1247,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 mem: location 101004 is 101015
 9999 mem: location 101005 is 98
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: in:address:buffer <- next-ingredient-without-typechecking 
+ 105 run: in:address:shared:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 101050
  105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 98 in location 101051
@@ -1269,9 +1269,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
  105 run: full?:boolean <- buffer-full? in
 9999 mem: location 101050 is 101015
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 106 run: in:address:buffer <- next-ingredient-without-typechecking 
+ 106 run: in:address:shared:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 1002
  106 run: len:number <- get *in, length:offset
 9999 mem: location 1002 is 101015
@@ -1282,13 +1282,13 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9998 run: its type is number
 9999 mem: location 101015 is 1
 9999 mem: storing 1 in location 1003
- 106 run: s:address:array:character <- get *in, data:offset
+ 106 run: s:address:shared:array:character <- get *in, data:offset
 9999 mem: location 1002 is 101015
 9999 mem: location 101015 is 1
 9999 mem: location 101016 is 101017
 9999 mem: location 1002 is 101015
 9998 run: address to copy is 101016
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 101016 is 101017
 9999 mem: storing 101017 in location 1004
  106 run: capacity:number <- length *s
@@ -1306,13 +1306,13 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
  105 run: jump-unless full?, 
 9999 mem: location 101055 is 0
 9998 run: jumping to instruction 17
- 105 run: s:address:array:character <- get *in, data:offset
+ 105 run: s:address:shared:array:character <- get *in, data:offset
 9999 mem: location 101050 is 101015
 9999 mem: location 101015 is 1
 9999 mem: location 101016 is 101017
 9999 mem: location 101050 is 101015
 9998 run: address to copy is 101016
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 101016 is 101017
 9999 mem: storing 101017 in location 101056
  105 run: dest:address:character <- index-address *s, *len
@@ -1329,7 +1329,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 mem: location 101015 is 1
 9999 mem: location 101052 is 101015
 9999 mem: storing 2 in location 101015
- 105 run: reply in:address:buffer
+ 105 run: reply in:address:shared:buffer
 9999 mem: location 101050 is 101015
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 101015
@@ -1351,16 +1351,16 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
  104 run: c:character, in <- read in
 9999 mem: location 101002 is 1007
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 105 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 101050
  105 run: empty?:boolean <- channel-empty? chan
 9999 mem: location 101050 is 1007
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1007
@@ -1409,12 +1409,12 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9998 run: waiting for location 1008 to change from 2
 9999 schedule: waking up routine 1
 9990 schedule: run1001/scenario-buffer-lines-blocks-until-newline
- 105 run: 7:boolean <- channel-empty? 2:address:channel/buffered-stdin
+ 105 run: 7:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
 9999 mem: location 2 is 1022
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1022
@@ -1448,21 +1448,21 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
  105 run: assert 7:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 mem: location 7 is 1
- 105 run: 1:address:channel <- write 1:address:channel, 10/newline
+ 105 run: 1:address:shared:channel <- write 1:address:shared:channel, 10/newline
 9999 mem: location 1 is 1007
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1045
  106 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 10 in location 1046
  106 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1007
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 107 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 107 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1056
  107 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1007
@@ -1480,18 +1480,18 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  107 run: len:number <- channel-capacity chan
 9999 mem: location 1056 is 1007
 9999 trace: incrementing callstack depth to 7
- 108 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 108 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 108 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 108 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1064
- 108 run: q:address:array:character <- get *chan, data:offset
+ 108 run: q:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1007
 9999 mem: location 1007 is 2
 9999 mem: location 1008 is 2
 9999 mem: location 1009 is 1010
 9999 mem: location 1064 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1065
  108 run: result <- length *q
@@ -1531,14 +1531,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  106 run: jump-unless full, 
 9999 mem: location 1047 is 0
 9998 run: jumping to instruction 8
- 106 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 106 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1045 is 1007
 9999 mem: location 1007 is 2
 9999 mem: location 1008 is 2
 9999 mem: location 1009 is 1010
 9999 mem: location 1045 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1049
  106 run: free:address:number <- get-address *chan, first-free:offset
@@ -1574,7 +1574,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  106 run: jump-unless at-end?, 
 9999 mem: location 1053 is 0
 9998 run: jumping to instruction 19
- 106 run: reply chan:address:channel
+ 106 run: reply chan:address:shared:channel
 9999 mem: location 1045 is 1007
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1007
@@ -1593,14 +1593,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 mem: location 101050 is 1007
 9998 run: address to copy is 1007
 9999 mem: storing 1007 in location 101053
- 105 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 105 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 101050 is 1007
 9999 mem: location 1007 is 2
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 1010
 9999 mem: location 101050 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 101054
  105 run: result <- index *circular-buffer, *full
@@ -1627,7 +1627,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  105 run: jump-unless at-end?, 
 9999 mem: location 101057 is 0
 9998 run: jumping to instruction 17
- 105 run: reply result:character, chan:address:channel
+ 105 run: reply result:character, chan:address:shared:channel
 9999 mem: location 101055 is 10
 9999 mem: location 101050 is 1007
 9999 trace: reply: decrementing callstack depth from 4
@@ -1645,9 +1645,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 mem: location 101004 is 101015
 9999 mem: location 101005 is 10
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: in:address:buffer <- next-ingredient-without-typechecking 
+ 105 run: in:address:shared:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 101050
  105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 10 in location 101051
@@ -1667,9 +1667,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  105 run: full?:boolean <- buffer-full? in
 9999 mem: location 101050 is 101015
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 106 run: in:address:buffer <- next-ingredient-without-typechecking 
+ 106 run: in:address:shared:buffer <- next-ingredient-without-typechecking 
 9999 mem: storing 101015 in location 1002
  106 run: len:number <- get *in, length:offset
 9999 mem: location 1002 is 101015
@@ -1680,13 +1680,13 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9998 run: its type is number
 9999 mem: location 101015 is 2
 9999 mem: storing 2 in location 1003
- 106 run: s:address:array:character <- get *in, data:offset
+ 106 run: s:address:shared:array:character <- get *in, data:offset
 9999 mem: location 1002 is 101015
 9999 mem: location 101015 is 2
 9999 mem: location 101016 is 101017
 9999 mem: location 1002 is 101015
 9998 run: address to copy is 101016
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 101016 is 101017
 9999 mem: storing 101017 in location 1004
  106 run: capacity:number <- length *s
@@ -1704,13 +1704,13 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  105 run: jump-unless full?, 
 9999 mem: location 101055 is 0
 9998 run: jumping to instruction 17
- 105 run: s:address:array:character <- get *in, data:offset
+ 105 run: s:address:shared:array:character <- get *in, data:offset
 9999 mem: location 101050 is 101015
 9999 mem: location 101015 is 2
 9999 mem: location 101016 is 101017
 9999 mem: location 101050 is 101015
 9998 run: address to copy is 101016
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 101016 is 101017
 9999 mem: storing 101017 in location 101056
  105 run: dest:address:character <- index-address *s, *len
@@ -1727,7 +1727,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 mem: location 101015 is 2
 9999 mem: location 101052 is 101015
 9999 mem: storing 3 in location 101015
- 105 run: reply in:address:buffer
+ 105 run: reply in:address:shared:buffer
 9999 mem: location 101050 is 101015
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 101015
@@ -1740,13 +1740,13 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9998 run: jumping to instruction 25
  104 run: i:number <- copy 0
 9999 mem: storing 0 in location 101011
- 104 run: line-contents:address:array:character <- get *line, data:offset
+ 104 run: line-contents:address:shared:array:character <- get *line, data:offset
 9999 mem: location 101004 is 101015
 9999 mem: location 101015 is 3
 9999 mem: location 101016 is 101017
 9999 mem: location 101004 is 101015
 9998 run: address to copy is 101016
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 101016 is 101017
 9999 mem: storing 101017 in location 101012
  104 run: max:number <- get *line, length:offset
@@ -1776,18 +1776,18 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 mem: location 101003 is 1022
 9999 mem: location 101005 is 97
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 105 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 105 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1045
  105 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1046
  105 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1022
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1056
  106 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1022
@@ -1805,18 +1805,18 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  106 run: len:number <- channel-capacity chan
 9999 mem: location 1056 is 1022
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 107 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 107 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1064
- 107 run: q:address:array:character <- get *chan, data:offset
+ 107 run: q:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1022
 9999 mem: location 1022 is 0
 9999 mem: location 1023 is 0
 9999 mem: location 1024 is 1025
 9999 mem: location 1064 is 1022
 9998 run: address to copy is 1024
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1024 is 1025
 9999 mem: storing 1025 in location 1065
  107 run: result <- length *q
@@ -1856,14 +1856,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  105 run: jump-unless full, 
 9999 mem: location 1047 is 0
 9998 run: jumping to instruction 8
- 105 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 105 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1045 is 1022
 9999 mem: location 1022 is 0
 9999 mem: location 1023 is 0
 9999 mem: location 1024 is 1025
 9999 mem: location 1045 is 1022
 9998 run: address to copy is 1024
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1024 is 1025
 9999 mem: storing 1025 in location 1049
  105 run: free:address:number <- get-address *chan, first-free:offset
@@ -1899,7 +1899,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  105 run: jump-unless at-end?, 
 9999 mem: location 1053 is 0
 9998 run: jumping to instruction 19
- 105 run: reply chan:address:channel
+ 105 run: reply chan:address:shared:channel
 9999 mem: location 1045 is 1022
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 1022
@@ -1927,18 +1927,18 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 mem: location 101003 is 1022
 9999 mem: location 101005 is 98
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 105 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 105 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1045
  105 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 98 in location 1046
  105 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1022
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1056
  106 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1022
@@ -1956,18 +1956,18 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  106 run: len:number <- channel-capacity chan
 9999 mem: location 1056 is 1022
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 107 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 107 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1064
- 107 run: q:address:array:character <- get *chan, data:offset
+ 107 run: q:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1022
 9999 mem: location 1022 is 0
 9999 mem: location 1023 is 1
 9999 mem: location 1024 is 1025
 9999 mem: location 1064 is 1022
 9998 run: address to copy is 1024
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1024 is 1025
 9999 mem: storing 1025 in location 1065
  107 run: result <- length *q
@@ -2007,14 +2007,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  105 run: jump-unless full, 
 9999 mem: location 1047 is 0
 9998 run: jumping to instruction 8
- 105 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 105 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1045 is 1022
 9999 mem: location 1022 is 0
 9999 mem: location 1023 is 1
 9999 mem: location 1024 is 1025
 9999 mem: location 1045 is 1022
 9998 run: address to copy is 1024
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1024 is 1025
 9999 mem: storing 1025 in location 1049
  105 run: free:address:number <- get-address *chan, first-free:offset
@@ -2050,7 +2050,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  105 run: jump-unless at-end?, 
 9999 mem: location 1053 is 0
 9998 run: jumping to instruction 19
- 105 run: reply chan:address:channel
+ 105 run: reply chan:address:shared:channel
 9999 mem: location 1045 is 1022
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 1022
@@ -2078,18 +2078,18 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 mem: location 101003 is 1022
 9999 mem: location 101005 is 10
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 105 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 105 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1045
  105 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 10 in location 1046
  105 run: full:boolean <- channel-full? chan
 9999 mem: location 1045 is 1022
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1056
  106 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1056 is 1022
@@ -2107,18 +2107,18 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  106 run: len:number <- channel-capacity chan
 9999 mem: location 1056 is 1022
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 107 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 107 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1064
- 107 run: q:address:array:character <- get *chan, data:offset
+ 107 run: q:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1064 is 1022
 9999 mem: location 1022 is 0
 9999 mem: location 1023 is 2
 9999 mem: location 1024 is 1025
 9999 mem: location 1064 is 1022
 9998 run: address to copy is 1024
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1024 is 1025
 9999 mem: storing 1025 in location 1065
  107 run: result <- length *q
@@ -2158,14 +2158,14 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  105 run: jump-unless full, 
 9999 mem: location 1047 is 0
 9998 run: jumping to instruction 8
- 105 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 105 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1045 is 1022
 9999 mem: location 1022 is 0
 9999 mem: location 1023 is 2
 9999 mem: location 1024 is 1025
 9999 mem: location 1045 is 1022
 9998 run: address to copy is 1024
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1024 is 1025
 9999 mem: storing 1025 in location 1049
  105 run: free:address:number <- get-address *chan, first-free:offset
@@ -2201,7 +2201,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  105 run: jump-unless at-end?, 
 9999 mem: location 1053 is 0
 9998 run: jumping to instruction 19
- 105 run: reply chan:address:channel
+ 105 run: reply chan:address:shared:channel
 9999 mem: location 1045 is 1022
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 1022
@@ -2220,9 +2220,9 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9998 run: jumping to instruction 36
  104 run: jump 
 9998 run: jumping to instruction 4
- 104 run: line:address:buffer <- new-buffer 30
+ 104 run: line:address:shared:buffer <- new-buffer 30
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
  105 run: capacity:number <- next-ingredient-without-typechecking 
 9999 mem: storing 30 in location 1039
@@ -2239,7 +2239,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  105 run: *len:address:number <- copy 0
 9999 mem: location 1041 is 101058
 9999 mem: storing 0 in location 101058
- 105 run: s:address:address:array:character <- get-address *result, data:offset
+ 105 run: s:address:address:shared:array:character <- get-address *result, data:offset
 9999 mem: location 1040 is 101058
 9999 mem: location 101058 is 0
 9999 mem: location 101059 is 0
@@ -2260,16 +2260,16 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
  104 run: c:character, in <- read in
 9999 mem: location 101002 is 1007
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
- 105 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 105 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 101050
  105 run: empty?:boolean <- channel-empty? chan
 9999 mem: location 101050 is 1007
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1007
@@ -2318,12 +2318,12 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9998 run: waiting for location 1008 to change from 3
 9999 schedule: waking up routine 1
 9990 schedule: run1001/scenario-buffer-lines-blocks-until-newline
- 105 run: 8:boolean <- channel-empty? 2:address:channel/buffered-stdin
+ 105 run: 8:boolean <- channel-empty? 2:address:shared:channel/buffered-stdin
 9999 mem: location 2 is 1022
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1022 in location 1039
  106 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1039 is 1022

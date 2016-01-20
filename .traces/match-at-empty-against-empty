@@ -1,10 +1,10 @@
 9991 parse: --- defining scenario-match-at-empty-against-empty
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:array:character <- new []\n    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:shared:array:character <- new []\n    3:boolean <- match-at 1:address:shared:array:character, 1:address:shared:array:character, 0\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    1:address:array:character <- new []
-    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
+    1:address:shared:array:character <- new []
+    3:boolean <- match-at 1:address:shared:array:character, 1:address:shared:array:character, 0
   ]
 9993 parse: instruction: memory-should-contain
 9993 parse:   number of ingredients: 1
@@ -33,22 +33,22 @@
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-match-at-empty-against-empty
  102 run: run [
-    1:address:array:character <- new []
-    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
+    1:address:shared:array:character <- new []
+    3:boolean <- match-at 1:address:shared:array:character, 1:address:shared:array:character, 0
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"": "literal-string"}
-9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 1:address:array:character <- new []
+9993 parse:   product: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 1:address:shared:array:character <- new []
 9993 parse: instruction: match-at
 9993 parse:   number of ingredients: 3
-9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
-9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
 9993 parse:   ingredient: {"0": "literal"}
 9993 parse:   product: {"3": "boolean"}
-9992 load: after rewriting: 3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
+9992 load: after rewriting: 3:boolean <- match-at 1:address:shared:array:character, 1:address:shared:array:character, 0
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
@@ -78,18 +78,18 @@
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: 1:address:array:character <- new []
+ 103 run: 1:address:shared:array:character <- new []
 9999 mem: storing 1000 in location 1
- 103 run: 3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
+ 103 run: 3:boolean <- match-at 1:address:shared:array:character, 1:address:shared:array:character, 0
 9999 mem: location 1 is 1000
 9999 mem: location 1 is 1000
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 12
 9999 mem: new alloc: 1001
- 104 run: text:address:array:character <- next-ingredient-without-typechecking 
+ 104 run: text:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1003
- 104 run: pattern:address:array:character <- next-ingredient-without-typechecking 
+ 104 run: pattern:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1004
  104 run: idx:number <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1005

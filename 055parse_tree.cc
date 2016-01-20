@@ -71,7 +71,7 @@ container bar [
 
 :(scenario dilated_reagent_with_new)
 recipe main [
-  x:address:address:number <- new {(address number): type}
+  x:address:shared:address:number <- new {(address number): type}
 ]
 +new: size of <"address" : <"number" : <>>> is 1
 

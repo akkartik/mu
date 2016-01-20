@@ -1,12 +1,12 @@
 9991 parse: --- defining scenario-channel-write-not-empty
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:channel <- new-channel 3/capacity\n    1:address:channel <- write 1:address:channel, 34\n    2:boolean <- channel-empty? 1:address:channel\n    3:boolean <- channel-full? 1:address:channel\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:shared:channel <- new-channel 3/capacity\n    1:address:shared:channel <- write 1:address:shared:channel, 34\n    2:boolean <- channel-empty? 1:address:shared:channel\n    3:boolean <- channel-full? 1:address:shared:channel\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    1:address:channel <- new-channel 3/capacity
-    1:address:channel <- write 1:address:channel, 34
-    2:boolean <- channel-empty? 1:address:channel
-    3:boolean <- channel-full? 1:address:channel
+    1:address:shared:channel <- new-channel 3/capacity
+    1:address:shared:channel <- write 1:address:shared:channel, 34
+    2:boolean <- channel-empty? 1:address:shared:channel
+    3:boolean <- channel-full? 1:address:shared:channel
   ]
 9993 parse: instruction: memory-should-contain
 9993 parse:   number of ingredients: 1
@@ -36,33 +36,33 @@
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-channel-write-not-empty
  102 run: run [
-    1:address:channel <- new-channel 3/capacity
-    1:address:channel <- write 1:address:channel, 34
-    2:boolean <- channel-empty? 1:address:channel
-    3:boolean <- channel-full? 1:address:channel
+    1:address:shared:channel <- new-channel 3/capacity
+    1:address:shared:channel <- write 1:address:shared:channel, 34
+    2:boolean <- channel-empty? 1:address:shared:channel
+    3:boolean <- channel-full? 1:address:shared:channel
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new-channel
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"3": "literal", "capacity": <>}
-9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9992 load: after rewriting: 1:address:channel <- new-channel 3/capacity
+9993 parse:   product: {"1": <"address" : <"shared" : <"channel" : <>>>>}
+9992 load: after rewriting: 1:address:shared:channel <- new-channel 3/capacity
 9993 parse: instruction: write
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>}
 9993 parse:   ingredient: {"34": "literal"}
-9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9992 load: after rewriting: 1:address:channel <- write 1:address:channel, 34
+9993 parse:   product: {"1": <"address" : <"shared" : <"channel" : <>>>>}
+9992 load: after rewriting: 1:address:shared:channel <- write 1:address:shared:channel, 34
 9993 parse: instruction: channel-empty?
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>}
 9993 parse:   product: {"2": "boolean"}
-9992 load: after rewriting: 2:boolean <- channel-empty? 1:address:channel
+9992 load: after rewriting: 2:boolean <- channel-empty? 1:address:shared:channel
 9993 parse: instruction: channel-full?
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>}
 9993 parse:   product: {"3": "boolean"}
-9992 load: after rewriting: 3:boolean <- channel-full? 1:address:channel
+9992 load: after rewriting: 3:boolean <- channel-full? 1:address:shared:channel
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
@@ -113,9 +113,9 @@
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: 1:address:channel <- new-channel 3/capacity
+ 103 run: 1:address:shared:channel <- new-channel 3/capacity
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
  104 run: capacity:number <- next-ingredient-without-typechecking 
@@ -148,7 +148,7 @@
  104 run: capacity <- add capacity, 1
 9999 mem: location 1002 is 3
 9999 mem: storing 4 in location 1002
- 104 run: dest:address:address:array:character <- get-address *result, data:offset
+ 104 run: dest:address:address:shared:array:character <- get-address *result, data:offset
 9999 mem: location 1003 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -162,28 +162,28 @@
 9999 mem: new alloc: 1010
 9999 mem: location 1006 is 1009
 9999 mem: storing 1010 in location 1009
- 104 run: reply result:address:channel
+ 104 run: reply result:address:shared:channel
 9999 mem: location 1003 is 1007
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
- 103 run: 1:address:channel <- write 1:address:channel, 34
+ 103 run: 1:address:shared:channel <- write 1:address:shared:channel, 34
 9999 mem: location 1 is 1007
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1015
- 104 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 104 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1017
  104 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 34 in location 1018
  104 run: full:boolean <- channel-full? chan
 9999 mem: location 1017 is 1007
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1026
- 105 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 105 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1028
  105 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1028 is 1007
@@ -201,19 +201,19 @@
  105 run: len:number <- channel-capacity chan
 9999 mem: location 1028 is 1007
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
 9999 mem: new alloc: 1034
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1036
- 106 run: q:address:array:character <- get *chan, data:offset
+ 106 run: q:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1036 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
 9999 mem: location 1009 is 1010
 9999 mem: location 1036 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1037
  106 run: result <- length *q
@@ -253,14 +253,14 @@
  104 run: jump-unless full, 
 9999 mem: location 1019 is 0
 9998 run: jumping to instruction 8
- 104 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 104 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1017 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
 9999 mem: location 1009 is 1010
 9999 mem: location 1017 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1021
  104 run: free:address:number <- get-address *chan, first-free:offset
@@ -296,18 +296,18 @@
  104 run: jump-unless at-end?, 
 9999 mem: location 1025 is 0
 9998 run: jumping to instruction 19
- 104 run: reply chan:address:channel
+ 104 run: reply chan:address:shared:channel
 9999 mem: location 1017 is 1007
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
- 103 run: 2:boolean <- channel-empty? 1:address:channel
+ 103 run: 2:boolean <- channel-empty? 1:address:shared:channel
 9999 mem: location 1 is 1007
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
 9999 mem: new alloc: 1039
- 104 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 104 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1041
  104 run: full:number <- get *chan, first-full:offset
 9999 mem: location 1041 is 1007
@@ -338,12 +338,12 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 0
 9999 mem: storing 0 in location 2
- 103 run: 3:boolean <- channel-full? 1:address:channel
+ 103 run: 3:boolean <- channel-full? 1:address:shared:channel
 9999 mem: location 1 is 1007
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
- 104 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 104 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1028
  104 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1028 is 1007
@@ -361,18 +361,18 @@
  104 run: len:number <- channel-capacity chan
 9999 mem: location 1028 is 1007
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
- 105 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 105 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1007 in location 1036
- 105 run: q:address:array:character <- get *chan, data:offset
+ 105 run: q:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1036 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 1
 9999 mem: location 1009 is 1010
 9999 mem: location 1036 is 1007
 9998 run: address to copy is 1009
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1037
  105 run: result <- length *q

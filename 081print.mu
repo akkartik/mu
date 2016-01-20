@@ -6,7 +6,7 @@ container screen [
   num-columns:number
   cursor-row:number
   cursor-column:number
-  data:address:array:screen-cell
+  data:address:shared:array:screen-cell
 ]
 
 container screen-cell [
@@ -14,7 +14,7 @@ container screen-cell [
   color:number
 ]
 
-recipe new-fake-screen w:number, h:number -> result:address:screen [
+recipe new-fake-screen w:number, h:number -> result:address:shared:screen [
   local-scope
   load-ingredients
   result <- new screen:type
@@ -27,19 +27,19 @@ recipe new-fake-screen w:number, h:number -> result:address:screen [
   column:address:number <- get-address *result, cursor-column:offset
   *column <- copy 0
   bufsize:number <- multiply *width, *height
-  buf:address:address:array:screen-cell <- get-address *result, data:offset
+  buf:address:address:shared:array:screen-cell <- get-address *result, data:offset
   *buf <- new screen-cell:type, bufsize
   result <- clear-screen result
 ]
 
-recipe clear-screen screen:address:screen -> screen:address:screen [
+recipe clear-screen screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists
   {
     break-unless screen
     # clear fake screen
-    buf:address:array:screen-cell <- get *screen, data:offset
+    buf:address:shared:array:screen-cell <- get *screen, data:offset
     max:number <- length *buf
     i:number <- copy 0
     {
@@ -64,7 +64,7 @@ recipe clear-screen screen:address:screen -> screen:address:screen [
   clear-display
 ]
 
-recipe sync-screen screen:address:screen -> screen:address:screen [
+recipe sync-screen screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   {
@@ -74,11 +74,11 @@ recipe sync-screen screen:address:screen -> screen:address:screen [
   # do nothing for fake screens
 ]
 
-recipe fake-screen-is-empty? screen:address:screen -> result:boolean [
+recipe fake-screen-is-empty? screen:address:shared:screen -> result:boolean [
   local-scope
   load-ingredients
   reply-unless screen, 1/true
-  buf:address:array:screen-cell <- get *screen, data:offset
+  buf:address:shared:array:screen-cell <- get *screen, data:offset
   i:number <- copy 0
   len:number <- length *buf
   {
@@ -94,7 +94,7 @@ recipe fake-screen-is-empty? screen:address:screen -> result:boolean [
   reply 1/true
 ]
 
-recipe print screen:address:screen, c:character -> screen:address:screen [
+recipe print screen:address:shared:screen, c:character -> screen:address:shared:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient
@@ -145,7 +145,7 @@ recipe print screen:address:screen, c:character -> screen:address:screen [
     # save character in fake screen
     index:number <- multiply *row, width
     index <- add index, *column
-    buf:address:array:screen-cell <- get *screen, data:offset
+    buf:address:shared:array:screen-cell <- get *screen, data:offset
     len:number <- length *buf
     # special-case: backspace
     {
@@ -186,11 +186,11 @@ recipe print screen:address:screen, c:character -> screen:address:screen [
 
 scenario print-character-at-top-left [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:shared:screen <- new-fake-screen 3/width, 2/height
     11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
-    2:address:array:screen-cell <- get *1:address:screen, data:offset
-    3:array:screen-cell <- copy *2:address:array:screen-cell
+    1:address:shared:screen <- print 1:address:shared:screen, 11:character/a
+    2:address:shared:array:screen-cell <- get *1:address:shared:screen, data:offset
+    3:array:screen-cell <- copy *2:address:shared:array:screen-cell
   ]
   memory-should-contain [
     3 <- 6  # width*height
@@ -202,11 +202,11 @@ scenario print-character-at-top-left [
 
 scenario print-character-in-color [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:shared:screen <- new-fake-screen 3/width, 2/height
     11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a, 1/red
-    2:address:array:screen-cell <- get *1:address:screen, data:offset
-    3:array:screen-cell <- copy *2:address:array:screen-cell
+    1:address:shared:screen <- print 1:address:shared:screen, 11:character/a, 1/red
+    2:address:shared:array:screen-cell <- get *1:address:shared:screen, data:offset
+    3:array:screen-cell <- copy *2:address:shared:array:screen-cell
   ]
   memory-should-contain [
     3 <- 6  # width*height
@@ -218,14 +218,14 @@ scenario print-character-in-color [
 
 scenario print-backspace-character [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:shared:screen <- new-fake-screen 3/width, 2/height
     11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
+    1:address:shared:screen <- print 1:address:shared:screen, 11:character/a
     12:character <- copy 8/backspace
-    1:address:screen <- print 1:address:screen, 12:character/backspace
-    2:number <- get *1:address:screen, cursor-column:offset
-    3:address:array:screen-cell <- get *1:address:screen, data:offset
-    4:array:screen-cell <- copy *3:address:array:screen-cell
+    1:address:shared:screen <- print 1:address:shared:screen, 12:character/backspace
+    2:number <- get *1:address:shared:screen, cursor-column:offset
+    3:address:shared:array:screen-cell <- get *1:address:shared:screen, data:offset
+    4:array:screen-cell <- copy *3:address:shared:array:screen-cell
   ]
   memory-should-contain [
     2 <- 0  # cursor column
@@ -238,16 +238,16 @@ scenario print-backspace-character [
 
 scenario print-extra-backspace-character [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:shared:screen <- new-fake-screen 3/width, 2/height
     11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
+    1:address:shared:screen <- print 1:address:shared:screen, 11:character/a
     12:character <- copy 8/backspace
-    1:address:screen <- print 1:address:screen, 12:character/backspace
+    1:address:shared:screen <- print 1:address:shared:screen, 12:character/backspace
     12:character <- copy 8/backspace
-    1:address:screen <- print 1:address:screen, 12:character/backspace
-    2:number <- get *1:address:screen, cursor-column:offset
-    3:address:array:screen-cell <- get *1:address:screen, data:offset
-    4:array:screen-cell <- copy *3:address:array:screen-cell
+    1:address:shared:screen <- print 1:address:shared:screen, 12:character/backspace
+    2:number <- get *1:address:shared:screen, cursor-column:offset
+    3:address:shared:array:screen-cell <- get *1:address:shared:screen, data:offset
+    4:array:screen-cell <- copy *3:address:shared:array:screen-cell
   ]
   memory-should-contain [
     2 <- 0  # cursor column
@@ -260,16 +260,16 @@ scenario print-extra-backspace-character [
 
 scenario print-character-at-right-margin [
   run [
-    1:address:screen <- new-fake-screen 2/width, 2/height
+    1:address:shared:screen <- new-fake-screen 2/width, 2/height
     11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
+    1:address:shared:screen <- print 1:address:shared:screen, 11:character/a
     12:character <- copy 98/b
-    1:address:screen <- print 1:address:screen, 12:character/b
+    1:address:shared:screen <- print 1:address:shared:screen, 12:character/b
     13:character <- copy 99/b
-    1:address:screen <- print 1:address:screen, 13:character/c
-    2:number <- get *1:address:screen, cursor-column:offset
-    3:address:array:screen-cell <- get *1:address:screen, data:offset
-    4:array:screen-cell <- copy *3:address:array:screen-cell
+    1:address:shared:screen <- print 1:address:shared:screen, 13:character/c
+    2:number <- get *1:address:shared:screen, cursor-column:offset
+    3:address:shared:array:screen-cell <- get *1:address:shared:screen, data:offset
+    4:array:screen-cell <- copy *3:address:shared:array:screen-cell
   ]
   memory-should-contain [
     2 <- 1  # cursor column
@@ -284,15 +284,15 @@ scenario print-character-at-right-margin [
 
 scenario print-newline-character [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:shared:screen <- new-fake-screen 3/width, 2/height
     10:character <- copy 10/newline
     11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
-    1:address:screen <- print 1:address:screen, 10:character/newline
-    2:number <- get *1:address:screen, cursor-row:offset
-    3:number <- get *1:address:screen, cursor-column:offset
-    4:address:array:screen-cell <- get *1:address:screen, data:offset
-    5:array:screen-cell <- copy *4:address:array:screen-cell
+    1:address:shared:screen <- print 1:address:shared:screen, 11:character/a
+    1:address:shared:screen <- print 1:address:shared:screen, 10:character/newline
+    2:number <- get *1:address:shared:screen, cursor-row:offset
+    3:number <- get *1:address:shared:screen, cursor-column:offset
+    4:address:shared:array:screen-cell <- get *1:address:shared:screen, data:offset
+    5:array:screen-cell <- copy *4:address:shared:array:screen-cell
   ]
   memory-should-contain [
     2 <- 1  # cursor row
@@ -306,13 +306,13 @@ scenario print-newline-character [
 
 scenario print-newline-at-bottom-line [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:shared:screen <- new-fake-screen 3/width, 2/height
     10:character <- copy 10/newline
-    1:address:screen <- print 1:address:screen, 10:character/newline
-    1:address:screen <- print 1:address:screen, 10:character/newline
-    1:address:screen <- print 1:address:screen, 10:character/newline
-    2:number <- get *1:address:screen, cursor-row:offset
-    3:number <- get *1:address:screen, cursor-column:offset
+    1:address:shared:screen <- print 1:address:shared:screen, 10:character/newline
+    1:address:shared:screen <- print 1:address:shared:screen, 10:character/newline
+    1:address:shared:screen <- print 1:address:shared:screen, 10:character/newline
+    2:number <- get *1:address:shared:screen, cursor-row:offset
+    3:number <- get *1:address:shared:screen, cursor-column:offset
   ]
   memory-should-contain [
     2 <- 1  # cursor row
@@ -322,22 +322,22 @@ scenario print-newline-at-bottom-line [
 
 scenario print-character-at-bottom-right [
   run [
-    1:address:screen <- new-fake-screen 2/width, 2/height
+    1:address:shared:screen <- new-fake-screen 2/width, 2/height
     10:character <- copy 10/newline
-    1:address:screen <- print 1:address:screen, 10:character/newline
+    1:address:shared:screen <- print 1:address:shared:screen, 10:character/newline
     11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
+    1:address:shared:screen <- print 1:address:shared:screen, 11:character/a
     12:character <- copy 98/b
-    1:address:screen <- print 1:address:screen, 12:character/b
+    1:address:shared:screen <- print 1:address:shared:screen, 12:character/b
     13:character <- copy 99/c
-    1:address:screen <- print 1:address:screen, 13:character/c
-    1:address:screen <- print 1:address:screen, 10:character/newline
+    1:address:shared:screen <- print 1:address:shared:screen, 13:character/c
+    1:address:shared:screen <- print 1:address:shared:screen, 10:character/newline
     14:character <- copy 100/d
-    1:address:screen <- print 1:address:screen, 14:character/d
-    2:number <- get *1:address:screen, cursor-row:offset
-    3:number <- get *1:address:screen, cursor-column:offset
-    4:address:array:screen-cell <- get *1:address:screen, data:offset
-    20:array:screen-cell <- copy *4:address:array:screen-cell
+    1:address:shared:screen <- print 1:address:shared:screen, 14:character/d
+    2:number <- get *1:address:shared:screen, cursor-row:offset
+    3:number <- get *1:address:shared:screen, cursor-column:offset
+    4:address:shared:array:screen-cell <- get *1:address:shared:screen, data:offset
+    20:array:screen-cell <- copy *4:address:shared:array:screen-cell
   ]
   memory-should-contain [
     2 <- 1  # cursor row
@@ -355,7 +355,7 @@ scenario print-character-at-bottom-right [
   ]
 ]
 
-recipe clear-line screen:address:screen -> screen:address:screen [
+recipe clear-line screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   space:character <- copy 0/nul
@@ -381,7 +381,7 @@ recipe clear-line screen:address:screen -> screen:address:screen [
   clear-line-on-display
 ]
 
-recipe cursor-position screen:address:screen -> row:number, column:number [
+recipe cursor-position screen:address:shared:screen -> row:number, column:number [
   local-scope
   load-ingredients
   # if x exists, lookup cursor in fake screen
@@ -394,7 +394,7 @@ recipe cursor-position screen:address:screen -> row:number, column:number [
   row, column <- cursor-position-on-display
 ]
 
-recipe move-cursor screen:address:screen, new-row:number, new-column:number -> screen:address:screen [
+recipe move-cursor screen:address:shared:screen, new-row:number, new-column:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -412,16 +412,16 @@ recipe move-cursor screen:address:screen, new-row:number, new-column:number -> s
 
 scenario clear-line-erases-printed-characters [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:shared:screen <- new-fake-screen 3/width, 2/height
     # print a character
     10:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 10:character/a
+    1:address:shared:screen <- print 1:address:shared:screen, 10:character/a
     # move cursor to start of line
-    1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column
+    1:address:shared:screen <- move-cursor 1:address:shared:screen, 0/row, 0/column
     # clear line
-    1:address:screen <- clear-line 1:address:screen
-    2:address:array:screen-cell <- get *1:address:screen, data:offset
-    20:array:screen-cell <- copy *2:address:array:screen-cell
+    1:address:shared:screen <- clear-line 1:address:shared:screen
+    2:address:shared:array:screen-cell <- get *1:address:shared:screen, data:offset
+    20:array:screen-cell <- copy *2:address:shared:array:screen-cell
   ]
   # screen should be blank
   memory-should-contain [
@@ -441,7 +441,7 @@ scenario clear-line-erases-printed-characters [
   ]
 ]
 
-recipe cursor-down screen:address:screen -> screen:address:screen [
+recipe cursor-down screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -462,7 +462,7 @@ recipe cursor-down screen:address:screen -> screen:address:screen [
   move-cursor-down-on-display
 ]
 
-recipe cursor-up screen:address:screen -> screen:address:screen [
+recipe cursor-up screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -481,7 +481,7 @@ recipe cursor-up screen:address:screen -> screen:address:screen [
   move-cursor-up-on-display
 ]
 
-recipe cursor-right screen:address:screen -> screen:address:screen [
+recipe cursor-right screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -502,7 +502,7 @@ recipe cursor-right screen:address:screen -> screen:address:screen [
   move-cursor-right-on-display
 ]
 
-recipe cursor-left screen:address:screen -> screen:address:screen [
+recipe cursor-left screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -521,7 +521,7 @@ recipe cursor-left screen:address:screen -> screen:address:screen [
   move-cursor-left-on-display
 ]
 
-recipe cursor-to-start-of-line screen:address:screen -> screen:address:screen [
+recipe cursor-to-start-of-line screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   row:number <- cursor-position screen
@@ -529,14 +529,14 @@ recipe cursor-to-start-of-line screen:address:screen -> screen:address:screen [
   screen <- move-cursor screen, row, column
 ]
 
-recipe cursor-to-next-line screen:address:screen -> screen:address:screen [
+recipe cursor-to-next-line screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   screen <- cursor-down screen
   screen <- cursor-to-start-of-line screen
 ]
 
-recipe screen-width screen:address:screen -> width:number [
+recipe screen-width screen:address:shared:screen -> width:number [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -549,7 +549,7 @@ recipe screen-width screen:address:screen -> width:number [
   width <- display-width
 ]
 
-recipe screen-height screen:address:screen -> height:number [
+recipe screen-height screen:address:shared:screen -> height:number [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -562,7 +562,7 @@ recipe screen-height screen:address:screen -> height:number [
   height <- display-height
 ]
 
-recipe hide-cursor screen:address:screen -> screen:address:screen [
+recipe hide-cursor screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
@@ -574,7 +574,7 @@ recipe hide-cursor screen:address:screen -> screen:address:screen [
   hide-cursor-on-display
 ]
 
-recipe show-cursor screen:address:screen -> screen:address:screen [
+recipe show-cursor screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
@@ -586,7 +586,7 @@ recipe show-cursor screen:address:screen -> screen:address:screen [
   show-cursor-on-display
 ]
 
-recipe hide-screen screen:address:screen -> screen:address:screen [
+recipe hide-screen screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
@@ -599,7 +599,7 @@ recipe hide-screen screen:address:screen -> screen:address:screen [
   hide-display
 ]
 
-recipe show-screen screen:address:screen -> screen:address:screen [
+recipe show-screen screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
@@ -612,7 +612,7 @@ recipe show-screen screen:address:screen -> screen:address:screen [
   show-display
 ]
 
-recipe print screen:address:screen, s:address:array:character -> screen:address:screen [
+recipe print screen:address:shared:screen, s:address:shared:array:character -> screen:address:shared:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient
@@ -641,11 +641,11 @@ recipe print screen:address:screen, s:address:array:character -> screen:address:
 
 scenario print-text-stops-at-right-margin [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
-    2:address:array:character <- new [abcd]
-    1:address:screen <- print 1:address:screen, 2:address:array:character
-    3:address:array:screen-cell <- get *1:address:screen, data:offset
-    4:array:screen-cell <- copy *3:address:array:screen-cell
+    1:address:shared:screen <- new-fake-screen 3/width, 2/height
+    2:address:shared:array:character <- new [abcd]
+    1:address:shared:screen <- print 1:address:shared:screen, 2:address:shared:array:character
+    3:address:shared:array:screen-cell <- get *1:address:shared:screen, data:offset
+    4:array:screen-cell <- copy *3:address:shared:array:screen-cell
   ]
   memory-should-contain [
     4 <- 6  # width*height
@@ -659,7 +659,7 @@ scenario print-text-stops-at-right-margin [
   ]
 ]
 
-recipe print-integer screen:address:screen, n:number -> screen:address:screen [
+recipe print-integer screen:address:shared:screen, n:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient
@@ -675,12 +675,12 @@ recipe print-integer screen:address:screen, n:number -> screen:address:screen [
     bg-color <- copy 0/black
   }
   # todo: other bases besides decimal
-  s:address:array:character <- to-text n
+  s:address:shared:array:character <- to-text n
   screen <- print screen, s, color, bg-color
 ]
 
 # for now, we can only print integers
-recipe print screen:address:screen, n:number -> screen:address:screen [
+recipe print screen:address:shared:screen, n:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   screen <- print-integer screen, n

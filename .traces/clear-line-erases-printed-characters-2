@@ -3,18 +3,18 @@
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"5": "literal", "width": <>}
 9993 parse:   ingredient: {"3": "literal", "height": <>}
-9992 load: after rewriting: screen:address:screen <- new-fake-screen 5/width, 3/height
+9992 load: after rewriting: screen:address:shared:screen <- new-fake-screen 5/width, 3/height
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    # print a character\n    1:character <- copy 97/a\n    screen:address:screen <- print screen:address:screen, 1:character/a\n    # move cursor to start of line\n    screen:address:screen <- move-cursor screen:address:screen, 0/row, 0/column\n    # clear line\n    screen:address:screen <- clear-line screen:address:screen\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    # print a character\n    1:character <- copy 97/a\n    screen:address:shared:screen <- print screen:address:shared:screen, 1:character/a\n    # move cursor to start of line\n    screen:address:shared:screen <- move-cursor screen:address:shared:screen, 0/row, 0/column\n    # clear line\n    screen:address:shared:screen <- clear-line screen:address:shared:screen\n  ": "literal-string"}
 9992 load: after rewriting: run [
     # print a character
     1:character <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 1:character/a
+    screen:address:shared:screen <- print screen:address:shared:screen, 1:character/a
     # move cursor to start of line
-    screen:address:screen <- move-cursor screen:address:screen, 0/row, 0/column
+    screen:address:shared:screen <- move-cursor screen:address:shared:screen, 0/row, 0/column
     # clear line
-    screen:address:screen <- clear-line screen:address:screen
+    screen:address:shared:screen <- clear-line screen:address:shared:screen
   ]
 9993 parse: instruction: screen-should-contain
 9993 parse:   number of ingredients: 1
@@ -28,7 +28,7 @@
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe scenario-clear-line-erases-printed-characters-2
 9991 transform: --- deduce types for recipe scenario-clear-line-erases-printed-characters-2
-9992 transform: screen => <address : <screen : <>>>
+9992 transform: screen => <address : <shared : <screen : <>>>>
 9991 transform: --- collect surrounding spaces for recipe scenario-clear-line-erases-printed-characters-2
 9991 transform: --- transform names for recipe scenario-clear-line-erases-printed-characters-2
 9991 transform: --- resolve ambiguous calls for recipe scenario-clear-line-erases-printed-characters-2
@@ -55,9 +55,9 @@
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-clear-line-erases-printed-characters-2
- 102 run: screen:address:screen <- new-fake-screen 5/width, 3/height
+ 102 run: screen:address:shared:screen <- new-fake-screen 5/width, 3/height
 9999 trace: incrementing callstack depth to 2
- 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 103 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1000
  103 run: w:number <- next-ingredient-without-typechecking 
@@ -127,7 +127,7 @@
 9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 3
 9999 mem: storing 15 in location 1009
- 103 run: buf:address:address:array:screen-cell <- get-address *result, data:offset
+ 103 run: buf:address:address:shared:array:screen-cell <- get-address *result, data:offset
 9999 mem: location 1004 is 1011
 9999 mem: location 1011 is 3
 9999 mem: location 1012 is 5
@@ -146,15 +146,15 @@
  103 run: result <- clear-screen result
 9999 mem: location 1004 is 1011
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1047
- 104 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1049
  104 run: jump-unless screen, 
 9999 mem: location 1049 is 1011
 9998 run: jump-unless fell through
- 104 run: buf:address:array:screen-cell <- get *screen, data:offset
+ 104 run: buf:address:shared:array:screen-cell <- get *screen, data:offset
 9999 mem: location 1049 is 1011
 9999 mem: location 1011 is 3
 9999 mem: location 1012 is 5
@@ -163,7 +163,7 @@
 9999 mem: location 1015 is 1016
 9999 mem: location 1049 is 1011
 9998 run: address to copy is 1015
-9998 run: its type is <address : <array : <screen-cell : <>>>>
+9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1015 is 1016
 9999 mem: storing 1016 in location 1050
  104 run: max:number <- length *buf
@@ -744,12 +744,12 @@
  104 run: *x <- copy 0
 9999 mem: location 1057 is 1014
 9999 mem: storing 0 in location 1014
- 104 run: reply screen:address:screen
+ 104 run: reply screen:address:shared:screen
 9999 mem: location 1049 is 1011
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1004
- 103 run: reply result:address:screen
+ 103 run: reply result:address:shared:screen
 9999 mem: location 1004 is 1011
 9999 trace: reply: decrementing callstack depth from 2
 9998 run: result 0 is 1011
@@ -757,11 +757,11 @@
  102 run: run [
     # print a character
     1:character <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 1:character/a
+    screen:address:shared:screen <- print screen:address:shared:screen, 1:character/a
     # move cursor to start of line
-    screen:address:screen <- move-cursor screen:address:screen, 0/row, 0/column
+    screen:address:shared:screen <- move-cursor screen:address:shared:screen, 0/row, 0/column
     # clear line
-    screen:address:screen <- clear-line screen:address:screen
+    screen:address:shared:screen <- clear-line screen:address:shared:screen
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: copy
@@ -771,27 +771,27 @@
 9992 load: after rewriting: 1:character <- copy 97/a
 9993 parse: instruction: print
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
 9993 parse:   ingredient: {"1": "character", "a": <>}
-9993 parse:   product: {"screen": <"address" : <"screen" : <>>>}
-9992 load: after rewriting: screen:address:screen <- print screen:address:screen, 1:character/a
+9993 parse:   product: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9992 load: after rewriting: screen:address:shared:screen <- print screen:address:shared:screen, 1:character/a
 9993 parse: instruction: move-cursor
 9993 parse:   number of ingredients: 3
-9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
 9993 parse:   ingredient: {"0": "literal", "row": <>}
 9993 parse:   ingredient: {"0": "literal", "column": <>}
-9993 parse:   product: {"screen": <"address" : <"screen" : <>>>}
-9992 load: after rewriting: screen:address:screen <- move-cursor screen:address:screen, 0/row, 0/column
+9993 parse:   product: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9992 load: after rewriting: screen:address:shared:screen <- move-cursor screen:address:shared:screen, 0/row, 0/column
 9993 parse: instruction: clear-line
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9993 parse:   product: {"screen": <"address" : <"screen" : <>>>}
-9992 load: after rewriting: screen:address:screen <- clear-line screen:address:screen
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9993 parse:   product: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9992 load: after rewriting: screen:address:shared:screen <- clear-line screen:address:shared:screen
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
 9991 transform: --- deduce types for recipe run1001
-9992 transform: screen => <address : <screen : <>>>
+9992 transform: screen => <address : <shared : <screen : <>>>>
 9991 transform: --- collect surrounding spaces for recipe run1001
 9991 transform: --- transform names for recipe run1001
 9991 transform: --- resolve ambiguous calls for recipe run1001
@@ -843,14 +843,14 @@
 9998 trace: run: incrementing callstack depth to 2
  103 run: 1:character <- copy 97/a
 9999 mem: storing 97 in location 1
- 103 run: screen:address:screen <- print screen:address:screen, 1:character/a
+ 103 run: screen:address:shared:screen <- print screen:address:shared:screen, 1:character/a
 9999 mem: location 900 is 1011
 9999 mem: location 1 is 97
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
 9999 mem: new alloc: 1058
- 104 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1060
  104 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1061
@@ -966,7 +966,7 @@
 9999 mem: location 1070 is 1014
 9999 mem: location 1014 is 0
 9999 mem: storing 0 in location 1074
- 104 run: buf:address:array:screen-cell <- get *screen, data:offset
+ 104 run: buf:address:shared:array:screen-cell <- get *screen, data:offset
 9999 mem: location 1060 is 1011
 9999 mem: location 1011 is 3
 9999 mem: location 1012 is 5
@@ -975,7 +975,7 @@
 9999 mem: location 1015 is 1016
 9999 mem: location 1060 is 1011
 9998 run: address to copy is 1015
-9998 run: its type is <address : <array : <screen-cell : <>>>>
+9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1015 is 1016
 9999 mem: storing 1016 in location 1075
  104 run: len:number <- length *buf
@@ -1029,18 +1029,18 @@
 9999 mem: location 1014 is 0
 9999 mem: location 1070 is 1014
 9999 mem: storing 1 in location 1014
- 104 run: reply screen:address:screen
+ 104 run: reply screen:address:shared:screen
 9999 mem: location 1060 is 1011
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 900
- 103 run: screen:address:screen <- move-cursor screen:address:screen, 0/row, 0/column
+ 103 run: screen:address:shared:screen <- move-cursor screen:address:shared:screen, 0/row, 0/column
 9999 mem: location 900 is 1011
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1084
- 104 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1086
  104 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1087
@@ -1077,18 +1077,18 @@
 9999 mem: location 1088 is 0
 9999 mem: location 1090 is 1014
 9999 mem: storing 0 in location 1014
- 104 run: reply screen:address:screen
+ 104 run: reply screen:address:shared:screen
 9999 mem: location 1086 is 1011
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 900
- 103 run: screen:address:screen <- clear-line screen:address:screen
+ 103 run: screen:address:shared:screen <- clear-line screen:address:shared:screen
 9999 mem: location 900 is 1011
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 8
 9999 mem: new alloc: 1091
- 104 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1093
  104 run: space:character <- copy 0/nul
 9999 mem: storing 0 in location 1094
@@ -1136,9 +1136,9 @@
 9999 mem: location 1093 is 1011
 9999 mem: location 1094 is 0
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
- 105 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 105 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1060
  105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1061
@@ -1254,7 +1254,7 @@
 9999 mem: location 1070 is 1014
 9999 mem: location 1014 is 0
 9999 mem: storing 0 in location 1074
- 105 run: buf:address:array:screen-cell <- get *screen, data:offset
+ 105 run: buf:address:shared:array:screen-cell <- get *screen, data:offset
 9999 mem: location 1060 is 1011
 9999 mem: location 1011 is 3
 9999 mem: location 1012 is 5
@@ -1263,7 +1263,7 @@
 9999 mem: location 1015 is 1016
 9999 mem: location 1060 is 1011
 9998 run: address to copy is 1015
-9998 run: its type is <address : <array : <screen-cell : <>>>>
+9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1015 is 1016
 9999 mem: storing 1016 in location 1075
  105 run: len:number <- length *buf
@@ -1317,7 +1317,7 @@
 9999 mem: location 1014 is 0
 9999 mem: location 1070 is 1014
 9999 mem: storing 1 in location 1014
- 105 run: reply screen:address:screen
+ 105 run: reply screen:address:shared:screen
 9999 mem: location 1060 is 1011
 9999 trace: reply: decrementing callstack depth from 4
  104 run: jump 
@@ -1337,9 +1337,9 @@
 9999 mem: location 1093 is 1011
 9999 mem: location 1094 is 0
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
- 105 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 105 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1060
  105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1061
@@ -1455,7 +1455,7 @@
 9999 mem: location 1070 is 1014
 9999 mem: location 1014 is 1
 9999 mem: storing 1 in location 1074
- 105 run: buf:address:array:screen-cell <- get *screen, data:offset
+ 105 run: buf:address:shared:array:screen-cell <- get *screen, data:offset
 9999 mem: location 1060 is 1011
 9999 mem: location 1011 is 3
 9999 mem: location 1012 is 5
@@ -1464,7 +1464,7 @@
 9999 mem: location 1015 is 1016
 9999 mem: location 1060 is 1011
 9998 run: address to copy is 1015
-9998 run: its type is <address : <array : <screen-cell : <>>>>
+9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1015 is 1016
 9999 mem: storing 1016 in location 1075
  105 run: len:number <- length *buf
@@ -1518,7 +1518,7 @@
 9999 mem: location 1014 is 1
 9999 mem: location 1070 is 1014
 9999 mem: storing 2 in location 1014
- 105 run: reply screen:address:screen
+ 105 run: reply screen:address:shared:screen
 9999 mem: location 1060 is 1011
 9999 trace: reply: decrementing callstack depth from 4
  104 run: jump 
@@ -1538,9 +1538,9 @@
 9999 mem: location 1093 is 1011
 9999 mem: location 1094 is 0
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
- 105 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 105 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1060
  105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1061
@@ -1656,7 +1656,7 @@
 9999 mem: location 1070 is 1014
 9999 mem: location 1014 is 2
 9999 mem: storing 2 in location 1074
- 105 run: buf:address:array:screen-cell <- get *screen, data:offset
+ 105 run: buf:address:shared:array:screen-cell <- get *screen, data:offset
 9999 mem: location 1060 is 1011
 9999 mem: location 1011 is 3
 9999 mem: location 1012 is 5
@@ -1665,7 +1665,7 @@
 9999 mem: location 1015 is 1016
 9999 mem: location 1060 is 1011
 9998 run: address to copy is 1015
-9998 run: its type is <address : <array : <screen-cell : <>>>>
+9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1015 is 1016
 9999 mem: storing 1016 in location 1075
  105 run: len:number <- length *buf
@@ -1719,7 +1719,7 @@
 9999 mem: location 1014 is 2
 9999 mem: location 1070 is 1014
 9999 mem: storing 3 in location 1014
- 105 run: reply screen:address:screen
+ 105 run: reply screen:address:shared:screen
 9999 mem: location 1060 is 1011
 9999 trace: reply: decrementing callstack depth from 4
  104 run: jump 
@@ -1739,9 +1739,9 @@
 9999 mem: location 1093 is 1011
 9999 mem: location 1094 is 0
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 25
- 105 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 105 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1060
  105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1061
@@ -1857,7 +1857,7 @@
 9999 mem: location 1070 is 1014
 9999 mem: location 1014 is 3
 9999 mem: storing 3 in location 1074
- 105 run: buf:address:array:screen-cell <- get *screen, data:offset
+ 105 run: buf:address:shared:array:screen-cell <- get *screen, data:offset
 9999 mem: location 1060 is 1011
 9999 mem: location 1011 is 3
 9999 mem: location 1012 is 5
@@ -1866,7 +1866,7 @@
 9999 mem: location 1015 is 1016
 9999 mem: location 1060 is 1011
 9998 run: address to copy is 1015
-9998 run: its type is <address : <array : <screen-cell : <>>>>
+9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1015 is 1016
 9999 mem: storing 1016 in location 1075
  105 run: len:number <- length *buf
@@ -1920,7 +1920,7 @@
 9999 mem: location 1014 is 3
 9999 mem: location 1070 is 1014
 9999 mem: storing 4 in location 1014
- 105 run: reply screen:address:screen
+ 105 run: reply screen:address:shared:screen
 9999 mem: location 1060 is 1011
 9999 trace: reply: decrementing callstack depth from 4
  104 run: jump 
@@ -1940,7 +1940,7 @@
 9999 mem: location 1097 is 0
 9999 mem: location 1096 is 1014
 9999 mem: storing 0 in location 1014
- 104 run: reply screen:address:screen
+ 104 run: reply screen:address:shared:screen
 9999 mem: location 1093 is 1011
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011

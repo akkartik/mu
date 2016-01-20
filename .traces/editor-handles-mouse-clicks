@@ -7,35 +7,35 @@
 9993 parse:   ingredient: {"1": "literal"}
 9992 load: after rewriting: left-click 1, 1
  102 run: run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+    3:number <- get *2:address:shared:editor-data, cursor-row:offset
+    4:number <- get *2:address:shared:editor-data, cursor-column:offset
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: editor-event-loop
 9993 parse:   number of ingredients: 3
-9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
-9993 parse:   ingredient: {"2": <"address" : <"editor-data" : <>>>}
-9992 load: after rewriting: editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9993 parse:   ingredient: {"console": <"address" : <"shared" : <"console" : <>>>>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"editor-data" : <>>>>}
+9992 load: after rewriting: editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
 9993 parse: instruction: get
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"2": <"address" : <"editor-data" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"editor-data" : <>>>>, "lookup": <>}
 9993 parse:   ingredient: {"cursor-row": "offset"}
 9993 parse:   product: {"3": "number"}
-9992 load: after rewriting: 3:number <- get *2:address:editor-data, cursor-row:offset
+9992 load: after rewriting: 3:number <- get *2:address:shared:editor-data, cursor-row:offset
 9993 parse: instruction: get
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"2": <"address" : <"editor-data" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"editor-data" : <>>>>, "lookup": <>}
 9993 parse:   ingredient: {"cursor-column": "offset"}
 9993 parse:   product: {"4": "number"}
-9992 load: after rewriting: 4:number <- get *2:address:editor-data, cursor-column:offset
+9992 load: after rewriting: 4:number <- get *2:address:shared:editor-data, cursor-column:offset
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
 9991 transform: --- deduce types for recipe run1001
-9992 transform: screen => <address : <screen : <>>>
-9992 transform: console => <address : <console : <>>>
+9992 transform: screen => <address : <shared : <screen : <>>>>
+9992 transform: console => <address : <shared : <console : <>>>>
 9991 transform: --- collect surrounding spaces for recipe run1001
 9991 transform: --- transform names for recipe run1001
 9993 name: element cursor-row of type editor-data is at offset 6
@@ -62,19 +62,19 @@
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
+ 103 run: editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
 9999 mem: location 900 is 1011
 9999 mem: location 901 is 1271
 9999 mem: location 2 is 1000
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 14
 9999 mem: new alloc: 1273
- 104 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1275
- 104 run: console:address:console <- next-ingredient-without-typechecking 
+ 104 run: console:address:shared:console <- next-ingredient-without-typechecking 
 9999 mem: storing 1271 in location 1276
- 104 run: editor:address:editor-data <- next-ingredient-without-typechecking 
+ 104 run: editor:address:shared:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1277
  104 run: cursor-row:number <- get *editor, cursor-row:offset
 9999 mem: location 1277 is 1000
@@ -117,9 +117,9 @@
 9999 mem: location 1278 is 1
 9999 mem: location 1279 is 0
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 105 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 105 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1207
  105 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1208
@@ -156,17 +156,17 @@
 9999 mem: location 1209 is 0
 9999 mem: location 1211 is 1014
 9999 mem: storing 0 in location 1014
- 105 run: reply screen:address:screen
+ 105 run: reply screen:address:shared:screen
 9999 mem: location 1207 is 1011
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1275
- 104 run: e:event, console:address:console, found?:boolean, quit?:boolean <- read-event console
+ 104 run: e:event, console:address:shared:console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1276 is 1271
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 12
- 105 run: console:address:console <- next-ingredient-without-typechecking 
+ 105 run: console:address:shared:console <- next-ingredient-without-typechecking 
 9999 mem: storing 1271 in location 1240
  105 run: jump-unless console, 
 9999 mem: location 1240 is 1271
@@ -178,13 +178,13 @@
 9999 mem: location 1240 is 1271
 9998 run: address to copy is 1271
 9999 mem: storing 1271 in location 1241
- 105 run: buf:address:array:event <- get *console, events:offset
+ 105 run: buf:address:shared:array:event <- get *console, events:offset
 9999 mem: location 1240 is 1271
 9999 mem: location 1271 is 0
 9999 mem: location 1272 is 1266
 9999 mem: location 1240 is 1271
 9998 run: address to copy is 1272
-9998 run: its type is <address : <array : <event : <>>>>
+9998 run: its type is <address : <shared : <array : <event : <>>>>>
 9999 mem: location 1272 is 1266
 9999 mem: storing 1266 in location 1242
  105 run: max:number <- length *buf
@@ -260,11 +260,11 @@
 9999 mem: location 1282 is 1
 9999 mem: location 1283 is 1
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 27
- 105 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 105 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1179
- 105 run: editor:address:editor-data <- next-ingredient-without-typechecking 
+ 105 run: editor:address:shared:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1180
  105 run: t:touch-event <- next-ingredient-without-typechecking 
 9999 mem: storing 65513 in location 1181
@@ -378,7 +378,7 @@
 9998 run: its type is number
 9999 mem: location 1007 is 0
 9999 mem: storing 0 in location 1191
- 105 run: before-top-of-screen:address:duplex-list:character <- get *editor, top-of-screen:offset
+ 105 run: before-top-of-screen:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
 9999 mem: location 1180 is 1000
 9999 mem: location 1000 is 1152
 9999 mem: location 1001 is 1152
@@ -393,7 +393,7 @@
 9999 mem: location 1010 is 0
 9999 mem: location 1180 is 1000
 9998 run: address to copy is 1001
-9998 run: its type is <address : <duplex-list : <character : <>>>>
+9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1001 is 1152
 9999 mem: storing 1152 in location 1192
  105 run: editor <- snap-cursor screen, editor, click-row, click-column
@@ -402,12 +402,12 @@
 9999 mem: location 1184 is 1
 9999 mem: location 1185 is 1
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 26
 9999 mem: new alloc: 1288
- 106 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1290
- 106 run: editor:address:editor-data <- next-ingredient-without-typechecking 
+ 106 run: editor:address:shared:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1291
  106 run: target-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1292
@@ -455,9 +455,9 @@
  106 run: screen-height:number <- screen-height screen
 9999 mem: location 1290 is 1011
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1169
  107 run: jump-unless screen, 
 9999 mem: location 1169 is 1011
@@ -479,7 +479,7 @@
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 5
 9999 mem: storing 5 in location 1296
- 106 run: curr:address:duplex-list:character <- get *editor, top-of-screen:offset
+ 106 run: curr:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
 9999 mem: location 1291 is 1000
 9999 mem: location 1000 is 1152
 9999 mem: location 1001 is 1152
@@ -494,18 +494,18 @@
 9999 mem: location 1010 is 0
 9999 mem: location 1291 is 1000
 9998 run: address to copy is 1001
-9998 run: its type is <address : <duplex-list : <character : <>>>>
+9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1001 is 1152
 9999 mem: storing 1152 in location 1297
- 106 run: prev:address:duplex-list:character <- copy curr
+ 106 run: prev:address:shared:duplex-list:character <- copy curr
 9999 mem: location 1297 is 1152
 9999 mem: storing 1152 in location 1298
  106 run: curr <- next_2 curr
 9999 mem: location 1297 is 1152
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
+ 107 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1152 in location 1169
  107 run: jump-if in, 1:offset
 9999 mem: location 1169 is 1152
@@ -521,10 +521,10 @@
 9999 mem: location 1169 is 1152
 9999 type: type deduced to be character$
 9998 run: address to copy is 1153
-9998 run: its type is <address : <duplex-list : <character : <>>>>
+9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1153 is 1164
 9999 mem: storing 1164 in location 1170
- 107 run: reply result:address:duplex-list:_elem/contained-in:in
+ 107 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1170 is 1164
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 1164
@@ -574,7 +574,7 @@
 9999 mem: location 1293 is 1
 9999 mem: location 1302 is 1007
 9999 mem: storing 1 in location 1007
- 106 run: before-cursor:address:address:duplex-list:character <- get-address *editor, before-cursor:offset
+ 106 run: before-cursor:address:address:shared:duplex-list:character <- get-address *editor, before-cursor:offset
 9999 mem: location 1291 is 1000
 9999 mem: location 1000 is 1152
 9999 mem: location 1001 is 1152
@@ -645,9 +645,9 @@
  106 run: curr <- next_2 curr
 9999 mem: location 1297 is 1164
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
+ 107 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1164 in location 1169
  107 run: jump-if in, 1:offset
 9999 mem: location 1169 is 1164
@@ -663,10 +663,10 @@
 9999 mem: location 1169 is 1164
 9999 type: type deduced to be character$
 9998 run: address to copy is 1165
-9998 run: its type is <address : <duplex-list : <character : <>>>>
+9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1165 is 1171
 9999 mem: storing 1171 in location 1170
- 107 run: reply result:address:duplex-list:_elem/contained-in:in
+ 107 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1170 is 1171
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 1171
@@ -674,9 +674,9 @@
  106 run: prev <- next_2 prev
 9999 mem: location 1298 is 1152
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
+ 107 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1152 in location 1169
  107 run: jump-if in, 1:offset
 9999 mem: location 1169 is 1152
@@ -692,10 +692,10 @@
 9999 mem: location 1169 is 1152
 9999 type: type deduced to be character$
 9998 run: address to copy is 1153
-9998 run: its type is <address : <duplex-list : <character : <>>>>
+9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1153 is 1164
 9999 mem: storing 1164 in location 1170
- 107 run: reply result:address:duplex-list:_elem/contained-in:in
+ 107 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1170 is 1164
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 1164
@@ -764,9 +764,9 @@
  106 run: curr <- next_2 curr
 9999 mem: location 1297 is 1171
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
+ 107 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1171 in location 1169
  107 run: jump-if in, 1:offset
 9999 mem: location 1169 is 1171
@@ -782,10 +782,10 @@
 9999 mem: location 1169 is 1171
 9999 type: type deduced to be character$
 9998 run: address to copy is 1172
-9998 run: its type is <address : <duplex-list : <character : <>>>>
+9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1172 is 1174
 9999 mem: storing 1174 in location 1170
- 107 run: reply result:address:duplex-list:_elem/contained-in:in
+ 107 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1170 is 1174
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 1174
@@ -793,9 +793,9 @@
  106 run: prev <- next_2 prev
 9999 mem: location 1298 is 1164
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
+ 107 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1164 in location 1169
  107 run: jump-if in, 1:offset
 9999 mem: location 1169 is 1164
@@ -811,10 +811,10 @@
 9999 mem: location 1169 is 1164
 9999 type: type deduced to be character$
 9998 run: address to copy is 1165
-9998 run: its type is <address : <duplex-list : <character : <>>>>
+9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1165 is 1171
 9999 mem: storing 1171 in location 1170
- 107 run: reply result:address:duplex-list:_elem/contained-in:in
+ 107 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1170 is 1171
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 1171
@@ -879,9 +879,9 @@
  106 run: curr <- next_2 curr
 9999 mem: location 1297 is 1174
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
+ 107 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1174 in location 1169
  107 run: jump-if in, 1:offset
 9999 mem: location 1169 is 1174
@@ -897,10 +897,10 @@
 9999 mem: location 1169 is 1174
 9999 type: type deduced to be character$
 9998 run: address to copy is 1175
-9998 run: its type is <address : <duplex-list : <character : <>>>>
+9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1175 is 0
 9999 mem: storing 0 in location 1170
- 107 run: reply result:address:duplex-list:_elem/contained-in:in
+ 107 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1170 is 0
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 0
@@ -908,9 +908,9 @@
  106 run: prev <- next_2 prev
 9999 mem: location 1298 is 1171
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
- 107 run: in:address:duplex-list:_elem <- next-ingredient-without-typechecking 
+ 107 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1171 in location 1169
  107 run: jump-if in, 1:offset
 9999 mem: location 1169 is 1171
@@ -926,10 +926,10 @@
 9999 mem: location 1169 is 1171
 9999 type: type deduced to be character$
 9998 run: address to copy is 1172
-9998 run: its type is <address : <duplex-list : <character : <>>>>
+9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1172 is 1174
 9999 mem: storing 1174 in location 1170
- 107 run: reply result:address:duplex-list:_elem/contained-in:in
+ 107 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1170 is 1174
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 1174
@@ -968,7 +968,7 @@
  106 run: jump-unless before-cursor?, 
 9999 mem: location 1314 is 0
 9998 run: jumping to instruction 72
- 106 run: reply editor:address:editor-data
+ 106 run: reply editor:address:shared:editor-data
 9999 mem: location 1291 is 1000
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1000
@@ -1011,7 +1011,7 @@
 9998 run: its type is number
 9999 mem: location 1007 is 1
 9999 mem: storing 1 in location 1195
- 105 run: after-top-of-screen:address:duplex-list:character <- get *editor, top-of-screen:offset
+ 105 run: after-top-of-screen:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
 9999 mem: location 1180 is 1000
 9999 mem: location 1000 is 1152
 9999 mem: location 1001 is 1152
@@ -1026,13 +1026,13 @@
 9999 mem: location 1010 is 0
 9999 mem: location 1180 is 1000
 9998 run: address to copy is 1001
-9998 run: its type is <address : <duplex-list : <character : <>>>>
+9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1001 is 1152
 9999 mem: storing 1152 in location 1196
  105 run: jump-unless undo-coalesce-tag, 
 9999 mem: location 1193 is 0
 9998 run: jumping to instruction 44
- 105 run: op:address:operation <- new operation:type
+ 105 run: op:address:shared:operation <- new operation:type
 9999 mem: storing 1117 in location 1198
  105 run: *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, undo-coalesce-tag
 9999 mem: location 1190 is 1
@@ -1056,14 +1056,14 @@
 9999 mem: location 1180 is 1000
 9999 mem: location 1198 is 1117
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
 9999 mem: new alloc: 1315
- 106 run: editor:address:editor-data <- next-ingredient-without-typechecking 
+ 106 run: editor:address:shared:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1317
- 106 run: op:address:operation <- next-ingredient-without-typechecking 
+ 106 run: op:address:shared:operation <- next-ingredient-without-typechecking 
 9999 mem: storing 1117 in location 1318
- 106 run: undo:address:address:list:address:operation <- get-address *editor, undo:offset
+ 106 run: undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
 9999 mem: location 1317 is 1000
 9999 mem: location 1000 is 1152
 9999 mem: location 1001 is 1152
@@ -1084,13 +1084,13 @@
 9999 mem: location 1319 is 1009
 9999 mem: location 1009 is 0
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
  107 run: x:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1117 in location 1207
- 107 run: in:address:list:_elem <- next-ingredient-without-typechecking 
+ 107 run: in:address:shared:list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1208
- 107 run: result:address:list:_elem <- new {(list _elem): type}
+ 107 run: result:address:shared:list:_elem <- new {(list _elem): type}
 9999 mem: new alloc: 1321
 9999 mem: storing 1321 in location 1209
  107 run: val:address:_elem <- get-address *result, value:offset
@@ -1107,7 +1107,7 @@
 9999 mem: location 1207 is 1117
 9999 mem: location 1210 is 1321
 9999 mem: storing 1117 in location 1321
- 107 run: next:address:address:list:_elem <- get-address *result, next:offset
+ 107 run: next:address:address:shared:list:_elem <- get-address *result, next:offset
 9999 mem: location 1209 is 1321
 9999 type: checking size of type ingredient
 
@@ -1128,7 +1128,7 @@
 9998 run: result 0 is 1321
 9999 mem: location 1319 is 1009
 9999 mem: storing 1321 in location 1009
- 106 run: redo:address:address:list:address:operation <- get-address *editor, redo:offset
+ 106 run: redo:address:address:shared:list:address:shared:operation <- get-address *editor, redo:offset
 9999 mem: location 1317 is 1000
 9999 mem: location 1000 is 1152
 9999 mem: location 1001 is 1152
@@ -1197,9 +1197,9 @@
 9999 mem: location 1278 is 1
 9999 mem: location 1279 is 1
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
- 105 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 105 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1207
  105 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1208
@@ -1236,17 +1236,17 @@
 9999 mem: location 1209 is 1
 9999 mem: location 1211 is 1014
 9999 mem: storing 1 in location 1014
- 105 run: reply screen:address:screen
+ 105 run: reply screen:address:shared:screen
 9999 mem: location 1207 is 1011
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1275
- 104 run: e:event, console:address:console, found?:boolean, quit?:boolean <- read-event console
+ 104 run: e:event, console:address:shared:console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1276 is 1271
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 12
- 105 run: console:address:console <- next-ingredient-without-typechecking 
+ 105 run: console:address:shared:console <- next-ingredient-without-typechecking 
 9999 mem: storing 1271 in location 1240
  105 run: jump-unless console, 
 9999 mem: location 1240 is 1271
@@ -1258,13 +1258,13 @@
 9999 mem: location 1240 is 1271
 9998 run: address to copy is 1271
 9999 mem: storing 1271 in location 1241
- 105 run: buf:address:array:event <- get *console, events:offset
+ 105 run: buf:address:shared:array:event <- get *console, events:offset
 9999 mem: location 1240 is 1271
 9999 mem: location 1271 is 1
 9999 mem: location 1272 is 1266
 9999 mem: location 1240 is 1271
 9998 run: address to copy is 1272
-9998 run: its type is <address : <array : <event : <>>>>
+9998 run: its type is <address : <shared : <array : <event : <>>>>>
 9999 mem: location 1272 is 1266
 9999 mem: storing 1266 in location 1242
  105 run: max:number <- length *buf
@@ -1278,7 +1278,7 @@
  105 run: jump-unless done?, 
 9999 mem: location 1244 is 1
 9998 run: jump-unless fell through
- 105 run: dummy:address:event <- new event:type
+ 105 run: dummy:address:shared:event <- new event:type
 9999 mem: storing 1167 in location 1245
  105 run: reply *dummy, console/same-as-ingredient:0, 1/found, 1/quit
 9999 mem: location 1245 is 1167
@@ -1305,12 +1305,12 @@
  104 run: jump-if quit?, 
 9999 mem: location 1285 is 1
 9998 run: jumping to instruction 28
- 104 run: reply screen:address:screen, console:address:console, editor:address:editor-data
+ 104 run: reply screen:address:shared:screen, console:address:shared:console, editor:address:shared:editor-data
 9999 mem: location 1275 is 1011
 9999 mem: location 1276 is 1271
 9999 mem: location 1277 is 1000
 9999 trace: reply: decrementing callstack depth from 3
- 103 run: 3:number <- get *2:address:editor-data, cursor-row:offset
+ 103 run: 3:number <- get *2:address:shared:editor-data, cursor-row:offset
 9999 mem: location 2 is 1000
 9999 mem: location 1000 is 1152
 9999 mem: location 1001 is 1152
@@ -1328,7 +1328,7 @@
 9998 run: its type is number
 9999 mem: location 1006 is 1
 9999 mem: storing 1 in location 3
- 103 run: 4:number <- get *2:address:editor-data, cursor-column:offset
+ 103 run: 4:number <- get *2:address:shared:editor-data, cursor-column:offset
 9999 mem: location 2 is 1000
 9999 mem: location 1000 is 1152
 9999 mem: location 1001 is 1152

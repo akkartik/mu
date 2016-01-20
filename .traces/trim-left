@@ -1,11 +1,11 @@
 9991 parse: --- defining scenario-trim-left
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:array:character <- new [  abc]\n    2:address:array:character <- trim 1:address:array:character\n    3:array:character <- copy *2:address:array:character\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:shared:array:character <- new [  abc]\n    2:address:shared:array:character <- trim 1:address:shared:array:character\n    3:array:character <- copy *2:address:shared:array:character\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    1:address:array:character <- new [  abc]
-    2:address:array:character <- trim 1:address:array:character
-    3:array:character <- copy *2:address:array:character
+    1:address:shared:array:character <- new [  abc]
+    2:address:shared:array:character <- trim 1:address:shared:array:character
+    3:array:character <- copy *2:address:shared:array:character
   ]
 9993 parse: instruction: memory-should-contain
 9993 parse:   number of ingredients: 1
@@ -34,26 +34,26 @@
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-trim-left
  102 run: run [
-    1:address:array:character <- new [  abc]
-    2:address:array:character <- trim 1:address:array:character
-    3:array:character <- copy *2:address:array:character
+    1:address:shared:array:character <- new [  abc]
+    2:address:shared:array:character <- trim 1:address:shared:array:character
+    3:array:character <- copy *2:address:shared:array:character
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"  abc": "literal-string"}
-9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 1:address:array:character <- new [  abc]
+9993 parse:   product: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 1:address:shared:array:character <- new [  abc]
 9993 parse: instruction: trim
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
-9993 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 2:address:array:character <- trim 1:address:array:character
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9993 parse:   product: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 2:address:shared:array:character <- trim 1:address:shared:array:character
 9993 parse: instruction: copy
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>, "lookup": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>, "lookup": <>}
 9993 parse:   product: {"3": <"array" : <"character" : <>>>}
-9992 load: after rewriting: 3:array:character <- copy *2:address:array:character
+9992 load: after rewriting: 3:array:character <- copy *2:address:shared:array:character
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
@@ -80,15 +80,15 @@
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: 1:address:array:character <- new [  abc]
+ 103 run: 1:address:shared:array:character <- new [  abc]
 9999 mem: storing 1000 in location 1
- 103 run: 2:address:array:character <- trim 1:address:array:character
+ 103 run: 2:address:shared:array:character <- trim 1:address:shared:array:character
 9999 mem: location 1 is 1000
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 16
 9999 mem: new alloc: 1006
- 104 run: s:address:array:character <- next-ingredient-without-typechecking 
+ 104 run: s:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1008
  104 run: len:number <- length *s
 9999 mem: location 1008 is 1000
@@ -112,7 +112,7 @@
  104 run: whitespace?:boolean <- space? curr
 9999 mem: location 1013 is 32
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1023
  105 run: c:character <- next-ingredient-without-typechecking 
@@ -153,7 +153,7 @@
  104 run: whitespace?:boolean <- space? curr
 9999 mem: location 1013 is 32
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
  105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 32 in location 1025
@@ -193,7 +193,7 @@
  104 run: whitespace?:boolean <- space? curr
 9999 mem: location 1013 is 97
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
  105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1025
@@ -383,7 +383,7 @@
  104 run: whitespace?:boolean <- space? curr
 9999 mem: location 1013 is 99
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
  105 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 99 in location 1025
@@ -558,7 +558,7 @@
 9999 mem: location 1015 is 4
 9999 mem: location 1010 is 2
 9999 mem: storing 3 in location 1017
- 104 run: result:address:array:character <- new character:type, new-len
+ 104 run: result:address:shared:array:character <- new character:type, new-len
 9999 mem: location 1017 is 3
 9999 mem: array size is 3
 9999 mem: storing 1023 in location 1012
@@ -664,12 +664,12 @@
  104 run: jump-if done?, 
 9999 mem: location 1020 is 1
 9998 run: jumping to instruction 40
- 104 run: reply result:address:array:character
+ 104 run: reply result:address:shared:array:character
 9999 mem: location 1012 is 1023
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1023
 9999 mem: storing 1023 in location 2
- 103 run: 3:array:character <- copy *2:address:array:character
+ 103 run: 3:array:character <- copy *2:address:shared:array:character
 9999 mem: location 2 is 1023
 9999 mem: location 1023 is 3
 9999 mem: location 1024 is 97

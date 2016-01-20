@@ -1,11 +1,11 @@
 9991 parse: --- defining scenario-text-split-empty
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:array:character <- new []\n    2:address:array:address:array:character <- split 1:address:array:character, 47/slash\n    3:number <- length *2:address:array:address:array:character\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:shared:array:character <- new []\n    2:address:shared:array:address:shared:array:character <- split 1:address:shared:array:character, 47/slash\n    3:number <- length *2:address:shared:array:address:shared:array:character\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    1:address:array:character <- new []
-    2:address:array:address:array:character <- split 1:address:array:character, 47/slash
-    3:number <- length *2:address:array:address:array:character
+    1:address:shared:array:character <- new []
+    2:address:shared:array:address:shared:array:character <- split 1:address:shared:array:character, 47/slash
+    3:number <- length *2:address:shared:array:address:shared:array:character
   ]
 9993 parse: instruction: memory-should-contain
 9993 parse:   number of ingredients: 1
@@ -34,27 +34,27 @@
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-text-split-empty
  102 run: run [
-    1:address:array:character <- new []
-    2:address:array:address:array:character <- split 1:address:array:character, 47/slash
-    3:number <- length *2:address:array:address:array:character
+    1:address:shared:array:character <- new []
+    2:address:shared:array:address:shared:array:character <- split 1:address:shared:array:character, 47/slash
+    3:number <- length *2:address:shared:array:address:shared:array:character
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"": "literal-string"}
-9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 1:address:array:character <- new []
+9993 parse:   product: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 1:address:shared:array:character <- new []
 9993 parse: instruction: split
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
 9993 parse:   ingredient: {"47": "literal", "slash": <>}
-9993 parse:   product: {"2": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>}
-9992 load: after rewriting: 2:address:array:address:array:character <- split 1:address:array:character, 47/slash
+9993 parse:   product: {"2": <"address" : <"shared" : <"array" : <"address" : <"shared" : <"array" : <"character" : <>>>>>>>>}
+9992 load: after rewriting: 2:address:shared:array:address:shared:array:character <- split 1:address:shared:array:character, 47/slash
 9993 parse: instruction: length
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"2": <"address" : <"array" : <"address" : <"array" : <"character" : <>>>>>>, "lookup": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"array" : <"address" : <"shared" : <"array" : <"character" : <>>>>>>>>, "lookup": <>}
 9993 parse:   product: {"3": "number"}
-9992 load: after rewriting: 3:number <- length *2:address:array:address:array:character
+9992 load: after rewriting: 3:number <- length *2:address:shared:array:address:shared:array:character
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
@@ -83,15 +83,15 @@
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: 1:address:array:character <- new []
+ 103 run: 1:address:shared:array:character <- new []
 9999 mem: storing 1000 in location 1
- 103 run: 2:address:array:address:array:character <- split 1:address:array:character, 47/slash
+ 103 run: 2:address:shared:array:address:shared:array:character <- split 1:address:shared:array:character, 47/slash
 9999 mem: location 1 is 1000
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 13
 9999 mem: new alloc: 1001
- 104 run: s:address:array:character <- next-ingredient-without-typechecking 
+ 104 run: s:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1003
  104 run: delim:character <- next-ingredient-without-typechecking 
 9999 mem: storing 47 in location 1004
@@ -104,16 +104,16 @@
  104 run: jump-unless empty?, 
 9999 mem: location 1006 is 1
 9998 run: jump-unless fell through
- 104 run: result <- new {(address array character): type}, 0
+ 104 run: result <- new {(address shared array character): type}, 0
 9999 mem: array size is 0
 9999 mem: new alloc: 1015
 9999 mem: storing 1015 in location 1007
- 104 run: reply result:address:array:address:array:character
+ 104 run: reply result:address:shared:array:address:shared:array:character
 9999 mem: location 1007 is 1015
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1015
 9999 mem: storing 1015 in location 2
- 103 run: 3:number <- length *2:address:array:address:array:character
+ 103 run: 3:number <- length *2:address:shared:array:address:shared:array:character
 9999 mem: location 2 is 1015
 9999 mem: storing 0 in location 3
  103 run: reply 

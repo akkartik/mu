@@ -7,26 +7,26 @@
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"100": "literal", "width": <>}
 9993 parse:   ingredient: {"15": "literal", "height": <>}
-9992 load: after rewriting: screen:address:screen <- new-fake-screen 100/width, 15/height
+9992 load: after rewriting: screen:address:shared:screen <- new-fake-screen 100/width, 15/height
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"recipe length l:address:list:_elem -> n:number [\n]": "literal-string"}
-9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 1:address:array:character <- new [recipe length l:address:list:_elem -> n:number [
+9993 parse:   ingredient: {"recipe length l:address:shared:list:_elem -> n:number [\n]": "literal-string"}
+9993 parse:   product: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 1:address:shared:array:character <- new [recipe length l:address:shared:list:_elem -> n:number [
 ]]
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"x:address:list:number <- copy 0\nto-text x": "literal-string"}
-9993 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 2:address:array:character <- new [x:address:list:number <- copy 0
+9993 parse:   ingredient: {"x:address:shared:list:number <- copy 0\nto-text x": "literal-string"}
+9993 parse:   product: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 2:address:shared:array:character <- new [x:address:shared:list:number <- copy 0
 to-text x]
 9993 parse: instruction: new-programming-environment
 9993 parse:   number of ingredients: 3
-9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
-9993 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>}
-9993 parse:   product: {"3": <"address" : <"programming-environment-data" : <>>>}
-9992 load: after rewriting: 3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9993 parse:   product: {"3": <"address" : <"shared" : <"programming-environment-data" : <>>>>}
+9992 load: after rewriting: 3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
 9993 parse: instruction: assume-console
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    press F4\n  ": "literal-string"}
@@ -35,20 +35,20 @@ to-text x]
   ]
 9993 parse: instruction: event-loop
 9993 parse:   number of ingredients: 3
-9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"console": <"address" : <"console" : <>>>}
-9993 parse:   ingredient: {"3": <"address" : <"programming-environment-data" : <>>>}
-9992 load: after rewriting: event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9993 parse:   ingredient: {"console": <"address" : <"shared" : <"console" : <>>>>}
+9993 parse:   ingredient: {"3": <"address" : <"shared" : <"programming-environment-data" : <>>>>}
+9992 load: after rewriting: event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
 9993 parse: instruction: screen-should-contain-in-color
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": "literal", "red": <>}
-9993 parse:   ingredient: {"\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                         <-                         .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                <-                  .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n  ": "literal-string"}
 9992 load: after rewriting: screen-should-contain-in-color 1/red, [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
-    .                                                                         <-                         .
+    .                                                                                <-                  .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -68,20 +68,20 @@ to-text x]
   ]
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
 9993 parse: instruction: screen-should-contain-in-color
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"1": "literal", "red": <>}
-9993 parse:   ingredient: {"\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                         <-                         .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                <-                  .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n    .                                                                                                    .\n  ": "literal-string"}
 9992 load: after rewriting: screen-should-contain-in-color 1/red, [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
-    .                                                                         <-                         .
+    .                                                                                <-                  .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -97,8 +97,8 @@ to-text x]
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe scenario-run-avoids-spurious-warnings-on-reloading-shape-shifting-recipes
 9991 transform: --- deduce types for recipe scenario-run-avoids-spurious-warnings-on-reloading-shape-shifting-recipes
-9992 transform: screen => <address : <screen : <>>>
-9992 transform: console => <address : <console : <>>>
+9992 transform: screen => <address : <shared : <screen : <>>>>
+9992 transform: console => <address : <shared : <console : <>>>>
 9991 transform: --- collect surrounding spaces for recipe scenario-run-avoids-spurious-warnings-on-reloading-shape-shifting-recipes
 9991 transform: --- transform names for recipe scenario-run-avoids-spurious-warnings-on-reloading-shape-shifting-recipes
 9991 transform: --- resolve ambiguous calls for recipe scenario-run-avoids-spurious-warnings-on-reloading-shape-shifting-recipes
@@ -303,6 +303,13 @@ to-text x]
   90 print-character: 115 
   90 print-character: 115 
   90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
+  90 print-character: 58 
   90 print-character: 108 
   90 print-character: 105 
   90 print-character: 115 
@@ -321,12 +328,55 @@ to-text x]
   90 print-character: 58 
   90 print-character: 110 
   90 print-character: 117 
+  90 print-character: 8617 
   90 print-character: 109 
   90 print-character: 98 
   90 print-character: 101 
   90 print-character: 114 
   90 print-character: 32 
   90 print-character: 91 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 93 
@@ -339,6 +389,13 @@ to-text x]
   90 print-character: 101 
   90 print-character: 115 
   90 print-character: 115 
+  90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
   90 print-character: 58 
   90 print-character: 108 
   90 print-character: 105 
@@ -361,13 +418,6 @@ to-text x]
   90 print-character: 121 
   90 print-character: 32 
   90 print-character: 48 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -554,6 +604,13 @@ to-text x]
   90 print-character: 115 
   90 print-character: 115 
   90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
+  90 print-character: 58 
   90 print-character: 108 
   90 print-character: 105 
   90 print-character: 115 
@@ -572,12 +629,55 @@ to-text x]
   90 print-character: 58 
   90 print-character: 110 
   90 print-character: 117 
+  90 print-character: 8617 
   90 print-character: 109 
   90 print-character: 98 
   90 print-character: 101 
   90 print-character: 114 
   90 print-character: 32 
   90 print-character: 91 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 93 
@@ -680,56 +780,6 @@ to-text x]
   90 print-character: 9480 
   90 print-character: 9480 
   90 print-character: 9480 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -2026,6 +2076,13 @@ to-text x]
   90 print-character: 115 
   90 print-character: 115 
   90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
+  90 print-character: 58 
   90 print-character: 108 
   90 print-character: 105 
   90 print-character: 115 
@@ -2047,13 +2104,6 @@ to-text x]
   90 print-character: 121 
   90 print-character: 32 
   90 print-character: 48 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -2447,6 +2497,13 @@ to-text x]
   90 print-character: 115 
   90 print-character: 115 
   90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
+  90 print-character: 58 
   90 print-character: 108 
   90 print-character: 105 
   90 print-character: 115 
@@ -2465,12 +2522,55 @@ to-text x]
   90 print-character: 58 
   90 print-character: 110 
   90 print-character: 117 
+  90 print-character: 8617 
   90 print-character: 109 
   90 print-character: 98 
   90 print-character: 101 
   90 print-character: 114 
   90 print-character: 32 
   90 print-character: 91 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
+  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 93 
@@ -2573,56 +2673,6 @@ to-text x]
   90 print-character: 9480 
   90 print-character: 9480 
   90 print-character: 9480 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -3919,6 +3969,13 @@ to-text x]
   90 print-character: 115 
   90 print-character: 115 
   90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
+  90 print-character: 58 
   90 print-character: 108 
   90 print-character: 105 
   90 print-character: 115 
@@ -3940,13 +3997,6 @@ to-text x]
   90 print-character: 121 
   90 print-character: 32 
   90 print-character: 48 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 

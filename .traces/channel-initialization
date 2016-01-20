@@ -1,11 +1,11 @@
 9991 parse: --- defining scenario-channel-initialization
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:channel <- new-channel 3/capacity\n    2:number <- get *1:address:channel, first-full:offset\n    3:number <- get *1:address:channel, first-free:offset\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:shared:channel <- new-channel 3/capacity\n    2:number <- get *1:address:shared:channel, first-full:offset\n    3:number <- get *1:address:shared:channel, first-free:offset\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    1:address:channel <- new-channel 3/capacity
-    2:number <- get *1:address:channel, first-full:offset
-    3:number <- get *1:address:channel, first-free:offset
+    1:address:shared:channel <- new-channel 3/capacity
+    2:number <- get *1:address:shared:channel, first-full:offset
+    3:number <- get *1:address:shared:channel, first-free:offset
   ]
 9993 parse: instruction: memory-should-contain
 9993 parse:   number of ingredients: 1
@@ -35,28 +35,28 @@
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-channel-initialization
  102 run: run [
-    1:address:channel <- new-channel 3/capacity
-    2:number <- get *1:address:channel, first-full:offset
-    3:number <- get *1:address:channel, first-free:offset
+    1:address:shared:channel <- new-channel 3/capacity
+    2:number <- get *1:address:shared:channel, first-full:offset
+    3:number <- get *1:address:shared:channel, first-free:offset
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new-channel
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"3": "literal", "capacity": <>}
-9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9992 load: after rewriting: 1:address:channel <- new-channel 3/capacity
+9993 parse:   product: {"1": <"address" : <"shared" : <"channel" : <>>>>}
+9992 load: after rewriting: 1:address:shared:channel <- new-channel 3/capacity
 9993 parse: instruction: get
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>, "lookup": <>}
 9993 parse:   ingredient: {"first-full": "offset"}
 9993 parse:   product: {"2": "number"}
-9992 load: after rewriting: 2:number <- get *1:address:channel, first-full:offset
+9992 load: after rewriting: 2:number <- get *1:address:shared:channel, first-full:offset
 9993 parse: instruction: get
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>, "lookup": <>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>, "lookup": <>}
 9993 parse:   ingredient: {"first-free": "offset"}
 9993 parse:   product: {"3": "number"}
-9992 load: after rewriting: 3:number <- get *1:address:channel, first-free:offset
+9992 load: after rewriting: 3:number <- get *1:address:shared:channel, first-free:offset
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
@@ -85,9 +85,9 @@
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: 1:address:channel <- new-channel 3/capacity
+ 103 run: 1:address:shared:channel <- new-channel 3/capacity
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
  104 run: capacity:number <- next-ingredient-without-typechecking 
@@ -120,7 +120,7 @@
  104 run: capacity <- add capacity, 1
 9999 mem: location 1002 is 3
 9999 mem: storing 4 in location 1002
- 104 run: dest:address:address:array:character <- get-address *result, data:offset
+ 104 run: dest:address:address:shared:array:character <- get-address *result, data:offset
 9999 mem: location 1003 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -134,12 +134,12 @@
 9999 mem: new alloc: 1010
 9999 mem: location 1006 is 1009
 9999 mem: storing 1010 in location 1009
- 104 run: reply result:address:channel
+ 104 run: reply result:address:shared:channel
 9999 mem: location 1003 is 1007
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
- 103 run: 2:number <- get *1:address:channel, first-full:offset
+ 103 run: 2:number <- get *1:address:shared:channel, first-full:offset
 9999 mem: location 1 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -149,7 +149,7 @@
 9998 run: its type is number
 9999 mem: location 1007 is 0
 9999 mem: storing 0 in location 2
- 103 run: 3:number <- get *1:address:channel, first-free:offset
+ 103 run: 3:number <- get *1:address:shared:channel, first-free:offset
 9999 mem: location 1 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0

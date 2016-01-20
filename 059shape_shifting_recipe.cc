@@ -535,14 +535,14 @@ container foo:_t [
 
 :(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient)
 recipe main [
-  1:address:foo:point <- bar 3
-  11:foo:point <- copy *1:address:foo:point
+  1:address:shared:foo:point <- bar 3
+  11:foo:point <- copy *1:address:shared:foo:point
 ]
 container foo:_t [
   x:_t
   y:number
 ]
-recipe bar x:number -> result:address:foo:_t [
+recipe bar x:number -> result:address:shared:foo:_t [
   local-scope
   load-ingredients
   # new refers to _t in its ingredient *value*
@@ -554,10 +554,10 @@ recipe bar x:number -> result:address:foo:_t [
 
 :(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient_2)
 recipe main [
-  1:address:foo:point <- bar 3
-  11:foo:point <- copy *1:address:foo:point
+  1:address:shared:foo:point <- bar 3
+  11:foo:point <- copy *1:address:shared:foo:point
 ]
-recipe bar x:number -> result:address:foo:_t [
+recipe bar x:number -> result:address:shared:foo:_t [
   local-scope
   load-ingredients
   # new refers to _t in its ingredient *value*
@@ -574,11 +574,11 @@ container foo:_t [
 
 :(scenario shape_shifting_recipe_supports_compound_types)
 recipe main [
-  1:address:point <- new point:type
-  2:address:number <- get-address *1:address:point, y:offset
+  1:address:shared:point <- new point:type
+  2:address:number <- get-address *1:address:shared:point, y:offset
   *2:address:number <- copy 34
-  3:address:point <- bar 1:address:point  # specialize _t to address:point
-  4:point <- copy *3:address:point
+  3:address:shared:point <- bar 1:address:shared:point  # specialize _t to address:shared:point
+  4:point <- copy *3:address:shared:point
 ]
 recipe bar a:_t -> result:_t [
   local-scope
@@ -716,7 +716,7 @@ container d2:_elem [
 # static dispatch between shape-shifting variants, _including pointer lookups_
 recipe main [
   e1:d1:number <- merge 3
-  e2:address:d2:number <- new {(d2 number): type}
+  e2:address:shared:d2:number <- new {(d2 number): type}
   1:number/raw <- foo e1
   2:number/raw <- foo *e2  # different from previous scenario
 ]
@@ -799,15 +799,15 @@ recipe foo x:_elem -> y:number [
 :(scenarios run)
 :(scenario specialize_most_similar_variant)
 recipe main [
-  1:address:number <- new number:type
-  2:number <- foo 1:address:number
+  1:address:shared:number <- new number:type
+  2:number <- foo 1:address:shared:number
 ]
 recipe foo x:_elem -> y:number [
   local-scope
   load-ingredients
   reply 34
 ]
-recipe foo x:address:_elem -> y:number [
+recipe foo x:address:shared:_elem -> y:number [
   local-scope
   load-ingredients
   reply 35

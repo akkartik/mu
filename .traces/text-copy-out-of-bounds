@@ -1,11 +1,11 @@
 9991 parse: --- defining scenario-text-copy-out-of-bounds
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:array:character <- new [abc]\n    2:address:array:character <- copy-range 1:address:array:character, 2, 4\n    3:array:character <- copy *2:address:array:character\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:shared:array:character <- new [abc]\n    2:address:shared:array:character <- copy-range 1:address:shared:array:character, 2, 4\n    3:array:character <- copy *2:address:shared:array:character\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    1:address:array:character <- new [abc]
-    2:address:array:character <- copy-range 1:address:array:character, 2, 4
-    3:array:character <- copy *2:address:array:character
+    1:address:shared:array:character <- new [abc]
+    2:address:shared:array:character <- copy-range 1:address:shared:array:character, 2, 4
+    3:array:character <- copy *2:address:shared:array:character
   ]
 9993 parse: instruction: memory-should-contain
 9993 parse:   number of ingredients: 1
@@ -34,28 +34,28 @@
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-text-copy-out-of-bounds
  102 run: run [
-    1:address:array:character <- new [abc]
-    2:address:array:character <- copy-range 1:address:array:character, 2, 4
-    3:array:character <- copy *2:address:array:character
+    1:address:shared:array:character <- new [abc]
+    2:address:shared:array:character <- copy-range 1:address:shared:array:character, 2, 4
+    3:array:character <- copy *2:address:shared:array:character
   ]
 9991 parse: --- defining run1001
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"abc": "literal-string"}
-9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 1:address:array:character <- new [abc]
+9993 parse:   product: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 1:address:shared:array:character <- new [abc]
 9993 parse: instruction: copy-range
 9993 parse:   number of ingredients: 3
-9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
 9993 parse:   ingredient: {"2": "literal"}
 9993 parse:   ingredient: {"4": "literal"}
-9993 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 2:address:array:character <- copy-range 1:address:array:character, 2, 4
+9993 parse:   product: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 2:address:shared:array:character <- copy-range 1:address:shared:array:character, 2, 4
 9993 parse: instruction: copy
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>, "lookup": <>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>, "lookup": <>}
 9993 parse:   product: {"3": <"array" : <"character" : <>>>}
-9992 load: after rewriting: 3:array:character <- copy *2:address:array:character
+9992 load: after rewriting: 3:array:character <- copy *2:address:shared:array:character
 9999 parse: recipe run1001 has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
@@ -86,15 +86,15 @@
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: 1:address:array:character <- new [abc]
+ 103 run: 1:address:shared:array:character <- new [abc]
 9999 mem: storing 1000 in location 1
- 103 run: 2:address:array:character <- copy-range 1:address:array:character, 2, 4
+ 103 run: 2:address:shared:array:character <- copy-range 1:address:shared:array:character, 2, 4
 9999 mem: location 1 is 1000
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 11
 9999 mem: new alloc: 1004
- 104 run: buf:address:array:character <- next-ingredient-without-typechecking 
+ 104 run: buf:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1006
  104 run: start:number <- next-ingredient-without-typechecking 
 9999 mem: storing 2 in location 1007
@@ -107,7 +107,7 @@
 9999 mem: location 1009 is 3
 9999 mem: location 1008 is 4
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
 9999 mem: new alloc: 1016
  105 run: x:number <- next-ingredient-without-typechecking 
@@ -130,7 +130,7 @@
 9999 mem: location 1008 is 3
 9999 mem: location 1007 is 2
 9999 mem: storing 1 in location 1009
- 104 run: result:address:array:character <- new character:type, len
+ 104 run: result:address:shared:array:character <- new character:type, len
 9999 mem: location 1009 is 1
 9999 mem: array size is 1
 9999 mem: new alloc: 1021
@@ -177,12 +177,12 @@
  104 run: jump-if done?, 
 9999 mem: location 1013 is 1
 9998 run: jumping to instruction 19
- 104 run: reply result:address:array:character
+ 104 run: reply result:address:shared:array:character
 9999 mem: location 1010 is 1021
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1021
 9999 mem: storing 1021 in location 2
- 103 run: 3:array:character <- copy *2:address:array:character
+ 103 run: 3:array:character <- copy *2:address:shared:array:character
 9999 mem: location 2 is 1021
 9999 mem: location 1021 is 1
 9999 mem: location 1022 is 99

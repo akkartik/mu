@@ -4,17 +4,17 @@ scenario sandbox-click-on-result-toggles-color-to-green [
   trace-until 100/app  # trace too long
   assume-screen 40/width, 10/height
   # basic recipe
-  1:address:array:character <- new [ 
+  1:address:shared:array:character <- new [ 
 recipe foo [
   reply 4
 ]]
   # run it
-  2:address:array:character <- new [foo]
+  2:address:shared:array:character <- new [foo]
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
     .                    ┊                   .
@@ -30,7 +30,7 @@ recipe foo [
     left-click 5, 21
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
   # color toggles to green
   screen-should-contain-in-color 2/green, [
@@ -46,7 +46,7 @@ recipe foo [
   # cursor should remain unmoved
   run [
     4:character/cursor <- copy 9251/␣
-    print screen:address:screen, 4:character/cursor
+    print screen:address:shared:screen, 4:character/cursor
   ]
   screen-should-contain [
     .                     run (F4)           .
@@ -67,7 +67,7 @@ recipe foo [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
   # result turns red
   screen-should-contain-in-color 1/red, [
@@ -90,14 +90,14 @@ after <global-touch> [
     click-column:number <- get *t, column:offset
     on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
     break-unless on-sandbox-side?
-    first-sandbox:address:sandbox-data <- get *env, sandbox:offset
+    first-sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
     break-unless first-sandbox
     first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
     click-row:number <- get *t, row:offset
     below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
     break-unless below-sandbox-editor?
     # identify the sandbox whose output is being clicked on
-    sandbox:address:sandbox-data <- find-click-in-sandbox-output env, click-row
+    sandbox:address:shared:sandbox-data <- find-click-in-sandbox-output env, click-row
     break-unless sandbox
     # toggle its expected-response, and save session
     sandbox <- toggle-expected-response sandbox
@@ -111,17 +111,17 @@ after <global-touch> [
   }
 ]
 
-recipe find-click-in-sandbox-output env:address:programming-environment-data, click-row:number -> sandbox:address:sandbox-data [
+recipe find-click-in-sandbox-output env:address:shared:programming-environment-data, click-row:number -> sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
-  sandbox:address:sandbox-data <- get *env, sandbox:offset
+  sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
   start:number <- get *sandbox, starting-row-on-screen:offset
   clicked-on-sandboxes?:boolean <- greater-or-equal click-row, start
   assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
   # while click-row < sandbox.next-sandbox.starting-row-on-screen
   {
-    next-sandbox:address:sandbox-data <- get *sandbox, next-sandbox:offset
+    next-sandbox:address:shared:sandbox-data <- get *sandbox, next-sandbox:offset
     break-unless next-sandbox
     next-start:number <- get *next-sandbox, starting-row-on-screen:offset
     found?:boolean <- lesser-than click-row, next-start
@@ -137,10 +137,10 @@ recipe find-click-in-sandbox-output env:address:programming-environment-data, cl
   reply sandbox
 ]
 
-recipe toggle-expected-response sandbox:address:sandbox-data -> sandbox:address:sandbox-data [
+recipe toggle-expected-response sandbox:address:shared:sandbox-data -> sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
-  expected-response:address:address:array:character <- get-address *sandbox, expected-response:offset
+  expected-response:address:address:shared:array:character <- get-address *sandbox, expected-response:offset
   {
     # if expected-response is set, reset
     break-unless *expected-response
@@ -148,7 +148,7 @@ recipe toggle-expected-response sandbox:address:sandbox-data -> sandbox:address:
     reply sandbox/same-as-ingredient:0
   }
   # if not, current response is the expected response
-  response:address:array:character <- get *sandbox, response:offset
+  response:address:shared:array:character <- get *sandbox, response:offset
   *expected-response <- copy response
 ]
 
@@ -156,7 +156,7 @@ recipe toggle-expected-response sandbox:address:sandbox-data -> sandbox:address:
 after <render-sandbox-response> [
   {
     break-unless sandbox-response
-    expected-response:address:array:character <- get *sandbox, expected-response:offset
+    expected-response:address:shared:array:character <- get *sandbox, expected-response:offset
     break-unless expected-response  # fall-through to print in grey
     response-is-expected?:boolean <- equal expected-response, sandbox-response
     {

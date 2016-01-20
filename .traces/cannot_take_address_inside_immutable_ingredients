@@ -1,23 +1,23 @@
 9991 parse: --- defining main
 9993 parse: instruction: local-scope
 9993 parse:   number of ingredients: 0
-9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9992 load: after rewriting: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"point": "type"}
-9993 parse:   product: {"p": <"address" : <"point" : <>>>}
-9992 load: after rewriting: p:address:point <- new point:type
+9993 parse:   product: {"p": <"address" : <"shared" : <"point" : <>>>>}
+9992 load: after rewriting: p:address:shared:point <- new point:type
 9993 parse: instruction: foo
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"p": <>}
 9992 load: after rewriting: foo p
 9999 parse: recipe main has a header
 9999 parse: recipe has a header; parsing
-9999 parse: header ingredient: p:address:point
+9999 parse: header ingredient: p:address:shared:point
 9991 parse: --- defining foo
 9993 parse: instruction: local-scope
 9993 parse:   number of ingredients: 0
-9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9992 load: after rewriting: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9993 parse: instruction: load-ingredients
 9993 parse:   number of ingredients: 0
 9992 load: after rewriting:  
@@ -37,13 +37,13 @@
 9991 transform: --- fill in reply ingredients from header for recipe main
 9991 transform: --- fill in reply ingredients from header for recipe foo
 9991 transform: --- deduce types for recipe main
-9992 transform: default-space => <address : <array : <number : <>>>>
-9992 transform: p => <address : <point : <>>>
-9992 transform: p <= <address : <point : <>>>
+9992 transform: default-space => <address : <shared : <array : <number : <>>>>>
+9992 transform: p => <address : <shared : <point : <>>>>
+9992 transform: p <= <address : <shared : <point : <>>>>
 9991 transform: --- deduce types for recipe foo
-9992 transform: default-space => <address : <array : <number : <>>>>
-9992 transform: p => <address : <point : <>>>
-9992 transform: p <= <address : <point : <>>>
+9992 transform: default-space => <address : <shared : <array : <number : <>>>>>
+9992 transform: p => <address : <shared : <point : <>>>>
+9992 transform: p <= <address : <shared : <point : <>>>>
 9992 transform: x => <address : <number : <>>>
 9992 transform: x <= <address : <number : <>>>
 9991 transform: --- collect surrounding spaces for recipe main
@@ -143,19 +143,19 @@
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: main
- 102 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 102 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 2
 9999 mem: new alloc: 1000
- 102 run: p:address:point <- new point:type
+ 102 run: p:address:shared:point <- new point:type
 9999 mem: new alloc: 1003
 9999 mem: storing 1003 in location 1002
  102 run: foo p
 9999 mem: location 1002 is 1003
 9999 trace: incrementing callstack depth to 2
- 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 103 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1005
- 103 run: p:address:point <- next-ingredient-without-typechecking 
+ 103 run: p:address:shared:point <- next-ingredient-without-typechecking 
 9999 mem: storing 1003 in location 1007
  103 run: x:address:number <- get-address *p, x:offset
 9999 mem: location 1007 is 1003

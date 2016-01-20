@@ -3,13 +3,13 @@
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"20": "literal", "width": <>}
 9993 parse:   ingredient: {"2": "literal", "height": <>}
-9992 load: after rewriting: screen:address:screen <- new-fake-screen 20/width, 2/height
+9992 load: after rewriting: screen:address:shared:screen <- new-fake-screen 20/width, 2/height
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    1:address:channel <- new-channel 2\n    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting\n    assert 4:boolean/waiting?, [\nF read-move-quit: routine failed to pause after coming up (before any keys were pressed)]\n    # press 'q'\n    1:address:channel <- write 1:address:channel, 113/q\n    restart 2:number/routine\n    # 'read-move' completes\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/completed? <- equal 3:number/routine-state, 1/completed\n    assert 4:boolean/completed?, [\nF read-move-quit: routine failed to terminate on 'q']\n    trace 1, [test], [reached end]\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    1:address:shared:channel <- new-channel 2\n    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting\n    assert 4:boolean/waiting?, [\nF read-move-quit: routine failed to pause after coming up (before any keys were pressed)]\n    # press 'q'\n    1:address:shared:channel <- write 1:address:shared:channel, 113/q\n    restart 2:number/routine\n    # 'read-move' completes\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/completed? <- equal 3:number/routine-state, 1/completed\n    assert 4:boolean/completed?, [\nF read-move-quit: routine failed to terminate on 'q']\n    trace 1, [test], [reached end]\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
+    1:address:shared:channel <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -17,7 +17,7 @@
     assert 4:boolean/waiting?, [
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
     # press 'q'
-    1:address:channel <- write 1:address:channel, 113/q
+    1:address:shared:channel <- write 1:address:shared:channel, 113/q
     restart 2:number/routine
     # 'read-move' completes
     wait-for-routine 2:number
@@ -37,7 +37,7 @@ F read-move-quit: routine failed to terminate on 'q']
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe scenario-read-move-quit
 9991 transform: --- deduce types for recipe scenario-read-move-quit
-9992 transform: screen => <address : <screen : <>>>
+9992 transform: screen => <address : <shared : <screen : <>>>>
 9991 transform: --- collect surrounding spaces for recipe scenario-read-move-quit
 9991 transform: --- transform names for recipe scenario-read-move-quit
 9991 transform: --- resolve ambiguous calls for recipe scenario-read-move-quit
@@ -64,9 +64,9 @@ F read-move-quit: routine failed to terminate on 'q']
 9999 trace: new routine; incrementing callstack depth to 1
 9999 new: routine allocated memory from 1000 to 101000
 9990 schedule: scenario-read-move-quit
- 102 run: screen:address:screen <- new-fake-screen 20/width, 2/height
+ 102 run: screen:address:shared:screen <- new-fake-screen 20/width, 2/height
 9999 trace: incrementing callstack depth to 2
- 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 103 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1000
  103 run: w:number <- next-ingredient-without-typechecking 
@@ -136,7 +136,7 @@ F read-move-quit: routine failed to terminate on 'q']
 9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 2
 9999 mem: storing 40 in location 1009
- 103 run: buf:address:address:array:screen-cell <- get-address *result, data:offset
+ 103 run: buf:address:address:shared:array:screen-cell <- get-address *result, data:offset
 9999 mem: location 1004 is 1011
 9999 mem: location 1011 is 2
 9999 mem: location 1012 is 20
@@ -155,15 +155,15 @@ F read-move-quit: routine failed to terminate on 'q']
  103 run: result <- clear-screen result
 9999 mem: location 1004 is 1011
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1097
- 104 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 1099
  104 run: jump-unless screen, 
 9999 mem: location 1099 is 1011
 9998 run: jump-unless fell through
- 104 run: buf:address:array:screen-cell <- get *screen, data:offset
+ 104 run: buf:address:shared:array:screen-cell <- get *screen, data:offset
 9999 mem: location 1099 is 1011
 9999 mem: location 1011 is 2
 9999 mem: location 1012 is 20
@@ -172,7 +172,7 @@ F read-move-quit: routine failed to terminate on 'q']
 9999 mem: location 1015 is 1016
 9999 mem: location 1099 is 1011
 9998 run: address to copy is 1015
-9998 run: its type is <address : <array : <screen-cell : <>>>>
+9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1015 is 1016
 9999 mem: storing 1016 in location 1100
  104 run: max:number <- length *buf
@@ -1653,19 +1653,19 @@ F read-move-quit: routine failed to terminate on 'q']
  104 run: *x <- copy 0
 9999 mem: location 1107 is 1014
 9999 mem: storing 0 in location 1014
- 104 run: reply screen:address:screen
+ 104 run: reply screen:address:shared:screen
 9999 mem: location 1099 is 1011
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 1004
- 103 run: reply result:address:screen
+ 103 run: reply result:address:shared:screen
 9999 mem: location 1004 is 1011
 9999 trace: reply: decrementing callstack depth from 2
 9998 run: result 0 is 1011
 9999 mem: storing 1011 in location 900
  102 run: run [
-    1:address:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
+    1:address:shared:channel <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -1673,7 +1673,7 @@ F read-move-quit: routine failed to terminate on 'q']
     assert 4:boolean/waiting?, [
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
     # press 'q'
-    1:address:channel <- write 1:address:channel, 113/q
+    1:address:shared:channel <- write 1:address:shared:channel, 113/q
     restart 2:number/routine
     # 'read-move' completes
     wait-for-routine 2:number
@@ -1687,15 +1687,15 @@ F read-move-quit: routine failed to terminate on 'q']
 9993 parse: instruction: new-channel
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": "literal"}
-9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9992 load: after rewriting: 1:address:channel <- new-channel 2
+9993 parse:   product: {"1": <"address" : <"shared" : <"channel" : <>>>>}
+9992 load: after rewriting: 1:address:shared:channel <- new-channel 2
 9993 parse: instruction: start-running
 9993 parse:   number of ingredients: 3
 9993 parse:   ingredient: {"read-move": <>}
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
-9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>}
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
 9993 parse:   product: {"2": "number", "routine": <>}
-9992 load: after rewriting: 2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
+9992 load: after rewriting: 2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
 9993 parse: instruction: wait-for-routine
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": "number"}
@@ -1719,10 +1719,10 @@ F read-move-quit: routine failed to terminate on 'q']
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
 9993 parse: instruction: write
 9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"1": <"address" : <"channel" : <>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"channel" : <>>>>}
 9993 parse:   ingredient: {"113": "literal", "q": <>}
-9993 parse:   product: {"1": <"address" : <"channel" : <>>>}
-9992 load: after rewriting: 1:address:channel <- write 1:address:channel, 113/q
+9993 parse:   product: {"1": <"address" : <"shared" : <"channel" : <>>>>}
+9992 load: after rewriting: 1:address:shared:channel <- write 1:address:shared:channel, 113/q
 9993 parse: instruction: restart
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"2": "number", "routine": <>}
@@ -1758,7 +1758,7 @@ F read-move-quit: routine failed to terminate on 'q']
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe run1001
 9991 transform: --- deduce types for recipe run1001
-9992 transform: screen => <address : <screen : <>>>
+9992 transform: screen => <address : <shared : <screen : <>>>>
 9991 transform: --- collect surrounding spaces for recipe run1001
 9991 transform: --- transform names for recipe run1001
 9991 transform: --- resolve ambiguous calls for recipe run1001
@@ -1818,9 +1818,9 @@ F read-move-quit: routine failed to terminate on 'q']
 9991 transform: --- convert 'new' to 'allocate' for recipe run1001
 9991 transform: --- parsing any uninitialized reagents as integers
 9998 trace: run: incrementing callstack depth to 2
- 103 run: 1:address:channel <- new-channel 2
+ 103 run: 1:address:shared:channel <- new-channel 2
 9999 trace: incrementing callstack depth to 3
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1108
  104 run: capacity:number <- next-ingredient-without-typechecking 
@@ -1853,7 +1853,7 @@ F read-move-quit: routine failed to terminate on 'q']
  104 run: capacity <- add capacity, 1
 9999 mem: location 1110 is 2
 9999 mem: storing 3 in location 1110
- 104 run: dest:address:address:array:character <- get-address *result, data:offset
+ 104 run: dest:address:address:shared:array:character <- get-address *result, data:offset
 9999 mem: location 1111 is 1115
 9999 mem: location 1115 is 0
 9999 mem: location 1116 is 0
@@ -1867,12 +1867,12 @@ F read-move-quit: routine failed to terminate on 'q']
 9999 mem: new alloc: 1118
 9999 mem: location 1114 is 1117
 9999 mem: storing 1118 in location 1117
- 104 run: reply result:address:channel
+ 104 run: reply result:address:shared:channel
 9999 mem: location 1111 is 1115
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1115
 9999 mem: storing 1115 in location 1
- 103 run: 2:number/routine <- start-running read-move, 1:address:channel, screen:address:screen
+ 103 run: 2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
 9999 mem: location 1 is 1115
 9999 mem: location 900 is 1011
 9999 trace: new routine; incrementing callstack depth to 3
@@ -1882,39 +1882,39 @@ F read-move-quit: routine failed to terminate on 'q']
 9999 mem: location 2 is 2
 9998 run: waiting for routine 2
 9990 schedule: read-move
- 104 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 104 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 8
 9999 mem: new alloc: 101000
- 104 run: stdin:address:channel <- next-ingredient-without-typechecking 
+ 104 run: stdin:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1115 in location 101002
- 104 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 101003
  104 run: from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
 9999 mem: location 101002 is 1115
 9999 mem: location 101003 is 1011
 9999 trace: incrementing callstack depth to 4
- 105 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 105 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 11
 9999 mem: new alloc: 101009
- 105 run: stdin:address:channel <- next-ingredient-without-typechecking 
+ 105 run: stdin:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1115 in location 101011
- 105 run: screen:address:screen <- next-ingredient-without-typechecking 
+ 105 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1011 in location 101012
  105 run: c:character, stdin <- read stdin
 9999 mem: location 101011 is 1115
 9999 trace: incrementing callstack depth to 5
- 106 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 106 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 9
 9999 mem: new alloc: 101021
- 106 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1115 in location 101023
  106 run: empty?:boolean <- channel-empty? chan
 9999 mem: location 101023 is 1115
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 5
 9999 mem: new alloc: 101031
- 107 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 107 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1115 in location 101033
  107 run: full:number <- get *chan, first-full:offset
 9999 mem: location 101033 is 1115
@@ -1972,22 +1972,22 @@ F read-move-quit: routine failed to terminate on 'q']
  106 run: assert 4:boolean/waiting?, [
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
 9999 mem: location 4 is 1
- 106 run: 1:address:channel <- write 1:address:channel, 113/q
+ 106 run: 1:address:shared:channel <- write 1:address:shared:channel, 113/q
 9999 mem: location 1 is 1115
 9999 trace: incrementing callstack depth to 6
- 107 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 107 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 10
- 107 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 107 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1115 in location 1002
  107 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 113 in location 1003
  107 run: full:boolean <- channel-full? chan
 9999 mem: location 1002 is 1115
 9999 trace: incrementing callstack depth to 7
- 108 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 108 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1122
- 108 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 108 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1115 in location 1124
  108 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1124 is 1115
@@ -2005,19 +2005,19 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
  108 run: len:number <- channel-capacity chan
 9999 mem: location 1124 is 1115
 9999 trace: incrementing callstack depth to 8
- 109 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 109 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 4
 9999 mem: new alloc: 1130
- 109 run: chan:address:channel <- next-ingredient-without-typechecking 
+ 109 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1115 in location 1132
- 109 run: q:address:array:character <- get *chan, data:offset
+ 109 run: q:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1132 is 1115
 9999 mem: location 1115 is 0
 9999 mem: location 1116 is 0
 9999 mem: location 1117 is 1118
 9999 mem: location 1132 is 1115
 9998 run: address to copy is 1117
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1117 is 1118
 9999 mem: storing 1118 in location 1133
  109 run: result <- length *q
@@ -2057,14 +2057,14 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
  107 run: jump-unless full, 
 9999 mem: location 1004 is 0
 9998 run: jumping to instruction 8
- 107 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 107 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1002 is 1115
 9999 mem: location 1115 is 0
 9999 mem: location 1116 is 0
 9999 mem: location 1117 is 1118
 9999 mem: location 1002 is 1115
 9998 run: address to copy is 1117
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1117 is 1118
 9999 mem: storing 1118 in location 1006
  107 run: free:address:number <- get-address *chan, first-free:offset
@@ -2100,7 +2100,7 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
  107 run: jump-unless at-end?, 
 9999 mem: location 1010 is 0
 9998 run: jumping to instruction 19
- 107 run: reply chan:address:channel
+ 107 run: reply chan:address:shared:channel
 9999 mem: location 1002 is 1115
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 1115
@@ -2119,14 +2119,14 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
 9999 mem: location 101023 is 1115
 9998 run: address to copy is 1115
 9999 mem: storing 1115 in location 101026
- 106 run: circular-buffer:address:array:character <- get *chan, data:offset
+ 106 run: circular-buffer:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 101023 is 1115
 9999 mem: location 1115 is 0
 9999 mem: location 1116 is 1
 9999 mem: location 1117 is 1118
 9999 mem: location 101023 is 1115
 9998 run: address to copy is 1117
-9998 run: its type is <address : <array : <character : <>>>>
+9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1117 is 1118
 9999 mem: storing 1118 in location 101027
  106 run: result <- index *circular-buffer, *full
@@ -2153,7 +2153,7 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
  106 run: jump-unless at-end?, 
 9999 mem: location 101030 is 0
 9998 run: jumping to instruction 17
- 106 run: reply result:character, chan:address:channel
+ 106 run: reply result:character, chan:address:shared:channel
 9999 mem: location 101028 is 113
 9999 mem: location 101023 is 1115
 9999 trace: reply: decrementing callstack depth from 5

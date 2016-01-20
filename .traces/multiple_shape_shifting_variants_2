@@ -7,8 +7,8 @@
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"(d2 number)": "type"}
-9993 parse:   product: {"e2": <"address" : <"d2" : <"number" : <>>>>}
-9992 load: after rewriting: e2:address:d2:number <- new {(d2 number): type}
+9993 parse:   product: {"e2": <"address" : <"shared" : <"d2" : <"number" : <>>>>>}
+9992 load: after rewriting: e2:address:shared:d2:number <- new {(d2 number): type}
 9993 parse: instruction: foo
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"e1": <>}
@@ -26,7 +26,7 @@
 9991 parse: --- defining foo
 9993 parse: instruction: local-scope
 9993 parse:   number of ingredients: 0
-9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9992 load: after rewriting: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9993 parse: instruction: load-ingredients
 9993 parse:   number of ingredients: 0
 9992 load: after rewriting:  
@@ -41,7 +41,7 @@
 9991 parse: --- defining foo_2
 9993 parse: instruction: local-scope
 9993 parse:   number of ingredients: 0
-9992 load: after rewriting: default-space:address:array:location <- new location:type, number-of-locals:literal
+9992 load: after rewriting: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9993 parse: instruction: load-ingredients
 9993 parse:   number of ingredients: 0
 9992 load: after rewriting:  
@@ -66,9 +66,9 @@
 9991 transform: --- fill in reply ingredients from header for recipe main
 9991 transform: --- deduce types for recipe main
 9992 transform: e1 => <?-1 : <number : <>>>
-9992 transform: e2 => <address : <?-1 : <number : <>>>>
+9992 transform: e2 => <address : <shared : <?-1 : <number : <>>>>>
 9992 transform: e1 <= <?-1 : <number : <>>>
-9992 transform: e2 <= <address : <?-1 : <number : <>>>>
+9992 transform: e2 <= <address : <shared : <?-1 : <number : <>>>>>
 9991 transform: --- collect surrounding spaces for recipe main
 9991 transform: --- transform names for recipe main
 9993 name: assign e1 1
@@ -134,13 +134,13 @@
 9993 transform: type of a is <"d1" : <"_elem" : <>>>
 9994 transform:     checking {"b": "number"}: "number"
 9993 transform: type of b is "number"
-9993 transform:   instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 transform:   instruction: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9994 transform:     checking {"location": "type"}: "type"
 9993 transform: type of location is "type"
 9994 transform:     checking {"number-of-locals": "literal"}: "literal"
 9993 transform: type of number-of-locals is "literal"
-9994 transform:     checking {"default-space": <"address" : <"array" : <"location" : <>>>>}: <"address" : <"array" : <"location" : <>>>>
-9993 transform: type of default-space is <"address" : <"array" : <"location" : <>>>>
+9994 transform:     checking {"default-space": <"address" : <"shared" : <"array" : <"location" : <>>>>>}: <"address" : <"shared" : <"array" : <"location" : <>>>>>
+9993 transform: type of default-space is <"address" : <"shared" : <"array" : <"location" : <>>>>>
 9993 transform:   instruction: a:d1:_elem <- next-ingredient-without-typechecking 
 9994 transform:     checking {"a": <"d1" : <"_elem" : <>>>}: <"d1" : <"_elem" : <>>>
 9993 transform:   instruction: reply 34
@@ -154,13 +154,13 @@
 9993 transform: replacing in recipe header products
 9993 transform: replacing in ingredient b:number
 9993 transform:   after: number
-9993 transform: replacing in instruction 'default-space:address:array:location <- new location:type, number-of-locals:literal'
+9993 transform: replacing in instruction 'default-space:address:shared:array:location <- new location:type, number-of-locals:literal'
 9993 transform: replacing in ingredient location:type
 9993 transform:   after: ?0
 9993 transform: replacing in ingredient number-of-locals:literal
 9993 transform:   after: ?0
-9993 transform: replacing in ingredient default-space:address:array:location
-9993 transform:   after: <address : <array : <number : <>>>>
+9993 transform: replacing in ingredient default-space:address:shared:array:location
+9993 transform:   after: <address : <shared : <array : <number : <>>>>>
 9993 transform: replacing in instruction 'a:d1:_elem <- next-ingredient-without-typechecking '
 9993 transform: replacing in ingredient a:d1:_elem
 9993 transform: _elem => "number"
@@ -172,13 +172,13 @@
 9991 transform: --- checking reply instructions against header for foo_3
 9991 transform: --- fill in reply ingredients from header for recipe foo_3
 9991 transform: --- deduce types for recipe foo_3
-9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: default-space => <address : <shared : <array : <number : <>>>>>
 9992 transform: a => <d1 : <number : <>>>
 9991 transform: --- deduce types from header for foo_3
 9993 transform: type of a is <d1 : <number : <>>>
 9993 transform: type of b is number
-9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
-9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 transform: instruction: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <shared : <array : <number : <>>>>> -- {"default-space": <"address" : <"shared" : <"array" : <"location" : <>>>>>}
 9992 transform: instruction: a:d1:_elem <- next-ingredient-without-typechecking 
 9993 transform:   product: a: <d1 : <number : <>>> -- {"a": <"d1" : <"number" : <>>>}
 9992 transform: instruction: reply 34
@@ -263,13 +263,13 @@
 9993 transform: type of a is <"d2" : <"_elem" : <>>>
 9994 transform:     checking {"b": "number"}: "number"
 9993 transform: type of b is "number"
-9993 transform:   instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
+9993 transform:   instruction: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9994 transform:     checking {"location": "type"}: "type"
 9993 transform: type of location is "type"
 9994 transform:     checking {"number-of-locals": "literal"}: "literal"
 9993 transform: type of number-of-locals is "literal"
-9994 transform:     checking {"default-space": <"address" : <"array" : <"location" : <>>>>}: <"address" : <"array" : <"location" : <>>>>
-9993 transform: type of default-space is <"address" : <"array" : <"location" : <>>>>
+9994 transform:     checking {"default-space": <"address" : <"shared" : <"array" : <"location" : <>>>>>}: <"address" : <"shared" : <"array" : <"location" : <>>>>>
+9993 transform: type of default-space is <"address" : <"shared" : <"array" : <"location" : <>>>>>
 9993 transform:   instruction: a:d2:_elem <- next-ingredient-without-typechecking 
 9994 transform:     checking {"a": <"d2" : <"_elem" : <>>>}: <"d2" : <"_elem" : <>>>
 9993 transform:   instruction: reply 35
@@ -283,13 +283,13 @@
 9993 transform: replacing in recipe header products
 9993 transform: replacing in ingredient b:number
 9993 transform:   after: number
-9993 transform: replacing in instruction 'default-space:address:array:location <- new location:type, number-of-locals:literal'
+9993 transform: replacing in instruction 'default-space:address:shared:array:location <- new location:type, number-of-locals:literal'
 9993 transform: replacing in ingredient location:type
 9993 transform:   after: ?0
 9993 transform: replacing in ingredient number-of-locals:literal
 9993 transform:   after: ?0
-9993 transform: replacing in ingredient default-space:address:array:location
-9993 transform:   after: <address : <array : <number : <>>>>
+9993 transform: replacing in ingredient default-space:address:shared:array:location
+9993 transform:   after: <address : <shared : <array : <number : <>>>>>
 9993 transform: replacing in instruction 'a:d2:_elem <- next-ingredient-without-typechecking '
 9993 transform: replacing in ingredient a:d2:_elem
 9993 transform: _elem => "number"
@@ -301,13 +301,13 @@
 9991 transform: --- checking reply instructions against header for foo_4
 9991 transform: --- fill in reply ingredients from header for recipe foo_4
 9991 transform: --- deduce types for recipe foo_4
-9992 transform: default-space => <address : <array : <number : <>>>>
+9992 transform: default-space => <address : <shared : <array : <number : <>>>>>
 9992 transform: a => <d2 : <number : <>>>
 9991 transform: --- deduce types from header for foo_4
 9993 transform: type of a is <d2 : <number : <>>>
 9993 transform: type of b is number
-9992 transform: instruction: default-space:address:array:location <- new location:type, number-of-locals:literal
-9993 transform:   product: default-space: <address : <array : <number : <>>>> -- {"default-space": <"address" : <"array" : <"location" : <>>>>}
+9992 transform: instruction: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
+9993 transform:   product: default-space: <address : <shared : <array : <number : <>>>>> -- {"default-space": <"address" : <"shared" : <"array" : <"location" : <>>>>>}
 9992 transform: instruction: a:d2:_elem <- next-ingredient-without-typechecking 
 9993 transform:   product: a: <d2 : <number : <>>> -- {"a": <"d2" : <"number" : <>>>}
 9992 transform: instruction: reply 35
@@ -354,7 +354,7 @@
 
 9999 type: type deduced to be number$
 9999 mem: storing 3 in location 1
- 102 run: e2:address:d2:number <- new {(d2 number): type}
+ 102 run: e2:address:shared:d2:number <- new {(d2 number): type}
 9999 mem: new alloc: 1000
 9999 mem: storing 1000 in location 2
  102 run: 1:number/raw <- foo_3 e1
@@ -363,7 +363,7 @@
 9999 type: type deduced to be number$
 9999 mem: location 1 is 3
 9999 trace: incrementing callstack depth to 2
- 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 103 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 2
 9999 mem: new alloc: 1002
  103 run: a:d1:_elem <- next-ingredient-without-typechecking 
@@ -383,7 +383,7 @@
 9999 mem: location 1000 is 0
 9999 mem: location 1001 is 0
 9999 trace: incrementing callstack depth to 2
- 103 run: default-space:address:array:location <- new location:type, number-of-locals:literal
+ 103 run: default-space:address:shared:array:location <- new location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1005
  103 run: a:d2:_elem <- next-ingredient-without-typechecking 

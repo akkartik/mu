@@ -1,12 +1,55 @@
-//: A simple memory allocator to create space for new variables at runtime.
+//: Creating space for new variables at runtime.
+
+//: Mu has two primitives for managing allocations:
+//: - 'allocate' reserves a specified amount of space
+//: - 'abandon' returns allocated space to be reused by future calls to 'allocate'
+//:
+//: In practice it's useful to let programs copy addresses anywhere they want,
+//: but a prime source of (particularly security) bugs is accessing memory
+//: after it's been abandoned. To avoid this, mu programs use a safer
+//: primitive called 'new', which performs two operations:
+//:
+//: - it takes a type rather than a size, to save you the trouble of
+//: calculating sizes of different variables.
+//: - it allocates an extra location where it tracks so-called 'reference
+//: counts' or refcounts: the number of address variables in your program that
+//: point to this allocation. The initial refcount of an allocation starts out
+//: at 1 (the product of the 'new' instruction). When other variables are
+//: copied from it the refcount is incremented. When a variable stops pointing
+//: at it the refcount is decremented. When the refcount goes to 0 the
+//: allocation is automatically abandoned.
+//:
+//: Mu programs guarantee you'll have no memory corruption bugs as long as you
+//: use 'new' and never use 'allocate' or 'abandon'. However, they don't help
+//: you at all to remember to abandon memory after you're done with it. To
+//: minimize memory use, be sure to reset allocated addresses to 0 when you're
+//: done with them.
+
+//: To help you distinguish addresses that point at allocations, 'new' returns
+//: type address:shared:___. Think of 'shared' as a generic container that
+//: contains one extra field: the refcount. However, lookup operations will
+//: transparently drop the 'shared' and access to the refcount. Copying
+//: between shared and non-shared addresses is forbidden.
+:(before "End Mu Types Initialization")
+type_ordinal shared = put(Type_ordinal, "shared", Next_type_ordinal++);
+get_or_insert(Type, shared).name = "shared";
+:(before "End Drop Address In lookup_memory(x)")
+if (x.properties.at(0).second->value == "shared") {
+  //x.set_value(x.value+1);  // doesn't work yet
+  drop_from_type(x, "shared");
+}
+:(before "End Drop Address In canonize_type(r)")
+if (r.properties.at(0).second->value == "shared") {
+  drop_from_type(r, "shared");
+}
 
 :(scenarios run)
 :(scenario new)
 # call new two times with identical arguments; you should get back different results
 recipe main [
-  1:address:number/raw <- new number:type
-  2:address:number/raw <- new number:type
-  3:boolean/raw <- equal 1:address:number/raw, 2:address:number/raw
+  1:address:shared:number/raw <- new number:type
+  2:address:shared:number/raw <- new number:type
+  3:boolean/raw <- equal 1:address:shared:number/raw, 2:address:shared:number/raw
 ]
 +mem: storing 0 in location 3
 
@@ -53,6 +96,7 @@ case NEW: {
   reagent product(inst.products.at(0));
   canonize_type(product);
   drop_from_type(product, "address");
+  drop_from_type(product, "shared");
   if (SIZE(inst.ingredients) > 1) {
     // array allocation
     drop_from_type(product, "array");
@@ -174,29 +218,29 @@ void ensure_space(long long int size) {
 % Memory_allocated_until = 10;
 % put(Memory, Memory_allocated_until, 1);
 recipe main [
-  1:address:number <- new number:type
-  2:number <- copy *1:address:number
+  1:address:shared:number <- new number:type
+  2:number <- copy *1:address:shared:number
 ]
 +mem: storing 0 in location 2
 
 :(scenario new_array)
 recipe main [
-  1:address:array:number/raw <- new number:type, 5
-  2:address:number/raw <- new number:type
-  3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
+  1:address:shared:array:number/raw <- new number:type, 5
+  2:address:shared:number/raw <- new number:type
+  3:number/raw <- subtract 2:address:shared:number/raw, 1:address:shared:array:number/raw
 ]
-+run: 1:address:array:number/raw <- new number:type, 5
++run: 1:address:shared:array:number/raw <- new number:type, 5
 +mem: array size is 5
 # don't forget the extra location for array size
 +mem: storing 6 in location 3
 
 :(scenario new_empty_array)
 recipe main [
-  1:address:array:number/raw <- new number:type, 0
-  2:address:number/raw <- new number:type
-  3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
+  1:address:shared:array:number/raw <- new number:type, 0
+  2:address:shared:number/raw <- new number:type
+  3:number/raw <- subtract 2:address:shared:number/raw, 1:address:shared:array:number/raw
 ]
-+run: 1:address:array:number/raw <- new number:type, 0
++run: 1:address:shared:array:number/raw <- new number:type, 0
 +mem: array size is 0
 +mem: storing 1 in location 3
 
@@ -204,8 +248,8 @@ recipe main [
 :(scenario new_overflow)
 % Initial_memory_per_routine = 2;
 recipe main [
-  1:address:number/raw <- new number:type
-  2:address:point/raw <- new point:type  # not enough room in initial page
+  1:address:shared:number/raw <- new number:type
+  2:address:shared:point/raw <- new point:type  # not enough room in initial page
 ]
 +new: routine allocated memory from 1000 to 1002
 +new: routine allocated memory from 1002 to 1004
@@ -215,10 +259,10 @@ recipe main [
 
 :(scenario new_reclaim)
 recipe main [
-  1:address:number <- new number:type
-  abandon 1:address:number
-  2:address:number <- new number:type  # must be same size as abandoned memory to reuse
-  3:boolean <- equal 1:address:number, 2:address:number
+  1:address:shared:number <- new number:type
+  abandon 1:address:shared:number
+  2:address:shared:number <- new number:type  # must be same size as abandoned memory to reuse
+  3:boolean <- equal 1:address:shared:number, 2:address:shared:number
 ]
 # both allocations should have returned the same address
 +mem: storing 1 in location 3
@@ -240,8 +284,8 @@ case ABANDON: {
   }
   reagent types = inst.ingredients.at(0);
   canonize_type(types);
-  if (!types.type || types.type->value != get(Type_ordinal, "address")) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'abandon' should be an address, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+  if (!types.type || types.type->value != get(Type_ordinal, "address") || types.type->right->value != get(Type_ordinal, "shared")) {
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'abandon' should be an address:shared:___, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -254,6 +298,7 @@ case ABANDON: {
   // lookup_memory without drop_one_lookup {
   types.set_value(get_or_insert(Memory, types.value));
   drop_from_type(types, "address");
+  drop_from_type(types, "shared");
   // }
   abandon(address, size_of(types));
   break;
@@ -293,20 +338,20 @@ if (Free_list[size]) {
 
 :(scenario new_differing_size_no_reclaim)
 recipe main [
-  1:address:number <- new number:type
-  abandon 1:address:number
-  2:address:array:number <- new number:type, 2  # different size
-  3:boolean <- equal 1:address:number, 2:address:array:number
+  1:address:shared:number <- new number:type
+  abandon 1:address:shared:number
+  2:address:shared:array:number <- new number:type, 2  # different size
+  3:boolean <- equal 1:address:shared:number, 2:address:shared:array:number
 ]
 # no reuse
 +mem: storing 0 in location 3
 
 :(scenario new_reclaim_array)
 recipe main [
-  1:address:array:number <- new number:type, 2
-  abandon 1:address:array:number
-  2:address:array:number <- new number:type, 2
-  3:boolean <- equal 1:address:array:number, 2:address:array:number
+  1:address:shared:array:number <- new number:type, 2
+  abandon 1:address:shared:array:number
+  2:address:shared:array:number <- new number:type, 2
+  3:boolean <- equal 1:address:shared:array:number, 2:address:shared:array:number
 ]
 # reuse
 +mem: storing 1 in location 3
@@ -315,17 +360,17 @@ recipe main [
 
 :(scenario new_string)
 recipe main [
-  1:address:array:character <- new [abc def]
-  2:character <- index *1:address:array:character, 5
+  1:address:shared:array:character <- new [abc def]
+  2:character <- index *1:address:shared:array:character, 5
 ]
 # number code for 'e'
 +mem: storing 101 in location 2
 
 :(scenario new_string_handles_unicode)
 recipe main [
-  1:address:array:character <- new [a«c]
-  2:number <- length *1:address:array:character
-  3:character <- index *1:address:array:character, 1
+  1:address:shared:array:character <- new [a«c]
+  2:number <- length *1:address:shared:array:character
+  3:character <- index *1:address:shared:array:character, 1
 ]
 +mem: storing 3 in location 2
 # unicode for '«'
@@ -370,8 +415,8 @@ long long int new_mu_string(const string& contents) {
 
 :(scenario stash_string)
 recipe main [
-  1:address:array:character <- new [abc]
-  stash [foo:], 1:address:array:character
+  1:address:shared:array:character <- new [abc]
+  stash [foo:], 1:address:shared:array:character
 ]
 +app: foo: abc
 
@@ -383,15 +428,15 @@ if (is_mu_string(r)) {
 
 :(scenario unicode_string)
 recipe main [
-  1:address:array:character <- new [♠]
-  stash [foo:], 1:address:array:character
+  1:address:shared:array:character <- new [♠]
+  stash [foo:], 1:address:shared:array:character
 ]
 +app: foo: ♠
 
 :(scenario stash_space_after_string)
 recipe main [
-  1:address:array:character <- new [abc]
-  stash 1:address:array:character [foo]
+  1:address:shared:array:character <- new [abc]
+  stash 1:address:shared:array:character, [foo]
 ]
 +app: abc foo
 
@@ -399,8 +444,8 @@ recipe main [
 :(scenario new_string_overflow)
 % Initial_memory_per_routine = 2;
 recipe main [
-  1:address:number/raw <- new number:type
-  2:address:array:character/raw <- new [a]  # not enough room in initial page, if you take the array size into account
+  1:address:shared:number/raw <- new number:type
+  2:address:shared:array:character/raw <- new [a]  # not enough room in initial page, if you take the array size into account
 ]
 +new: routine allocated memory from 1000 to 1002
 +new: routine allocated memory from 1002 to 1004

@@ -7,28 +7,28 @@
 9993 parse:   number of ingredients: 2
 9993 parse:   ingredient: {"100": "literal", "width": <>}
 9993 parse:   ingredient: {"15": "literal", "height": <>}
-9992 load: after rewriting: screen:address:screen <- new-fake-screen 100/width, 15/height
+9992 load: after rewriting: screen:address:shared:screen <- new-fake-screen 100/width, 15/height
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {" \nrecipe foo [\n  x:address:point <- new point:type\n  get x:address:point, 1:offset\n]": "literal-string"}
-9993 parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 1:address:array:character <- new [ 
+9993 parse:   ingredient: {" \nrecipe foo [\n  x:address:shared:point <- new point:type\n  get x:address:shared:point, 1:offset\n]": "literal-string"}
+9993 parse:   product: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 1:address:shared:array:character <- new [ 
 recipe foo [
-  x:address:point <- new point:type
-  get x:address:point, 1:offset
+  x:address:shared:point <- new point:type
+  get x:address:shared:point, 1:offset
 ]]
 9993 parse: instruction: new
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"foo": "literal-string"}
-9993 parse:   product: {"2": <"address" : <"array" : <"character" : <>>>>}
-9992 load: after rewriting: 2:address:array:character <- new [foo]
+9993 parse:   product: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9992 load: after rewriting: 2:address:shared:array:character <- new [foo]
 9993 parse: instruction: new-programming-environment
 9993 parse:   number of ingredients: 3
-9993 parse:   ingredient: {"screen": <"address" : <"screen" : <>>>}
-9993 parse:   ingredient: {"1": <"address" : <"array" : <"character" : <>>>>}
-9993 parse:   ingredient: {"2": <"address" : <"array" : <"character" : <>>>>}
-9993 parse:   product: {"3": <"address" : <"programming-environment-data" : <>>>}
-9992 load: after rewriting: 3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9993 parse:   ingredient: {"1": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9993 parse:   ingredient: {"2": <"address" : <"shared" : <"array" : <"character" : <>>>>>}
+9993 parse:   product: {"3": <"address" : <"shared" : <"programming-environment-data" : <>>>>}
+9992 load: after rewriting: 3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
 9993 parse: instruction: assume-console
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    press F4\n  ": "literal-string"}
@@ -37,22 +37,22 @@ recipe foo [
   ]
 9993 parse: instruction: run
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data\n  ": "literal-string"}
 9992 load: after rewriting: run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
 9993 parse: instruction: screen-should-contain
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    .  errors found                                                                   run (F4)           .\n    .                                                  ┊foo                                              .\n    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.\n    .  x:address:point <- new point:type               ┊                                                 .\n    .  get x:address:point, 1:offset                   ┊                                                 .\n    .]                                                 ┊                                                 .\n    .foo: first ingredient of 'get' should be a contai↩┊                                                 .\n    .ner, but got x:address:point                      ┊                                                 .\n    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .\n    .                                                  ┊                                                 .\n  ": "literal-string"}
+9993 parse:   ingredient: {"\n    .  errors found                                                                   run (F4)           .\n    .                                                  ┊foo                                              .\n    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.\n    .  x:address:shared:point <- new point:type        ┊                                                 .\n    .  get x:address:shared:point, 1:offset            ┊                                                 .\n    .]                                                 ┊                                                 .\n    .foo: first ingredient of 'get' should be a contai↩┊                                                 .\n    .ner, but got x:address:shared:point               ┊                                                 .\n    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .\n    .                                                  ┊                                                 .\n  ": "literal-string"}
 9992 load: after rewriting: screen-should-contain [
     .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  x:address:point <- new point:type               ┊                                                 .
-    .  get x:address:point, 1:offset                   ┊                                                 .
+    .  x:address:shared:point <- new point:type        ┊                                                 .
+    .  get x:address:shared:point, 1:offset            ┊                                                 .
     .]                                                 ┊                                                 .
     .foo: first ingredient of 'get' should be a contai↩┊                                                 .
-    .ner, but got x:address:point                      ┊                                                 .
+    .ner, but got x:address:shared:point               ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -60,7 +60,7 @@ recipe foo [
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe scenario-run-shows-get-on-non-container-warnings
 9991 transform: --- deduce types for recipe scenario-run-shows-get-on-non-container-warnings
-9992 transform: screen => <address : <screen : <>>>
+9992 transform: screen => <address : <shared : <screen : <>>>>
 9991 transform: --- collect surrounding spaces for recipe scenario-run-shows-get-on-non-container-warnings
 9991 transform: --- transform names for recipe scenario-run-shows-get-on-non-container-warnings
 9991 transform: --- resolve ambiguous calls for recipe scenario-run-shows-get-on-non-container-warnings
@@ -341,6 +341,13 @@ recipe foo [
   90 print-character: 115 
   90 print-character: 115 
   90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
+  90 print-character: 58 
   90 print-character: 112 
   90 print-character: 111 
   90 print-character: 105 
@@ -374,13 +381,6 @@ recipe foo [
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 103 
   90 print-character: 101 
   90 print-character: 116 
@@ -394,6 +394,13 @@ recipe foo [
   90 print-character: 101 
   90 print-character: 115 
   90 print-character: 115 
+  90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
   90 print-character: 58 
   90 print-character: 112 
   90 print-character: 111 
@@ -410,13 +417,6 @@ recipe foo [
   90 print-character: 115 
   90 print-character: 101 
   90 print-character: 116 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -699,6 +699,13 @@ recipe foo [
   90 print-character: 115 
   90 print-character: 115 
   90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
+  90 print-character: 58 
   90 print-character: 112 
   90 print-character: 111 
   90 print-character: 105 
@@ -732,13 +739,6 @@ recipe foo [
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 103 
   90 print-character: 101 
   90 print-character: 116 
@@ -752,6 +752,13 @@ recipe foo [
   90 print-character: 101 
   90 print-character: 115 
   90 print-character: 115 
+  90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
   90 print-character: 58 
   90 print-character: 112 
   90 print-character: 111 
@@ -768,13 +775,6 @@ recipe foo [
   90 print-character: 115 
   90 print-character: 101 
   90 print-character: 116 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
@@ -910,18 +910,18 @@ recipe foo [
   90 print-character: 115 
   90 print-character: 115 
   90 print-character: 58 
+  90 print-character: 115 
+  90 print-character: 104 
+  90 print-character: 97 
+  90 print-character: 114 
+  90 print-character: 101 
+  90 print-character: 100 
+  90 print-character: 58 
   90 print-character: 112 
   90 print-character: 111 
   90 print-character: 105 
   90 print-character: 110 
   90 print-character: 116 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
-  90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 
   90 print-character: 32 

@@ -7,7 +7,7 @@
 # then location 0 is really location 11, location 1 is really location 12, and so on.
 recipe main [
   10:number <- copy 5  # pretend array; in practice we'll use new
-  default-space:address:array:location <- copy 10/unsafe
+  default-space:address:shared:array:location <- copy 10/unsafe
   1:number <- copy 23
 ]
 +mem: storing 23 in location 12
@@ -19,7 +19,7 @@ recipe main [
   # pretend array
   1000:number <- copy 5
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000/unsafe
+  default-space:address:shared:array:location <- copy 1000/unsafe
   1:address:number <- copy 3/unsafe
   8:number/raw <- copy *1:address:number
 ]
@@ -70,7 +70,7 @@ recipe main [
   # pretend array
   1000:number <- copy 5
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000/unsafe
+  default-space:address:shared:array:location <- copy 1000/unsafe
   1:address:point <- copy 12/unsafe
   9:number/raw <- get *1:address:point, 1:offset
 ]
@@ -90,7 +90,7 @@ recipe main [
   # pretend array
   1000:number <- copy 5
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000/unsafe
+  default-space:address:shared:array:location <- copy 1000/unsafe
   1:address:array:number <- copy 12/unsafe
   9:number/raw <- index *1:address:array:number, 1
 ]
@@ -119,7 +119,7 @@ if (s == "number-of-locals") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite `new-default-space` to
-//   `default-space:address:array:location <- new location:type, number-of-locals:literal`
+//   `default-space:address:shared:array:location <- new location:type, number-of-locals:literal`
 // where N is Name[recipe][""]
 if (curr.name == "new-default-space") {
   rewrite_default_space_instruction(curr);
@@ -150,7 +150,7 @@ recipe main [
 recipe foo [
   local-scope
   x:number <- copy 34
-  reply default-space:address:array:location
+  reply default-space:address:shared:array:location
 ]
 # both calls to foo should have received the same default-space
 +mem: storing 1 in location 3
@@ -186,7 +186,7 @@ void rewrite_default_space_instruction(instruction& curr) {
   curr.ingredients.push_back(reagent("number-of-locals:literal"));
   if (!curr.products.empty())
     raise_error << "new-default-space can't take any results\n" << end();
-  curr.products.push_back(reagent("default-space:address:array:location"));
+  curr.products.push_back(reagent("default-space:address:shared:array:location"));
 }
 
 //:: helpers
@@ -212,11 +212,13 @@ long long int address(long long int offset, long long int base) {
         || !x.type
         || x.type->value != get(Type_ordinal, "address")
         || !x.type->right
-        || x.type->right->value != get(Type_ordinal, "array")
+        || x.type->right->value != get(Type_ordinal, "shared")
         || !x.type->right->right
-        || x.type->right->right->value != get(Type_ordinal, "location")
-        || x.type->right->right->right) {
-      raise_error << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
+        || x.type->right->right->value != get(Type_ordinal, "array")
+        || !x.type->right->right->right
+        || x.type->right->right->right->value != get(Type_ordinal, "location")
+        || x.type->right->right->right->right) {
+      raise_error << maybe(current_recipe_name()) << "'default-space' should be of type address:shared:array:location, but tried to write " << to_string(data) << '\n' << end();
     }
     current_call().default_space = data.at(0);
     return;
@@ -224,8 +226,8 @@ long long int address(long long int offset, long long int base) {
 
 :(scenario get_default_space)
 recipe main [
-  default-space:address:array:location <- copy 10/unsafe
-  1:address:array:location/raw <- copy default-space:address:array:location
+  default-space:address:shared:array:location <- copy 10/unsafe
+  1:address:shared:array:location/raw <- copy default-space:address:shared:array:location
 ]
 +mem: storing 10 in location 1
 
