@@ -60,6 +60,56 @@ void absolutize(reagent& x) {
   assert(is_raw(x));
 }
 
+long long int space_base(const reagent& x) {
+  // temporary stub; will be replaced in a later layer
+  return current_call().default_space;
+}
+
+long long int address(long long int offset, long long int base) {
+  if (base == 0) return offset;  // raw
+  long long int size = get_or_insert(Memory, base);
+  if (offset >= size) {
+    // todo: test
+    raise_error << "location " << offset << " is out of bounds " << size << " at " << base << '\n' << end();
+    return 0;
+  }
+  return base + /*skip length*/1 + offset;
+}
+
+//:: reads and writes to the 'default-space' variable have special behavior
+
+:(after "void write_memory(reagent x, vector<double> data)")
+  if (x.name == "default-space") {
+    if (!scalar(data)
+        || !x.type
+        || x.type->value != get(Type_ordinal, "address")
+        || !x.type->right
+        || x.type->right->value != get(Type_ordinal, "shared")
+        || !x.type->right->right
+        || x.type->right->right->value != get(Type_ordinal, "array")
+        || !x.type->right->right->right
+        || x.type->right->right->right->value != get(Type_ordinal, "location")
+        || x.type->right->right->right->right) {
+      raise_error << maybe(current_recipe_name()) << "'default-space' should be of type address:shared:array:location, but tried to write " << to_string(data) << '\n' << end();
+    }
+    current_call().default_space = data.at(0);
+    return;
+  }
+
+:(scenario get_default_space)
+recipe main [
+  default-space:address:shared:array:location <- copy 10/unsafe
+  1:address:shared:array:location/raw <- copy default-space:address:shared:array:location
+]
++mem: storing 10 in location 1
+
+:(after "vector<double> read_memory(reagent x)")
+  if (x.name == "default-space") {
+    vector<double> result;
+    result.push_back(current_call().default_space);
+    return result;
+  }
+
 //:: fix 'get'
 
 :(scenario lookup_sidesteps_default_space_in_get)
@@ -188,52 +238,3 @@ void rewrite_default_space_instruction(instruction& curr) {
     raise_error << "new-default-space can't take any results\n" << end();
   curr.products.push_back(reagent("default-space:address:shared:array:location"));
 }
-
-//:: helpers
-
-:(code)
-long long int space_base(const reagent& x) {
-  // temporary stub; will be replaced in a later layer
-  return current_call().default_space;
-}
-
-long long int address(long long int offset, long long int base) {
-  if (base == 0) return offset;  // raw
-  if (offset >= static_cast<long long int>(get_or_insert(Memory, base))) {
-    // todo: test
-    raise_error << "location " << offset << " is out of bounds " << no_scientific(get_or_insert(Memory, base)) << " at " << base << '\n' << end();
-  }
-  return base+1 + offset;
-}
-
-:(after "void write_memory(reagent x, vector<double> data)")
-  if (x.name == "default-space") {
-    if (!scalar(data)
-        || !x.type
-        || x.type->value != get(Type_ordinal, "address")
-        || !x.type->right
-        || x.type->right->value != get(Type_ordinal, "shared")
-        || !x.type->right->right
-        || x.type->right->right->value != get(Type_ordinal, "array")
-        || !x.type->right->right->right
-        || x.type->right->right->right->value != get(Type_ordinal, "location")
-        || x.type->right->right->right->right) {
-      raise_error << maybe(current_recipe_name()) << "'default-space' should be of type address:shared:array:location, but tried to write " << to_string(data) << '\n' << end();
-    }
-    current_call().default_space = data.at(0);
-    return;
-  }
-
-:(scenario get_default_space)
-recipe main [
-  default-space:address:shared:array:location <- copy 10/unsafe
-  1:address:shared:array:location/raw <- copy default-space:address:shared:array:location
-]
-+mem: storing 10 in location 1
-
-:(after "vector<double> read_memory(reagent x)")
-  if (x.name == "default-space") {
-    vector<double> result;
-    result.push_back(current_call().default_space);
-    return result;
-  }
