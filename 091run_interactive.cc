@@ -4,16 +4,16 @@
 :(scenario run_interactive_code)
 recipe main [
   1:number/raw <- copy 0
-  2:address:array:character <- new [1:number/raw <- copy 34]
-  run-interactive 2:address:array:character
+  2:address:shared:array:character <- new [1:number/raw <- copy 34]
+  run-interactive 2:address:shared:array:character
   3:number/raw <- copy 1:number/raw
 ]
 +mem: storing 34 in location 3
 
 :(scenario run_interactive_empty)
 recipe main [
-  1:address:array:character <- copy 0/unsafe
-  2:address:array:character <- run-interactive 1:address:array:character
+  1:address:shared:array:character <- copy 0/unsafe
+  2:address:shared:array:character <- run-interactive 1:address:shared:array:character
 ]
 # result is null
 +mem: storing 0 in location 2
@@ -88,7 +88,7 @@ bool run_interactive(long long int address) {
   // call run(string) but without the scheduling
   load(string("recipe! interactive [\n") +
           "local-scope\n" +
-          "screen:address:screen <- next-ingredient\n" +
+          "screen:address:shared:screen <- next-ingredient\n" +
           "$start-tracking-products\n" +
           command + "\n" +
           "$stop-tracking-products\n" +
@@ -153,15 +153,15 @@ load(string(
 "]\n" +
 "recipe sandbox [\n" +
   "local-scope\n" +
-  "screen:address:screen/shared <- new-fake-screen 30, 5\n" +
+  "screen:address:shared:screen <- new-fake-screen 30, 5\n" +
   "r:number/routine_id <- start-running interactive, screen\n" +
   "limit-time r, 100000/instructions\n" +
   "wait-for-routine r\n" +
   "sandbox-state:number <- routine-state r/routine_id\n" +
   "completed?:boolean <- equal sandbox-state, 1/completed\n" +
-  "output:address:array:character <- $most-recent-products\n" +
-  "warnings:address:array:character <- save-errors-warnings\n" +
-  "stashes:address:array:character <- save-app-trace\n" +
+  "output:address:shared:array:character <- $most-recent-products\n" +
+  "warnings:address:shared:array:character <- save-errors-warnings\n" +
+  "stashes:address:shared:array:character <- save-app-trace\n" +
   "$cleanup-run-interactive\n" +
   "reply output, warnings, screen, stashes, completed?\n" +
 "]\n");
@@ -174,10 +174,10 @@ Recently_added_recipes.clear();
 
 :(scenario run_interactive_comments)
 recipe main [
-  1:address:array:character <- new [# ab
+  1:address:shared:array:character <- new [# ab
 add 2, 2]
-  2:address:array:character <- run-interactive 1:address:array:character
-  3:array:character <- copy *2:address:array:character
+  2:address:shared:array:character <- run-interactive 1:address:shared:array:character
+  3:array:character <- copy *2:address:shared:array:character
 ]
 +mem: storing 52 in location 4
 
@@ -271,9 +271,9 @@ case _CLEANUP_RUN_INTERACTIVE: {
 :(scenario "run_interactive_converts_result_to_text")
 recipe main [
   # try to interactively add 2 and 2
-  1:address:array:character <- new [add 2, 2]
-  2:address:array:character <- run-interactive 1:address:array:character
-  10:array:character <- copy 2:address:array:character/lookup
+  1:address:shared:array:character <- new [add 2, 2]
+  2:address:shared:array:character <- run-interactive 1:address:shared:array:character
+  10:array:character <- copy 2:address:shared:array:character/lookup
 ]
 # first letter in the output should be '4' in unicode
 +mem: storing 52 in location 11
@@ -281,13 +281,13 @@ recipe main [
 :(scenario "run_interactive_returns_text")
 recipe main [
   # try to interactively add 2 and 2
-  1:address:array:character <- new [
-    x:address:array:character <- new [a]
-    y:address:array:character <- new [b]
-    z:address:array:character <- append x:address:array:character, y:address:array:character
+  1:address:shared:array:character <- new [
+    x:address:shared:array:character <- new [a]
+    y:address:shared:array:character <- new [b]
+    z:address:shared:array:character <- append x:address:shared:array:character, y:address:shared:array:character
   ]
-  2:address:array:character <- run-interactive 1:address:array:character
-  10:array:character <- copy 2:address:array:character/lookup
+  2:address:shared:array:character <- run-interactive 1:address:shared:array:character
+  10:array:character <- copy 2:address:shared:array:character/lookup
 ]
 # output contains "ab"
 +mem: storing 97 in location 11
@@ -296,10 +296,10 @@ recipe main [
 :(scenario "run_interactive_returns_errors")
 recipe main [
   # run a command that generates an error
-  1:address:array:character <- new [x:number <- copy 34
+  1:address:shared:array:character <- new [x:number <- copy 34
 get x:number, foo:offset]
-  2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
-  10:array:character <- copy 3:address:array:character/lookup
+  2:address:shared:array:character, 3:address:shared:array:character <- run-interactive 1:address:shared:array:character
+  10:array:character <- copy 3:address:shared:array:character/lookup
 ]
 # error should be "unknown element foo in container number"
 +mem: storing 117 in location 11
@@ -311,10 +311,10 @@ get x:number, foo:offset]
 :(scenario run_interactive_with_comment)
 recipe main [
   # 2 instructions, with a comment after the first
-  1:address:array:number <- new [a:number <- copy 0  # abc
+  1:address:shared:array:number <- new [a:number <- copy 0  # abc
 b:number <- copy 0
 ]
-  2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
+  2:address:shared:array:character, 3:address:shared:array:character <- run-interactive 1:address:shared:array:character
 ]
 # no errors
 +mem: storing 0 in location 3
@@ -331,8 +331,8 @@ void test_run_interactive_cleans_up_any_created_specializations() {
   // run-interactive a call that specializes this recipe
   run("recipe main [\n"
        "  1:number/raw <- copy 0\n"
-       "  2:address:array:character <- new [foo 1:number/raw]\n"
-       "  run-interactive 2:address:array:character\n"
+       "  2:address:shared:array:character <- new [foo 1:number/raw]\n"
+       "  run-interactive 2:address:shared:array:character\n"
        "]\n");
   assert(SIZE(Recently_added_recipes) == 2);  // foo, main
   // check that number of variants doesn't change
@@ -504,7 +504,7 @@ case RELOAD: {
 :(scenario reload_continues_past_error)
 recipe main [
   local-scope
-  x:address:array:character <- new [recipe foo [
+  x:address:shared:array:character <- new [recipe foo [
   get 1234:number, foo:offset
 ]]
   reload x
@@ -520,7 +520,7 @@ void test_reload_cleans_up_any_created_specializations() {
   // a call that specializes this recipe
   run("recipe main [\n"
       "  local-scope\n"
-      "  x:address:array:character <- new [recipe foo x:_elem -> n:number [\n"
+      "  x:address:shared:array:character <- new [recipe foo x:_elem -> n:number [\n"
       "local-scope\n"
       "load-ingredients\n"
       "reply 34\n"

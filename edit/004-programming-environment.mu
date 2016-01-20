@@ -6,22 +6,22 @@
 recipe! main [
   local-scope
   open-console
-  initial-recipe:address:array:character <- restore [recipes.mu]
-  initial-sandbox:address:array:character <- new []
+  initial-recipe:address:shared:array:character <- restore [recipes.mu]
+  initial-sandbox:address:shared:array:character <- new []
   hide-screen 0/screen
-  env:address:programming-environment-data <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
+  env:address:shared:programming-environment-data <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
   render-all 0/screen, env
   event-loop 0/screen, 0/console, env
   # never gets here
 ]
 
 container programming-environment-data [
-  recipes:address:editor-data
-  current-sandbox:address:editor-data
+  recipes:address:shared:editor-data
+  current-sandbox:address:shared:editor-data
   sandbox-in-focus?:boolean  # false => cursor in recipes; true => cursor in current-sandbox
 ]
 
-recipe new-programming-environment screen:address:screen, initial-recipe-contents:address:array:character, initial-sandbox-contents:address:array:character -> result:address:programming-environment-data, screen:address:screen [
+recipe new-programming-environment screen:address:shared:screen, initial-recipe-contents:address:shared:array:character, initial-sandbox-contents:address:shared:array:character -> result:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
   width:number <- screen-width screen
@@ -33,25 +33,25 @@ recipe new-programming-environment screen:address:screen, initial-recipe-content
   button-on-screen?:boolean <- greater-or-equal button-start, 0
   assert button-on-screen?, [screen too narrow for menu]
   screen <- move-cursor screen, 0/row, button-start
-  run-button:address:array:character <- new [ run (F4) ]
+  run-button:address:shared:array:character <- new [ run (F4) ]
   print screen, run-button, 255/white, 161/reddish
   # dotted line down the middle
   divider:number, _ <- divide-with-remainder width, 2
   draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
   # recipe editor on the left
-  recipes:address:address:editor-data <- get-address *result, recipes:offset
+  recipes:address:address:shared:editor-data <- get-address *result, recipes:offset
   *recipes <- new-editor initial-recipe-contents, screen, 0/left, divider/right
   # sandbox editor on the right
   new-left:number <- add divider, 1
-  current-sandbox:address:address:editor-data <- get-address *result, current-sandbox:offset
+  current-sandbox:address:address:shared:editor-data <- get-address *result, current-sandbox:offset
   *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
 ]
 
-recipe event-loop screen:address:screen, console:address:console, env:address:programming-environment-data -> screen:address:screen, console:address:console, env:address:programming-environment-data [
+recipe event-loop screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data -> screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
-  recipes:address:editor-data <- get *env, recipes:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  recipes:address:shared:editor-data <- get *env, recipes:offset
+  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
   sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
   # if we fall behind we'll stop updating the screen, but then we have to
   # render the entire screen when we catch up.
@@ -179,14 +179,14 @@ recipe event-loop screen:address:screen, console:address:console, env:address:pr
   }
 ]
 
-recipe resize screen:address:screen, env:address:programming-environment-data -> env:address:programming-environment-data, screen:address:screen [
+recipe resize screen:address:shared:screen, env:address:shared:programming-environment-data -> env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
   clear-screen screen  # update screen dimensions
   width:number <- screen-width screen
   divider:number, _ <- divide-with-remainder width, 2
   # update recipe editor
-  recipes:address:editor-data <- get *env, recipes:offset
+  recipes:address:shared:editor-data <- get *env, recipes:offset
   right:address:number <- get-address *recipes, right:offset
   *right <- subtract divider, 1
   # reset cursor (later we'll try to preserve its position)
@@ -195,7 +195,7 @@ recipe resize screen:address:screen, env:address:programming-environment-data ->
   cursor-column:address:number <- get-address *recipes, cursor-column:offset
   *cursor-column <- copy 0
   # update sandbox editor
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
   left:address:number <- get-address *current-sandbox, left:offset
   right:address:number <- get-address *current-sandbox, right:offset
   *left <- add divider, 1
@@ -211,9 +211,9 @@ scenario point-at-multiple-editors [
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
-  1:address:array:character <- new [abc]
-  2:address:array:character <- new [def]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  1:address:shared:array:character <- new [abc]
+  2:address:shared:array:character <- new [def]
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
   # focus on both sides
   assume-console [
     left-click 1, 1
@@ -221,11 +221,11 @@ scenario point-at-multiple-editors [
   ]
   # check cursor column in each
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
-    4:address:editor-data <- get *3:address:programming-environment-data, recipes:offset
-    5:number <- get *4:address:editor-data, cursor-column:offset
-    6:address:editor-data <- get *3:address:programming-environment-data, current-sandbox:offset
-    7:number <- get *6:address:editor-data, cursor-column:offset
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    4:address:shared:editor-data <- get *3:address:shared:programming-environment-data, recipes:offset
+    5:number <- get *4:address:shared:editor-data, cursor-column:offset
+    6:address:shared:editor-data <- get *3:address:shared:programming-environment-data, current-sandbox:offset
+    7:number <- get *6:address:shared:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     5 <- 1
@@ -237,10 +237,10 @@ scenario edit-multiple-editors [
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
-  1:address:array:character <- new [abc]
-  2:address:array:character <- new [def]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  render-all screen, 3:address:programming-environment-data
+  1:address:shared:array:character <- new [abc]
+  2:address:shared:array:character <- new [def]
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
   # type one letter in each of them
   assume-console [
     left-click 1, 1
@@ -249,11 +249,11 @@ scenario edit-multiple-editors [
     type [1]
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
-    4:address:editor-data <- get *3:address:programming-environment-data, recipes:offset
-    5:number <- get *4:address:editor-data, cursor-column:offset
-    6:address:editor-data <- get *3:address:programming-environment-data, current-sandbox:offset
-    7:number <- get *6:address:editor-data, cursor-column:offset
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    4:address:shared:editor-data <- get *3:address:shared:programming-environment-data, recipes:offset
+    5:number <- get *4:address:shared:editor-data, cursor-column:offset
+    6:address:shared:editor-data <- get *3:address:shared:programming-environment-data, current-sandbox:offset
+    7:number <- get *6:address:shared:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .           run (F4)           .  # this line has a different background, but we don't test that yet
@@ -268,7 +268,7 @@ scenario edit-multiple-editors [
   # show the cursor at the right window
   run [
     8:character/cursor <- copy 9251/␣
-    print screen:address:screen, 8:character/cursor
+    print screen:address:shared:screen, 8:character/cursor
   ]
   screen-should-contain [
     .           run (F4)           .
@@ -282,10 +282,10 @@ scenario multiple-editors-cover-only-their-own-areas [
   trace-until 100/app  # trace too long
   assume-screen 60/width, 10/height
   run [
-    1:address:array:character <- new [abc]
-    2:address:array:character <- new [def]
-    3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-    render-all screen, 3:address:programming-environment-data
+    1:address:shared:array:character <- new [abc]
+    2:address:shared:array:character <- new [def]
+    3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+    render-all screen, 3:address:shared:programming-environment-data
   ]
   # divider isn't messed up
   screen-should-contain [
@@ -300,16 +300,16 @@ scenario multiple-editors-cover-only-their-own-areas [
 scenario editor-in-focus-keeps-cursor [
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
-  1:address:array:character <- new [abc]
-  2:address:array:character <- new [def]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  render-all screen, 3:address:programming-environment-data
+  1:address:shared:array:character <- new [abc]
+  2:address:shared:array:character <- new [def]
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
   # initialize programming environment and highlight cursor
   assume-console []
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
     4:character/cursor <- copy 9251/␣
-    print screen:address:screen, 4:character/cursor
+    print screen:address:shared:screen, 4:character/cursor
   ]
   # is cursor at the right place?
   screen-should-contain [
@@ -323,9 +323,9 @@ scenario editor-in-focus-keeps-cursor [
     type [z]
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
     4:character/cursor <- copy 9251/␣
-    print screen:address:screen, 4:character/cursor
+    print screen:address:shared:screen, 4:character/cursor
   ]
   # cursor should still be right
   screen-should-contain [
@@ -340,11 +340,11 @@ scenario backspace-in-sandbox-editor-joins-lines [
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize sandbox side with two lines
-  1:address:array:character <- new []
-  2:address:array:character <- new [abc
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new [abc
 def]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  render-all screen, 3:address:programming-environment-data
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
   screen-should-contain [
     .           run (F4)           .
     .               ┊abc           .
@@ -358,9 +358,9 @@ def]
     press backspace
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
     4:character/cursor <- copy 9251/␣
-    print screen:address:screen, 4:character/cursor
+    print screen:address:shared:screen, 4:character/cursor
   ]
   # cursor moves to end of old line
   screen-should-contain [
@@ -371,7 +371,7 @@ def]
   ]
 ]
 
-recipe render-all screen:address:screen, env:address:programming-environment-data -> screen:address:screen [
+recipe render-all screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen [
   local-scope
   load-ingredients
   trace 10, [app], [render all]
@@ -384,7 +384,7 @@ recipe render-all screen:address:screen, env:address:programming-environment-dat
   button-on-screen?:boolean <- greater-or-equal button-start, 0
   assert button-on-screen?, [screen too narrow for menu]
   screen <- move-cursor screen, 0/row, button-start
-  run-button:address:array:character <- new [ run (F4) ]
+  run-button:address:shared:array:character <- new [ run (F4) ]
   print screen, run-button, 255/white, 161/reddish
   # dotted line down the middle
   trace 11, [app], [render divider]
@@ -396,19 +396,19 @@ recipe render-all screen:address:screen, env:address:programming-environment-dat
   screen <- render-sandbox-side screen, env
   <render-components-end>
   #
-  recipes:address:editor-data <- get *env, recipes:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  recipes:address:shared:editor-data <- get *env, recipes:offset
+  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
   sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
   screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
   #
   show-screen screen
 ]
 
-recipe render-recipes screen:address:screen, env:address:programming-environment-data -> screen:address:screen [
+recipe render-recipes screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen [
   local-scope
   load-ingredients
   trace 11, [app], [render recipes]
-  recipes:address:editor-data <- get *env, recipes:offset
+  recipes:address:shared:editor-data <- get *env, recipes:offset
   # render recipes
   left:number <- get *recipes, left:offset
   right:number <- get *recipes, right:offset
@@ -423,10 +423,10 @@ recipe render-recipes screen:address:screen, env:address:programming-environment
 ]
 
 # replaced in a later layer
-recipe render-sandbox-side screen:address:screen, env:address:programming-environment-data -> screen:address:screen [
+recipe render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen [
   local-scope
   load-ingredients
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
   row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
@@ -438,7 +438,7 @@ recipe render-sandbox-side screen:address:screen, env:address:programming-enviro
   clear-screen-from screen, row, left, left, right
 ]
 
-recipe update-cursor screen:address:screen, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean -> screen:address:screen [
+recipe update-cursor screen:address:shared:screen, recipes:address:shared:editor-data, current-sandbox:address:shared:editor-data, sandbox-in-focus?:boolean -> screen:address:shared:screen [
   local-scope
   load-ingredients
   {
@@ -456,7 +456,7 @@ recipe update-cursor screen:address:screen, recipes:address:editor-data, current
 
 # print a text 's' to 'editor' in 'color' starting at 'row'
 # clear rest of last line, move cursor to next line
-recipe render screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
+recipe render screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:shared:screen [
   local-scope
   load-ingredients
   reply-unless s
@@ -517,7 +517,7 @@ recipe render screen:address:screen, s:address:array:character, left:number, rig
 ]
 
 # like 'render' for texts, but with colorization for comments like in the editor
-recipe render-code screen:address:screen, s:address:array:character, left:number, right:number, row:number -> row:number, screen:address:screen [
+recipe render-code screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, row:number -> row:number, screen:address:shared:screen [
   local-scope
   load-ingredients
   reply-unless s
@@ -585,7 +585,7 @@ after <global-type> [
   {
     redraw-screen?:boolean <- equal *c, 12/ctrl-l
     break-unless redraw-screen?
-    screen <- render-all screen, env:address:programming-environment-data
+    screen <- render-all screen, env:address:shared:programming-environment-data
     sync-screen screen
     loop +next-event:label
   }
@@ -606,7 +606,7 @@ after <global-type> [
 
 ## helpers
 
-recipe draw-vertical screen:address:screen, col:number, y:number, bottom:number -> screen:address:screen [
+recipe draw-vertical screen:address:shared:screen, col:number, y:number, bottom:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   style:character, style-found?:boolean <- next-ingredient

@@ -92,8 +92,10 @@ long long int lookup_name(const reagent& r, const recipe_ordinal default_recipe)
 }
 
 type_ordinal skip_addresses(type_tree* type, const string& recipe_name) {
+  type_ordinal address = get(Type_ordinal, "address");
+  type_ordinal shared = get(Type_ordinal, "shared");
   for (; type; type = type->right) {
-    if (type->value != get(Type_ordinal, "address"))
+    if (type->value != address && type->value != shared)
       return type->value;
   }
   raise_error << maybe(recipe_name) << "expected a container" << '\n' << end();

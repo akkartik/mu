@@ -3,9 +3,9 @@
 scenario deleting-sandboxes [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  1:address:array:character <- new []
-  2:address:array:character <- new []
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new []
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
   # run a few commands
   assume-console [
     left-click 1, 80
@@ -14,7 +14,7 @@ scenario deleting-sandboxes [
     type [add 2, 2]
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -35,7 +35,7 @@ scenario deleting-sandboxes [
     left-click 7, 99
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -53,7 +53,7 @@ scenario deleting-sandboxes [
     left-click 3, 99
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -77,17 +77,17 @@ after <global-touch> [
   }
 ]
 
-recipe delete-sandbox t:touch-event, env:address:programming-environment-data -> was-delete?:boolean, env:address:programming-environment-data [
+recipe delete-sandbox t:touch-event, env:address:shared:programming-environment-data -> was-delete?:boolean, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   click-column:number <- get t, column:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
   right:number <- get *current-sandbox, right:offset
   at-right?:boolean <- equal click-column, right
   reply-unless at-right?, 0/false
   click-row:number <- get t, row:offset
-  prev:address:address:sandbox-data <- get-address *env, sandbox:offset
-  curr:address:sandbox-data <- get *env, sandbox:offset
+  prev:address:address:shared:sandbox-data <- get-address *env, sandbox:offset
+  curr:address:shared:sandbox-data <- get *env, sandbox:offset
   {
     break-unless curr
     # more sandboxes to check

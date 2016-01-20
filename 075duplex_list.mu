@@ -2,42 +2,42 @@
 
 container duplex-list:_elem [
   value:_elem
-  next:address:duplex-list:_elem
-  prev:address:duplex-list:_elem
+  next:address:shared:duplex-list:_elem
+  prev:address:shared:duplex-list:_elem
 ]
 
 # should I say in/contained-in:result, allow ingredients to refer to products?
-recipe push x:_elem, in:address:duplex-list:_elem -> in:address:duplex-list:_elem [
+recipe push x:_elem, in:address:shared:duplex-list:_elem -> in:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
-  result:address:duplex-list:_elem <- new {(duplex-list _elem): type}
+  result:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
   val:address:_elem <- get-address *result, value:offset
   *val <- copy x
-  next:address:address:duplex-list:_elem <- get-address *result, next:offset
+  next:address:address:shared:duplex-list:_elem <- get-address *result, next:offset
   *next <- copy in
   {
     break-unless in
-    prev:address:address:duplex-list:_elem <- get-address *in, prev:offset
+    prev:address:address:shared:duplex-list:_elem <- get-address *in, prev:offset
     *prev <- copy result
   }
   reply result  # needed explicitly because we need to replace 'in' with 'result'
 ]
 
-recipe first in:address:duplex-list:_elem -> result:_elem [
+recipe first in:address:shared:duplex-list:_elem -> result:_elem [
   local-scope
   load-ingredients
   reply-unless in, 0
   result <- get *in, value:offset
 ]
 
-recipe next in:address:duplex-list:_elem -> result:address:duplex-list:_elem/contained-in:in [
+recipe next in:address:shared:duplex-list:_elem -> result:address:shared:duplex-list:_elem/contained-in:in [
   local-scope
   load-ingredients
   reply-unless in, 0
   result <- get *in, next:offset
 ]
 
-recipe prev in:address:duplex-list:_elem -> result:address:duplex-list:_elem/contained-in:in [
+recipe prev in:address:shared:duplex-list:_elem -> result:address:shared:duplex-list:_elem/contained-in:in [
   local-scope
   load-ingredients
   reply-unless in, 0
@@ -50,24 +50,24 @@ scenario duplex-list-handling [
     # reserve locations 0, 1 and 2 to check for missing null check
     1:number <- copy 34
     2:number <- copy 35
-    3:address:duplex-list:character <- push 3, 0
-    3:address:duplex-list:character <- push 4, 3:address:duplex-list:character
-    3:address:duplex-list:character <- push 5, 3:address:duplex-list:character
-    4:address:duplex-list:character <- copy 3:address:duplex-list:character
-    5:character <- first 4:address:duplex-list:character
-    4:address:duplex-list:character <- next 4:address:duplex-list:character
-    6:character <- first 4:address:duplex-list:character
-    4:address:duplex-list:character <- next 4:address:duplex-list:character
-    7:character <- first 4:address:duplex-list:character
-    8:address:duplex-list:character <- next 4:address:duplex-list:character
-    9:character <- first 8:address:duplex-list:character
-    10:address:duplex-list:character <- next 8:address:duplex-list:character
-    11:address:duplex-list:character <- prev 8:address:duplex-list:character
-    4:address:duplex-list:character <- prev 4:address:duplex-list:character
-    12:character <- first 4:address:duplex-list:character
-    4:address:duplex-list:character <- prev 4:address:duplex-list:character
-    13:character <- first 4:address:duplex-list:character
-    14:boolean <- equal 3:address:duplex-list:character, 4:address:duplex-list:character
+    3:address:shared:duplex-list:character <- push 3, 0
+    3:address:shared:duplex-list:character <- push 4, 3:address:shared:duplex-list:character
+    3:address:shared:duplex-list:character <- push 5, 3:address:shared:duplex-list:character
+    4:address:shared:duplex-list:character <- copy 3:address:shared:duplex-list:character
+    5:character <- first 4:address:shared:duplex-list:character
+    4:address:shared:duplex-list:character <- next 4:address:shared:duplex-list:character
+    6:character <- first 4:address:shared:duplex-list:character
+    4:address:shared:duplex-list:character <- next 4:address:shared:duplex-list:character
+    7:character <- first 4:address:shared:duplex-list:character
+    8:address:shared:duplex-list:character <- next 4:address:shared:duplex-list:character
+    9:character <- first 8:address:shared:duplex-list:character
+    10:address:shared:duplex-list:character <- next 8:address:shared:duplex-list:character
+    11:address:shared:duplex-list:character <- prev 8:address:shared:duplex-list:character
+    4:address:shared:duplex-list:character <- prev 4:address:shared:duplex-list:character
+    12:character <- first 4:address:shared:duplex-list:character
+    4:address:shared:duplex-list:character <- prev 4:address:shared:duplex-list:character
+    13:character <- first 4:address:shared:duplex-list:character
+    14:boolean <- equal 3:address:shared:duplex-list:character, 4:address:shared:duplex-list:character
   ]
   memory-should-contain [
     0 <- 0  # no modifications to null pointers
@@ -87,15 +87,15 @@ scenario duplex-list-handling [
 ]
 
 # insert 'x' after 'in'
-recipe insert x:_elem, in:address:duplex-list:_elem -> in:address:duplex-list:_elem [
+recipe insert x:_elem, in:address:shared:duplex-list:_elem -> in:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
-  new-node:address:duplex-list:_elem <- new {(duplex-list _elem): type}
+  new-node:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
   val:address:_elem <- get-address *new-node, value:offset
   *val <- copy x
-  next-node:address:duplex-list:_elem <- get *in, next:offset
+  next-node:address:shared:duplex-list:_elem <- get *in, next:offset
   # in.next = new-node
-  y:address:address:duplex-list:_elem <- get-address *in, next:offset
+  y:address:address:shared:duplex-list:_elem <- get-address *in, next:offset
   *y <- copy new-node
   # new-node.prev = in
   y <- get-address *new-node, prev:offset
@@ -112,27 +112,27 @@ recipe insert x:_elem, in:address:duplex-list:_elem -> in:address:duplex-list:_e
 
 scenario inserting-into-duplex-list [
   run [
-    1:address:duplex-list:character <- push 3, 0
-    1:address:duplex-list:character <- push 4, 1:address:duplex-list:character
-    1:address:duplex-list:character <- push 5, 1:address:duplex-list:character
-    2:address:duplex-list:character <- next 1:address:duplex-list:character  # 2 points inside list
-    2:address:duplex-list:character <- insert 6, 2:address:duplex-list:character
+    1:address:shared:duplex-list:character <- push 3, 0
+    1:address:shared:duplex-list:character <- push 4, 1:address:shared:duplex-list:character
+    1:address:shared:duplex-list:character <- push 5, 1:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character  # 2 points inside list
+    2:address:shared:duplex-list:character <- insert 6, 2:address:shared:duplex-list:character
     # check structure like before
-    2:address:duplex-list:character <- copy 1:address:duplex-list:character
-    3:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    4:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    5:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    6:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    7:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    8:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    9:character <- first 2:address:duplex-list:character
-    10:boolean <- equal 1:address:duplex-list:character, 2:address:duplex-list:character
+    2:address:shared:duplex-list:character <- copy 1:address:shared:duplex-list:character
+    3:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    4:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    5:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    6:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    7:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    8:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    9:character <- first 2:address:shared:duplex-list:character
+    10:boolean <- equal 1:address:shared:duplex-list:character, 2:address:shared:duplex-list:character
   ]
   memory-should-contain [
     3 <- 5  # scanning next
@@ -148,28 +148,28 @@ scenario inserting-into-duplex-list [
 
 scenario inserting-at-end-of-duplex-list [
   run [
-    1:address:duplex-list:character <- push 3, 0
-    1:address:duplex-list:character <- push 4, 1:address:duplex-list:character
-    1:address:duplex-list:character <- push 5, 1:address:duplex-list:character
-    2:address:duplex-list:character <- next 1:address:duplex-list:character  # 2 points inside list
-    2:address:duplex-list:character <- next 2:address:duplex-list:character  # now at end of list
-    2:address:duplex-list:character <- insert 6, 2:address:duplex-list:character
+    1:address:shared:duplex-list:character <- push 3, 0
+    1:address:shared:duplex-list:character <- push 4, 1:address:shared:duplex-list:character
+    1:address:shared:duplex-list:character <- push 5, 1:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character  # 2 points inside list
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character  # now at end of list
+    2:address:shared:duplex-list:character <- insert 6, 2:address:shared:duplex-list:character
     # check structure like before
-    2:address:duplex-list:character <- copy 1:address:duplex-list:character
-    3:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    4:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    5:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    6:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    7:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    8:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    9:character <- first 2:address:duplex-list:character
-    10:boolean <- equal 1:address:duplex-list:character, 2:address:duplex-list:character
+    2:address:shared:duplex-list:character <- copy 1:address:shared:duplex-list:character
+    3:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    4:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    5:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    6:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    7:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    8:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    9:character <- first 2:address:shared:duplex-list:character
+    10:boolean <- equal 1:address:shared:duplex-list:character, 2:address:shared:duplex-list:character
   ]
   memory-should-contain [
     3 <- 5  # scanning next
@@ -185,26 +185,26 @@ scenario inserting-at-end-of-duplex-list [
 
 scenario inserting-after-start-of-duplex-list [
   run [
-    1:address:duplex-list:character <- push 3, 0
-    1:address:duplex-list:character <- push 4, 1:address:duplex-list:character
-    1:address:duplex-list:character <- push 5, 1:address:duplex-list:character
-    1:address:duplex-list:character <- insert 6, 1:address:duplex-list:character
+    1:address:shared:duplex-list:character <- push 3, 0
+    1:address:shared:duplex-list:character <- push 4, 1:address:shared:duplex-list:character
+    1:address:shared:duplex-list:character <- push 5, 1:address:shared:duplex-list:character
+    1:address:shared:duplex-list:character <- insert 6, 1:address:shared:duplex-list:character
     # check structure like before
-    2:address:duplex-list:character <- copy 1:address:duplex-list:character
-    3:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    4:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    5:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    6:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    7:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    8:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    9:character <- first 2:address:duplex-list:character
-    10:boolean <- equal 1:address:duplex-list:character, 2:address:duplex-list:character
+    2:address:shared:duplex-list:character <- copy 1:address:shared:duplex-list:character
+    3:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    4:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    5:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    6:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    7:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    8:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    9:character <- first 2:address:shared:duplex-list:character
+    10:boolean <- equal 1:address:shared:duplex-list:character, 2:address:shared:duplex-list:character
   ]
   memory-should-contain [
     3 <- 5  # scanning next
@@ -222,15 +222,15 @@ scenario inserting-after-start-of-duplex-list [
 #
 # Returns null if and only if list is empty. Beware: in that case any other
 # pointers to the head are now invalid.
-recipe remove x:address:duplex-list:_elem/contained-in:in, in:address:duplex-list:_elem -> in:address:duplex-list:_elem [
+recipe remove x:address:shared:duplex-list:_elem/contained-in:in, in:address:shared:duplex-list:_elem -> in:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   # if 'x' is null, return
   reply-unless x
-  next-node:address:duplex-list:_elem <- get *x, next:offset
-  prev-node:address:duplex-list:_elem <- get *x, prev:offset
+  next-node:address:shared:duplex-list:_elem <- get *x, next:offset
+  prev-node:address:shared:duplex-list:_elem <- get *x, prev:offset
   # null x's pointers
-  tmp:address:address:duplex-list:_elem <- get-address *x, next:offset
+  tmp:address:address:shared:duplex-list:_elem <- get-address *x, next:offset
   *tmp <- copy 0
   tmp <- get-address *x, prev:offset
   *tmp <- copy 0
@@ -254,21 +254,21 @@ recipe remove x:address:duplex-list:_elem/contained-in:in, in:address:duplex-lis
 
 scenario removing-from-duplex-list [
   run [
-    1:address:duplex-list:character <- push 3, 0
-    1:address:duplex-list:character <- push 4, 1:address:duplex-list:character
-    1:address:duplex-list:character <- push 5, 1:address:duplex-list:character
-    2:address:duplex-list:character <- next 1:address:duplex-list:character  # 2 points at second element
-    1:address:duplex-list:character <- remove 2:address:duplex-list:character, 1:address:duplex-list:character
-    3:boolean <- equal 2:address:duplex-list:character, 0
+    1:address:shared:duplex-list:character <- push 3, 0
+    1:address:shared:duplex-list:character <- push 4, 1:address:shared:duplex-list:character
+    1:address:shared:duplex-list:character <- push 5, 1:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character  # 2 points at second element
+    1:address:shared:duplex-list:character <- remove 2:address:shared:duplex-list:character, 1:address:shared:duplex-list:character
+    3:boolean <- equal 2:address:shared:duplex-list:character, 0
     # check structure like before
-    2:address:duplex-list:character <- copy 1:address:duplex-list:character
-    4:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    5:character <- first 2:address:duplex-list:character
-    6:address:duplex-list:character <- next 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    7:character <- first 2:address:duplex-list:character
-    8:boolean <- equal 1:address:duplex-list:character, 2:address:duplex-list:character
+    2:address:shared:duplex-list:character <- copy 1:address:shared:duplex-list:character
+    4:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    5:character <- first 2:address:shared:duplex-list:character
+    6:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    7:character <- first 2:address:shared:duplex-list:character
+    8:boolean <- equal 1:address:shared:duplex-list:character, 2:address:shared:duplex-list:character
   ]
   memory-should-contain [
     3 <- 0  # remove returned non-null
@@ -282,19 +282,19 @@ scenario removing-from-duplex-list [
 
 scenario removing-from-start-of-duplex-list [
   run [
-    1:address:duplex-list:character <- push 3, 0
-    1:address:duplex-list:character <- push 4, 1:address:duplex-list:character
-    1:address:duplex-list:character <- push 5, 1:address:duplex-list:character
-    1:address:duplex-list:character <- remove 1:address:duplex-list:character, 1:address:duplex-list:character
+    1:address:shared:duplex-list:character <- push 3, 0
+    1:address:shared:duplex-list:character <- push 4, 1:address:shared:duplex-list:character
+    1:address:shared:duplex-list:character <- push 5, 1:address:shared:duplex-list:character
+    1:address:shared:duplex-list:character <- remove 1:address:shared:duplex-list:character, 1:address:shared:duplex-list:character
     # check structure like before
-    2:address:duplex-list:character <- copy 1:address:duplex-list:character
-    3:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    4:character <- first 2:address:duplex-list:character
-    5:address:duplex-list:character <- next 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    6:character <- first 2:address:duplex-list:character
-    7:boolean <- equal 1:address:duplex-list:character, 2:address:duplex-list:character
+    2:address:shared:duplex-list:character <- copy 1:address:shared:duplex-list:character
+    3:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    4:character <- first 2:address:shared:duplex-list:character
+    5:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    6:character <- first 2:address:shared:duplex-list:character
+    7:boolean <- equal 1:address:shared:duplex-list:character, 2:address:shared:duplex-list:character
   ]
   memory-should-contain [
     3 <- 4  # scanning next, skipping deleted element
@@ -307,23 +307,23 @@ scenario removing-from-start-of-duplex-list [
 
 scenario removing-from-end-of-duplex-list [
   run [
-    1:address:duplex-list:character <- push 3, 0
-    1:address:duplex-list:character <- push 4, 1:address:duplex-list:character
-    1:address:duplex-list:character <- push 5, 1:address:duplex-list:character
+    1:address:shared:duplex-list:character <- push 3, 0
+    1:address:shared:duplex-list:character <- push 4, 1:address:shared:duplex-list:character
+    1:address:shared:duplex-list:character <- push 5, 1:address:shared:duplex-list:character
     # delete last element
-    2:address:duplex-list:character <- next 1:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    1:address:duplex-list:character <- remove 2:address:duplex-list:character, 1:address:duplex-list:character
-    3:boolean <- equal 2:address:duplex-list:character, 0
+    2:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    1:address:shared:duplex-list:character <- remove 2:address:shared:duplex-list:character, 1:address:shared:duplex-list:character
+    3:boolean <- equal 2:address:shared:duplex-list:character, 0
     # check structure like before
-    2:address:duplex-list:character <- copy 1:address:duplex-list:character
-    4:character <- first 2:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    5:character <- first 2:address:duplex-list:character
-    6:address:duplex-list:character <- next 2:address:duplex-list:character
-    2:address:duplex-list:character <- prev 2:address:duplex-list:character
-    7:character <- first 2:address:duplex-list:character
-    8:boolean <- equal 1:address:duplex-list:character, 2:address:duplex-list:character
+    2:address:shared:duplex-list:character <- copy 1:address:shared:duplex-list:character
+    4:character <- first 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    5:character <- first 2:address:shared:duplex-list:character
+    6:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- prev 2:address:shared:duplex-list:character
+    7:character <- first 2:address:shared:duplex-list:character
+    8:boolean <- equal 1:address:shared:duplex-list:character, 2:address:shared:duplex-list:character
   ]
   memory-should-contain [
     3 <- 0  # remove returned non-null
@@ -337,8 +337,8 @@ scenario removing-from-end-of-duplex-list [
 
 scenario removing-from-singleton-list [
   run [
-    1:address:duplex-list:character <- push 3, 0
-    1:address:duplex-list:character <- remove 1:address:duplex-list:character, 1:address:duplex-list:character
+    1:address:shared:duplex-list:character <- push 3, 0
+    1:address:shared:duplex-list:character <- remove 1:address:shared:duplex-list:character, 1:address:shared:duplex-list:character
   ]
   memory-should-contain [
     1 <- 0  # back to an empty list
@@ -347,16 +347,16 @@ scenario removing-from-singleton-list [
 
 # remove values between 'start' and 'end' (both exclusive)
 # also clear pointers back out from start/end for hygiene
-recipe remove-between start:address:duplex-list:_elem, end:address:duplex-list:_elem/contained-in:start -> start:address:duplex-list:_elem [
+recipe remove-between start:address:shared:duplex-list:_elem, end:address:shared:duplex-list:_elem/contained-in:start -> start:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   reply-unless start
   # start->next->prev = 0
   # start->next = end
-  next:address:address:duplex-list:_elem <- get-address *start, next:offset
+  next:address:address:shared:duplex-list:_elem <- get-address *start, next:offset
   nothing-to-delete?:boolean <- equal *next, end
   reply-if nothing-to-delete?
-  prev:address:address:duplex-list:_elem <- get-address **next, prev:offset
+  prev:address:address:shared:duplex-list:_elem <- get-address **next, prev:offset
   *prev <- copy 0
   *next <- copy end
   reply-unless end
@@ -370,25 +370,25 @@ recipe remove-between start:address:duplex-list:_elem, end:address:duplex-list:_
 
 scenario remove-range [
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  1:address:duplex-list:character <- push 18, 0
-  1:address:duplex-list:character <- push 17, 1:address:duplex-list:character
-  1:address:duplex-list:character <- push 16, 1:address:duplex-list:character
-  1:address:duplex-list:character <- push 15, 1:address:duplex-list:character
-  1:address:duplex-list:character <- push 14, 1:address:duplex-list:character
-  1:address:duplex-list:character <- push 13, 1:address:duplex-list:character
+  1:address:shared:duplex-list:character <- push 18, 0
+  1:address:shared:duplex-list:character <- push 17, 1:address:shared:duplex-list:character
+  1:address:shared:duplex-list:character <- push 16, 1:address:shared:duplex-list:character
+  1:address:shared:duplex-list:character <- push 15, 1:address:shared:duplex-list:character
+  1:address:shared:duplex-list:character <- push 14, 1:address:shared:duplex-list:character
+  1:address:shared:duplex-list:character <- push 13, 1:address:shared:duplex-list:character
   run [
     # delete 16 onwards
     # first pointer: to the third element
-    2:address:duplex-list:character <- next 1:address:duplex-list:character
-    2:address:duplex-list:character <- next 2:address:duplex-list:character
-    2:address:duplex-list:character <- remove-between 2:address:duplex-list:character, 0
+    2:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    2:address:shared:duplex-list:character <- remove-between 2:address:shared:duplex-list:character, 0
     # now check the list
-    4:character <- get *1:address:duplex-list:character, value:offset
-    5:address:duplex-list:character <- next 1:address:duplex-list:character
-    6:character <- get *5:address:duplex-list:character, value:offset
-    7:address:duplex-list:character <- next 5:address:duplex-list:character
-    8:character <- get *7:address:duplex-list:character, value:offset
-    9:address:duplex-list:character <- next 7:address:duplex-list:character
+    4:character <- get *1:address:shared:duplex-list:character, value:offset
+    5:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character
+    6:character <- get *5:address:shared:duplex-list:character, value:offset
+    7:address:shared:duplex-list:character <- next 5:address:shared:duplex-list:character
+    8:character <- get *7:address:shared:duplex-list:character, value:offset
+    9:address:shared:duplex-list:character <- next 7:address:shared:duplex-list:character
   ]
   memory-should-contain [
     4 <- 13
@@ -400,29 +400,29 @@ scenario remove-range [
 
 scenario remove-range-to-end [
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  1:address:duplex-list:character <- push 18, 0
-  1:address:duplex-list:character <- push 17, 1:address:duplex-list:character
-  1:address:duplex-list:character <- push 16, 1:address:duplex-list:character
-  1:address:duplex-list:character <- push 15, 1:address:duplex-list:character
-  1:address:duplex-list:character <- push 14, 1:address:duplex-list:character
-  1:address:duplex-list:character <- push 13, 1:address:duplex-list:character
+  1:address:shared:duplex-list:character <- push 18, 0
+  1:address:shared:duplex-list:character <- push 17, 1:address:shared:duplex-list:character
+  1:address:shared:duplex-list:character <- push 16, 1:address:shared:duplex-list:character
+  1:address:shared:duplex-list:character <- push 15, 1:address:shared:duplex-list:character
+  1:address:shared:duplex-list:character <- push 14, 1:address:shared:duplex-list:character
+  1:address:shared:duplex-list:character <- push 13, 1:address:shared:duplex-list:character
   run [
     # delete 15, 16 and 17
     # first pointer: to the third element
-    2:address:duplex-list:character <- next 1:address:duplex-list:character
+    2:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character
     # second pointer: to the fifth element
-    3:address:duplex-list:character <- next 2:address:duplex-list:character
-    3:address:duplex-list:character <- next 3:address:duplex-list:character
-    3:address:duplex-list:character <- next 3:address:duplex-list:character
-    3:address:duplex-list:character <- next 3:address:duplex-list:character
-    remove-between 2:address:duplex-list:character, 3:address:duplex-list:character
+    3:address:shared:duplex-list:character <- next 2:address:shared:duplex-list:character
+    3:address:shared:duplex-list:character <- next 3:address:shared:duplex-list:character
+    3:address:shared:duplex-list:character <- next 3:address:shared:duplex-list:character
+    3:address:shared:duplex-list:character <- next 3:address:shared:duplex-list:character
+    remove-between 2:address:shared:duplex-list:character, 3:address:shared:duplex-list:character
     # now check the list
-    4:character <- get *1:address:duplex-list:character, value:offset
-    5:address:duplex-list:character <- next 1:address:duplex-list:character
-    6:character <- get *5:address:duplex-list:character, value:offset
-    7:address:duplex-list:character <- next 5:address:duplex-list:character
-    8:character <- get *7:address:duplex-list:character, value:offset
-    9:address:duplex-list:character <- next 7:address:duplex-list:character
+    4:character <- get *1:address:shared:duplex-list:character, value:offset
+    5:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character
+    6:character <- get *5:address:shared:duplex-list:character, value:offset
+    7:address:shared:duplex-list:character <- next 5:address:shared:duplex-list:character
+    8:character <- get *7:address:shared:duplex-list:character, value:offset
+    9:address:shared:duplex-list:character <- next 7:address:shared:duplex-list:character
   ]
   memory-should-contain [
     4 <- 13
@@ -434,18 +434,18 @@ scenario remove-range-to-end [
 
 scenario remove-range-empty [
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  1:address:duplex-list:character <- push 14, 0
-  1:address:duplex-list:character <- push 13, 1:address:duplex-list:character
+  1:address:shared:duplex-list:character <- push 14, 0
+  1:address:shared:duplex-list:character <- push 13, 1:address:shared:duplex-list:character
   run [
     # delete 16 onwards
     # first pointer: to the third element
-    2:address:duplex-list:character <- next 1:address:duplex-list:character
-    remove-between 1:address:duplex-list:character, 2:address:duplex-list:character
+    2:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character
+    remove-between 1:address:shared:duplex-list:character, 2:address:shared:duplex-list:character
     # now check the list
-    4:character <- get *1:address:duplex-list:character, value:offset
-    5:address:duplex-list:character <- next 1:address:duplex-list:character
-    6:character <- get *5:address:duplex-list:character, value:offset
-    7:address:duplex-list:character <- next 5:address:duplex-list:character
+    4:character <- get *1:address:shared:duplex-list:character, value:offset
+    5:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character
+    6:character <- get *5:address:shared:duplex-list:character, value:offset
+    7:address:shared:duplex-list:character <- next 5:address:shared:duplex-list:character
   ]
   memory-should-contain [
     4 <- 13
@@ -455,20 +455,20 @@ scenario remove-range-empty [
 ]
 
 # insert list beginning at 'new' after 'in'
-recipe insert-range in:address:duplex-list:_elem, start:address:duplex-list:_elem/contained-in:in -> in:address:duplex-list:_elem [
+recipe insert-range in:address:shared:duplex-list:_elem, start:address:shared:duplex-list:_elem/contained-in:in -> in:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   reply-unless in
   reply-unless start
-  end:address:duplex-list:_elem <- copy start
+  end:address:shared:duplex-list:_elem <- copy start
   {
-    next:address:duplex-list:_elem <- next end/insert-range
+    next:address:shared:duplex-list:_elem <- next end/insert-range
     break-unless next
     end <- copy next
     loop
   }
-  next:address:duplex-list:_elem <- next in
-  dest:address:address:duplex-list:_elem <- get-address *end, next:offset
+  next:address:shared:duplex-list:_elem <- next in
+  dest:address:address:shared:duplex-list:_elem <- get-address *end, next:offset
   *dest <- copy next
   {
     break-unless next
@@ -481,23 +481,23 @@ recipe insert-range in:address:duplex-list:_elem, start:address:duplex-list:_ele
   *dest <- copy in
 ]
 
-recipe append in:address:duplex-list:_elem, new:address:duplex-list:_elem/contained-in:in -> in:address:duplex-list:_elem [
+recipe append in:address:shared:duplex-list:_elem, new:address:shared:duplex-list:_elem/contained-in:in -> in:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
-  last:address:duplex-list:_elem <- last in
-  dest:address:address:duplex-list:_elem <- get-address *last, next:offset
+  last:address:shared:duplex-list:_elem <- last in
+  dest:address:address:shared:duplex-list:_elem <- get-address *last, next:offset
   *dest <- copy new
   reply-unless new
   dest <- get-address *new, prev:offset
   *dest <- copy last
 ]
 
-recipe last in:address:duplex-list:_elem -> result:address:duplex-list:_elem [
+recipe last in:address:shared:duplex-list:_elem -> result:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   result <- copy in
   {
-    next:address:duplex-list:_elem <- next result
+    next:address:shared:duplex-list:_elem <- next result
     break-unless next
     result <- copy next
     loop
@@ -505,7 +505,7 @@ recipe last in:address:duplex-list:_elem -> result:address:duplex-list:_elem [
 ]
 
 # helper for debugging
-recipe dump-from x:address:duplex-list:_elem [
+recipe dump-from x:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   $print x, [: ]

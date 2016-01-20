@@ -5,27 +5,27 @@
 
 container list:_elem [
   value:_elem
-  next:address:list:_elem
+  next:address:shared:list:_elem
 ]
 
-recipe push x:_elem, in:address:list:_elem -> in:address:list:_elem [
+recipe push x:_elem, in:address:shared:list:_elem -> in:address:shared:list:_elem [
   local-scope
   load-ingredients
-  result:address:list:_elem <- new {(list _elem): type}
+  result:address:shared:list:_elem <- new {(list _elem): type}
   val:address:_elem <- get-address *result, value:offset
   *val <- copy x
-  next:address:address:list:_elem <- get-address *result, next:offset
+  next:address:address:shared:list:_elem <- get-address *result, next:offset
   *next <- copy in
   reply result  # needed explicitly because we need to replace 'in' with 'result'
 ]
 
-recipe first in:address:list:_elem -> result:_elem [
+recipe first in:address:shared:list:_elem -> result:_elem [
   local-scope
   load-ingredients
   result <- get *in, value:offset
 ]
 
-recipe rest in:address:list:_elem -> result:address:list:_elem/contained-in:in [
+recipe rest in:address:shared:list:_elem -> result:address:shared:list:_elem/contained-in:in [
   local-scope
   load-ingredients
   result <- get *in, next:offset
@@ -33,15 +33,15 @@ recipe rest in:address:list:_elem -> result:address:list:_elem/contained-in:in [
 
 scenario list-handling [
   run [
-    1:address:list:number <- push 3, 0
-    1:address:list:number <- push 4, 1:address:list:number
-    1:address:list:number <- push 5, 1:address:list:number
-    2:number <- first 1:address:list:number
-    1:address:list:number <- rest 1:address:list:number
-    3:number <- first 1:address:list:number
-    1:address:list:number <- rest 1:address:list:number
-    4:number <- first 1:address:list:number
-    1:address:list:number <- rest 1:address:list:number
+    1:address:shared:list:number <- push 3, 0
+    1:address:shared:list:number <- push 4, 1:address:shared:list:number
+    1:address:shared:list:number <- push 5, 1:address:shared:list:number
+    2:number <- first 1:address:shared:list:number
+    1:address:shared:list:number <- rest 1:address:shared:list:number
+    3:number <- first 1:address:shared:list:number
+    1:address:shared:list:number <- rest 1:address:shared:list:number
+    4:number <- first 1:address:shared:list:number
+    1:address:shared:list:number <- rest 1:address:shared:list:number
   ]
   memory-should-contain [
     1 <- 0  # empty to empty, dust to dust..
@@ -51,26 +51,26 @@ scenario list-handling [
   ]
 ]
 
-recipe to-text in:address:list:_elem -> result:address:array:character [
+recipe to-text in:address:shared:list:_elem -> result:address:shared:array:character [
   local-scope
 #?   $print [to text: list], 10/newline
   load-ingredients
-  buf:address:buffer <- new-buffer 80
+  buf:address:shared:buffer <- new-buffer 80
   buf <- to-buffer in, buf
   result <- buffer-to-array buf
 ]
 
 # variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)
-recipe to-text-line in:address:list:_elem -> result:address:array:character [
+recipe to-text-line in:address:shared:list:_elem -> result:address:shared:array:character [
   local-scope
 #?   $print [to text line: list], 10/newline
   load-ingredients
-  buf:address:buffer <- new-buffer 80
+  buf:address:shared:buffer <- new-buffer 80
   buf <- to-buffer in, buf, 6  # max elements to display
   result <- buffer-to-array buf
 ]
 
-recipe to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer [
+recipe to-buffer in:address:shared:list:_elem, buf:address:shared:buffer -> buf:address:shared:buffer [
   local-scope
 #?   $print [to buffer: list], 10/newline
   load-ingredients
@@ -83,13 +83,13 @@ recipe to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer
   val:_elem <- get *in, value:offset
   buf <- append buf, val
   # now prepare next
-  next:address:list:_elem <- rest in
+  next:address:shared:list:_elem <- rest in
   nextn:number <- copy next
 #?   buf <- append buf, nextn
   reply-unless next
   space:character <- copy 32/space
   buf <- append buf, space:character
-  s:address:array:character <- new [-> ]
+  s:address:shared:array:character <- new [-> ]
   n:number <- length *s
   buf <- append buf, s
   # and recurse
@@ -108,13 +108,13 @@ recipe to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer
     reply
   }
   # past recursion depth; insert ellipses and stop
-  s:address:array:character <- new [...]
+  s:address:shared:array:character <- new [...]
   append buf, s
 ]
 
 scenario stash-on-list-converts-to-text [
   run [
-    x:address:list:number <- push 4, 0
+    x:address:shared:list:number <- push 4, 0
     x <- push 5, x
     x <- push 6, x
     stash [foo foo], x
@@ -126,8 +126,8 @@ scenario stash-on-list-converts-to-text [
 
 scenario stash-handles-list-with-cycle [
   run [
-    x:address:list:number <- push 4, 0
-    y:address:address:list:number <- get-address *x, next:offset
+    x:address:shared:list:number <- push 4, 0
+    y:address:address:shared:list:number <- get-address *x, next:offset
     *y <- copy x
     stash [foo foo], x
   ]

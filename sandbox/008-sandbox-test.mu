@@ -10,14 +10,14 @@ after <global-touch> [
     click-column:number <- get *t, column:offset
     on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
     break-unless on-sandbox-side?
-    first-sandbox:address:sandbox-data <- get *env, sandbox:offset
+    first-sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
     break-unless first-sandbox
     first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
     click-row:number <- get *t, row:offset
     below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
     break-unless below-sandbox-editor?
     # identify the sandbox whose output is being clicked on
-    sandbox:address:sandbox-data <- find-click-in-sandbox-output env, click-row
+    sandbox:address:shared:sandbox-data <- find-click-in-sandbox-output env, click-row
     break-unless sandbox
     # toggle its expected-response, and save session
     sandbox <- toggle-expected-response sandbox
@@ -31,17 +31,17 @@ after <global-touch> [
   }
 ]
 
-recipe find-click-in-sandbox-output env:address:programming-environment-data, click-row:number -> sandbox:address:sandbox-data [
+recipe find-click-in-sandbox-output env:address:shared:programming-environment-data, click-row:number -> sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
-  sandbox:address:sandbox-data <- get *env, sandbox:offset
+  sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
   start:number <- get *sandbox, starting-row-on-screen:offset
   clicked-on-sandboxes?:boolean <- greater-or-equal click-row, start
   assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
   # while click-row < sandbox.next-sandbox.starting-row-on-screen
   {
-    next-sandbox:address:sandbox-data <- get *sandbox, next-sandbox:offset
+    next-sandbox:address:shared:sandbox-data <- get *sandbox, next-sandbox:offset
     break-unless next-sandbox
     next-start:number <- get *next-sandbox, starting-row-on-screen:offset
     found?:boolean <- lesser-than click-row, next-start
@@ -57,10 +57,10 @@ recipe find-click-in-sandbox-output env:address:programming-environment-data, cl
   reply sandbox
 ]
 
-recipe toggle-expected-response sandbox:address:sandbox-data -> sandbox:address:sandbox-data [
+recipe toggle-expected-response sandbox:address:shared:sandbox-data -> sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
-  expected-response:address:address:array:character <- get-address *sandbox, expected-response:offset
+  expected-response:address:address:shared:array:character <- get-address *sandbox, expected-response:offset
   {
     # if expected-response is set, reset
     break-unless *expected-response
@@ -68,7 +68,7 @@ recipe toggle-expected-response sandbox:address:sandbox-data -> sandbox:address:
     reply sandbox/same-as-ingredient:0
   }
   # if not, current response is the expected response
-  response:address:array:character <- get *sandbox, response:offset
+  response:address:shared:array:character <- get *sandbox, response:offset
   *expected-response <- copy response
 ]
 
@@ -76,7 +76,7 @@ recipe toggle-expected-response sandbox:address:sandbox-data -> sandbox:address:
 after <render-sandbox-response> [
   {
     break-unless sandbox-response
-    expected-response:address:array:character <- get *sandbox, expected-response:offset
+    expected-response:address:shared:array:character <- get *sandbox, expected-response:offset
     break-unless expected-response  # fall-through to print in grey
     response-is-expected?:boolean <- equal expected-response, sandbox-response
     {

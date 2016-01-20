@@ -38,7 +38,7 @@ void rewrite_stashes_to_text_named(recipe& caller) {
         def.name = "to-text-line";
         def.ingredients.push_back(inst.ingredients.at(j));
         ostringstream ingredient_name;
-        ingredient_name << "stash_" << stash_instruction_idx << '_' << j << ":address:array:character";
+        ingredient_name << "stash_" << stash_instruction_idx << '_' << j << ":address:shared:array:character";
         def.products.push_back(reagent(ingredient_name.str()));
         new_instructions.push_back(def);
         inst.ingredients.at(j).clear();  // reclaim old memory

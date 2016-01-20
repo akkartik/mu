@@ -50,14 +50,17 @@ void canonize(reagent& x) {
 void lookup_memory(reagent& x) {
   if (!x.type || x.type->value != get(Type_ordinal, "address")) {
     raise_error << maybe(current_recipe_name()) << "tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
+    return;
   }
   // compute value
   if (x.value == 0) {
     raise_error << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
+    return;
   }
   trace(9999, "mem") << "location " << x.value << " is " << no_scientific(get_or_insert(Memory, x.value)) << end();
   x.set_value(get_or_insert(Memory, x.value));
   drop_from_type(x, "address");
+  // End Drop Address In lookup_memory(x)
   drop_one_lookup(x);
 }
 
@@ -89,6 +92,7 @@ bool canonize_type(reagent& r) {
       return false;
     }
     drop_from_type(r, "address");
+    // End Drop Address In canonize_type(r)
     drop_one_lookup(r);
   }
   return true;

@@ -1,6 +1,6 @@
 # example program: communicating between routines using channels
 
-recipe producer chan:address:channel -> chan:address:channel [
+recipe producer chan:address:shared:channel -> chan:address:shared:channel [
   # produce characters 1 to 5 on a channel
   local-scope
   load-ingredients
@@ -12,19 +12,19 @@ recipe producer chan:address:channel -> chan:address:channel [
     # other threads might get between these prints
     $print [produce: ], n, [ 
 ]
-    chan:address:channel <- write chan, n
+    chan:address:shared:channel <- write chan, n
     n <- add n, 1
     loop
   }
 ]
 
-recipe consumer chan:address:channel -> chan:address:channel [
+recipe consumer chan:address:shared:channel -> chan:address:shared:channel [
   # consume and print integers from a channel
   local-scope
   load-ingredients
   {
     # read an integer from the channel
-    n:character, chan:address:channel <- read chan
+    n:character, chan:address:shared:channel <- read chan
     # other threads might get between these prints
     $print [consume: ], n:character, [ 
 ]
@@ -34,7 +34,7 @@ recipe consumer chan:address:channel -> chan:address:channel [
 
 recipe main [
   local-scope
-  chan:address:channel <- new-channel 3
+  chan:address:shared:channel <- new-channel 3
   # create two background 'routines' that communicate by a channel
   routine1:number <- start-running producer, chan
   routine2:number <- start-running consumer, chan

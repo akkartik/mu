@@ -297,13 +297,13 @@ $error: 0
 :(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_first_use)
 % Hide_errors = true;
 recipe main [
-  x:address:foo <- new foo:type
+  x:address:shared:foo <- new foo:type
   test x
 ]
 container foo [
   x:number
 ]
-recipe test a:address:foo -> z:number [
+recipe test a:address:shared:foo -> z:number [
   local-scope
   load-ingredients
   z:number <- get *a, x:offset
@@ -313,10 +313,10 @@ $error: 0
 :(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_second_use)
 % Hide_errors = true;
 recipe main [
-  x:address:foo <- new foo:type
+  x:address:shared:foo <- new foo:type
   test x
 ]
-recipe test a:address:foo -> z:number [
+recipe test a:address:shared:foo -> z:number [
   local-scope
   load-ingredients
   z:number <- get *a, x:offset
