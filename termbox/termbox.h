@@ -132,7 +132,7 @@ struct tb_event {
 #define TB_KEY_CTRL_ARROW_DOWN  (0xFFFF-31)
 #define TB_KEY_CTRL_ARROW_LEFT  (0xFFFF-32)
 #define TB_KEY_CTRL_ARROW_RIGHT (0xFFFF-33)
-#define TB_KEY_SHIFT_TAB (0xFFFF-34)
+#define TB_KEY_SHIFT_TAB        (0xFFFF-34)
 
 /* Names for some of the possible values for tb_event.ch. */
 /* These are all ASCII code points below SPACE character and a BACKSPACE key. */
