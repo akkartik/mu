@@ -136,10 +136,6 @@ bool types_strictly_match(type_tree* lhs, type_tree* rhs) {
   return types_strictly_match(lhs->left, rhs->left) && types_strictly_match(lhs->right, rhs->right);
 }
 
-bool is_raw(const reagent& r) {
-  return has_property(r, "raw");
-}
-
 bool is_unsafe(const reagent& r) {
   return has_property(r, "unsafe");
 }
