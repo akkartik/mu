@@ -104,6 +104,10 @@ case SUBTRACT: {
   products.at(0).push_back(result);
   break;
 }
+:(code)
+bool is_raw(const reagent& r) {
+  return has_property(r, "raw");
+}
 
 :(scenario subtract_literal)
 recipe main [
