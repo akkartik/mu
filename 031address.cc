@@ -57,7 +57,7 @@ void lookup_memory(reagent& x) {
   }
   trace(9999, "mem") << "location " << x.value << " is " << no_scientific(get_or_insert(Memory, x.value)) << end();
   x.set_value(get_or_insert(Memory, x.value));
-  drop_address_from_type(x);
+  drop_from_type(x, "address");
   drop_one_lookup(x);
 }
 
@@ -88,15 +88,19 @@ bool canonize_type(reagent& r) {
       raise_error << "can't lookup non-address: " << r.to_string() << ": " << debug_string(r.type) << '\n' << end();
       return false;
     }
-    drop_address_from_type(r);
+    drop_from_type(r, "address");
     drop_one_lookup(r);
   }
   return true;
 }
 
-void drop_address_from_type(reagent& r) {
+void drop_from_type(reagent& r, string expected_type) {
   if (!r.type) {
-    raise_error << "can't drop address from " << debug_string(r) << '\n' << end();
+    raise_error << "can't drop " << expected_type << " from " << debug_string(r) << '\n' << end();
+    return;
+  }
+  if (r.properties.at(0).second->value != expected_type) {
+    raise_error << "can't drop " << expected_type << " from " << debug_string(r) << '\n' << end();
     return;
   }
   type_tree* tmp = r.type;
