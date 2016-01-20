@@ -116,7 +116,7 @@ recipe new-board initial-position:address:array:character -> board:address:array
   correct-length?:boolean <- equal len, 64
   assert correct-length?, [chessboard had incorrect size]
   # board is an array of pointers to files; file is an array of characters
-  board <- new location:type, 8
+  board <- new {(address array character): type}, 8
   col:number <- copy 0
   {
     done?:boolean <- equal col, 8

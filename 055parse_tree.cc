@@ -71,10 +71,13 @@ container bar [
 
 :(scenario dilated_reagent_with_new)
 recipe main [
-  x:address:number <- new {(foo bar): type}
+  x:address:address:number <- new {(address number): type}
 ]
-# type isn't defined so size is meaningless, but at least we parse the type correctly
-+new: size of <"foo" : <"bar" : <>>> is 1
++new: size of <"address" : <"number" : <>>> is 1
 
+:(before "End Post-processing(expected_product) When Checking 'new'")
+expected_product.properties.at(0).second = parse_string_tree(expected_product.properties.at(0).second);
+delete expected_product.type;
+expected_product.type = new_type_tree(expected_product.properties.at(0).second);
 :(before "End Post-processing(type_name) When Converting 'new'")
 type_name = parse_string_tree(type_name);

@@ -1080,7 +1080,7 @@ recipe split s:address:array:character, delim:character -> result:address:array:
   {
     empty?:boolean <- equal len, 0
     break-unless empty?
-    result <- new location:type, 0
+    result <- new {(address array character): type}, 0
     reply
   }
   # count #pieces we need room for
@@ -1095,7 +1095,7 @@ recipe split s:address:array:character, delim:character -> result:address:array:
     loop
   }
   # allocate space
-  result <- new location:type, count
+  result <- new {(address array character): type}, count
   # repeatedly copy slices start..end until delimiter into result[curr-result]
   curr-result:number <- copy 0
   start:number <- copy 0
