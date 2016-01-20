@@ -35,14 +35,39 @@ NEW,
 put(Recipe_ordinal, "new", NEW);
 :(before "End Primitive Recipe Checks")
 case NEW: {
+  const recipe& caller = get(Recipe, r);
   if (inst.ingredients.empty() || SIZE(inst.ingredients) > 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'new' requires one or two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(caller.name) << "'new' requires one or two ingredients, but got " << inst.to_string() << '\n' << end();
     break;
   }
   // End NEW Check Special-cases
   reagent type = inst.ingredients.at(0);
   if (!is_mu_type_literal(type)) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
+    raise_error << maybe(caller.name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
+    break;
+  }
+  if (inst.products.empty()) {
+    raise_error << maybe(caller.name) << "result of 'new' should never be ignored\n" << end();
+    break;
+  }
+  reagent product(inst.products.at(0));
+  canonize_type(product);
+  drop_address_from_type(product);
+  if (SIZE(inst.ingredients) > 1) {
+    // array allocation, so drop an 'array' as well from product.type
+    type_tree* tmp = product.type;
+    if (tmp->value != get(Type_ordinal, "array")) {
+      raise_error << maybe(caller.name) << "result of 'new' should start with 'address:array:...' in " << inst.to_string() << '\n' << end();
+      break;
+    }
+    product.type = tmp->right;
+    tmp->right = NULL;
+    delete tmp;
+  }
+  reagent expected_product("x:"+type.name);
+  // End Post-processing(expected_product) When Checking 'new'
+  if (!types_strictly_match(product, expected_product)) {
+    raise_error << maybe(caller.name) << "product of 'new' has incorrect type: " << inst.to_string() << '\n' << end();
     break;
   }
   break;
@@ -277,8 +302,8 @@ if (Free_list[size]) {
 recipe main [
   1:address:number <- new number:type
   abandon 1:address:number
-  2:address:number <- new number:type, 2  # different size
-  3:boolean <- equal 1:address:number, 2:address:number
+  2:address:array:number <- new number:type, 2  # different size
+  3:boolean <- equal 1:address:number, 2:address:array:number
 ]
 # no reuse
 +mem: storing 0 in location 3
