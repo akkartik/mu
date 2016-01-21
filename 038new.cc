@@ -7,7 +7,7 @@
 //: In practice it's useful to let programs copy addresses anywhere they want,
 //: but a prime source of (particularly security) bugs is accessing memory
 //: after it's been abandoned. To avoid this, mu programs use a safer
-//: primitive called 'new', which performs two operations:
+//: primitive called 'new', which adds two features:
 //:
 //: - it takes a type rather than a size, to save you the trouble of
 //: calculating sizes of different variables.
