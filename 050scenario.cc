@@ -106,11 +106,19 @@ scenario foo [
 //:: Run scenarios when we run 'mu test'.
 //: Treat the text of the scenario as a regular series of instructions.
 
+:(before "End Globals")
+long long int Num_core_mu_tests = 0;
+:(after "Check For .mu Files")
+Num_core_mu_tests = SIZE(Scenarios);
 :(before "End Tests")
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
 for (long long int i = 0; i < SIZE(Scenarios); ++i) {
 //?   cerr << i << ": " << Scenarios.at(i).name << '\n';
+  if (i == Num_core_mu_tests) {
+    time(&t);
+    cerr << "\nApp tests: " << ctime(&t);
+  }
   run_mu_scenario(Scenarios.at(i));
   if (Passed) cerr << ".";
 }

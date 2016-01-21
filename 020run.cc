@@ -139,6 +139,7 @@ transform_all();
 
 //: Step 2: load any .mu files provided at the commandline
 :(before "End Commandline Parsing")
+// Check For .mu Files
 if (argc > 1) {
   // skip argv[0]
   argv++;
