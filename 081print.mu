@@ -683,5 +683,17 @@ recipe print-integer screen:address:shared:screen, n:number -> screen:address:sh
 recipe print screen:address:shared:screen, n:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
-  screen <- print-integer screen, n
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?
+    color <- copy 7/white
+  }
+  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  {
+    # default bg-color to black
+    break-if bg-color-found?
+    bg-color <- copy 0/black
+  }
+  screen <- print-integer screen, n, color, bg-color
 ]

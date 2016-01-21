@@ -14,7 +14,7 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
     .                     run (F4)           .
     .                                        .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                       x.
+    .0                                      x.
     .add 2, 2                                .
     .4                                       .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -138,7 +138,7 @@ scenario sandbox-with-print-can-be-edited [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
+    .0                                                x.
     .print-integer screen, 4                           .
     .screen:                                           .
     .  .4                             .                .
