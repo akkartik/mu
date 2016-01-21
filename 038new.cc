@@ -261,7 +261,7 @@ recipe main [
 +new: routine allocated memory from 1000 to 1003
 +new: routine allocated memory from 1003 to 1006
 
-//: We also provide a way to return memory, and to reuse reclaimed memory.
+//:: A way to return memory, and to reuse reclaimed memory.
 //: todo: custodians, etc. Following malloc/free is a temporary hack.
 
 :(scenario new_reclaim)
@@ -368,7 +368,70 @@ recipe main [
 # reuse
 +mem: storing 1 in location 3
 
-//:: Next, extend 'new' to handle a unicode string literal argument.
+//:: Manage refcounts when copying addresses.
+
+:(scenario refcounts)
+recipe main [
+  1:address:shared:number <- copy 1000/unsafe
+  2:address:shared:number <- copy 1:address:shared:number
+  1:address:shared:number <- copy 0
+  2:address:shared:number <- copy 0
+]
++run: 1:address:shared:number <- copy 1000/unsafe
++mem: incrementing refcount of 1000: 0 -> 1
++run: 2:address:shared:number <- copy 1:address:shared:number
++mem: incrementing refcount of 1000: 1 -> 2
++run: 1:address:shared:number <- copy 0
++mem: decrementing refcount of 1000: 2 -> 1
++run: 2:address:shared:number <- copy 0
++mem: decrementing refcount of 1000: 1 -> 0
+# the /unsafe corrupts memory but fortunately we won't be running any more 'new' in this scenario
++mem: automatically abandoning 1000
+
+:(before "End write_memory(reagent x, long long int base) Special-cases")
+if (x.type->value == get(Type_ordinal, "address")
+    && x.type->right
+    && x.type->right->value == get(Type_ordinal, "shared")) {
+  // compute old address of x, as well as new address we want to write in
+  long long int old_address = get_or_insert(Memory, x.value);
+  assert(scalar(data));
+  long long int new_address = data.at(0);
+  // decrement refcount of old address
+  if (old_address) {
+    long long int old_refcount = get_or_insert(Memory, old_address);
+//?     cerr << old_refcount << '\n';
+//?     assert(old_refcount > 0);
+    trace(9999, "mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << (old_refcount-1) << end();
+    put(Memory, old_address, old_refcount-1);
+  }
+  // perform the write
+  trace(9999, "mem") << "storing " << no_scientific(data.at(0)) << " in location " << base << end();
+  put(Memory, base, new_address);
+  // increment refcount of new address
+  if (new_address) {
+    long long int new_refcount = get_or_insert(Memory, new_address);
+//?       assert(new_refcount >= 0);  // == 0 only when new_address == old_address
+    trace(9999, "mem") << "incrementing refcount of " << new_address << ": " << new_refcount << " -> " << (new_refcount+1) << end();
+    put(Memory, new_address, new_refcount+1);
+  }
+  // abandon old address if necessary
+  // do this after all refcount updates are done just in case old and new are identical
+  // TODO: doesn't work yet
+  assert(get_or_insert(Memory, old_address) >= 0);
+  if (old_address && get_or_insert(Memory, old_address) == 0) {
+    // lookup_memory without drop_one_lookup {
+    trace(9999, "mem") << "automatically abandoning " << old_address << end();
+    trace(9999, "mem") << "computing size to abandon at " << x.value << end();
+    x.set_value(get_or_insert(Memory, x.value)+/*skip refcount*/1);
+    drop_from_type(x, "address");
+    drop_from_type(x, "shared");
+    // }
+    abandon(old_address, size_of(x)+/*refcount*/1);
+  }
+  return;
+}
+
+//:: Extend 'new' to handle a unicode string literal argument.
 
 :(scenario new_string)
 recipe main [

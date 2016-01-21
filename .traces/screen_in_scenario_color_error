@@ -67,6 +67,7 @@
 9999 mem: allocating size 6
 9999 mem: new alloc: 1012
 9999 mem: storing 1012 in location 1005
+9999 mem: incrementing refcount of 1012: 0 -> 1
  103 run: width:address:number <- get-address *result, num-columns:offset
 9999 mem: location 1005 is 1012
 9999 mem: skipping refcount at 1012
@@ -155,6 +156,7 @@
 9999 mem: storing 15 in location 1019
 9999 mem: location 1011 is 1017
 9999 mem: storing 1018 in location 1017
+9999 mem: incrementing refcount of 1018: 0 -> 1
  103 run: result <- clear-screen result
 9999 mem: location 1005 is 1012
 9999 trace: incrementing callstack depth to 3
@@ -165,6 +167,7 @@
 9999 mem: storing 10 in location 1051
  104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1053
+9999 mem: incrementing refcount of 1012: 1 -> 2
  104 run: jump-unless screen, 
 9999 mem: location 1053 is 1012
 9998 run: jump-unless fell through
@@ -182,6 +185,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1054
+9999 mem: incrementing refcount of 1018: 1 -> 2
  104 run: max:number <- length *buf
 9999 mem: location 1054 is 1018
 9999 mem: skipping refcount at 1018
@@ -785,13 +789,16 @@
 9999 abandon: saving in free-list of size 12
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1012
+9999 mem: decrementing refcount of 1012: 2 -> 1
 9999 mem: storing 1012 in location 1005
+9999 mem: incrementing refcount of 1012: 1 -> 2
  103 run: reply result:address:shared:screen
 9999 mem: location 1005 is 1012
 9999 abandon: saving in free-list of size 12
 9999 trace: reply: decrementing callstack depth from 2
 9998 run: result 0 is 1012
 9999 mem: storing 1012 in location 900
+9999 mem: incrementing refcount of 1012: 2 -> 3
  102 run: run [
     1:character <- copy 97/a
     screen:address:shared:screen <- print screen:address:shared:screen, 1:character/a, 1/red
@@ -856,6 +863,7 @@
 9999 mem: storing 25 in location 1063
  104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1065
+9999 mem: incrementing refcount of 1012: 3 -> 4
  104 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1066
  104 run: color:number, color-found?:boolean <- next-ingredient 
@@ -990,6 +998,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1080
+9999 mem: incrementing refcount of 1018: 2 -> 3
  104 run: len:number <- length *buf
 9999 mem: location 1080 is 1018
 9999 mem: skipping refcount at 1018
@@ -1048,7 +1057,9 @@
 9999 abandon: saving in free-list of size 27
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1012
+9999 mem: decrementing refcount of 1012: 4 -> 3
 9999 mem: storing 1012 in location 900
+9999 mem: incrementing refcount of 1012: 3 -> 4
  103 run: reply 
 9999 trace: reply: decrementing callstack depth from 2
  102 run: screen-should-contain-in-color 2/green, [

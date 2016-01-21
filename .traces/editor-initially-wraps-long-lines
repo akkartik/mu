@@ -77,6 +77,7 @@
 9999 mem: allocating size 6
 9999 mem: new alloc: 1012
 9999 mem: storing 1012 in location 1005
+9999 mem: incrementing refcount of 1012: 0 -> 1
  103 run: width:address:number <- get-address *result, num-columns:offset
 9999 mem: location 1005 is 1012
 9999 mem: skipping refcount at 1012
@@ -165,6 +166,7 @@
 9999 mem: storing 25 in location 1019
 9999 mem: location 1011 is 1017
 9999 mem: storing 1018 in location 1017
+9999 mem: incrementing refcount of 1018: 0 -> 1
  103 run: result <- clear-screen result
 9999 mem: location 1005 is 1012
 9999 trace: incrementing callstack depth to 3
@@ -175,6 +177,7 @@
 9999 mem: storing 10 in location 1071
  104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1073
+9999 mem: incrementing refcount of 1012: 1 -> 2
  104 run: jump-unless screen, 
 9999 mem: location 1073 is 1012
 9998 run: jump-unless fell through
@@ -192,6 +195,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1074
+9999 mem: incrementing refcount of 1018: 1 -> 2
  104 run: max:number <- length *buf
 9999 mem: location 1074 is 1018
 9999 mem: skipping refcount at 1018
@@ -1165,13 +1169,16 @@
 9999 abandon: saving in free-list of size 12
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1012
+9999 mem: decrementing refcount of 1012: 2 -> 1
 9999 mem: storing 1012 in location 1005
+9999 mem: incrementing refcount of 1012: 1 -> 2
  103 run: reply result:address:shared:screen
 9999 mem: location 1005 is 1012
 9999 abandon: saving in free-list of size 12
 9999 trace: reply: decrementing callstack depth from 2
 9998 run: result 0 is 1012
 9999 mem: storing 1012 in location 900
+9999 mem: incrementing refcount of 1012: 2 -> 3
  102 run: run [
     s:address:shared:array:character <- new [abc def]
     new-editor s:address:shared:array:character, screen:address:shared:screen, 0/left, 5/right
@@ -1223,6 +1230,7 @@
 9998 trace: run: incrementing callstack depth to 2
  103 run: s:address:shared:array:character <- new [abc def]
 9999 mem: storing 1082 in location 1
+9999 mem: incrementing refcount of 1082: 0 -> 1
  103 run: new-editor s:address:shared:array:character, screen:address:shared:screen, 0/left, 5/right
 9999 mem: location 1 is 1082
 9999 mem: location 900 is 1012
@@ -1234,8 +1242,10 @@
 9999 mem: storing 11 in location 1092
  104 run: s:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1082 in location 1094
+9999 mem: incrementing refcount of 1082: 1 -> 2
  104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1095
+9999 mem: incrementing refcount of 1012: 3 -> 4
  104 run: left:number <- next-ingredient-without-typechecking 
 9999 mem: storing 0 in location 1096
  104 run: right:number <- next-ingredient-without-typechecking 
@@ -1247,6 +1257,7 @@
 9999 mem: allocating size 12
 9999 abandon: picking up space from free-list of size 12
 9999 mem: storing 1000 in location 1098
+9999 mem: incrementing refcount of 1000: 0 -> 1
  104 run: x:address:number <- get-address *result, left:offset
 9999 mem: location 1098 is 1000
 9999 mem: skipping refcount at 1000
@@ -1367,6 +1378,7 @@
 9999 mem: allocating size 4
 9999 mem: new alloc: 1113
 9999 mem: storing 1113 in location 1109
+9999 mem: incrementing refcount of 1113: 0 -> 1
  105 run: val:address:_elem <- get-address *result, value:offset
 9999 mem: location 1109 is 1113
 9999 mem: skipping refcount at 1113
@@ -1412,6 +1424,7 @@
 9998 run: result 0 is 1113
 9999 mem: location 1100 is 1001
 9999 mem: storing 1113 in location 1001
+9999 mem: incrementing refcount of 1113: 1 -> 2
  104 run: top-of-screen:address:address:shared:duplex-list:character <- get-address *result, top-of-screen:offset
 9999 mem: location 1098 is 1000
 9999 mem: skipping refcount at 1000
@@ -1435,6 +1448,7 @@
 9999 mem: location 1001 is 1113
 9999 mem: location 1101 is 1002
 9999 mem: storing 1113 in location 1002
+9999 mem: incrementing refcount of 1113: 2 -> 3
  104 run: y:address:address:shared:duplex-list:character <- get-address *result, before-cursor:offset
 9999 mem: location 1098 is 1000
 9999 mem: skipping refcount at 1000
@@ -1458,6 +1472,7 @@
 9999 mem: location 1001 is 1113
 9999 mem: location 1102 is 1004
 9999 mem: storing 1113 in location 1004
+9999 mem: incrementing refcount of 1113: 3 -> 4
  104 run: result <- insert-text result, s
 9999 mem: location 1098 is 1000
 9999 mem: location 1094 is 1082
@@ -1469,8 +1484,10 @@
 9999 mem: storing 8 in location 1118
  105 run: editor:address:shared:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1120
+9999 mem: incrementing refcount of 1000: 1 -> 2
  105 run: text:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1082 in location 1121
+9999 mem: incrementing refcount of 1082: 2 -> 3
  105 run: jump-if text, 1:offset
 9999 mem: location 1121 is 1082
 9998 run: jumping to instruction 5
@@ -1503,6 +1520,7 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1001 is 1113
 9999 mem: storing 1113 in location 1124
+9999 mem: incrementing refcount of 1113: 4 -> 5
  105 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1123 is 0
 9999 mem: location 1122 is 7
@@ -1531,10 +1549,12 @@
 9999 mem: storing 97 in location 1107
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1113 in location 1108
+9999 mem: incrementing refcount of 1113: 5 -> 6
  106 run: new-node:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: allocating size 4
 9999 mem: new alloc: 1127
 9999 mem: storing 1127 in location 1109
+9999 mem: incrementing refcount of 1127: 0 -> 1
  106 run: val:address:_elem <- get-address *new-node, value:offset
 9999 mem: location 1109 is 1127
 9999 mem: skipping refcount at 1127
@@ -1586,6 +1606,7 @@
 9999 mem: location 1109 is 1127
 9999 mem: location 1112 is 1115
 9999 mem: storing 1127 in location 1115
+9999 mem: incrementing refcount of 1127: 1 -> 2
  106 run: y <- get-address *new-node, prev:offset
 9999 mem: location 1109 is 1127
 9999 mem: skipping refcount at 1127
@@ -1604,6 +1625,7 @@
 9999 mem: location 1108 is 1113
 9999 mem: location 1112 is 1130
 9999 mem: storing 1113 in location 1130
+9999 mem: incrementing refcount of 1113: 6 -> 7
  106 run: y <- get-address *new-node, next:offset
 9999 mem: location 1109 is 1127
 9999 mem: skipping refcount at 1127
@@ -1639,6 +1661,7 @@
 9999 mem: storing 3 in location 1132
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1113 in location 1134
+9999 mem: incrementing refcount of 1113: 7 -> 8
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1113
 9998 run: jumping to instruction 4
@@ -1658,12 +1681,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1115 is 1127
 9999 mem: storing 1127 in location 1135
+9999 mem: incrementing refcount of 1127: 2 -> 3
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1127
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1127
+9999 mem: decrementing refcount of 1113: 8 -> 7
 9999 mem: storing 1127 in location 1124
+9999 mem: incrementing refcount of 1127: 3 -> 4
  105 run: idx <- add idx, 1
 9999 mem: location 1123 is 0
 9999 mem: storing 1 in location 1123
@@ -1697,10 +1723,12 @@
 9999 mem: storing 98 in location 1107
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1127 in location 1108
+9999 mem: incrementing refcount of 1127: 4 -> 5
  106 run: new-node:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: allocating size 4
 9999 mem: new alloc: 1136
 9999 mem: storing 1136 in location 1109
+9999 mem: incrementing refcount of 1136: 0 -> 1
  106 run: val:address:_elem <- get-address *new-node, value:offset
 9999 mem: location 1109 is 1136
 9999 mem: skipping refcount at 1136
@@ -1752,6 +1780,7 @@
 9999 mem: location 1109 is 1136
 9999 mem: location 1112 is 1129
 9999 mem: storing 1136 in location 1129
+9999 mem: incrementing refcount of 1136: 1 -> 2
  106 run: y <- get-address *new-node, prev:offset
 9999 mem: location 1109 is 1136
 9999 mem: skipping refcount at 1136
@@ -1770,6 +1799,7 @@
 9999 mem: location 1108 is 1127
 9999 mem: location 1112 is 1139
 9999 mem: storing 1127 in location 1139
+9999 mem: incrementing refcount of 1127: 5 -> 6
  106 run: y <- get-address *new-node, next:offset
 9999 mem: location 1109 is 1136
 9999 mem: skipping refcount at 1136
@@ -1804,6 +1834,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1127 in location 1134
+9999 mem: incrementing refcount of 1127: 6 -> 7
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1127
 9998 run: jumping to instruction 4
@@ -1823,12 +1854,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1129 is 1136
 9999 mem: storing 1136 in location 1135
+9999 mem: incrementing refcount of 1136: 2 -> 3
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1136
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1136
+9999 mem: decrementing refcount of 1127: 7 -> 6
 9999 mem: storing 1136 in location 1124
+9999 mem: incrementing refcount of 1136: 3 -> 4
  105 run: idx <- add idx, 1
 9999 mem: location 1123 is 1
 9999 mem: storing 2 in location 1123
@@ -1862,10 +1896,12 @@
 9999 mem: storing 99 in location 1107
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1136 in location 1108
+9999 mem: incrementing refcount of 1136: 4 -> 5
  106 run: new-node:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: allocating size 4
 9999 mem: new alloc: 1140
 9999 mem: storing 1140 in location 1109
+9999 mem: incrementing refcount of 1140: 0 -> 1
  106 run: val:address:_elem <- get-address *new-node, value:offset
 9999 mem: location 1109 is 1140
 9999 mem: skipping refcount at 1140
@@ -1917,6 +1953,7 @@
 9999 mem: location 1109 is 1140
 9999 mem: location 1112 is 1138
 9999 mem: storing 1140 in location 1138
+9999 mem: incrementing refcount of 1140: 1 -> 2
  106 run: y <- get-address *new-node, prev:offset
 9999 mem: location 1109 is 1140
 9999 mem: skipping refcount at 1140
@@ -1935,6 +1972,7 @@
 9999 mem: location 1108 is 1136
 9999 mem: location 1112 is 1143
 9999 mem: storing 1136 in location 1143
+9999 mem: incrementing refcount of 1136: 5 -> 6
  106 run: y <- get-address *new-node, next:offset
 9999 mem: location 1109 is 1140
 9999 mem: skipping refcount at 1140
@@ -1969,6 +2007,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1136 in location 1134
+9999 mem: incrementing refcount of 1136: 6 -> 7
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1136
 9998 run: jumping to instruction 4
@@ -1988,12 +2027,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1138 is 1140
 9999 mem: storing 1140 in location 1135
+9999 mem: incrementing refcount of 1140: 2 -> 3
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1140
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1140
+9999 mem: decrementing refcount of 1136: 7 -> 6
 9999 mem: storing 1140 in location 1124
+9999 mem: incrementing refcount of 1140: 3 -> 4
  105 run: idx <- add idx, 1
 9999 mem: location 1123 is 2
 9999 mem: storing 3 in location 1123
@@ -2027,10 +2069,12 @@
 9999 mem: storing 32 in location 1107
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1140 in location 1108
+9999 mem: incrementing refcount of 1140: 4 -> 5
  106 run: new-node:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: allocating size 4
 9999 mem: new alloc: 1144
 9999 mem: storing 1144 in location 1109
+9999 mem: incrementing refcount of 1144: 0 -> 1
  106 run: val:address:_elem <- get-address *new-node, value:offset
 9999 mem: location 1109 is 1144
 9999 mem: skipping refcount at 1144
@@ -2082,6 +2126,7 @@
 9999 mem: location 1109 is 1144
 9999 mem: location 1112 is 1142
 9999 mem: storing 1144 in location 1142
+9999 mem: incrementing refcount of 1144: 1 -> 2
  106 run: y <- get-address *new-node, prev:offset
 9999 mem: location 1109 is 1144
 9999 mem: skipping refcount at 1144
@@ -2100,6 +2145,7 @@
 9999 mem: location 1108 is 1140
 9999 mem: location 1112 is 1147
 9999 mem: storing 1140 in location 1147
+9999 mem: incrementing refcount of 1140: 5 -> 6
  106 run: y <- get-address *new-node, next:offset
 9999 mem: location 1109 is 1144
 9999 mem: skipping refcount at 1144
@@ -2134,6 +2180,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1140 in location 1134
+9999 mem: incrementing refcount of 1140: 6 -> 7
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1140
 9998 run: jumping to instruction 4
@@ -2153,12 +2200,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1142 is 1144
 9999 mem: storing 1144 in location 1135
+9999 mem: incrementing refcount of 1144: 2 -> 3
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1144
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1144
+9999 mem: decrementing refcount of 1140: 7 -> 6
 9999 mem: storing 1144 in location 1124
+9999 mem: incrementing refcount of 1144: 3 -> 4
  105 run: idx <- add idx, 1
 9999 mem: location 1123 is 3
 9999 mem: storing 4 in location 1123
@@ -2192,10 +2242,12 @@
 9999 mem: storing 100 in location 1107
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1144 in location 1108
+9999 mem: incrementing refcount of 1144: 4 -> 5
  106 run: new-node:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: allocating size 4
 9999 mem: new alloc: 1148
 9999 mem: storing 1148 in location 1109
+9999 mem: incrementing refcount of 1148: 0 -> 1
  106 run: val:address:_elem <- get-address *new-node, value:offset
 9999 mem: location 1109 is 1148
 9999 mem: skipping refcount at 1148
@@ -2247,6 +2299,7 @@
 9999 mem: location 1109 is 1148
 9999 mem: location 1112 is 1146
 9999 mem: storing 1148 in location 1146
+9999 mem: incrementing refcount of 1148: 1 -> 2
  106 run: y <- get-address *new-node, prev:offset
 9999 mem: location 1109 is 1148
 9999 mem: skipping refcount at 1148
@@ -2265,6 +2318,7 @@
 9999 mem: location 1108 is 1144
 9999 mem: location 1112 is 1151
 9999 mem: storing 1144 in location 1151
+9999 mem: incrementing refcount of 1144: 5 -> 6
  106 run: y <- get-address *new-node, next:offset
 9999 mem: location 1109 is 1148
 9999 mem: skipping refcount at 1148
@@ -2299,6 +2353,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1144 in location 1134
+9999 mem: incrementing refcount of 1144: 6 -> 7
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1144
 9998 run: jumping to instruction 4
@@ -2318,12 +2373,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1146 is 1148
 9999 mem: storing 1148 in location 1135
+9999 mem: incrementing refcount of 1148: 2 -> 3
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1148
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1148
+9999 mem: decrementing refcount of 1144: 7 -> 6
 9999 mem: storing 1148 in location 1124
+9999 mem: incrementing refcount of 1148: 3 -> 4
  105 run: idx <- add idx, 1
 9999 mem: location 1123 is 4
 9999 mem: storing 5 in location 1123
@@ -2357,10 +2415,12 @@
 9999 mem: storing 101 in location 1107
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1148 in location 1108
+9999 mem: incrementing refcount of 1148: 4 -> 5
  106 run: new-node:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: allocating size 4
 9999 mem: new alloc: 1152
 9999 mem: storing 1152 in location 1109
+9999 mem: incrementing refcount of 1152: 0 -> 1
  106 run: val:address:_elem <- get-address *new-node, value:offset
 9999 mem: location 1109 is 1152
 9999 mem: skipping refcount at 1152
@@ -2412,6 +2472,7 @@
 9999 mem: location 1109 is 1152
 9999 mem: location 1112 is 1150
 9999 mem: storing 1152 in location 1150
+9999 mem: incrementing refcount of 1152: 1 -> 2
  106 run: y <- get-address *new-node, prev:offset
 9999 mem: location 1109 is 1152
 9999 mem: skipping refcount at 1152
@@ -2430,6 +2491,7 @@
 9999 mem: location 1108 is 1148
 9999 mem: location 1112 is 1155
 9999 mem: storing 1148 in location 1155
+9999 mem: incrementing refcount of 1148: 5 -> 6
  106 run: y <- get-address *new-node, next:offset
 9999 mem: location 1109 is 1152
 9999 mem: skipping refcount at 1152
@@ -2464,6 +2526,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1148 in location 1134
+9999 mem: incrementing refcount of 1148: 6 -> 7
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1148
 9998 run: jumping to instruction 4
@@ -2483,12 +2546,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1150 is 1152
 9999 mem: storing 1152 in location 1135
+9999 mem: incrementing refcount of 1152: 2 -> 3
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1152
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1152
+9999 mem: decrementing refcount of 1148: 7 -> 6
 9999 mem: storing 1152 in location 1124
+9999 mem: incrementing refcount of 1152: 3 -> 4
  105 run: idx <- add idx, 1
 9999 mem: location 1123 is 5
 9999 mem: storing 6 in location 1123
@@ -2522,10 +2588,12 @@
 9999 mem: storing 102 in location 1107
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1152 in location 1108
+9999 mem: incrementing refcount of 1152: 4 -> 5
  106 run: new-node:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
 9999 mem: allocating size 4
 9999 mem: new alloc: 1156
 9999 mem: storing 1156 in location 1109
+9999 mem: incrementing refcount of 1156: 0 -> 1
  106 run: val:address:_elem <- get-address *new-node, value:offset
 9999 mem: location 1109 is 1156
 9999 mem: skipping refcount at 1156
@@ -2577,6 +2645,7 @@
 9999 mem: location 1109 is 1156
 9999 mem: location 1112 is 1154
 9999 mem: storing 1156 in location 1154
+9999 mem: incrementing refcount of 1156: 1 -> 2
  106 run: y <- get-address *new-node, prev:offset
 9999 mem: location 1109 is 1156
 9999 mem: skipping refcount at 1156
@@ -2595,6 +2664,7 @@
 9999 mem: location 1108 is 1152
 9999 mem: location 1112 is 1159
 9999 mem: storing 1152 in location 1159
+9999 mem: incrementing refcount of 1152: 5 -> 6
  106 run: y <- get-address *new-node, next:offset
 9999 mem: location 1109 is 1156
 9999 mem: skipping refcount at 1156
@@ -2629,6 +2699,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1152 in location 1134
+9999 mem: incrementing refcount of 1152: 6 -> 7
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1152
 9998 run: jumping to instruction 4
@@ -2648,12 +2719,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1154 is 1156
 9999 mem: storing 1156 in location 1135
+9999 mem: incrementing refcount of 1156: 2 -> 3
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1156
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1156
+9999 mem: decrementing refcount of 1152: 7 -> 6
 9999 mem: storing 1156 in location 1124
+9999 mem: incrementing refcount of 1156: 3 -> 4
  105 run: idx <- add idx, 1
 9999 mem: location 1123 is 6
 9999 mem: storing 7 in location 1123
@@ -2671,7 +2745,9 @@
 9999 abandon: saving in free-list of size 10
 9999 trace: reply: decrementing callstack depth from 4
 9998 run: result 0 is 1000
+9999 mem: decrementing refcount of 1000: 2 -> 1
 9999 mem: storing 1000 in location 1098
+9999 mem: incrementing refcount of 1000: 1 -> 2
  104 run: y <- get-address *result, before-cursor:offset
 9999 mem: location 1098 is 1000
 9999 mem: skipping refcount at 1000
@@ -2694,7 +2770,9 @@
 9999 mem: location 1100 is 1001
 9999 mem: location 1001 is 1113
 9999 mem: location 1102 is 1004
+9999 mem: decrementing refcount of 1113: 7 -> 6
 9999 mem: storing 1113 in location 1004
+9999 mem: incrementing refcount of 1113: 6 -> 7
 9990 schedule: new-editor/run1001/scenario-editor-initially-wraps-long-lines
  104 run: _, _, screen, result <- render screen, result
 9999 mem: location 1095 is 1012
@@ -2707,8 +2785,10 @@
 9999 mem: storing 27 in location 1161
  105 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1163
+9999 mem: incrementing refcount of 1012: 4 -> 5
  105 run: editor:address:shared:editor-data <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1164
+9999 mem: incrementing refcount of 1000: 2 -> 3
  105 run: jump-if editor, 1:offset
 9999 mem: location 1164 is 1000
 9998 run: jumping to instruction 5
@@ -2741,6 +2821,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1134
+9999 mem: incrementing refcount of 1012: 5 -> 6
  106 run: jump-unless screen, 
 9999 mem: location 1134 is 1012
 9998 run: jump-unless fell through
@@ -2804,9 +2885,11 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1002 is 1113
 9999 mem: storing 1113 in location 1168
+9999 mem: incrementing refcount of 1113: 7 -> 8
  105 run: prev:address:shared:duplex-list:character <- copy curr
 9999 mem: location 1168 is 1113
 9999 mem: storing 1113 in location 1169
+9999 mem: incrementing refcount of 1113: 8 -> 9
  105 run: curr <- next_2 curr
 9999 mem: location 1168 is 1113
 9999 trace: incrementing callstack depth to 5
@@ -2816,6 +2899,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1113 in location 1134
+9999 mem: incrementing refcount of 1113: 9 -> 10
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1113
 9998 run: jumping to instruction 4
@@ -2835,12 +2919,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1115 is 1127
 9999 mem: storing 1127 in location 1135
+9999 mem: incrementing refcount of 1127: 6 -> 7
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1127
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1127
+9999 mem: decrementing refcount of 1113: 10 -> 9
 9999 mem: storing 1127 in location 1168
+9999 mem: incrementing refcount of 1127: 7 -> 8
  105 run: color:number <- copy 7/white
 9999 mem: storing 7 in location 1170
  105 run: row:number <- copy 1/top
@@ -2914,6 +3001,7 @@
 9999 mem: storing 6 in location 1190
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1192
+9999 mem: incrementing refcount of 1012: 6 -> 7
  106 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1193
  106 run: new-column:number <- next-ingredient-without-typechecking 
@@ -2958,7 +3046,9 @@
 9999 abandon: saving in free-list of size 8
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1012
+9999 mem: decrementing refcount of 1012: 7 -> 6
 9999 mem: storing 1012 in location 1163
+9999 mem: incrementing refcount of 1012: 6 -> 7
  105 run: jump-unless curr, 
 9999 mem: location 1168 is 1127
 9998 run: jump-unless fell through
@@ -2988,7 +3078,9 @@
  105 run: *before-cursor <- copy prev
 9999 mem: location 1169 is 1113
 9999 mem: location 1175 is 1004
+9999 mem: decrementing refcount of 1113: 9 -> 8
 9999 mem: storing 1113 in location 1004
+9999 mem: incrementing refcount of 1113: 8 -> 9
  105 run: c:character <- get *curr, value:offset
 9999 mem: location 1168 is 1127
 9999 mem: skipping refcount at 1127
@@ -3080,6 +3172,7 @@
 9999 mem: storing 25 in location 1198
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1200
+9999 mem: incrementing refcount of 1012: 7 -> 8
  106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 97 in location 1201
  106 run: color:number, color-found?:boolean <- next-ingredient 
@@ -3214,6 +3307,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1215
+9999 mem: incrementing refcount of 1018: 2 -> 3
  106 run: len:number <- length *buf
 9999 mem: location 1215 is 1018
 9999 mem: skipping refcount at 1018
@@ -3280,6 +3374,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1127 in location 1134
+9999 mem: incrementing refcount of 1127: 8 -> 9
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1127
 9998 run: jumping to instruction 4
@@ -3299,12 +3394,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1129 is 1136
 9999 mem: storing 1136 in location 1135
+9999 mem: incrementing refcount of 1136: 6 -> 7
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1136
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1136
+9999 mem: decrementing refcount of 1127: 9 -> 8
 9999 mem: storing 1136 in location 1168
+9999 mem: incrementing refcount of 1136: 7 -> 8
  105 run: prev <- next_2 prev
 9999 mem: location 1169 is 1113
 9999 trace: incrementing callstack depth to 5
@@ -3314,6 +3412,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1113 in location 1134
+9999 mem: incrementing refcount of 1113: 9 -> 10
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1113
 9998 run: jumping to instruction 4
@@ -3333,12 +3432,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1115 is 1127
 9999 mem: storing 1127 in location 1135
+9999 mem: incrementing refcount of 1127: 8 -> 9
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1127
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1127
+9999 mem: decrementing refcount of 1113: 10 -> 9
 9999 mem: storing 1127 in location 1169
+9999 mem: incrementing refcount of 1127: 9 -> 10
  105 run: column <- add column, 1
 9999 mem: location 1172 is 0
 9999 mem: storing 1 in location 1172
@@ -3460,6 +3562,7 @@
 9999 abandon: picking up space from free-list of size 27
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1200
+9999 mem: incrementing refcount of 1012: 8 -> 9
  106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 98 in location 1201
  106 run: color:number, color-found?:boolean <- next-ingredient 
@@ -3594,6 +3697,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1215
+9999 mem: incrementing refcount of 1018: 3 -> 4
  106 run: len:number <- length *buf
 9999 mem: location 1215 is 1018
 9999 mem: skipping refcount at 1018
@@ -3660,6 +3764,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1136 in location 1134
+9999 mem: incrementing refcount of 1136: 8 -> 9
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1136
 9998 run: jumping to instruction 4
@@ -3679,12 +3784,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1138 is 1140
 9999 mem: storing 1140 in location 1135
+9999 mem: incrementing refcount of 1140: 6 -> 7
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1140
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1140
+9999 mem: decrementing refcount of 1136: 9 -> 8
 9999 mem: storing 1140 in location 1168
+9999 mem: incrementing refcount of 1140: 7 -> 8
  105 run: prev <- next_2 prev
 9999 mem: location 1169 is 1127
 9999 trace: incrementing callstack depth to 5
@@ -3694,6 +3802,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1127 in location 1134
+9999 mem: incrementing refcount of 1127: 10 -> 11
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1127
 9998 run: jumping to instruction 4
@@ -3713,12 +3822,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1129 is 1136
 9999 mem: storing 1136 in location 1135
+9999 mem: incrementing refcount of 1136: 8 -> 9
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1136
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1136
+9999 mem: decrementing refcount of 1127: 11 -> 10
 9999 mem: storing 1136 in location 1169
+9999 mem: incrementing refcount of 1136: 9 -> 10
  105 run: column <- add column, 1
 9999 mem: location 1172 is 1
 9999 mem: storing 2 in location 1172
@@ -3840,6 +3952,7 @@
 9999 abandon: picking up space from free-list of size 27
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1200
+9999 mem: incrementing refcount of 1012: 9 -> 10
  106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 99 in location 1201
  106 run: color:number, color-found?:boolean <- next-ingredient 
@@ -3974,6 +4087,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1215
+9999 mem: incrementing refcount of 1018: 4 -> 5
  106 run: len:number <- length *buf
 9999 mem: location 1215 is 1018
 9999 mem: skipping refcount at 1018
@@ -4040,6 +4154,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1140 in location 1134
+9999 mem: incrementing refcount of 1140: 8 -> 9
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1140
 9998 run: jumping to instruction 4
@@ -4059,12 +4174,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1142 is 1144
 9999 mem: storing 1144 in location 1135
+9999 mem: incrementing refcount of 1144: 6 -> 7
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1144
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1144
+9999 mem: decrementing refcount of 1140: 9 -> 8
 9999 mem: storing 1144 in location 1168
+9999 mem: incrementing refcount of 1144: 7 -> 8
  105 run: prev <- next_2 prev
 9999 mem: location 1169 is 1136
 9999 trace: incrementing callstack depth to 5
@@ -4074,6 +4192,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1136 in location 1134
+9999 mem: incrementing refcount of 1136: 10 -> 11
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1136
 9998 run: jumping to instruction 4
@@ -4093,12 +4212,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1138 is 1140
 9999 mem: storing 1140 in location 1135
+9999 mem: incrementing refcount of 1140: 8 -> 9
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1140
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1140
+9999 mem: decrementing refcount of 1136: 11 -> 10
 9999 mem: storing 1140 in location 1169
+9999 mem: incrementing refcount of 1140: 9 -> 10
  105 run: column <- add column, 1
 9999 mem: location 1172 is 2
 9999 mem: storing 3 in location 1172
@@ -4220,6 +4342,7 @@
 9999 abandon: picking up space from free-list of size 27
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1200
+9999 mem: incrementing refcount of 1012: 10 -> 11
  106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 32 in location 1201
  106 run: color:number, color-found?:boolean <- next-ingredient 
@@ -4354,6 +4477,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1215
+9999 mem: incrementing refcount of 1018: 5 -> 6
  106 run: len:number <- length *buf
 9999 mem: location 1215 is 1018
 9999 mem: skipping refcount at 1018
@@ -4420,6 +4544,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1144 in location 1134
+9999 mem: incrementing refcount of 1144: 8 -> 9
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1144
 9998 run: jumping to instruction 4
@@ -4439,12 +4564,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1146 is 1148
 9999 mem: storing 1148 in location 1135
+9999 mem: incrementing refcount of 1148: 6 -> 7
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1148
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1148
+9999 mem: decrementing refcount of 1144: 9 -> 8
 9999 mem: storing 1148 in location 1168
+9999 mem: incrementing refcount of 1148: 7 -> 8
  105 run: prev <- next_2 prev
 9999 mem: location 1169 is 1140
 9999 trace: incrementing callstack depth to 5
@@ -4454,6 +4582,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1140 in location 1134
+9999 mem: incrementing refcount of 1140: 10 -> 11
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1140
 9998 run: jumping to instruction 4
@@ -4473,12 +4602,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1142 is 1144
 9999 mem: storing 1144 in location 1135
+9999 mem: incrementing refcount of 1144: 8 -> 9
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1144
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1144
+9999 mem: decrementing refcount of 1140: 11 -> 10
 9999 mem: storing 1144 in location 1169
+9999 mem: incrementing refcount of 1144: 9 -> 10
  105 run: column <- add column, 1
 9999 mem: location 1172 is 3
 9999 mem: storing 4 in location 1172
@@ -4602,6 +4734,7 @@
 9999 abandon: picking up space from free-list of size 27
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1200
+9999 mem: incrementing refcount of 1012: 11 -> 12
  106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 8617 in location 1201
  106 run: color:number, color-found?:boolean <- next-ingredient 
@@ -4736,6 +4869,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1215
+9999 mem: incrementing refcount of 1018: 6 -> 7
  106 run: len:number <- length *buf
 9999 mem: location 1215 is 1018
 9999 mem: skipping refcount at 1018
@@ -4805,6 +4939,7 @@
 9999 abandon: picking up space from free-list of size 8
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1192
+9999 mem: incrementing refcount of 1012: 12 -> 13
  106 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 2 in location 1193
  106 run: new-column:number <- next-ingredient-without-typechecking 
@@ -4849,7 +4984,9 @@
 9999 abandon: saving in free-list of size 8
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1012
+9999 mem: decrementing refcount of 1012: 13 -> 12
 9999 mem: storing 1012 in location 1163
+9999 mem: incrementing refcount of 1012: 12 -> 13
  105 run: jump +next-character:label
 9998 run: jumping to instruction 21
  105 run: jump-unless curr, 
@@ -4960,6 +5097,7 @@
 9999 abandon: picking up space from free-list of size 27
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1200
+9999 mem: incrementing refcount of 1012: 13 -> 14
  106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 100 in location 1201
  106 run: color:number, color-found?:boolean <- next-ingredient 
@@ -5094,6 +5232,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1215
+9999 mem: incrementing refcount of 1018: 7 -> 8
  106 run: len:number <- length *buf
 9999 mem: location 1215 is 1018
 9999 mem: skipping refcount at 1018
@@ -5160,6 +5299,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1148 in location 1134
+9999 mem: incrementing refcount of 1148: 8 -> 9
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1148
 9998 run: jumping to instruction 4
@@ -5179,12 +5319,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1150 is 1152
 9999 mem: storing 1152 in location 1135
+9999 mem: incrementing refcount of 1152: 6 -> 7
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1152
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1152
+9999 mem: decrementing refcount of 1148: 9 -> 8
 9999 mem: storing 1152 in location 1168
+9999 mem: incrementing refcount of 1152: 7 -> 8
  105 run: prev <- next_2 prev
 9999 mem: location 1169 is 1144
 9999 trace: incrementing callstack depth to 5
@@ -5194,6 +5337,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1144 in location 1134
+9999 mem: incrementing refcount of 1144: 10 -> 11
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1144
 9998 run: jumping to instruction 4
@@ -5213,12 +5357,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1146 is 1148
 9999 mem: storing 1148 in location 1135
+9999 mem: incrementing refcount of 1148: 8 -> 9
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1148
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1148
+9999 mem: decrementing refcount of 1144: 11 -> 10
 9999 mem: storing 1148 in location 1169
+9999 mem: incrementing refcount of 1148: 9 -> 10
  105 run: column <- add column, 1
 9999 mem: location 1172 is 0
 9999 mem: storing 1 in location 1172
@@ -5332,6 +5479,7 @@
 9999 abandon: picking up space from free-list of size 27
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1200
+9999 mem: incrementing refcount of 1012: 14 -> 15
  106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 101 in location 1201
  106 run: color:number, color-found?:boolean <- next-ingredient 
@@ -5466,6 +5614,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1215
+9999 mem: incrementing refcount of 1018: 8 -> 9
  106 run: len:number <- length *buf
 9999 mem: location 1215 is 1018
 9999 mem: skipping refcount at 1018
@@ -5532,6 +5681,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1152 in location 1134
+9999 mem: incrementing refcount of 1152: 8 -> 9
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1152
 9998 run: jumping to instruction 4
@@ -5551,12 +5701,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1154 is 1156
 9999 mem: storing 1156 in location 1135
+9999 mem: incrementing refcount of 1156: 4 -> 5
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1156
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1156
+9999 mem: decrementing refcount of 1152: 9 -> 8
 9999 mem: storing 1156 in location 1168
+9999 mem: incrementing refcount of 1156: 5 -> 6
  105 run: prev <- next_2 prev
 9999 mem: location 1169 is 1148
 9999 trace: incrementing callstack depth to 5
@@ -5566,6 +5719,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1148 in location 1134
+9999 mem: incrementing refcount of 1148: 10 -> 11
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1148
 9998 run: jumping to instruction 4
@@ -5585,12 +5739,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1150 is 1152
 9999 mem: storing 1152 in location 1135
+9999 mem: incrementing refcount of 1152: 8 -> 9
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1152
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1152
+9999 mem: decrementing refcount of 1148: 11 -> 10
 9999 mem: storing 1152 in location 1169
+9999 mem: incrementing refcount of 1152: 9 -> 10
  105 run: column <- add column, 1
 9999 mem: location 1172 is 1
 9999 mem: storing 2 in location 1172
@@ -5704,6 +5861,7 @@
 9999 abandon: picking up space from free-list of size 27
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1200
+9999 mem: incrementing refcount of 1012: 15 -> 16
  106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 102 in location 1201
  106 run: color:number, color-found?:boolean <- next-ingredient 
@@ -5838,6 +5996,7 @@
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1215
+9999 mem: incrementing refcount of 1018: 9 -> 10
  106 run: len:number <- length *buf
 9999 mem: location 1215 is 1018
 9999 mem: skipping refcount at 1018
@@ -5904,6 +6063,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1156 in location 1134
+9999 mem: incrementing refcount of 1156: 6 -> 7
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1156
 9998 run: jumping to instruction 4
@@ -5928,6 +6088,7 @@
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 0
+9999 mem: decrementing refcount of 1156: 7 -> 6
 9999 mem: storing 0 in location 1168
  105 run: prev <- next_2 prev
 9999 mem: location 1169 is 1152
@@ -5938,6 +6099,7 @@
 9999 abandon: picking up space from free-list of size 5
  106 run: in:address:shared:duplex-list:_elem <- next-ingredient-without-typechecking 
 9999 mem: storing 1152 in location 1134
+9999 mem: incrementing refcount of 1152: 10 -> 11
  106 run: jump-if in, 1:offset
 9999 mem: location 1134 is 1152
 9998 run: jumping to instruction 4
@@ -5957,12 +6119,15 @@
 9998 run: its type is <address : <shared : <duplex-list : <character : <>>>>>
 9999 mem: location 1154 is 1156
 9999 mem: storing 1156 in location 1135
+9999 mem: incrementing refcount of 1156: 6 -> 7
  106 run: reply result:address:shared:duplex-list:_elem/contained-in:in
 9999 mem: location 1135 is 1156
 9999 abandon: saving in free-list of size 5
 9999 trace: reply: decrementing callstack depth from 5
 9998 run: result 0 is 1156
+9999 mem: decrementing refcount of 1152: 11 -> 10
 9999 mem: storing 1156 in location 1169
+9999 mem: incrementing refcount of 1156: 7 -> 8
  105 run: column <- add column, 1
 9999 mem: location 1172 is 2
 9999 mem: storing 3 in location 1172
@@ -6030,8 +6195,12 @@
 9998 run: result 1 is 3
 9998 run: result 2 is 1012
 9998 run: result 3 is 1000
+9999 mem: decrementing refcount of 1012: 16 -> 15
 9999 mem: storing 1012 in location 1095
+9999 mem: incrementing refcount of 1012: 15 -> 16
+9999 mem: decrementing refcount of 1000: 3 -> 2
 9999 mem: storing 1000 in location 1098
+9999 mem: incrementing refcount of 1000: 2 -> 3
  104 run: indent?:address:boolean <- get-address *result, indent?:offset
 9999 mem: location 1098 is 1000
 9999 mem: skipping refcount at 1000

@@ -91,8 +91,10 @@
 9998 trace: run: incrementing callstack depth to 2
  103 run: 1:address:shared:array:character/raw <- new [abc _]
 9999 mem: storing 1000 in location 1
+9999 mem: incrementing refcount of 1000: 0 -> 1
  103 run: 2:address:shared:array:character/raw <- new [def]
 9999 mem: storing 1007 in location 2
+9999 mem: incrementing refcount of 1007: 0 -> 1
  103 run: 3:address:shared:array:character/raw <- interpolate 1:address:shared:array:character/raw, 2:address:shared:array:character/raw
 9999 mem: location 1 is 1000
 9999 mem: location 2 is 1007
@@ -104,6 +106,7 @@
 9999 mem: storing 16 in location 1013
  104 run: template:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 1000 in location 1015
+9999 mem: incrementing refcount of 1000: 1 -> 2
  104 run: tem-len:number <- length *template
 9999 mem: location 1015 is 1000
 9999 mem: skipping refcount at 1000
@@ -113,6 +116,7 @@
 9999 mem: storing 5 in location 1017
  104 run: a:address:shared:array:character, arg-received?:boolean <- next-ingredient 
 9999 mem: storing 1007 in location 1018
+9999 mem: incrementing refcount of 1007: 1 -> 2
 9999 mem: storing 1 in location 1019
  104 run: jump-unless arg-received?, 
 9999 mem: location 1019 is 1
@@ -131,6 +135,7 @@
  104 run: jump 
 9998 run: jumping to instruction 5
  104 run: a:address:shared:array:character, arg-received?:boolean <- next-ingredient 
+9999 mem: decrementing refcount of 1007: 2 -> 1
 9999 mem: storing 0 in location 1018
 9999 mem: storing 0 in location 1019
  104 run: jump-unless arg-received?, 
@@ -145,12 +150,14 @@
 9999 mem: new alloc: 1030
 9999 mem: storing 7 in location 1031
 9999 mem: storing 1030 in location 1021
+9999 mem: incrementing refcount of 1030: 0 -> 1
  104 run: result-idx:number <- copy 0
 9999 mem: storing 0 in location 1022
  104 run: i:number <- copy 0
 9999 mem: storing 0 in location 1023
  104 run: a:address:shared:array:character, arg-received?:boolean <- next-ingredient 
 9999 mem: storing 1007 in location 1018
+9999 mem: incrementing refcount of 1007: 1 -> 2
 9999 mem: storing 1 in location 1019
  104 run: jump-unless arg-received?, 
 9999 mem: location 1019 is 1
@@ -447,6 +454,7 @@
  104 run: jump 
 9998 run: jumping to instruction 18
  104 run: a:address:shared:array:character, arg-received?:boolean <- next-ingredient 
+9999 mem: decrementing refcount of 1007: 2 -> 1
 9999 mem: storing 0 in location 1018
 9999 mem: storing 0 in location 1019
  104 run: jump-unless arg-received?, 
@@ -465,6 +473,7 @@
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1030
 9999 mem: storing 1030 in location 3
+9999 mem: incrementing refcount of 1030: 1 -> 2
  103 run: 4:array:character/raw <- copy *3:address:shared:array:character/raw
 9999 mem: location 3 is 1030
 9999 mem: skipping refcount at 1030

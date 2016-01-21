@@ -73,6 +73,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: allocating size 6
 9999 mem: new alloc: 1012
 9999 mem: storing 1012 in location 1005
+9999 mem: incrementing refcount of 1012: 0 -> 1
  103 run: width:address:number <- get-address *result, num-columns:offset
 9999 mem: location 1005 is 1012
 9999 mem: skipping refcount at 1012
@@ -161,6 +162,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 40 in location 1019
 9999 mem: location 1011 is 1017
 9999 mem: storing 1018 in location 1017
+9999 mem: incrementing refcount of 1018: 0 -> 1
  103 run: result <- clear-screen result
 9999 mem: location 1005 is 1012
 9999 trace: incrementing callstack depth to 3
@@ -171,6 +173,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 10 in location 1101
  104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1103
+9999 mem: incrementing refcount of 1012: 1 -> 2
  104 run: jump-unless screen, 
 9999 mem: location 1103 is 1012
 9998 run: jump-unless fell through
@@ -188,6 +191,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 1104
+9999 mem: incrementing refcount of 1018: 1 -> 2
  104 run: max:number <- length *buf
 9999 mem: location 1104 is 1018
 9999 mem: skipping refcount at 1018
@@ -1716,13 +1720,16 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: saving in free-list of size 12
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1012
+9999 mem: decrementing refcount of 1012: 2 -> 1
 9999 mem: storing 1012 in location 1005
+9999 mem: incrementing refcount of 1012: 1 -> 2
  103 run: reply result:address:shared:screen
 9999 mem: location 1005 is 1012
 9999 abandon: saving in free-list of size 12
 9999 trace: reply: decrementing callstack depth from 2
 9998 run: result 0 is 1012
 9999 mem: storing 1012 in location 900
+9999 mem: incrementing refcount of 1012: 2 -> 3
  102 run: run [
     1:address:shared:channel <- new-channel 2
     2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
@@ -1848,6 +1855,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: allocating size 4
 9999 mem: new alloc: 1120
 9999 mem: storing 1120 in location 1116
+9999 mem: incrementing refcount of 1120: 0 -> 1
  104 run: full:address:number <- get-address *result, first-full:offset
 9999 mem: location 1116 is 1120
 9999 mem: skipping refcount at 1120
@@ -1895,12 +1903,14 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 3 in location 1125
 9999 mem: location 1119 is 1123
 9999 mem: storing 1124 in location 1123
+9999 mem: incrementing refcount of 1124: 0 -> 1
  104 run: reply result:address:shared:channel
 9999 mem: location 1116 is 1120
 9999 abandon: saving in free-list of size 8
 9999 trace: reply: decrementing callstack depth from 3
 9998 run: result 0 is 1120
 9999 mem: storing 1120 in location 1
+9999 mem: incrementing refcount of 1120: 1 -> 2
  103 run: 2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
 9999 mem: location 1 is 1120
 9999 mem: location 900 is 1012
@@ -1918,8 +1928,10 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 8 in location 101001
  104 run: stdin:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1120 in location 101003
+9999 mem: incrementing refcount of 1120: 2 -> 3
  104 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101004
+9999 mem: incrementing refcount of 1012: 3 -> 4
  104 run: from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
 9999 mem: location 101003 is 1120
 9999 mem: location 101004 is 1012
@@ -1931,8 +1943,10 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 11 in location 101011
  105 run: stdin:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1120 in location 101013
+9999 mem: incrementing refcount of 1120: 3 -> 4
  105 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101014
+9999 mem: incrementing refcount of 1012: 4 -> 5
  105 run: c:character, stdin <- read stdin
 9999 mem: location 101013 is 1120
 9999 trace: incrementing callstack depth to 5
@@ -1943,6 +1957,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 9 in location 101024
  106 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1120 in location 101026
+9999 mem: incrementing refcount of 1120: 4 -> 5
  106 run: empty?:boolean <- channel-empty? chan
 9999 mem: location 101026 is 1120
 9999 trace: incrementing callstack depth to 6
@@ -1953,6 +1968,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 5 in location 101035
  107 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1120 in location 101037
+9999 mem: incrementing refcount of 1120: 5 -> 6
  107 run: full:number <- get *chan, first-full:offset
 9999 mem: location 101037 is 1120
 9999 mem: skipping refcount at 1120
@@ -2025,6 +2041,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 12
  107 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1120 in location 1003
+9999 mem: incrementing refcount of 1120: 6 -> 7
  107 run: val:character <- next-ingredient-without-typechecking 
 9999 mem: storing 50 in location 1004
  107 run: full:boolean <- channel-full? chan
@@ -2037,6 +2054,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 7 in location 1130
  108 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1120 in location 1132
+9999 mem: incrementing refcount of 1120: 7 -> 8
  108 run: tmp:number <- get *chan, first-free:offset
 9999 mem: location 1132 is 1120
 9999 mem: skipping refcount at 1120
@@ -2062,6 +2080,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 4 in location 1139
  109 run: chan:address:shared:channel <- next-ingredient-without-typechecking 
 9999 mem: storing 1120 in location 1141
+9999 mem: incrementing refcount of 1120: 8 -> 9
  109 run: q:address:shared:array:character <- get *chan, data:offset
 9999 mem: location 1141 is 1120
 9999 mem: skipping refcount at 1120
@@ -2074,6 +2093,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1123 is 1124
 9999 mem: storing 1124 in location 1142
+9999 mem: incrementing refcount of 1124: 1 -> 2
  109 run: result <- length *q
 9999 mem: location 1142 is 1124
 9999 mem: skipping refcount at 1124
@@ -2128,6 +2148,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1123 is 1124
 9999 mem: storing 1124 in location 1007
+9999 mem: incrementing refcount of 1124: 2 -> 3
  107 run: free:address:number <- get-address *chan, first-free:offset
 9999 mem: location 1003 is 1120
 9999 mem: skipping refcount at 1120
@@ -2170,7 +2191,9 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: saving in free-list of size 12
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 1120
+9999 mem: decrementing refcount of 1120: 9 -> 8
 9999 mem: storing 1120 in location 1
+9999 mem: incrementing refcount of 1120: 8 -> 9
  106 run: restart 2:number/routine
 9999 mem: location 2 is 2
  106 run: wait-for-routine 2:number
@@ -2199,6 +2222,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <character : <>>>>>
 9999 mem: location 1123 is 1124
 9999 mem: storing 1124 in location 101030
+9999 mem: incrementing refcount of 1124: 3 -> 4
  106 run: result <- index *circular-buffer, *full
 9999 mem: location 101030 is 1124
 9999 mem: skipping refcount at 1124
@@ -2234,7 +2258,9 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: result 0 is 50
 9998 run: result 1 is 1120
 9999 mem: storing 50 in location 101015
+9999 mem: decrementing refcount of 1120: 9 -> 8
 9999 mem: storing 1120 in location 101013
+9999 mem: incrementing refcount of 1120: 8 -> 9
  105 run: q-pressed?:boolean <- equal c, 81/Q
 9999 mem: location 101015 is 50
 9999 mem: storing 0 in location 101016
@@ -2270,6 +2296,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: jump-if fell through
  105 run: error-message:address:shared:array:character <- new [file too low: ]
 9999 mem: storing 101041 in location 101019
+9999 mem: incrementing refcount of 101041: 0 -> 1
  105 run: print_2 screen, error-message
 9999 mem: location 101014 is 1012
 9999 mem: location 101019 is 101041
@@ -2281,8 +2308,10 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 11 in location 101058
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101060
+9999 mem: incrementing refcount of 1012: 5 -> 6
  106 run: s:address:shared:array:character <- next-ingredient-without-typechecking 
 9999 mem: storing 101041 in location 101061
+9999 mem: incrementing refcount of 101041: 1 -> 2
  106 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 101062
 9999 mem: storing 0 in location 101063
@@ -2334,6 +2363,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 25 in location 101071
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 6 -> 7
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 102 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -2466,6 +2496,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 2 -> 3
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -2556,6 +2587,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 7 -> 8
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 105 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -2688,6 +2720,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 3 -> 4
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -2778,6 +2811,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 8 -> 9
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 108 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -2910,6 +2944,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 4 -> 5
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -3000,6 +3035,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 9 -> 10
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 101 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -3132,6 +3168,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 5 -> 6
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -3222,6 +3259,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 10 -> 11
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 32 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -3354,6 +3392,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 6 -> 7
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -3444,6 +3483,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 11 -> 12
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 116 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -3576,6 +3616,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 7 -> 8
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -3666,6 +3707,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 12 -> 13
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 111 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -3798,6 +3840,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 8 -> 9
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -3888,6 +3931,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 13 -> 14
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 111 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -4020,6 +4064,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 9 -> 10
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -4111,6 +4156,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 14 -> 15
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 32 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -4243,6 +4289,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 10 -> 11
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -4333,6 +4380,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 15 -> 16
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 108 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -4465,6 +4513,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 11 -> 12
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -4555,6 +4604,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 16 -> 17
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 111 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -4687,6 +4737,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 12 -> 13
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -4777,6 +4828,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 17 -> 18
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 119 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -4909,6 +4961,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 13 -> 14
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -4999,6 +5052,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 18 -> 19
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 58 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -5131,6 +5185,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 14 -> 15
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -5221,6 +5276,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 19 -> 20
  107 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 32 in location 101074
  107 run: color:number, color-found?:boolean <- next-ingredient 
@@ -5353,6 +5409,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 15 -> 16
  107 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -5436,6 +5493,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 27
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101073
+9999 mem: incrementing refcount of 1012: 20 -> 21
  106 run: c:character <- next-ingredient-without-typechecking 
 9999 mem: storing 50 in location 101074
  106 run: color:number, color-found?:boolean <- next-ingredient 
@@ -5572,6 +5630,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9998 run: its type is <address : <shared : <array : <screen-cell : <>>>>>
 9999 mem: location 1017 is 1018
 9999 mem: storing 1018 in location 101088
+9999 mem: incrementing refcount of 1018: 16 -> 17
  106 run: len:number <- length *buf
 9999 mem: location 101088 is 1018
 9999 mem: skipping refcount at 1018
@@ -5639,6 +5698,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 2 in location 101098
  106 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101100
+9999 mem: incrementing refcount of 1012: 21 -> 22
  106 run: screen <- cursor-down screen
 9999 mem: location 101100 is 1012
 9999 trace: incrementing callstack depth to 6
@@ -5648,6 +5708,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 8
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1115
+9999 mem: incrementing refcount of 1012: 22 -> 23
  107 run: jump-unless screen, 
 9999 mem: location 1115 is 1012
 9998 run: jump-unless fell through
@@ -5698,7 +5759,9 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: saving in free-list of size 8
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 1012
+9999 mem: decrementing refcount of 1012: 23 -> 22
 9999 mem: storing 1012 in location 101100
+9999 mem: incrementing refcount of 1012: 22 -> 23
  106 run: screen <- cursor-to-start-of-line screen
 9999 mem: location 101100 is 1012
 9999 trace: incrementing callstack depth to 6
@@ -5708,6 +5771,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 6
  107 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1141
+9999 mem: incrementing refcount of 1012: 23 -> 24
  107 run: row:number <- cursor-position screen
 9999 mem: location 1141 is 1012
 9999 trace: incrementing callstack depth to 7
@@ -5718,6 +5782,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: storing 4 in location 101102
  108 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 101104
+9999 mem: incrementing refcount of 1012: 24 -> 25
  108 run: jump-unless screen, 
 9999 mem: location 101104 is 1012
 9998 run: jump-unless fell through
@@ -5769,6 +5834,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: picking up space from free-list of size 8
  108 run: screen:address:shared:screen <- next-ingredient-without-typechecking 
 9999 mem: storing 1012 in location 1115
+9999 mem: incrementing refcount of 1012: 25 -> 26
  108 run: new-row:number <- next-ingredient-without-typechecking 
 9999 mem: storing 1 in location 1116
  108 run: new-column:number <- next-ingredient-without-typechecking 
@@ -5813,13 +5879,17 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 abandon: saving in free-list of size 8
 9999 trace: reply: decrementing callstack depth from 7
 9998 run: result 0 is 1012
+9999 mem: decrementing refcount of 1012: 26 -> 25
 9999 mem: storing 1012 in location 1141
+9999 mem: incrementing refcount of 1012: 25 -> 26
  107 run: reply screen:address:shared:screen
 9999 mem: location 1141 is 1012
 9999 abandon: saving in free-list of size 6
 9999 trace: reply: decrementing callstack depth from 6
 9998 run: result 0 is 1012
+9999 mem: decrementing refcount of 1012: 26 -> 25
 9999 mem: storing 1012 in location 101100
+9999 mem: incrementing refcount of 1012: 25 -> 26
  106 run: reply screen:address:shared:screen
 9999 mem: location 101100 is 1012
 9999 abandon: saving in free-list of size 4

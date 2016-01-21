@@ -273,12 +273,14 @@ void write_memory(reagent x, vector<double> data) {
   if (is_dummy(x)) return;
   if (is_literal(x)) return;
   long long int base = x.value;
+  if (base == 0) return;
   if (size_mismatch(x, data)) {
     raise_error << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << current_instruction().to_string() << "'\n" << end();
     return;
   }
+  // End write_memory(reagent x, long long int base) Special-cases
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
-    if (base+offset == 0) continue;
+    assert(base+offset > 0);
     trace(9999, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << base+offset << end();
     put(Memory, base+offset, data.at(offset));
   }
