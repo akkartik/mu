@@ -35,7 +35,8 @@ type_ordinal shared = put(Type_ordinal, "shared", Next_type_ordinal++);
 get_or_insert(Type, shared).name = "shared";
 :(before "End Drop Address In lookup_memory(x)")
 if (x.properties.at(0).second->value == "shared") {
-  //x.set_value(x.value+1);  // doesn't work yet
+  trace(9999, "mem") << "skipping refcount at " << x.value << end();
+  x.set_value(x.value+1);  // skip refcount
   drop_from_type(x, "shared");
 }
 :(before "End Drop Address In canonize_type(r)")
@@ -149,6 +150,9 @@ case ALLOCATE: {
     trace(9999, "mem") << "array size is " << ingredients.at(1).at(0) << end();
     size = /*space for length*/1 + size*ingredients.at(1).at(0);
   }
+  // include space for refcount
+  size++;
+  trace(9999, "mem") << "allocating size " << size << end();
 //?   Total_alloc += size;
 //?   Num_alloc++;
   // compute the region of memory to return
@@ -163,8 +167,10 @@ case ALLOCATE: {
   for (long long int address = result; address < result+size; ++address)
     put(Memory, address, 0);
   // initialize array length
-  if (SIZE(current_instruction().ingredients) > 1)
-    put(Memory, result, ingredients.at(1).at(0));
+  if (SIZE(current_instruction().ingredients) > 1) {
+    trace(9999, "mem") << "storing " << ingredients.at(1).at(0) << " in location " << result+/*skip refcount*/1 << end();
+    put(Memory, result+/*skip refcount*/1, ingredients.at(1).at(0));
+  }
   // bump
   Current_routine->alloc += size;
   // no support for reclaiming memory
@@ -202,7 +208,7 @@ case NEW: {
 void ensure_space(long long int size) {
   if (size > Initial_memory_per_routine) {
     tb_shutdown();
-    cerr << "can't allocate " << size << " locations, that's too much.\n";
+    cerr << "can't allocate " << size << " locations, that's too much compared to " << Initial_memory_per_routine << ".\n";
     exit(0);
   }
   if (Current_routine->alloc + size > Current_routine->alloc_max) {
@@ -231,8 +237,8 @@ recipe main [
 ]
 +run: 1:address:shared:array:number/raw <- new number:type, 5
 +mem: array size is 5
-# don't forget the extra location for array size
-+mem: storing 6 in location 3
+# don't forget the extra location for array size, and the second extra location for the refcount
++mem: storing 7 in location 3
 
 :(scenario new_empty_array)
 recipe main [
@@ -242,17 +248,18 @@ recipe main [
 ]
 +run: 1:address:shared:array:number/raw <- new number:type, 0
 +mem: array size is 0
-+mem: storing 1 in location 3
+# one location for array size, and one for the refcount
++mem: storing 2 in location 3
 
 //: If a routine runs out of its initial allocation, it should allocate more.
 :(scenario new_overflow)
-% Initial_memory_per_routine = 2;
+% Initial_memory_per_routine = 3;  // barely enough room for point allocation below
 recipe main [
   1:address:shared:number/raw <- new number:type
   2:address:shared:point/raw <- new point:type  # not enough room in initial page
 ]
-+new: routine allocated memory from 1000 to 1002
-+new: routine allocated memory from 1002 to 1004
++new: routine allocated memory from 1000 to 1003
++new: routine allocated memory from 1003 to 1006
 
 //: We also provide a way to return memory, and to reuse reclaimed memory.
 //: todo: custodians, etc. Following malloc/free is a temporary hack.
@@ -293,19 +300,23 @@ case ABANDON: {
 :(before "End Primitive Recipe Implementations")
 case ABANDON: {
   long long int address = ingredients.at(0).at(0);
+  trace(9999, "abandon") << "address to abandon is " << address << end();
   reagent types = current_instruction().ingredients.at(0);
+  trace(9999, "abandon") << "value of ingredient is " << types.value << end();
   canonize(types);
   // lookup_memory without drop_one_lookup {
-  types.set_value(get_or_insert(Memory, types.value));
+  trace(9999, "abandon") << "value of ingredient after canonization is " << types.value << end();
+  types.set_value(get_or_insert(Memory, types.value)+/*skip refcount*/1);
   drop_from_type(types, "address");
   drop_from_type(types, "shared");
   // }
-  abandon(address, size_of(types));
+  abandon(address, size_of(types)+/*refcount*/1);
   break;
 }
 
 :(code)
 void abandon(long long int address, long long int size) {
+  trace(9999, "abandon") << "saving in free-list of size " << size << end();
 //?   Total_free += size;
 //?   Num_free++;
 //?   cerr << "abandon: " << size << '\n';
@@ -319,6 +330,7 @@ void abandon(long long int address, long long int size) {
 
 :(before "ensure_space(size)" following "case ALLOCATE")
 if (Free_list[size]) {
+  trace(9999, "abandon") << "picking up space from free-list of size " << size << end();
   long long int result = Free_list[size];
   Free_list[size] = get_or_insert(Memory, result);
   for (long long int curr = result+1; curr < result+size; ++curr) {
@@ -328,7 +340,7 @@ if (Free_list[size]) {
     }
   }
   if (SIZE(current_instruction().ingredients) > 1)
-    put(Memory, result, ingredients.at(1).at(0));
+    put(Memory, result+/*skip refcount*/1, ingredients.at(1).at(0));
   else
     put(Memory, result, 0);
   products.resize(1);
@@ -396,6 +408,9 @@ long long int new_mu_string(const string& contents) {
   ensure_space(string_length+1);  // don't forget the extra location for array size
   // initialize string
   long long int result = Current_routine->alloc;
+  // initialize refcount
+  put(Memory, Current_routine->alloc++, 0);
+  // store length
   put(Memory, Current_routine->alloc++, string_length);
   long long int curr = 0;
   const char* raw_contents = contents.c_str();
@@ -465,6 +480,8 @@ long long int unicode_length(const string& s) {
 }
 
 string read_mu_string(long long int address) {
+  if (address == 0) return "";
+  address++;  // skip refcount
   long long int size = get_or_insert(Memory, address);
   if (size == 0) return "";
   ostringstream tmp;

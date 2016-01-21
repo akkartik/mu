@@ -112,7 +112,7 @@ if (r.type && r.type->value == get(Type_ordinal, "array")) {
     raise_error << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
     return 1;
   }
-  // skip the 'array' type to get at the element type
+//?   trace(9999, "mem") << "computing size of array starting at " << r.value << end();
   return 1 + get_or_insert(Memory, r.value)*size_of(array_element(r.type));
 }
 
@@ -171,6 +171,7 @@ case INDEX: {
   reagent base = current_instruction().ingredients.at(0);
   canonize(base);
   long long int base_address = base.value;
+  trace(9998, "run") << "base address is " << base_address << end();
   if (base_address == 0) {
     raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().to_string() << "'\n" << end();
     break;
