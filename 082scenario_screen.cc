@@ -207,18 +207,18 @@ struct raw_string_stream {
 :(code)
 void check_screen(const string& expected_contents, const int color) {
   assert(!current_call().default_space);  // not supported
-  long long int screen_location = get_or_insert(Memory, SCREEN);
+  long long int screen_location = get_or_insert(Memory, SCREEN)+/*skip refcount*/1;
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
   long long int screen_data_location = screen_location+data_offset;  // type: address:shared:array:character
-  long long int screen_data_start = get_or_insert(Memory, screen_data_location);  // type: array:character
+  long long int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
   int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
   long long int screen_width = get_or_insert(Memory, screen_location+width_offset);
   int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
   long long int screen_height = get_or_insert(Memory, screen_location+height_offset);
   raw_string_stream cursor(expected_contents);
   // todo: too-long expected_contents should fail
-  long long int addr = screen_data_start+1;  // skip length
+  long long int addr = screen_data_start+/*skip length*/1;
   for (long long int row = 0; row < screen_height; ++row) {
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
@@ -342,7 +342,7 @@ case _DUMP_SCREEN: {
 :(code)
 void dump_screen() {
   assert(!current_call().default_space);  // not supported
-  long long int screen_location = get_or_insert(Memory, SCREEN);
+  long long int screen_location = get_or_insert(Memory, SCREEN) + /*skip refcount*/1;
   int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
   long long int screen_width = get_or_insert(Memory, screen_location+width_offset);
   int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
@@ -350,7 +350,7 @@ void dump_screen() {
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
   long long int screen_data_location = screen_location+data_offset;  // type: address:shared:array:character
-  long long int screen_data_start = get_or_insert(Memory, screen_data_location);  // type: array:character
+  long long int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
   assert(get_or_insert(Memory, screen_data_start) == screen_width*screen_height);
   long long int curr = screen_data_start+1;  // skip length
   for (long long int row = 0; row < screen_height; ++row) {

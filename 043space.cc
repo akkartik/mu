@@ -3,21 +3,24 @@
 //: (unless they have the /raw property)
 
 :(scenario set_default_space)
-# if default-space is 10, and if an array of 5 locals lies from location 11 to 15 (inclusive),
-# then location 0 is really location 11, location 1 is really location 12, and so on.
+# if default-space is 10, and if an array of 5 locals lies from location 12 to 16 (inclusive),
+# then local 0 is really location 12, local 1 is really location 13, and so on.
 recipe main [
-  10:number <- copy 5  # pretend array; in practice we'll use new
+  # pretend shared:array:location; in practice we'll use new
+  10:number <- copy 0  # refcount
+  11:number <- copy 5  # length
   default-space:address:shared:array:location <- copy 10/unsafe
   1:number <- copy 23
 ]
-+mem: storing 23 in location 12
++mem: storing 23 in location 13
 
 :(scenario lookup_sidesteps_default_space)
 recipe main [
   # pretend pointer from outside
   3:number <- copy 34
-  # pretend array
-  1000:number <- copy 5
+  # pretend shared:array:location; in practice we'll use new
+  1000:number <- copy 0  # refcount
+  1001:number <- copy 5  # length
   # actual start of this recipe
   default-space:address:shared:array:location <- copy 1000/unsafe
   1:address:number <- copy 3/unsafe
@@ -62,7 +65,7 @@ void absolutize(reagent& x) {
 
 long long int space_base(const reagent& x) {
   // temporary stub; will be replaced in a later layer
-  return current_call().default_space;
+  return current_call().default_space ? (current_call().default_space+/*skip refcount*/1) : 0;
 }
 
 long long int address(long long int offset, long long int base) {
@@ -117,8 +120,9 @@ recipe main [
   # pretend pointer to container from outside
   12:number <- copy 34
   13:number <- copy 35
-  # pretend array
-  1000:number <- copy 5
+  # pretend shared:array:location; in practice we'll use new
+  1000:number <- copy 0  # refcount
+  1001:number <- copy 5  # length
   # actual start of this recipe
   default-space:address:shared:array:location <- copy 1000/unsafe
   1:address:point <- copy 12/unsafe
@@ -137,8 +141,9 @@ recipe main [
   12:number <- copy 2
   13:number <- copy 34
   14:number <- copy 35
-  # pretend array
-  1000:number <- copy 5
+  # pretend shared:array:location; in practice we'll use new
+  1000:number <- copy 0  # refcount
+  1001:number <- copy 5  # length
   # actual start of this recipe
   default-space:address:shared:array:location <- copy 1000/unsafe
   1:address:array:number <- copy 12/unsafe
@@ -225,7 +230,7 @@ void try_reclaim_locals() {
   const instruction& inst = get(Recipe, r).steps.at(0);
   if (inst.old_name != "local-scope") return;
   abandon(current_call().default_space,
-          /*array length*/1+/*number-of-locals*/Name[r][""]);
+          /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[r][""]);
 }
 
 void rewrite_default_space_instruction(instruction& curr) {
