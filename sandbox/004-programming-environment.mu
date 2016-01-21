@@ -56,18 +56,18 @@ recipe event-loop screen:address:shared:screen, console:address:shared:console, 
     <handle-event>
     # check for global events that will trigger regardless of which editor has focus
     {
-      k:address:shared:number <- maybe-convert e:event, keycode:variant
+      k:address:number <- maybe-convert e:event, keycode:variant
       break-unless k
       <global-keypress>
     }
     {
-      c:address:shared:character <- maybe-convert e:event, text:variant
+      c:address:character <- maybe-convert e:event, text:variant
       break-unless c
       <global-type>
     }
     # 'touch' event
     {
-      t:address:shared:touch-event <- maybe-convert e:event, touch:variant
+      t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t
       # ignore all but 'left-click' events for now
       # todo: test this
@@ -83,7 +83,7 @@ recipe event-loop screen:address:shared:screen, console:address:shared:console, 
     # 'resize' event - redraw editor
     # todo: test this after supporting resize in assume-console
     {
-      r:address:shared:resize-event <- maybe-convert e:event, resize:variant
+      r:address:resize-event <- maybe-convert e:event, resize:variant
       break-unless r
       # if more events, we're still resizing; wait until we stop
       more-events?:boolean <- has-more-events? console

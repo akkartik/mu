@@ -145,7 +145,7 @@ before <insert-character-end> [
     # if previous operation was an insert, coalesce this operation with it
     break-unless *undo
     op:address:shared:operation <- first *undo
-    typing:address:shared:insert-operation <- maybe-convert *op, typing:variant
+    typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
     previous-coalesce-tag:number <- get *typing, tag:offset
     break-unless previous-coalesce-tag
@@ -201,7 +201,7 @@ recipe add-operation editor:address:shared:editor-data, op:address:shared:operat
 
 after <handle-undo> [
   {
-    typing:address:shared:insert-operation <- maybe-convert *op, typing:variant
+    typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
     start:address:shared:duplex-list:character <- get *typing, insert-from:offset
     end:address:shared:duplex-list:character <- get *typing, insert-until:offset
@@ -398,7 +398,7 @@ scenario editor-redo-typing [
 
 after <handle-redo> [
   {
-    typing:address:shared:insert-operation <- maybe-convert *op, typing:variant
+    typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
     insert-from:address:shared:duplex-list:character <- get *typing, insert-from:offset  # ignore insert-to because it's already been spliced away
     # assert insert-to matches next(*before-cursor)
@@ -715,7 +715,7 @@ before <move-cursor-end> [
     undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
     break-unless *undo
     op:address:shared:operation <- first *undo
-    move:address:shared:move-operation <- maybe-convert *op, move:variant
+    move:address:move-operation <- maybe-convert *op, move:variant
     break-unless move
     previous-coalesce-tag:number <- get *move, tag:offset
     coalesce?:boolean <- equal undo-coalesce-tag, previous-coalesce-tag
@@ -736,7 +736,7 @@ before <move-cursor-end> [
 
 after <handle-undo> [
   {
-    move:address:shared:move-operation <- maybe-convert *op, move:variant
+    move:address:move-operation <- maybe-convert *op, move:variant
     break-unless move
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
@@ -1510,7 +1510,7 @@ ghi]
 
 after <handle-redo> [
   {
-    move:address:shared:move-operation <- maybe-convert *op, move:variant
+    move:address:move-operation <- maybe-convert *op, move:variant
     break-unless move
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     *cursor-row <- get *move, after-row:offset
@@ -1600,7 +1600,7 @@ before <backspace-character-end> [
       # if previous operation was an insert, coalesce this operation with it
       break-unless *undo
       op:address:shared:operation <- first *undo
-      deletion:address:shared:delete-operation <- maybe-convert *op, delete:variant
+      deletion:address:delete-operation <- maybe-convert *op, delete:variant
       break-unless deletion
       previous-coalesce-tag:number <- get *deletion, tag:offset
       coalesce?:boolean <- equal previous-coalesce-tag, 1/coalesce-backspace
@@ -1629,7 +1629,7 @@ before <backspace-character-end> [
 
 after <handle-undo> [
   {
-    deletion:address:shared:delete-operation <- maybe-convert *op, delete:variant
+    deletion:address:delete-operation <- maybe-convert *op, delete:variant
     break-unless deletion
     start2:address:address:shared:duplex-list:character <- get-address *editor, data:offset
     anchor:address:shared:duplex-list:character <- get *deletion, delete-from:offset
@@ -1648,7 +1648,7 @@ after <handle-undo> [
 
 after <handle-redo> [
   {
-    deletion:address:shared:delete-operation <- maybe-convert *op, delete:variant
+    deletion:address:delete-operation <- maybe-convert *op, delete:variant
     break-unless deletion
     start:address:shared:duplex-list:character <- get *deletion, delete-from:offset
     end:address:shared:duplex-list:character <- get *deletion, delete-until:offset
@@ -1822,7 +1822,7 @@ before <delete-character-end> [
       # if previous operation was an insert, coalesce this operation with it
       break-unless *undo
       op:address:shared:operation <- first *undo
-      deletion:address:shared:delete-operation <- maybe-convert *op, delete:variant
+      deletion:address:delete-operation <- maybe-convert *op, delete:variant
       break-unless deletion
       previous-coalesce-tag:number <- get *deletion, tag:offset
       coalesce?:boolean <- equal previous-coalesce-tag, 2/coalesce-delete
