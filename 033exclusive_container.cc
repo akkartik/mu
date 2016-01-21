@@ -154,9 +154,9 @@ recipe main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
-  20:address:shared:point <- maybe-convert 12:number-or-point/unsafe, 1:variant
+  20:address:number <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
-+error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to <address : <point : <>>> but 20 has type <address : <shared : <point : <>>>>
++error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to <address : <point : <>>> but 20 has type <address : <number : <>>>
 
 
 //:: Allow exclusive containers to be defined in mu code.
