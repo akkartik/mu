@@ -89,7 +89,7 @@ scenario run-instruction-and-print-warnings [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
+    .0                                                x.
     .get 1:address:shared:point, 1:offset              .
     .first ingredient of 'get' should be a container, ↩.
     .but got 1:address:shared:point                    .
@@ -130,7 +130,7 @@ scenario run-instruction-and-print-warnings-only-once [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
+    .0                                                x.
     .get 1234:number, foo:offset                       .
     .unknown element foo in container number           .
     .first ingredient of 'get' should be a container, ↩.
@@ -159,7 +159,7 @@ loop
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
+    .0                                                x.
     .{                                                 .
     .loop                                              .
     .}                                                 .

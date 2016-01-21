@@ -38,7 +38,7 @@ scenario run-and-show-results [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
+    .0                                                x.
     .divide-with-remainder 11, 3                       .
     .3                                                 .
     .2                                                 .
@@ -67,6 +67,13 @@ scenario run-and-show-results [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
+  # sandbox title in reverse video
+  screen-should-contain-in-color 0/black, [
+    .                                                  .
+    .                                                  .
+    .                                                  .
+    .0                                                 .
+  ]
   # run another command
   assume-console [
     left-click 1, 80
@@ -81,11 +88,11 @@ scenario run-and-show-results [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
+    .0                                                x.
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
+    .1                                                x.
     .divide-with-remainder 11, 3                       .
     .3                                                 .
     .2                                                 .
@@ -218,11 +225,11 @@ recipe! render-sandbox-side screen:address:shared:screen, env:address:shared:pro
   row <- add row, 1
   draw-horizontal screen, row, left, right, 9473/horizontal-double
   sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
-  row, screen <- render-sandboxes screen, sandbox, left, right, row, env
+  row, screen <- render-sandboxes screen, sandbox, left, right, row, 0, env
   clear-rest-of-screen screen, row, left, left, right
 ]
 
-recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbox-data, left:number, right:number, row:number -> row:number, screen:address:shared:screen, sandbox:address:shared:sandbox-data [
+recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbox-data, left:number, right:number, row:number, idx:number -> row:number, screen:address:shared:screen, sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
   env:address:shared:programming-environment-data, _/optional <- next-ingredient
@@ -233,6 +240,7 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
   # render sandbox menu
   row <- add row, 1
   screen <- move-cursor screen, row, left
+  print screen, idx, 0/black, 245/grey
   clear-line-delimited screen, left, right
   delete-icon:character <- copy 120/x
   print screen, delete-icon, 245/grey
@@ -269,7 +277,8 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
   draw-horizontal screen, row, left, right, 9473/horizontal-double
   # draw next sandbox
   next-sandbox:address:shared:sandbox-data <- get *sandbox, next-sandbox:offset
-  row, screen <- render-sandboxes screen, next-sandbox, left, right, row
+  next-idx:number <- add idx, 1
+  row, screen <- render-sandboxes screen, next-sandbox, left, right, row, next-idx, env
 ]
 
 # assumes programming environment has no sandboxes; restores them from previous session
@@ -389,7 +398,7 @@ scenario run-instruction-manages-screen-per-sandbox [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
+    .0                                                x.
     .print-integer screen, 4                           .
     .screen:                                           .
     .  .4                             .                .

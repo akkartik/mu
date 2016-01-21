@@ -19,7 +19,7 @@ recipe foo [
     .                     run (F4)           .
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
+    .  stash [abc]       ┊0                 x.
     .]                   ┊foo                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
     .                    ┊                   .
@@ -38,7 +38,7 @@ recipe foo [
     .                     run (F4)           .
     .␣                   ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
+    .  stash [abc]       ┊0                 x.
     .]                   ┊foo                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .
     .                    ┊━━━━━━━━━━━━━━━━━━━.
@@ -67,7 +67,7 @@ recipe foo [
     .                     run (F4)           .
     .␣                   ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
+    .  stash [abc]       ┊0                 x.
     .]                   ┊foo                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
     .                    ┊                   .
@@ -94,7 +94,7 @@ recipe foo [
     .                     run (F4)           .
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
+    .  stash [abc]       ┊0                 x.
     .  reply 4           ┊foo                .
     .]                   ┊4                  .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
@@ -112,7 +112,7 @@ recipe foo [
     .                     run (F4)           .
     .                    ┊                   .
     .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊                  x.
+    .  stash [abc]       ┊0                 x.
     .  reply 4           ┊foo                .
     .]                   ┊abc                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
