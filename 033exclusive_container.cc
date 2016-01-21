@@ -69,7 +69,7 @@ recipe main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
-  20:address:point <- maybe-convert 12:number-or-point/unsafe, 0:variant
+  20:address:number <- maybe-convert 12:number-or-point/unsafe, 0:variant
 ]
 +mem: storing 0 in location 20
 
@@ -79,18 +79,36 @@ MAYBE_CONVERT,
 put(Recipe_ordinal, "maybe-convert", MAYBE_CONVERT);
 :(before "End Primitive Recipe Checks")
 case MAYBE_CONVERT: {
+  const recipe& caller = get(Recipe, r);
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'maybe-convert' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(caller.name) << "'maybe-convert' expects exactly 2 ingredients in '" << inst.to_string() << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
   canonize_type(base);
   if (!base.type || !base.type->value || get(Type, base.type->value).kind != EXCLUSIVE_CONTAINER) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
+    raise_error << maybe(caller.name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1))) {
-    raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise_error << maybe(caller.name) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  if (inst.products.empty()) break;
+  reagent product = inst.products.at(0);
+  if (!canonize_type(product)) break;
+  const reagent& offset = inst.ingredients.at(1);
+  long long int tag = 0;
+  if (is_integer(offset.name)) {
+    tag = to_integer(offset.name);
+  }
+  else {
+    tag = offset.value;
+  }
+  reagent variant = variant_type(base, tag);
+  variant.type = new type_tree(get(Type_ordinal, "address"), variant.type);
+  if (!types_coercible(product, variant)) {
+    raise_error << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << debug_string(variant.type) << " but " << product.name << " has type " << debug_string(product.type) << '\n' << end();
     break;
   }
   break;
@@ -116,6 +134,30 @@ case MAYBE_CONVERT: {
   products.at(0).push_back(result);
   break;
 }
+
+:(code)
+const reagent variant_type(const reagent& canonized_base, long long int tag) {
+  assert(tag >= 0);
+  assert(contains_key(Type, canonized_base.type->value));
+  assert(!get(Type, canonized_base.type->value).name.empty());
+  const type_info& info = get(Type, canonized_base.type->value);
+  assert(info.kind == EXCLUSIVE_CONTAINER);
+  reagent element;
+  element.type = new type_tree(*info.elements.at(tag));
+  // End variant_type Special-cases
+  return element;
+}
+
+:(scenario maybe_convert_product_type_mismatch)
+% Hide_errors = true;
+recipe main [
+  12:number <- copy 1
+  13:number <- copy 35
+  14:number <- copy 36
+  20:address:shared:point <- maybe-convert 12:number-or-point/unsafe, 1:variant
+]
++error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to <address : <point : <>>> but 20 has type <address : <shared : <point : <>>>>
+
 
 //:: Allow exclusive containers to be defined in mu code.
 
