@@ -127,6 +127,7 @@ recipe print screen:address:shared:screen, c:character -> screen:address:shared:
     reply-unless legal?
     legal? <- lesser-than *column, width
     reply-unless legal?
+#?     $print [print-character (], *row, [, ], *column, [): ], c, 10/newline
     # special-case: newline
     {
       newline?:boolean <- equal c, 10/newline
