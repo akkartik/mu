@@ -17,7 +17,7 @@ recipe! update-recipes env:address:shared:programming-environment-data, screen:a
   # if recipe editor has errors, stop
   {
     break-unless *recipe-warnings
-    status:address:shared:array:character <- new [errors found]
+    status:address:shared:array:character <- new [errors found     ]
     update-status screen, status, 1/red
     errors-found? <- copy 1/true
     reply
@@ -30,7 +30,7 @@ before <render-components-end> [
   recipe-warnings:address:shared:array:character <- get *env, recipe-warnings:offset
   {
     break-unless recipe-warnings
-    status:address:shared:array:character <- new [errors found]
+    status:address:shared:array:character <- new [errors found     ]
     update-status screen, status, 1/red
   }
 ]
@@ -43,11 +43,49 @@ before <render-recipe-components-end> [
   }
 ]
 
+container programming-environment-data [
+  warning-index:number  # index of first sandbox with an error (or -1 if none)
+]
+
+after <programming-environment-initialization> [
+  warning-index:address:number <- get-address *result, warning-index:offset
+  *warning-index <- copy -1
+]
+
+after <run-sandboxes-begin> [
+  warning-index:address:number <- get-address *env, warning-index:offset
+  *warning-index <- copy -1
+]
+
+before <run-sandboxes-end> [
+  {
+    sandboxes-completed-successfully?:boolean <- equal *warning-index, -1
+    break-if sandboxes-completed-successfully?
+    errors-found? <- copy 1/true
+  }
+]
+
+before <render-components-end> [
+  {
+    break-if recipe-warnings
+    warning-index:number <- get *env, warning-index:offset
+    sandboxes-completed-successfully?:boolean <- equal warning-index, -1
+    break-if sandboxes-completed-successfully?
+    status-template:address:shared:array:character <- new [errors found (_)    ]
+    warning-index-text:address:shared:array:character <- to-text warning-index
+    status:address:shared:array:character <- interpolate status-template, warning-index-text
+#?     $print [update-status: sandbox warning], 10/newline
+    update-status screen, status, 1/red
+#?     $print [run sandboxes end], 10/newline
+    reply
+  }
+]
+
 container sandbox-data [
   warnings:address:shared:array:character
 ]
 
-recipe! update-sandbox sandbox:address:shared:sandbox-data -> sandbox:address:shared:sandbox-data [
+recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
 #?   $log [update sandbox]
@@ -63,6 +101,12 @@ recipe! update-sandbox sandbox:address:shared:sandbox-data -> sandbox:address:sh
     break-if completed?:boolean
     *warnings <- new [took too long!
 ]
+  }
+  {
+    break-unless *warnings
+#?     $print [setting warning-index to ], idx, 10/newline
+    warning-index:address:number <- get-address *env, warning-index:offset
+    *warning-index <- copy idx
   }
 #?   $print [done with run-interactive], 10/newline
 ]
@@ -170,7 +214,7 @@ z <- add x, [a]
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .load-ingredients                                  ┊0                                               x.
@@ -189,7 +233,7 @@ z <- add x, [a]
   ]
   # error should remain unchanged
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .load-ingredients                                  ┊0                                               x.
@@ -441,7 +485,7 @@ scenario run-instruction-and-print-warnings [
   ]
   # check that screen prints error message in red
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found (0)                                                               run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊0                                               x.
@@ -463,7 +507,7 @@ scenario run-instruction-and-print-warnings [
     .                                                                                                    .
   ]
   screen-should-contain-in-color 1/red, [
-    .                                                                                                    .
+    .  errors found (0)                                                                                  .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -505,7 +549,7 @@ scenario run-instruction-and-print-warnings-only-once [
   ]
   # check that screen prints error message just once
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found (0)                                                               run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊0                                               x.
@@ -538,7 +582,7 @@ scenario sandbox-can-handle-infinite-loop [
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .  {                                               ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .    loop                                          ┊0                                               x.
@@ -570,7 +614,7 @@ reply b
   event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   # screen prints error message
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .a:number <- next-ingredient                       ┊0                                               x.
@@ -589,7 +633,7 @@ reply b
   ]
   # screen should expand trace
   screen-should-contain [
-    .                                                                                 run (F4)           .
+    .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .a:number <- next-ingredient                       ┊0                                               x.

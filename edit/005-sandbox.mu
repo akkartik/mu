@@ -122,14 +122,16 @@ after <global-keypress> [
     do-run?:boolean <- equal *k, 65532/F4
     break-unless do-run?
 #?     $log [F4 pressed]
-    status:address:shared:array:character <- new [running...  ]
+    status:address:shared:array:character <- new [running...       ]
     screen <- update-status screen, status, 245/grey
     error?:boolean, env, screen <- run-sandboxes env, screen
     # F4 might update warnings and results on both sides
+#?     $print [render-all begin], 10/newline
     screen <- render-all screen, env
+#?     $print [render-all end], 10/newline
     {
       break-if error?
-      status:address:shared:array:character <- new [            ]
+      status:address:shared:array:character <- new [                 ]
       screen <- update-status screen, status, 245/grey
     }
     screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
@@ -143,6 +145,7 @@ recipe run-sandboxes env:address:shared:programming-environment-data, screen:add
   errors-found?:boolean, env, screen <- update-recipes env, screen
   reply-if errors-found?
   # check contents of right editor (sandbox)
+  <run-sandboxes-begin>
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
   {
     sandbox-contents:address:shared:array:character <- editor-contents current-sandbox
@@ -167,13 +170,15 @@ recipe run-sandboxes env:address:shared:programming-environment-data, screen:add
   save-sandboxes env
   # run all sandboxes
   curr:address:shared:sandbox-data <- get *env, sandbox:offset
+  idx:number <- copy 0
   {
     break-unless curr
-    curr <- update-sandbox curr
+    curr <- update-sandbox curr, env, idx
     curr <- get *curr, next-sandbox:offset
+    idx <- add idx, 1
     loop
   }
-  errors-found? <- copy 0/false
+  <run-sandboxes-end>
 ]
 
 # copy code from recipe editor, persist, load into mu
@@ -189,7 +194,7 @@ recipe update-recipes env:address:shared:programming-environment-data, screen:ad
 ]
 
 # replaced in a later layer
-recipe update-sandbox sandbox:address:shared:sandbox-data -> sandbox:address:shared:sandbox-data [
+recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   data:address:shared:array:character <- get *sandbox, data:offset

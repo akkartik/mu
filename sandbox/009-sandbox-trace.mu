@@ -119,7 +119,7 @@ container sandbox-data [
 ]
 
 # replaced in a later layer
-recipe! update-sandbox sandbox:address:shared:sandbox-data -> sandbox:address:shared:sandbox-data [
+recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   data:address:shared:array:character <- get *sandbox, data:offset

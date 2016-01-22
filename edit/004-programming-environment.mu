@@ -45,6 +45,7 @@ recipe new-programming-environment screen:address:shared:screen, initial-recipe-
   new-left:number <- add divider, 1
   current-sandbox:address:address:shared:editor-data <- get-address *result, current-sandbox:offset
   *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
+  <programming-environment-initialization>
 ]
 
 recipe event-loop screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data -> screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data [
@@ -379,7 +380,9 @@ recipe render-all screen:address:shared:screen, env:address:shared:programming-e
   # top menu
   trace 11, [app], [render top menu]
   width:number <- screen-width screen
+#?   $print [draw menu], 10/newline
   draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
+#?   $print [draw menu end], 10/newline
   button-start:number <- subtract width, 20
   button-on-screen?:boolean <- greater-or-equal button-start, 0
   assert button-on-screen?, [screen too narrow for menu]
