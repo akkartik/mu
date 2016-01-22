@@ -77,7 +77,6 @@ before <render-components-end> [
 #?     $print [update-status: sandbox warning], 10/newline
     update-status screen, status, 1/red
 #?     $print [run sandboxes end], 10/newline
-    reply
   }
 ]
 
