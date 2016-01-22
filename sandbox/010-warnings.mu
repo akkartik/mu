@@ -98,6 +98,8 @@ recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:p
     break-unless *warnings
 #?     $print [setting warning-index to ], idx, 10/newline
     warning-index:address:number <- get-address *env, warning-index:offset
+    warning-not-set?:boolean <- equal *warning-index, -1
+    break-unless warning-not-set?
     *warning-index <- copy idx
   }
 #?   $print [done with run-interactive], 10/newline
