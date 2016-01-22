@@ -83,7 +83,7 @@ scenario run-and-show-results [
     .                                                  ┊                                                 .
   ]
   # sandbox title in reverse video
-  screen-should-contain-in-color 0/black, [
+  screen-should-contain-in-color 240/dark-grey, [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -264,7 +264,7 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
   # render sandbox menu
   row <- add row, 1
   screen <- move-cursor screen, row, left
-  print screen, idx, 0/black, 245/grey
+  print screen, idx, 240/dark-grey
   clear-line-delimited screen, left, right
   delete-icon:character <- copy 120/x
   print screen, delete-icon, 245/grey
