@@ -105,6 +105,8 @@ recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:p
     break-unless *warnings
 #?     $print [setting warning-index to ], idx, 10/newline
     warning-index:address:number <- get-address *env, warning-index:offset
+    warning-not-set?:boolean <- equal *warning-index, -1
+    break-unless warning-not-set?
     *warning-index <- copy idx
   }
 #?   $print [done with run-interactive], 10/newline
@@ -162,6 +164,57 @@ recipe foo [
   ]
 ]
 
+scenario run-updates-status-with-first-erroneous-sandbox [
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 15/height
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new []
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  assume-console [
+    left-click 3, 80
+    # create invalid sandbox 1
+    type [get foo, x:offset]
+    press F4
+    # create invalid sandbox 0
+    type [get foo, x:offset]
+    press F4
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # status shows first sandbox with error
+  screen-should-contain [
+    .  errors found (0)                                                               run (F4)           .
+  ]
+]
+
+scenario run-updates-status-with-first-erroneous-sandbox-2 [
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 15/height
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new []
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  assume-console [
+    left-click 3, 80
+    # create invalid sandbox 2
+    type [get foo, x:offset]
+    press F4
+    # create invalid sandbox 1
+    type [get foo, x:offset]
+    press F4
+    # create valid sandbox 0
+    type [add 2, 2]
+    press F4
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # status shows first sandbox with error
+  screen-should-contain [
+    .  errors found (1)                                                               run (F4)           .
+  ]
+]
+
 scenario run-hides-warnings-from-past-sandboxes [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
@@ -178,11 +231,12 @@ scenario run-hides-warnings-from-past-sandboxes [
     left-click 3, 80
     press ctrl-k
     type [add 2, 2]  # valid code
-    press F4  # error should disappear
+    press F4  # update sandbox
   ]
   run [
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
+  # error should disappear
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
