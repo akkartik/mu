@@ -77,15 +77,14 @@ after <global-touch> [
     below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
     break-unless below-sandbox-editor?
     empty-sandbox-editor?:boolean <- empty-editor? current-sandbox
-    break-unless empty-sandbox-editor?  # make the user hit F4 before editing a new sandbox
+    break-unless empty-sandbox-editor?  # don't clobber existing contents
     # identify the sandbox to edit and remove it from the sandbox list
     sandbox:address:shared:sandbox-data <- extract-sandbox env, click-row
+    break-unless sandbox
     text:address:shared:array:character <- get *sandbox, data:offset
     current-sandbox <- insert-text current-sandbox, text
-    first-sandbox-to-render:address:address:shared:sandbox-data <- get-address *env, first-sandbox-to-render:offset
-    *first-sandbox-to-render <- copy 0
-    first-sandbox-index:address:number <- get-address *env, first-sandbox-index:offset
-    *first-sandbox-index <- copy 0
+    render-from:address:number <- get-address *env, render-from:offset
+    *render-from <- copy -1
     hide-screen screen
     screen <- render-sandbox-side screen, env
     screen <- update-cursor screen, current-sandbox, env
@@ -105,11 +104,10 @@ recipe empty-editor? editor:address:shared:editor-data -> result:boolean [
 recipe extract-sandbox env:address:shared:programming-environment-data, click-row:number -> result:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
-  # assert click-row >= sandbox.starting-row-on-screen
   sandbox:address:address:shared:sandbox-data <- get-address *env, sandbox:offset
   start:number <- get **sandbox, starting-row-on-screen:offset
-  clicked-on-sandboxes?:boolean <- greater-or-equal click-row, start
-  assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
+  in-editor?:boolean <- lesser-than click-row, start
+  reply-if in-editor?, 0
   {
     next-sandbox:address:shared:sandbox-data <- get **sandbox, next-sandbox:offset
     break-unless next-sandbox

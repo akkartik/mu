@@ -19,8 +19,13 @@ recipe! main [
 
 container programming-environment-data [
   sandbox:address:shared:sandbox-data  # list of sandboxes, from top to bottom
-  first-sandbox-to-render:address:shared:sandbox-data  # 0 = display current-sandbox editor
-  first-sandbox-index:number
+  render-from:number
+  number-of-sandboxes:number
+]
+
+after <programming-environment-initialization> [
+  render-from:address:number <- get-address *result, render-from:offset
+  *render-from <- copy -1
 ]
 
 container sandbox-data [
@@ -28,6 +33,7 @@ container sandbox-data [
   response:address:shared:array:character
   expected-response:address:shared:array:character
   # coordinates to track clicks
+  # constraint: will be 0 for sandboxes at positions before env.render-from
   starting-row-on-screen:number
   code-ending-row-on-screen:number  # past end of code
   response-starting-row-on-screen:number
@@ -162,6 +168,9 @@ recipe run-sandboxes env:address:shared:programming-environment-data, screen:add
     next:address:address:shared:sandbox-data <- get-address *new-sandbox, next-sandbox:offset
     *next <- copy *dest
     *dest <- copy new-sandbox
+    # update sandbox count
+    sandbox-count:address:number <- get-address *env, number-of-sandboxes:offset
+    *sandbox-count <- add *sandbox-count, 1
     # clear sandbox editor
     init:address:address:shared:duplex-list:character <- get-address *current-sandbox, data:offset
     *init <- push 167/§, 0/tail
@@ -244,19 +253,26 @@ recipe! render-sandbox-side screen:address:shared:screen, env:address:shared:pro
 #?   $log [render sandbox side]
   trace 11, [app], [render sandbox side]
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
+  row:number, column:number <- copy 1, 0
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
-  <render-sandbox-side-special-cases>
-  row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
-  clear-screen-from screen, row, column, left, right
-  row <- add row, 1
+  # render sandbox editor
+  render-from:number <- get *env, render-from:offset
+  {
+    render-current-sandbox?:boolean <- equal render-from, -1
+    break-unless render-current-sandbox?
+    row, column, screen, current-sandbox <- render screen, current-sandbox
+    clear-screen-from screen, row, column, left, right
+    row <- add row, 1
+  }
+  # render sandboxes
   draw-horizontal screen, row, left, right, 9473/horizontal-double
   sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
-  row, screen <- render-sandboxes screen, sandbox, left, right, row, 0
+  row, screen <- render-sandboxes screen, sandbox, left, right, row, render-from
   clear-rest-of-screen screen, row, left, right
 ]
 
-recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbox-data, left:number, right:number, row:number, idx:number -> row:number, screen:address:shared:screen, sandbox:address:shared:sandbox-data [
+recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbox-data, left:number, right:number, row:number, render-from:number, idx:number -> row:number, screen:address:shared:screen, sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
 #?   $log [render sandbox]
@@ -264,48 +280,62 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
   screen-height:number <- screen-height screen
   at-bottom?:boolean <- greater-or-equal row, screen-height
   reply-if at-bottom?:boolean
-  # render sandbox menu
-  row <- add row, 1
-  screen <- move-cursor screen, row, left
-  print screen, idx, 240/dark-grey
-  clear-line-delimited screen, left, right
-  delete-icon:character <- copy 120/x
-  print screen, delete-icon, 245/grey
-  # save menu row so we can detect clicks to it later
-  starting-row:address:number <- get-address *sandbox, starting-row-on-screen:offset
-  *starting-row <- copy row
-  # render sandbox contents
-  row <- add row, 1
-  screen <- move-cursor screen, row, left
-  sandbox-data:address:shared:array:character <- get *sandbox, data:offset
-  row, screen <- render-code screen, sandbox-data, left, right, row
-  code-ending-row:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
-  *code-ending-row <- copy row
-  # render sandbox warnings, screen or response, in that order
-  response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
-  sandbox-response:address:shared:array:character <- get *sandbox, response:offset
-  <render-sandbox-results>
+  hidden?:boolean <- lesser-than idx, render-from
   {
-    sandbox-screen:address:shared:screen <- get *sandbox, screen:offset
-    empty-screen?:boolean <- fake-screen-is-empty? sandbox-screen
-    break-if empty-screen?
-    row, screen <- render-screen screen, sandbox-screen, left, right, row
+    break-if hidden?
+    # render sandbox menu
+    row <- add row, 1
+    screen <- move-cursor screen, row, left
+    print screen, idx, 240/dark-grey
+    clear-line-delimited screen, left, right
+    delete-icon:character <- copy 120/x
+    print screen, delete-icon, 245/grey
+    # save menu row so we can detect clicks to it later
+    starting-row:address:number <- get-address *sandbox, starting-row-on-screen:offset
+    *starting-row <- copy row
+    # render sandbox contents
+    row <- add row, 1
+    screen <- move-cursor screen, row, left
+    sandbox-data:address:shared:array:character <- get *sandbox, data:offset
+    row, screen <- render-code screen, sandbox-data, left, right, row
+    code-ending-row:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
+    *code-ending-row <- copy row
+    # render sandbox warnings, screen or response, in that order
+    response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
+    sandbox-response:address:shared:array:character <- get *sandbox, response:offset
+    <render-sandbox-results>
+    {
+      sandbox-screen:address:shared:screen <- get *sandbox, screen:offset
+      empty-screen?:boolean <- fake-screen-is-empty? sandbox-screen
+      break-if empty-screen?
+      row, screen <- render-screen screen, sandbox-screen, left, right, row
+    }
+    {
+      break-unless empty-screen?
+      *response-starting-row <- copy row
+      <render-sandbox-response>
+      row, screen <- render screen, sandbox-response, left, right, 245/grey, row
+    }
+    +render-sandbox-end
+    at-bottom?:boolean <- greater-or-equal row, screen-height
+    reply-if at-bottom?
+    # draw solid line after sandbox
+    draw-horizontal screen, row, left, right, 9473/horizontal-double
   }
+  # if hidden, reset row attributes
   {
-    break-unless empty-screen?
-    *response-starting-row <- copy row
-    <render-sandbox-response>
-    row, screen <- render screen, sandbox-response, left, right, 245/grey, row
+    break-unless hidden?
+    tmp:address:number <- get-address *sandbox, starting-row-on-screen:offset
+    *tmp <- copy 0
+    tmp:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
+    *tmp <- copy 0
+    tmp:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
+    *tmp <- copy 0
   }
-  +render-sandbox-end
-  at-bottom?:boolean <- greater-or-equal row, screen-height
-  reply-if at-bottom?
-  # draw solid line after sandbox
-  draw-horizontal screen, row, left, right, 9473/horizontal-double
   # draw next sandbox
   next-sandbox:address:shared:sandbox-data <- get *sandbox, next-sandbox:offset
   next-idx:number <- add idx, 1
-  row, screen <- render-sandboxes screen, next-sandbox, left, right, row, next-idx
+  row, screen <- render-sandboxes screen, next-sandbox, left, right, row, render-from, next-idx
 ]
 
 # assumes programming environment has no sandboxes; restores them from previous session
@@ -598,7 +628,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   ]
 ]
 
-# down on sandbox side updates first-sandbox-to-render when sandbox editor has cursor at bottom
+# down on sandbox side updates render-from when sandbox editor has cursor at bottom
 after <global-keypress> [
   {
     break-unless *sandbox-in-focus?
@@ -610,21 +640,14 @@ after <global-keypress> [
     break-unless sandbox-cursor-on-last-line?
     sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
     break-unless sandbox
-    first-sandbox-to-render:address:address:shared:sandbox-data <- get-address *env, first-sandbox-to-render:offset
-    first-sandbox-index:address:number <- get-address *env, first-sandbox-index:offset
-    # if first-sandbox-to-render is set, slide it down if possible
+    # slide down if possible
     {
-      break-unless *first-sandbox-to-render
-      next:address:shared:sandbox-data <- get **first-sandbox-to-render, next-sandbox:offset
-      break-unless next
-      *first-sandbox-to-render <- copy next
-      *first-sandbox-index <- add *first-sandbox-index, 1
-    }
-    # if first-sandbox-to-render is not set, set it to first sandbox
-    {
-      break-if *first-sandbox-to-render
-      *first-sandbox-to-render <- copy sandbox
-      *first-sandbox-index <- copy 0
+      render-from:address:number <- get-address *env, render-from:offset
+      number-of-sandboxes:number <- get *env, number-of-sandboxes:offset
+      max:number <- subtract number-of-sandboxes, 1
+      at-end?:boolean <- greater-or-equal *render-from, max
+      break-if at-end?
+      *render-from <- add *render-from, 1
     }
     hide-screen screen
     screen <- render-sandbox-side screen, env
@@ -633,46 +656,29 @@ after <global-keypress> [
   }
 ]
 
-# render-sandbox-side takes first-sandbox-to-render into account
-after <render-sandbox-side-special-cases> [
-  {
-    first-sandbox-to-render:address:shared:sandbox-data <- get *env, first-sandbox-to-render:offset
-    break-unless first-sandbox-to-render
-    row:number <- copy 1  # skip menu
-    draw-horizontal screen, row, left, right, 9473/horizontal-double
-    first-sandbox-index:number <- get *env, first-sandbox-index:offset
-    row, screen <- render-sandboxes screen, first-sandbox-to-render, left, right, row, first-sandbox-index
-    clear-rest-of-screen screen, row, left, right
-    reply
-  }
-]
-
-# update-cursor takes first-sandbox-to-render into account
+# update-cursor takes render-from into account
 after <update-cursor-special-cases> [
   {
     break-unless sandbox-in-focus?
-    first-sandbox-to-render:address:shared:sandbox-data <- get *env, first-sandbox-to-render:offset
-    break-unless first-sandbox-to-render
+    render-from:number <- get *env, render-from:offset
+    scrolling?:boolean <- greater-or-equal render-from, 0
+    break-unless scrolling?
     cursor-column:number <- get *current-sandbox, left:offset
     screen <- move-cursor screen, 2/row, cursor-column  # highlighted sandbox will always start at row 2
     reply
   }
 ]
 
-# 'up' on sandbox side is like 'down': updates first-sandbox-to-render when necessary
+# 'up' on sandbox side is like 'down': updates render-from when necessary
 after <global-keypress> [
   {
     break-unless *sandbox-in-focus?
     up?:boolean <- equal *k, 65517/up-arrow
     break-unless up?
-    first-sandbox-to-render:address:address:shared:sandbox-data <- get-address *env, first-sandbox-to-render:offset
-    break-unless *first-sandbox-to-render
-    {
-      break-unless *first-sandbox-to-render
-      *first-sandbox-to-render <- previous-sandbox env, *first-sandbox-to-render
-      first-sandbox-index:address:number <- get-address *env, first-sandbox-index:offset
-      *first-sandbox-index <- subtract *first-sandbox-index, 1
-    }
+    render-from:address:number <- get-address *env, render-from:offset
+    at-beginning?:boolean <- equal *render-from, -1
+    break-if at-beginning?
+    *render-from <- subtract *render-from, 1
     hide-screen screen
     screen <- render-sandbox-side screen, env
     show-screen screen

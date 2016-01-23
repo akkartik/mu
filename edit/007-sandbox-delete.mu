@@ -95,13 +95,222 @@ recipe delete-sandbox t:touch-event, env:address:shared:programming-environment-
       target-row:number <- get *curr, starting-row-on-screen:offset
       delete-curr?:boolean <- equal target-row, click-row
       break-unless delete-curr?
-      # delete this sandbox, rerender and stop
+      # delete this sandbox
       *prev <- get *curr, next-sandbox:offset
-      reply 1/true
+      # update sandbox count
+      sandbox-count:address:number <- get-address *env, number-of-sandboxes:offset
+      *sandbox-count <- subtract *sandbox-count, 1
+      # if it's the last sandbox and if it was the only sandbox rendered, reset scroll
+      {
+        break-if *prev
+        render-from:address:number <- get-address *env, render-from:offset
+        reset-scroll?:boolean <- equal *render-from, *sandbox-count
+        break-unless reset-scroll?
+        *render-from <- copy -1
+      }
+      reply 1/true  # force rerender
     }
     prev <- get-address *curr, next-sandbox:offset
     curr <- get *curr, next-sandbox:offset
     loop
   }
   reply 0/false
+]
+
+scenario deleting-sandbox-after-scroll [
+  trace-until 100/app  # trace too long
+  assume-screen 30/width, 10/height
+  # initialize environment
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new []
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
+  # create 2 sandboxes and scroll to second
+  assume-console [
+    press ctrl-n
+    type [add 2, 2]
+    press F4
+    type [add 1, 1]
+    press F4
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊1            x.
+  ]
+  # delete the second sandbox
+  assume-console [
+    left-click 6, 29
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # second sandbox shows in editor; scroll resets to display first sandbox
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+]
+
+scenario deleting-top-sandbox-after-scroll [
+  trace-until 100/app  # trace too long
+  assume-screen 30/width, 10/height
+  # initialize environment
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new []
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
+  # create 2 sandboxes and scroll to second
+  assume-console [
+    press ctrl-n
+    type [add 2, 2]
+    press F4
+    type [add 1, 1]
+    press F4
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊1            x.
+  ]
+  # delete the second sandbox
+  assume-console [
+    left-click 2, 29
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # second sandbox shows in editor; scroll resets to display first sandbox
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+]
+
+scenario deleting-final-sandbox-after-scroll [
+  trace-until 100/app  # trace too long
+  assume-screen 30/width, 10/height
+  # initialize environment
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new []
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
+  # create 2 sandboxes and scroll to second
+  assume-console [
+    press ctrl-n
+    type [add 2, 2]
+    press F4
+    type [add 1, 1]
+    press F4
+    press down-arrow
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+  # delete the second sandbox
+  assume-console [
+    left-click 2, 29
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # implicitly scroll up to first sandbox
+  screen-should-contain [
+    .                              .
+    .               ┊              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+]
+
+scenario deleting-updates-sandbox-count [
+  trace-until 100/app  # trace too long
+  assume-screen 30/width, 10/height
+  # initialize environment
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new []
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
+  # create 2 sandboxes
+  assume-console [
+    press ctrl-n
+    type [add 2, 2]
+    press F4
+    type [add 1, 1]
+    press F4
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  screen-should-contain [
+    .                              .
+    .               ┊              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊1            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+  ]
+  # delete the second sandbox, then try to scroll down twice
+  assume-console [
+    left-click 3, 29
+    press down-arrow
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # shouldn't go past last sandbox
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
 ]
