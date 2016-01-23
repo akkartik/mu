@@ -81,6 +81,10 @@ after <global-touch> [
     sandbox:address:shared:sandbox-data <- extract-sandbox env, click-row
     text:address:shared:array:character <- get *sandbox, data:offset
     current-sandbox <- insert-text current-sandbox, text
+    first-sandbox-to-render:address:address:shared:sandbox-data <- get-address *env, first-sandbox-to-render:offset
+    *first-sandbox-to-render <- copy 0
+    first-sandbox-index:address:number <- get-address *env, first-sandbox-index:offset
+    *first-sandbox-index <- copy 0
     hide-screen screen
     screen <- render-sandbox-side screen, env
     screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
@@ -164,5 +168,55 @@ scenario sandbox-with-print-can-be-edited [
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
     .                                                  ┊                                                 .
+  ]
+]
+
+scenario editing-sandbox-after-scrolling-resets-scroll [
+  trace-until 100/app  # trace too long
+  assume-screen 30/width, 10/height
+  # initialize environment
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new []
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
+  # create 2 sandboxes and scroll to second
+  assume-console [
+    press ctrl-n
+    type [add 2, 2]
+    press F4
+    type [add 1, 1]
+    press F4
+    press down-arrow
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+  # edit the second sandbox
+  assume-console [
+    left-click 2, 20
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # second sandbox shows in editor; scroll resets to display first sandbox
+  screen-should-contain [
+    .                              .
+    .               ┊add 2, 2      .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
   ]
 ]
