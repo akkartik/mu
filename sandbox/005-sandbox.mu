@@ -347,6 +347,9 @@ recipe! restore-sandboxes env:address:shared:programming-environment-data -> env
     curr <- get-address **curr, next-sandbox:offset
     loop
   }
+  # update sandbox count
+  number-of-sandboxes:address:number <- get-address *env, number-of-sandboxes:offset
+  *number-of-sandboxes <- copy idx
 ]
 
 # print the fake sandbox screen to 'screen' with appropriate delimiters
