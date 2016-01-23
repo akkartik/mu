@@ -24,7 +24,7 @@ after <global-touch> [
     save-sandboxes env
     hide-screen screen
     screen <- render-sandbox-side screen, env, 1/clear
-    screen <- update-cursor screen, current-sandbox
+    screen <- update-cursor screen, current-sandbox, env
     # no change in cursor
     show-screen screen
     loop +next-event:label

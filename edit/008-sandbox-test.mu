@@ -104,7 +104,7 @@ after <global-touch> [
     save-sandboxes env
     hide-screen screen
     screen <- render-sandbox-side screen, env, 1/clear
-    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
     # no change in cursor
     show-screen screen
     loop +next-event:label

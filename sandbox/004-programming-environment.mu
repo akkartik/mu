@@ -9,7 +9,7 @@ recipe! main [
   env <- restore-sandboxes env
   render-sandbox-side 0/screen, env
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
-  update-cursor 0/screen, current-sandbox
+  update-cursor 0/screen, current-sandbox, env
   show-screen 0/screen
   event-loop 0/screen, 0/console, env
   # never gets here
@@ -78,7 +78,7 @@ recipe event-loop screen:address:shared:screen, console:address:shared:console, 
       # later exceptions for non-editor touches will go here
       <global-touch>
       move-cursor-in-editor screen, current-sandbox, *t
-      screen <- update-cursor screen, current-sandbox
+      screen <- update-cursor screen, current-sandbox, env
       loop +next-event:label
     }
     # 'resize' event - redraw editor
@@ -129,7 +129,7 @@ recipe event-loop screen:address:shared:screen, console:address:shared:console, 
         }
       }
       +finish-event
-      screen <- update-cursor screen, current-sandbox
+      screen <- update-cursor screen, current-sandbox, env
       show-screen screen
     }
     loop
@@ -174,7 +174,7 @@ recipe render-all screen:address:shared:screen, env:address:shared:programming-e
   <render-components-end>
   #
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
-  screen <- update-cursor screen, current-sandbox
+  screen <- update-cursor screen, current-sandbox, env
   #
   show-screen screen
 ]
@@ -195,9 +195,10 @@ recipe render-sandbox-side screen:address:shared:screen, env:address:shared:prog
   clear-screen-from screen, row, left, left, right
 ]
 
-recipe update-cursor screen:address:shared:screen, current-sandbox:address:shared:editor-data -> screen:address:shared:screen [
+recipe update-cursor screen:address:shared:screen, current-sandbox:address:shared:editor-data, env:address:shared:programming-environment-data -> screen:address:shared:screen [
   local-scope
   load-ingredients
+  <update-cursor-special-cases>
   cursor-row:number <- get *current-sandbox, cursor-row:offset
   cursor-column:number <- get *current-sandbox, cursor-column:offset
   screen <- move-cursor screen, cursor-row, cursor-column

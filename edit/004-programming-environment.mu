@@ -91,7 +91,7 @@ recipe event-loop screen:address:shared:screen, console:address:shared:console, 
       # send to both editors
       _ <- move-cursor-in-editor screen, recipes, *t
       *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
-      screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+      screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
       loop +next-event:label
     }
     # 'resize' event - redraw editor
@@ -173,7 +173,7 @@ recipe event-loop screen:address:shared:screen, console:address:shared:console, 
         }
       }
       +finish-event
-      screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+      screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
       show-screen screen
     }
     loop
@@ -402,7 +402,7 @@ recipe render-all screen:address:shared:screen, env:address:shared:programming-e
   recipes:address:shared:editor-data <- get *env, recipes:offset
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
   sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
-  screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
+  screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
   #
   show-screen screen
 ]
@@ -441,9 +441,10 @@ recipe render-sandbox-side screen:address:shared:screen, env:address:shared:prog
   clear-screen-from screen, row, left, left, right
 ]
 
-recipe update-cursor screen:address:shared:screen, recipes:address:shared:editor-data, current-sandbox:address:shared:editor-data, sandbox-in-focus?:boolean -> screen:address:shared:screen [
+recipe update-cursor screen:address:shared:screen, recipes:address:shared:editor-data, current-sandbox:address:shared:editor-data, sandbox-in-focus?:boolean, env:address:shared:programming-environment-data -> screen:address:shared:screen [
   local-scope
   load-ingredients
+  <update-cursor-special-cases>
   {
     break-if sandbox-in-focus?
     cursor-row:number <- get *recipes, cursor-row:offset
@@ -602,7 +603,7 @@ after <global-type> [
     switch-side?:boolean <- equal *c, 14/ctrl-n
     break-unless switch-side?
     *sandbox-in-focus? <- not *sandbox-in-focus?
-    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
     loop +next-event:label
   }
 ]

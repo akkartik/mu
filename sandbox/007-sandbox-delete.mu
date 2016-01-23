@@ -70,7 +70,7 @@ after <global-touch> [
     break-unless was-delete?
     hide-screen screen
     screen <- render-sandbox-side screen, env
-    screen <- update-cursor screen, current-sandbox
+    screen <- update-cursor screen, current-sandbox, env
     show-screen screen
     loop +next-event:label
   }

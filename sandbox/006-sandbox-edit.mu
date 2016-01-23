@@ -84,7 +84,7 @@ after <global-touch> [
     current-sandbox <- insert-text current-sandbox, text
     hide-screen screen
     screen <- render-sandbox-side screen, env
-    screen <- update-cursor screen, current-sandbox
+    screen <- update-cursor screen, current-sandbox, env
     show-screen screen
     loop +next-event:label
   }
