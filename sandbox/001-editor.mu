@@ -233,10 +233,16 @@ recipe clear-line-delimited screen:address:shared:screen, column:number, right:n
   local-scope
   load-ingredients
   space:character <- copy 32/space
+  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  {
+    # default bg-color to black
+    break-if bg-color-found?
+    bg-color <- copy 0/black
+  }
   {
     done?:boolean <- greater-than column, right
     break-if done?
-    screen <- print screen, space
+    screen <- print screen, space, 0/color/unused, bg-color
     column <- add column, 1
     loop
   }
