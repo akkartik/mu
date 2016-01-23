@@ -591,13 +591,13 @@ recipe bar a:_t -> result:_t [
 % Hide_errors = true;
 recipe main [
   a:number <- copy 3
-  b:address:number <- foo a
+  b:address:shared:number <- foo a
 ]
 recipe foo a:_t -> b:_t [
   load-ingredients
   b <- copy a
 ]
-+error: main: no call found for 'b:address:number <- foo a'
++error: main: no call found for 'b:address:shared:number <- foo a'
 
 :(scenario specialize_inside_recipe_without_header)
 recipe main [
@@ -646,7 +646,7 @@ recipe foo x:_elem -> y:_elem [
 recipe main [
   local-scope
   # permit '0' to map to address to shape-shifting type-ingredient
-  1:address:character/raw <- foo 0
+  1:address:shared:character/raw <- foo 0
 ]
 recipe foo x:address:_elem -> y:address:_elem [
   local-scope
