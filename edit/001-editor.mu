@@ -39,6 +39,7 @@ container editor-data [
   # always displays from row 1 (leaving row 0 for a menu) and at most until bottom of screen
   left:number
   right:number
+  bottom:number
   # raw screen coordinates of cursor
   cursor-row:number
   cursor-column:number
@@ -114,8 +115,9 @@ scenario editor-initializes-without-data [
     # 5 (before cursor) <- the § sentinel
     6 <- 2  # left
     7 <- 4  # right  (inclusive)
-    8 <- 1  # cursor row
-    9 <- 2  # cursor column
+    8 <- 1  # bottom
+    9 <- 1  # cursor row
+    10 <- 2  # cursor column
   ]
   screen-should-contain [
     .     .
@@ -222,6 +224,8 @@ recipe render screen:address:shared:screen, editor:address:shared:editor-data ->
     *cursor-column <- copy column
     *before-cursor <- copy prev
   }
+  bottom:address:number <- get-address *editor, bottom:offset
+  *bottom <- copy row
   reply row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 

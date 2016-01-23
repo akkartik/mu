@@ -19,6 +19,8 @@ recipe! main [
 
 container programming-environment-data [
   sandbox:address:shared:sandbox-data  # list of sandboxes, from top to bottom
+  first-sandbox-to-render:address:shared:sandbox-data  # 0 = display current-sandbox editor
+  first-sandbox-index:number
 ]
 
 container sandbox-data [
@@ -134,7 +136,7 @@ after <global-keypress> [
       status:address:shared:array:character <- new [                 ]
       screen <- update-status screen, status, 245/grey
     }
-    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
     loop +next-event:label
   }
 ]
@@ -244,13 +246,14 @@ recipe! render-sandbox-side screen:address:shared:screen, env:address:shared:pro
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
+  <render-sandbox-side-special-cases>
   row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
   clear-screen-from screen, row, column, left, right
   row <- add row, 1
   draw-horizontal screen, row, left, right, 9473/horizontal-double
   sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
   row, screen <- render-sandboxes screen, sandbox, left, right, row, 0
-  clear-rest-of-screen screen, row, left, left, right
+  clear-rest-of-screen screen, row, left, right
 ]
 
 recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbox-data, left:number, right:number, row:number, idx:number -> row:number, screen:address:shared:screen, sandbox:address:shared:sandbox-data [
@@ -521,5 +524,371 @@ scenario editor-provides-edited-contents [
   ]
   memory-should-contain [
     4:array:character <- [abdefc]
+  ]
+]
+
+# scrolling through sandboxes
+
+scenario scrolling-down-past-bottom-of-sandbox-editor [
+  trace-until 100/app  # trace too long
+  assume-screen 30/width, 10/height
+  # initialize sandbox side
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new [add 2, 2]
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
+  assume-console [
+    # create a sandbox
+    press F4
+    # switch to sandbox editor and type in 2 lines
+    press ctrl-n
+    type [abc
+]
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    4:character/cursor <- copy 9251/␣
+    print screen:address:shared:screen, 4:character/cursor
+  ]
+  screen-should-contain [
+    .                              .  # minor: F4 clears menu tooltip in very narrow screens
+    .               ┊abc           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊0            x.
+    .               ┊add 2, 2      .
+  ]
+  # hit 'down' at bottom of sandbox editor
+  assume-console [
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    4:character/cursor <- copy 9251/␣
+    print screen:address:shared:screen, 4:character/cursor
+  ]
+  # sandbox editor hidden; first sandbox displayed
+  # cursor moves to first sandbox
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+  # hit 'up'
+  assume-console [
+    press up-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    4:character/cursor <- copy 9251/␣
+    print screen:address:shared:screen, 4:character/cursor
+  ]
+  # sandbox editor displays again
+  screen-should-contain [
+    .                              .  # minor: F4 clears menu tooltip in very narrow screens
+    .               ┊abc           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊0            x.
+    .               ┊add 2, 2      .
+  ]
+]
+
+# down on sandbox side updates first-sandbox-to-render when sandbox editor has cursor at bottom
+after <global-keypress> [
+  {
+    break-unless *sandbox-in-focus?
+    down?:boolean <- equal *k, 65516/down-arrow
+    break-unless down?
+    sandbox-bottom:number <- get *current-sandbox, bottom:offset
+    sandbox-cursor:number <- get *current-sandbox, cursor-row:offset
+    sandbox-cursor-on-last-line?:boolean <- equal sandbox-bottom, sandbox-cursor
+    break-unless sandbox-cursor-on-last-line?
+    sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
+    break-unless sandbox
+    first-sandbox-to-render:address:address:shared:sandbox-data <- get-address *env, first-sandbox-to-render:offset
+    # if first-sandbox-to-render is set, slide it down if possible
+    {
+      break-unless *first-sandbox-to-render
+      next:address:shared:sandbox-data <- get **first-sandbox-to-render, next-sandbox:offset
+      break-unless next
+      *first-sandbox-to-render <- copy next
+      first-sandbox-index:address:number <- get-address *env, first-sandbox-index:offset
+      *first-sandbox-index <- add *first-sandbox-index, 1
+    }
+    # if first-sandbox-to-render is not set, set it to first sandbox
+    {
+      break-if *first-sandbox-to-render
+      *first-sandbox-to-render <- copy sandbox
+    }
+    hide-screen screen
+    screen <- render-sandbox-side screen, env
+    show-screen screen
+    jump +finish-event:label
+  }
+]
+
+# render-sandbox-side takes first-sandbox-to-render into account
+after <render-sandbox-side-special-cases> [
+  {
+    first-sandbox-to-render:address:shared:sandbox-data <- get *env, first-sandbox-to-render:offset
+    break-unless first-sandbox-to-render
+    row:number <- copy 1  # skip menu
+    draw-horizontal screen, row, left, right, 9473/horizontal-double
+    first-sandbox-index:number <- get *env, first-sandbox-index:offset
+    row, screen <- render-sandboxes screen, first-sandbox-to-render, left, right, row, first-sandbox-index
+    clear-rest-of-screen screen, row, left, right
+    reply
+  }
+]
+
+# update-cursor takes first-sandbox-to-render into account
+after <update-cursor-special-cases> [
+  {
+    break-unless sandbox-in-focus?
+    first-sandbox-to-render:address:shared:sandbox-data <- get *env, first-sandbox-to-render:offset
+    break-unless first-sandbox-to-render
+    cursor-column:number <- get *current-sandbox, left:offset
+    screen <- move-cursor screen, 2/row, cursor-column  # highlighted sandbox will always start at row 2
+    reply
+  }
+]
+
+# 'up' on sandbox side is like 'down': updates first-sandbox-to-render when necessary
+after <global-keypress> [
+  {
+    break-unless *sandbox-in-focus?
+    up?:boolean <- equal *k, 65517/up-arrow
+    break-unless up?
+    first-sandbox-to-render:address:address:shared:sandbox-data <- get-address *env, first-sandbox-to-render:offset
+    break-unless *first-sandbox-to-render
+    {
+      break-unless *first-sandbox-to-render
+      *first-sandbox-to-render <- previous-sandbox env, *first-sandbox-to-render
+      first-sandbox-index:address:number <- get-address *env, first-sandbox-index:offset
+      *first-sandbox-index <- subtract *first-sandbox-index, 1
+    }
+    hide-screen screen
+    screen <- render-sandbox-side screen, env
+    show-screen screen
+    jump +finish-event:label
+  }
+]
+
+# sandbox belonging to 'env' whose next-sandbox is 'in'
+# return 0 if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox
+recipe previous-sandbox env:address:shared:programming-environment-data, in:address:shared:sandbox-data -> out:address:shared:sandbox-data [
+  local-scope
+  load-ingredients
+  curr:address:shared:sandbox-data <- get *env, sandbox:offset
+  reply-unless curr, 0/nil
+  next:address:shared:sandbox-data <- get *curr, next-sandbox:offset
+  {
+    reply-unless next, 0/nil
+    found?:boolean <- equal next, in
+    break-if found?
+    curr <- copy next
+    next <- get *curr, next-sandbox:offset
+    loop
+  }
+  reply curr
+]
+
+scenario scrolling-down-on-recipe-side [
+  trace-until 100/app  # trace too long
+  assume-screen 30/width, 10/height
+  # initialize sandbox side and create a sandbox
+  1:address:shared:array:character <- new [ 
+]
+  # create a sandbox
+  2:address:shared:array:character <- new [add 2, 2]
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # hit 'down' in recipe editor
+  assume-console [
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    4:character/cursor <- copy 9251/␣
+    print screen:address:shared:screen, 4:character/cursor
+  ]
+  # sandbox editor hidden; first sandbox displayed
+  # cursor moves to first sandbox
+  screen-should-contain [
+    .                              .
+    .               ┊              .
+    .␣              ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+]
+
+scenario scrolling-through-multiple-sandboxes [
+  trace-until 100/app  # trace too long
+  assume-screen 30/width, 10/height
+  # initialize environment
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new []
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
+  # create 2 sandboxes
+  assume-console [
+    press ctrl-n
+    type [add 2, 2]
+    press F4
+    type [add 1, 1]
+    press F4
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    4:character/cursor <- copy 9251/␣
+    print screen:address:shared:screen, 4:character/cursor
+  ]
+  screen-should-contain [
+    .                              .
+    .               ┊␣             .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊1            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+  ]
+  # hit 'down'
+  assume-console [
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    4:character/cursor <- copy 9251/␣
+    print screen:address:shared:screen, 4:character/cursor
+  ]
+  # sandbox editor hidden; first sandbox displayed
+  # cursor moves to first sandbox
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊1            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+    .               ┊━━━━━━━━━━━━━━.
+  ]
+  # hit 'down' again
+  assume-console [
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # just second sandbox displayed
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+    .               ┊              .
+  ]
+  # hit 'down' again
+  assume-console [
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # no change
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+    .               ┊              .
+  ]
+  # hit 'up'
+  assume-console [
+    press up-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # back to displaying both sandboxes without editor
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊1            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+    .               ┊━━━━━━━━━━━━━━.
+  ]
+  # hit 'up' again
+  assume-console [
+    press up-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    4:character/cursor <- copy 9251/␣
+    print screen:address:shared:screen, 4:character/cursor
+  ]
+  # back to displaying both sandboxes as well as editor
+  screen-should-contain [
+    .                              .
+    .               ┊␣             .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊1            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
+  ]
+  # hit 'up' again
+  assume-console [
+    press up-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # no change
+  screen-should-contain [
+    .                              .
+    .               ┊␣             .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊1            x.
+    .               ┊add 2, 2      .
+    .               ┊4             .
   ]
 ]

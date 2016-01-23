@@ -71,7 +71,7 @@ after <global-touch> [
     break-unless was-delete?
     hide-screen screen
     screen <- render-sandbox-side screen, env
-    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
     show-screen screen
     loop +next-event:label
   }
