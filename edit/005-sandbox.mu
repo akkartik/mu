@@ -611,19 +611,20 @@ after <global-keypress> [
     sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
     break-unless sandbox
     first-sandbox-to-render:address:address:shared:sandbox-data <- get-address *env, first-sandbox-to-render:offset
+    first-sandbox-index:address:number <- get-address *env, first-sandbox-index:offset
     # if first-sandbox-to-render is set, slide it down if possible
     {
       break-unless *first-sandbox-to-render
       next:address:shared:sandbox-data <- get **first-sandbox-to-render, next-sandbox:offset
       break-unless next
       *first-sandbox-to-render <- copy next
-      first-sandbox-index:address:number <- get-address *env, first-sandbox-index:offset
       *first-sandbox-index <- add *first-sandbox-index, 1
     }
     # if first-sandbox-to-render is not set, set it to first sandbox
     {
       break-if *first-sandbox-to-render
       *first-sandbox-to-render <- copy sandbox
+      *first-sandbox-index <- copy 0
     }
     hide-screen screen
     screen <- render-sandbox-side screen, env
@@ -890,5 +891,88 @@ scenario scrolling-through-multiple-sandboxes [
     .               ┊1            x.
     .               ┊add 2, 2      .
     .               ┊4             .
+  ]
+]
+
+scenario scrolling-manages-sandbox-index-correctly [
+  trace-until 100/app  # trace too long
+  assume-screen 30/width, 10/height
+  # initialize environment
+  1:address:shared:array:character <- new []
+  2:address:shared:array:character <- new []
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
+  render-all screen, 3:address:shared:programming-environment-data
+  # create a sandbox
+  assume-console [
+    press ctrl-n
+    type [add 1, 1]
+    press F4
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  screen-should-contain [
+    .                              .
+    .               ┊              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+  # hit 'down' and 'up' a couple of times. sandbox index should be stable
+  assume-console [
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # sandbox editor hidden; first sandbox displayed
+  # cursor moves to first sandbox
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+  # hit 'up' again
+  assume-console [
+    press up-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # back to displaying both sandboxes as well as editor
+  screen-should-contain [
+    .                              .
+    .               ┊              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .               ┊0            x.
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
+  ]
+  # hit 'down'
+  assume-console [
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  ]
+  # sandbox editor hidden; first sandbox displayed
+  # cursor moves to first sandbox
+  screen-should-contain [
+    .                              .
+    .               ┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.  # no change
+    .               ┊add 1, 1      .
+    .               ┊2             .
+    .               ┊━━━━━━━━━━━━━━.
+    .               ┊              .
   ]
 ]
