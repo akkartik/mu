@@ -4,26 +4,10 @@
 9993 parse:   ingredient: {"number": "type"}
 9993 parse:   product: {"1": <"address" : <"shared" : <"number" : <>>>>}
 9992 load: after rewriting: 1:address:shared:number <- new number:type
-9993 parse: instruction: copy
-9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"1": <"address" : <"shared" : <"number" : <>>>>}
-9993 parse:   product: {"2": <"address" : <"shared" : <"number" : <>>>>}
-9992 load: after rewriting: 2:address:shared:number <- copy 1:address:shared:number
 9993 parse: instruction: abandon
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"1": <"address" : <"shared" : <"number" : <>>>>}
 9992 load: after rewriting: abandon 1:address:shared:number
-9993 parse: instruction: new
-9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"number": "type"}
-9993 parse:   product: {"3": <"address" : <"shared" : <"number" : <>>>>}
-9992 load: after rewriting: 3:address:shared:number <- new number:type
-9993 parse: instruction: equal
-9993 parse:   number of ingredients: 2
-9993 parse:   ingredient: {"2": <"address" : <"shared" : <"number" : <>>>>}
-9993 parse:   ingredient: {"3": <"address" : <"shared" : <"number" : <>>>>}
-9993 parse:   product: {"4": "boolean"}
-9992 load: after rewriting: 4:boolean <- equal 2:address:shared:number, 3:address:shared:number
 9999 parse: recipe main has a header
 9990 transform: === transform_all()
 9991 transform: --- fill in reply ingredients from header for recipe main
@@ -31,27 +15,15 @@
 9991 transform: --- collect surrounding spaces for recipe main
 9991 transform: --- transform names for recipe main
 9991 transform: --- resolve ambiguous calls for recipe main
-9992 transform: instruction equal
-9992 transform: score for base: -1
-9993 transform: mismatch: ingredient 0
-9992 transform: score for variant 0: -1
-9992 transform: no variant found; searching for variant with suitable type ingredients
-9992 transform: checking shape-shifting variant 0
-9993 transform: no type ingredients
-9992 transform: final score: -1
 9991 transform: --- compute instruction operations for recipe main
 9991 transform: --- transform braces for recipe main
 9992 transform: new ...
-9992 transform: copy ...
 9992 transform: abandon ...
-9992 transform: new ...
-9992 transform: equal ...
 9992 transform:  ...
 9991 transform: --- perform checks for recipe main
 9991 transform: --- type-check 'call' instructions inside recipe main
 9991 transform: --- type-check calls inside recipe main
 9991 transform: --- convert 'new' to 'allocate' for recipe main
-9992 new: size of "number" is 1
 9992 new: size of "number" is 1
 9991 transform: --- parsing any uninitialized reagents as integers
 9999 trace: new routine; incrementing callstack depth to 1
@@ -62,10 +34,6 @@
 9999 mem: new alloc: 1000
 9999 mem: storing 1000 in location 1
 9999 mem: incrementing refcount of 1000: 0 -> 1
- 102 run: 2:address:shared:number <- copy 1:address:shared:number
-9999 mem: location 1 is 1000
-9999 mem: storing 1000 in location 2
-9999 mem: incrementing refcount of 1000: 1 -> 2
  102 run: abandon 1:address:shared:number
 9999 mem: location 1 is 1000
 9999 abandon: address to abandon is 1000
@@ -73,14 +41,5 @@
 9999 abandon: value of ingredient after canonization is 1
 9999 abandon: saving in free-list of size 2
 9999 mem: resetting location 1
- 102 run: 3:address:shared:number <- new number:type
-9999 mem: allocating size 2
-9999 abandon: picking up space from free-list of size 2
-9999 mem: storing 1000 in location 3
-9999 mem: incrementing refcount of 1000: 0 -> 1
- 102 run: 4:boolean <- equal 2:address:shared:number, 3:address:shared:number
-9999 mem: location 2 is 1000
-9999 mem: location 3 is 1000
-9999 mem: storing 1 in location 4
  102 run: reply 
 9999 trace: reply: decrementing callstack depth from 1
