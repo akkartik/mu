@@ -698,3 +698,23 @@ recipe print screen:address:shared:screen, n:number -> screen:address:shared:scr
   }
   screen <- print-integer screen, n, color, bg-color
 ]
+
+# addresses
+recipe print screen:address:shared:screen, n:address:_elem -> screen:address:shared:screen [
+  local-scope
+  load-ingredients
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?
+    color <- copy 7/white
+  }
+  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  {
+    # default bg-color to black
+    break-if bg-color-found?
+    bg-color <- copy 0/black
+  }
+  n2:number <- copy n
+  screen <- print-integer screen, n2, color, bg-color
+]
