@@ -267,12 +267,13 @@ recipe main [
 :(scenario new_reclaim)
 recipe main [
   1:address:shared:number <- new number:type
-  abandon 1:address:shared:number
-  2:address:shared:number <- new number:type  # must be same size as abandoned memory to reuse
-  3:boolean <- equal 1:address:shared:number, 2:address:shared:number
+  2:address:shared:number <- copy 1:address:shared:number  # because 1 will get reset during abandon below
+  abandon 1:address:shared:number  # unsafe
+  3:address:shared:number <- new number:type  # must be same size as abandoned memory to reuse
+  4:boolean <- equal 2:address:shared:number, 3:address:shared:number
 ]
 # both allocations should have returned the same address
-+mem: storing 1 in location 3
++mem: storing 1 in location 4
 
 :(before "End Globals")
 map<long long int, long long int> Free_list;
@@ -306,11 +307,15 @@ case ABANDON: {
   canonize(types);
   // lookup_memory without drop_one_lookup {
   trace(9999, "abandon") << "value of ingredient after canonization is " << types.value << end();
+  long long int address_location = types.value;
   types.set_value(get_or_insert(Memory, types.value)+/*skip refcount*/1);
   drop_from_type(types, "address");
   drop_from_type(types, "shared");
   // }
   abandon(address, size_of(types)+/*refcount*/1);
+  // clear the address
+  trace(9999, "mem") << "resetting location " << address_location << end();
+  Memory[address_location] = 0;
   break;
 }
 
@@ -351,22 +356,33 @@ if (Free_list[size]) {
 :(scenario new_differing_size_no_reclaim)
 recipe main [
   1:address:shared:number <- new number:type
+  2:address:shared:number <- copy 1:address:shared:number
   abandon 1:address:shared:number
-  2:address:shared:array:number <- new number:type, 2  # different size
-  3:boolean <- equal 1:address:shared:number, 2:address:shared:array:number
+  3:address:shared:array:number <- new number:type, 2  # different size
+  4:boolean <- equal 2:address:shared:number, 3:address:shared:array:number
 ]
 # no reuse
-+mem: storing 0 in location 3
++mem: storing 0 in location 4
 
 :(scenario new_reclaim_array)
 recipe main [
   1:address:shared:array:number <- new number:type, 2
-  abandon 1:address:shared:array:number
-  2:address:shared:array:number <- new number:type, 2
-  3:boolean <- equal 1:address:shared:array:number, 2:address:shared:array:number
+  2:address:shared:array:number <- copy 1:address:shared:array:number
+  abandon 1:address:shared:array:number  # unsafe
+  3:address:shared:array:number <- new number:type, 2
+  4:boolean <- equal 2:address:shared:array:number, 3:address:shared:array:number
 ]
 # reuse
-+mem: storing 1 in location 3
++mem: storing 1 in location 4
+
+:(scenario reset_on_abandon)
+recipe main [
+  1:address:shared:number <- new number:type
+  abandon 1:address:shared:number
+]
+# reuse
++run: abandon 1:address:shared:number
++mem: resetting location 1
 
 //:: Manage refcounts when copying addresses.
 
