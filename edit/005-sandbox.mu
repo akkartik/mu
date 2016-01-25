@@ -649,7 +649,7 @@ after <global-keypress> [
       number-of-sandboxes:number <- get *env, number-of-sandboxes:offset
       max:number <- subtract number-of-sandboxes, 1
       at-end?:boolean <- greater-or-equal *render-from, max
-      break-if at-end?
+      jump-if at-end?, +finish-event:label  # render nothing
       *render-from <- add *render-from, 1
     }
     hide-screen screen
