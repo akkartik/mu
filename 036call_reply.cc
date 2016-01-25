@@ -101,8 +101,10 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
             goto finish_reply_check;
           }
           long long int ingredient_index = to_integer(tmp->value);
-          if (ingredient_index >= SIZE(caller_instruction.ingredients))
-            raise_error << maybe(caller.name) << "'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
+          if (ingredient_index >= SIZE(caller_instruction.ingredients)) {
+            raise_error << maybe(caller.name) << "too few ingredients in '" << caller_instruction.to_string() << "'\n" << end();
+            goto finish_reply_check;
+          }
           if (!is_dummy(caller_instruction.products.at(i)) && caller_instruction.products.at(i).name != caller_instruction.ingredients.at(ingredient_index).name)
             raise_error << maybe(caller.name) << "'" << caller_instruction.to_string() << "' should write to " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
         }
