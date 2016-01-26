@@ -30,7 +30,7 @@ for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin();
 }
 
 :(before "End Load Recipe Header(result)")
-if (contains_key(Recipe_ordinal, result.name)) {
+if (result.name != "main" && contains_key(Recipe_ordinal, result.name)) {
   const recipe_ordinal r = get(Recipe_ordinal, result.name);
 //?   cerr << result.name << ": " << contains_key(Recipe, r) << (contains_key(Recipe, r) ? get(Recipe, r).has_header : 0) << matching_variant_name(result) << '\n';
   if (!contains_key(Recipe, r) || get(Recipe, r).has_header) {
