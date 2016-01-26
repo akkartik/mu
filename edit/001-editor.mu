@@ -242,7 +242,7 @@ recipe clear-line-delimited screen:address:shared:screen, column:number, right:n
   {
     done?:boolean <- greater-than column, right
     break-if done?
-    screen <- print screen, space, 0/color/unused, bg-color
+    screen <- print screen, space, 7/white, bg-color  # foreground color is mostly unused except if the cursor shows up at this cell
     column <- add column, 1
     loop
   }
