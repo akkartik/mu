@@ -112,18 +112,17 @@ Current_routine = NULL;
 :(replace{} "void run_main(int argc, char* argv[])")
 void run_main(int argc, char* argv[]) {
   recipe_ordinal r = get(Recipe_ordinal, "main");
-  if (r) {
-    routine* main_routine = new routine(r);
-    // pass in commandline args as ingredients to main
-    // todo: test this
-    Current_routine = main_routine;
-    for (long long int i = 1; i < argc; ++i) {
-      vector<double> arg;
-      arg.push_back(new_mu_string(argv[i]));
-      current_call().ingredient_atoms.push_back(arg);
-    }
-    run(main_routine);
+  assert(r);
+  routine* main_routine = new routine(r);
+  // pass in commandline args as ingredients to main
+  // todo: test this
+  Current_routine = main_routine;
+  for (long long int i = 1; i < argc; ++i) {
+    vector<double> arg;
+    arg.push_back(new_mu_string(argv[i]));
+    current_call().ingredient_atoms.push_back(arg);
   }
+  run(main_routine);
 }
 
 //:: To schedule new routines to run, call 'start-running'.

@@ -59,7 +59,7 @@ long long int slurp_recipe(istream& in) {
   }
   slurp_body(in, result);
   // End recipe Body(result)
-  get_or_insert(Recipe, get(Recipe_ordinal, result.name)) = result;
+  put(Recipe, get(Recipe_ordinal, result.name), result);
   // track added recipes because we may need to undo them in tests; see below
   Recently_added_recipes.push_back(get(Recipe_ordinal, result.name));
   return get(Recipe_ordinal, result.name);
