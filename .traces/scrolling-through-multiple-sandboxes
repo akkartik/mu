@@ -40,14 +40,22 @@
     type [add 1, 1]
     press F4
   ]
-9993 parse: instruction: run
+9993 parse: instruction: event-loop
+9993 parse:   number of ingredients: 3
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9993 parse:   ingredient: {"console": <"address" : <"shared" : <"console" : <>>>>}
+9993 parse:   ingredient: {"3": <"address" : <"shared" : <"programming-environment-data" : <>>>>}
+9992 load: after rewriting: event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+9993 parse: instruction: copy
 9993 parse:   number of ingredients: 1
-9993 parse:   ingredient: {"\n    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data\n    4:character/cursor <- copy 9251/␣\n    print screen:address:shared:screen, 4:character/cursor\n  ": "literal-string"}
-9992 load: after rewriting: run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-    4:character/cursor <- copy 9251/␣
-    print screen:address:shared:screen, 4:character/cursor
-  ]
+9993 parse:   ingredient: {"9251": "literal", "␣": <>}
+9993 parse:   product: {"4": "character", "cursor": <>}
+9992 load: after rewriting: 4:character/cursor <- copy 9251/␣
+9993 parse: instruction: print
+9993 parse:   number of ingredients: 2
+9993 parse:   ingredient: {"screen": <"address" : <"shared" : <"screen" : <>>>>}
+9993 parse:   ingredient: {"4": "character", "cursor": <>}
+9992 load: after rewriting: print screen:address:shared:screen, 4:character/cursor
 9993 parse: instruction: screen-should-contain
 9993 parse:   number of ingredients: 1
 9993 parse:   ingredient: {"\n    .                              .\n    .               ┊␣             .\n    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.\n    .               ┊0            x.\n    .               ┊add 1, 1      .\n    .               ┊2             .\n    .               ┊━━━━━━━━━━━━━━.\n    .               ┊1            x.\n    .               ┊add 2, 2      .\n    .               ┊4             .\n  ": "literal-string"}
@@ -231,6 +239,7 @@
 9991 transform: --- deduce types for recipe scenario-scrolling-through-multiple-sandboxes
 9992 transform: screen => <address : <shared : <screen : <>>>>
 9992 transform: screen <= <address : <shared : <screen : <>>>>
+9992 transform: console => <address : <shared : <console : <>>>>
 9991 transform: --- collect surrounding spaces for recipe scenario-scrolling-through-multiple-sandboxes
 9991 transform: --- transform names for recipe scenario-scrolling-through-multiple-sandboxes
 9991 transform: --- resolve ambiguous calls for recipe scenario-scrolling-through-multiple-sandboxes
@@ -261,6 +270,31 @@
 9993 transform: strict match: ingredient 0
 9993 transform: strict match: ingredient 1
 9992 transform: score for variant 0: 999
+9992 transform: instruction event-loop
+9993 transform: strict match: ingredient 0
+9993 transform: strict match: ingredient 1
+9993 transform: strict match: ingredient 2
+9992 transform: score for base: 997
+9993 transform: strict match: ingredient 0
+9993 transform: strict match: ingredient 1
+9993 transform: strict match: ingredient 2
+9992 transform: score for variant 0: 997
+9992 transform: instruction print
+9993 transform: strict match: ingredient 0
+9993 transform: strict match: ingredient 1
+9992 transform: score for base: 999
+9993 transform: strict match: ingredient 0
+9993 transform: strict match: ingredient 1
+9992 transform: score for variant 0: 999
+9993 transform: strict match: ingredient 0
+9993 transform: mismatch: ingredient 1
+9992 transform: score for variant 1: -1
+9993 transform: strict match: ingredient 0
+9993 transform: mismatch: ingredient 1
+9992 transform: score for variant 2: -1
+9993 transform: strict match: ingredient 0
+9993 transform: mismatch: ingredient 1
+9992 transform: score for variant 3: -1
 9991 transform: --- compute instruction operations for recipe scenario-scrolling-through-multiple-sandboxes
 9991 transform: --- transform braces for recipe scenario-scrolling-through-multiple-sandboxes
 9992 transform: trace-until ...
@@ -270,7 +304,9 @@
 9992 transform: new-programming-environment ...
 9992 transform: render-all ...
 9992 transform: assume-console ...
-9992 transform: run ...
+9992 transform: event-loop ...
+9992 transform: copy ...
+9992 transform: print ...
 9992 transform: screen-should-contain ...
 9992 transform: assume-console ...
 9992 transform: run ...

@@ -121,6 +121,9 @@ recipe extract-sandbox env:address:shared:programming-environment-data, click-ro
   # snip sandbox out of its list
   result <- copy *sandbox
   *sandbox <- copy next-sandbox
+  # update sandbox count
+  sandbox-count:address:number <- get-address *env, number-of-sandboxes:offset
+  *sandbox-count <- subtract *sandbox-count, 1
 ]
 
 scenario sandbox-with-print-can-be-edited [
@@ -133,9 +136,7 @@ scenario sandbox-with-print-can-be-edited [
   assume-console [
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -149,13 +150,6 @@ scenario sandbox-with-print-can-be-edited [
     .  .                              .                .
     .  .                              .                .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
-    .                                                  .
-    .                                                  .
-    .                                                  .
-    .                                                  .
-    .                                                  .
-    .                                                  .
     .                                                  .
   ]
   # edit the sandbox
@@ -179,9 +173,8 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   assume-screen 50/width, 20/height
   # initialize environment
   1:address:shared:array:character <- new []
-  2:address:shared:array:character <- new []
-  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
-  render-all screen, 3:address:shared:programming-environment-data
+  2:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character
+  render-all screen, 2:address:shared:programming-environment-data
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
@@ -192,9 +185,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     press down-arrow
     press down-arrow
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -209,7 +200,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     left-click 2, 20
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
@@ -219,6 +210,72 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     .0                                                x.
     .add 1, 1                                          .
     .2                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
+  ]
+]
+
+scenario editing-sandbox-updates-sandbox-count [
+  trace-until 100/app  # trace too long
+  assume-screen 50/width, 20/height
+  # initialize environment
+  1:address:shared:array:character <- new []
+  2:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character
+  render-all screen, 2:address:shared:programming-environment-data
+  # create 2 sandboxes and scroll to second
+  assume-console [
+    press ctrl-n
+    type [add 2, 2]
+    press F4
+    type [add 1, 1]
+    press F4
+  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+  screen-should-contain [
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
+    .add 1, 1                                          .
+    .2                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .1                                                x.
+  ]
+  # edit the second sandbox, then resave
+  assume-console [
+    left-click 3, 20
+    press F4
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+  ]
+  # no change in contents
+  screen-should-contain [
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
+    .add 1, 1                                          .
+    .2                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .1                                                x.
+  ]
+  # now try to scroll past end
+  assume-console [
+    press down-arrow
+    press down-arrow
+    press down-arrow
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+  ]
+  # screen should show just final sandbox
+  screen-should-contain [
+    .                               run (F4)           .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .1                                                x.
+    .add 2, 2                                          .
+    .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]

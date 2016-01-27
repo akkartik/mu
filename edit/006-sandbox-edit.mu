@@ -190,9 +190,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     press down-arrow
     press down-arrow
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .                              .
     .               ┊━━━━━━━━━━━━━━.
@@ -238,9 +236,7 @@ scenario editing-sandbox-updates-sandbox-count [
     type [add 1, 1]
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .                              .
     .               ┊              .

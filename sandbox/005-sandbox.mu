@@ -116,7 +116,9 @@ after <global-keypress> [
     break-unless do-run?
     status:address:shared:array:character <- new [running...       ]
     screen <- update-status screen, status, 245/grey
-    error?:boolean, env, screen <- run-sandboxes env, screen
+    test-recipes:address:shared:array:character, _/optional <- next-ingredient
+    error?:boolean, env, screen <- run-sandboxes env, screen, test-recipes
+#?     test-recipes <- copy 0  # abandon
     # F4 might update warnings and results on both sides
     screen <- render-all screen, env
     {
@@ -130,10 +132,10 @@ after <global-keypress> [
   }
 ]
 
-recipe run-sandboxes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+recipe run-sandboxes env:address:shared:programming-environment-data, screen:address:shared:screen, test-recipes:address:shared:array:character -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
-  errors-found?:boolean, env, screen <- update-recipes env, screen
+  errors-found?:boolean, env, screen <- update-recipes env, screen, test-recipes
   reply-if errors-found?
   # check contents of editor
   <run-sandboxes-begin>
@@ -175,13 +177,20 @@ recipe run-sandboxes env:address:shared:programming-environment-data, screen:add
   <run-sandboxes-end>
 ]
 
-# load code from recipes.mu
+# load code from recipes.mu, or from test-recipes in tests
 # replaced in a later layer (whereupon errors-found? will actually be set)
-recipe update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+recipe update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen, test-recipes:address:shared:array:character -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
-  in:address:shared:array:character <- restore [recipes.mu]  # newlayer: persistence
-  reload in
+  {
+    break-if test-recipes
+    in:address:shared:array:character <- restore [recipes.mu]  # newlayer: persistence
+    reload in
+  }
+  {
+    break-unless test-recipes
+    reload test-recipes
+  }
   errors-found? <- copy 0/false
 ]
 
@@ -420,6 +429,57 @@ recipe render-screen screen:address:shared:screen, sandbox-screen:address:shared
   }
 ]
 
+scenario run-updates-results [
+  assume-screen 50/width, 12/height
+  # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
+  1:address:shared:array:character <- new [ 
+recipe foo [
+z:number <- add 2, 2
+reply z
+]]
+  # sandbox editor contains an instruction without storing outputs
+  2:address:shared:array:character <- new [foo]
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 2:address:shared:array:character
+  # run the code in the editors
+  assume-console [
+    press F4
+  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/recipes
+  screen-should-contain [
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
+    .foo                                               .
+    .4                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
+  ]
+  # make a change (incrementing one of the args to 'add'), then rerun
+  4:address:shared:array:character <- new [ 
+recipe foo [
+z:number <- add 2, 3
+reply z
+]]
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 4:address:shared:array:character/recipes
+  ]
+  # check that screen updates the result on the right
+  screen-should-contain [
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
+    .foo                                               .
+    .5                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
+  ]
+]
+
 scenario run-instruction-manages-screen-per-sandbox [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
@@ -504,11 +564,9 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     type [abc
 ]
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
-    3:character/cursor <- copy 9251/␣
-    print screen:address:shared:screen, 3:character/cursor
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+  3:character/cursor <- copy 9251/␣
+  print screen:address:shared:screen, 3:character/cursor
   screen-should-contain [
     .                               run (F4)           .
     .abc                                               .
@@ -652,11 +710,9 @@ scenario scrolling-through-multiple-sandboxes [
     type [add 1, 1]
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
-    3:character/cursor <- copy 9251/␣
-    print screen:address:shared:screen, 3:character/cursor
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+  3:character/cursor <- copy 9251/␣
+  print screen:address:shared:screen, 3:character/cursor
   screen-should-contain [
     .                               run (F4)           .
     .␣                                                 .
@@ -811,9 +867,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     type [add 1, 1]
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .

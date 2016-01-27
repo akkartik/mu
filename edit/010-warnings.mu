@@ -182,7 +182,7 @@ scenario run-updates-status-with-first-erroneous-sandbox [
   run [
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
-  # status shows first sandbox with error
+  # status line shows that error is in first sandbox
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
   ]
@@ -209,7 +209,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
   run [
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   ]
-  # status shows first sandbox with error
+  # status line shows that error is in second sandbox
   screen-should-contain [
     .  errors found (1)                                                               run (F4)           .
   ]
@@ -263,9 +263,7 @@ z <- add x, [a]
   assume-console [
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
@@ -489,9 +487,7 @@ recipe foo [
   assume-console [
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .

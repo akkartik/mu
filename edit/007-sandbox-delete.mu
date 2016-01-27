@@ -134,9 +134,7 @@ scenario deleting-sandbox-after-scroll [
     press F4
     press down-arrow
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .                              .
     .               ┊━━━━━━━━━━━━━━.
@@ -182,9 +180,7 @@ scenario deleting-top-sandbox-after-scroll [
     press F4
     press down-arrow
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .                              .
     .               ┊━━━━━━━━━━━━━━.
@@ -231,9 +227,7 @@ scenario deleting-final-sandbox-after-scroll [
     press down-arrow
     press down-arrow
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .                              .
     .               ┊━━━━━━━━━━━━━━.
@@ -279,9 +273,7 @@ scenario deleting-updates-sandbox-count [
     type [add 1, 1]
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .                              .
     .               ┊              .
