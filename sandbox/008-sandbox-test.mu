@@ -1,6 +1,85 @@
 ## clicking on sandbox results to 'fix' them and turn sandboxes into tests
 
-# todo: perform test from edit/ by faking file system
+scenario sandbox-click-on-result-toggles-color-to-green [
+  trace-until 100/app  # trace too long
+  assume-screen 50/width, 20/height
+  # basic recipe
+  1:address:shared:array:character <- new [ 
+recipe foo [
+  reply 4
+]]
+  # run it
+  2:address:shared:array:character <- new [foo]
+  assume-console [
+    press F4
+  ]
+  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 2:address:shared:array:character
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/test-recipes
+  screen-should-contain [
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
+    .foo                                               .
+    .4                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
+  ]
+  # click on the '4' in the result
+  assume-console [
+    left-click 5, 21
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/test-recipes
+  ]
+  # color toggles to green
+  screen-should-contain-in-color 2/green, [
+    .                                                  .
+    .                                                  .
+    .                                                  .
+    .                                                  .
+    .                                                  .
+    .4                                                 .
+    .                                                  .
+  ]
+  # cursor should remain unmoved
+  run [
+    4:character/cursor <- copy 9251/␣
+    print screen:address:shared:screen, 4:character/cursor
+  ]
+  screen-should-contain [
+    .                               run (F4)           .
+    .␣                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
+    .foo                                               .
+    .4                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
+  ]
+  # now change the result
+  5:address:shared:array:character <- new [ 
+recipe foo [
+  reply 3
+]]
+  # then rerun
+  assume-console [
+    press F4
+  ]
+  run [
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 5:address:shared:array:character/new-test-recipes
+  ]
+  # result turns red
+  screen-should-contain-in-color 1/red, [
+    .                                                  .
+    .                                                  .
+    .                                                  .
+    .                                                  .
+    .                                                  .
+    .3                                                 .
+    .                                                  .
+  ]
+]
 
 # clicks on sandbox responses save it as 'expected'
 after <global-touch> [

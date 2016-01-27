@@ -721,9 +721,7 @@ scenario scrolling-down-on-recipe-side [
   assume-console [
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   # hit 'down' in recipe editor
   assume-console [
     press down-arrow
@@ -733,8 +731,7 @@ scenario scrolling-down-on-recipe-side [
     4:character/cursor <- copy 9251/␣
     print screen:address:shared:screen, 4:character/cursor
   ]
-  # sandbox editor hidden; first sandbox displayed
-  # cursor moves to first sandbox
+  # cursor moves down on recipe side
   screen-should-contain [
     .                              .
     .               ┊              .
@@ -763,11 +760,9 @@ scenario scrolling-through-multiple-sandboxes [
     type [add 1, 1]
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-    4:character/cursor <- copy 9251/␣
-    print screen:address:shared:screen, 4:character/cursor
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  4:character/cursor <- copy 9251/␣
+  print screen:address:shared:screen, 4:character/cursor
   screen-should-contain [
     .                              .
     .               ┊␣             .
@@ -917,9 +912,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     type [add 1, 1]
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
   screen-should-contain [
     .                              .
     .               ┊              .
