@@ -40,6 +40,12 @@ void test_trace_check_ignores_other_layers<span class="Delimiter">()</span> <spa
   CHECK_TRACE_DOESNT_CONTAIN<span class="Delimiter">(</span><span class="Constant">&quot;test layer 2: foo&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+void test_trace_check_ignores_leading_whitespace<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; foo&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  CHECK<span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">too little whitespace</span><span class="Comment">*/</span><span class="Constant">&quot;foo&quot;</span><span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">too much whitespace</span><span class="Comment">*/</span><span class="Constant">&quot;  foo&quot;</span><span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
 void test_trace_check_ignores_other_lines<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>

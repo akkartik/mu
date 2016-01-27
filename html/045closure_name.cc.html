@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 046closure_name.cc</title>
+<title>Mu - 045closure_name.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -39,22 +39,22 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Delimiter">:(scenario closure)</span>
 recipe main [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
-  <span class="Constant">1</span>:address:array:location/names:new-counter<span class="Special"> &lt;- </span>new-counter
-  <span class="Constant">2</span>:number/<span class="Special">raw &lt;- </span>increment-counter <span class="Constant">1</span>:address:array:location/names:new-counter
-  <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>increment-counter <span class="Constant">1</span>:address:array:location/names:new-counter
+  default-space:address:shared:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
+  <span class="Constant">1</span>:address:shared:array:location/names:new-counter<span class="Special"> &lt;- </span>new-counter
+  <span class="Constant">2</span>:number/<span class="Special">raw &lt;- </span>increment-counter <span class="Constant">1</span>:address:shared:array:location/names:new-counter
+  <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>increment-counter <span class="Constant">1</span>:address:shared:array:location/names:new-counter
 ]
 
 recipe new-counter [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
+  default-space:address:shared:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
   x:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   y:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># variable that will be incremented</span>
-  reply default-space:address:array:location
+  reply default-space:address:shared:array:location
 ]
 
 recipe increment-counter [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
-  <span class="Constant">0</span>:address:array:location/names:new-counter<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># outer space must be created by 'new-counter' above</span>
+  default-space:address:shared:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
+  <span class="Constant">0</span>:address:shared:array:location/names:new-counter<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># outer space must be created by 'new-counter' above</span>
   y:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>add y:number/space:<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>  <span class="Comment"># increment</span>
   y:number<span class="Special"> &lt;- </span>copy <span class="Constant">234</span>  <span class="Comment"># dummy</span>
   reply y:number/space:<span class="Constant">1</span>
@@ -86,11 +86,13 @@ void collect_surrounding_spaces<span class="Delimiter">(</span>const recipe_ordi
       if <span class="Delimiter">(</span>!type
           || type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span>
           || !type<span class="Delimiter">-&gt;</span>right
-          || type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span>
+          || type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">)</span>
           || !type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
-          || type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">)</span>
-          || type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        raise_error &lt;&lt; <span class="Constant">&quot;slot 0 should always have type address:array:location, but is &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+          || type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span>
+          || !type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
+          || type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">)</span>
+          || type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        raise_error &lt;&lt; <span class="Constant">&quot;slot 0 should always have type address:shared:array:location, but is &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
         <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
       string_tree* s = property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> <span class="Constant">&quot;names&quot;</span><span class="Delimiter">);</span>

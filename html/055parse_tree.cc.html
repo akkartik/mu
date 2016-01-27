@@ -103,11 +103,14 @@ container bar [
 
 <span class="Delimiter">:(scenario dilated_reagent_with_new)</span>
 recipe main [
-  x:address:number<span class="Special"> &lt;- </span>new <span class="Delimiter">{(</span>foo bar<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
+  x:address:shared:address:number<span class="Special"> &lt;- </span>new <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
 ]
-<span class="Comment"># type isn't defined so size is meaningless, but at least we parse the type correctly</span>
-<span class="traceContains">+new: size of &lt;&quot;foo&quot; : &lt;&quot;bar&quot; : &lt;&gt;&gt;&gt; is 1</span>
+<span class="traceContains">+new: size of &lt;&quot;address&quot; : &lt;&quot;number&quot; : &lt;&gt;&gt;&gt; is 1</span>
 
+<span class="Delimiter">:(before &quot;End Post-processing(expected_product) When Checking 'new'&quot;)</span>
+expected_product<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second = parse_string_tree<span class="Delimiter">(</span>expected_product<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
+delete expected_product<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
+expected_product<span class="Delimiter">.</span>type = new_type_tree<span class="Delimiter">(</span>expected_product<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Post-processing(type_name) When Converting 'new'&quot;)</span>
 type_name = parse_string_tree<span class="Delimiter">(</span>type_name<span class="Delimiter">);</span>
 </pre>

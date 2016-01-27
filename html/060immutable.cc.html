@@ -39,7 +39,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
   local-scope
-  p:address:point<span class="Special"> &lt;- </span>new point:type
+  p:address:shared:point<span class="Special"> &lt;- </span>new point:type
   foo *p
 ]
 recipe foo p:point [
@@ -54,10 +54,10 @@ $warn: <span class="Constant">0</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
   local-scope
-  p:address:point<span class="Special"> &lt;- </span>new point:type
+  p:address:shared:point<span class="Special"> &lt;- </span>new point:type
   p<span class="Special"> &lt;- </span>foo p
 ]
-recipe foo p:address:point <span class="Delimiter">-&gt;</span> p:address:point [
+recipe foo p:address:shared:point <span class="Delimiter">-&gt;</span> p:address:shared:point [
   local-scope
   load-ingredients
   x:address:number<span class="Special"> &lt;- </span>get-address *p<span class="Delimiter">,</span> x:offset
@@ -69,13 +69,13 @@ $warn: <span class="Constant">0</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
   local-scope
-  p:address:d1<span class="Special"> &lt;- </span>new d1:type
+  p:address:shared:d1<span class="Special"> &lt;- </span>new d1:type
   q:number<span class="Special"> &lt;- </span>foo p
 ]
-recipe foo p:address:d1 <span class="Delimiter">-&gt;</span> q:number [
+recipe foo p:address:shared:d1 <span class="Delimiter">-&gt;</span> q:number [
   local-scope
   load-ingredients
-  x:address:d1<span class="Special"> &lt;- </span>new d1:type
+  x:address:shared:d1<span class="Special"> &lt;- </span>new d1:type
   y:address:number<span class="Special"> &lt;- </span>get-address *x<span class="Delimiter">,</span> p:offset  <span class="Comment"># ignore this 'p'</span>
   q<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
@@ -89,10 +89,10 @@ $warn: <span class="Constant">0</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
   local-scope
-  p:address:point<span class="Special"> &lt;- </span>new point:type
+  p:address:shared:point<span class="Special"> &lt;- </span>new point:type
   foo p
 ]
-recipe foo p:address:point [
+recipe foo p:address:shared:point [
   local-scope
   load-ingredients
   x:address:number<span class="Special"> &lt;- </span>get-address *p<span class="Delimiter">,</span> x:offset
@@ -104,15 +104,15 @@ recipe foo p:address:point [
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
   local-scope
-  p:address:point<span class="Special"> &lt;- </span>new point:type
+  p:address:shared:point<span class="Special"> &lt;- </span>new point:type
   foo p
 ]
-recipe foo p:address:point [
+recipe foo p:address:shared:point [
   local-scope
   load-ingredients
   bar p
 ]
-recipe bar p:address:point <span class="Delimiter">-&gt;</span> p:address:point [
+recipe bar p:address:shared:point <span class="Delimiter">-&gt;</span> p:address:shared:point [
   local-scope
   load-ingredients
   x:address:number<span class="Special"> &lt;- </span>get-address *p<span class="Delimiter">,</span> x:offset
@@ -124,13 +124,13 @@ recipe bar p:address:point <span class="Delimiter">-&gt;</span> p:address:point 
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
   local-scope
-  p:address:point<span class="Special"> &lt;- </span>new point:type
+  p:address:shared:point<span class="Special"> &lt;- </span>new point:type
   foo p
 ]
-recipe foo p:address:point [
+recipe foo p:address:shared:point [
   local-scope
   load-ingredients
-  q:address:point<span class="Special"> &lt;- </span>copy p
+  q:address:shared:point<span class="Special"> &lt;- </span>copy p
   x:address:number<span class="Special"> &lt;- </span>get-address *q<span class="Delimiter">,</span> x:offset
 ]
 <span class="traceContains">+warn: foo: cannot modify q after instruction 'x:address:number &lt;- get-address *q, x:offset' because that would modify ingredient p which is not also a product of foo</span>
@@ -138,19 +138,19 @@ recipe foo p:address:point [
 <span class="Delimiter">:(scenario can_traverse_immutable_ingredients)</span>
 <span class="Special">% Hide_warnings = true;</span>
 container test-list [
-  next:address:test-list
+  next:address:shared:test-list
 ]
 recipe main [
   local-scope
-  p:address:test-list<span class="Special"> &lt;- </span>new test-list:type
+  p:address:shared:test-list<span class="Special"> &lt;- </span>new test-list:type
   foo p
 ]
-recipe foo p:address:test-list [
+recipe foo p:address:shared:test-list [
   local-scope
   load-ingredients
-  p2:address:test-list<span class="Special"> &lt;- </span>bar p
+  p2:address:shared:test-list<span class="Special"> &lt;- </span>bar p
 ]
-recipe bar x:address:test-list <span class="Delimiter">-&gt;</span> y:address:test-list [
+recipe bar x:address:shared:test-list <span class="Delimiter">-&gt;</span> y:address:shared:test-list [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> next:offset
@@ -160,11 +160,11 @@ $warn: <span class="Constant">0</span>
 <span class="Delimiter">:(scenario handle_optional_ingredients_in_immutability_checks)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
-  k:address:number<span class="Special"> &lt;- </span>new number:type
+  k:address:shared:number<span class="Special"> &lt;- </span>new number:type
   test k
 ]
 <span class="Comment"># recipe taking an immutable address ingredient</span>
-recipe test k:address:number [
+recipe test k:address:shared:number [
   local-scope
   load-ingredients
   foo k
@@ -173,7 +173,7 @@ recipe test k:address:number [
 recipe foo <span class="Delimiter">-&gt;</span> [
   local-scope
   load-ingredients
-  k:address:number<span class="Delimiter">,</span> found?:boolean<span class="Special"> &lt;- </span>next-ingredient
+  k:address:shared:number<span class="Delimiter">,</span> found?:boolean<span class="Special"> &lt;- </span>next-ingredient
 ]
 $warn: <span class="Constant">0</span>
 
@@ -246,25 +246,25 @@ set&lt;long long int&gt; scan_contained_in_product_indices<span class="Delimiter
 <span class="Delimiter">:(scenario immutability_infects_contained_in_variables)</span>
 <span class="Special">% Hide_warnings = true;</span>
 container test-list [
-  next:address:test-list
+  next:address:shared:test-list
 ]
 recipe main [
   local-scope
-  p:address:test-list<span class="Special"> &lt;- </span>new test-list:type
+  p:address:shared:test-list<span class="Special"> &lt;- </span>new test-list:type
   foo p
 ]
-recipe foo p:address:test-list [  <span class="Comment"># p is immutable</span>
+recipe foo p:address:shared:test-list [  <span class="Comment"># p is immutable</span>
   local-scope
   load-ingredients
-  p2:address:test-list<span class="Special"> &lt;- </span>test-next p  <span class="Comment"># p2 is immutable</span>
-  p3:address:address:test-list<span class="Special"> &lt;- </span>get-address *p2<span class="Delimiter">,</span> next:offset  <span class="Comment"># signal modification of p2</span>
+  p2:address:shared:test-list<span class="Special"> &lt;- </span>test-next p  <span class="Comment"># p2 is immutable</span>
+  p3:address:address:shared:test-list<span class="Special"> &lt;- </span>get-address *p2<span class="Delimiter">,</span> next:offset  <span class="Comment"># signal modification of p2</span>
 ]
-recipe test-next x:address:test-list <span class="Delimiter">-&gt;</span> y:address:test-list/contained-in:x [
+recipe test-next x:address:shared:test-list <span class="Delimiter">-&gt;</span> y:address:shared:test-list/contained-in:x [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> next:offset
 ]
-<span class="traceContains">+warn: foo: cannot modify p2 after instruction 'p3:address:address:test-list &lt;- get-address *p2, next:offset' because that would modify ingredient p which is not also a product of foo</span>
+<span class="traceContains">+warn: foo: cannot modify p2 after instruction 'p3:address:address:shared:test-list &lt;- get-address *p2, next:offset' because that would modify ingredient p which is not also a product of foo</span>
 
 <span class="Delimiter">:(code)</span>
 void check_immutable_ingredient_in_instruction<span class="Delimiter">(</span>const instruction&amp; inst<span class="Delimiter">,</span> const set&lt;string&gt;&amp; current_ingredient_and_aliases<span class="Delimiter">,</span> const string&amp; original_ingredient_name<span class="Delimiter">,</span> const recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -349,28 +349,28 @@ set&lt;long long int&gt; ingredient_indices<span class="Delimiter">(</span>const
 <span class="Delimiter">:(scenario can_modify_contained_in_addresses)</span>
 <span class="Special">% Hide_warnings = true;</span>
 container test-list [
-  next:address:test-list
+  next:address:shared:test-list
 ]
 recipe main [
   local-scope
-  p:address:test-list<span class="Special"> &lt;- </span>new test-list:type
+  p:address:shared:test-list<span class="Special"> &lt;- </span>new test-list:type
   foo p
 ]
-recipe foo p:address:test-list <span class="Delimiter">-&gt;</span> p:address:test-list [
+recipe foo p:address:shared:test-list <span class="Delimiter">-&gt;</span> p:address:shared:test-list [
   local-scope
   load-ingredients
-  p2:address:test-list<span class="Special"> &lt;- </span>test-next p
+  p2:address:shared:test-list<span class="Special"> &lt;- </span>test-next p
   p<span class="Special"> &lt;- </span>test-remove p2<span class="Delimiter">,</span> p
 ]
-recipe test-next x:address:test-list <span class="Delimiter">-&gt;</span> y:address:test-list [
+recipe test-next x:address:shared:test-list <span class="Delimiter">-&gt;</span> y:address:shared:test-list [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> next:offset
 ]
-recipe test-remove x:address:test-list/contained-in:from<span class="Delimiter">,</span> from:address:test-list <span class="Delimiter">-&gt;</span> from:address:test-list [
+recipe test-remove x:address:shared:test-list/contained-in:from<span class="Delimiter">,</span> from:address:shared:test-list <span class="Delimiter">-&gt;</span> from:address:shared:test-list [
   local-scope
   load-ingredients
-  x2:address:address:test-list<span class="Special"> &lt;- </span>get-address *x<span class="Delimiter">,</span> next:offset  <span class="Comment"># pretend modification</span>
+  x2:address:address:shared:test-list<span class="Special"> &lt;- </span>get-address *x<span class="Delimiter">,</span> next:offset  <span class="Comment"># pretend modification</span>
 ]
 $warn: <span class="Constant">0</span>
 

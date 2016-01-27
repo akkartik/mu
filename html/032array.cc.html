@@ -13,9 +13,10 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .SalientComment { color: #00ffff; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -146,7 +147,7 @@ if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type &amp;&a
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; r<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' is an array of what?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Comment">// skip the 'array' type to get at the element type</span>
+<span class="CommentedCode">//?   trace(9999, &quot;mem&quot;) &lt;&lt; &quot;computing size of array starting at &quot; &lt;&lt; r.value &lt;&lt; end();</span>
   <span class="Identifier">return</span> <span class="Constant">1</span> + get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>array_element<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
@@ -205,6 +206,7 @@ case INDEX: <span class="Delimiter">{</span>
   reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
   long long int base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;base address is &quot;</span> &lt;&lt; base_address &lt;&lt; end<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>base_address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to access location 0 in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -253,7 +255,7 @@ recipe main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
   index *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> <span class="Constant">4</span>  <span class="Comment"># less than size of array in locations, but larger than its length in elements</span>
 ]
 <span class="traceContains">+error: main: invalid index 4</span>
@@ -373,7 +375,7 @@ recipe main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>  <span class="Comment"># unsafe</span>
+  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
   index-address *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> <span class="Constant">4</span>  <span class="Comment"># less than size of array in locations, but larger than its length in elements</span>
 ]
 <span class="traceContains">+error: main: invalid index 4</span>
@@ -464,10 +466,12 @@ bool is_mu_string<span class="Delimiter">(</span>const reagent&amp; x<span class
   <span class="Identifier">return</span> x<span class="Delimiter">.</span>type
     &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span>
     &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span>
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">)</span>
     &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;character&quot;</span><span class="Delimiter">)</span>
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right == <span class="Constant">NULL</span><span class="Delimiter">;</span>
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span>
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;character&quot;</span><span class="Delimiter">)</span>
+    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right == <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>

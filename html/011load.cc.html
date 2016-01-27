@@ -13,10 +13,9 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .traceAbsent { color: #c00000; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.CommentedCode { color: #6c6c6c; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -94,9 +93,8 @@ long long int slurp_recipe<span class="Delimiter">(</span>istream&amp; in<span c
   <span class="Delimiter">}</span>
   slurp_body<span class="Delimiter">(</span>in<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
   <span class="Comment">// End recipe Body(result)</span>
-  get_or_insert<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span> = result<span class="Delimiter">;</span>
+  put<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">),</span> result<span class="Delimiter">);</span>
   <span class="Comment">// track added recipes because we may need to undo them in tests; see below</span>
-<span class="CommentedCode">//?   LOG &lt;&lt; &quot;recently added recipe: &quot; &lt;&lt; result.name &lt;&lt; ' ' &lt;&lt; get(Recipe_ordinal, result.name) &lt;&lt; '\n';</span>
   Recently_added_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
@@ -280,7 +278,6 @@ void clear_recently_added_recipes<span class="Delimiter">()</span> <span class="
     if <span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &gt;= Reserved_for_tests  <span class="Comment">// don't renumber existing recipes, like 'interactive'</span>
         &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>  <span class="Comment">// in case previous test had duplicate definitions</span>
       Recipe_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
-<span class="CommentedCode">//?   LOG &lt;&lt; &quot;erase recipe &quot; &lt;&lt; Recently_added_recipes.at(i) &lt;&lt; ' ' &lt;&lt; get(Recipe, Recently_added_recipes.at(i)).name &lt;&lt; '\n';</span>
     Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// Clear Other State For Recently_added_recipes</span>

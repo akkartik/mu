@@ -37,16 +37,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># temporary main: interactive editor</span>
 <span class="Comment"># hit ctrl-c to exit</span>
-<span class="muRecipe">recipe!</span> main text:address:array:character [
+<span class="muRecipe">recipe!</span> main text:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   open-console
-  editor:address:editor-data<span class="Special"> &lt;- </span>new-editor text, <span class="Constant">0/screen</span>, <span class="Constant">5/left</span>, <span class="Constant">45/right</span>
+  editor:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor text, <span class="Constant">0/screen</span>, <span class="Constant">5/left</span>, <span class="Constant">45/right</span>
   editor-event-loop <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>, editor
   close-console
 ]
 
-<span class="muRecipe">recipe</span> editor-event-loop screen:address:screen, console:address:console, editor:address:editor-data<span class="muRecipe"> -&gt; </span>screen:address:screen, console:address:console, editor:address:editor-data [
+<span class="muRecipe">recipe</span> editor-event-loop screen:address:shared:screen, console:address:shared:console, editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, console:address:shared:console, editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -55,7 +55,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     cursor-row:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-row:offset</span>
     cursor-column:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-column:offset</span>
     screen<span class="Special"> &lt;- </span>move-cursor screen, cursor-row, cursor-column
-    e:event, console:address:console, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-event console
+    e:event, console:address:shared:console, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-event console
     <span class="muControl">loop-unless</span> found?
     <span class="muControl">break-if</span> quit?  <span class="Comment"># only in tests</span>
     trace <span class="Constant">10</span>, <span class="Constant">[app]</span>, <span class="Constant">[next-event]</span>
@@ -80,7 +80,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># process click, return if it was on current editor</span>
-<span class="muRecipe">recipe</span> move-cursor-in-editor screen:address:screen, editor:address:editor-data, t:touch-event<span class="muRecipe"> -&gt; </span>in-focus?:boolean, editor:address:editor-data [
+<span class="muRecipe">recipe</span> move-cursor-in-editor screen:address:shared:screen, editor:address:shared:editor-data, t:touch-event<span class="muRecipe"> -&gt; </span>in-focus?:boolean, editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">reply-unless</span> editor, <span class="Constant">0/false</span>
@@ -105,7 +105,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># Variant of 'render' that only moves the cursor (coordinates and</span>
 <span class="Comment"># before-cursor). If it's past the end of a line, it 'slides' it left. If it's</span>
 <span class="Comment"># past the last line it positions at end of last line.</span>
-<span class="muRecipe">recipe</span> snap-cursor screen:address:screen, editor:address:editor-data, target-row:number, target-column:number<span class="muRecipe"> -&gt; </span>editor:address:editor-data [
+<span class="muRecipe">recipe</span> snap-cursor screen:address:shared:screen, editor:address:shared:editor-data, target-row:number, target-column:number<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">reply-unless</span> editor
@@ -113,8 +113,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   right:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">right:offset</span>
   screen-height:number<span class="Special"> &lt;- </span>screen-height screen
   <span class="Comment"># count newlines until screen row</span>
-  curr:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
-  prev:address:duplex-list:character<span class="Special"> &lt;- </span>copy curr  <span class="Comment"># just in case curr becomes null and we can't compute prev</span>
+  curr:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  prev:address:shared:duplex-list:character<span class="Special"> &lt;- </span>copy curr  <span class="Comment"># just in case curr becomes null and we can't compute prev</span>
   curr<span class="Special"> &lt;- </span>next curr
   row:number<span class="Special"> &lt;- </span>copy <span class="Constant">1/top</span>
   column:number<span class="Special"> &lt;- </span>copy left
@@ -122,7 +122,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   *cursor-row<span class="Special"> &lt;- </span>copy target-row
   cursor-column:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-column:offset</span>
   *cursor-column<span class="Special"> &lt;- </span>copy target-column
-  before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
+  before-cursor:address:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
   <span class="Delimiter">{</span>
 <span class="Constant">    +next-character</span>
     <span class="muControl">break-unless</span> curr
@@ -190,7 +190,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># Process an event 'e' and try to minimally update the screen.</span>
 <span class="Comment"># Set 'go-render?' to true to indicate the caller must perform a non-minimal update.</span>
-<span class="muRecipe">recipe</span> handle-keyboard-event screen:address:screen, editor:address:editor-data, e:event<span class="muRecipe"> -&gt; </span>screen:address:screen, editor:address:editor-data, go-render?:boolean [
+<span class="muRecipe">recipe</span> handle-keyboard-event screen:address:shared:screen, editor:address:shared:editor-data, e:event<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, editor:address:shared:editor-data, go-render?:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
@@ -199,7 +199,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   screen-height:number<span class="Special"> &lt;- </span>screen-height screen
   left:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">left:offset</span>
   right:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">right:offset</span>
-  before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
+  before-cursor:address:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
   cursor-row:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-row:offset</span>
   cursor-column:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-column:offset</span>
   save-row:number<span class="Special"> &lt;- </span>copy *cursor-row
@@ -230,10 +230,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="muControl">reply</span>
 ]
 
-<span class="muRecipe">recipe</span> insert-at-cursor editor:address:editor-data, c:character, screen:address:screen<span class="muRecipe"> -&gt; </span>editor:address:editor-data, screen:address:screen, go-render?:boolean [
+<span class="muRecipe">recipe</span> insert-at-cursor editor:address:shared:editor-data, c:character, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
+  before-cursor:address:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
   insert c, *before-cursor
   *before-cursor<span class="Special"> &lt;- </span>next *before-cursor
   cursor-row:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-row:offset</span>
@@ -248,7 +248,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Constant">  &lt;insert-character-special-case&gt;</span>
   <span class="Comment"># but mostly we'll just move the cursor right</span>
   *cursor-column<span class="Special"> &lt;- </span>add *cursor-column, <span class="Constant">1</span>
-  next:address:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
+  next:address:shared:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
   <span class="Delimiter">{</span>
     <span class="Comment"># at end of all text? no need to scroll? just print the character and leave</span>
     at-end?:boolean<span class="Special"> &lt;- </span>equal next, <span class="Constant">0/null</span>
@@ -268,7 +268,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> next
     at-right?:boolean<span class="Special"> &lt;- </span>greater-or-equal *cursor-column, screen-width
     <span class="muControl">break-if</span> at-right?
-    curr:address:duplex-list:character<span class="Special"> &lt;- </span>copy *before-cursor
+    curr:address:shared:duplex-list:character<span class="Special"> &lt;- </span>copy *before-cursor
     move-cursor screen, save-row, save-column
     curr-column:number<span class="Special"> &lt;- </span>copy save-column
     <span class="Delimiter">{</span>
@@ -294,7 +294,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># helper for tests</span>
-<span class="muRecipe">recipe</span> editor-render screen:address:screen, editor:address:editor-data<span class="muRecipe"> -&gt; </span>screen:address:screen, editor:address:editor-data [
+<span class="muRecipe">recipe</span> editor-render screen:address:shared:screen, editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   left:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">left:offset</span>
@@ -309,12 +309,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-handles-empty-event-queue [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
   assume-console <span class="Constant">[]</span>
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -326,17 +326,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">1</span>  <span class="Comment"># on the 'b'</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -353,16 +353,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-text [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">7</span>  <span class="Comment"># last line, to the right of text</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># cursor row</span>
@@ -373,17 +373,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-text-2 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">7</span>  <span class="Comment"># interior line, to the right of text</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># cursor row</span>
@@ -394,17 +394,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-text-3 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">7</span>  <span class="Comment"># below text</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>  <span class="Comment"># cursor row</span>
@@ -415,19 +415,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-column [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   <span class="Comment"># editor occupies only left half of screen</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
     <span class="Comment"># click on right half of screen</span>
     left-click <span class="Constant">3</span>, <span class="Constant">8</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -444,18 +444,18 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks-in-menu-area [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
     <span class="Comment"># click on first, 'menu' row</span>
     left-click <span class="Constant">0</span>, <span class="Constant">3</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># no change to cursor</span>
   memory-should-contain [
@@ -466,15 +466,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-inserts-characters-into-empty-editor [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
     type <span class="Constant">[abc]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -487,9 +487,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># type two letters at different places</span>
   assume-console [
@@ -498,7 +498,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[d]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -511,16 +511,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-2 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">5</span>  <span class="Comment"># right of last line</span>
     type <span class="Constant">[d]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -533,17 +533,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-5 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">5</span>  <span class="Comment"># right of non-last line</span>
     type <span class="Constant">[e]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -557,16 +557,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-3 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">5</span>  <span class="Comment"># below all text</span>
     type <span class="Constant">[d]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -579,17 +579,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-4 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">5</span>  <span class="Comment"># below all text</span>
     type <span class="Constant">[e]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -603,17 +603,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-6 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">5</span>  <span class="Comment"># below all text</span>
     type <span class="Constant">[ef]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -627,14 +627,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-moves-cursor-after-inserting-characters [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
   assume-console [
     type <span class="Constant">[01]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -648,15 +648,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-wraps-line-on-insert [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
   <span class="Comment"># type a letter</span>
   assume-console [
     type <span class="Constant">[e]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   <span class="Comment"># no wrap yet</span>
   screen-should-contain [
@@ -671,7 +671,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[f]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   <span class="Comment"># now wrap</span>
   screen-should-contain [
@@ -686,19 +686,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muScenario">scenario</span> editor-wraps-line-on-insert-2 [
   <span class="Comment"># create an editor with some text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcdefg</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcdefg</span>
 <span class="Constant">defg]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:address:editor-data
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
   <span class="Comment"># type more text at the start</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">0</span>
     type <span class="Constant">[abc]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor is not wrapped</span>
   memory-should-contain [
@@ -738,16 +738,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-wraps-cursor-after-inserting-characters [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">4</span>  <span class="Comment"># line is full; no wrap icon yet</span>
     type <span class="Constant">[f]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -764,16 +764,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-wraps-cursor-after-inserting-characters-2 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">3</span>  <span class="Comment"># right before the wrap icon</span>
     type <span class="Constant">[f]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -790,16 +790,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-wraps-cursor-to-left-margin [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">2/left</span>, <span class="Constant">7/right</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">2/left</span>, <span class="Constant">7/right</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">5</span>  <span class="Comment"># line is full; no wrap icon yet</span>
     type <span class="Constant">[01]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -827,14 +827,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-moves-cursor-down-after-inserting-newline [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   assume-console [
     type <span class="Constant">[0</span>
 <span class="Constant">1]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -857,12 +857,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> insert-new-line-and-indent editor:address:editor-data, screen:address:screen<span class="muRecipe"> -&gt; </span>editor:address:editor-data, screen:address:screen, go-render?:boolean [
+<span class="muRecipe">recipe</span> insert-new-line-and-indent editor:address:shared:editor-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   cursor-row:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-row:offset</span>
   cursor-column:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-column:offset</span>
-  before-cursor:address:address:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
+  before-cursor:address:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
   left:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">left:offset</span>
   right:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">right:offset</span>
   screen-height:number<span class="Special"> &lt;- </span>screen-height screen
@@ -882,8 +882,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># indent if necessary</span>
   indent?:boolean<span class="Special"> &lt;- </span>get *editor, <span class="Constant">indent?:offset</span>
   <span class="muControl">reply-unless</span> indent?
-  d:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
-  end-of-previous-line:address:duplex-list:character<span class="Special"> &lt;- </span>prev *before-cursor
+  d:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
+  end-of-previous-line:address:shared:duplex-list:character<span class="Special"> &lt;- </span>prev *before-cursor
   indent:number<span class="Special"> &lt;- </span>line-indent end-of-previous-line, d
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
@@ -897,7 +897,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># takes a pointer 'curr' into the doubly-linked list and its sentinel, counts</span>
 <span class="Comment"># the number of spaces at the start of the line containing 'curr'.</span>
-<span class="muRecipe">recipe</span> line-indent curr:address:duplex-list:character, start:address:duplex-list:character<span class="muRecipe"> -&gt; </span>result:number [
+<span class="muRecipe">recipe</span> line-indent curr:address:shared:duplex-list:character, start:address:shared:duplex-list:character<span class="muRecipe"> -&gt; </span>result:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -929,14 +929,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-moves-cursor-down-after-inserting-newline-2 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">1/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">1/left</span>, <span class="Constant">10/right</span>
   assume-console [
     type <span class="Constant">[0</span>
 <span class="Constant">1]</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -949,8 +949,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-clears-previous-line-completely-after-inserting-newline [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   assume-console [
     press enter
   ]
@@ -962,7 +962,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
    <span class="Constant"> .          .</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
   ]
   <span class="Comment"># line should be fully cleared</span>
   screen-should-contain [
@@ -976,10 +976,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-inserts-indent-after-newline [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">10/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
 <span class="Constant">  cd</span>
 <span class="Constant">ef]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># position cursor after 'cd' and hit 'newline'</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">8</span>
@@ -987,9 +987,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor should be below start of previous line</span>
   memory-should-contain [
@@ -1000,10 +1000,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> editor-skips-indent-around-paste [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">10/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
 <span class="Constant">  cd</span>
 <span class="Constant">ef]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># position cursor after 'cd' and hit 'newline' surrounded by paste markers</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">8</span>
@@ -1012,9 +1012,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     press <span class="Constant">65506</span>  <span class="Comment"># end paste</span>
   ]
   run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor should be below start of previous line</span>
   memory-should-contain [
@@ -1047,7 +1047,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="SalientComment">## helpers</span>
 
-<span class="muRecipe">recipe</span> draw-horizontal screen:address:screen, row:number, x:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">recipe</span> draw-horizontal screen:address:shared:screen, row:number, x:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   style:character, style-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>

@@ -37,21 +37,21 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># to-text-line gets called implicitly in various places</span>
 <span class="Comment"># define it to be identical to 'to-text' by default</span>
-<span class="muRecipe">recipe</span> to-text-line x:_elem<span class="muRecipe"> -&gt; </span>y:address:array:character [
+<span class="muRecipe">recipe</span> to-text-line x:_elem<span class="muRecipe"> -&gt; </span>y:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   y<span class="Special"> &lt;- </span>to-text x
 ]
 
 <span class="Comment"># to-text on text is just the identity function</span>
-<span class="muRecipe">recipe</span> to-text x:address:array:character<span class="muRecipe"> -&gt; </span>y:address:array:character [
+<span class="muRecipe">recipe</span> to-text x:address:shared:array:character<span class="muRecipe"> -&gt; </span>y:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
 <span class="CommentedCode">#?   $print [to-text text], 10/newline</span>
   <span class="muControl">reply</span> x
 ]
 
-<span class="muRecipe">recipe</span> equal a:address:array:character, b:address:array:character<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">recipe</span> equal a:address:shared:array:character, b:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   a-len:number<span class="Special"> &lt;- </span>length *a
@@ -84,8 +84,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-equal-reflexive [
   run [
-    <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
-    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">default-space</span>:address:shared:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
+    x:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal x, x
   ]
   memory-should-contain [
@@ -95,9 +95,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-equal-identical [
   run [
-    <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
-    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">default-space</span>:address:shared:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
+    x:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    y:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal x, y
   ]
   memory-should-contain [
@@ -107,9 +107,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-equal-distinct-lengths [
   run [
-    <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
-    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
+    <span class="Constant">default-space</span>:address:shared:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
+    x:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    y:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
     <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal x, y
   ]
   memory-should-contain [
@@ -125,9 +125,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-equal-with-empty [
   run [
-    <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
-    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
+    <span class="Constant">default-space</span>:address:shared:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
+    x:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    y:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
     <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal x, y
   ]
   memory-should-contain [
@@ -137,9 +137,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-equal-common-lengths-but-distinct [
   run [
-    <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
-    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abd]</span>
+    <span class="Constant">default-space</span>:address:shared:array:location<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
+    x:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    y:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abd]</span>
     <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal x, y
   ]
   memory-should-contain [
@@ -150,28 +150,28 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># A new type to help incrementally construct texts.</span>
 <span class="muData">container</span> buffer [
   length:number
-  data:address:array:character
+  data:address:shared:array:character
 ]
 
-<span class="muRecipe">recipe</span> new-buffer capacity:number<span class="muRecipe"> -&gt; </span>result:address:buffer [
+<span class="muRecipe">recipe</span> new-buffer capacity:number<span class="muRecipe"> -&gt; </span>result:address:shared:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>new <span class="Constant">buffer:type</span>
   len:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">length:offset</span>
   *len:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  s:address:address:array:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
+  s:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
   *s<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, capacity
   <span class="muControl">reply</span> result
 ]
 
-<span class="muRecipe">recipe</span> grow-buffer in:address:buffer<span class="muRecipe"> -&gt; </span>in:address:buffer [
+<span class="muRecipe">recipe</span> grow-buffer in:address:shared:buffer<span class="muRecipe"> -&gt; </span>in:address:shared:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># double buffer size</span>
-  x:address:address:array:character<span class="Special"> &lt;- </span>get-address *in, <span class="Constant">data:offset</span>
+  x:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *in, <span class="Constant">data:offset</span>
   oldlen:number<span class="Special"> &lt;- </span>length **x
   newlen:number<span class="Special"> &lt;- </span>multiply oldlen, <span class="Constant">2</span>
-  olddata:address:array:character<span class="Special"> &lt;- </span>copy *x
+  olddata:address:shared:array:character<span class="Special"> &lt;- </span>copy *x
   *x<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, newlen
   <span class="Comment"># copy old contents</span>
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -186,21 +186,21 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> buffer-full? in:address:buffer<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">recipe</span> buffer-full? in:address:shared:buffer<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   len:number<span class="Special"> &lt;- </span>get *in, <span class="Constant">length:offset</span>
-  s:address:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  s:address:shared:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
   capacity:number<span class="Special"> &lt;- </span>length *s
   result<span class="Special"> &lt;- </span>greater-or-equal len, capacity
 ]
 
 <span class="Comment"># most broadly applicable definition of append to a buffer: just call to-text</span>
-<span class="muRecipe">recipe</span> append buf:address:buffer, x:_elem<span class="muRecipe"> -&gt; </span>buf:address:buffer [
+<span class="muRecipe">recipe</span> append buf:address:shared:buffer, x:_elem<span class="muRecipe"> -&gt; </span>buf:address:shared:buffer [
   <span class="Constant">local-scope</span>
 <span class="CommentedCode">#?   $print [append _elem to buffer], 10/newline</span>
   <span class="Constant">load-ingredients</span>
-  text:address:array:character<span class="Special"> &lt;- </span>to-text x
+  text:address:shared:array:character<span class="Special"> &lt;- </span>to-text x
   len:number<span class="Special"> &lt;- </span>length *text
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
@@ -213,7 +213,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> append in:address:buffer, c:character<span class="muRecipe"> -&gt; </span>in:address:buffer [
+<span class="muRecipe">recipe</span> append in:address:shared:buffer, c:character<span class="muRecipe"> -&gt; </span>in:address:shared:buffer [
   <span class="Constant">local-scope</span>
 <span class="CommentedCode">#?   $print [append character to buffer], 10/newline</span>
   <span class="Constant">load-ingredients</span>
@@ -233,7 +233,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> full?
     in<span class="Special"> &lt;- </span>grow-buffer in
   <span class="Delimiter">}</span>
-  s:address:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  s:address:shared:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
   dest:address:character<span class="Special"> &lt;- </span>index-address *s, *len
   *dest<span class="Special"> &lt;- </span>copy c
   *len<span class="Special"> &lt;- </span>add *len, <span class="Constant">1</span>
@@ -242,20 +242,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muScenario">scenario</span> buffer-append-works [
   run [
     <span class="Constant">local-scope</span>
-    x:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">3</span>
-    s1:address:array:character<span class="Special"> &lt;- </span>get *x:address:buffer, <span class="Constant">data:offset</span>
-    x:address:buffer<span class="Special"> &lt;- </span>append x:address:buffer, <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
-    x:address:buffer<span class="Special"> &lt;- </span>append x:address:buffer, <span class="Constant">98</span>  <span class="Comment"># 'b'</span>
-    x:address:buffer<span class="Special"> &lt;- </span>append x:address:buffer, <span class="Constant">99</span>  <span class="Comment"># 'c'</span>
-    s2:address:array:character<span class="Special"> &lt;- </span>get *x:address:buffer, <span class="Constant">data:offset</span>
-    <span class="Constant">1</span>:boolean/<span class="Special">raw &lt;- </span>equal s1:address:array:character, s2:address:array:character
-    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2:address:array:character
+    x:address:shared:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">3</span>
+    s1:address:shared:array:character<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
+    x<span class="Special"> &lt;- </span>append x, <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
+    x<span class="Special"> &lt;- </span>append x, <span class="Constant">98</span>  <span class="Comment"># 'b'</span>
+    x<span class="Special"> &lt;- </span>append x, <span class="Constant">99</span>  <span class="Comment"># 'c'</span>
+    s2:address:shared:array:character<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
+    <span class="Constant">1</span>:boolean/<span class="Special">raw &lt;- </span>equal s1, s2
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2
 <span class="Constant">    +buffer-filled</span>
-    x:address:buffer<span class="Special"> &lt;- </span>append x:address:buffer, <span class="Constant">100</span>  <span class="Comment"># 'd'</span>
-    s3:address:array:character<span class="Special"> &lt;- </span>get *x:address:buffer, <span class="Constant">data:offset</span>
-    <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal s1:address:array:character, s3:address:array:character
-    <span class="Constant">11</span>:number/<span class="Special">raw &lt;- </span>get *x:address:buffer, <span class="Constant">length:offset</span>
-    <span class="Constant">12</span>:array:character/<span class="Special">raw &lt;- </span>copy *s3:address:array:character
+    x<span class="Special"> &lt;- </span>append x, <span class="Constant">100</span>  <span class="Comment"># 'd'</span>
+    s3:address:shared:array:character<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
+    <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal s1, s3
+    <span class="Constant">11</span>:number/<span class="Special">raw &lt;- </span>get *x, <span class="Constant">length:offset</span>
+    <span class="Constant">12</span>:array:character/<span class="Special">raw &lt;- </span>copy *s3
   ]
   memory-should-contain [
     <span class="Comment"># before +buffer-filled</span>
@@ -280,11 +280,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muScenario">scenario</span> buffer-append-handles-backspace [
   run [
     <span class="Constant">local-scope</span>
-    x:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">3</span>
+    x:address:shared:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">3</span>
     x<span class="Special"> &lt;- </span>append x, <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
     x<span class="Special"> &lt;- </span>append x, <span class="Constant">98</span>  <span class="Comment"># 'b'</span>
     x<span class="Special"> &lt;- </span>append x, <span class="Constant">8/backspace</span>
-    s:address:array:character<span class="Special"> &lt;- </span>buffer-to-array x
+    s:address:shared:array:character<span class="Special"> &lt;- </span>buffer-to-array x
     <span class="Constant">1</span>:array:character/<span class="Special">raw &lt;- </span>copy *s
   ]
   memory-should-contain [
@@ -294,7 +294,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> to-text n:number<span class="muRecipe"> -&gt; </span>result:address:array:character [
+<span class="muRecipe">recipe</span> to-text n:number<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># is n zero?</span>
@@ -312,14 +312,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     n<span class="Special"> &lt;- </span>multiply n, <span class="Constant">-1</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># add digits from right to left into intermediate buffer</span>
-  tmp:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
+  tmp:address:shared:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
   digit-base:number<span class="Special"> &lt;- </span>copy <span class="Constant">48</span>  <span class="Comment"># '0'</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>equal n, <span class="Constant">0</span>
     <span class="muControl">break-if</span> done?
     n, digit:number<span class="Special"> &lt;- </span>divide-with-remainder n, <span class="Constant">10</span>
     c:character<span class="Special"> &lt;- </span>add digit-base, digit
-    tmp:address:buffer<span class="Special"> &lt;- </span>append tmp, c
+    tmp:address:shared:buffer<span class="Special"> &lt;- </span>append tmp, c
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># add sign</span>
@@ -329,7 +329,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
   <span class="Comment"># reverse buffer into text result</span>
   len:number<span class="Special"> &lt;- </span>get *tmp, <span class="Constant">length:offset</span>
-  buf:address:array:character<span class="Special"> &lt;- </span>get *tmp, <span class="Constant">data:offset</span>
+  buf:address:shared:array:character<span class="Special"> &lt;- </span>get *tmp, <span class="Constant">data:offset</span>
   result<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, len
   i:number<span class="Special"> &lt;- </span>subtract len, <span class="Constant">1</span>  <span class="Comment"># source index, decreasing</span>
   j:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># destination index, increasing</span>
@@ -347,7 +347,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> buffer-to-array in:address:buffer<span class="muRecipe"> -&gt; </span>result:address:array:character [
+<span class="muRecipe">recipe</span> buffer-to-array in:address:shared:buffer<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -356,7 +356,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">reply</span> <span class="Constant">0</span>
   <span class="Delimiter">}</span>
   len:number<span class="Special"> &lt;- </span>get *in, <span class="Constant">length:offset</span>
-  s:address:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  s:address:shared:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
   <span class="Comment"># we can't just return s because it is usually the wrong length</span>
   result<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, len
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -373,8 +373,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> integer-to-decimal-digit-zero [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>to-text <span class="Constant">0</span>
-    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>to-text <span class="Constant">0</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[0]</span>
@@ -383,8 +383,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> integer-to-decimal-digit-positive [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>to-text <span class="Constant">234</span>
-    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>to-text <span class="Constant">234</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[234]</span>
@@ -393,8 +393,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> integer-to-decimal-digit-negative [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>to-text <span class="Constant">-1</span>
-    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>to-text <span class="Constant">-1</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
@@ -403,7 +403,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> append a:address:array:character, b:address:array:character<span class="muRecipe"> -&gt; </span>result:address:array:character [
+<span class="muRecipe">recipe</span> append a:address:shared:array:character, b:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
 <span class="CommentedCode">#?   $print [append text to text], 10/newline</span>
   <span class="Constant">load-ingredients</span>
@@ -445,10 +445,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-append-1 [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[hello,]</span>
-    <span class="Constant">2</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[ world!]</span>
-    <span class="Constant">3</span>:address:array:character/<span class="Special">raw &lt;- </span>append <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">2</span>:address:array:character/<span class="Special">raw</span>
-    <span class="Constant">4</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">3</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[hello,]</span>
+    <span class="Constant">2</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[ world!]</span>
+    <span class="Constant">3</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>append <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>, <span class="Constant">2</span>:address:shared:array:character/<span class="Special">raw</span>
+    <span class="Constant">4</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">3</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">4</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[hello, world!]</span>
@@ -457,19 +457,18 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> replace-character-in-text [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>replace <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">98/b</span>, <span class="Constant">122/z</span>
-    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>replace <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>, <span class="Constant">98/b</span>, <span class="Constant">122/z</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[azc]</span>
   ]
 ]
 
-<span class="muRecipe">recipe</span> replace s:address:array:character, oldc:character, newc:character<span class="muRecipe"> -&gt; </span>s:address:array:character [
+<span class="muRecipe">recipe</span> replace s:address:shared:array:character, oldc:character, newc:character, from:number/optional<span class="muRecipe"> -&gt; </span>s:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  from:number, _<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>  <span class="Comment"># default to 0</span>
   len:number<span class="Special"> &lt;- </span>length *s
   i:number<span class="Special"> &lt;- </span>find-next s, oldc, from
   done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
@@ -482,9 +481,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> replace-character-at-start [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>replace <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
-    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>replace <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[zbc]</span>
@@ -493,9 +492,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> replace-character-at-end [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>replace <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">99/c</span>, <span class="Constant">122/z</span>
-    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>replace <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>, <span class="Constant">99/c</span>, <span class="Constant">122/z</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abz]</span>
@@ -504,9 +503,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> replace-character-missing [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>replace <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">100/d</span>, <span class="Constant">122/z</span>
-    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>replace <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>, <span class="Constant">100/d</span>, <span class="Constant">122/z</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>
@@ -515,9 +514,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> replace-all-characters [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[banana]</span>
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>replace <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
-    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[banana]</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>replace <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[bznznz]</span>
@@ -525,7 +524,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># replace underscores in first with remaining args</span>
-<span class="muRecipe">recipe</span> interpolate template:address:array:character<span class="muRecipe"> -&gt; </span>result:address:array:character [
+<span class="muRecipe">recipe</span> interpolate template:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>  <span class="Comment"># consume just the template</span>
   <span class="Comment"># compute result-len, space to allocate for result</span>
@@ -533,7 +532,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   result-len:number<span class="Special"> &lt;- </span>copy tem-len
   <span class="Delimiter">{</span>
     <span class="Comment"># while ingredients remain</span>
-    a:address:array:character, arg-received?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    a:address:shared:array:character, arg-received?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
     <span class="muControl">break-unless</span> arg-received?
     <span class="Comment"># result-len = result-len + arg.length - 1 (for the 'underscore' being replaced)</span>
     a-len:number<span class="Special"> &lt;- </span>length *a
@@ -543,13 +542,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
   rewind-ingredients
   _<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>  <span class="Comment"># skip template</span>
-  result:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, result-len
+  result<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, result-len
   <span class="Comment"># repeatedly copy sections of template and 'holes' into result</span>
   result-idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># while arg received</span>
-    a:address:array:character, arg-received?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    a:address:shared:array:character, arg-received?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
     <span class="muControl">break-unless</span> arg-received?
     <span class="Comment"># copy template into result until '_'</span>
     <span class="Delimiter">{</span>
@@ -603,10 +602,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> interpolate-works [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc _]</span>
-    <span class="Constant">2</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[def]</span>
-    <span class="Constant">3</span>:address:array:character/<span class="Special">raw &lt;- </span>interpolate <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">2</span>:address:array:character/<span class="Special">raw</span>
-    <span class="Constant">4</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">3</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc _]</span>
+    <span class="Constant">2</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[def]</span>
+    <span class="Constant">3</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>interpolate <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>, <span class="Constant">2</span>:address:shared:array:character/<span class="Special">raw</span>
+    <span class="Constant">4</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">3</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">4</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc def]</span>
@@ -615,10 +614,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> interpolate-at-start [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[_, hello!]</span>
-    <span class="Constant">2</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">3</span>:address:array:character/<span class="Special">raw &lt;- </span>interpolate <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">2</span>:address:array:character/<span class="Special">raw</span>
-    <span class="Constant">4</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">3</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[_, hello!]</span>
+    <span class="Constant">2</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">3</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>interpolate <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>, <span class="Constant">2</span>:address:shared:array:character/<span class="Special">raw</span>
+    <span class="Constant">4</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">3</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">4</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc, hello!]</span>
@@ -628,10 +627,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> interpolate-at-end [
   run [
-    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[hello, _]</span>
-    <span class="Constant">2</span>:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">3</span>:address:array:character/<span class="Special">raw &lt;- </span>interpolate <span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>, <span class="Constant">2</span>:address:array:character/<span class="Special">raw</span>
-    <span class="Constant">4</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">3</span>:address:array:character/<span class="Special">raw</span>
+    <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[hello, _]</span>
+    <span class="Constant">2</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">3</span>:address:shared:array:character/<span class="Special">raw &lt;- </span>interpolate <span class="Constant">1</span>:address:shared:array:character/<span class="Special">raw</span>, <span class="Constant">2</span>:address:shared:array:character/<span class="Special">raw</span>
+    <span class="Constant">4</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">3</span>:address:shared:array:character/<span class="Special">raw</span>
   ]
   memory-should-contain [
     <span class="Constant">4</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[hello, abc]</span>
@@ -700,7 +699,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">12288/ideographic-space</span>
 ]
 
-<span class="muRecipe">recipe</span> trim s:address:array:character<span class="muRecipe"> -&gt; </span>result:address:array:character [
+<span class="muRecipe">recipe</span> trim s:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   len:number<span class="Special"> &lt;- </span>length *s
@@ -732,7 +731,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
   <span class="Comment"># result = new character[end+1 - start]</span>
   new-len:number<span class="Special"> &lt;- </span>subtract end, start, <span class="Constant">-1</span>
-  result:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, new-len
+  result:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, new-len
   <span class="Comment"># copy the untrimmed parts between start and end</span>
   i:number<span class="Special"> &lt;- </span>copy start
   j:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -752,9 +751,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> trim-unmodified [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>trim <span class="Constant">1</span>:address:array:character
-    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>trim <span class="Constant">1</span>:address:shared:array:character
+    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>
@@ -763,9 +762,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> trim-left [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[  abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>trim <span class="Constant">1</span>:address:array:character
-    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[  abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>trim <span class="Constant">1</span>:address:shared:array:character
+    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>
@@ -774,9 +773,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> trim-right [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc  ]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>trim <span class="Constant">1</span>:address:array:character
-    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc  ]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>trim <span class="Constant">1</span>:address:shared:array:character
+    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>
@@ -785,9 +784,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> trim-left-right [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[  abc   ]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>trim <span class="Constant">1</span>:address:array:character
-    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[  abc   ]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>trim <span class="Constant">1</span>:address:shared:array:character
+    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>
@@ -796,21 +795,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> trim-newline-tab [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[  abc</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ abc</span>
 <span class="Constant">]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>trim <span class="Constant">1</span>:address:array:character
-    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>trim <span class="Constant">1</span>:address:shared:array:character
+    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>
   ]
 ]
 
-<span class="muRecipe">recipe</span> find-next text:address:array:character, pattern:character, idx:number<span class="muRecipe"> -&gt; </span>next-index:number [
+<span class="muRecipe">recipe</span> find-next text:address:shared:array:character, pattern:character, idx:number<span class="muRecipe"> -&gt; </span>next-index:number [
   <span class="Constant">local-scope</span>
-  text:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  pattern:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  idx:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Constant">load-ingredients</span>
   len:number<span class="Special"> &lt;- </span>length *text
   <span class="Delimiter">{</span>
     eof?:boolean<span class="Special"> &lt;- </span>greater-or-equal idx, len
@@ -826,8 +823,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-find-next [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
@@ -836,8 +833,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-find-next-empty [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
@@ -846,8 +843,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-find-next-initial [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[/abc]</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[/abc]</span>
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># prefix match</span>
@@ -856,8 +853,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-find-next-final [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc/]</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc/]</span>
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">3</span>  <span class="Comment"># suffix match</span>
@@ -866,8 +863,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-find-next-missing [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">3</span>  <span class="Comment"># no match</span>
@@ -876,8 +873,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-find-next-invalid-index [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>, <span class="Constant">4/start-index</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>, <span class="Constant">4/start-index</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># no change</span>
@@ -886,8 +883,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-find-next-first [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab/c/]</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab/c/]</span>
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">2</span>  <span class="Comment"># first '/' of multiple</span>
@@ -896,8 +893,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-find-next-second [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab/c/]</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>, <span class="Constant">3/start-index</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab/c/]</span>
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>, <span class="Constant">3/start-index</span>
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># second '/' of multiple</span>
@@ -906,7 +903,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># search for a pattern of multiple characters</span>
 <span class="Comment"># fairly dumb algorithm</span>
-<span class="muRecipe">recipe</span> find-next text:address:array:character, pattern:address:array:character, idx:number<span class="muRecipe"> -&gt; </span>next-index:number [
+<span class="muRecipe">recipe</span> find-next text:address:shared:array:character, pattern:address:shared:array:character, idx:number<span class="muRecipe"> -&gt; </span>next-index:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   first:character<span class="Special"> &lt;- </span>index *pattern, <span class="Constant">0</span>
@@ -928,9 +925,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> find-next-text-1 [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">0</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
@@ -939,9 +936,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> find-next-text-2 [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">1</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">1</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
@@ -950,9 +947,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> find-next-no-match [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[bd]</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[bd]</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">0</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">3</span>  <span class="Comment"># not found</span>
@@ -961,9 +958,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> find-next-suffix-match [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[cd]</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[cd]</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">0</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
@@ -972,9 +969,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> find-next-suffix-match-2 [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[cde]</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[cde]</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>find-next <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">0</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># not found</span>
@@ -982,7 +979,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># checks if pattern matches at index 'idx'</span>
-<span class="muRecipe">recipe</span> match-at text:address:array:character, pattern:address:array:character, idx:number<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">recipe</span> match-at text:address:shared:array:character, pattern:address:shared:array:character, idx:number<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   pattern-len:number<span class="Special"> &lt;- </span>length *pattern
@@ -1015,9 +1012,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> match-at-checks-pattern-at-index [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab]</span>
-    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab]</span>
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">0</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># match found</span>
@@ -1026,8 +1023,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> match-at-reflexive [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:array:character, <span class="Constant">1</span>:address:array:character, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">0</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># match found</span>
@@ -1036,9 +1033,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> match-at-outside-bounds [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
-    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">4</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">4</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># never matches</span>
@@ -1047,9 +1044,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> match-at-empty-pattern [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">0</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># always matches empty pattern given a valid index</span>
@@ -1058,9 +1055,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> match-at-empty-pattern-outside-bound [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">4</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">4</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># no match</span>
@@ -1069,9 +1066,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> match-at-empty-text [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">0</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># no match</span>
@@ -1080,8 +1077,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> match-at-empty-against-empty [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:array:character, <span class="Constant">1</span>:address:array:character, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">0</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># matches because pattern is also empty</span>
@@ -1090,9 +1087,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> match-at-inside-bounds [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
-    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">1</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">1</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># match</span>
@@ -1101,16 +1098,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> match-at-inside-bounds-2 [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
-    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
+    <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>match-at <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">0</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># no match</span>
   ]
 ]
 
-<span class="muRecipe">recipe</span> split s:address:array:character, delim:character<span class="muRecipe"> -&gt; </span>result:address:array:address:array:character [
+<span class="muRecipe">recipe</span> split s:address:shared:array:character, delim:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># empty text? return empty array</span>
@@ -1118,7 +1115,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     empty?:boolean<span class="Special"> &lt;- </span>equal len, <span class="Constant">0</span>
     <span class="muControl">break-unless</span> empty?
-    result<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">0</span>
+    result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(address shared array character): type<span class="Delimiter">}</span>, <span class="Constant">0</span>
     <span class="muControl">reply</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># count #pieces we need room for</span>
@@ -1133,7 +1130,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># allocate space</span>
-  result<span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, count
+  result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(address shared array character): type<span class="Delimiter">}</span>, count
   <span class="Comment"># repeatedly copy slices start..end until delimiter into result[curr-result]</span>
   curr-result:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   start:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -1143,8 +1140,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-if</span> done?
     end:number<span class="Special"> &lt;- </span>find-next s, delim, start
     <span class="Comment"># copy start..end into result[curr-result]</span>
-    dest:address:address:array:character<span class="Special"> &lt;- </span>index-address *result, curr-result
-    *dest<span class="Special"> &lt;- </span>copy s, start, end
+    dest:address:address:shared:array:character<span class="Special"> &lt;- </span>index-address *result, curr-result
+    *dest<span class="Special"> &lt;- </span>copy-range s, start, end
     <span class="Comment"># slide over to next slice</span>
     start<span class="Special"> &lt;- </span>add end, <span class="Constant">1</span>
     curr-result<span class="Special"> &lt;- </span>add curr-result, <span class="Constant">1</span>
@@ -1154,13 +1151,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-split-1 [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
-    <span class="Constant">2</span>:address:array:address:array:character<span class="Special"> &lt;- </span>split <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">2</span>:address:array:address:array:character
-    <span class="Constant">4</span>:address:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:array:address:array:character, <span class="Constant">0</span>
-    <span class="Constant">5</span>:address:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:array:address:array:character, <span class="Constant">1</span>
-    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">4</span>:address:array:character
-    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">5</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
+    <span class="Constant">2</span>:address:shared:array:address:shared:array:character<span class="Special"> &lt;- </span>split <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">2</span>:address:shared:array:address:shared:array:character
+    <span class="Constant">4</span>:address:shared:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:shared:array:address:shared:array:character, <span class="Constant">0</span>
+    <span class="Constant">5</span>:address:shared:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:shared:array:address:shared:array:character, <span class="Constant">1</span>
+    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">4</span>:address:shared:array:character
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">5</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>  <span class="Comment"># length of result</span>
@@ -1171,15 +1168,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-split-2 [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a/b/c]</span>
-    <span class="Constant">2</span>:address:array:address:array:character<span class="Special"> &lt;- </span>split <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">2</span>:address:array:address:array:character
-    <span class="Constant">4</span>:address:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:array:address:array:character, <span class="Constant">0</span>
-    <span class="Constant">5</span>:address:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:array:address:array:character, <span class="Constant">1</span>
-    <span class="Constant">6</span>:address:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:array:address:array:character, <span class="Constant">2</span>
-    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">4</span>:address:array:character
-    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">5</span>:address:array:character
-    <span class="Constant">30</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">6</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a/b/c]</span>
+    <span class="Constant">2</span>:address:shared:array:address:shared:array:character<span class="Special"> &lt;- </span>split <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">2</span>:address:shared:array:address:shared:array:character
+    <span class="Constant">4</span>:address:shared:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:shared:array:address:shared:array:character, <span class="Constant">0</span>
+    <span class="Constant">5</span>:address:shared:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:shared:array:address:shared:array:character, <span class="Constant">1</span>
+    <span class="Constant">6</span>:address:shared:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:shared:array:address:shared:array:character, <span class="Constant">2</span>
+    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">4</span>:address:shared:array:character
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">5</span>:address:shared:array:character
+    <span class="Constant">30</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">6</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">3</span>  <span class="Comment"># length of result</span>
@@ -1191,11 +1188,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-split-missing [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:address:array:character<span class="Special"> &lt;- </span>split <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">2</span>:address:array:address:array:character
-    <span class="Constant">4</span>:address:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:array:address:array:character, <span class="Constant">0</span>
-    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">4</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:address:shared:array:character<span class="Special"> &lt;- </span>split <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">2</span>:address:shared:array:address:shared:array:character
+    <span class="Constant">4</span>:address:shared:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:shared:array:address:shared:array:character, <span class="Constant">0</span>
+    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">4</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># length of result</span>
@@ -1205,9 +1202,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-split-empty [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    <span class="Constant">2</span>:address:array:address:array:character<span class="Special"> &lt;- </span>split <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">2</span>:address:array:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    <span class="Constant">2</span>:address:shared:array:address:shared:array:character<span class="Special"> &lt;- </span>split <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">2</span>:address:shared:array:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># empty result</span>
@@ -1216,17 +1213,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-split-empty-piece [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a/b//c]</span>
-    <span class="Constant">2</span>:address:array:address:array:character<span class="Special"> &lt;- </span>split <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">2</span>:address:array:address:array:character
-    <span class="Constant">4</span>:address:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:array:address:array:character, <span class="Constant">0</span>
-    <span class="Constant">5</span>:address:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:array:address:array:character, <span class="Constant">1</span>
-    <span class="Constant">6</span>:address:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:array:address:array:character, <span class="Constant">2</span>
-    <span class="Constant">7</span>:address:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:array:address:array:character, <span class="Constant">3</span>
-    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">4</span>:address:array:character
-    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">5</span>:address:array:character
-    <span class="Constant">30</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">6</span>:address:array:character
-    <span class="Constant">40</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">7</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a/b//c]</span>
+    <span class="Constant">2</span>:address:shared:array:address:shared:array:character<span class="Special"> &lt;- </span>split <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">2</span>:address:shared:array:address:shared:array:character
+    <span class="Constant">4</span>:address:shared:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:shared:array:address:shared:array:character, <span class="Constant">0</span>
+    <span class="Constant">5</span>:address:shared:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:shared:array:address:shared:array:character, <span class="Constant">1</span>
+    <span class="Constant">6</span>:address:shared:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:shared:array:address:shared:array:character, <span class="Constant">2</span>
+    <span class="Constant">7</span>:address:shared:array:character<span class="Special"> &lt;- </span>index *<span class="Constant">2</span>:address:shared:array:address:shared:array:character, <span class="Constant">3</span>
+    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">4</span>:address:shared:array:character
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">5</span>:address:shared:array:character
+    <span class="Constant">30</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">6</span>:address:shared:array:character
+    <span class="Constant">40</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">7</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># length of result</span>
@@ -1237,7 +1234,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> split-first text:address:array:character, delim:character<span class="muRecipe"> -&gt; </span>x:address:array:character, y:address:array:character [
+<span class="muRecipe">recipe</span> split-first text:address:shared:array:character, delim:character<span class="muRecipe"> -&gt; </span>x:address:shared:array:character, y:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># empty text? return empty texts</span>
@@ -1245,22 +1242,22 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     empty?:boolean<span class="Special"> &lt;- </span>equal len, <span class="Constant">0</span>
     <span class="muControl">break-unless</span> empty?
-    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    x:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    y:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
     <span class="muControl">reply</span>
   <span class="Delimiter">}</span>
   idx:number<span class="Special"> &lt;- </span>find-next text, delim, <span class="Constant">0</span>
-  x:address:array:character<span class="Special"> &lt;- </span>copy text, <span class="Constant">0</span>, idx
+  x:address:shared:array:character<span class="Special"> &lt;- </span>copy-range text, <span class="Constant">0</span>, idx
   idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
-  y:address:array:character<span class="Special"> &lt;- </span>copy text, idx, len
+  y:address:shared:array:character<span class="Special"> &lt;- </span>copy-range text, idx, len
 ]
 
 <span class="muScenario">scenario</span> text-split-first [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
-    <span class="Constant">2</span>:address:array:character, <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>split-first <span class="Constant">1</span>:address:array:character, <span class="Constant">47/slash</span>
-    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
-    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
+    <span class="Constant">2</span>:address:shared:array:character, <span class="Constant">3</span>:address:shared:array:character<span class="Special"> &lt;- </span>split-first <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">47/slash</span>
+    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[a]</span>
@@ -1268,7 +1265,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> copy buf:address:array:character, start:number, end:number<span class="muRecipe"> -&gt; </span>result:address:array:character [
+<span class="muRecipe">recipe</span> copy-range buf:address:shared:array:character, start:number, end:number<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if end is out of bounds, trim it</span>
@@ -1276,7 +1273,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   end:number<span class="Special"> &lt;- </span>min len, end
   <span class="Comment"># allocate space for result</span>
   len<span class="Special"> &lt;- </span>subtract end, start
-  result:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, len
+  result:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, len
   <span class="Comment"># copy start..end into result[curr-result]</span>
   src-idx:number<span class="Special"> &lt;- </span>copy start
   dest-idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -1294,9 +1291,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-copy-copies-partial-text [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:array:character, <span class="Constant">1</span>, <span class="Constant">3</span>
-    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>copy-range <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">1</span>, <span class="Constant">3</span>
+    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[bc]</span>
@@ -1305,9 +1302,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-copy-out-of-bounds [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>, <span class="Constant">4</span>
-    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>copy-range <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>, <span class="Constant">4</span>
+    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[c]</span>
@@ -1316,9 +1313,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> text-copy-out-of-bounds-2 [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:array:character, <span class="Constant">3</span>, <span class="Constant">3</span>
-    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>copy-range <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">3</span>, <span class="Constant">3</span>
+    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
   ]
   memory-should-contain [
     <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[]</span>

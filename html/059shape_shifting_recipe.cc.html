@@ -109,32 +109,28 @@ if <span class="Delimiter">(</span>best_score == -<span class="Constant">1</span
   if <span class="Delimiter">(</span>exemplar<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; &quot;specializing &quot; &lt;&lt; inst.name &lt;&lt; '\n';</span>
     trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;found variant to specialize: &quot;</span> &lt;&lt; exemplar &lt;&lt; <span class="Constant">' '</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> exemplar<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
-    LOG &lt;&lt; <span class="Constant">&quot;found variant to specialize: &quot;</span> &lt;&lt; exemplar &lt;&lt; <span class="Constant">' '</span> &lt;&lt; header<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> exemplar<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     recipe_ordinal new_recipe_ordinal = new_variant<span class="Delimiter">(</span>exemplar<span class="Delimiter">,</span> inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>new_recipe_ordinal == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">goto</span> done_constructing_variant<span class="Delimiter">;</span>
     variants<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_recipe_ordinal<span class="Delimiter">);</span>
     <span class="Comment">// perform all transforms on the new specialization</span>
     const string&amp; new_name = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>back<span class="Delimiter">()).</span>name<span class="Delimiter">;</span>
     trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;transforming new specialization: &quot;</span> &lt;&lt; new_name &lt;&lt; end<span class="Delimiter">();</span>
-    LOG &lt;&lt; <span class="Constant">&quot;transforming new specialization: &quot;</span> &lt;&lt; header<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>back<span class="Delimiter">()))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     for <span class="Delimiter">(</span>long long int t = <span class="Constant">0</span><span class="Delimiter">;</span> t &lt; SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">);</span> ++t<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Delimiter">(</span>*Transform<span class="Delimiter">.</span>at<span class="Delimiter">(</span>t<span class="Delimiter">))(</span>new_recipe_ordinal<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
     get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> new_recipe_ordinal<span class="Delimiter">).</span>transformed_until = SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">;</span>
-    LOG &lt;&lt; <span class="Constant">&quot;replacing &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; with &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>back<span class="Delimiter">()).</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     inst<span class="Delimiter">.</span>name = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>back<span class="Delimiter">()).</span>name<span class="Delimiter">;</span>
     trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new specialization: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-    LOG &lt;&lt; <span class="Constant">&quot;new specialization: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  done_constructing_variant:<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: make sure we have no unspecialized shape-shifting recipes being called</span>
 <span class="Comment">//: before running mu programs</span>
 
 <span class="Delimiter">:(before &quot;End Instruction Operation Checks&quot;)</span>
-<span class="CommentedCode">//? LOG &lt;&lt; inst.operation &lt;&lt; &quot; &quot; &lt;&lt; contains_key(Recipe, inst.operation) &lt;&lt; '\n';</span>
 if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">)</span> &amp;&amp; inst<span class="Delimiter">.</span>operation &gt;= MAX_PRIMITIVE_RECIPES
     &amp;&amp; any_type_ingredient_in_header<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   LOG &lt;&lt; header(caller) &lt;&lt; &quot;instruction &quot; &lt;&lt; inst.name &lt;&lt; &quot; has no valid specialization\n&quot;;</span>
   raise_error &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has no valid specialization</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -319,7 +315,7 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
     if <span class="Delimiter">(</span>!error<span class="Delimiter">)</span> replace_type_ingredients<span class="Delimiter">(</span>new_recipe<span class="Delimiter">,</span> mappings<span class="Delimiter">);</span>
     for <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> const string_tree*&gt;::iterator p = mappings<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != mappings<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
       delete p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>error<span class="Delimiter">)</span> <span class="Identifier">return</span> exemplar<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>error<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// todo: delete new_recipe_ordinal from Recipes and other global state</span>
   <span class="Delimiter">}</span>
   ensure_all_concrete_types<span class="Delimiter">(</span>new_recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> exemplar<span class="Delimiter">));</span>
   <span class="Identifier">return</span> new_recipe_ordinal<span class="Delimiter">;</span>
@@ -574,14 +570,14 @@ container foo:_t [
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient)</span>
 recipe main [
-  <span class="Constant">1</span>:address:foo:point<span class="Special"> &lt;- </span>bar <span class="Constant">3</span>
-  <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:foo:point
+  <span class="Constant">1</span>:address:shared:foo:point<span class="Special"> &lt;- </span>bar <span class="Constant">3</span>
+  <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:shared:foo:point
 ]
 container foo:_t [
   x:_t
   y:number
 ]
-recipe bar x:number <span class="Delimiter">-&gt;</span> result:address:foo:_t [
+recipe bar x:number <span class="Delimiter">-&gt;</span> result:address:shared:foo:_t [
   local-scope
   load-ingredients
   <span class="Comment"># new refers to _t in its ingredient *value*</span>
@@ -593,10 +589,10 @@ recipe bar x:number <span class="Delimiter">-&gt;</span> result:address:foo:_t [
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient_2)</span>
 recipe main [
-  <span class="Constant">1</span>:address:foo:point<span class="Special"> &lt;- </span>bar <span class="Constant">3</span>
-  <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:foo:point
+  <span class="Constant">1</span>:address:shared:foo:point<span class="Special"> &lt;- </span>bar <span class="Constant">3</span>
+  <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:shared:foo:point
 ]
-recipe bar x:number <span class="Delimiter">-&gt;</span> result:address:foo:_t [
+recipe bar x:number <span class="Delimiter">-&gt;</span> result:address:shared:foo:_t [
   local-scope
   load-ingredients
   <span class="Comment"># new refers to _t in its ingredient *value*</span>
@@ -613,11 +609,11 @@ container foo:_t [
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_supports_compound_types)</span>
 recipe main [
-  <span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>new point:type
-  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">1</span>:address:point<span class="Delimiter">,</span> y:offset
+  <span class="Constant">1</span>:address:shared:point<span class="Special"> &lt;- </span>new point:type
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">1</span>:address:shared:point<span class="Delimiter">,</span> y:offset
   *<span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">3</span>:address:point<span class="Special"> &lt;- </span>bar <span class="Constant">1</span>:address:point  <span class="Comment"># specialize _t to address:point</span>
-  <span class="Constant">4</span>:point<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:point
+  <span class="Constant">3</span>:address:shared:point<span class="Special"> &lt;- </span>bar <span class="Constant">1</span>:address:shared:point  <span class="Comment"># specialize _t to address:shared:point</span>
+  <span class="Constant">4</span>:point<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:shared:point
 ]
 recipe bar a:_t <span class="Delimiter">-&gt;</span> result:_t [
   local-scope
@@ -630,13 +626,13 @@ recipe bar a:_t <span class="Delimiter">-&gt;</span> result:_t [
 <span class="Special">% Hide_errors = true;</span>
 recipe main [
   a:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
-  b:address:number<span class="Special"> &lt;- </span>foo a
+  b:address:shared:number<span class="Special"> &lt;- </span>foo a
 ]
 recipe foo a:_t <span class="Delimiter">-&gt;</span> b:_t [
   load-ingredients
   b<span class="Special"> &lt;- </span>copy a
 ]
-<span class="traceContains">+error: main: no call found for 'b:address:number &lt;- foo a'</span>
+<span class="traceContains">+error: main: no call found for 'b:address:shared:number &lt;- foo a'</span>
 
 <span class="Delimiter">:(scenario specialize_inside_recipe_without_header)</span>
 recipe main [
@@ -685,7 +681,7 @@ recipe foo x:_elem <span class="Delimiter">-&gt;</span> y:_elem [
 recipe main [
   local-scope
   <span class="Comment"># permit '0' to map to address to shape-shifting type-ingredient</span>
-  <span class="Constant">1</span>:address:character/<span class="Special">raw &lt;- </span>foo <span class="Constant">0</span>
+  <span class="Constant">1</span>:address:shared:character/<span class="Special">raw &lt;- </span>foo <span class="Constant">0</span>
 ]
 recipe foo x:address:_elem <span class="Delimiter">-&gt;</span> y:address:_elem [
   local-scope
@@ -755,7 +751,7 @@ container d2:_elem [
 <span class="Comment"># static dispatch between shape-shifting variants, _including pointer lookups_</span>
 recipe main [
   e1:d1:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
-  e2:address:d2:number<span class="Special"> &lt;- </span>new <span class="Delimiter">{(</span>d2 number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
+  e2:address:shared:d2:number<span class="Special"> &lt;- </span>new <span class="Delimiter">{(</span>d2 number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>foo e1
   <span class="Constant">2</span>:number/<span class="Special">raw &lt;- </span>foo *e2  <span class="Comment"># different from previous scenario</span>
 ]
@@ -838,15 +834,15 @@ recipe foo x:_elem <span class="Delimiter">-&gt;</span> y:number [
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario specialize_most_similar_variant)</span>
 recipe main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>new number:type
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>foo <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>foo <span class="Constant">1</span>:address:shared:number
 ]
 recipe foo x:_elem <span class="Delimiter">-&gt;</span> y:number [
   local-scope
   load-ingredients
   reply <span class="Constant">34</span>
 ]
-recipe foo x:address:_elem <span class="Delimiter">-&gt;</span> y:number [
+recipe foo x:address:shared:_elem <span class="Delimiter">-&gt;</span> y:number [
   local-scope
   load-ingredients
   reply <span class="Constant">35</span>

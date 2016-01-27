@@ -150,8 +150,12 @@ default: <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
   <span class="Delimiter">}</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">));</span>
+  finish_call_housekeeping<span class="Delimiter">(</span>call_instruction<span class="Delimiter">,</span> ingredients<span class="Delimiter">);</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not done with caller; don't increment step_index of caller</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(code)</span>
+void finish_call_housekeeping<span class="Delimiter">(</span>const instruction&amp; call_instruction<span class="Delimiter">,</span> const vector&lt;vector&lt;double&gt; &gt;&amp; ingredients<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// End Call Housekeeping</span>
-  <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not done with caller; don't increment current_step_index()</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario calling_undefined_recipe_fails)</span>
