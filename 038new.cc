@@ -432,7 +432,6 @@ if (x.type->value == get(Type_ordinal, "address")
   }
   // abandon old address if necessary
   // do this after all refcount updates are done just in case old and new are identical
-  // TODO: doesn't work yet
   assert(get_or_insert(Memory, old_address) >= 0);
   if (old_address && get_or_insert(Memory, old_address) == 0) {
     // lookup_memory without drop_one_lookup {
