@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 045space_surround.cc</title>
+<title>Mu - 044space_surround.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -15,6 +15,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -40,21 +41,26 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Delimiter">:(scenario surrounding_space)</span>
 <span class="Comment"># location 1 in space 1 refers to the space surrounding the default space, here 20.</span>
 recipe main [
-  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># pretend array</span>
-  <span class="Constant">20</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># pretend array</span>
-  default-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
-  <span class="Constant">0</span>:address:array:location/names:dummy<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe  <span class="Comment"># later layers will explain the /names: property</span>
+  <span class="Comment"># pretend shared:array:location; in practice we'll use new</span>
+  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
+  <span class="Comment"># pretend shared:array:location; in practice we'll use new</span>
+  <span class="Constant">20</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
+  <span class="Constant">21</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
+  <span class="Comment"># actual start of this recipe</span>
+  default-space:address:shared:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">0</span>:address:shared:array:location/names:dummy<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe  <span class="Comment"># later layers will explain the /names: property</span>
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">32</span>
   <span class="Constant">1</span>:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">33</span>
 ]
-recipe dummy [
+recipe dummy [  <span class="Comment"># just for the /names: property above</span>
 ]
-<span class="Comment"># chain space</span>
-<span class="traceContains">+mem: storing 20 in location 11</span>
-<span class="Comment"># store to default-space</span>
-<span class="traceContains">+mem: storing 32 in location 12</span>
-<span class="Comment"># store to chained space</span>
-<span class="traceContains">+mem: storing 33 in location 22</span>
+<span class="Comment"># chain space: 10 + /*skip refcount*/1 + /*skip length*/1</span>
+<span class="traceContains">+mem: storing 20 in location 12</span>
+<span class="Comment"># store to default space: 10 + /*skip refcount*/1 + /*skip length*/1 + /*index*/1</span>
+<span class="traceContains">+mem: storing 32 in location 13</span>
+<span class="Comment"># store to chained space: /*contents of location 12*/20 + /*skip refcount*/1 + /*skip length*/1 + /*index*/1</span>
+<span class="traceContains">+mem: storing 33 in location 23</span>
 
 <span class="Comment">//: If you think of a space as a collection of variables with a common</span>
 <span class="Comment">//: lifetime, surrounding allows managing shorter lifetimes inside a longer</span>
@@ -62,14 +68,17 @@ recipe dummy [
 
 <span class="Delimiter">:(replace{} &quot;long long int space_base(const reagent&amp; x)&quot;)</span>
 long long int space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index<span class="Delimiter">(</span>x<span class="Delimiter">),</span> current_call<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>
+  long long int base = current_call<span class="Delimiter">().</span>default_space ? <span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>default_space+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">)</span> : <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index<span class="Delimiter">(</span>x<span class="Delimiter">),</span> base<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 long long int space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">,</span> long long int space_index<span class="Delimiter">,</span> long long int base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   trace(9999, &quot;space&quot;) &lt;&lt; &quot;space-base: &quot; &lt;&lt; space_index &lt;&lt; &quot; &quot; &lt;&lt; base &lt;&lt; end();</span>
   if <span class="Delimiter">(</span>space_index == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Identifier">return</span> base<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  long long int result = space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index-<span class="Constant">1</span><span class="Delimiter">,</span> get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base+<span class="Constant">1</span><span class="Delimiter">));</span>
+  long long int result = space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index-<span class="Constant">1</span><span class="Delimiter">,</span> get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base+<span class="Comment">/*</span><span class="Comment">skip length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">))</span>+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="CommentedCode">//?   trace(9999, &quot;space&quot;) &lt;&lt; &quot;space-base: &quot; &lt;&lt; space_index &lt;&lt; &quot; &quot; &lt;&lt; base &lt;&lt; &quot; =&gt; &quot; &lt;&lt; result &lt;&lt; end();</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 038scheduler.cc</title>
+<title>Mu - 062scheduler.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -13,8 +13,8 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .traceAbsent { color: #c00000; }
+.traceContains { color: #008000; }
 .SalientComment { color: #00ffff; }
 .cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
@@ -38,7 +38,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Delimiter">:(scenario scheduler)</span>
 recipe f1 [
-  start-running f2:recipe
+  start-running f2
   <span class="Comment"># wait for f2 to run</span>
   <span class="Delimiter">{</span>
     jump-unless <span class="Constant">1</span>:number<span class="Delimiter">,</span> -<span class="Constant">1</span>
@@ -147,11 +147,17 @@ Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</s
 <span class="Delimiter">:(replace{} &quot;void run_main(int argc, char* argv[])&quot;)</span>
 void run_main<span class="Delimiter">(</span>int argc<span class="Delimiter">,</span> char* argv[]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe_ordinal r = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    routine* main_routine = new routine<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
-    <span class="Comment">// Update main_routine</span>
-    run<span class="Delimiter">(</span>main_routine<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  routine* main_routine = new routine<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// pass in commandline args as ingredients to main</span>
+  <span class="Comment">// todo: test this</span>
+  Current_routine = main_routine<span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; argc<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    vector&lt;double&gt; arg<span class="Delimiter">;</span>
+    arg<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_mu_string<span class="Delimiter">(</span>argv[i]<span class="Delimiter">));</span>
+    current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
+  run<span class="Delimiter">(</span>main_routine<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: To schedule new routines to run, call 'start-running'.</span>
@@ -186,7 +192,7 @@ case START_RUNNING: <span class="Delimiter">{</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>!is_mu_recipe<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'start-running' should be a recipe, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'start-running' should be a recipe, but got &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -222,7 +228,7 @@ recipe f1 [
 <span class="Delimiter">:(scenario scheduler_interleaves_routines)</span>
 <span class="Special">% Scheduling_interval = 1;</span>
 recipe f1 [
-  start-running f2:recipe
+  start-running f2
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
@@ -231,7 +237,7 @@ recipe f2 [
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+schedule: f1</span>
-<span class="traceContains">+run: start-running f2:recipe</span>
+<span class="traceContains">+run: start-running f2</span>
 <span class="traceContains">+schedule: f2</span>
 <span class="traceContains">+run: 3:number &lt;- copy 0</span>
 <span class="traceContains">+schedule: f1</span>
@@ -243,7 +249,7 @@ recipe f2 [
 
 <span class="Delimiter">:(scenario start_running_takes_ingredients)</span>
 recipe f1 [
-  start-running f2:recipe<span class="Delimiter">,</span> <span class="Constant">3</span>
+  start-running f2<span class="Delimiter">,</span> <span class="Constant">3</span>
   <span class="Comment"># wait for f2 to run</span>
   <span class="Delimiter">{</span>
     jump-unless <span class="Constant">1</span>:number<span class="Delimiter">,</span> -<span class="Constant">1</span>
@@ -257,7 +263,7 @@ recipe f2 [
 
 <span class="Delimiter">:(scenario start_running_returns_routine_id)</span>
 recipe f1 [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>start-running f2:recipe
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>start-running f2
 ]
 recipe f2 [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">44</span>
@@ -300,7 +306,7 @@ recipe f1 [
 <span class="Special">% Hide_errors = true;</span>
 <span class="Special">% Scheduling_interval = 2;</span>
 recipe f1 [
-  start-running f2:recipe
+  start-running f2
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
@@ -322,7 +328,7 @@ recipe f2 [
 
 <span class="Delimiter">:(scenario scheduler_kills_orphans)</span>
 recipe main [
-  start-running f1:recipe
+  start-running f1
   <span class="Comment"># f1 never actually runs because its parent completes without waiting for it</span>
 ]
 recipe f1 [
@@ -353,7 +359,7 @@ bool has_completed_parent<span class="Delimiter">(</span>long long int routine_i
 <span class="Delimiter">:(scenario routine_state_test)</span>
 <span class="Special">% Scheduling_interval = 2;</span>
 recipe f1 [
-  <span class="Constant">1</span>:number/child-id<span class="Special"> &lt;- </span>start-running f2:recipe
+  <span class="Constant">1</span>:number/child-id<span class="Special"> &lt;- </span>start-running f2
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># race condition since we don't care about location 12</span>
   <span class="Comment"># thanks to Scheduling_interval, f2's one instruction runs in between here and completes</span>
   <span class="Constant">2</span>:number/state<span class="Special"> &lt;- </span>routine-state <span class="Constant">1</span>:number/child-id
@@ -475,7 +481,7 @@ case _DUMP_ROUTINES: <span class="Delimiter">{</span>
 <span class="Delimiter">:(scenario routine_discontinues_past_limit)</span>
 <span class="Special">% Scheduling_interval = 2;</span>
 recipe f1 [
-  <span class="Constant">1</span>:number/child-id<span class="Special"> &lt;- </span>start-running f2:recipe
+  <span class="Constant">1</span>:number/child-id<span class="Special"> &lt;- </span>start-running f2
   limit-time <span class="Constant">1</span>:number/child-id<span class="Delimiter">,</span> <span class="Constant">10</span>
   <span class="Comment"># padding loop just to make sure f2 has time to completed</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>
@@ -539,6 +545,26 @@ case LIMIT_TIME: <span class="Delimiter">{</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+
+<span class="SalientComment">//:: make sure that each routine gets a different alloc to start</span>
+
+<span class="Delimiter">:(scenario new_concurrent)</span>
+recipe f1 [
+  start-running f2
+  <span class="Constant">1</span>:address:shared:number/<span class="Special">raw &lt;- </span>new number:type
+  <span class="Comment"># wait for f2 to complete</span>
+  <span class="Delimiter">{</span>
+    loop-unless <span class="Constant">4</span>:number/<span class="Special">raw</span>
+  <span class="Delimiter">}</span>
+]
+recipe f2 [
+  <span class="Constant">2</span>:address:shared:number/<span class="Special">raw &lt;- </span>new number:type
+  <span class="Comment"># hack: assumes scheduler implementation</span>
+  <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:shared:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:shared:number/<span class="Special">raw</span>
+  <span class="Comment"># signal f2 complete</span>
+  <span class="Constant">4</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>
+]
+<span class="traceContains">+mem: storing 0 in location 3</span>
 </pre>
 </body>
 </html>

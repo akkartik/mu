@@ -282,14 +282,14 @@ reagent::reagent<span class="Delimiter">(</span>string s<span class="Delimiter">
   name = properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>first<span class="Delimiter">;</span>
   type = new_type_tree<span class="Delimiter">(</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>name<span class="Delimiter">)</span> &amp;&amp; type == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    type = new type_tree<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     assert<span class="Delimiter">(</span>!properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
     properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second = new string_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">);</span>
+    type = new type_tree<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>name == <span class="Constant">&quot;_&quot;</span> &amp;&amp; type == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    type = new type_tree<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     assert<span class="Delimiter">(</span>!properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
     properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second = new string_tree<span class="Delimiter">(</span><span class="Constant">&quot;dummy&quot;</span><span class="Delimiter">);</span>
+    type = new type_tree<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// End Parsing reagent</span>
 <span class="Delimiter">}</span>
@@ -311,7 +311,7 @@ type_tree* new_type_tree<span class="Delimiter">(</span>const string_tree* prope
       result<span class="Delimiter">-&gt;</span>value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">);</span>
     else if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>type_name<span class="Delimiter">))</span>  <span class="Comment">// sometimes types will contain non-type tags, like numbers for the size of an array</span>
       result<span class="Delimiter">-&gt;</span>value = <span class="Constant">0</span><span class="Delimiter">;</span>
-    else
+    else if <span class="Delimiter">(</span>properties<span class="Delimiter">-&gt;</span>value != <span class="Constant">&quot;-&gt;&quot;</span><span class="Delimiter">)</span>  <span class="Comment">// used in recipe types</span>
       result<span class="Delimiter">-&gt;</span>value = -<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// should never happen; will trigger errors later</span>
   <span class="Delimiter">}</span>
   result<span class="Delimiter">-&gt;</span>left = new_type_tree<span class="Delimiter">(</span>properties<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
@@ -321,7 +321,11 @@ type_tree* new_type_tree<span class="Delimiter">(</span>const string_tree* prope
 
 <span class="Comment">//: avoid memory leaks for the type tree</span>
 
-reagent::reagent<span class="Delimiter">(</span>const reagent&amp; old<span class="Delimiter">)</span> :original_string<span class="Delimiter">(</span>old<span class="Delimiter">.</span>original_string<span class="Delimiter">),</span> properties<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">),</span> name<span class="Delimiter">(</span>old<span class="Delimiter">.</span>name<span class="Delimiter">),</span> value<span class="Delimiter">(</span>old<span class="Delimiter">.</span>value<span class="Delimiter">),</span> initialized<span class="Delimiter">(</span>old<span class="Delimiter">.</span>initialized<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+reagent::reagent<span class="Delimiter">(</span>const reagent&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  original_string = old<span class="Delimiter">.</span>original_string<span class="Delimiter">;</span>
+  name = old<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  initialized = old<span class="Delimiter">.</span>initialized<span class="Delimiter">;</span>
   properties<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span>
@@ -330,7 +334,8 @@ reagent::reagent<span class="Delimiter">(</span>const reagent&amp; old<span clas
   type = old<span class="Delimiter">.</span>type ? new type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>type<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-type_tree::type_tree<span class="Delimiter">(</span>const type_tree&amp; old<span class="Delimiter">)</span> :value<span class="Delimiter">(</span>old<span class="Delimiter">.</span>value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+type_tree::type_tree<span class="Delimiter">(</span>const type_tree&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   left = old<span class="Delimiter">.</span>left ? new type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
   right = old<span class="Delimiter">.</span>right ? new type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>

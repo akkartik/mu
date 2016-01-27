@@ -32,7 +32,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <pre id='vimCodeElement'>
 <span class="Comment"># example program: communicating between routines using channels</span>
 
-<span class="muRecipe">recipe</span> producer chan:address:channel<span class="muRecipe"> -&gt; </span>chan:address:channel [
+<span class="muRecipe">recipe</span> producer chan:address:shared:channel<span class="muRecipe"> -&gt; </span>chan:address:shared:channel [
   <span class="Comment"># produce characters 1 to 5 on a channel</span>
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
@@ -44,19 +44,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Comment"># other threads might get between these prints</span>
     $print <span class="Constant">[produce: ]</span>, n, <span class="Constant">[ </span>
 <span class="Constant">]</span>
-    chan:address:channel<span class="Special"> &lt;- </span>write chan, n
+    chan:address:shared:channel<span class="Special"> &lt;- </span>write chan, n
     n<span class="Special"> &lt;- </span>add n, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> consumer chan:address:channel<span class="muRecipe"> -&gt; </span>chan:address:channel [
+<span class="muRecipe">recipe</span> consumer chan:address:shared:channel<span class="muRecipe"> -&gt; </span>chan:address:shared:channel [
   <span class="Comment"># consume and print integers from a channel</span>
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># read an integer from the channel</span>
-    n:character, chan:address:channel<span class="Special"> &lt;- </span>read chan
+    n:character, chan:address:shared:channel<span class="Special"> &lt;- </span>read chan
     <span class="Comment"># other threads might get between these prints</span>
     $print <span class="Constant">[consume: ]</span>, n:character, <span class="Constant">[ </span>
 <span class="Constant">]</span>
@@ -66,10 +66,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> main [
   <span class="Constant">local-scope</span>
-  chan:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3</span>
+  chan:address:shared:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3</span>
   <span class="Comment"># create two background 'routines' that communicate by a channel</span>
-  routine1:character<span class="Special"> &lt;- </span>start-running <span class="Constant">producer:recipe</span>, chan
-  routine2:character<span class="Special"> &lt;- </span>start-running <span class="Constant">consumer:recipe</span>, chan
+  routine1:number<span class="Special"> &lt;- </span>start-running producer, chan
+  routine2:number<span class="Special"> &lt;- </span>start-running consumer, chan
   wait-for-routine routine1
   wait-for-routine routine2
 ]

@@ -38,16 +38,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Delimiter">:(scenario run_interactive_code)</span>
 recipe main [
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new [<span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">34</span>]
-  run-interactive <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [<span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">34</span>]
+  run-interactive <span class="Constant">2</span>:address:shared:array:character
   <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>:number/<span class="Special">raw</span>
 ]
 <span class="traceContains">+mem: storing 34 in location 3</span>
 
 <span class="Delimiter">:(scenario run_interactive_empty)</span>
 recipe main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
+  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
 ]
 <span class="Comment"># result is null</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
@@ -122,7 +122,7 @@ bool run_interactive<span class="Delimiter">(</span>long long int address<span c
   <span class="Comment">// call run(string) but without the scheduling</span>
   load<span class="Delimiter">(</span>string<span class="Delimiter">(</span><span class="Constant">&quot;recipe! interactive [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">)</span> +
           <span class="Constant">&quot;local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-          <span class="Constant">&quot;screen:address:screen &lt;- next-ingredient</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+          <span class="Constant">&quot;screen:address:shared:screen &lt;- next-ingredient</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
           <span class="Constant">&quot;$start-tracking-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
           command + <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
           <span class="Constant">&quot;$stop-tracking-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
@@ -187,15 +187,15 @@ load<span class="Delimiter">(</span>string<span class="Delimiter">(</span>
 <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
 <span class="Constant">&quot;recipe sandbox [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;screen:address:screen/shared &lt;- new-fake-screen 30, 5</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;r:number/routine_id &lt;- start-running interactive:recipe, screen</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;screen:address:shared:screen &lt;- new-fake-screen 30, 5</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;r:number/routine_id &lt;- start-running interactive, screen</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;limit-time r, 100000/instructions</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;wait-for-routine r</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;sandbox-state:number &lt;- routine-state r/routine_id</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;completed?:boolean &lt;- equal sandbox-state, 1/completed</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;output:address:array:character &lt;- $most-recent-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;warnings:address:array:character &lt;- save-errors-warnings</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;stashes:address:array:character &lt;- save-app-trace</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;output:address:shared:array:character &lt;- $most-recent-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;warnings:address:shared:array:character &lt;- save-errors-warnings</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;stashes:address:shared:array:character &lt;- save-app-trace</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;$cleanup-run-interactive</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;reply output, warnings, screen, stashes, completed?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
 <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
@@ -208,10 +208,10 @@ Recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimite
 
 <span class="Delimiter">:(scenario run_interactive_comments)</span>
 recipe main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [<span class="Comment"># ab</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [<span class="Comment"># ab</span>
 add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
-  <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
+  <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
 ]
 <span class="traceContains">+mem: storing 52 in location 4</span>
 
@@ -305,9 +305,9 @@ case _CLEANUP_RUN_INTERACTIVE: <span class="Delimiter">{</span>
 <span class="Delimiter">:(scenario &quot;run_interactive_converts_result_to_text&quot;)</span>
 recipe main [
   <span class="Comment"># try to interactively add 2 and 2</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
-  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:array:character/lookup
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
+  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
+  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:shared:array:character/lookup
 ]
 <span class="Comment"># first letter in the output should be '4' in unicode</span>
 <span class="traceContains">+mem: storing 52 in location 11</span>
@@ -315,13 +315,13 @@ recipe main [
 <span class="Delimiter">:(scenario &quot;run_interactive_returns_text&quot;)</span>
 recipe main [
   <span class="Comment"># try to interactively add 2 and 2</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [
-    x:address:array:character<span class="Special"> &lt;- </span>new [a]
-    y:address:array:character<span class="Special"> &lt;- </span>new [b]
-    z:address:array:character<span class="Special"> &lt;- </span>append x:address:array:character<span class="Delimiter">,</span> y:address:array:character
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [
+    x:address:shared:array:character<span class="Special"> &lt;- </span>new [a]
+    y:address:shared:array:character<span class="Special"> &lt;- </span>new [b]
+    z:address:shared:array:character<span class="Special"> &lt;- </span>append x:address:shared:array:character<span class="Delimiter">,</span> y:address:shared:array:character
   ]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
-  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:array:character/lookup
+  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
+  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:shared:array:character/lookup
 ]
 <span class="Comment"># output contains &quot;ab&quot;</span>
 <span class="traceContains">+mem: storing 97 in location 11</span>
@@ -330,10 +330,10 @@ recipe main [
 <span class="Delimiter">:(scenario &quot;run_interactive_returns_errors&quot;)</span>
 recipe main [
   <span class="Comment"># run a command that generates an error</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [x:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [x:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 get x:number<span class="Delimiter">,</span> foo:offset]
-  <span class="Constant">2</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
-  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:array:character/lookup
+  <span class="Constant">2</span>:address:shared:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
+  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:shared:array:character/lookup
 ]
 <span class="Comment"># error should be &quot;unknown element foo in container number&quot;</span>
 <span class="traceContains">+mem: storing 117 in location 11</span>
@@ -345,10 +345,10 @@ get x:number<span class="Delimiter">,</span> foo:offset]
 <span class="Delimiter">:(scenario run_interactive_with_comment)</span>
 recipe main [
   <span class="Comment"># 2 instructions, with a comment after the first</span>
-  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>new [a:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abc</span>
+  <span class="Constant">1</span>:address:shared:array:number<span class="Special"> &lt;- </span>new [a:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abc</span>
 b:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-  <span class="Constant">2</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">2</span>:address:shared:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
 ]
 <span class="Comment"># no errors</span>
 <span class="traceContains">+mem: storing 0 in location 3</span>
@@ -365,8 +365,8 @@ void test_run_interactive_cleans_up_any_created_specializations<span class="Deli
   <span class="Comment">// run-interactive a call that specializes this recipe</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;recipe main [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        <span class="Constant">&quot;  1:number/raw &lt;- copy 0</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-       <span class="Constant">&quot;  2:address:array:character &lt;- new [foo 1:number/raw]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-       <span class="Constant">&quot;  run-interactive 2:address:array:character</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       <span class="Constant">&quot;  2:address:shared:array:character &lt;- new [foo 1:number/raw]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       <span class="Constant">&quot;  run-interactive 2:address:shared:array:character</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">)</span> == <span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">// foo, main</span>
   <span class="Comment">// check that number of variants doesn't change</span>
@@ -512,7 +512,6 @@ case RELOAD: <span class="Delimiter">{</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recently_added_shape_shifting_recipes<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?     LOG &lt;&lt; &quot;erasing &quot; &lt;&lt; get(Recipe, Recently_added_shape_shifting_recipes.at(i)).name &lt;&lt; '\n';</span>
     Recipe_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
     Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
@@ -539,7 +538,7 @@ case RELOAD: <span class="Delimiter">{</span>
 <span class="Delimiter">:(scenario reload_continues_past_error)</span>
 recipe main [
   local-scope
-  x:address:array:character<span class="Special"> &lt;- </span>new [recipe foo [
+  x:address:shared:array:character<span class="Special"> &lt;- </span>new [recipe foo [
   get <span class="Constant">1234</span>:number<span class="Delimiter">,</span> foo:offset
 ]]
   reload x
@@ -555,7 +554,7 @@ void test_reload_cleans_up_any_created_specializations<span class="Delimiter">()
   <span class="Comment">// a call that specializes this recipe</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;recipe main [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;  local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:address:array:character &lt;- new [recipe foo x:_elem -&gt; n:number [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:shared:array:character &lt;- new [recipe foo x:_elem -&gt; n:number [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;load-ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;reply 34</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>

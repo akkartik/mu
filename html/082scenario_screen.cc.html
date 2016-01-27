@@ -44,7 +44,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 scenario screen-in-scenario [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
+    <span class="Constant">1</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>/a
+    screen:address:shared:screen<span class="Special"> &lt;- </span>print screen:address:shared:screen<span class="Delimiter">,</span> <span class="Constant">1</span>:character/a
   ]
   screen-should-contain [
   <span class="Comment">#  01234</span>
@@ -58,8 +59,10 @@ scenario screen-in-scenario [
 scenario screen-in-scenario-unicode-color [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">955</span>/greek-small-lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
-    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>/a
+    <span class="Constant">1</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">955</span>/greek-small-lambda
+    screen:address:shared:screen<span class="Special"> &lt;- </span>print screen:address:shared:screen<span class="Delimiter">,</span> <span class="Constant">1</span>:character/lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
+    <span class="Constant">2</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>/a
+    screen:address:shared:screen<span class="Special"> &lt;- </span>print screen:address:shared:screen<span class="Delimiter">,</span> <span class="Constant">2</span>:character/a
   ]
   screen-should-contain [
   <span class="Comment">#  01234</span>
@@ -74,8 +77,10 @@ scenario screen-in-scenario-unicode-color [
 scenario screen-in-scenario-color [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">955</span>/greek-small-lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
-    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">7</span>/white
+    <span class="Constant">1</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">955</span>/greek-small-lambda
+    screen:address:shared:screen<span class="Special"> &lt;- </span>print screen:address:shared:screen<span class="Delimiter">,</span> <span class="Constant">1</span>:character/lambda<span class="Delimiter">,</span> <span class="Constant">1</span>/red
+    <span class="Constant">2</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>/a
+    screen:address:shared:screen<span class="Special"> &lt;- </span>print screen:address:shared:screen<span class="Delimiter">,</span> <span class="Constant">2</span>:character/a<span class="Delimiter">,</span> <span class="Constant">7</span>/white
   ]
   <span class="Comment"># screen-should-contain shows everything</span>
   screen-should-contain [
@@ -107,7 +112,8 @@ scenario screen-in-scenario-color [
 scenario screen-in-scenario-error [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
+    <span class="Constant">1</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>/a
+    screen:address:shared:screen<span class="Special"> &lt;- </span>print screen:address:shared:screen<span class="Delimiter">,</span> <span class="Constant">1</span>:character/a
   ]
   screen-should-contain [
   <span class="Comment">#  01234</span>
@@ -125,7 +131,8 @@ scenario screen-in-scenario-error [
 scenario screen-in-scenario-color [
   assume-screen <span class="Constant">5</span>/width<span class="Delimiter">,</span> <span class="Constant">3</span>/height
   run [
-    screen:address:screen<span class="Special"> &lt;- </span>print screen:address:screen<span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>/red
+    <span class="Constant">1</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>/a
+    screen:address:shared:screen<span class="Special"> &lt;- </span>print screen:address:shared:screen<span class="Delimiter">,</span> <span class="Constant">1</span>:character/a<span class="Delimiter">,</span> <span class="Constant">1</span>/red
   ]
   screen-should-contain-in-color <span class="Constant">2</span>/green<span class="Delimiter">,</span> [
   <span class="Comment">#  01234</span>
@@ -174,11 +181,11 @@ Name[r][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="D
 
 <span class="Delimiter">:(before &quot;End Rewrite Instruction(curr, recipe result)&quot;)</span>
 <span class="Comment">// rewrite `assume-screen width, height` to</span>
-<span class="Comment">// `screen:address:screen &lt;- new-fake-screen width, height`</span>
+<span class="Comment">// `screen:address:shared:screen &lt;- new-fake-screen width, height`</span>
 if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;assume-screen&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   curr<span class="Delimiter">.</span>name = <span class="Constant">&quot;new-fake-screen&quot;</span><span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;screen:address:screen&quot;</span><span class="Delimiter">));</span>
+  curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;screen:address:shared:screen&quot;</span><span class="Delimiter">));</span>
   curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>SCREEN<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -235,18 +242,18 @@ struct raw_string_stream <span class="Delimiter">{</span>
 <span class="Delimiter">:(code)</span>
 void check_screen<span class="Delimiter">(</span>const string&amp; expected_contents<span class="Delimiter">,</span> const int color<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!current_call<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>  <span class="Comment">// not supported</span>
-  long long int screen_location = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> SCREEN<span class="Delimiter">);</span>
+  long long int screen_location = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> SCREEN<span class="Delimiter">)</span>+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   int data_offset = find_element_name<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;data&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>data_offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  long long int screen_data_location = screen_location+data_offset<span class="Delimiter">;</span>  <span class="Comment">// type: address:array:character</span>
-  long long int screen_data_start = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> screen_data_location<span class="Delimiter">);</span>  <span class="Comment">// type: array:character</span>
+  long long int screen_data_location = screen_location+data_offset<span class="Delimiter">;</span>  <span class="Comment">// type: address:shared:array:character</span>
+  long long int screen_data_start = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> screen_data_location<span class="Delimiter">)</span> + <span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// type: array:character</span>
   int width_offset = find_element_name<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;num-columns&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   long long int screen_width = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> screen_location+width_offset<span class="Delimiter">);</span>
   int height_offset = find_element_name<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;num-rows&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   long long int screen_height = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> screen_location+height_offset<span class="Delimiter">);</span>
   raw_string_stream cursor<span class="Delimiter">(</span>expected_contents<span class="Delimiter">);</span>
   <span class="Comment">// todo: too-long expected_contents should fail</span>
-  long long int addr = screen_data_start+<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
+  long long int addr = screen_data_start+<span class="Comment">/*</span><span class="Comment">skip length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     cursor<span class="Delimiter">.</span>skip_whitespace_and_comments<span class="Delimiter">();</span>
     if <span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>at_end<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -370,15 +377,15 @@ case _DUMP_SCREEN: <span class="Delimiter">{</span>
 <span class="Delimiter">:(code)</span>
 void dump_screen<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!current_call<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>  <span class="Comment">// not supported</span>
-  long long int screen_location = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> SCREEN<span class="Delimiter">);</span>
+  long long int screen_location = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> SCREEN<span class="Delimiter">)</span> + <span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   int width_offset = find_element_name<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;num-columns&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   long long int screen_width = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> screen_location+width_offset<span class="Delimiter">);</span>
   int height_offset = find_element_name<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;num-rows&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   long long int screen_height = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> screen_location+height_offset<span class="Delimiter">);</span>
   int data_offset = find_element_name<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;data&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>data_offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  long long int screen_data_location = screen_location+data_offset<span class="Delimiter">;</span>  <span class="Comment">// type: address:array:character</span>
-  long long int screen_data_start = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> screen_data_location<span class="Delimiter">);</span>  <span class="Comment">// type: array:character</span>
+  long long int screen_data_location = screen_location+data_offset<span class="Delimiter">;</span>  <span class="Comment">// type: address:shared:array:character</span>
+  long long int screen_data_start = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> screen_data_location<span class="Delimiter">)</span> + <span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// type: array:character</span>
   assert<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> screen_data_start<span class="Delimiter">)</span> == screen_width*screen_height<span class="Delimiter">);</span>
   long long int curr = screen_data_start+<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
   for <span class="Delimiter">(</span>long long int row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>

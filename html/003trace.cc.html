@@ -287,7 +287,7 @@ int trace_count<span class="Delimiter">(</span>string label<span class="Delimite
   long result = <span class="Constant">0</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      if <span class="Delimiter">(</span>line == <span class="Constant">&quot;&quot;</span> || line == trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span>
+      if <span class="Delimiter">(</span>line == <span class="Constant">&quot;&quot;</span> || trim<span class="Delimiter">(</span>line<span class="Delimiter">)</span> == trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span>
         ++result<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -302,6 +302,16 @@ int trace_count<span class="Delimiter">(</span>string label<span class="Delimite
 <span class="PreProc">    DUMP(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    </span><span class="Identifier">return</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">  </span><span class="Delimiter">}</span>
+
+<span class="PreProc">#define CHECK_TRACE_COUNT(label</span><span class="Delimiter">,</span><span class="PreProc"> count) \</span>
+<span class="PreProc">  </span>if<span class="PreProc"> (trace_count(label) != (count)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
+<span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): trace_count of &quot;</span><span class="PreProc"> &lt;&lt; label &lt;&lt; </span><span class="Constant">&quot; should be &quot;</span><span class="PreProc"> &lt;&lt; count &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;  got &quot;</span><span class="PreProc"> &lt;&lt; trace_count(label) &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> multiple eval </span><span class="Comment">*/</span><span class="PreProc"> \</span>
+<span class="PreProc">    DUMP(label)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    </span><span class="Identifier">return</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> Currently we stop at the very first failure. </span><span class="Comment">*/</span><span class="PreProc"> \</span>
 <span class="PreProc">  </span><span class="Delimiter">}</span>
 
 bool trace_doesnt_contain<span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>

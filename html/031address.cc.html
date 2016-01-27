@@ -13,8 +13,8 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .traceAbsent { color: #c00000; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
@@ -85,14 +85,17 @@ void canonize<span class="Delimiter">(</span>reagent&amp; x<span class="Delimite
 void lookup_memory<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to /lookup &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; but it isn't an address</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// compute value</span>
   if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to /lookup 0</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;location &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value<span class="Delimiter">))</span> &lt;&lt; end<span class="Delimiter">();</span>
   x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value<span class="Delimiter">));</span>
-  drop_address_from_type<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  drop_from_type<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// End Drop Address In lookup_memory(x)</span>
   drop_one_lookup<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -123,15 +126,20 @@ bool canonize_type<span class="Delimiter">(</span>reagent&amp; r<span class="Del
       raise_error &lt;&lt; <span class="Constant">&quot;can't lookup non-address: &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    drop_address_from_type<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+    drop_from_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+    <span class="Comment">// End Drop Address In canonize_type(r)</span>
     drop_one_lookup<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-void drop_address_from_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void drop_from_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">,</span> string expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;can't drop address from &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;can't drop &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">-&gt;</span>value != expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;can't drop &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   type_tree* tmp = r<span class="Delimiter">.</span>type<span class="Delimiter">;</span>

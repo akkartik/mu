@@ -13,8 +13,8 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .SalientComment { color: #00ffff; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
@@ -55,7 +55,7 @@ get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> point<sp
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">3</span>:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:point/<span class="Special">raw</span>  <span class="Comment"># unsafe</span>
+  <span class="Constant">3</span>:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:point/unsafe
 ]
 <span class="traceContains">+mem: storing 34 in location 3</span>
 <span class="traceContains">+mem: storing 35 in location 4</span>
@@ -85,7 +85,7 @@ recipe main [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">15</span>:point-number<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>:point-number/<span class="Special">raw</span>  <span class="Comment"># unsafe</span>
+  <span class="Constant">15</span>:point-number<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>:point-number/unsafe
 ]
 <span class="traceContains">+mem: storing 36 in location 17</span>
 
@@ -100,7 +100,7 @@ recipe main [
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># second</span>
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">4</span>:point-number/<span class="Special">raw</span>  <span class="Comment"># unsafe</span>
+  <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">4</span>:point-number/unsafe
 ]
 <span class="traceContains">+mem: storing 1 in location 7</span>
 
@@ -112,7 +112,7 @@ recipe main [
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># second</span>
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">37</span>  <span class="Comment"># different</span>
-  <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">4</span>:point-number/<span class="Special">raw</span>  <span class="Comment"># unsafe</span>
+  <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">4</span>:point-number/unsafe
 ]
 <span class="traceContains">+mem: storing 0 in location 7</span>
 
@@ -587,10 +587,7 @@ void check_or_set_invalid_types<span class="Delimiter">(</span>type_tree* type<s
   <span class="Comment">// can't assert that type_name is non-null, even at the top of a recursive call tree</span>
   if <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// will throw a more precise error elsewhere</span>
   <span class="Comment">// End Container Type Checks</span>
-  if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    assert<span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>left &amp;&amp; !type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
-    <span class="Identifier">return</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>type_name &amp;&amp; contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span>
       type<span class="Delimiter">-&gt;</span>value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>

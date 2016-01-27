@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 047global.cc</title>
+<title>Mu - 046global.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -38,17 +38,22 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Delimiter">:(scenario global_space)</span>
 recipe main [
-  <span class="Comment"># pretend arrays; in practice we'll use new</span>
-  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>
-  <span class="Constant">20</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>
+  <span class="Comment"># pretend shared:array:location; in practice we'll use new</span>
+  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
+  <span class="Comment"># pretend shared:array:location; in practice we'll use new</span>
+  <span class="Constant">20</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
+  <span class="Constant">21</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
   <span class="Comment"># actual start of this recipe</span>
-  global-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
-  default-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  global-space:address:shared:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
+  default-space:address:shared:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Constant">1</span>:number/space:global<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
-<span class="traceContains">+mem: storing 23 in location 12</span>
-<span class="traceContains">+mem: storing 24 in location 22</span>
+<span class="Comment"># store to default space: 10 + /*skip refcount*/1 + /*skip length*/1 + /*index*/1</span>
+<span class="traceContains">+mem: storing 23 in location 13</span>
+<span class="Comment"># store to chained space: /*contents of location 12*/20 + /*skip refcount*/1 + /*skip length*/1 + /*index*/1</span>
+<span class="traceContains">+mem: storing 24 in location 23</span>
 
 <span class="Comment">//: to support it, create another special variable called global space</span>
 <span class="Delimiter">:(before &quot;End Disqualified Reagents&quot;)</span>
@@ -68,11 +73,13 @@ global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
         || !x<span class="Delimiter">.</span>type
         || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span>
         || !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right
-        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span>
+        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">)</span>
         || !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
-        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">)</span>
-        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'global-space' should be of type address:array:location, but tried to write &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span>
+        || !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
+        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">)</span>
+        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'global-space' should be of type address:shared:array:location, but tried to write &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
       raise_error &lt;&lt; <span class="Constant">&quot;routine already has a global-space; you can't over-write your globals&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -85,7 +92,7 @@ global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
       raise_error &lt;&lt; <span class="Constant">&quot;routine has no global space</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">;</span>
+    <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>global_space + <span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
 <span class="Comment">//: for now let's not bother giving global variables names.</span>
@@ -94,7 +101,7 @@ global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(scenario global_space_with_names)</span>
 <span class="Special">% Hide_errors = true;</span>
 recipe main [
-  global-space:address:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">10</span>
+  global-space:address:shared:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">10</span>
   x:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Constant">1</span>:number/space:global<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
