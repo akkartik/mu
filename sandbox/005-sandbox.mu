@@ -459,6 +459,7 @@ reply z
   # make a change (incrementing one of the args to 'add'), then rerun
   1:address:shared:array:character <- new [ 
 recipe foo [
+local-scope
 z:number <- add 2, 3
 reply z
 ]]

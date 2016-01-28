@@ -415,6 +415,7 @@ scenario run-shows-get-on-non-container-warnings [
   assume-screen 100/width, 15/height
   1:address:shared:array:character <- new [ 
 recipe foo [
+  local-scope
   x:address:shared:point <- new point:type
   get x:address:shared:point, 1:offset
 ]]
@@ -430,6 +431,7 @@ recipe foo [
     .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  local-scope                                     ┊                                                 .
     .  x:address:shared:point <- new point:type        ┊                                                 .
     .  get x:address:shared:point, 1:offset            ┊                                                 .
     .]                                                 ┊                                                 .
@@ -445,6 +447,7 @@ scenario run-shows-non-literal-get-argument-warnings [
   assume-screen 100/width, 15/height
   1:address:shared:array:character <- new [ 
 recipe foo [
+  local-scope
   x:number <- copy 0
   y:address:shared:point <- new point:type
   get *y:address:shared:point, x:number
@@ -461,6 +464,7 @@ recipe foo [
     .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  local-scope                                     ┊                                                 .
     .  x:number <- copy 0                              ┊                                                 .
     .  y:address:shared:point <- new point:type        ┊                                                 .
     .  get *y:address:shared:point, x:number           ┊                                                 .
@@ -480,6 +484,7 @@ scenario run-shows-warnings-everytime [
   assume-screen 100/width, 15/height
   1:address:shared:array:character <- new [ 
 recipe foo [
+  local-scope
   x:number <- copy y:number
 ]]
   2:address:shared:array:character <- new [foo]
@@ -492,6 +497,7 @@ recipe foo [
     .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  local-scope                                     ┊                                                 .
     .  x:number <- copy y:number                       ┊                                                 .
     .]                                                 ┊                                                 .
     .foo: use before set: y                            ┊                                                 .
@@ -509,6 +515,7 @@ recipe foo [
     .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  local-scope                                     ┊                                                 .
     .  x:number <- copy y:number                       ┊                                                 .
     .]                                                 ┊                                                 .
     .foo: use before set: y                            ┊                                                 .

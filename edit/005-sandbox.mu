@@ -446,6 +446,7 @@ scenario run-updates-results [
   # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
   1:address:shared:array:character <- new [ 
 recipe foo [
+local-scope
 z:number <- add 2, 2
 reply z
 ]]
@@ -461,15 +462,16 @@ reply z
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .z:number <- add 2, 2                              ┊0                                               x.
-    .reply z                                           ┊foo                                              .
-    .]                                                 ┊4                                                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .local-scope                                       ┊0                                               x.
+    .z:number <- add 2, 2                              ┊foo                                              .
+    .reply z                                           ┊4                                                .
+    .]                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
   # make a change (incrementing one of the args to 'add'), then rerun
   assume-console [
-    left-click 3, 28  # one past the value of the second arg
+    left-click 4, 28  # one past the value of the second arg
     press backspace
     type [3]
     press F4
@@ -482,10 +484,11 @@ reply z
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .z:number <- add 2, 3                              ┊0                                               x.
-    .reply z                                           ┊foo                                              .
-    .]                                                 ┊5                                                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .local-scope                                       ┊0                                               x.
+    .z:number <- add 2, 3                              ┊foo                                              .
+    .reply z                                           ┊5                                                .
+    .]                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
 ]

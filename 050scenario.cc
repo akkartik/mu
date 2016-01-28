@@ -111,6 +111,7 @@ long long int Num_core_mu_tests = 0;
 :(after "Check For .mu Files")
 Num_core_mu_tests = SIZE(Scenarios);
 :(before "End Tests")
+Warn_on_missing_default_space = true;
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
 for (long long int i = 0; i < SIZE(Scenarios); ++i) {
@@ -145,7 +146,7 @@ void run_mu_scenario(const scenario& s) {
     Trace_stream = new trace_stream;
     setup();
   }
-  vector<recipe_ordinal> tmp = load("recipe scenario-"+s.name+" [ "+s.to_run+" ]");
+  vector<recipe_ordinal> tmp = load("recipe scenario_"+s.name+" [ "+s.to_run+" ]");
   bind_special_scenario_names(tmp.at(0));
   transform_all();
   run(tmp.front());
@@ -202,8 +203,10 @@ case RUN: {
 }
 :(before "End Primitive Recipe Implementations")
 case RUN: {
+  assert(Name[Next_recipe_ordinal].empty());
   ostringstream tmp;
-  tmp << "recipe run" << Next_recipe_ordinal << " [ " << current_instruction().ingredients.at(0).name << " ]";
+  tmp << "recipe run_" << Next_recipe_ordinal << " [ " << current_instruction().ingredients.at(0).name << " ]";
+//?   cerr << tmp.str() << '\n';
 //?   cerr << "before load\n";
   vector<recipe_ordinal> tmp_recipe = load(tmp.str());
 //?   cerr << "before bind\n";
