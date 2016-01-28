@@ -94,21 +94,28 @@ case NEW: {
     raise_error << maybe(caller.name) << "result of 'new' should never be ignored\n" << end();
     break;
   }
-  reagent product(inst.products.at(0));
-  canonize_type(product);
-  drop_from_type(product, "address");
-  drop_from_type(product, "shared");
-  if (SIZE(inst.ingredients) > 1) {
-    // array allocation
-    drop_from_type(product, "array");
-  }
-  reagent expected_product("x:"+type.name);
-  // End Post-processing(expected_product) When Checking 'new'
-  if (!types_strictly_match(product, expected_product)) {
+  if (!product_of_new_is_valid(inst)) {
     raise_error << maybe(caller.name) << "product of 'new' has incorrect type: " << inst.to_string() << '\n' << end();
     break;
   }
   break;
+}
+:(code)
+bool product_of_new_is_valid(const instruction& inst) {
+  reagent product = inst.products.at(0);
+  canonize_type(product);
+  if (!product.type || product.type->value != get(Type_ordinal, "address")) return false;
+  drop_from_type(product, "address");
+  if (!product.type || product.type->value != get(Type_ordinal, "shared")) return false;
+  drop_from_type(product, "shared");
+  if (SIZE(inst.ingredients) > 1) {
+    // array allocation
+    if (!product.type || product.type->value != get(Type_ordinal, "array")) return false;
+    drop_from_type(product, "array");
+  }
+  reagent expected_product("x:"+inst.ingredients.at(0).name);
+  // End Post-processing(expected_product) When Checking 'new'
+  return types_strictly_match(product, expected_product);
 }
 
 //:: translate 'new' to 'allocate' instructions that take a size instead of a type
@@ -228,6 +235,13 @@ recipe main [
   2:number <- copy *1:address:shared:number
 ]
 +mem: storing 0 in location 2
+
+:(scenario new_error)
+% Hide_errors = true;
+recipe main [
+  1:address:number/raw <- new number:type
+]
++error: main: product of 'new' has incorrect type: 1:address:number/raw <- new number:type
 
 :(scenario new_array)
 recipe main [
