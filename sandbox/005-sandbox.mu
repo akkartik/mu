@@ -136,7 +136,6 @@ recipe run-sandboxes env:address:shared:programming-environment-data, screen:add
   local-scope
   load-ingredients
   errors-found?:boolean, env, screen <- update-recipes env, screen, test-recipes
-  reply-if errors-found?
   # check contents of editor
   <run-sandboxes-begin>
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
