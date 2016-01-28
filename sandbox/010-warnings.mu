@@ -146,9 +146,17 @@ recipe foo [
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/test-recipes
   ]
   screen-should-contain [
-    # TODO: make this more specific
     .  errors found                 run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
     .foo                                               .
+    .foo: unknown element foo in container number      .
+    .foo: first ingredient of 'get' should be a contai↩.
+    .ner, but got 123:number                           .
+    .foo: unknown element foo in container number      .
+    .foo: first ingredient of 'get' should be a contai↩.
+    .ner, but got 123:number                           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -386,9 +394,15 @@ recipe foo [
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/test-recipes
   ]
   screen-should-contain [
-    # TODO: make this more specific
     .  errors found                 run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
     .foo                                               .
+    .foo: missing type for x in 'x <- copy 0'          .
+    .foo: can't copy 0 to x; types don't match         .
+    .foo: missing type for x in 'x <- copy 0'          .
+    .foo: can't copy 0 to x; types don't match         .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -412,9 +426,13 @@ recipe foo «
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/test-recipes
   ]
   screen-should-contain [
-    # TODO: make this more specific
     .  errors found                 run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
     .foo                                               .
+    .9: unbalanced '\\\[' for recipe                      .
+    .9: unbalanced '\\\[' for recipe                      .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -438,11 +456,13 @@ recipe foo [
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/test-recipes
   ]
   screen-should-contain [
-    # TODO: make this more specific
     .  errors found                 run (F4)           .
-    .foo                                               .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
+    .foo                                               .
+    .foo: first ingredient of 'get' should be a contai↩.
+    .ner, but got x:address:shared:point               .
   ]
 ]
 
@@ -465,11 +485,13 @@ recipe foo [
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/test-recipes
   ]
   screen-should-contain [
-    # TODO: make this more specific
     .  errors found                 run (F4)           .
-    .foo                                               .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
+    .foo                                               .
+    .foo: expected ingredient 1 of 'get' to have type ↩.
+    .'offset'; got x:number                            .
   ]
 ]
 
@@ -489,11 +511,12 @@ recipe foo [
   ]
   event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/test-recipes
   screen-should-contain [
-    # TODO: make this more specific
     .  errors found                 run (F4)           .
-    .foo                                               .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
+    .foo                                               .
+    .foo: use before set: y                            .
   ]
   # rerun the file, check for the same error
   assume-console [
@@ -503,11 +526,12 @@ recipe foo [
     event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/test-recipes
   ]
   screen-should-contain [
-    # TODO: make this more specific
     .  errors found                 run (F4)           .
-    .foo                                               .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0                                                x.
+    .foo                                               .
+    .foo: use before set: y                            .
   ]
 ]
 
@@ -545,8 +569,6 @@ scenario run-instruction-and-print-warnings [
     .                                                  .
   ]
 ]
-
-# TODO: print warnings in file even if you can't run a sandbox
 
 scenario run-instruction-and-print-warnings-only-once [
   trace-until 100/app  # trace too long
