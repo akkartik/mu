@@ -4,7 +4,7 @@
 //: 'after' fragments will simply be inserted at all applicable waypoints.
 //: Waypoints are always surrounded by '<>', e.g. <handle-request>.
 //:
-//: TODO: switch recipe.steps to a more efficient data structure.
+//: todo: switch recipe.steps to a more efficient data structure.
 
 :(scenario tangle_before)
 recipe main [
