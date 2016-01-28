@@ -60,6 +60,7 @@ void run_current_routine()
   while (!Current_routine->completed())  // later layers will modify condition
   {
     // Running One Instruction
+//?     trace(9999, "aaaa") << "location 1 contains " << get_or_insert(Memory, 1) << end();
 //?     Instructions_running[current_recipe_name()]++;
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << current_instruction().to_string() << end();

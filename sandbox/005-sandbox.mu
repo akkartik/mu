@@ -434,6 +434,7 @@ scenario run-updates-results [
   # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
   1:address:shared:array:character <- new [ 
 recipe foo [
+local-scope
 z:number <- add 2, 2
 reply z
 ]]
@@ -456,7 +457,7 @@ reply z
     .                                                  .
   ]
   # make a change (incrementing one of the args to 'add'), then rerun
-  4:address:shared:array:character <- new [ 
+  1:address:shared:array:character <- new [ 
 recipe foo [
 z:number <- add 2, 3
 reply z
@@ -465,7 +466,7 @@ reply z
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 4:address:shared:array:character/recipes
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/recipes
   ]
   # check that screen updates the result on the right
   screen-should-contain [
