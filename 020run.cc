@@ -133,6 +133,7 @@ inline bool routine::completed() const {
 
 //: Step 1: load all .mu files with numeric prefixes (in order)
 :(before "End Load Recipes")
+// Load .mu Core
 //? Trace_file = "interactive";
 //? START_TRACING_UNTIL_END_OF_SCOPE;
 load_permanently("core.mu");
@@ -162,6 +163,7 @@ if (argc > 1) {
 //: start running it.
 :(before "End Main")
 if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, get(Recipe_ordinal, "main"))) {
+  // Running Main
   setup();
 //?   Trace_file = "interactive";
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
