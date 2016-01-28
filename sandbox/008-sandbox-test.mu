@@ -58,7 +58,7 @@ recipe foo [
     .                                                  .
   ]
   # now change the result
-  5:address:shared:array:character <- new [ 
+  1:address:shared:array:character <- new [ 
 recipe foo [
   reply 3
 ]]
@@ -67,7 +67,7 @@ recipe foo [
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 5:address:shared:array:character/new-test-recipes
+    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/new-test-recipes
   ]
   # result turns red
   screen-should-contain-in-color 1/red, [

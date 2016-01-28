@@ -421,6 +421,7 @@ if (x.type->value == get(Type_ordinal, "address")
     put(Memory, old_address, old_refcount-1);
   }
   // perform the write
+//?   trace(9999, "mem") << "038new.cc:424: location " << x.value << " contains " << old_address << " with refcount " << get_or_insert(Memory, old_address) << end();
   trace(9999, "mem") << "storing " << no_scientific(data.at(0)) << " in location " << base << end();
   put(Memory, base, new_address);
   // increment refcount of new address
@@ -432,6 +433,9 @@ if (x.type->value == get(Type_ordinal, "address")
   }
   // abandon old address if necessary
   // do this after all refcount updates are done just in case old and new are identical
+//?   if (get_or_insert(Memory, old_address) < 0) {
+//?     DUMP("");
+//?   }
   assert(get_or_insert(Memory, old_address) >= 0);
   if (old_address && get_or_insert(Memory, old_address) == 0) {
     // lookup_memory without drop_one_lookup {
@@ -441,10 +445,75 @@ if (x.type->value == get(Type_ordinal, "address")
     drop_from_type(x, "address");
     drop_from_type(x, "shared");
     // }
+//?     cerr << "ABANDON\n";
     abandon(old_address, size_of(x)+/*refcount*/1);
   }
   return;
 }
+
+:(scenario refcounts_2)
+recipe main [
+  1:address:shared:number <- new number:type
+  # over-writing one allocation with another
+  1:address:shared:number <- new number:type
+  1:address:shared:number <- copy 0
+]
++run: 1:address:shared:number <- new number:type
++mem: incrementing refcount of 1000: 0 -> 1
++run: 1:address:shared:number <- new number:type
++mem: automatically abandoning 1000
+
+:(scenario refcounts_3)
+recipe main [
+  1:address:shared:number <- new number:type
+  # passing in addresses to recipes increments refcount
+  foo 1:address:shared:number
+  1:address:shared:number <- copy 0
+]
+recipe foo [
+  2:address:shared:number <- next-ingredient
+  # return does NOT yet decrement refcount; memory must be explicitly managed
+  2:address:shared:number <- copy 0
+]
++run: 1:address:shared:number <- new number:type
++mem: incrementing refcount of 1000: 0 -> 1
++run: 2:address:shared:number <- next-ingredient
++mem: incrementing refcount of 1000: 1 -> 2
++run: 2:address:shared:number <- copy 0
++mem: decrementing refcount of 1000: 2 -> 1
++run: 1:address:shared:number <- copy 0
++mem: decrementing refcount of 1000: 1 -> 0
++mem: automatically abandoning 1000
+
+:(scenario refcounts_4)
+recipe main [
+  1:address:shared:number <- new number:type
+  # idempotent copies leave refcount unchanged
+  1:address:shared:number <- copy 1:address:shared:number
+]
++run: 1:address:shared:number <- new number:type
++mem: incrementing refcount of 1000: 0 -> 1
++run: 1:address:shared:number <- copy 1:address:shared:number
++mem: decrementing refcount of 1000: 1 -> 0
++mem: incrementing refcount of 1000: 0 -> 1
+
+:(scenario refcounts_5)
+recipe main [
+  1:address:shared:number <- new number:type
+  # passing in addresses to recipes increments refcount
+  foo 1:address:shared:number
+  # return does NOT yet decrement refcount; memory must be explicitly managed
+  1:address:shared:number <- new number:type
+]
+recipe foo [
+  2:address:shared:number <- next-ingredient
+]
++run: 1:address:shared:number <- new number:type
++mem: incrementing refcount of 1000: 0 -> 1
++run: 2:address:shared:number <- next-ingredient
++mem: incrementing refcount of 1000: 1 -> 2
++run: 1:address:shared:number <- new number:type
++mem: decrementing refcount of 1000: 2 -> 1
 
 //:: Extend 'new' to handle a unicode string literal argument.
 
