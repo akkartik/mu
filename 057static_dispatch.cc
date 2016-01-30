@@ -140,6 +140,15 @@ for (long long int i = 0; i < SIZE(caller.products); ++i) {
 :(after "Transform.push_back(transform_names)")
 Transform.push_back(resolve_ambiguous_calls);  // idempotent
 
+//: In a later layer we'll introduce recursion in resolve_ambiguous_calls, by
+//: having it generate code for shape-shifting recipes and then transform such
+//: code. This data structure will help error messages be more useful.
+//:
+//: We're punning the 'call' data structure just because it has slots for
+//: calling recipe and calling instruction.
+:(before "End Globals")
+list<call> resolve_stack;
+
 :(code)
 void resolve_ambiguous_calls(recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
@@ -149,7 +158,12 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
     instruction& inst = caller_recipe.steps.at(index);
     if (inst.is_label) continue;
     if (get_or_insert(Recipe_variants, inst.name).empty()) continue;
+    resolve_stack.push_front(call(r));
+    resolve_stack.front().running_step_index = index;
     replace_best_variant(inst, caller_recipe);
+    assert(resolve_stack.front().running_recipe == r);
+    assert(resolve_stack.front().running_step_index == index);
+    resolve_stack.pop_front();
   }
 }
 
@@ -172,7 +186,38 @@ void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
   // End Instruction Dispatch(inst, best_score)
   if (best_score == -1 && get(Recipe_ordinal, inst.name) >= MAX_PRIMITIVE_RECIPES) {
     raise_error << maybe(caller_recipe.name) << "failed to find a matching call for '" << inst.to_string() << "'\n" << end();
+    for (list<call>::iterator p = /*skip*/++resolve_stack.begin(); p != resolve_stack.end(); ++p) {
+      const recipe& specializer_recipe = get(Recipe, p->running_recipe);
+      const instruction& specializer_inst = specializer_recipe.steps.at(p->running_step_index);
+      if (specializer_recipe.name != "interactive")
+        raise_error << "  (from '" << specializer_inst.to_string() << "' in " << specializer_recipe.name << ")\n" << end();
+      else
+        raise_error << "  (from '" << specializer_inst.to_string() << "')\n" << end();
+      // One special-case to help with the rewrite_stash transform. (cross-layer)
+      if (specializer_inst.products.at(0).name.find("stash_") == 0) {
+        instruction stash_inst;
+        if (next_stash(*p, &stash_inst)) {
+          if (specializer_recipe.name != "interactive")
+            raise_error << "  (part of '" << stash_inst.original_string << "' in " << specializer_recipe.name << ")\n" << end();
+          else
+            raise_error << "  (part of '" << stash_inst.original_string << "')\n" << end();
+        }
+      }
+    }
   }
+}
+
+bool next_stash(const call& c, instruction* stash_inst) {
+  const recipe& specializer_recipe = get(Recipe, c.running_recipe);
+  long long int index = c.running_step_index;
+  for (++index; index < SIZE(specializer_recipe.steps); ++index) {
+    const instruction& inst = specializer_recipe.steps.at(index);
+    if (inst.name == "stash") {
+      *stash_inst = inst;
+      return true;
+    }
+  }
+  return false;
 }
 
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {

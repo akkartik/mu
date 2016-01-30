@@ -35,6 +35,7 @@ struct instruction {
   string label;  // only if is_label
   string name;  // only if !is_label
   string old_name;  // before our automatic rewrite rules
+  string original_string;
   recipe_ordinal operation;  // get(Recipe_ordinal, name)
   vector<reagent> ingredients;  // only if !is_label
   vector<reagent> products;  // only if !is_label
@@ -228,7 +229,7 @@ recipe::recipe() {
 instruction::instruction() :is_label(false), operation(IDLE) {
   // End instruction Constructor
 }
-void instruction::clear() { is_label=false; label.clear(); name.clear(); old_name.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
+void instruction::clear() { is_label=false; label.clear(); name.clear(); old_name.clear(); operation=IDLE; ingredients.clear(); products.clear(); original_string.clear(); }
 bool instruction::is_clear() { return !is_label && name.empty(); }
 
 // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
