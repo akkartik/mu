@@ -75,8 +75,10 @@ void slurp_body(istream& in, recipe& result) {
   while (next_instruction(in, &curr)) {
     // End Rewrite Instruction(curr, recipe result)
     trace(9992, "load") << "after rewriting: " << curr.to_string() << end();
-    if (!curr.is_clear())
+    if (!curr.is_clear()) {
+      curr.original_string = curr.to_string();
       result.steps.push_back(curr);
+    }
   }
 }
 
