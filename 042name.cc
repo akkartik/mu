@@ -44,7 +44,7 @@ void transform_names(const recipe_ordinal r) {
     // End transform_names(inst) Special-cases
     // map names to addresses
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
-      if (disqualified(inst.ingredients.at(in), inst, caller.name)) continue;
+      if (is_disqualified(inst.ingredients.at(in), inst, caller.name)) continue;
       if (is_numeric_location(inst.ingredients.at(in))) numeric_locations_used = true;
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
       if (is_integer(inst.ingredients.at(in).name)) continue;
@@ -54,7 +54,7 @@ void transform_names(const recipe_ordinal r) {
       inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
     }
     for (long long int out = 0; out < SIZE(inst.products); ++out) {
-      if (disqualified(inst.products.at(out), inst, caller.name)) continue;
+      if (is_disqualified(inst.products.at(out), inst, caller.name)) continue;
       if (is_numeric_location(inst.products.at(out))) numeric_locations_used = true;
       if (is_named_location(inst.products.at(out))) names_used = true;
       if (is_integer(inst.products.at(out).name)) continue;
@@ -70,15 +70,15 @@ void transform_names(const recipe_ordinal r) {
     raise_error << maybe(caller.name) << "mixing variable names and numeric addresses\n" << end();
 }
 
-bool disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
+bool is_disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
   if (!x.type) {
-    // End transform_names Exceptions
+    // End Null-type is_disqualified Exceptions
     raise_error << maybe(recipe_name) << "missing type for " << x.original_string << " in '" << inst.to_string() << "'\n" << end();
     return true;
   }
   if (is_raw(x)) return true;
   if (is_literal(x)) return true;
-  // End Disqualified Reagents
+  // End is_disqualified Cases
   if (x.initialized) return true;
   return false;
 }

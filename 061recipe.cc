@@ -31,7 +31,7 @@ put(Type_ordinal, "recipe-literal", 0);
 type_ordinal recipe = put(Type_ordinal, "recipe", Next_type_ordinal++);
 get_or_insert(Type, recipe).name = "recipe";
 
-:(before "End transform_names Exceptions")
+:(before "End Null-type is_disqualified Exceptions")
 if (!x.properties.at(0).second && contains_key(Recipe_ordinal, x.name)) {
   x.properties.at(0).second = new string_tree("recipe-literal");
   x.type = new type_tree(get(Type_ordinal, "recipe-literal"));
