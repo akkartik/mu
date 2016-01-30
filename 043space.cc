@@ -37,7 +37,7 @@ recipe main [
 +name: assign x 1
 -name: assign default-space 1
 
-:(before "End Disqualified Reagents")
+:(before "End is_disqualified Cases")
 if (x.name == "default-space")
   x.initialized = true;
 :(before "End is_special_name Cases")
@@ -166,7 +166,7 @@ recipe main [
 # allocate space for x and y, as well as the chaining slot at 0
 +mem: array size is 3
 
-:(before "End Disqualified Reagents")
+:(before "End is_disqualified Cases")
 if (x.name == "number-of-locals")
   x.initialized = true;
 :(before "End is_special_name Cases")

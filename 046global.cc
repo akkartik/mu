@@ -23,7 +23,7 @@ recipe main [
 +mem: storing 24 in location 23
 
 //: to support it, create another special variable called global space
-:(before "End Disqualified Reagents")
+:(before "End is_disqualified Cases")
 if (x.name == "global-space")
   x.initialized = true;
 :(before "End is_special_name Cases")
