@@ -37,8 +37,8 @@ if (Current_routine->calls.front().running_step_index == 0
 
 //: Make sure we don't match up literals with type ingredients without
 //: specialization.
-:(before "End Matching Types For Literal(lhs)")
-if (contains_type_ingredient_name(lhs)) return false;
+:(before "End Matching Types For Literal(to)")
+if (contains_type_ingredient_name(to)) return false;
 
 //: We'll be creating recipes without loading them from anywhere by
 //: *specializing* existing recipes.
@@ -192,10 +192,10 @@ bool any_type_ingredient_in_header(recipe_ordinal variant) {
   return false;
 }
 
-bool deeply_equal_concrete_types(reagent lhs, reagent rhs) {
-  canonize_type(lhs);
-  canonize_type(rhs);
-  return deeply_equal_concrete_types(lhs.properties.at(0).second, rhs.properties.at(0).second, rhs);
+bool deeply_equal_concrete_types(reagent to, reagent from) {
+  canonize_type(to);
+  canonize_type(from);
+  return deeply_equal_concrete_types(to.properties.at(0).second, from.properties.at(0).second, from);
 }
 
 long long int number_of_concrete_types(recipe_ordinal r) {
@@ -222,24 +222,24 @@ long long int number_of_concrete_types(const string_tree* type) {
   return result;
 }
 
-bool deeply_equal_concrete_types(const string_tree* lhs, const string_tree* rhs, const reagent& rhs_reagent) {
-  if (!lhs) return !rhs;
-  if (!rhs) return !lhs;
-  if (is_type_ingredient_name(lhs->value)) return true;  // type ingredient matches anything
-  if (lhs->value == "literal" && rhs->value == "literal")
+bool deeply_equal_concrete_types(const string_tree* to, const string_tree* from, const reagent& rhs_reagent) {
+  if (!to) return !from;
+  if (!from) return !to;
+  if (is_type_ingredient_name(to->value)) return true;  // type ingredient matches anything
+  if (to->value == "literal" && from->value == "literal")
     return true;
-  if (lhs->value == "literal"
-      && Literal_type_names.find(rhs->value) != Literal_type_names.end())
+  if (to->value == "literal"
+      && Literal_type_names.find(from->value) != Literal_type_names.end())
     return true;
-  if (rhs->value == "literal"
-      && Literal_type_names.find(lhs->value) != Literal_type_names.end())
+  if (from->value == "literal"
+      && Literal_type_names.find(to->value) != Literal_type_names.end())
     return true;
-  if (rhs->value == "literal" && lhs->value == "address")
+  if (from->value == "literal" && to->value == "address")
     return rhs_reagent.name == "0";
-//?   cerr << lhs->value << " vs " << rhs->value << '\n';
-  return lhs->value == rhs->value
-      && deeply_equal_concrete_types(lhs->left, rhs->left, rhs_reagent)
-      && deeply_equal_concrete_types(lhs->right, rhs->right, rhs_reagent);
+//?   cerr << to->value << " vs " << from->value << '\n';
+  return to->value == from->value
+      && deeply_equal_concrete_types(to->left, from->left, rhs_reagent)
+      && deeply_equal_concrete_types(to->right, from->right, rhs_reagent);
 }
 
 bool contains_type_ingredient_name(const reagent& x) {
