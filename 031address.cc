@@ -71,9 +71,9 @@ recipe foo [
 ]
 # don't crash
 
-:(after "bool types_strictly_match(reagent lhs, reagent rhs)")
-  if (!canonize_type(lhs)) return false;
-  if (!canonize_type(rhs)) return false;
+:(after "bool types_strictly_match(reagent to, reagent from)")
+  if (!canonize_type(to)) return false;
+  if (!canonize_type(from)) return false;
 
 :(after "bool is_mu_array(reagent r)")
   if (!canonize_type(r)) return false;

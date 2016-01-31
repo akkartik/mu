@@ -177,14 +177,14 @@ recipe f x:boolean -> y:boolean [
 ]
 +error: main: can't copy f to {1: (recipe number -> number)}; types don't match
 
-:(before "End Matching Types For Literal(lhs)")
-if (is_mu_recipe(lhs)) {
-  if (!contains_key(Recipe, rhs.value)) {
-    raise_error << "trying to store recipe " << rhs.name << " into " << debug_string(lhs) << " but there's no such recipe\n" << end();
+:(before "End Matching Types For Literal(to)")
+if (is_mu_recipe(to)) {
+  if (!contains_key(Recipe, from.value)) {
+    raise_error << "trying to store recipe " << from.name << " into " << debug_string(to) << " but there's no such recipe\n" << end();
     return false;
   }
-  const recipe& rrhs = get(Recipe, rhs.value);
-  const recipe& rlhs = from_reagent(lhs);
+  const recipe& rrhs = get(Recipe, from.value);
+  const recipe& rlhs = from_reagent(to);
   for (long int i = 0; i < min(SIZE(rlhs.ingredients), SIZE(rrhs.ingredients)); ++i) {
     if (!types_match(rlhs.ingredients.at(i), rrhs.ingredients.at(i)))
       return false;

@@ -100,50 +100,50 @@ bool types_coercible(const reagent& to, const reagent& from) {
   return false;
 }
 
-bool types_match(const reagent& lhs, const reagent& rhs) {
+bool types_match(const reagent& to, const reagent& from) {
   // to sidestep type-checking, use /unsafe in the source.
   // this will be highlighted in red inside vim. just for setting up some tests.
-  if (is_unsafe(rhs)) return true;
-  if (is_literal(rhs)) {
-    if (is_mu_array(lhs)) return false;
-    // End Matching Types For Literal(lhs)
+  if (is_unsafe(from)) return true;
+  if (is_literal(from)) {
+    if (is_mu_array(to)) return false;
+    // End Matching Types For Literal(to)
     // allow writing 0 to any address
-    if (is_mu_address(lhs)) return rhs.name == "0";
-    if (!lhs.type) return false;
-    if (lhs.type->value == get(Type_ordinal, "boolean"))
-      return boolean_matches_literal(lhs, rhs);
-    return size_of(lhs) == 1;  // literals are always scalars
+    if (is_mu_address(to)) return from.name == "0";
+    if (!to.type) return false;
+    if (to.type->value == get(Type_ordinal, "boolean"))
+      return boolean_matches_literal(to, from);
+    return size_of(to) == 1;  // literals are always scalars
   }
-  return types_strictly_match(lhs, rhs);
+  return types_strictly_match(to, from);
 }
 
-bool boolean_matches_literal(const reagent& lhs, const reagent& rhs) {
-  if (!is_literal(rhs)) return false;
-  if (!lhs.type) return false;
-  if (lhs.type->value != get(Type_ordinal, "boolean")) return false;
-  return rhs.name == "0" || rhs.name == "1";
+bool boolean_matches_literal(const reagent& to, const reagent& from) {
+  if (!is_literal(from)) return false;
+  if (!to.type) return false;
+  if (to.type->value != get(Type_ordinal, "boolean")) return false;
+  return from.name == "0" || from.name == "1";
 }
 
 // copy arguments because later layers will want to make changes to them
 // without perturbing the caller
-bool types_strictly_match(reagent lhs, reagent rhs) {
-  if (is_literal(rhs) && lhs.type->value == get(Type_ordinal, "number")) return true;
+bool types_strictly_match(reagent to, reagent from) {
+  if (is_literal(from) && to.type->value == get(Type_ordinal, "number")) return true;
   // to sidestep type-checking, use /unsafe in the source.
   // this will be highlighted in red inside vim. just for setting up some tests.
-  if (is_unsafe(rhs)) return true;
+  if (is_unsafe(from)) return true;
   // '_' never raises type error
-  if (is_dummy(lhs)) return true;
-  if (!lhs.type) return !rhs.type;
-  return types_strictly_match(lhs.type, rhs.type);
+  if (is_dummy(to)) return true;
+  if (!to.type) return !from.type;
+  return types_strictly_match(to.type, from.type);
 }
 
 // two types match if the second begins like the first
 // (trees perform the same check recursively on each subtree)
-bool types_strictly_match(type_tree* lhs, type_tree* rhs) {
-  if (!lhs) return true;
-  if (!rhs) return lhs->value == 0;
-  if (lhs->value != rhs->value) return false;
-  return types_strictly_match(lhs->left, rhs->left) && types_strictly_match(lhs->right, rhs->right);
+bool types_strictly_match(type_tree* to, type_tree* from) {
+  if (!to) return true;
+  if (!from) return to->value == 0;
+  if (to->value != from->value) return false;
+  return types_strictly_match(to->left, from->left) && types_strictly_match(to->right, from->right);
 }
 
 bool is_unsafe(const reagent& r) {
