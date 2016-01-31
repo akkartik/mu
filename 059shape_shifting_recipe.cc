@@ -77,14 +77,16 @@ if (best_score == -1) {
     recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
     if (new_recipe_ordinal == 0) goto done_constructing_variant;
     variants.push_back(new_recipe_ordinal);
+    recipe& variant = get(Recipe, new_recipe_ordinal);
     // perform all transforms on the new specialization
-    const string& new_name = get(Recipe, variants.back()).name;
-    trace(9992, "transform") << "transforming new specialization: " << new_name << end();
-    for (long long int t = 0; t < SIZE(Transform); ++t) {
-      (*Transform.at(t))(new_recipe_ordinal);
+    if (!variant.steps.empty()) {
+      trace(9992, "transform") << "transforming new specialization: " << variant.name << end();
+      for (long long int t = 0; t < SIZE(Transform); ++t) {
+        (*Transform.at(t))(new_recipe_ordinal);
+      }
     }
-    get(Recipe, new_recipe_ordinal).transformed_until = SIZE(Transform)-1;
-    inst.name = get(Recipe, variants.back()).name;
+    variant.transformed_until = SIZE(Transform)-1;
+    inst.name = variant.name;
     trace(9992, "transform") << "new specialization: " << inst.name << end();
   }
   done_constructing_variant:;
@@ -532,6 +534,15 @@ container foo:_t [
 ]
 +mem: storing 14 in location 20
 +mem: storing 15 in location 21
+
+:(scenario shape_shifting_recipe_empty)
+recipe main [
+  foo 1
+]
+# shape-shifting recipe with no body
+recipe foo a:_t [
+]
+# shouldn't crash
 
 :(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient)
 recipe main [
