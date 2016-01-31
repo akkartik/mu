@@ -216,6 +216,7 @@ void check_calls_against_header(const recipe_ordinal r) {
     const recipe& callee = get(Recipe, inst.operation);
     if (!callee.has_header) continue;
     for (long int i = 0; i < min(SIZE(inst.ingredients), SIZE(callee.ingredients)); ++i) {
+      // ingredients coerced from call to callee
       if (!types_coercible(callee.ingredients.at(i), inst.ingredients.at(i)))
         raise_error << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << inst.to_string() << "'\n" << end();
       if (is_unique_address(inst.ingredients.at(i)))
@@ -223,7 +224,8 @@ void check_calls_against_header(const recipe_ordinal r) {
     }
     for (long int i = 0; i < min(SIZE(inst.products), SIZE(callee.products)); ++i) {
       if (is_dummy(inst.products.at(i))) continue;
-      if (!types_coercible(callee.products.at(i), inst.products.at(i)))
+      // products coerced from callee to call
+      if (!types_coercible(inst.products.at(i), callee.products.at(i)))
         raise_error << maybe(caller.name) << "product " << i << " has the wrong type at '" << inst.to_string() << "'\n" << end();
       if (is_unique_address(inst.products.at(i)))
         raise << maybe(caller.name) << "try to avoid getting non-shared addresses out of calls, like product " << i << " at '" << inst.to_string() << "'\n" << end();
