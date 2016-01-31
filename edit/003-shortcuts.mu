@@ -167,7 +167,18 @@ recipe move-cursor-coordinates-left editor:address:shared:editor-data -> editor:
     trace 10, [app], [switching to previous line]
     d:address:shared:duplex-list:character <- get *editor, data:offset
     end-of-line:number <- previous-line-length before-cursor, d
-    *cursor-column <- add left, end-of-line
+    right:number <- get *editor, right:offset
+    width:number <- subtract right, left
+    wrap?:boolean <- greater-than end-of-line, width
+    {
+      break-unless wrap?
+      _, column-offset:number <- divide-with-remainder end-of-line, width
+      *cursor-column <- add left, column-offset
+    }
+    {
+      break-if wrap?
+      *cursor-column <- add left, end-of-line
+    }
     reply
   }
   # case 2: if previous-character was not newline, we're just at a wrapped line
@@ -802,7 +813,7 @@ d]
 
 scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   assume-screen 10/width, 5/height
-  # initialize editor with text containing an empty line
+  # initialize editor with a wrapping line
   1:address:shared:array:character <- new [abcdef]
   2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 5/right
   editor-render screen, 2:address:shared:editor-data
@@ -826,7 +837,71 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   ]
   memory-should-contain [
     3 <- 1  # previous row
-    4 <- 3  # end of wrapped line
+    4 <- 3  # right margin except wrap icon
+  ]
+  check-trace-count-for-label 0, [print-character]
+]
+
+scenario editor-moves-across-screen-lines-to-wrapping-line-with-left-arrow [
+  assume-screen 10/width, 5/height
+  # initialize editor with a wrapping line followed by a second line
+  1:address:shared:array:character <- new [abcdef
+g]
+  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 5/right
+  editor-render screen, 2:address:shared:editor-data
+  $clear-trace
+  screen-should-contain [
+    .          .
+    .abcd↩     .
+    .ef        .
+    .g         .
+    .┈┈┈┈┈     .
+  ]
+  # position cursor right after empty line
+  assume-console [
+    left-click 3, 0
+    press left-arrow
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+    3:number <- get *2:address:shared:editor-data, cursor-row:offset
+    4:number <- get *2:address:shared:editor-data, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 2  # previous row
+    4 <- 2  # end of wrapped line
+  ]
+  check-trace-count-for-label 0, [print-character]
+]
+
+scenario editor-moves-across-screen-lines-to-non-wrapping-line-with-left-arrow [
+  assume-screen 10/width, 5/height
+  # initialize editor with a line on the verge of wrapping, followed by a second line
+  1:address:shared:array:character <- new [abcd
+e]
+  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 5/right
+  editor-render screen, 2:address:shared:editor-data
+  $clear-trace
+  screen-should-contain [
+    .          .
+    .abcd      .
+    .e         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  # position cursor right after empty line
+  assume-console [
+    left-click 2, 0
+    press left-arrow
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+    3:number <- get *2:address:shared:editor-data, cursor-row:offset
+    4:number <- get *2:address:shared:editor-data, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 1  # previous row
+    4 <- 4  # end of wrapped line
   ]
   check-trace-count-for-label 0, [print-character]
 ]
