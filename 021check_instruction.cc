@@ -81,11 +81,21 @@ recipe main [
 +mem: storing 12 in location 2
 $error: 0
 
+:(scenario write_boolean_to_number_allowed)
+% Hide_errors = true;
+recipe main [
+  1:boolean <- copy 1/true
+  2:number <- copy 1:boolean
+]
++mem: storing 1 in location 2
+$error: 0
+
 :(code)
 // types_match with some leniency
-bool types_coercible(const reagent& lhs, const reagent& rhs) {
-  if (types_match(lhs, rhs)) return true;
-  if (is_mu_address(rhs) && is_mu_number(lhs)) return true;
+bool types_coercible(const reagent& to, const reagent& from) {
+  if (types_match(to, from)) return true;
+  if (is_mu_address(from) && is_mu_number(to)) return true;
+  if (is_mu_boolean(from) && is_mu_number(to)) return true;
   // End types_coercible Special-cases
   return false;
 }
@@ -150,6 +160,12 @@ bool is_mu_address(reagent r) {
   if (!r.type) return false;
   if (is_literal(r)) return false;
   return r.type->value == get(Type_ordinal, "address");
+}
+
+bool is_mu_boolean(reagent r) {
+  if (!r.type) return false;
+  if (is_literal(r)) return false;
+  return r.type->value == get(Type_ordinal, "boolean");
 }
 
 bool is_mu_number(reagent r) {
