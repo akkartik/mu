@@ -18,7 +18,6 @@ after <programming-environment-initialization> [
 container sandbox-data [
   data:address:shared:array:character
   response:address:shared:array:character
-  expected-response:address:shared:array:character
   # coordinates to track clicks
   # constraint: will be 0 for sandboxes at positions before env.render-from
   starting-row-on-screen:number
@@ -223,12 +222,7 @@ recipe save-sandboxes env:address:shared:programming-environment-data [
     data:address:shared:array:character <- get *curr, data:offset
     filename:address:shared:array:character <- to-text idx
     save filename, data
-    {
-      expected-response:address:shared:array:character <- get *curr, expected-response:offset
-      break-unless expected-response
-      filename <- append filename, suffix
-      save filename, expected-response
-    }
+    <end-save-sandbox>
     idx <- add idx, 1
     curr <- get *curr, next-sandbox:offset
     loop
@@ -343,8 +337,7 @@ recipe! restore-sandboxes env:address:shared:programming-environment-data -> env
       filename <- append filename, suffix
       contents <- restore filename
       break-unless contents
-      expected-response:address:address:shared:array:character <- get-address **curr, expected-response:offset
-      *expected-response <- copy contents
+      <end-restore-sandbox>
     }
     +continue
     idx <- add idx, 1

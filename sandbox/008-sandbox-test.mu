@@ -81,6 +81,27 @@ recipe foo [
   ]
 ]
 
+# this requires tracking a couple more things
+container sandbox-data [
+  response-starting-row-on-screen:number
+  expected-response:address:shared:array:character
+]
+
+# include expected response when saving or restoring a sandbox
+before <end-save-sandbox> [
+  {
+    expected-response:address:shared:array:character <- get *curr, expected-response:offset
+    break-unless expected-response
+    filename <- append filename, suffix
+    save filename, expected-response
+  }
+]
+
+before <end-restore-sandbox> [
+  expected-response:address:address:shared:array:character <- get-address **curr, expected-response:offset
+  *expected-response <- copy contents
+]
+
 # clicks on sandbox responses save it as 'expected'
 after <global-touch> [
   # check if it's inside the output of any sandbox
@@ -108,11 +129,6 @@ after <global-touch> [
     show-screen screen
     loop +next-event:label
   }
-]
-
-# this requires tracking where responses begin for every sandbox
-container sandbox-data [
-  response-starting-row-on-screen:number
 ]
 
 recipe find-click-in-sandbox-output env:address:shared:programming-environment-data, click-row:number -> sandbox:address:shared:sandbox-data [
@@ -178,7 +194,6 @@ after <render-sandbox-response> [
 ]
 
 before <end-render-sandbox-reset-hidden> [
-  $log sandbox, [resetting response starting row]
   tmp:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
   *tmp <- copy 0
 ]
