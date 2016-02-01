@@ -111,6 +111,11 @@ after <global-touch> [
   }
 ]
 
+# this requires tracking where responses begin for every sandbox
+container sandbox-data [
+  response-starting-row-on-screen:number
+]
+
 recipe find-click-in-sandbox-output env:address:shared:programming-environment-data, click-row:number -> sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
@@ -156,6 +161,8 @@ recipe toggle-expected-response sandbox:address:shared:sandbox-data -> sandbox:a
 after <render-sandbox-response> [
   {
     break-unless sandbox-response
+    response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
+    *response-starting-row <- copy row
     expected-response:address:shared:array:character <- get *sandbox, expected-response:offset
     break-unless expected-response  # fall-through to print in grey
     response-is-expected?:boolean <- equal expected-response, sandbox-response
@@ -169,4 +176,10 @@ after <render-sandbox-response> [
     }
     jump +render-sandbox-end:label
   }
+]
+
+before <end-render-sandbox-reset-hidden> [
+  $log sandbox, [resetting response starting row]
+  tmp:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
+  *tmp <- copy 0
 ]
