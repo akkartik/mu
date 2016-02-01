@@ -23,7 +23,6 @@ container sandbox-data [
   # constraint: will be 0 for sandboxes at positions before env.render-from
   starting-row-on-screen:number
   code-ending-row-on-screen:number  # past end of code
-  response-starting-row-on-screen:number
   screen:address:shared:screen  # prints in the sandbox go here
   next-sandbox:address:shared:sandbox-data
 ]
@@ -289,7 +288,6 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
     code-ending-row:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
     *code-ending-row <- copy row
     # render sandbox warnings, screen or response, in that order
-    response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
     sandbox-response:address:shared:array:character <- get *sandbox, response:offset
     <render-sandbox-results>
     {
@@ -300,13 +298,12 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
     }
     {
       break-unless empty-screen?
-      *response-starting-row <- copy row
       <render-sandbox-response>
       row, screen <- render screen, sandbox-response, left, right, 245/grey, row
     }
     +render-sandbox-end
     at-bottom?:boolean <- greater-or-equal row, screen-height
-    reply-if at-bottom?, row/same-as-ingredient:4, screen/same-as-ingredient:0
+    reply-if at-bottom?
     # draw solid line after sandbox
     draw-horizontal screen, row, left, right, 9473/horizontal-double
   }
@@ -317,8 +314,7 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
     *tmp <- copy 0
     tmp:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
     *tmp <- copy 0
-    tmp:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
-    *tmp <- copy 0
+    <end-render-sandbox-reset-hidden>
   }
   # draw next sandbox
   next-sandbox:address:shared:sandbox-data <- get *sandbox, next-sandbox:offset
@@ -429,6 +425,7 @@ recipe render-screen screen:address:shared:screen, sandbox-screen:address:shared
 ]
 
 scenario run-updates-results [
+  trace-until 100/app  # trace too long
   assume-screen 50/width, 12/height
   # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
   1:address:shared:array:character <- new [ 

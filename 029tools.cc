@@ -324,6 +324,6 @@ case _LOG: {
   for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
     out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
   }
-  LOG << out.str() << "(length: " << get(Recipe_ordinal, "length") << '/' << contains_key(Recipe, get(Recipe_ordinal, "length")) << ")\n";
+  LOG << out.str() << '\n';
   break;
 }

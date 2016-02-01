@@ -117,6 +117,7 @@ after <render-sandbox-trace-done> [
   {
     sandbox-warnings:address:shared:array:character <- get *sandbox, warnings:offset
     break-unless sandbox-warnings
+    response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
     *response-starting-row <- copy 0  # no response
     row, screen <- render screen, sandbox-warnings, left, right, 1/red, row
     # don't try to print anything more for this sandbox

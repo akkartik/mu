@@ -36,7 +36,6 @@ container sandbox-data [
   # constraint: will be 0 for sandboxes at positions before env.render-from
   starting-row-on-screen:number
   code-ending-row-on-screen:number  # past end of code
-  response-starting-row-on-screen:number
   screen:address:shared:screen  # prints in the sandbox go here
   next-sandbox:address:shared:sandbox-data
 ]
@@ -301,7 +300,6 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
     code-ending-row:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
     *code-ending-row <- copy row
     # render sandbox warnings, screen or response, in that order
-    response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
     sandbox-response:address:shared:array:character <- get *sandbox, response:offset
     <render-sandbox-results>
     {
@@ -312,7 +310,6 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
     }
     {
       break-unless empty-screen?
-      *response-starting-row <- copy row
       <render-sandbox-response>
       row, screen <- render screen, sandbox-response, left, right, 245/grey, row
     }
@@ -329,8 +326,7 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
     *tmp <- copy 0
     tmp:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
     *tmp <- copy 0
-    tmp:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
-    *tmp <- copy 0
+    <end-render-sandbox-reset-hidden>
   }
   # draw next sandbox
   next-sandbox:address:shared:sandbox-data <- get *sandbox, next-sandbox:offset
