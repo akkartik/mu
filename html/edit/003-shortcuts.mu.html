@@ -201,7 +201,18 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     trace <span class="Constant">10</span>, <span class="Constant">[app]</span>, <span class="Constant">[switching to previous line]</span>
     d:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
     end-of-line:number<span class="Special"> &lt;- </span>previous-line-length before-cursor, d
-    *cursor-column<span class="Special"> &lt;- </span>add left, end-of-line
+    right:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">right:offset</span>
+    width:number<span class="Special"> &lt;- </span>subtract right, left
+    wrap?:boolean<span class="Special"> &lt;- </span>greater-than end-of-line, width
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-unless</span> wrap?
+      _, column-offset:number<span class="Special"> &lt;- </span>divide-with-remainder end-of-line, width
+      *cursor-column<span class="Special"> &lt;- </span>add left, column-offset
+    <span class="Delimiter">}</span>
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-if</span> wrap?
+      *cursor-column<span class="Special"> &lt;- </span>add left, end-of-line
+    <span class="Delimiter">}</span>
     <span class="muControl">reply</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># case 2: if previous-character was not newline, we're just at a wrapped line</span>
@@ -836,7 +847,7 @@ d]
 
 <span class="muScenario">scenario</span> editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Comment"># initialize editor with text containing an empty line</span>
+  <span class="Comment"># initialize editor with a wrapping line</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef]</span>
   <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
@@ -860,7 +871,71 @@ d]
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># previous row</span>
-    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">3</span>  <span class="Comment"># end of wrapped line</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">3</span>  <span class="Comment"># right margin except wrap icon</span>
+  ]
+  check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
+]
+
+<span class="muScenario">scenario</span> editor-moves-across-screen-lines-to-wrapping-line-with-left-arrow [
+  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
+  <span class="Comment"># initialize editor with a wrapping line followed by a second line</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
+<span class="Constant">g]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
+<span class="Constant">  $clear-trace</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .abcd↩     .</span>
+   <span class="Constant"> .ef        .</span>
+   <span class="Constant"> .g         .</span>
+   <span class="Constant"> .┈┈┈┈┈     .</span>
+  ]
+  <span class="Comment"># position cursor right after empty line</span>
+  assume-console [
+    left-click <span class="Constant">3</span>, <span class="Constant">0</span>
+    press left-arrow
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
+  ]
+  memory-should-contain [
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>  <span class="Comment"># previous row</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">2</span>  <span class="Comment"># end of wrapped line</span>
+  ]
+  check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
+]
+
+<span class="muScenario">scenario</span> editor-moves-across-screen-lines-to-non-wrapping-line-with-left-arrow [
+  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
+  <span class="Comment"># initialize editor with a line on the verge of wrapping, followed by a second line</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd</span>
+<span class="Constant">e]</span>
+  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
+<span class="Constant">  $clear-trace</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .abcd      .</span>
+   <span class="Constant"> .e         .</span>
+   <span class="Constant"> .┈┈┈┈┈     .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  <span class="Comment"># position cursor right after empty line</span>
+  assume-console [
+    left-click <span class="Constant">2</span>, <span class="Constant">0</span>
+    press left-arrow
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:shared:editor-data, <span class="Constant">cursor-column:offset</span>
+  ]
+  memory-should-contain [
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># previous row</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># end of wrapped line</span>
   ]
   check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
 ]

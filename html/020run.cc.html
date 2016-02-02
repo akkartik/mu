@@ -97,6 +97,7 @@ void run_current_routine<span class="Delimiter">()</span>
   while <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>  <span class="Comment">// later layers will modify condition</span>
   <span class="Delimiter">{</span>
     <span class="Comment">// Running One Instruction</span>
+<span class="CommentedCode">//?     trace(9999, &quot;aaaa&quot;) &lt;&lt; &quot;location 1 contains &quot; &lt;&lt; get_or_insert(Memory, 1) &lt;&lt; end();</span>
 <span class="CommentedCode">//?     Instructions_running[current_recipe_name()]++;</span>
     if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>is_label<span class="Delimiter">)</span> <span class="Delimiter">{</span> ++current_step_index<span class="Delimiter">();</span> <span class="Identifier">continue</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
     trace<span class="Delimiter">(</span>Initial_callstack_depth + Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -169,6 +170,7 @@ inline bool routine::completed<span class="Delimiter">()</span> const <span clas
 
 <span class="Comment">//: Step 1: load all .mu files with numeric prefixes (in order)</span>
 <span class="Delimiter">:(before &quot;End Load Recipes&quot;)</span>
+<span class="Comment">// Load .mu Core</span>
 <span class="CommentedCode">//? Trace_file = &quot;interactive&quot;;</span>
 <span class="CommentedCode">//? START_TRACING_UNTIL_END_OF_SCOPE;</span>
 load_permanently<span class="Delimiter">(</span><span class="Constant">&quot;core.mu&quot;</span><span class="Delimiter">);</span>
@@ -198,6 +200,7 @@ if <span class="Delimiter">(</span>argc &gt; <span class="Constant">1</span><spa
 <span class="Comment">//: start running it.</span>
 <span class="Delimiter">:(before &quot;End Main&quot;)</span>
 if <span class="Delimiter">(</span>!Run_tests &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span> &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  <span class="Comment">// Running Main</span>
   setup<span class="Delimiter">();</span>
 <span class="CommentedCode">//?   Trace_file = &quot;interactive&quot;;</span>
 <span class="CommentedCode">//?   START_TRACING_UNTIL_END_OF_SCOPE;</span>
