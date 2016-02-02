@@ -67,12 +67,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muData">container</span> sandbox-data [
   data:address:shared:array:character
   response:address:shared:array:character
-  expected-response:address:shared:array:character
   <span class="Comment"># coordinates to track clicks</span>
   <span class="Comment"># constraint: will be 0 for sandboxes at positions before env.render-from</span>
   starting-row-on-screen:number
   code-ending-row-on-screen:number  <span class="Comment"># past end of code</span>
-  response-starting-row-on-screen:number
   screen:address:shared:screen  <span class="Comment"># prints in the sandbox go here</span>
   next-sandbox:address:shared:sandbox-data
 ]
@@ -271,12 +269,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     data:address:shared:array:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">data:offset</span>
     filename:address:shared:array:character<span class="Special"> &lt;- </span>to-text idx
     save filename, data
-    <span class="Delimiter">{</span>
-      expected-response:address:shared:array:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">expected-response:offset</span>
-      <span class="muControl">break-unless</span> expected-response
-      filename<span class="Special"> &lt;- </span>append filename, suffix
-      save filename, expected-response
-    <span class="Delimiter">}</span>
+<span class="Constant">    &lt;end-save-sandbox&gt;</span>
     idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
     curr<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
     <span class="muControl">loop</span>
@@ -337,7 +330,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     code-ending-row:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>
     *code-ending-row<span class="Special"> &lt;- </span>copy row
     <span class="Comment"># render sandbox warnings, screen or response, in that order</span>
-    response-starting-row:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>
     sandbox-response:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response:offset</span>
 <span class="Constant">    &lt;render-sandbox-results&gt;</span>
     <span class="Delimiter">{</span>
@@ -348,7 +340,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
       <span class="muControl">break-unless</span> empty-screen?
-      *response-starting-row<span class="Special"> &lt;- </span>copy row
 <span class="Constant">      &lt;render-sandbox-response&gt;</span>
       row, screen<span class="Special"> &lt;- </span>render screen, sandbox-response, left, right, <span class="Constant">245/grey</span>, row
     <span class="Delimiter">}</span>
@@ -365,8 +356,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     *tmp<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     tmp:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>
     *tmp<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    tmp:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>
-    *tmp<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<span class="Constant">    &lt;end-render-sandbox-reset-hidden&gt;</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># draw next sandbox</span>
   next-sandbox:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
@@ -395,8 +385,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       filename<span class="Special"> &lt;- </span>append filename, suffix
       contents<span class="Special"> &lt;- </span>restore filename
       <span class="muControl">break-unless</span> contents
-      expected-response:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address **curr, <span class="Constant">expected-response:offset</span>
-      *expected-response<span class="Special"> &lt;- </span>copy contents
+<span class="Constant">      &lt;end-restore-sandbox&gt;</span>
     <span class="Delimiter">}</span>
 <span class="Constant">    +continue</span>
     idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
@@ -482,6 +471,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># define a recipe (no indent for the 'add' line below so column numbers are more obvious)</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
+<span class="Constant">local-scope</span>
 <span class="Constant">z:number &lt;- add 2, 2</span>
 <span class="Constant">reply z</span>
 <span class="Constant">]</span>]
@@ -497,15 +487,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .z:number &lt;- add 2, 2                              ┊0                                               x.</span>
-   <span class="Constant"> .reply z                                           ┊foo                                              .</span>
-   <span class="Constant"> .]                                                 ┊4                                                .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .local-scope                                       ┊0                                               x.</span>
+   <span class="Constant"> .z:number &lt;- add 2, 2                              ┊foo                                              .</span>
+   <span class="Constant"> .reply z                                           ┊4                                                .</span>
+   <span class="Constant"> .]                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
   <span class="Comment"># make a change (incrementing one of the args to 'add'), then rerun</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">28</span>  <span class="Comment"># one past the value of the second arg</span>
+    left-click <span class="Constant">4</span>, <span class="Constant">28</span>  <span class="Comment"># one past the value of the second arg</span>
     press backspace
     type <span class="Constant">[3]</span>
     press F4
@@ -518,10 +509,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .z:number &lt;- add 2, 3                              ┊0                                               x.</span>
-   <span class="Constant"> .reply z                                           ┊foo                                              .</span>
-   <span class="Constant"> .]                                                 ┊5                                                .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .local-scope                                       ┊0                                               x.</span>
+   <span class="Constant"> .z:number &lt;- add 2, 3                              ┊foo                                              .</span>
+   <span class="Constant"> .reply z                                           ┊5                                                .</span>
+   <span class="Constant"> .]                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
@@ -757,9 +749,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   assume-console [
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
   <span class="Comment"># hit 'down' in recipe editor</span>
   assume-console [
     press down-arrow
@@ -769,8 +759,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
     print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
   ]
-  <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
-  <span class="Comment"># cursor moves to first sandbox</span>
+  <span class="Comment"># cursor moves down on recipe side</span>
   screen-should-contain [
    <span class="Constant"> .                              .</span>
    <span class="Constant"> .               ┊              .</span>
@@ -799,11 +788,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
-    <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
+  print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
   screen-should-contain [
    <span class="Constant"> .                              .</span>
    <span class="Constant"> .               ┊␣             .</span>
@@ -953,9 +940,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     type <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                              .</span>
    <span class="Constant"> .               ┊              .</span>

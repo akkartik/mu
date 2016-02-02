@@ -72,8 +72,8 @@ if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;<
 
 <span class="Comment">//: Make sure we don't match up literals with type ingredients without</span>
 <span class="Comment">//: specialization.</span>
-<span class="Delimiter">:(before &quot;End Matching Types For Literal(lhs)&quot;)</span>
-if <span class="Delimiter">(</span>contains_type_ingredient_name<span class="Delimiter">(</span>lhs<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Matching Types For Literal(to)&quot;)</span>
+if <span class="Delimiter">(</span>contains_type_ingredient_name<span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Comment">//: We'll be creating recipes without loading them from anywhere by</span>
 <span class="Comment">//: *specializing* existing recipes.</span>
@@ -112,14 +112,16 @@ if <span class="Delimiter">(</span>best_score == -<span class="Constant">1</span
     recipe_ordinal new_recipe_ordinal = new_variant<span class="Delimiter">(</span>exemplar<span class="Delimiter">,</span> inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>new_recipe_ordinal == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">goto</span> done_constructing_variant<span class="Delimiter">;</span>
     variants<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_recipe_ordinal<span class="Delimiter">);</span>
+    recipe&amp; variant = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> new_recipe_ordinal<span class="Delimiter">);</span>
     <span class="Comment">// perform all transforms on the new specialization</span>
-    const string&amp; new_name = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>back<span class="Delimiter">()).</span>name<span class="Delimiter">;</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;transforming new specialization: &quot;</span> &lt;&lt; new_name &lt;&lt; end<span class="Delimiter">();</span>
-    for <span class="Delimiter">(</span>long long int t = <span class="Constant">0</span><span class="Delimiter">;</span> t &lt; SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">);</span> ++t<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Delimiter">(</span>*Transform<span class="Delimiter">.</span>at<span class="Delimiter">(</span>t<span class="Delimiter">))(</span>new_recipe_ordinal<span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>!variant<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;transforming new specialization: &quot;</span> &lt;&lt; variant<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+      for <span class="Delimiter">(</span>long long int t = <span class="Constant">0</span><span class="Delimiter">;</span> t &lt; SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">);</span> ++t<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        <span class="Delimiter">(</span>*Transform<span class="Delimiter">.</span>at<span class="Delimiter">(</span>t<span class="Delimiter">))(</span>new_recipe_ordinal<span class="Delimiter">);</span>
+      <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
-    get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> new_recipe_ordinal<span class="Delimiter">).</span>transformed_until = SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">;</span>
-    inst<span class="Delimiter">.</span>name = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>back<span class="Delimiter">()).</span>name<span class="Delimiter">;</span>
+    variant<span class="Delimiter">.</span>transformed_until = SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">;</span>
+    inst<span class="Delimiter">.</span>name = variant<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
     trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new specialization: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   done_constructing_variant:<span class="Delimiter">;</span>
@@ -227,10 +229,10 @@ bool any_type_ingredient_in_header<span class="Delimiter">(</span>recipe_ordinal
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-bool deeply_equal_concrete_types<span class="Delimiter">(</span>reagent lhs<span class="Delimiter">,</span> reagent rhs<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  canonize_type<span class="Delimiter">(</span>lhs<span class="Delimiter">);</span>
-  canonize_type<span class="Delimiter">(</span>rhs<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> deeply_equal_concrete_types<span class="Delimiter">(</span>lhs<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">,</span> rhs<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">,</span> rhs<span class="Delimiter">);</span>
+bool deeply_equal_concrete_types<span class="Delimiter">(</span>reagent to<span class="Delimiter">,</span> reagent from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  canonize_type<span class="Delimiter">(</span>to<span class="Delimiter">);</span>
+  canonize_type<span class="Delimiter">(</span>from<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> deeply_equal_concrete_types<span class="Delimiter">(</span>to<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">,</span> from<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">,</span> from<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 long long int number_of_concrete_types<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -257,24 +259,24 @@ long long int number_of_concrete_types<span class="Delimiter">(</span>const stri
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-bool deeply_equal_concrete_types<span class="Delimiter">(</span>const string_tree* lhs<span class="Delimiter">,</span> const string_tree* rhs<span class="Delimiter">,</span> const reagent&amp; rhs_reagent<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!lhs<span class="Delimiter">)</span> <span class="Identifier">return</span> !rhs<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>!rhs<span class="Delimiter">)</span> <span class="Identifier">return</span> !lhs<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>is_type_ingredient_name<span class="Delimiter">(</span>lhs<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>  <span class="Comment">// type ingredient matches anything</span>
-  if <span class="Delimiter">(</span>lhs<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal&quot;</span> &amp;&amp; rhs<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
+bool deeply_equal_concrete_types<span class="Delimiter">(</span>const string_tree* to<span class="Delimiter">,</span> const string_tree* from<span class="Delimiter">,</span> const reagent&amp; rhs_reagent<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!to<span class="Delimiter">)</span> <span class="Identifier">return</span> !from<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>!from<span class="Delimiter">)</span> <span class="Identifier">return</span> !to<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>is_type_ingredient_name<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>  <span class="Comment">// type ingredient matches anything</span>
+  if <span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal&quot;</span> &amp;&amp; from<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
     <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>lhs<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal&quot;</span>
-      &amp;&amp; Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>rhs<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+  if <span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal&quot;</span>
+      &amp;&amp; Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
     <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>rhs<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal&quot;</span>
-      &amp;&amp; Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>lhs<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+  if <span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal&quot;</span>
+      &amp;&amp; Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
     <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>rhs<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal&quot;</span> &amp;&amp; lhs<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span>
+  if <span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal&quot;</span> &amp;&amp; to<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span>
     <span class="Identifier">return</span> rhs_reagent<span class="Delimiter">.</span>name == <span class="Constant">&quot;0&quot;</span><span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; lhs-&gt;value &lt;&lt; &quot; vs &quot; &lt;&lt; rhs-&gt;value &lt;&lt; '\n';</span>
-  <span class="Identifier">return</span> lhs<span class="Delimiter">-&gt;</span>value == rhs<span class="Delimiter">-&gt;</span>value
-      &amp;&amp; deeply_equal_concrete_types<span class="Delimiter">(</span>lhs<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> rhs<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> rhs_reagent<span class="Delimiter">)</span>
-      &amp;&amp; deeply_equal_concrete_types<span class="Delimiter">(</span>lhs<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> rhs<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> rhs_reagent<span class="Delimiter">);</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; to-&gt;value &lt;&lt; &quot; vs &quot; &lt;&lt; from-&gt;value &lt;&lt; '\n';</span>
+  <span class="Identifier">return</span> to<span class="Delimiter">-&gt;</span>value == from<span class="Delimiter">-&gt;</span>value
+      &amp;&amp; deeply_equal_concrete_types<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> from<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> rhs_reagent<span class="Delimiter">)</span>
+      &amp;&amp; deeply_equal_concrete_types<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> from<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> rhs_reagent<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 bool contains_type_ingredient_name<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -567,6 +569,15 @@ container foo:_t [
 ]
 <span class="traceContains">+mem: storing 14 in location 20</span>
 <span class="traceContains">+mem: storing 15 in location 21</span>
+
+<span class="Delimiter">:(scenario shape_shifting_recipe_empty)</span>
+recipe main [
+  foo <span class="Constant">1</span>
+]
+<span class="Comment"># shape-shifting recipe with no body</span>
+recipe foo a:_t [
+]
+<span class="Comment"># shouldn't crash</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient)</span>
 recipe main [

@@ -65,7 +65,7 @@ put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> 
 type_ordinal recipe = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
 get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> recipe<span class="Delimiter">).</span>name = <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">;</span>
 
-<span class="Delimiter">:(before &quot;End transform_names Exceptions&quot;)</span>
+<span class="Delimiter">:(before &quot;End Null-type is_disqualified Exceptions&quot;)</span>
 if <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
   x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second = new string_tree<span class="Delimiter">(</span><span class="Constant">&quot;recipe-literal&quot;</span><span class="Delimiter">);</span>
   x<span class="Delimiter">.</span>type = new type_tree<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;recipe-literal&quot;</span><span class="Delimiter">));</span>
@@ -211,14 +211,14 @@ recipe f x:boolean <span class="Delimiter">-&gt;</span> y:boolean [
 ]
 <span class="traceContains">+error: main: can't copy f to {1: (recipe number -&gt; number)}; types don't match</span>
 
-<span class="Delimiter">:(before &quot;End Matching Types For Literal(lhs)&quot;)</span>
-if <span class="Delimiter">(</span>is_mu_recipe<span class="Delimiter">(</span>lhs<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> rhs<span class="Delimiter">.</span>value<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;trying to store recipe &quot;</span> &lt;&lt; rhs<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; into &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>lhs<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but there's no such recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Delimiter">:(before &quot;End Matching Types For Literal(to)&quot;)</span>
+if <span class="Delimiter">(</span>is_mu_recipe<span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> from<span class="Delimiter">.</span>value<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;trying to store recipe &quot;</span> &lt;&lt; from<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; into &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>to<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but there's no such recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  const recipe&amp; rrhs = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> rhs<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
-  const recipe&amp; rlhs = from_reagent<span class="Delimiter">(</span>lhs<span class="Delimiter">);</span>
+  const recipe&amp; rrhs = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> from<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
+  const recipe&amp; rlhs = from_reagent<span class="Delimiter">(</span>to<span class="Delimiter">);</span>
   for <span class="Delimiter">(</span>long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; min<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>rlhs<span class="Delimiter">.</span>ingredients<span class="Delimiter">),</span> SIZE<span class="Delimiter">(</span>rrhs<span class="Delimiter">.</span>ingredients<span class="Delimiter">));</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>!types_match<span class="Delimiter">(</span>rlhs<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> rrhs<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>

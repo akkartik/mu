@@ -22,7 +22,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
 .Constant { color: #00a0a0; }
-.Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
 -->
 </style>
 
@@ -130,21 +129,28 @@ case NEW: <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;result of 'new' should never be ignored</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  reagent product<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
-  drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
-  drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Comment">// array allocation</span>
-    drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  reagent expected_product<span class="Delimiter">(</span><span class="Constant">&quot;x:&quot;</span>+type<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
-  <span class="Comment">// End Post-processing(expected_product) When Checking 'new'</span>
-  if <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>product<span class="Delimiter">,</span> expected_product<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!product_of_new_is_valid<span class="Delimiter">(</span>inst<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product of 'new' has incorrect type: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(code)</span>
+bool product_of_new_is_valid<span class="Delimiter">(</span>const instruction&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  reagent product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// array allocation</span>
+    if <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  reagent expected_product<span class="Delimiter">(</span><span class="Constant">&quot;x:&quot;</span>+inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+  <span class="Comment">// End Post-processing(expected_product) When Checking 'new'</span>
+  <span class="Identifier">return</span> types_strictly_match<span class="Delimiter">(</span>product<span class="Delimiter">,</span> expected_product<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: translate 'new' to 'allocate' instructions that take a size instead of a type</span>
@@ -264,6 +270,13 @@ recipe main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:shared:number
 ]
 <span class="traceContains">+mem: storing 0 in location 2</span>
+
+<span class="Delimiter">:(scenario new_error)</span>
+<span class="Special">% Hide_errors = true;</span>
+recipe main [
+  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span>new number:type
+]
+<span class="traceContains">+error: main: product of 'new' has incorrect type: 1:address:number/raw &lt;- new number:type</span>
 
 <span class="Delimiter">:(scenario new_array)</span>
 recipe main [
@@ -457,6 +470,7 @@ if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span cl
     put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">,</span> old_refcount-<span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// perform the write</span>
+<span class="CommentedCode">//?   trace(9999, &quot;mem&quot;) &lt;&lt; &quot;038new.cc:424: location &quot; &lt;&lt; x.value &lt;&lt; &quot; contains &quot; &lt;&lt; old_address &lt;&lt; &quot; with refcount &quot; &lt;&lt; get_or_insert(Memory, old_address) &lt;&lt; end();</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; base &lt;&lt; end<span class="Delimiter">();</span>
   put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base<span class="Delimiter">,</span> new_address<span class="Delimiter">);</span>
   <span class="Comment">// increment refcount of new address</span>
@@ -468,7 +482,9 @@ if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span cl
   <span class="Delimiter">}</span>
   <span class="Comment">// abandon old address if necessary</span>
   <span class="Comment">// do this after all refcount updates are done just in case old and new are identical</span>
-  <span class="Comment">// </span><span class="Todo">TODO</span><span class="Comment">: doesn't work yet</span>
+<span class="CommentedCode">//?   if (get_or_insert(Memory, old_address) &lt; 0) {</span>
+<span class="CommentedCode">//?     DUMP(&quot;&quot;);</span>
+<span class="CommentedCode">//?   }</span>
   assert<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">)</span> &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>old_address &amp;&amp; get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// lookup_memory without drop_one_lookup {</span>
@@ -478,10 +494,75 @@ if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span cl
     drop_from_type<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
     drop_from_type<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">);</span>
     <span class="Comment">// }</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;ABANDON\n&quot;;</span>
     abandon<span class="Delimiter">(</span>old_address<span class="Delimiter">,</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span>+<span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario refcounts_2)</span>
+recipe main [
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  <span class="Comment"># over-writing one allocation with another</span>
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+<span class="traceContains">+run: 1:address:shared:number &lt;- new number:type</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: 1:address:shared:number &lt;- new number:type</span>
+<span class="traceContains">+mem: automatically abandoning 1000</span>
+
+<span class="Delimiter">:(scenario refcounts_3)</span>
+recipe main [
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  <span class="Comment"># passing in addresses to recipes increments refcount</span>
+  foo <span class="Constant">1</span>:address:shared:number
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+recipe foo [
+  <span class="Constant">2</span>:address:shared:number<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># return does NOT yet decrement refcount; memory must be explicitly managed</span>
+  <span class="Constant">2</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+<span class="traceContains">+run: 1:address:shared:number &lt;- new number:type</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: 2:address:shared:number &lt;- next-ingredient</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: 2:address:shared:number &lt;- copy 0</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 2 -&gt; 1</span>
+<span class="traceContains">+run: 1:address:shared:number &lt;- copy 0</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 1 -&gt; 0</span>
+<span class="traceContains">+mem: automatically abandoning 1000</span>
+
+<span class="Delimiter">:(scenario refcounts_4)</span>
+recipe main [
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  <span class="Comment"># idempotent copies leave refcount unchanged</span>
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:shared:number
+]
+<span class="traceContains">+run: 1:address:shared:number &lt;- new number:type</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: 1:address:shared:number &lt;- copy 1:address:shared:number</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 1 -&gt; 0</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+
+<span class="Delimiter">:(scenario refcounts_5)</span>
+recipe main [
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  <span class="Comment"># passing in addresses to recipes increments refcount</span>
+  foo <span class="Constant">1</span>:address:shared:number
+  <span class="Comment"># return does NOT yet decrement refcount; memory must be explicitly managed</span>
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+]
+recipe foo [
+  <span class="Constant">2</span>:address:shared:number<span class="Special"> &lt;- </span>next-ingredient
+]
+<span class="traceContains">+run: 1:address:shared:number &lt;- new number:type</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: 2:address:shared:number &lt;- next-ingredient</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: 1:address:shared:number &lt;- new number:type</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 2 -&gt; 1</span>
 
 <span class="SalientComment">//:: Extend 'new' to handle a unicode string literal argument.</span>
 

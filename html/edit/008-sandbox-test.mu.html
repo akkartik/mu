@@ -16,6 +16,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
 .muScenario { color: #00af00; }
+.muData { color: #ffff00; }
 .Special { color: #ff6060; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
@@ -116,6 +117,27 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
+<span class="Comment"># this requires tracking a couple more things</span>
+<span class="muData">container</span> sandbox-data [
+  response-starting-row-on-screen:number
+  expected-response:address:shared:array:character
+]
+
+<span class="Comment"># include expected response when saving or restoring a sandbox</span>
+<span class="muRecipe">before</span> <span class="Constant">&lt;end-save-sandbox&gt;</span> [
+  <span class="Delimiter">{</span>
+    expected-response:address:shared:array:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">expected-response:offset</span>
+    <span class="muControl">break-unless</span> expected-response
+    filename<span class="Special"> &lt;- </span>append filename, suffix
+    save filename, expected-response
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">before</span> <span class="Constant">&lt;end-restore-sandbox&gt;</span> [
+  expected-response:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address **curr, <span class="Constant">expected-response:offset</span>
+  *expected-response<span class="Special"> &lt;- </span>copy contents
+]
+
 <span class="Comment"># clicks on sandbox responses save it as 'expected'</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
   <span class="Comment"># check if it's inside the output of any sandbox</span>
@@ -190,6 +212,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">after</span> <span class="Constant">&lt;render-sandbox-response&gt;</span> [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sandbox-response
+    response-starting-row:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>
+    *response-starting-row<span class="Special"> &lt;- </span>copy row
     expected-response:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>
     <span class="muControl">break-unless</span> expected-response  <span class="Comment"># fall-through to print in grey</span>
     response-is-expected?:boolean<span class="Special"> &lt;- </span>equal expected-response, sandbox-response
@@ -203,6 +227,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Delimiter">}</span>
     <span class="muControl">jump</span> <span class="Constant">+render-sandbox-end:label</span>
   <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">before</span> <span class="Constant">&lt;end-render-sandbox-reset-hidden&gt;</span> [
+  tmp:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>
+  *tmp<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 </pre>
 </body>

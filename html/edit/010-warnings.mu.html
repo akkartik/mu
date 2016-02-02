@@ -153,6 +153,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     sandbox-warnings:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">warnings:offset</span>
     <span class="muControl">break-unless</span> sandbox-warnings
+    response-starting-row:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>
     *response-starting-row<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># no response</span>
     row, screen<span class="Special"> &lt;- </span>render screen, sandbox-warnings, left, right, <span class="Constant">1/red</span>, row
     <span class="Comment"># don't try to print anything more for this sandbox</span>
@@ -218,7 +219,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   run [
     event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
   ]
-  <span class="Comment"># status shows first sandbox with error</span>
+  <span class="Comment"># status line shows that error is in first sandbox</span>
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
   ]
@@ -245,7 +246,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   run [
     event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
   ]
-  <span class="Comment"># status shows first sandbox with error</span>
+  <span class="Comment"># status line shows that error is in second sandbox</span>
   screen-should-contain [
    <span class="Constant"> .  errors found (1)                                                               run (F4)           .</span>
   ]
@@ -299,9 +300,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   assume-console [
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
    <span class="Constant"> .recipe foo x:_elem -&gt; z:_elem [                   ┊                                                 .</span>
@@ -453,6 +452,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
+<span class="Constant">  local-scope</span>
 <span class="Constant">  x:address:shared:point &lt;- new point:type</span>
 <span class="Constant">  get x:address:shared:point, 1:offset</span>
 <span class="Constant">]</span>]
@@ -468,6 +468,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
    <span class="Constant"> .                                                  ┊foo                                              .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  local-scope                                     ┊                                                 .</span>
    <span class="Constant"> .  x:address:shared:point &lt;- new point:type        ┊                                                 .</span>
    <span class="Constant"> .  get x:address:shared:point, 1:offset            ┊                                                 .</span>
    <span class="Constant"> .]                                                 ┊                                                 .</span>
@@ -483,6 +484,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
+<span class="Constant">  local-scope</span>
 <span class="Constant">  x:number &lt;- copy 0</span>
 <span class="Constant">  y:address:shared:point &lt;- new point:type</span>
 <span class="Constant">  get *y:address:shared:point, x:number</span>
@@ -499,6 +501,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
    <span class="Constant"> .                                                  ┊foo                                              .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  local-scope                                     ┊                                                 .</span>
    <span class="Constant"> .  x:number &lt;- copy 0                              ┊                                                 .</span>
    <span class="Constant"> .  y:address:shared:point &lt;- new point:type        ┊                                                 .</span>
    <span class="Constant"> .  get *y:address:shared:point, x:number           ┊                                                 .</span>
@@ -518,6 +521,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
+<span class="Constant">  local-scope</span>
 <span class="Constant">  x:number &lt;- copy y:number</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
@@ -525,13 +529,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   assume-console [
     press F4
   ]
-  run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
-  ]
+  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
    <span class="Constant"> .                                                  ┊foo                                              .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  local-scope                                     ┊                                                 .</span>
    <span class="Constant"> .  x:number &lt;- copy y:number                       ┊                                                 .</span>
    <span class="Constant"> .]                                                 ┊                                                 .</span>
    <span class="Constant"> .foo: use before set: y                            ┊                                                 .</span>
@@ -549,6 +552,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
    <span class="Constant"> .                                                  ┊foo                                              .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  local-scope                                     ┊                                                 .</span>
    <span class="Constant"> .  x:number &lt;- copy y:number                       ┊                                                 .</span>
    <span class="Constant"> .]                                                 ┊                                                 .</span>
    <span class="Constant"> .foo: use before set: y                            ┊                                                 .</span>

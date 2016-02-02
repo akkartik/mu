@@ -22,6 +22,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
 .Constant { color: #00a0a0; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -72,7 +73,7 @@ recipe main [
 <span class="traceContains">+name: assign x 1</span>
 <span class="traceAbsent">-name: assign default-space 1</span>
 
-<span class="Delimiter">:(before &quot;End Disqualified Reagents&quot;)</span>
+<span class="Delimiter">:(before &quot;End is_disqualified Cases&quot;)</span>
 if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;default-space&quot;</span><span class="Delimiter">)</span>
   x<span class="Delimiter">.</span>initialized = <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End is_special_name Cases&quot;)</span>
@@ -201,7 +202,7 @@ recipe main [
 <span class="Comment"># allocate space for x and y, as well as the chaining slot at 0</span>
 <span class="traceContains">+mem: array size is 3</span>
 
-<span class="Delimiter">:(before &quot;End Disqualified Reagents&quot;)</span>
+<span class="Delimiter">:(before &quot;End is_disqualified Cases&quot;)</span>
 if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;number-of-locals&quot;</span><span class="Delimiter">)</span>
   x<span class="Delimiter">.</span>initialized = <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End is_special_name Cases&quot;)</span>
@@ -277,6 +278,50 @@ void rewrite_default_space_instruction<span class="Delimiter">(</span>instructio
   if <span class="Delimiter">(</span>!curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
     raise_error &lt;&lt; <span class="Constant">&quot;new-default-space can't take any results</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;default-space:address:shared:array:location&quot;</span><span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+
+<span class="SalientComment">//:: all recipes must set default-space one way or another</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+bool Warn_on_missing_default_space = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Checks&quot;)</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_default_space<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span class="Delimiter">:(code)</span>
+void check_default_space<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!Warn_on_missing_default_space<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// skip previous core tests; this is only for mu code</span>
+  const recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  <span class="Comment">// skip scenarios (later layer)</span>
+  <span class="Comment">// user code should never create recipes with underscores in their names</span>
+  if <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;scenario_&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// skip mu scenarios which will use raw memory locations</span>
+  if <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;run_&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// skip calls to 'run', which should be in scenarios and will also use raw memory locations</span>
+  <span class="Comment">// assume recipes with only numeric addresses know what they're doing (usually tests)</span>
+  if <span class="Delimiter">(</span>!contains_non_special_name<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- check that recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; sets default-space&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
+      || caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name != <span class="Constant">&quot;default-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; does not seem to start with default-space or local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; maybe(caller.name) &lt;&lt; &quot; does not seem to start with default-space or local-scope\n&quot; &lt;&lt; '\n';</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(after &quot;Load .mu Core&quot;)</span>
+Warn_on_missing_default_space = <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Test Runs&quot;)</span>
+Warn_on_missing_default_space = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Running Main&quot;)</span>
+Warn_on_missing_default_space = <span class="Constant">true</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(code)</span>
+bool contains_non_special_name<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> long long int&gt;::iterator p = Name[r]<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Name[r]<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;stash_&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// generated by rewrite_stashes_to_text</span>
+    if <span class="Delimiter">(</span>!is_special_name<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; &quot;  &quot; &lt;&lt; Recipe[r].name &lt;&lt; &quot;: &quot; &lt;&lt; p-&gt;first &lt;&lt; '\n';</span>
+      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>
