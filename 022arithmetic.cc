@@ -321,3 +321,83 @@ recipe main [
 ]
 # integer division can't return floating-point infinity
 +error: main: divide by zero in '1:number <- divide-with-remainder 4, 0'
+
+//: Bitwise shifts
+
+:(before "End Primitive Recipe Declarations")
+SHIFT_LEFT,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "shift-left", SHIFT_LEFT);
+:(before "End Primitive Recipe Checks")
+case SHIFT_LEFT: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise_error << maybe(get(Recipe, r).name) << "'shift-left' requires exactly two ingredients, but got '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.ingredients.at(0)) || !is_mu_number(inst.ingredients.at(1))) {
+    raise_error << maybe(get(Recipe, r).name) << "'shift-left' requires number ingredients, but got '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  if (SIZE(inst.products) > 1) {
+    raise_error << maybe(get(Recipe, r).name) << "'shift-left' yields one product in '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
+    raise_error << maybe(get(Recipe, r).name) << "'shift-left' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    goto finish_checking_instruction;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case SHIFT_LEFT: {
+  // ingredients must be integers
+  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
+  long long int b = static_cast<long long int>(ingredients.at(1).at(0));
+  products.resize(1);
+  if (b < 0) {
+    raise_error << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << current_instruction().to_string() << "'\n" << end();
+    products.at(0).push_back(0);
+    break;
+  }
+  products.at(0).push_back(a<<b);
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+SHIFT_RIGHT,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "shift-right", SHIFT_RIGHT);
+:(before "End Primitive Recipe Checks")
+case SHIFT_RIGHT: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise_error << maybe(get(Recipe, r).name) << "'shift-right' requires exactly two ingredients, but got '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.ingredients.at(0)) || !is_mu_number(inst.ingredients.at(1))) {
+    raise_error << maybe(get(Recipe, r).name) << "'shift-right' requires number ingredients, but got '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  if (SIZE(inst.products) > 1) {
+    raise_error << maybe(get(Recipe, r).name) << "'shift-right' yields one product in '" << inst.to_string() << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
+    raise_error << maybe(get(Recipe, r).name) << "'shift-right' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    goto finish_checking_instruction;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case SHIFT_RIGHT: {
+  // ingredients must be integers
+  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
+  long long int b = static_cast<long long int>(ingredients.at(1).at(0));
+  products.resize(1);
+  if (b < 0) {
+    raise_error << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << current_instruction().to_string() << "'\n" << end();
+    products.at(0).push_back(0);
+    break;
+  }
+  products.at(0).push_back(a>>b);
+  break;
+}
