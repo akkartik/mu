@@ -319,6 +319,12 @@ recipe to-text x:boolean -> result:address:shared:array:character [
   result <- to-text n
 ]
 
+recipe to-text x:address:_elem -> result:address:shared:array:character [
+  local-scope
+  load-ingredients
+  n:number <- copy x
+  result <- to-text n
+]
 
 recipe buffer-to-array in:address:shared:buffer -> result:address:shared:array:character [
   local-scope
