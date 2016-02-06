@@ -184,10 +184,6 @@ $error: 0
 
 //:: Support element names for containers in 'get' and 'get-address'.
 
-//: update our running example container for the next test
-:(before "End Mu Types Initialization")
-get(Type, point).element_names.push_back("x");
-get(Type, point).element_names.push_back("y");
 :(scenario transform_names_transforms_container_elements)
 recipe main [
   p:address:point <- copy 0
