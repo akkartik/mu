@@ -68,6 +68,10 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
       }
       if (s->right) raise_error << "slot 0 should have a single value in /names, but got " << inst.products.at(j).to_string() << '\n' << end();
       const string& surrounding_recipe_name = s->value;
+      if (surrounding_recipe_name.empty()) {
+        raise_error << "slot 0 doesn't initialize its /names property in recipe " << get(Recipe, r).name << end();
+        continue;
+      }
       if (contains_key(Surrounding_space, r)
           && Surrounding_space[r] != get(Recipe_ordinal, surrounding_recipe_name)) {
         raise_error << "recipe " << get(Recipe, r).name << " can have only one 'surrounding' recipe but has " << get(Recipe, Surrounding_space[r]).name << " and " << surrounding_recipe_name << '\n' << end();
