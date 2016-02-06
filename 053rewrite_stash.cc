@@ -9,7 +9,7 @@ void rewrite_stashes_to_text(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   if (contains_named_locations(caller))
     rewrite_stashes_to_text_named(caller);
-  // in recipes without named locations, 'stash' is still not configurable
+  // in recipes without named locations, 'stash' is still not extensible
 }
 
 bool contains_named_locations(const recipe& caller) {
