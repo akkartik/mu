@@ -628,6 +628,19 @@ void check_invalid_types(type_tree* type, const string& block, const string& nam
 
 //:: Construct types out of their constituent fields. Doesn't currently do
 //:: type-checking but *does* match sizes.
+
+:(scenario merge)
+container foo [
+  x:number
+  y:number
+]
+
+recipe main [
+  1:foo <- merge 3, 4
+]
++mem: storing 3 in location 1
++mem: storing 4 in location 2
+
 :(before "End Primitive Recipe Declarations")
 MERGE,
 :(before "End Primitive Recipe Numbers")
@@ -644,15 +657,3 @@ case MERGE: {
       products.at(0).push_back(ingredients.at(i).at(j));
   break;
 }
-
-:(scenario merge)
-container foo [
-  x:number
-  y:number
-]
-
-recipe main [
-  1:foo <- merge 3, 4
-]
-+mem: storing 3 in location 1
-+mem: storing 4 in location 2
