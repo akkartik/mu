@@ -463,6 +463,7 @@ case RELOAD: {
 //?   cerr << "== reload\n";
   // clear any containers in advance
   for (long long int i = 0; i < SIZE(Recently_added_types); ++i) {
+    if (!contains_key(Type, Recently_added_types.at(i))) continue;
     Type_ordinal.erase(get(Type, Recently_added_types.at(i)).name);
     Type.erase(Recently_added_types.at(i));
   }
