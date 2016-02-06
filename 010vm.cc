@@ -179,6 +179,7 @@ struct type_info {
   kind_of_type kind;
   long long int size;  // only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)
   vector<type_tree*> elements;
+  vector<string_tree*> element_type_names;
   vector<string> element_names;
   // End type_info Fields
   type_info() :kind(PRIMITIVE), size(0) {}

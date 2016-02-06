@@ -11,8 +11,10 @@ type_ordinal tmp = put(Type_ordinal, "number-or-point", Next_type_ordinal++);
 get_or_insert(Type, tmp).size = 2;
 get(Type, tmp).kind = EXCLUSIVE_CONTAINER;
 get(Type, tmp).name = "number-or-point";
+get(Type, tmp).element_type_names.push_back(new string_tree("number"));
 get(Type, tmp).elements.push_back(new type_tree(number));
 get(Type, tmp).element_names.push_back("i");
+get(Type, tmp).element_type_names.push_back(new string_tree("point"));
 get(Type, tmp).elements.push_back(new type_tree(point));
 get(Type, tmp).element_names.push_back("p");
 }
