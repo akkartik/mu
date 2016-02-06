@@ -6,8 +6,10 @@ type_ordinal point = put(Type_ordinal, "point", Next_type_ordinal++);
 get_or_insert(Type, point).size = 2;
 get(Type, point).kind = CONTAINER;
 get(Type, point).name = "point";
+get(Type, point).element_type_names.push_back(new string_tree("number"));
 get(Type, point).elements.push_back(new type_tree(number));
 get(Type, point).element_names.push_back("x");
+get(Type, point).element_type_names.push_back(new string_tree("number"));
 get(Type, point).elements.push_back(new type_tree(number));
 get(Type, point).element_names.push_back("y");
 
@@ -42,8 +44,10 @@ get_or_insert(Type, point_number).size = 2;
 get(Type, point_number).kind = CONTAINER;
 get(Type, point_number).name = "point-number";
 get(Type, point_number).elements.push_back(new type_tree(point));
+get(Type, point_number).element_type_names.push_back(new string_tree("point"));
 get(Type, point_number).element_names.push_back("xy");
 get(Type, point_number).elements.push_back(new type_tree(number));
+get(Type, point_number).element_type_names.push_back(new string_tree("number"));
 get(Type, point_number).element_names.push_back("z");
 
 :(scenario copy_handles_nested_container_elements)
