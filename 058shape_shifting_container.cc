@@ -59,12 +59,10 @@ void read_type_ingredients(string& name) {
   }
 }
 
-:(before "End insert_container Special Uses(type_name)")
+:(before "End insert_container Special-cases")
 // check for use of type ingredients
-if (type_name.at(0) == '_') {
-  *curr_type = new type_tree(get(info.type_ingredient_names, type_name));
-  trace(9999, "parse") << "  type: " << get(info.type_ingredient_names, type_name) << end();
-  continue;
+else if (!properties->value.empty() && properties->value.at(0) == '_') {
+  result->value = get(info.type_ingredient_names, properties->value);
 }
 
 :(before "End Container Type Checks")
