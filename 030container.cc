@@ -203,7 +203,10 @@ const reagent element_type(const reagent& canonized_base, long long int offset_v
   const type_info& info = get(Type, canonized_base.type->value);
   assert(info.kind == CONTAINER);
   reagent element;
+  element.name = info.element_names.at(offset_value);
   element.type = new type_tree(*info.elements.at(offset_value));
+  element.properties.resize(1);
+  element.properties.at(0).second = new string_tree(*info.element_type_names.at(offset_value));
   // End element_type Special-cases
   return element;
 }
@@ -426,26 +429,38 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     skip_whitespace_and_comments(in);
     string element = next_word(in);
     if (element == "]") break;
-    // End insert_container Special Definitions(element)
     istringstream inner(element);
     info.element_names.push_back(slurp_until(inner, ':'));
     trace(9993, "parse") << "  element name: " << info.element_names.back() << end();
-    type_tree* new_type = NULL;
-    for (type_tree** curr_type = &new_type; has_data(inner); curr_type = &(*curr_type)->right) {
-      string type_name = slurp_until(inner, ':');
-      // End insert_container Special Uses(type_name)
-      if (!contains_key(Type_ordinal, type_name)
-          // types can contain integers, like for array sizes
-          && !is_integer(type_name)) {
-        put(Type_ordinal, type_name, Next_type_ordinal++);
-      }
-      *curr_type = new type_tree(get(Type_ordinal, type_name));
-      trace(9993, "parse") << "  type: " << get(Type_ordinal, type_name) << end();
-    }
-    info.elements.push_back(new_type);
+    info.element_type_names.push_back(parse_property_list(inner));
+    info.elements.push_back(new_type_tree_with_new_types_for_unknown(info.element_type_names.back(), info));
+    for (long long int i = 0; i < SIZE(info.elements); ++i)
+      trace(9993, "parse") << "  type: " << info.elements.at(i)->value << end();
   }
   assert(SIZE(info.elements) == SIZE(info.element_names));
   info.size = SIZE(info.elements);
+}
+
+type_tree* new_type_tree_with_new_types_for_unknown(const string_tree* properties, const type_info& info) {
+  if (!properties) return NULL;
+  type_tree* result = new type_tree(0);
+  if (!properties->value.empty()) {
+    const string& type_name = properties->value;
+    if (contains_key(Type_ordinal, type_name)) {
+      result->value = get(Type_ordinal, type_name);
+    }
+    else if (is_integer(type_name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
+      result->value = 0;
+    }
+    // End insert_container Special-cases
+    else if (properties->value != "->") {  // used in recipe types
+      put(Type_ordinal, type_name, Next_type_ordinal++);
+      result->value = get(Type_ordinal, type_name);
+    }
+  }
+  result->left = new_type_tree_with_new_types_for_unknown(properties->left, info);
+  result->right = new_type_tree_with_new_types_for_unknown(properties->right, info);
+  return result;
 }
 
 void skip_bracket(istream& in, string message) {
@@ -485,6 +500,7 @@ for (long long int i = 0; i < SIZE(Recently_added_types); ++i) {
   // todo: why do I explicitly need to provide this?
   for (long long int j = 0; j < SIZE(Type.at(Recently_added_types.at(i)).elements); ++j) {
     delete Type.at(Recently_added_types.at(i)).elements.at(j);
+    delete Type.at(Recently_added_types.at(i)).element_type_names.at(j);
   }
   Type.erase(Recently_added_types.at(i));
 }

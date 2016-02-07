@@ -148,8 +148,10 @@ void setup_types() {
 }
 void teardown_types() {
   for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
-    for (long long int i = 0; i < SIZE(p->second.elements); ++i)
+    for (long long int i = 0; i < SIZE(p->second.elements); ++i) {
       delete p->second.elements.at(i);
+      delete p->second.element_type_names.at(i);
+    }
   }
   Type_ordinal.clear();
 }
