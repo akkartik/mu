@@ -67,14 +67,12 @@ bool all_reagents_match(const recipe& r1, const recipe& r2) {
   if (SIZE(r1.ingredients) != SIZE(r2.ingredients)) return false;
   if (SIZE(r1.products) != SIZE(r2.products)) return false;
   for (long long int i = 0; i < SIZE(r1.ingredients); ++i) {
-    if (!deeply_equal_types(r1.ingredients.at(i).properties.at(0).second,
-                            r2.ingredients.at(i).properties.at(0).second)) {
+    if (!deeply_equal_types(r1.ingredients.at(i), r2.ingredients.at(i))) {
       return false;
     }
   }
   for (long long int i = 0; i < SIZE(r1.products); ++i) {
-    if (!deeply_equal_types(r1.products.at(i).properties.at(0).second,
-                            r2.products.at(i).properties.at(0).second)) {
+    if (!deeply_equal_types(r1.products.at(i), r2.products.at(i))) {
       return false;
     }
   }
@@ -87,6 +85,9 @@ set<string> Literal_type_names;
 Literal_type_names.insert("number");
 Literal_type_names.insert("character");
 :(code)
+bool deeply_equal_types(const reagent& a, const reagent& b) {
+  return deeply_equal_types(a.properties.at(0).second, b.properties.at(0).second);
+}
 bool deeply_equal_types(const string_tree* a, const string_tree* b) {
   if (!a) return !b;
   if (!b) return !a;
