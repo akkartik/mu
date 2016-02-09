@@ -209,14 +209,18 @@ scenario buffer-append-works [
     local-scope
     x:address:shared:buffer <- new-buffer 3
     s1:address:shared:array:character <- get *x, data:offset
-    x <- append x, 97  # 'a'
-    x <- append x, 98  # 'b'
-    x <- append x, 99  # 'c'
+    c:character <- copy 97/a
+    x <- append x, c
+    c:character <- copy 98/b
+    x <- append x, c
+    c:character <- copy 99/c
+    x <- append x, c
     s2:address:shared:array:character <- get *x, data:offset
     1:boolean/raw <- equal s1, s2
     2:array:character/raw <- copy *s2
     +buffer-filled
-    x <- append x, 100  # 'd'
+    c:character <- copy 100/d
+    x <- append x, c
     s3:address:shared:array:character <- get *x, data:offset
     10:boolean/raw <- equal s1, s3
     11:number/raw <- get *x, length:offset
@@ -246,9 +250,12 @@ scenario buffer-append-handles-backspace [
   run [
     local-scope
     x:address:shared:buffer <- new-buffer 3
-    x <- append x, 97  # 'a'
-    x <- append x, 98  # 'b'
-    x <- append x, 8/backspace
+    c:character <- copy 97/a
+    x <- append x, c
+    c:character <- copy 98/b
+    x <- append x, c
+    c:character <- copy 8/backspace
+    x <- append x, c
     s:address:shared:array:character <- buffer-to-array x
     1:array:character/raw <- copy *s
   ]
