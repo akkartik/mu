@@ -222,7 +222,7 @@ bool next_stash(const call& c, instruction* stash_inst) {
 }
 
 long long int variant_score(const instruction& inst, recipe_ordinal variant) {
-  long long int result = 1000;
+  long long int result = 100;
   if (variant == -1) return -1;  // ghost from a previous test
 //?   cerr << "variant score: " << inst.to_string() << '\n';
   if (!contains_key(Recipe, variant)) {
