@@ -44,7 +44,7 @@ long long int slurp_recipe(istream& in) {
   recipe result;
   result.name = next_word(in);
   skip_whitespace_but_not_newline(in);
-  // End recipe Refinements
+  // End Recipe Refinements
   if (result.name.empty())
     raise_error << "empty result.name\n" << end();
   trace(9991, "parse") << "--- defining " << result.name << end();
@@ -58,7 +58,7 @@ long long int slurp_recipe(istream& in) {
     Recipe.erase(get(Recipe_ordinal, result.name));
   }
   slurp_body(in, result);
-  // End recipe Body(result)
+  // End Recipe Body(result)
   put(Recipe, get(Recipe_ordinal, result.name), result);
   // track added recipes because we may need to undo them in tests; see below
   Recently_added_recipes.push_back(get(Recipe_ordinal, result.name));
