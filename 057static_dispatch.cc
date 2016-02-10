@@ -30,6 +30,7 @@ for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin();
 }
 
 :(before "End Load Recipe Header(result)")
+// there can only ever be one variant for main
 if (result.name != "main" && contains_key(Recipe_ordinal, result.name)) {
   const recipe_ordinal r = get(Recipe_ordinal, result.name);
 //?   cerr << result.name << ": " << contains_key(Recipe, r) << (contains_key(Recipe, r) ? get(Recipe, r).has_header : 0) << matching_variant_name(result) << '\n';
@@ -41,6 +42,7 @@ if (result.name != "main" && contains_key(Recipe_ordinal, result.name)) {
       put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
       get_or_insert(Recipe_variants, result.name).push_back(get(Recipe_ordinal, new_name));
     }
+    trace(9999, "load") << "switching " << result.name << " to " << new_name << end();
     result.name = new_name;
 //?     cerr << "=> " << new_name << '\n';
   }
@@ -169,7 +171,7 @@ void resolve_ambiguous_calls(recipe_ordinal r) {
 }
 
 void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
-  trace(9992, "transform") << "instruction " << inst.name << end();
+  trace(9992, "transform") << "instruction " << inst.original_string << end();
   vector<recipe_ordinal>& variants = get(Recipe_variants, inst.name);
 //?   trace(9992, "transform") << "checking base: " << get(Recipe_ordinal, inst.name) << end();
   long long int best_score = variant_score(inst, get(Recipe_ordinal, inst.name));
@@ -180,6 +182,7 @@ void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
     long long int current_score = variant_score(inst, variants.at(i));
     trace(9992, "transform") << "score for variant " << i << ": " << current_score << end();
     if (current_score > best_score) {
+      trace(9993, "transform") << "switching " << inst.name << " to " << get(Recipe, variants.at(i)).name << end();
       inst.name = get(Recipe, variants.at(i)).name;
       best_score = current_score;
     }
@@ -456,10 +459,10 @@ string header_label(recipe_ordinal r) {
   ostringstream out;
   out << "recipe " << caller.name;
   for (long long int i = 0; i < SIZE(caller.ingredients); ++i)
-    out << ' ' << caller.ingredients.at(i).original_string;
+    out << ' ' << caller.ingredients.at(i).to_string();
   if (!caller.products.empty()) out << " ->";
   for (long long int i = 0; i < SIZE(caller.products); ++i)
-    out << ' ' << caller.products.at(i).original_string;
+    out << ' ' << caller.products.at(i).to_string();
   return out.str();
 }
 

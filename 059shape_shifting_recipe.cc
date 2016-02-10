@@ -258,7 +258,7 @@ bool is_type_ingredient_name(const string& type) {
 
 recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, const recipe& caller_recipe) {
   string new_name = next_unused_recipe_name(inst.name);
-  trace(9993, "transform") << "switching " << inst.name << " to " << new_name << end();
+  trace(9993, "transform") << "switching " << inst.name << " to specialized " << new_name << end();
   assert(!contains_key(Recipe_ordinal, new_name));
   recipe_ordinal new_recipe_ordinal = put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
   // make a copy
