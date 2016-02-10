@@ -68,11 +68,9 @@ result.original_name = result.name;
 
 :(before "End Instruction Dispatch(inst, best_score)")
 if (best_score == -1) {
-  trace(9992, "transform") << "no variant found; searching for variant with suitable type ingredients" << end();
-//?   cerr << "no variant found for " << inst.name << "; searching for variant with suitable type ingredients" << '\n';
+  trace(9992, "transform") << "no variant found; checking for variant with suitable type ingredients" << end();
   recipe_ordinal exemplar = pick_matching_shape_shifting_variant(variants, inst, best_score);
   if (exemplar) {
-//?     cerr << "specializing " << inst.name << '\n';
     trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
     recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
     if (new_recipe_ordinal == 0) goto done_constructing_variant;
@@ -128,7 +126,7 @@ recipe_ordinal pick_matching_shape_shifting_variant(vector<recipe_ordinal>& vari
   for (long long int i = 0; i < SIZE(variants); ++i) {
     if (variants.at(i) == -1) continue;  // ghost from a previous test
 //?     cerr << "-- variant " << i << "\n" << debug_string(get(Recipe, variants.at(i)));
-    trace(9992, "transform") << "checking shape-shifting variant " << i << end();
+    trace(9992, "transform") << "checking shape-shifting variant " << i << ": " << header_label(variants.at(i)) << end();
     long long int current_score = shape_shifting_variant_score(inst, variants.at(i));
     trace(9992, "transform") << "final score: " << current_score << end();
 //?     cerr << get(Recipe, variants.at(i)).name << ": " << current_score << '\n';

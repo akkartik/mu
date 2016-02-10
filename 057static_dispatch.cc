@@ -176,7 +176,7 @@ void replace_best_variant(instruction& inst, const recipe& caller_recipe) {
   trace(9992, "transform") << "score for base: " << best_score << end();
   for (long long int i = 0; i < SIZE(variants); ++i) {
     if (variants.at(i) == -1) continue;
-//?     trace(9992, "transform") << "checking variant " << i << ": " << variants.at(i) << end();
+    trace(9992, "transform") << "checking variant " << i << ": " << header_label(variants.at(i)) << end();
     long long int current_score = variant_score(inst, variants.at(i));
     trace(9992, "transform") << "score for variant " << i << ": " << current_score << end();
     if (current_score > best_score) {
