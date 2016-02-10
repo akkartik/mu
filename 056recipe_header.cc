@@ -22,7 +22,7 @@ vector<reagent> products;
 :(before "End recipe Constructor")
 has_header = false;
 
-:(before "End recipe Refinements")
+:(before "End Recipe Refinements")
 if (in.peek() != '[') {
   trace(9999, "parse") << "recipe has a header; parsing" << end();
   load_recipe_header(in, result);
@@ -115,7 +115,7 @@ recipe test [
 ]
 +parse: recipe test has a header
 
-:(before "End recipe Body(result)")
+:(before "End Recipe Body(result)")
 if (!result.has_header) {
   result.has_header = true;
   for (long long int i = 0; i < SIZE(result.steps); ++i) {
