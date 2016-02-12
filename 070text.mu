@@ -297,7 +297,8 @@ recipe to-text n:number -> result:address:shared:array:character [
   # add sign
   {
     break-unless negate-result:boolean
-    tmp <- append tmp, 45  # '-'
+    minus:character <- copy 45/-
+    tmp <- append tmp, minus
   }
   # reverse buffer into text result
   len:number <- get *tmp, length:offset
