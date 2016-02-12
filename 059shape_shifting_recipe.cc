@@ -63,7 +63,7 @@ Recently_added_shape_shifting_recipes.clear();
 :(before "End recipe Fields")
 string original_name;
 //: original name is only set during load
-:(before "End Recipe Refinements")
+:(before "End Load Recipe Name")
 result.original_name = result.name;
 
 :(after "Static Dispatch Phase 2")
