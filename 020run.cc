@@ -138,6 +138,8 @@ inline bool routine::completed() const {
 //? START_TRACING_UNTIL_END_OF_SCOPE;
 load_permanently("core.mu");
 transform_all();
+//? DUMP("");
+//? exit(0);
 
 //: Step 2: load any .mu files provided at the commandline
 :(before "End Commandline Parsing")
