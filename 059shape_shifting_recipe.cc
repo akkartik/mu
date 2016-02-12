@@ -66,29 +66,27 @@ string original_name;
 :(before "End Recipe Refinements")
 result.original_name = result.name;
 
-:(before "End Instruction Dispatch(inst, best_score)")
-if (best_score == -1) {
-  trace(9992, "transform") << "no variant found; checking for variant with suitable type ingredients" << end();
-  recipe_ordinal exemplar = pick_matching_shape_shifting_variant(variants, inst, best_score);
-  if (exemplar) {
-    trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
-    recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
-    if (new_recipe_ordinal == 0) goto done_constructing_variant;
-    variants.push_back(new_recipe_ordinal);
-    recipe& variant = get(Recipe, new_recipe_ordinal);
-    // perform all transforms on the new specialization
-    if (!variant.steps.empty()) {
-      trace(9992, "transform") << "transforming new specialization: " << variant.name << end();
-      for (long long int t = 0; t < SIZE(Transform); ++t) {
-        (*Transform.at(t))(new_recipe_ordinal);
-      }
+:(after "Static Dispatch Phase 2")
+candidates = strictly_matching_shape_shifting_variants(inst, variants);
+if (!candidates.empty()) {
+  recipe_ordinal exemplar = best_shape_shifting_variant(inst, candidates);
+  trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
+  recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
+  if (new_recipe_ordinal == 0) goto skip_shape_shifting_variants;
+  variants.push_back(new_recipe_ordinal);  // side-effect
+  recipe& variant = get(Recipe, new_recipe_ordinal);
+  // perform all transforms on the new specialization
+  if (!variant.steps.empty()) {
+    trace(9992, "transform") << "transforming new specialization: " << variant.name << end();
+    for (long long int t = 0; t < SIZE(Transform); ++t) {
+      (*Transform.at(t))(new_recipe_ordinal);
     }
-    variant.transformed_until = SIZE(Transform)-1;
-    inst.name = variant.name;
-    trace(9992, "transform") << "new specialization: " << inst.name << end();
   }
-  done_constructing_variant:;
+  variant.transformed_until = SIZE(Transform)-1;
+  trace(9992, "transform") << "new specialization: " << variant.name << end();
+  return variant.name;
 }
+skip_shape_shifting_variants:;
 
 //: make sure we have no unspecialized shape-shifting recipes being called
 //: before running mu programs
@@ -101,6 +99,73 @@ if (contains_key(Recipe, inst.operation) && inst.operation >= MAX_PRIMITIVE_RECI
 }
 
 :(code)
+// phase 2 of static dispatch
+vector<recipe_ordinal> strictly_matching_shape_shifting_variants(const instruction& inst, vector<recipe_ordinal>& variants) {
+  vector<recipe_ordinal> result;
+  for (long long int i = 0; i < SIZE(variants); ++i) {
+    if (variants.at(i) == -1) continue;
+    if (!any_type_ingredient_in_header(variants.at(i))) continue;
+    if (all_concrete_header_reagents_strictly_match(inst, get(Recipe, variants.at(i))))
+      result.push_back(variants.at(i));
+  }
+  return result;
+}
+
+bool all_concrete_header_reagents_strictly_match(const instruction& inst, const recipe& variant) {
+  if (SIZE(inst.ingredients) < SIZE(variant.ingredients)) {
+    trace(9993, "transform") << "too few ingredients" << end();
+    return false;
+  }
+  if (SIZE(variant.products) < SIZE(inst.products)) {
+    trace(9993, "transform") << "too few products" << end();
+    return false;
+  }
+  for (long long int i = 0; i < SIZE(variant.ingredients); ++i) {
+    if (!concrete_types_strictly_match(variant.ingredients.at(i), inst.ingredients.at(i))) {
+      trace(9993, "transform") << "concrete-type match failed: ingredient " << i << end();
+      return false;
+    }
+  }
+  for (long long int i = 0; i < SIZE(inst.products); ++i) {
+    if (is_dummy(inst.products.at(i))) continue;
+    if (!concrete_types_strictly_match(variant.products.at(i), inst.products.at(i))) {
+      trace(9993, "transform") << "strict match failed: product " << i << end();
+      return false;
+    }
+  }
+  return true;
+}
+
+// tie-breaker for phase 2
+recipe_ordinal best_shape_shifting_variant(const instruction& inst, vector<recipe_ordinal>& candidates) {
+  assert(!candidates.empty());
+  // primary score
+  long long int max_score = -1;
+  for (long long int i = 0; i < SIZE(candidates); ++i) {
+    long long int score = number_of_concrete_types(candidates.at(i));
+    assert(score > -1);
+    if (score > max_score) max_score = score;
+  }
+  // break any ties at max_score by a secondary score
+  long long int min_score2 = 999;
+  long long int best_index = 0;
+  for (long long int i = 0; i < SIZE(candidates); ++i) {
+    long long int score1 = number_of_concrete_types(candidates.at(i));
+    assert(score1 <= max_score);
+    if (score1 != max_score) continue;
+    const recipe& candidate = get(Recipe, candidates.at(i));
+    long long int score2 = (SIZE(candidate.products)-SIZE(inst.products))
+                           + (SIZE(inst.ingredients)-SIZE(candidate.ingredients));
+    assert(score2 < 999);
+    if (score2 < min_score2) {
+      min_score2 = score2;
+      best_index = i;
+    }
+  }
+  return candidates.at(best_index);
+}
+
+
 string header(const recipe& caller) {
   if (!caller.has_header) return maybe(caller.name);
   ostringstream out;
@@ -120,65 +185,6 @@ string header(const recipe& caller) {
   return out.str();
 }
 
-recipe_ordinal pick_matching_shape_shifting_variant(vector<recipe_ordinal>& variants, const instruction& inst, long long int& best_score) {
-//?   cerr << "---- " << inst.name << ": " << non_ghost_size(variants) << '\n';
-  recipe_ordinal result = 0;
-  for (long long int i = 0; i < SIZE(variants); ++i) {
-    if (variants.at(i) == -1) continue;  // ghost from a previous test
-//?     cerr << "-- variant " << i << "\n" << debug_string(get(Recipe, variants.at(i)));
-    trace(9992, "transform") << "checking shape-shifting variant " << i << ": " << header_label(variants.at(i)) << end();
-    long long int current_score = shape_shifting_variant_score(inst, variants.at(i));
-    trace(9992, "transform") << "final score: " << current_score << end();
-//?     cerr << get(Recipe, variants.at(i)).name << ": " << current_score << '\n';
-    if (current_score > best_score) {
-      trace(9992, "transform") << "matches" << end();
-      result = variants.at(i);
-      best_score = current_score;
-    }
-  }
-  return result;
-}
-
-long long int shape_shifting_variant_score(const instruction& inst, recipe_ordinal variant) {
-//?   cerr << "======== " << inst.to_string() << '\n';
-  if (!any_type_ingredient_in_header(variant)) {
-    trace(9993, "transform") << "no type ingredients" << end();
-//?     cerr << "no type ingredients\n";
-    return -1;
-  }
-  const vector<reagent>& header_ingredients = get(Recipe, variant).ingredients;
-  if (SIZE(inst.ingredients) < SIZE(header_ingredients)) {
-    trace(9993, "transform") << "too few ingredients" << end();
-//?     cerr << "too few ingredients\n";
-    return -1;
-  }
-  for (long long int i = 0; i < SIZE(header_ingredients); ++i) {
-    if (!deeply_equal_concrete_types(header_ingredients.at(i), inst.ingredients.at(i))) {
-      trace(9993, "transform") << "mismatch: ingredient " << i << end();
-//?       cerr << "mismatch: ingredient " << i << ": " << debug_string(header_ingredients.at(i)) << " vs " << debug_string(inst.ingredients.at(i)) << '\n';
-      return -1;
-    }
-  }
-  if (SIZE(inst.products) > SIZE(get(Recipe, variant).products)) {
-    trace(9993, "transform") << "too few products" << end();
-//?     cerr << "too few products\n";
-    return -1;
-  }
-  const vector<reagent>& header_products = get(Recipe, variant).products;
-  for (long long int i = 0; i < SIZE(inst.products); ++i) {
-    if (is_dummy(inst.products.at(i))) continue;
-    if (!deeply_equal_concrete_types(header_products.at(i), inst.products.at(i))) {
-      trace(9993, "transform") << "mismatch: product " << i << end();
-//?       cerr << "mismatch: product " << i << '\n';
-      return -1;
-    }
-  }
-  // the greater the number of unused ingredients, the lower the score
-  return 100 - (SIZE(get(Recipe, variant).products)-SIZE(inst.products))
-             - (SIZE(inst.ingredients)-SIZE(get(Recipe, variant).ingredients))  // ok to go negative
-             + number_of_concrete_types(variant);
-}
-
 bool any_type_ingredient_in_header(recipe_ordinal variant) {
   const recipe& caller = get(Recipe, variant);
   for (long long int i = 0; i < SIZE(caller.ingredients); ++i) {
@@ -192,10 +198,10 @@ bool any_type_ingredient_in_header(recipe_ordinal variant) {
   return false;
 }
 
-bool deeply_equal_concrete_types(reagent to, reagent from) {
+bool concrete_types_strictly_match(reagent to, reagent from) {
   canonize_type(to);
   canonize_type(from);
-  return deeply_equal_concrete_types(to.properties.at(0).second, from.properties.at(0).second, from);
+  return concrete_types_strictly_match(to.properties.at(0).second, from.properties.at(0).second, from);
 }
 
 long long int number_of_concrete_types(recipe_ordinal r) {
@@ -222,7 +228,7 @@ long long int number_of_concrete_types(const string_tree* type) {
   return result;
 }
 
-bool deeply_equal_concrete_types(const string_tree* to, const string_tree* from, const reagent& rhs_reagent) {
+bool concrete_types_strictly_match(const string_tree* to, const string_tree* from, const reagent& rhs_reagent) {
   if (!to) return !from;
   if (!from) return !to;
   if (is_type_ingredient_name(to->value)) return true;  // type ingredient matches anything
@@ -238,8 +244,8 @@ bool deeply_equal_concrete_types(const string_tree* to, const string_tree* from,
     return rhs_reagent.name == "0";
 //?   cerr << to->value << " vs " << from->value << '\n';
   return to->value == from->value
-      && deeply_equal_concrete_types(to->left, from->left, rhs_reagent)
-      && deeply_equal_concrete_types(to->right, from->right, rhs_reagent);
+      && concrete_types_strictly_match(to->left, from->left, rhs_reagent)
+      && concrete_types_strictly_match(to->right, from->right, rhs_reagent);
 }
 
 bool contains_type_ingredient_name(const reagent& x) {
@@ -468,13 +474,6 @@ void ensure_all_concrete_types(/*const*/ reagent& x, const recipe& exemplar) {
     raise_error << maybe(exemplar.name) << "failed to map a type to the unknown " << x.original_string << '\n' << end();
     return;
   }
-}
-
-long long int non_ghost_size(vector<recipe_ordinal>& variants) {
-  long long int result = 0;
-  for (long long int i = 0; i < SIZE(variants); ++i)
-    if (variants.at(i) != -1) ++result;
-  return result;
 }
 
 :(scenario shape_shifting_recipe_2)
