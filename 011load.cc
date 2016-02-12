@@ -43,6 +43,7 @@ vector<recipe_ordinal> load(istream& in) {
 long long int slurp_recipe(istream& in) {
   recipe result;
   result.name = next_word(in);
+  // End Load Recipe Name
   skip_whitespace_but_not_newline(in);
   // End Recipe Refinements
   if (result.name.empty())
