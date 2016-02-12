@@ -821,3 +821,75 @@ recipe foo x:address:shared:_elem -> y:number [
   reply 35
 ]
 +mem: storing 35 in location 2
+
+:(scenario specialize_most_similar_variant_2)
+# version with headers padded with lots of unrelated concrete types
+recipe main [
+  1:number <- copy 23
+  2:address:shared:array:number <- copy 0
+  3:number <- foo 2:address:shared:array:number, 1:number
+]
+# variant with concrete type
+recipe foo dummy:address:shared:array:number, x:number -> y:number, dummy:address:shared:array:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+# shape-shifting variant
+recipe foo dummy:address:shared:array:number, x:_elem -> y:number, dummy:address:shared:array:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
+# prefer the concrete variant
++mem: storing 34 in location 3
+
+:(scenario specialize_most_similar_variant_3)
+recipe main [
+  1:address:shared:array:character <- new [abc]
+  foo 1:address:shared:array:character
+]
+recipe foo x:address:shared:array:character [
+  2:number <- copy 34
+]
+recipe foo x:address:_elem [
+  2:number <- copy 35
+]
+# make sure the more precise version was used
++mem: storing 34 in location 2
+
+:(scenario specialize_literal_as_number)
+recipe main [
+  1:number <- foo 23
+]
+recipe foo x:_elem -> y:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+recipe foo x:character -> y:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
++mem: storing 34 in location 1
+
+:(scenario specialize_literal_as_number_2)
+# version calling with literal
+recipe main [
+  1:number <- foo 0
+]
+# variant with concrete type
+recipe foo x:number -> y:number [
+  local-scope
+  load-ingredients
+  reply 34
+]
+# shape-shifting variant
+recipe foo x:address:shared:_elem -> y:number [
+  local-scope
+  load-ingredients
+  reply 35
+]
+# prefer the concrete variant, ignore concrete types in scoring the shape-shifting variant
++mem: storing 34 in location 1
