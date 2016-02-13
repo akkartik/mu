@@ -341,13 +341,8 @@ inserting code at them.
 
 Any instruction without ingredients or products that starts with a
 non-alphanumeric character is a label. By convention we use '+' to indicate
-label names.
-
-This is a good time to point out that `{` and `}` are also just labels in Mu
-syntax, and that `break` and `loop` get rewritten as jumps to just after the
-enclosing `}` and `{` respectively. This gives us a simple sort of structured
-programming without adding complexity to the parser -- Mu functions remain
-just flat lists of instructions.
+recipe-local label names you can jump to, and surround in '<>' global label
+names for inserting code at.
 
 ---
 
