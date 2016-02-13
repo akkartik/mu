@@ -316,19 +316,19 @@ inserting code at them.
     local-scope
     n:number <- next-ingredient
     {
-      +base-case:
+      <base-case>
     }
-    +recursive-case:
+    <recursive-case>
   ]
 
-  after +base-case [
+  after <base-case> [
     # if n=0 return 1
     zero?:boolean <- equal n, 0
     break-unless zero?
     reply 1
   ]
 
-  after +recursive-case [
+  after <recursive-case> [
     # return n * factorial(n-1)
     x:number <- subtract n, 1
     subresult:number <- factorial x
