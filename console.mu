@@ -3,6 +3,7 @@
 # Keeps printing 'a' until you press a key or click on the mouse.
 
 recipe main [
+  local-scope
   open-console
   {
     e:event, found?:boolean <- check-for-interaction
