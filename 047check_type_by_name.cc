@@ -55,8 +55,20 @@ void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_n
   }
   if (!contains_key(type_name, x.name))
     put(type_name, x.name, x.properties.at(0).second);
-  if (!types_strictly_match(type[x.name], x.type))
+  if (!types_strictly_match(type[x.name], x.type)) {
     raise_error << maybe(get(Recipe, r).name) << x.name << " used with multiple types\n" << end();
+    return;
+  }
+  if (type_name[x.name]->value == "array") {
+    if (!type_name[x.name]->right) {
+      raise_error << maybe(get(Recipe, r).name) << x.name << " can't be just an array. What is it an array of?\n" << end();
+      return;
+    }
+    if (!type_name[x.name]->right->right) {
+      raise_error << get(Recipe, r).name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:shared:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
+      return;
+    }
+  }
 }
 
 :(scenario transform_fills_in_missing_types)
@@ -93,3 +105,10 @@ recipe main [
   *y <- copy 67
 ]
 +error: main: unknown type charcter in 'y:address:shared:charcter <- new character:type'
+
+:(scenario array_type_without_size_fails)
+% Hide_errors = true;
+recipe main [
+  x:array:number <- merge 2, 12, 13
+]
++error: main can't determine the size of array variable x. Either allocate it separately and make the type of x address:shared:..., or specify the length of the array in the type of x.
