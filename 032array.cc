@@ -116,6 +116,38 @@ if (r.type && r.type->value == get(Type_ordinal, "array")) {
   return 1 + get_or_insert(Memory, r.value)*size_of(array_element(r.type));
 }
 
+//: arrays are disallowed inside containers unless their length is fixed in
+//: advance
+
+:(scenario container_contains_array)
+% Hide_errors = true;
+container foo [
+  x:array:number:3
+]
+$error: 0
+
+:(scenario container_warns_on_dynamic_array_element)
+% Hide_errors = true;
+container foo [
+  x:array:number
+]
++error: container 'foo' cannot determine size of element x
+
+:(before "End Load Container Element Definition")
+{
+  const string_tree* type_name = info.element_type_names.back();
+  if (type_name->value == "array") {
+    if (!type_name->right) {
+      raise_error << "container '" << name << "' doesn't specify type of array elements for " << info.element_names.back() << '\n' << end();
+      break;
+    }
+    if (!type_name->right->right) {  // array has no length
+      raise_error << "container '" << name << "' cannot determine size of element " << info.element_names.back() << '\n' << end();
+      break;
+    }
+  }
+}
+
 //:: To access elements of an array, use 'index'
 
 :(scenario index)

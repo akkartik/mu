@@ -436,6 +436,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     info.elements.push_back(new_type_tree_with_new_types_for_unknown(info.element_type_names.back(), info));
     for (long long int i = 0; i < SIZE(info.elements); ++i)
       trace(9993, "parse") << "  type: " << info.elements.at(i)->value << end();
+    // End Load Container Element Definition
   }
   assert(SIZE(info.elements) == SIZE(info.element_names));
   info.size = SIZE(info.elements);
