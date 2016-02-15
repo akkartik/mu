@@ -179,6 +179,23 @@ else if (command == "exclusive-container") {
   insert_container(command, EXCLUSIVE_CONTAINER, in);
 }
 
+//: arrays are disallowed inside exclusive containers unless their length is
+//: fixed in advance
+
+:(scenario exclusive_container_contains_array)
+% Hide_errors = true;
+exclusive-container foo [
+  x:array:number:3
+]
+$error: 0
+
+:(scenario exclusive_container_warns_on_dynamic_array_element)
+% Hide_errors = true;
+exclusive-container foo [
+  x:array:number
+]
++error: container 'foo' cannot determine size of element x
+
 //:: To construct exclusive containers out of variant types, use 'merge'.
 :(scenario lift_to_exclusive_container)
 exclusive-container foo [
