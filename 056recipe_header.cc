@@ -286,18 +286,31 @@ Transform.push_back(check_reply_instructions_against_header);  // idempotent
 :(code)
 void check_reply_instructions_against_header(const recipe_ordinal r) {
   const recipe& caller_recipe = get(Recipe, r);
-  if (caller_recipe.products.empty()) return;
+  if (!caller_recipe.has_header) return;
   trace(9991, "transform") << "--- checking reply instructions against header for " << caller_recipe.name << end();
-//?   cerr << "--- checking reply instructions against header for " << caller_recipe.name << '\n';
   for (long long int i = 0; i < SIZE(caller_recipe.steps); ++i) {
     const instruction& inst = caller_recipe.steps.at(i);
     if (inst.name != "reply") continue;
-    for (long long int i = 0; i < min(SIZE(caller_recipe.products), SIZE(inst.ingredients)); ++i) {
+    if (SIZE(caller_recipe.products) != SIZE(inst.ingredients)) {
+      raise_error << maybe(caller_recipe.name) << "replied with the wrong number of products at '" << inst.to_string() << "'\n" << end();
+      continue;
+    }
+    for (long long int i = 0; i < SIZE(caller_recipe.products); ++i) {
       if (!types_match(caller_recipe.products.at(i), inst.ingredients.at(i)))
         raise_error << maybe(caller_recipe.name) << "replied with the wrong type at '" << inst.to_string() << "'\n" << end();
     }
   }
 }
+
+:(scenario recipe_headers_are_checked_2)
+% Hide_errors = true;
+recipe add2 x:number, y:number [
+  local-scope
+  load-ingredients
+  z:address:number <- copy 0/unsafe
+  reply z
+]
++error: add2: replied with the wrong number of products at 'reply z'
 
 :(scenario recipe_headers_check_for_duplicate_names)
 % Hide_errors = true;
@@ -415,7 +428,7 @@ void fill_in_reply_ingredients(recipe_ordinal r) {
   trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << caller_recipe.name << end();
   for (long long int i = 0; i < SIZE(caller_recipe.steps); ++i) {
     instruction& inst = caller_recipe.steps.at(i);
-    if (inst.name == "reply" && inst.ingredients.empty())
+    if (inst.name == "reply")
       add_header_products(inst, caller_recipe);
   }
   // fall through reply

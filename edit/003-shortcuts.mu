@@ -2310,9 +2310,10 @@ after <scroll-up> [
 # takes a pointer into the doubly-linked list, scans back to before start of
 # previous *wrapped* line
 # beware: never return null pointer
-recipe before-previous-line curr:address:shared:duplex-list:character, editor:address:shared:editor-data -> curr:address:shared:duplex-list:character [
+recipe before-previous-line in:address:shared:duplex-list:character, editor:address:shared:editor-data -> out:address:shared:duplex-list:character [
   local-scope
   load-ingredients
+  curr:address:shared:duplex-list:character <- copy in
   c:character <- get *curr, value:offset
   # compute max, number of characters to skip
   #   1 + len%(width-1)
