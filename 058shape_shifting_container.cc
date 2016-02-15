@@ -173,7 +173,9 @@ void replace_type_ingredient(type_tree* element_type, const type_tree* callsite_
     }
     const type_tree* replacement = nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS);
     element_type->value = replacement->value;
+    assert(!element_type->left);  // since value is set
     element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
+    assert(!element_type->right);  // unsupported
     element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
   }
   replace_type_ingredient(element_type->right, callsite_type);
