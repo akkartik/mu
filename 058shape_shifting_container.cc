@@ -80,6 +80,35 @@ if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
   continue;
 }
 
+:(scenario size_of_shape_shifting_exclusive_container)
+exclusive-container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  1:foo:number <- merge 0/x, 34
+  3:foo:point <- merge 0/x, 15, 16
+  6:foo:point <- merge 1/y, 23
+]
++mem: storing 0 in location 1
++mem: storing 34 in location 2
++mem: storing 0 in location 3
++mem: storing 15 in location 4
++mem: storing 16 in location 5
++mem: storing 1 in location 6
++mem: storing 23 in location 7
+$mem: 7
+
+:(before "End size_of(type) Exclusive Container Cases")
+if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
+  trace(9999, "type") << "checking size of type ingredient\n" << end();
+  long long int size = size_of_type_ingredient(t.elements.at(i), type->right);
+  if (!size)
+    raise_error << "illegal type '" << debug_string(type) << "' seems to be missing a type ingredient or three\n" << end();
+  if (size > result) result = size;
+  continue;
+}
+
 :(code)
 // shape-shifting version of size_of
 long long int size_of_type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {

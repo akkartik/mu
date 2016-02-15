@@ -40,8 +40,9 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
   // (So like containers, it can't contain arrays.)
   long long int result = 0;
   for (long long int i = 0; i < t.size; ++i) {
-    long long int tmp = size_of(t.elements.at(i));
-    if (tmp > result) result = tmp;
+    // End size_of(type) Exclusive Container Cases
+    long long int size = size_of(t.elements.at(i));
+    if (size > result) result = size;
   }
   // ...+1 for its tag.
   return result+1;
