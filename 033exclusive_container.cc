@@ -99,15 +99,13 @@ case MAYBE_CONVERT: {
   if (inst.products.empty()) break;
   reagent product = inst.products.at(0);
   if (!canonize_type(product)) break;
-  const reagent& offset = inst.ingredients.at(1);
-  long long int tag = 0;
-  if (is_integer(offset.name)) {
-    tag = to_integer(offset.name);
+  reagent& offset = inst.ingredients.at(1);
+  populate_value(offset);
+  if (offset.value >= SIZE(get(Type, base.type->value).elements)) {
+    raise_error << maybe(caller.name) << "invalid tag " << offset.value << " in '" << inst.to_string() << '\n' << end();
+    break;
   }
-  else {
-    tag = offset.value;
-  }
-  reagent variant = variant_type(base, tag);
+  reagent variant = variant_type(base, offset.value);
   variant.type = new type_tree(get(Type_ordinal, "address"), variant.type);
   if (!types_coercible(product, variant)) {
     raise_error << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << debug_string(variant.type) << " but " << product.name << " has type " << debug_string(product.type) << '\n' << end();
@@ -188,8 +186,8 @@ exclusive-container foo [
 
 recipe main [
   1:number <- copy 34
-  2:foo <- merge 0/x, 1:number
-  4:foo <- merge 1/x, 1:number
+  2:foo <- merge 0/x, 1:number  # tag must be a literal when merging exclusive containers
+  4:foo <- merge 1/y, 1:number
 ]
 +mem: storing 0 in location 2
 +mem: storing 34 in location 3
