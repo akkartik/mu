@@ -152,11 +152,10 @@ void check_immutable_ingredients(recipe_ordinal r) {
   // call get-address or index-address with it, and that any non-primitive
   // recipe calls in the body aren't returning it as a product.
   const recipe& caller = get(Recipe, r);
-//?   cerr << caller.name << '\n';
+  trace(9991, "transform") << "--- check mutability of ingredients in recipe " << caller.name << end();
   if (!caller.has_header) return;  // skip check for old-style recipes calling next-ingredient directly
   for (long long int i = 0; i < SIZE(caller.ingredients); ++i) {
     const reagent& current_ingredient = caller.ingredients.at(i);
-//?     cerr << "  " << current_ingredient.original_string << '\n';
     if (!is_mu_address(current_ingredient)) continue;  // will be copied
     if (is_present_in_products(caller, current_ingredient.name)) continue;  // not expected to be immutable
     // End Immutable Ingredients Special-cases
@@ -164,7 +163,6 @@ void check_immutable_ingredients(recipe_ordinal r) {
     immutable_vars.insert(current_ingredient.name);
     for (long long int i = 0; i < SIZE(caller.steps); ++i) {
       const instruction& inst = caller.steps.at(i);
-//?       cerr << "    " << inst.to_string() << '\n';
       check_immutable_ingredient_in_instruction(inst, immutable_vars, current_ingredient.name, caller);
       update_aliases(inst, immutable_vars);
     }
@@ -238,7 +236,6 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
   if (current_ingredient_indices.empty()) return;  // ingredient not found in call
   for (set<long long int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p) {
     const long long int current_ingredient_index = *p;
-//?     cerr << "      ingredient index: " << *p << '\n';
     reagent current_ingredient = inst.ingredients.at(current_ingredient_index);
     canonize_type(current_ingredient);
     const string& current_ingredient_name = current_ingredient.name;

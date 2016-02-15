@@ -65,6 +65,7 @@ Transform.push_back(check_types_of_reply_instructions);
 :(code)
 void check_types_of_reply_instructions(recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
+  trace(9991, "transform") << "--- check types of reply instructions in recipe " << caller.name << end();
   for (long long int i = 0; i < SIZE(caller.steps); ++i) {
     const instruction& caller_instruction = caller.steps.at(i);
     if (caller_instruction.is_label) continue;

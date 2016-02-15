@@ -555,6 +555,7 @@ Transform.push_back(check_or_set_invalid_types);  // idempotent
 :(code)
 void check_or_set_invalid_types(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
+  trace(9991, "transform") << "--- check for invalid types in recipe " << caller.name << end();
   for (long long int index = 0; index < SIZE(caller.steps); ++index) {
     instruction& inst = caller.steps.at(index);
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
