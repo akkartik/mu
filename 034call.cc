@@ -165,7 +165,3 @@ while (current_step_index() >= SIZE(Current_routine->steps())) {
   // todo: fail if no products returned
   ++current_step_index();
 }
-
-:(before "End Includes")
-#include <stack>
-using std::stack;

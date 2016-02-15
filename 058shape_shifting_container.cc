@@ -112,22 +112,27 @@ if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
 :(code)
 // shape-shifting version of size_of
 long long int size_of_type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {
+  type_tree* element_type = type_ingredient(element_template, rest_of_use);
+  if (!element_type) return 0;
+  long long int result = size_of(element_type);
+  delete element_type;
+  return result;
+}
+
+type_tree* type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {
   long long int type_ingredient_index = element_template->value - START_TYPE_INGREDIENTS;
   const type_tree* curr = rest_of_use;
-  if (!curr) return 0;
+  if (!curr) return NULL;
   while (type_ingredient_index > 0) {
     --type_ingredient_index;
     curr = curr->right;
-    if (!curr) return 0;
+    if (!curr) return NULL;
   }
   assert(curr);
   assert(!curr->left);  // unimplemented
-  if (!contains_key(Type, curr->value)) return 0;
+  if (!contains_key(Type, curr->value)) return NULL;
   trace(9999, "type") << "type deduced to be " << get(Type, curr->value).name << "$" << end();
-  type_tree tmp(curr->value);
-  if (curr->right)
-    tmp.right = new type_tree(*curr->right);
-  return size_of(&tmp);
+  return new type_tree(*curr);
 }
 
 :(scenario get_on_shape_shifting_container)
@@ -169,7 +174,7 @@ container foo:_t [
   y:number
 ]
 recipe main [
-  1:foo:address:point <- merge 34, 48  # unsafe
+  1:foo:address:point <- merge 34/unsafe, 48
   2:address:point <- get 1:foo:address:point, x:offset
 ]
 +mem: storing 34 in location 2
@@ -178,7 +183,7 @@ recipe main [
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
     raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredient(element.type, canonized_base.type->right);
+  replace_type_ingredient(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second->right);
 }
 
 :(code)
@@ -192,7 +197,7 @@ bool contains_type_ingredient(const type_tree* type) {
   return contains_type_ingredient(type->left) || contains_type_ingredient(type->right);
 }
 
-void replace_type_ingredient(type_tree* element_type, const type_tree* callsite_type) {
+void replace_type_ingredient(type_tree* element_type, string_tree* element_type_name, const type_tree* callsite_type, const string_tree* callsite_type_name) {
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
   if (element_type->value >= START_TYPE_INGREDIENTS) {
@@ -200,20 +205,33 @@ void replace_type_ingredient(type_tree* element_type, const type_tree* callsite_
       raise_error << "illegal type '" << debug_string(callsite_type) << "' seems to be missing a type ingredient or three\n" << end();
       return;
     }
-    const type_tree* replacement = nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS);
+    const long long int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
+    const type_tree* replacement = nth_type(callsite_type, type_ingredient_index);
     element_type->value = replacement->value;
     assert(!element_type->left);  // since value is set
     element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
     assert(!element_type->right);  // unsupported
     element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
+    const string_tree* replacement_name = nth_type_name(callsite_type_name, type_ingredient_index);
+    element_type_name->value = replacement_name->value;
+    assert(!element_type_name->left);  // since value is set
+    element_type_name->left = replacement_name->left ? new string_tree(*replacement_name->left) : NULL;
+    assert(!element_type_name->right);  // unsupported
+    element_type_name->right = replacement_name->right ? new string_tree(*replacement_name->right) : NULL;
   }
-  replace_type_ingredient(element_type->right, callsite_type);
+  replace_type_ingredient(element_type->right, element_type_name->right, callsite_type, callsite_type_name);
 }
 
 const type_tree* nth_type(const type_tree* base, long long int n) {
   assert(n >= 0);
   if (n == 0) return base;
   return nth_type(base->right, n-1);
+}
+
+const string_tree* nth_type_name(const string_tree* base, long long int n) {
+  assert(n >= 0);
+  if (n == 0) return base;
+  return nth_type_name(base->right, n-1);
 }
 
 bool has_nth_type(const type_tree* base, long long int n) {
@@ -272,3 +290,93 @@ recipe main [
   2:number <- get 1:bar, 1:offset
 ]
 +mem: storing 17 in location 2
+
+//: 'merge' on shape-shifting containers
+
+:(scenario merge_check_shape_shifting_container_containing_exclusive_container)
+% Hide_errors = true;
+container foo:_elem [
+  x:number
+  y:_elem
+]
+exclusive-container bar [
+  x:number
+  y:number
+]
+recipe main [
+  1:foo:bar <- merge 23, 1/y, 34
+]
++mem: storing 23 in location 1
++mem: storing 1 in location 2
++mem: storing 34 in location 3
+$error: 0
+
+:(scenario merge_check_shape_shifting_container_containing_exclusive_container_2)
+% Hide_errors = true;
+container foo:_elem [
+  x:number
+  y:_elem
+]
+exclusive-container bar [
+  x:number
+  y:number
+]
+recipe main [
+  1:foo:bar <- merge 23, 1/y, 34, 35
+]
++error: main: too many ingredients in '1:foo:bar <- merge 23, 1/y, 34, 35'
+
+:(scenario merge_check_shape_shifting_exclusive_container_containing_container)
+% Hide_errors = true;
+exclusive-container foo:_elem [
+  x:number
+  y:_elem
+]
+container bar [
+  x:number
+  y:number
+]
+recipe main [
+  1:foo:bar <- merge 1/y, 23, 34
+]
++mem: storing 1 in location 1
++mem: storing 23 in location 2
++mem: storing 34 in location 3
+$error: 0
+
+:(scenario merge_check_shape_shifting_exclusive_container_containing_container_2)
+% Hide_errors = true;
+exclusive-container foo:_elem [
+  x:number
+  y:_elem
+]
+container bar [
+  x:number
+  y:number
+]
+recipe main [
+  1:foo:bar <- merge 0/x, 23
+]
+$error: 0
+
+:(scenario merge_check_shape_shifting_exclusive_container_containing_container_3)
+% Hide_errors = true;
+exclusive-container foo:_elem [
+  x:number
+  y:_elem
+]
+container bar [
+  x:number
+  y:number
+]
+recipe main [
+  1:foo:bar <- merge 1/y, 23
+]
++error: main: too few ingredients in '1:foo:bar <- merge 1/y, 23'
+
+:(before "End variant_type Special-cases")
+if (contains_type_ingredient(element)) {
+  if (!canonized_base.type->right)
+    raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
+  replace_type_ingredient(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second->right);
+}

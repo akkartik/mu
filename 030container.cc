@@ -647,8 +647,7 @@ void check_invalid_types(type_tree* type, const string& block, const string& nam
   check_invalid_types(type->right, block, name);
 }
 
-//:: Construct types out of their constituent fields. Doesn't currently do
-//:: type-checking but *does* match sizes.
+//:: Construct types out of their constituent fields.
 
 :(scenario merge)
 container foo [
@@ -668,6 +667,7 @@ MERGE,
 put(Recipe_ordinal, "merge", MERGE);
 :(before "End Primitive Recipe Checks")
 case MERGE: {
+  // type-checking in a separate transform below
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -678,3 +678,179 @@ case MERGE: {
       products.at(0).push_back(ingredients.at(i).at(j));
   break;
 }
+
+//: type-check 'merge' to avoid interpreting numbers as addresses
+
+:(scenario merge_check)
+% Hide_errors = true;
+recipe main [
+  1:point <- merge 3, 4
+]
+$error: 0
+
+:(scenario merge_check_missing_element)
+% Hide_errors = true;
+recipe main [
+  1:point <- merge 3
+]
++error: main: too few ingredients in '1:point <- merge 3'
+
+:(scenario merge_check_extra_element)
+% Hide_errors = true;
+recipe main [
+  1:point <- merge 3, 4, 5
+]
++error: main: too many ingredients in '1:point <- merge 3, 4, 5'
+
+//: We want to avoid causing memory corruption, but other than that we want to
+//: be flexible in how we construct containers of containers. It should be
+//: equally easy to define a container out of primitives or intermediate
+//: container fields.
+
+:(scenario merge_check_recursive_containers)
+% Hide_errors = true;
+recipe main [
+  1:point <- merge 3, 4
+  1:point-number <- merge 1:point, 5
+]
+$error: 0
+
+:(scenario merge_check_recursive_containers_2)
+% Hide_errors = true;
+recipe main [
+  1:point <- merge 3, 4
+  2:point-number <- merge 1:point
+]
++error: main: too few ingredients in '2:point-number <- merge 1:point'
+
+:(scenario merge_check_recursive_containers_3)
+% Hide_errors = true;
+recipe main [
+  1:point-number <- merge 3, 4, 5
+]
+$error: 0
+
+:(scenario merge_check_recursive_containers_4)
+% Hide_errors = true;
+recipe main [
+  1:point-number <- merge 3, 4
+]
++error: main: too few ingredients in '1:point-number <- merge 3, 4'
+
+//: Since a container can be merged in several ways, we need to be able to
+//: backtrack through different possibilities. Later we'll allow creating
+//: exclusive containers which contain just one of rather than all of their
+//: elements. That will also require backtracking capabilities. Here's the
+//: state we need to maintain for backtracking:
+
+:(before "End Types")
+struct merge_check_point {
+  reagent container;
+  long long int container_element_index;
+  merge_check_point(const reagent& c, long long int i) :container(c), container_element_index(i) {}
+};
+
+struct merge_check_state {
+  stack<merge_check_point> data;
+};
+
+:(before "End Checks")
+Transform.push_back(check_merge_calls);
+:(code)
+void check_merge_calls(const recipe_ordinal r) {
+  const recipe& caller = get(Recipe, r);
+  trace(9991, "transform") << "--- type-check merge instructions in recipe " << caller.name << end();
+  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+    const instruction& inst = caller.steps.at(i);
+    if (inst.name != "merge") continue;
+    if (SIZE(inst.products) != 1) {
+      raise_error << maybe(caller.name) << "'merge' should yield a single product in '" << inst.to_string() << "'\n" << end();
+      continue;
+    }
+    reagent product = inst.products.at(0);
+    // Update product While Type-checking Merge
+    type_ordinal product_type = product.type->value;
+    if (product_type == 0 || !contains_key(Type, product_type)) {
+      raise_error << maybe(caller.name) << "'merge' should yield a container in '" << inst.to_string() << "'\n" << end();
+      continue;
+    }
+    const type_info& info = get(Type, product_type);
+    if (info.kind != CONTAINER && info.kind != EXCLUSIVE_CONTAINER) {
+      raise_error << maybe(caller.name) << "'merge' should yield a container in '" << inst.to_string() << "'\n" << end();
+      continue;
+    }
+    check_merge_call(inst.ingredients, product, caller, inst);
+  }
+}
+
+void check_merge_call(const vector<reagent>& ingredients, const reagent& product, const recipe& caller, const instruction& inst) {
+  long long int ingredient_index = 0;
+  merge_check_state state;
+  state.data.push(merge_check_point(product, 0));
+  while (true) {
+    assert(!state.data.empty());
+    trace(9999, "transform") << ingredient_index << " vs " << SIZE(ingredients) << end();
+    if (ingredient_index >= SIZE(ingredients)) {
+      raise_error << maybe(caller.name) << "too few ingredients in '" << inst.to_string() << "'\n" << end();
+      return;
+    }
+    reagent& container = state.data.top().container;
+    type_info& container_info = get(Type, container.type->value);
+    switch (container_info.kind) {
+      case CONTAINER: {
+        reagent expected_ingredient = element_type(container, state.data.top().container_element_index);
+        trace(9999, "transform") << "checking container " << debug_string(container) << " || " << debug_string(expected_ingredient) << " vs ingredient " << ingredient_index << end();
+        // if the current element is the ingredient we expect, move on to the next element/ingredient
+        if (types_coercible(expected_ingredient, ingredients.at(ingredient_index))) {
+          ++ingredient_index;
+          ++state.data.top().container_element_index;
+          while (state.data.top().container_element_index >= SIZE(get(Type, state.data.top().container.type->value).elements)) {
+            state.data.pop();
+            if (state.data.empty()) {
+              if (ingredient_index < SIZE(ingredients))
+                raise_error << maybe(caller.name) << "too many ingredients in '" << inst.to_string() << "'\n" << end();
+              return;
+            }
+            ++state.data.top().container_element_index;
+          }
+        }
+        // if not, maybe it's a field of the current element
+        else {
+          // no change to ingredient_index
+          state.data.push(merge_check_point(expected_ingredient, 0));
+        }
+        break;
+      }
+      // End valid_merge Cases
+      default: {
+        if (!types_coercible(container, ingredients.at(ingredient_index))) {
+          raise_error << maybe(caller.name) << "incorrect type of ingredient " << ingredient_index << " in '" << inst.to_string() << "'\n" << end();
+          return;
+        }
+        ++ingredient_index;
+        do {
+          state.data.pop();
+          if (state.data.empty()) {
+            if (ingredient_index < SIZE(ingredients))
+              raise_error << maybe(caller.name) << "too many ingredients in '" << inst.to_string() << "'\n" << end();
+            return;
+          }
+          ++state.data.top().container_element_index;
+        } while (state.data.top().container_element_index >= SIZE(get(Type, state.data.top().container.type->value).elements));
+      }
+    }
+  }
+  // never gets here
+  assert(false);
+}
+
+:(scenario merge_check_product)
+% Hide_errors = true;
+recipe main [
+  1:number <- merge 3
+]
++error: main: 'merge' should yield a container in '1:number <- merge 3'
+
+:(before "End Includes")
+#include <stack>
+using std::stack;

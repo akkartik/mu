@@ -84,6 +84,9 @@ recipe foo [
 :(after "bool is_mu_number(reagent r)")
   if (!canonize_type(r)) return false;
 
+:(after "Update product While Type-checking Merge")
+if (!canonize_type(product)) continue;
+
 :(code)
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
