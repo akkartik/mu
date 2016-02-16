@@ -60,8 +60,6 @@ void run_current_routine()
   while (!Current_routine->completed())  // later layers will modify condition
   {
     // Running One Instruction
-//?     trace(9999, "aaaa") << "location 1 contains " << get_or_insert(Memory, 1) << end();
-//?     Instructions_running[current_recipe_name()]++;
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << current_instruction().to_string() << end();
     if (get_or_insert(Memory, 0) != 0) {
@@ -71,11 +69,8 @@ void run_current_routine()
     // read all ingredients from memory, each potentially spanning multiple locations
     vector<vector<double> > ingredients;
     if (should_copy_ingredients()) {
-      for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
+      for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i)
         ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
-//?         Locations_read[current_recipe_name()] += SIZE(ingredients.back());
-//?         Locations_read_by_instruction[current_instruction().name] += SIZE(ingredients.back());
-      }
     }
     // instructions below will write to 'products'
     vector<vector<double> > products;
