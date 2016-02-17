@@ -101,6 +101,7 @@ size_t hash_mu_container(size_t h, const reagent& r) {
   long long int offset = 0;
   for (long long int i = 0; i < SIZE(info.elements); ++i) {
     reagent element = element_type(r, i);
+    if (has_property(element, "ignore-for-hash")) continue;
     element.set_value(address+offset);
     h = hash(h, element);
 //?     cerr << i << ": " << h << '\n';
@@ -119,6 +120,9 @@ size_t hash_mu_exclusive_container(size_t h, const reagent& r) {
   assert(r.type->value);
   long long int tag = get(Memory, r.value);
   reagent variant = variant_type(r, tag);
+  // todo: move this warning to container definition time
+  if (has_property(variant, "ignore-for-hash"))
+    raise << get(Type, r.type->value).name << ": /ignore-for-hash won't work in exclusive containers\n";
   variant.set_value(r.value + /*skip tag*/1);
   h = hash(h, variant);
   return h;
@@ -172,6 +176,23 @@ recipe main [
 ]
 # hash on containers includes all elements
 +mem: storing 0 in location 9
+
+:(scenario hash_can_ignore_container_elements)
+container foo [
+  x:number
+  y:character/ignore-for-hash
+]
+recipe main [
+  1:foo <- merge 34, 97/a
+  3:number <- hash 1:foo
+  reply-unless 3:number
+  4:foo <- merge 34, 98/a
+  6:number <- hash 4:foo
+  reply-unless 6:number
+  7:boolean <- equal 3:number, 6:number
+]
+# hashes match even though y is different
++mem: storing 1 in location 7
 
 //: These properties aren't necessary for hash, they just test that the
 //: current implementation works like we think it does.
