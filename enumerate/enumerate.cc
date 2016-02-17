@@ -1,3 +1,4 @@
+#include<assert.h>
 #include<cstdlib>
 #include<dirent.h>
 #include<vector>
@@ -7,14 +8,11 @@ using std::string;
 #include<iostream>
 using std::cout;
 
-int enumerate_files_in_cwd_until(string last_file);
-string flag_value(const string& flag, int argc, const char* argv[]);
-
 int main(int argc, const char* argv[]) {
-  return enumerate_files_in_cwd_until(flag_value("--until", argc, argv));
-}
+  assert(argc == 3);
+  assert(string(argv[1]) == "--until");
+  string last_file(argv[2]);
 
-int enumerate_files_in_cwd_until(string last_file) {
   dirent** files;
   int num_files = scandir(".", &files, NULL, alphasort);
   for (int i = 0; i < num_files; ++i) {
@@ -25,11 +23,4 @@ int enumerate_files_in_cwd_until(string last_file) {
   }
   // don't bother freeing files
   return 0;
-}
-
-string flag_value(const string& flag, int argc, const char* argv[]) {
-  for (int i = 1; i < argc-1; ++i)
-    if (string(argv[i]) == flag)
-      return argv[i+1];
-  return "";
 }

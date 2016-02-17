@@ -16,7 +16,7 @@ core.mu: [0-9]*.mu mu.cc
 	cat $$(./enumerate/enumerate --until zzz |grep '.mu$$') > core.mu
 
 enumerate/enumerate:
-	cd enumerate && make && ./enumerate test
+	cd enumerate && make
 
 tangle/tangle:
 	cd tangle && make && ./tangle test
