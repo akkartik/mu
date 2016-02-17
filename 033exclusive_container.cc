@@ -11,12 +11,8 @@ type_ordinal tmp = put(Type_ordinal, "number-or-point", Next_type_ordinal++);
 get_or_insert(Type, tmp).size = 2;
 get(Type, tmp).kind = EXCLUSIVE_CONTAINER;
 get(Type, tmp).name = "number-or-point";
-get(Type, tmp).element_type_names.push_back(new string_tree("number"));
-get(Type, tmp).elements.push_back(new type_tree(number));
-get(Type, tmp).element_names.push_back("i");
-get(Type, tmp).element_type_names.push_back(new string_tree("point"));
-get(Type, tmp).elements.push_back(new type_tree(point));
-get(Type, tmp).element_names.push_back("p");
+get(Type, tmp).elements.push_back(reagent("i:number"));
+get(Type, tmp).elements.push_back(reagent("p:point"));
 }
 
 //: Tests in this layer often explicitly setup memory before reading it as an
@@ -41,7 +37,7 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
   long long int result = 0;
   for (long long int i = 0; i < t.size; ++i) {
     // End size_of(type) Exclusive Container Cases
-    long long int size = size_of(t.elements.at(i));
+    long long int size = size_of(t.elements.at(i).type);
     if (size > result) result = size;
   }
   // ...+1 for its tag.
@@ -143,9 +139,7 @@ const reagent variant_type(const reagent& canonized_base, long long int tag) {
   assert(!get(Type, canonized_base.type->value).name.empty());
   const type_info& info = get(Type, canonized_base.type->value);
   assert(info.kind == EXCLUSIVE_CONTAINER);
-  reagent element;
-  element.type = new type_tree(*info.elements.at(tag));
-  element.properties.at(0).second = new string_tree(*info.element_type_names.at(tag));
+  reagent element = info.elements.at(tag);
   // End variant_type Special-cases
   return element;
 }
@@ -169,10 +163,8 @@ exclusive-container foo [
   y:number
 ]
 +parse: --- defining exclusive-container foo
-+parse:   element name: x
-+parse:   type: 1
-+parse:   element name: y
-+parse:   type: 1
++parse: element: x: number -- {"x": "number"}
++parse: element: y: number -- {"y": "number"}
 
 :(before "End Command Handlers")
 else if (command == "exclusive-container") {

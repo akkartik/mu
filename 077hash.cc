@@ -104,7 +104,7 @@ size_t hash_mu_container(size_t h, const reagent& r) {
     element.set_value(address+offset);
     h = hash(h, element);
 //?     cerr << i << ": " << h << '\n';
-    offset += size_of(info.elements.at(i));
+    offset += size_of(info.elements.at(i).type);
   }
   return h;
 }

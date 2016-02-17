@@ -6,12 +6,8 @@ type_ordinal point = put(Type_ordinal, "point", Next_type_ordinal++);
 get_or_insert(Type, point).size = 2;
 get(Type, point).kind = CONTAINER;
 get(Type, point).name = "point";
-get(Type, point).element_type_names.push_back(new string_tree("number"));
-get(Type, point).elements.push_back(new type_tree(number));
-get(Type, point).element_names.push_back("x");
-get(Type, point).element_type_names.push_back(new string_tree("number"));
-get(Type, point).elements.push_back(new type_tree(number));
-get(Type, point).element_names.push_back("y");
+get(Type, point).elements.push_back(reagent("x:number"));
+get(Type, point).elements.push_back(reagent("y:number"));
 
 //: Containers can be copied around with a single instruction just like
 //: numbers, no matter how large they are.
@@ -43,12 +39,8 @@ type_ordinal point_number = put(Type_ordinal, "point-number", Next_type_ordinal+
 get_or_insert(Type, point_number).size = 2;
 get(Type, point_number).kind = CONTAINER;
 get(Type, point_number).name = "point-number";
-get(Type, point_number).elements.push_back(new type_tree(point));
-get(Type, point_number).element_type_names.push_back(new string_tree("point"));
-get(Type, point_number).element_names.push_back("xy");
-get(Type, point_number).elements.push_back(new type_tree(number));
-get(Type, point_number).element_type_names.push_back(new string_tree("number"));
-get(Type, point_number).element_names.push_back("z");
+get(Type, point_number).elements.push_back(reagent("xy:point"));
+get(Type, point_number).elements.push_back(reagent("z:number"));
 
 :(scenario copy_handles_nested_container_elements)
 recipe main [
@@ -101,12 +93,12 @@ if (t.kind == CONTAINER) {
   long long int result = 0;
   for (long long int i = 0; i < SIZE(t.elements); ++i) {
     // todo: strengthen assertion to disallow mutual type recursion
-    if (t.elements.at(i)->value == type->value) {
+    if (t.elements.at(i).type->value == type->value) {
       raise_error << "container " << t.name << " can't include itself as a member\n" << end();
       return 0;
     }
     // End size_of(type) Container Cases
-    result += size_of(t.elements.at(i));
+    result += size_of(t.elements.at(i).type);
   }
   return result;
 }
@@ -185,7 +177,7 @@ case GET: {
   long long int src = base_address;
   for (long long int i = 0; i < offset; ++i) {
     // End GET field Cases
-    src += size_of(get(Type, base_type).elements.at(i));
+    src += size_of(get(Type, base_type).elements.at(i).type);
   }
   trace(9998, "run") << "address to copy is " << src << end();
   reagent tmp = element_type(base, offset);
@@ -202,11 +194,7 @@ const reagent element_type(const reagent& canonized_base, long long int offset_v
   assert(!get(Type, canonized_base.type->value).name.empty());
   const type_info& info = get(Type, canonized_base.type->value);
   assert(info.kind == CONTAINER);
-  reagent element;
-  element.name = info.element_names.at(offset_value);
-  element.type = new type_tree(*info.elements.at(offset_value));
-  element.properties.resize(1);
-  element.properties.at(0).second = new string_tree(*info.element_type_names.at(offset_value));
+  reagent element = info.elements.at(offset_value);
   // End element_type Special-cases
   return element;
 }
@@ -330,7 +318,7 @@ case GET_ADDRESS: {
   long long int result = base_address;
   for (long long int i = 0; i < offset; ++i) {
     // End GET_ADDRESS field Cases
-    result += size_of(get(Type, base_type).elements.at(i));
+    result += size_of(get(Type, base_type).elements.at(i).type);
   }
   trace(9998, "run") << "address to copy is " << result << end();
   products.resize(1);
@@ -380,10 +368,8 @@ container foo [
   y:number
 ]
 +parse: --- defining container foo
-+parse: element name: x
-+parse: type: 1
-+parse: element name: y
-+parse: type: 1
++parse: element: x: number -- {"x": "number"}
++parse: element: y: number -- {"y": "number"}
 
 :(scenario container_use_before_definition)
 container foo [
@@ -397,12 +383,15 @@ container bar [
 ]
 +parse: --- defining container foo
 +parse: type number: 1000
-+parse:   element name: x
-+parse:   type: 1
-+parse:   element name: y
-+parse:   type: 1001
++parse:   element: x: number -- {"x": "number"}
+# todo: brittle
+# type bar is unknown at this point, but we assign it a number
++parse:   element: y: ?1001 -- {"y": "bar"}
+# later type bar gets a definition
 +parse: --- defining container bar
 +parse: type number: 1001
++parse:   element: x: number -- {"x": "number"}
++parse:   element: y: number -- {"y": "number"}
 
 :(before "End Command Handlers")
 else if (command == "container") {
@@ -429,16 +418,13 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     skip_whitespace_and_comments(in);
     string element = next_word(in);
     if (element == "]") break;
-    istringstream inner(element);
-    info.element_names.push_back(slurp_until(inner, ':'));
-    trace(9993, "parse") << "  element name: " << info.element_names.back() << end();
-    info.element_type_names.push_back(parse_property_list(inner));
-    info.elements.push_back(new_type_tree_with_new_types_for_unknown(info.element_type_names.back(), info));
-    for (long long int i = 0; i < SIZE(info.elements); ++i)
-      trace(9993, "parse") << "  type: " << info.elements.at(i)->value << end();
+    info.elements.push_back(reagent(element));
+    // handle undefined types
+    delete info.elements.back().type;
+    info.elements.back().type = new_type_tree_with_new_types_for_unknown(info.elements.back().properties.at(0).second, info);
+    trace(9993, "parse") << "  element: " << debug_string(info.elements.back()) << end();
     // End Load Container Element Definition
   }
-  assert(SIZE(info.elements) == SIZE(info.element_names));
   info.size = SIZE(info.elements);
 }
 
@@ -499,10 +485,8 @@ for (long long int i = 0; i < SIZE(Recently_added_types); ++i) {
   if (!contains_key(Type, Recently_added_types.at(i))) continue;
   Type_ordinal.erase(get(Type, Recently_added_types.at(i)).name);
   // todo: why do I explicitly need to provide this?
-  for (long long int j = 0; j < SIZE(Type.at(Recently_added_types.at(i)).elements); ++j) {
-    delete Type.at(Recently_added_types.at(i)).elements.at(j);
-    delete Type.at(Recently_added_types.at(i)).element_type_names.at(j);
-  }
+  for (long long int j = 0; j < SIZE(Type.at(Recently_added_types.at(i)).elements); ++j)
+    Type.at(Recently_added_types.at(i)).elements.at(j).clear();
   Type.erase(Recently_added_types.at(i));
 }
 Recently_added_types.clear();
@@ -603,10 +587,8 @@ container foo [
   y:number
 ]
 +parse: --- defining container foo
-+parse: element name: x
-+parse: type: 1
-+parse: element name: y
-+parse: type: 1
++parse: element: x: number -- {"x": "number"}
++parse: element: y: number -- {"y": "number"}
 
 :(before "End Transform All")
 check_container_field_types();
@@ -617,7 +599,7 @@ void check_container_field_types() {
     const type_info& info = p->second;
     // Check Container Field Types(info)
     for (long long int i = 0; i < SIZE(info.elements); ++i)
-      check_invalid_types(info.elements.at(i), maybe(info.name), info.element_names.at(i));
+      check_invalid_types(info.elements.at(i).type, maybe(info.name), info.elements.at(i).name);
   }
 }
 

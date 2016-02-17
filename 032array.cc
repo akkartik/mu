@@ -134,14 +134,17 @@ container foo [
 +error: container 'foo' cannot determine size of element x
 
 :(before "End Load Container Element Definition")
-if (info.element_type_names.back()->value == "array") {
-  if (!info.element_type_names.back()->right) {
-    raise_error << "container '" << name << "' doesn't specify type of array elements for " << info.element_names.back() << '\n' << end();
-    continue;
-  }
-  if (!info.element_type_names.back()->right->right) {  // array has no length
-    raise_error << "container '" << name << "' cannot determine size of element " << info.element_names.back() << '\n' << end();
-    continue;
+{
+  const string_tree* type_name = info.elements.back().properties.at(0).second;
+  if (type_name->value == "array") {
+    if (!type_name->right) {
+      raise_error << "container '" << name << "' doesn't specify type of array elements for " << info.elements.back().name << '\n' << end();
+      continue;
+    }
+    if (!type_name->right->right) {  // array has no length
+      raise_error << "container '" << name << "' cannot determine size of element " << info.elements.back().name << '\n' << end();
+      continue;
+    }
   }
 }
 

@@ -148,10 +148,8 @@ void setup_types() {
 }
 void teardown_types() {
   for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
-    for (long long int i = 0; i < SIZE(p->second.elements); ++i) {
-      delete p->second.elements.at(i);
-      delete p->second.element_type_names.at(i);
-    }
+    for (long long int i = 0; i < SIZE(p->second.elements); ++i)
+      p->second.elements.clear();
   }
   Type_ordinal.clear();
 }
@@ -180,9 +178,7 @@ struct type_info {
   string name;
   kind_of_type kind;
   long long int size;  // only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)
-  vector<type_tree*> elements;
-  vector<string_tree*> element_type_names;
-  vector<string> element_names;
+  vector<reagent> elements;
   // End type_info Fields
   type_info() :kind(PRIMITIVE), size(0) {}
 };

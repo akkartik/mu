@@ -71,9 +71,9 @@ if (type->value >= START_TYPE_INGREDIENTS
   return;
 
 :(before "End size_of(type) Container Cases")
-if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
+if (t.elements.at(i).type->value >= START_TYPE_INGREDIENTS) {
   trace(9999, "type") << "checking size of type ingredient\n" << end();
-  long long int size = size_of_type_ingredient(t.elements.at(i), type->right);
+  long long int size = size_of_type_ingredient(t.elements.at(i).type, type->right);
   if (!size)
     raise_error << "illegal type '" << debug_string(type) << "' seems to be missing a type ingredient or three\n" << end();
   result += size;
@@ -100,9 +100,9 @@ recipe main [
 $mem: 7
 
 :(before "End size_of(type) Exclusive Container Cases")
-if (t.elements.at(i)->value >= START_TYPE_INGREDIENTS) {
+if (t.elements.at(i).type->value >= START_TYPE_INGREDIENTS) {
   trace(9999, "type") << "checking size of type ingredient\n" << end();
-  long long int size = size_of_type_ingredient(t.elements.at(i), type->right);
+  long long int size = size_of_type_ingredient(t.elements.at(i).type, type->right);
   if (!size)
     raise_error << "illegal type '" << debug_string(type) << "' seems to be missing a type ingredient or three\n" << end();
   if (size > result) result = size;
@@ -147,7 +147,7 @@ recipe main [
 +mem: storing 16 in location 2
 
 :(before "End GET field Cases")
-const type_tree* type = get(Type, base_type).elements.at(i);
+const type_tree* type = get(Type, base_type).elements.at(i).type;
 if (type->value >= START_TYPE_INGREDIENTS) {
   long long int size = size_of_type_ingredient(type, base.type->right);
   if (!size)
@@ -267,7 +267,7 @@ recipe main [
 +mem: storing 12 in location 1
 
 :(before "End GET_ADDRESS field Cases")
-const type_tree* type = get(Type, base_type).elements.at(i);
+const type_tree* type = get(Type, base_type).elements.at(i).type;
 if (type->value >= START_TYPE_INGREDIENTS) {
   long long int size = size_of_type_ingredient(type, base.type->right);
   if (!size)

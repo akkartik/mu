@@ -104,9 +104,8 @@ type_ordinal skip_addresses(type_tree* type, const string& recipe_name) {
 
 int find_element_name(const type_ordinal t, const string& name, const string& recipe_name) {
   const type_info& container = get(Type, t);
-  for (long long int i = 0; i < SIZE(container.element_names); ++i) {
-    if (container.element_names.at(i) == name) return i;
-  }
+  for (long long int i = 0; i < SIZE(container.elements); ++i)
+    if (container.elements.at(i).name == name) return i;
   raise_error << maybe(recipe_name) << "unknown element " << name << " in container " << get(Type, t).name << '\n' << end();
   return -1;
 }
