@@ -635,7 +635,7 @@ void check_invalid_types(const recipe_ordinal r) {
   }
 }
 
-void check_invalid_types(type_tree* type, const string& block, const string& name) {
+void check_invalid_types(const type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
   // End Container Type Checks
   if (type->value == 0) {
