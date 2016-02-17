@@ -811,6 +811,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
           return;
         }
         ++ingredient_index;
+        // ++state.data.top().container_element_index;  // unnecessary, but wouldn't do any harm
         do {
           state.data.pop();
           if (state.data.empty()) {
