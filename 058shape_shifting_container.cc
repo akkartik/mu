@@ -1,9 +1,7 @@
-//:: Container definitions can contain type parameters.
+//:: Container definitions can contain 'type ingredients'
 //:
-//: Extremely hacky initial implementation. We still don't support the full
-//: complexity of type trees inside container definitions. So for example you
-//: can't have a container element with this type:
-//:   (map (array address character) (list number))
+//: Incomplete implementation; see the pending test below. There may be
+//: others.
 
 :(scenario size_of_shape_shifting_container)
 container foo:_t [
@@ -19,6 +17,41 @@ recipe main [
 +mem: storing 14 in location 3
 +mem: storing 15 in location 4
 +mem: storing 16 in location 5
+
+:(scenario size_of_shape_shifting_container_2)
+# multiple type ingredients
+container foo:_a:_b [
+  x:_a
+  y:_b
+]
+recipe main [
+  1:foo:number:boolean <- merge 34, 1/true
+]
+
+:(scenario size_of_shape_shifting_container_3)
+container foo:_a:_b [
+  x:_a
+  y:_b
+]
+recipe main [
+  1:address:shared:array:character <- new [abc]
+  # compound types for type ingredients
+  {2: (foo number (address shared array character))} <- merge 34/x, 1:address:shared:array:character/y
+]
+
+:(scenario size_of_shape_shifting_container_4)
+container foo:_a:_b [
+  x:_a
+  y:_b
+]
+container bar:_a:_b [
+  # dilated element
+  {data: (foo _a (address shared _b))}
+]
+recipe main [
+  1:address:shared:array:character <- new [abc]
+  2:bar:number:array:character <- merge 34/x, 1:address:shared:array:character/y
+]
 
 :(before "End Globals")
 // We'll use large type ordinals to mean "the following type of the variable".
@@ -129,8 +162,8 @@ type_tree* type_ingredient(const type_tree* element_template, const type_tree* r
     if (!curr) return NULL;
   }
   assert(curr);
-  assert(!curr->left);  // unimplemented
-  if (!contains_key(Type, curr->value)) return NULL;
+  if (curr->left) curr = curr->left;
+  assert(curr->value > 0);
   trace(9999, "type") << "type deduced to be " << get(Type, curr->value).name << "$" << end();
   return new type_tree(*curr);
 }
@@ -210,27 +243,127 @@ void replace_type_ingredient(type_tree* element_type, string_tree* element_type_
     element_type->value = replacement->value;
     assert(!element_type->left);  // since value is set
     element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
-    assert(!element_type->right);  // unsupported
+    if (element_type->right) delete element_type->right;
     element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
     const string_tree* replacement_name = nth_type_name(callsite_type_name, type_ingredient_index);
     element_type_name->value = replacement_name->value;
     assert(!element_type_name->left);  // since value is set
     element_type_name->left = replacement_name->left ? new string_tree(*replacement_name->left) : NULL;
-    assert(!element_type_name->right);  // unsupported
+    if (element_type_name->right) delete element_type_name->right;
     element_type_name->right = replacement_name->right ? new string_tree(*replacement_name->right) : NULL;
   }
   replace_type_ingredient(element_type->right, element_type_name->right, callsite_type, callsite_type_name);
 }
 
+void test_replace_type_ingredient_entire() {
+  run("container foo:_elem [\n"
+      "  x:_elem\n"
+      "  y:number\n"
+      "]\n");
+  reagent callsite("x:foo:point");
+  reagent element = element_type(callsite, 0);
+  CHECK_EQ(element.name, "x");
+  CHECK_EQ(element.properties.at(0).second->value, "point");
+  CHECK(!element.properties.at(0).second->right);
+}
+
+void test_replace_type_ingredient_tail() {
+  run("container foo:_elem [\n"
+      "  x:_elem\n"
+      "]\n"
+      "container bar:_elem [\n"
+      "  x:foo:_elem\n"
+      "]\n");
+  reagent callsite("x:bar:point");
+  reagent element = element_type(callsite, 0);
+  CHECK_EQ(element.name, "x");
+  CHECK_EQ(element.properties.at(0).second->value, "foo");
+  CHECK_EQ(element.properties.at(0).second->right->value, "point");
+  CHECK(!element.properties.at(0).second->right->right);
+}
+
+void test_replace_type_ingredient_head_tail_multiple() {
+  run("container foo:_elem [\n"
+      "  x:_elem\n"
+      "]\n"
+      "container bar:_elem [\n"
+      "  x:foo:_elem\n"
+      "]\n");
+  reagent callsite("x:bar:address:shared:array:character");
+  reagent element = element_type(callsite, 0);
+  CHECK_EQ(element.name, "x");
+  CHECK_EQ(element.properties.at(0).second->value, "foo");
+  CHECK_EQ(element.properties.at(0).second->right->value, "address");
+  CHECK_EQ(element.properties.at(0).second->right->right->value, "shared");
+  CHECK_EQ(element.properties.at(0).second->right->right->right->value, "array");
+  CHECK_EQ(element.properties.at(0).second->right->right->right->right->value, "character");
+  CHECK(!element.properties.at(0).second->right->right->right->right->right);
+}
+
+//// generic containers can't yet have type ingredients at non-root position
+//// of an element definition
+void pending_test_replace_type_ingredient_head_middle() {  // not supported yet
+  run("container foo:_elem [\n"
+      "  x:_elem\n"
+      "]\n"
+      "container bar:_elem [\n"
+      "  x:foo:_elem:number\n"
+      "]\n");
+  reagent callsite("x:bar:address");
+  reagent element = element_type(callsite, 0);
+  CHECK_EQ(element.name, "x");
+  CHECK_EQ(element.properties.at(0).second->value, "foo");
+  CHECK_EQ(element.properties.at(0).second->right->value, "address");
+  CHECK_EQ(element.properties.at(0).second->right->right->value, "number");
+  CHECK(!element.properties.at(0).second->right->right->right);
+}
+
+void test_replace_last_type_ingredient_with_multiple() {
+  run("container foo:_a:_b [\n"
+      "  x:_a\n"
+      "  y:_b\n"
+      "]\n");
+  reagent callsite("{f: (foo number (address shared array character))}");
+  reagent element = element_type(callsite, 1);
+  CHECK_EQ(element.name, "y");
+  CHECK_EQ(element.properties.at(0).second->value, "address");
+  CHECK_EQ(element.properties.at(0).second->right->value, "shared");
+  CHECK_EQ(element.properties.at(0).second->right->right->value, "array");
+  CHECK_EQ(element.properties.at(0).second->right->right->right->value, "character");
+  CHECK(!element.properties.at(0).second->right->right->right->right);
+}
+
+void test_replace_middle_type_ingredient_with_multiple() {
+  run("container foo:_a:_b:_c [\n"
+      "  x:_a\n"
+      "  y:_b\n"
+      "  z:_c\n"
+      "]\n");
+  reagent callsite("{f: (foo number (address shared array character) boolean)}");
+  reagent element = element_type(callsite, 1);
+  CHECK_EQ(element.name, "y");
+  CHECK_EQ(element.properties.at(0).second->value, "address");
+  CHECK_EQ(element.properties.at(0).second->right->value, "shared");
+  CHECK_EQ(element.properties.at(0).second->right->right->value, "array");
+  CHECK_EQ(element.properties.at(0).second->right->right->right->value, "character");
+  CHECK(!element.properties.at(0).second->right->right->right->right);
+}
+
 const type_tree* nth_type(const type_tree* base, long long int n) {
   assert(n >= 0);
-  if (n == 0) return base;
+  if (n == 0) {
+    if (base && base->left) return base->left;
+    return base;
+  }
   return nth_type(base->right, n-1);
 }
 
 const string_tree* nth_type_name(const string_tree* base, long long int n) {
   assert(n >= 0);
-  if (n == 0) return base;
+  if (n == 0) {
+    if (base && base->left) return base->left;
+    return base;
+  }
   return nth_type_name(base->right, n-1);
 }
 
