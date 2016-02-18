@@ -1,7 +1,4 @@
 //:: Container definitions can contain 'type ingredients'
-//:
-//: Incomplete implementation; see the pending test below. There may be
-//: others.
 
 :(scenario size_of_shape_shifting_container)
 container foo:_t [
@@ -239,20 +236,43 @@ void replace_type_ingredient(type_tree* element_type, string_tree* element_type_
       return;
     }
     const long long int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
+    // update value/left/right of both element_type and element_type_name
     const type_tree* replacement = nth_type(callsite_type, type_ingredient_index);
     element_type->value = replacement->value;
     assert(!element_type->left);  // since value is set
     element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
-    if (element_type->right) delete element_type->right;
+    type_tree* old_right = element_type->right;
     element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
+    append(element_type->right, old_right);
     const string_tree* replacement_name = nth_type_name(callsite_type_name, type_ingredient_index);
     element_type_name->value = replacement_name->value;
     assert(!element_type_name->left);  // since value is set
     element_type_name->left = replacement_name->left ? new string_tree(*replacement_name->left) : NULL;
-    if (element_type_name->right) delete element_type_name->right;
+    string_tree* old_right_name = element_type_name->right;
     element_type_name->right = replacement_name->right ? new string_tree(*replacement_name->right) : NULL;
+    append(element_type_name->right, old_right_name);
   }
   replace_type_ingredient(element_type->right, element_type_name->right, callsite_type, callsite_type_name);
+}
+
+void append(type_tree*& base, type_tree* extra) {
+  if (!base) {
+    base = extra;
+    return;
+  }
+  type_tree* curr = base;
+  while (curr->right) curr = curr->right;
+  curr->right = extra;
+}
+
+void append(string_tree*& base, string_tree* extra) {
+  if (!base) {
+    base = extra;
+    return;
+  }
+  string_tree* curr = base;
+  while (curr->right) curr = curr->right;
+  curr->right = extra;
 }
 
 void test_replace_type_ingredient_entire() {
@@ -300,9 +320,7 @@ void test_replace_type_ingredient_head_tail_multiple() {
   CHECK(!element.properties.at(0).second->right->right->right->right->right);
 }
 
-//// generic containers can't yet have type ingredients at non-root position
-//// of an element definition
-void pending_test_replace_type_ingredient_head_middle() {  // not supported yet
+void test_replace_type_ingredient_head_middle() {
   run("container foo:_elem [\n"
       "  x:_elem\n"
       "]\n"
@@ -312,8 +330,11 @@ void pending_test_replace_type_ingredient_head_middle() {  // not supported yet
   reagent callsite("x:bar:address");
   reagent element = element_type(callsite, 0);
   CHECK_EQ(element.name, "x");
+  CHECK(element.properties.at(0).second)
   CHECK_EQ(element.properties.at(0).second->value, "foo");
+  CHECK(element.properties.at(0).second->right)
   CHECK_EQ(element.properties.at(0).second->right->value, "address");
+  CHECK(element.properties.at(0).second->right->right)
   CHECK_EQ(element.properties.at(0).second->right->right->value, "number");
   CHECK(!element.properties.at(0).second->right->right->right);
 }
