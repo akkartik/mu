@@ -228,7 +228,7 @@ bool contains_type_ingredient(const type_tree* type) {
   return contains_type_ingredient(type->left) || contains_type_ingredient(type->right);
 }
 
-// ugly and likely wrong; maybe avoid replacing in place?
+// todo: too complicated and likely incomplete; maybe avoid replacing in place? Maybe process element_type and element_type_name in separate functions?
 void replace_type_ingredients(type_tree* element_type, string_tree* element_type_name, const type_tree* callsite_type, const string_tree* callsite_type_name, const type_info& container_info) {
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
