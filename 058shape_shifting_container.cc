@@ -396,20 +396,18 @@ void test_replace_middle_type_ingredient_with_multiple() {
 
 const type_tree* nth_type(const type_tree* base, long long int n) {
   assert(n >= 0);
-  if (n == 0) {
-    if (base && base->left) return base->left;
-    return base;
-  }
-  return nth_type(base->right, n-1);
+  for (; n > 0; --n)
+    base = base->right;
+  if (base && base->left) return base->left;
+  return base;
 }
 
 const string_tree* nth_type_name(const string_tree* base, long long int n) {
   assert(n >= 0);
-  if (n == 0) {
-    if (base && base->left) return base->left;
-    return base;
-  }
-  return nth_type_name(base->right, n-1);
+  for (; n > 0; --n)
+    base = base->right;
+  if (base && base->left) return base->left;
+  return base;
 }
 
 bool has_nth_type(const type_tree* base, long long int n) {
