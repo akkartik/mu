@@ -292,6 +292,7 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
     replace_type_ingredients(old_right, old_right_name, callsite_type, callsite_type_name, container_info);
   }
   else {
+    replace_type_ingredients(element_type->left, element_type_name->left, callsite_type, callsite_type_name, container_info);
     replace_type_ingredients(element_type->right, element_type_name->right, callsite_type, callsite_type_name, container_info);
   }
 }
