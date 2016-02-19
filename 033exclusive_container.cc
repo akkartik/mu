@@ -36,8 +36,9 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
   // (So like containers, it can't contain arrays.)
   long long int result = 0;
   for (long long int i = 0; i < t.size; ++i) {
-    // End size_of(type) Exclusive Container Cases
-    long long int size = size_of(t.elements.at(i).type);
+    reagent tmp;
+    tmp.type = new type_tree(*type);
+    long long int size = size_of(variant_type(tmp, i));
     if (size > result) result = size;
   }
   // ...+1 for its tag.

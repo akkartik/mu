@@ -87,6 +87,10 @@ if (type->value == 0) {
   assert(!type->left && !type->right);
   return 1;
 }
+if (!contains_key(Type, type->value)) {
+  raise_error << "no such type " << type->value << '\n' << end();
+  return 0;
+}
 type_info t = get(Type, type->value);
 if (t.kind == CONTAINER) {
   // size of a container is the sum of the sizes of its elements
@@ -97,8 +101,9 @@ if (t.kind == CONTAINER) {
       raise_error << "container " << t.name << " can't include itself as a member\n" << end();
       return 0;
     }
-    // End size_of(type) Container Cases
-    result += size_of(t.elements.at(i).type);
+    reagent tmp;
+    tmp.type = new type_tree(*type);
+    result += size_of(element_type(tmp, i));
   }
   return result;
 }
@@ -177,7 +182,7 @@ case GET: {
   long long int src = base_address;
   for (long long int i = 0; i < offset; ++i) {
     // End GET field Cases
-    src += size_of(get(Type, base_type).elements.at(i).type);
+    src += size_of(element_type(base, i));
   }
   trace(9998, "run") << "address to copy is " << src << end();
   reagent tmp = element_type(base, offset);
@@ -318,7 +323,7 @@ case GET_ADDRESS: {
   long long int result = base_address;
   for (long long int i = 0; i < offset; ++i) {
     // End GET_ADDRESS field Cases
-    result += size_of(get(Type, base_type).elements.at(i).type);
+    result += size_of(element_type(base, i));
   }
   trace(9998, "run") << "address to copy is " << result << end();
   products.resize(1);
