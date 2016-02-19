@@ -219,7 +219,7 @@ recipe main [
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
     raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredients(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second->right);
+  replace_type_ingredients(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second->right, info);
 }
 
 :(code)
@@ -234,7 +234,7 @@ bool contains_type_ingredient(const type_tree* type) {
 }
 
 // ugly and likely wrong; maybe avoid replacing in place?
-void replace_type_ingredients(type_tree* element_type, string_tree* element_type_name, const type_tree* callsite_type, const string_tree* callsite_type_name) {
+void replace_type_ingredients(type_tree* element_type, string_tree* element_type_name, const type_tree* callsite_type, const string_tree* callsite_type_name, const type_info& container_info) {
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
   if (element_type->value >= START_TYPE_INGREDIENTS) {
@@ -245,24 +245,32 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
     }
     // update value/left/right of element_type
     const type_tree* replacement = NULL;
+    bool erase_right = false;
     {
       const type_tree* curr = callsite_type;
       for (long long int i = 0; i < type_ingredient_index; ++i)
         curr = curr->right;
-      if (curr && curr->left)
+      if (curr && curr->left) {
         replacement = curr->left;
-      else
+      }
+      else {
         replacement = curr;
+        if (!final_type_ingredient(type_ingredient_index, container_info))
+          erase_right = true;
+      }
     }
     element_type->value = replacement->value;
     assert(!element_type->left);  // since value is set
     element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
     type_tree* old_right = element_type->right;
-    element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
-    append(element_type->right, old_right);
+    if (!erase_right) {
+      element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
+      append(element_type->right, old_right);
+    }
 
     // analogously update value/left/right of element_type_name
     const string_tree* replacement_name = NULL;
+    // could compute erase_right again here, but why bother
     {
       const string_tree* curr = callsite_type_name;
       for (long long int i = 0; i < type_ingredient_index; ++i)
@@ -276,14 +284,25 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
     assert(!element_type_name->left);  // since value is set
     element_type_name->left = replacement_name->left ? new string_tree(*replacement_name->left) : NULL;
     string_tree* old_right_name = element_type_name->right;
-    element_type_name->right = replacement_name->right ? new string_tree(*replacement_name->right) : NULL;
-    append(element_type_name->right, old_right_name);
+    if (!erase_right) {
+      element_type_name->right = replacement_name->right ? new string_tree(*replacement_name->right) : NULL;
+      append(element_type_name->right, old_right_name);
+    }
 
-    replace_type_ingredients(old_right, old_right_name, callsite_type, callsite_type_name);
+    replace_type_ingredients(old_right, old_right_name, callsite_type, callsite_type_name, container_info);
   }
   else {
-    replace_type_ingredients(element_type->right, element_type_name->right, callsite_type, callsite_type_name);
+    replace_type_ingredients(element_type->right, element_type_name->right, callsite_type, callsite_type_name, container_info);
   }
+}
+
+bool final_type_ingredient(long long int type_ingredient_index, const type_info& container_info) {
+  for (map<string, type_ordinal>::const_iterator p = container_info.type_ingredient_names.begin();
+       p != container_info.type_ingredient_names.end();
+       ++p) {
+    if (p->second > START_TYPE_INGREDIENTS+type_ingredient_index) return false;
+  }
+  return true;
 }
 
 void append(type_tree*& base, type_tree* extra) {
@@ -557,5 +576,5 @@ recipe main [
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
     raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredients(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second->right);
+  replace_type_ingredients(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second->right, info);
 }
