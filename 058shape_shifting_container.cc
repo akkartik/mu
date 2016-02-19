@@ -396,17 +396,17 @@ void test_replace_last_type_ingredient_with_multiple() {
       "  y:_b\n"
       "]\n");
   reagent callsite("{f: (foo number (address shared array character))}");
-  reagent element = element_type(callsite, 0);
-  CHECK_EQ(element.name, "x");
-  CHECK_EQ(element.properties.at(0).second->value, "number");
-  CHECK(!element.properties.at(0).second->right);
-  element = element_type(callsite, 1);
-  CHECK_EQ(element.name, "y");
-  CHECK_EQ(element.properties.at(0).second->value, "address");
-  CHECK_EQ(element.properties.at(0).second->right->value, "shared");
-  CHECK_EQ(element.properties.at(0).second->right->right->value, "array");
-  CHECK_EQ(element.properties.at(0).second->right->right->right->value, "character");
-  CHECK(!element.properties.at(0).second->right->right->right->right);
+  reagent element1 = element_type(callsite, 0);
+  CHECK_EQ(element1.name, "x");
+  CHECK_EQ(element1.properties.at(0).second->value, "number");
+  CHECK(!element1.properties.at(0).second->right);
+  reagent element2 = element_type(callsite, 1);
+  CHECK_EQ(element2.name, "y");
+  CHECK_EQ(element2.properties.at(0).second->value, "address");
+  CHECK_EQ(element2.properties.at(0).second->right->value, "shared");
+  CHECK_EQ(element2.properties.at(0).second->right->right->value, "array");
+  CHECK_EQ(element2.properties.at(0).second->right->right->right->value, "character");
+  CHECK(!element2.properties.at(0).second->right->right->right->right);
 }
 
 void test_replace_middle_type_ingredient_with_multiple() {
@@ -416,21 +416,21 @@ void test_replace_middle_type_ingredient_with_multiple() {
       "  z:_c\n"
       "]\n");
   reagent callsite("{f: (foo number (address shared array character) boolean)}");
-  reagent element = element_type(callsite, 0);
-  CHECK_EQ(element.name, "x");
-  CHECK_EQ(element.properties.at(0).second->value, "number");
-  CHECK(!element.properties.at(0).second->right);
-  element = element_type(callsite, 1);
-  CHECK_EQ(element.name, "y");
-  CHECK_EQ(element.properties.at(0).second->value, "address");
-  CHECK_EQ(element.properties.at(0).second->right->value, "shared");
-  CHECK_EQ(element.properties.at(0).second->right->right->value, "array");
-  CHECK_EQ(element.properties.at(0).second->right->right->right->value, "character");
-  CHECK(!element.properties.at(0).second->right->right->right->right);
-  element = element_type(callsite, 2);
-  CHECK_EQ(element.name, "z");
-  CHECK_EQ(element.properties.at(0).second->value, "boolean");
-  CHECK(!element.properties.at(0).second->right);
+  reagent element1 = element_type(callsite, 0);
+  CHECK_EQ(element1.name, "x");
+  CHECK_EQ(element1.properties.at(0).second->value, "number");
+  CHECK(!element1.properties.at(0).second->right);
+  reagent element2 = element_type(callsite, 1);
+  CHECK_EQ(element2.name, "y");
+  CHECK_EQ(element2.properties.at(0).second->value, "address");
+  CHECK_EQ(element2.properties.at(0).second->right->value, "shared");
+  CHECK_EQ(element2.properties.at(0).second->right->right->value, "array");
+  CHECK_EQ(element2.properties.at(0).second->right->right->right->value, "character");
+  CHECK(!element2.properties.at(0).second->right->right->right->right);
+  reagent element3 = element_type(callsite, 2);
+  CHECK_EQ(element3.name, "z");
+  CHECK_EQ(element3.properties.at(0).second->value, "boolean");
+  CHECK(!element3.properties.at(0).second->right);
 }
 
 bool has_nth_type(const type_tree* base, long long int n) {

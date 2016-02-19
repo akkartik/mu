@@ -77,7 +77,7 @@ size_t hash_mu_string(size_t h, const reagent& r) {
 size_t hash_mu_array(size_t h, const reagent& r) {
   long long int size = get_or_insert(Memory, r.value);
   reagent elem = r;
-  drop_from_type(elem, "array");
+  delete elem.type;
   elem.type = new type_tree(*array_element(r.type));
   for (long long int i=0, address = r.value+1; i < size; ++i, address += size_of(elem)) {
     reagent tmp = elem;
