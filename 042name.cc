@@ -73,7 +73,7 @@ void transform_names(const recipe_ordinal r) {
 bool is_disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
   if (!x.type) {
     // End Null-type is_disqualified Exceptions
-    raise_error << maybe(recipe_name) << "missing type for " << x.original_string << " in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(recipe_name) << "missing type for " << x.original_string << " in '" << to_string(inst) << "'\n" << end();
     return true;
   }
   if (is_raw(x)) return true;
@@ -196,7 +196,7 @@ recipe main [
 // replace element names of containers with offsets
 if (inst.name == "get" || inst.name == "get-address") {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1)))
@@ -238,7 +238,7 @@ recipe main [
 // convert variant names of exclusive containers
 if (inst.name == "maybe-convert") {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << to_string(inst) << "'\n" << end();
     break;
   }
   assert(is_literal(inst.ingredients.at(1)));

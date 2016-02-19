@@ -56,7 +56,7 @@ void absolutize(reagent& x) {
   if (is_raw(x) || is_dummy(x)) return;
   if (x.name == "default-space") return;
   if (!x.initialized) {
-    raise_error << current_instruction().to_string() << ": reagent not initialized: " << x.original_string << '\n' << end();
+    raise_error << to_string(current_instruction()) << ": reagent not initialized: " << x.original_string << '\n' << end();
   }
   x.set_value(address(x.value, space_base(x)));
   x.properties.push_back(pair<string, string_tree*>("raw", NULL));
@@ -235,7 +235,7 @@ void try_reclaim_locals() {
 
 void rewrite_default_space_instruction(instruction& curr) {
   if (!curr.ingredients.empty())
-    raise_error << curr.to_string() << " can't take any ingredients\n" << end();
+    raise_error << to_string(curr) << " can't take any ingredients\n" << end();
   curr.name = "new";
   curr.ingredients.push_back(reagent("location:type"));
   curr.ingredients.push_back(reagent("number-of-locals:literal"));

@@ -301,7 +301,7 @@ void compute_type_names(recipe& variant) {
     save_or_deduce_type_name(variant.products.at(i), type_names, variant);
   for (long long int i = 0; i < SIZE(variant.steps); ++i) {
     instruction& inst = variant.steps.at(i);
-    trace(9993, "transform") << "  instruction: " << inst.to_string() << end();
+    trace(9993, "transform") << "  instruction: " << to_string(inst) << end();
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in)
       save_or_deduce_type_name(inst.ingredients.at(in), type_names, variant);
     for (long long int out = 0; out < SIZE(inst.products); ++out)
@@ -310,7 +310,7 @@ void compute_type_names(recipe& variant) {
 }
 
 void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name, const recipe& variant) {
-  trace(9994, "transform") << "    checking " << x.to_string() << ": " << debug_string(x.properties.at(0).second) << end();
+  trace(9994, "transform") << "    checking " << to_string(x) << ": " << debug_string(x.properties.at(0).second) << end();
   if (!x.properties.at(0).second && contains_key(type_name, x.name)) {
     x.properties.at(0).second = new string_tree(*get(type_name, x.name));
     trace(9994, "transform") << "    deducing type to " << debug_string(x.properties.at(0).second) << end();
@@ -374,7 +374,7 @@ void accumulate_type_ingredients(const string_tree* exemplar_type, const string_
     }
     else {
       if (!deeply_equal_types(get(mappings, exemplar_type->value), refinement_type)) {
-        raise_error << maybe(caller_recipe.name) << "no call found for '" << call_instruction.to_string() << "'\n" << end();
+        raise_error << maybe(caller_recipe.name) << "no call found for '" << to_string(call_instruction) << "'\n" << end();
 //?         cerr << exemplar_type->value << ": " << debug_string(get(mappings, exemplar_type->value)) << " vs " << debug_string(refinement_type) << '\n';
         *error = true;
         return;
@@ -404,7 +404,7 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const string
   // update its body
   for (long long int i = 0; i < SIZE(new_recipe.steps); ++i) {
     instruction& inst = new_recipe.steps.at(i);
-    trace(9993, "transform") << "replacing in instruction '" << inst.to_string() << "'" << end();
+    trace(9993, "transform") << "replacing in instruction '" << to_string(inst) << "'" << end();
     for (long long int j = 0; j < SIZE(inst.ingredients); ++j)
       replace_type_ingredients(inst.ingredients.at(j), mappings, new_recipe);
     for (long long int j = 0; j < SIZE(inst.products); ++j)
@@ -413,7 +413,7 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const string
     if (inst.name == "new" && inst.ingredients.at(0).properties.at(0).second->value != "literal-string") {
       string_tree* type_name = parse_string_tree(inst.ingredients.at(0).name);
       replace_type_ingredients(type_name, mappings);
-      inst.ingredients.at(0).name = type_name->to_string();
+      inst.ingredients.at(0).name = to_string(type_name);
       delete type_name;
     }
   }

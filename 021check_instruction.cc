@@ -23,7 +23,7 @@ void check_instruction(const recipe_ordinal r) {
       // Primitive Recipe Checks
       case COPY: {
         if (SIZE(inst.products) != SIZE(inst.ingredients)) {
-          raise_error << "ingredients and products should match in '" << inst.to_string() << "'\n" << end();
+          raise_error << "ingredients and products should match in '" << to_string(inst) << "'\n" << end();
           break;
         }
         for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {

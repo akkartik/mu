@@ -58,7 +58,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
           || !type->right->right->right
           || type->right->right->right->value != get(Type_ordinal, "location")
           || type->right->right->right->right) {
-        raise_error << "slot 0 should always have type address:shared:array:location, but is " << inst.products.at(j).to_string() << '\n' << end();
+        raise_error << "slot 0 should always have type address:shared:array:location, but is " << to_string(inst.products.at(j)) << '\n' << end();
         continue;
       }
       string_tree* s = property(inst.products.at(j), "names");
@@ -66,7 +66,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
         raise_error << "slot 0 requires a /names property in recipe " << get(Recipe, r).name << end();
         continue;
       }
-      if (s->right) raise_error << "slot 0 should have a single value in /names, but got " << inst.products.at(j).to_string() << '\n' << end();
+      if (s->right) raise_error << "slot 0 should have a single value in /names, but got " << to_string(inst.products.at(j)) << '\n' << end();
       const string& surrounding_recipe_name = s->value;
       if (surrounding_recipe_name.empty()) {
         raise_error << "slot 0 doesn't initialize its /names property in recipe " << get(Recipe, r).name << end();
@@ -112,7 +112,7 @@ long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe)
 long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_ordinal>& done, vector<recipe_ordinal>& path) {
   if (!Name[r].empty()) return Name[r][x.name];
   if (contains_key(done, r)) {
-    raise_error << "can't compute address of " << x.to_string() << " because " << end();
+    raise_error << "can't compute address of " << to_string(x) << " because " << end();
     for (long long int i = 1; i < SIZE(path); ++i) {
       raise_error << path.at(i-1) << " requires computing names of " << path.at(i) << '\n' << end();
     }

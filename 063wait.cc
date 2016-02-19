@@ -96,7 +96,7 @@ put(Recipe_ordinal, "wait-for-routine", WAIT_FOR_ROUTINE);
 :(before "End Primitive Recipe Checks")
 case WAIT_FOR_ROUTINE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'wait-for-routine' requires exactly one ingredient, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'wait-for-routine' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -108,7 +108,7 @@ case WAIT_FOR_ROUTINE: {
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_ROUTINE: {
   if (ingredients.at(0).at(0) == Current_routine->id) {
-    raise_error << maybe(current_recipe_name()) << "routine can't wait for itself! " << current_instruction().to_string() << '\n' << end();
+    raise_error << maybe(current_recipe_name()) << "routine can't wait for itself! " << to_string(current_instruction()) << '\n' << end();
     break;
   }
   Current_routine->state = WAITING;

@@ -61,7 +61,7 @@ void run_current_routine()
   {
     // Running One Instruction
     if (current_instruction().is_label) { ++current_step_index(); continue; }
-    trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << current_instruction().to_string() << end();
+    trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << to_string(current_instruction()) << end();
     if (get_or_insert(Memory, 0) != 0) {
       raise_error << "something wrote to location 0; this should never happen\n" << end();
       put(Memory, 0, 0);
@@ -86,7 +86,7 @@ void run_current_routine()
       }
     }
     if (SIZE(products) < SIZE(current_instruction().products)) {
-      raise_error << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << current_instruction().to_string() << '\n' << end();
+      raise_error << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << to_string(current_instruction()) << '\n' << end();
     }
     else {
       for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
@@ -267,7 +267,7 @@ vector<double> read_memory(reagent x) {
 
 void write_memory(reagent x, vector<double> data) {
   if (!x.type) {
-    raise_error << "can't write to " << x.to_string() << "; no type\n" << end();
+    raise_error << "can't write to " << to_string(x) << "; no type\n" << end();
     return;
   }
   if (is_dummy(x)) return;
@@ -275,7 +275,7 @@ void write_memory(reagent x, vector<double> data) {
   long long int base = x.value;
   if (base == 0) return;
   if (size_mismatch(x, data)) {
-    raise_error << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << current_instruction().to_string() << "'\n" << end();
+    raise_error << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << to_string(current_instruction()) << "'\n" << end();
     return;
   }
   // End write_memory(reagent x, long long int base) Special-cases

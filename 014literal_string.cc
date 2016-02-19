@@ -118,9 +118,9 @@ if (s.at(0) == '[') {
 //: Unlike other reagents, escape newlines in literal strings to make them
 //: more friendly to trace().
 
-:(after "string reagent::to_string()")
-  if (is_literal_string(*this))
-    return emit_literal_string(name);
+:(after "string to_string(const reagent& r)")
+  if (is_literal_string(r))
+    return emit_literal_string(r.name);
 
 :(code)
 bool is_literal_string(const reagent& x) {

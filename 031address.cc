@@ -25,7 +25,7 @@ recipe main [
 :(before "long long int base = x.value" following "void write_memory(reagent x, vector<double> data)")
 canonize(x);
 if (x.value == 0) {
-  raise_error << "can't write to location 0 in '" << current_instruction().to_string() << "'\n" << end();
+  raise_error << "can't write to location 0 in '" << to_string(current_instruction()) << "'\n" << end();
   return;
 }
 
@@ -91,7 +91,7 @@ if (!canonize_type(product)) continue;
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
     if (!r.type || r.type->value != get(Type_ordinal, "address")) {
-      raise_error << "can't lookup non-address: " << r.to_string() << ": " << debug_string(r.type) << '\n' << end();
+      raise_error << "can't lookup non-address: " << to_string(r) << ": " << debug_string(r.type) << '\n' << end();
       return false;
     }
     drop_from_type(r, "address");

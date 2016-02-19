@@ -594,7 +594,7 @@ put(Recipe_ordinal, "check-trace-count-for-label", CHECK_TRACE_COUNT_FOR_LABEL);
 :(before "End Primitive Recipe Checks")
 case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'check-trace-for-label' requires exactly two ingredients, but got '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'check-trace-for-label' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {

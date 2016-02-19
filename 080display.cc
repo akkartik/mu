@@ -100,7 +100,7 @@ put(Recipe_ordinal, "print-character-to-display", PRINT_CHARACTER_TO_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case PRINT_CHARACTER_TO_DISPLAY: {
   if (inst.ingredients.empty()) {
-    raise_error << maybe(get(Recipe, r).name) << "'print-character-to-display' requires at least one ingredient, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'print-character-to-display' requires at least one ingredient, but got " << to_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -186,7 +186,7 @@ put(Recipe_ordinal, "move-cursor-on-display", MOVE_CURSOR_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case MOVE_CURSOR_ON_DISPLAY: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'move-cursor-on-display' requires two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'move-cursor-on-display' requires two ingredients, but got " << to_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {

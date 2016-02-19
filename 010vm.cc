@@ -21,7 +21,6 @@ struct recipe {
   vector<instruction> steps;
   // End recipe Fields
   recipe();
-  string to_string() const;
 };
 
 :(before "struct recipe")
@@ -43,7 +42,6 @@ struct instruction {
   instruction();
   void clear();
   bool is_clear();
-  string to_string() const;
 };
 
 :(before "struct instruction")
@@ -65,7 +63,6 @@ struct reagent {
   reagent(const reagent& old);
   reagent& operator=(const reagent& old);
   void set_value(double v) { value = v; initialized = true; }
-  string to_string() const;
 };
 
 :(before "struct reagent")
@@ -102,7 +99,6 @@ struct string_tree {
   // advanced: tree containing strings
   string_tree(string_tree* l, string_tree* r) :left(l), right(r) {}
   // print as s-expression
-  string to_string() const;
 };
 
 :(before "End Globals")
@@ -354,13 +350,13 @@ reagent::reagent() :value(0), initialized(false), type(NULL) {
   properties.push_back(pair<string, string_tree*>("", NULL));
 }
 
-string reagent::to_string() const {
+string to_string(const reagent& r) {
   ostringstream out;
-  if (!properties.empty()) {
+  if (!r.properties.empty()) {
     out << "{";
-    for (long long int i = 0; i < SIZE(properties); ++i) {
+    for (long long int i = 0; i < SIZE(r.properties); ++i) {
       if (i > 0) out << ", ";
-      out << "\"" << properties.at(i).first << "\": " << debug_string(properties.at(i).second);
+      out << "\"" << r.properties.at(i).first << "\": " << debug_string(r.properties.at(i).second);
     }
     out << "}";
   }
@@ -369,7 +365,7 @@ string reagent::to_string() const {
 
 string debug_string(const reagent& x) {
   ostringstream out;
-  out << x.name << ": " << debug_string(x.type) << " -- " << x.to_string();
+  out << x.name << ": " << debug_string(x.type) << " -- " << to_string(x);
   return out.str();
 }
 
@@ -430,18 +426,18 @@ void dump_type_name(type_ordinal type, ostream& out) {
     out << "?" << type;
 }
 
-string instruction::to_string() const {
-  if (is_label) return label;
+string to_string(const instruction& inst) {
+  if (inst.is_label) return inst.label;
   ostringstream out;
-  for (long long int i = 0; i < SIZE(products); ++i) {
+  for (long long int i = 0; i < SIZE(inst.products); ++i) {
     if (i > 0) out << ", ";
-    out << products.at(i).original_string;
+    out << inst.products.at(i).original_string;
   }
-  if (!products.empty()) out << " <- ";
-  out << name << ' ';
-  for (long long int i = 0; i < SIZE(ingredients); ++i) {
+  if (!inst.products.empty()) out << " <- ";
+  out << inst.name << ' ';
+  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (i > 0) out << ", ";
-    out << ingredients.at(i).original_string;
+    out << inst.ingredients.at(i).original_string;
   }
   return out.str();
 }
@@ -452,7 +448,7 @@ string debug_string(const recipe& x) {
   // Begin debug_string(recipe x)
   for (long long int index = 0; index < SIZE(x.steps); ++index) {
     const instruction& inst = x.steps.at(index);
-    out << "inst: " << inst.to_string() << '\n';
+    out << "inst: " << to_string(inst) << '\n';
     out << "  ingredients\n";
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i)
       out << "    " << debug_string(inst.ingredients.at(i)) << '\n';
@@ -497,18 +493,18 @@ void dump_memory() {
   }
 }
 
-string recipe::to_string() const {
+string to_string(const recipe& r) {
   ostringstream out;
-  out << "recipe " << name << " [\n";
-  for (long long int i = 0; i < SIZE(steps); ++i)
-    out << "  " << steps.at(i).to_string() << '\n';
+  out << "recipe " << r.name << " [\n";
+  for (long long int i = 0; i < SIZE(r.steps); ++i)
+    out << "  " << to_string(r.steps.at(i)) << '\n';
   out << "]\n";
   return out.str();
 }
 
-string string_tree::to_string() const {
+string to_string(const string_tree* x) {
   ostringstream out;
-  dump(this, out);
+  dump(x, out);
   return out.str();
 }
 

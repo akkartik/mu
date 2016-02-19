@@ -81,7 +81,7 @@ put(Recipe_ordinal, "new", NEW);
 case NEW: {
   const recipe& caller = get(Recipe, r);
   if (inst.ingredients.empty() || SIZE(inst.ingredients) > 2) {
-    raise_error << maybe(caller.name) << "'new' requires one or two ingredients, but got " << inst.to_string() << '\n' << end();
+    raise_error << maybe(caller.name) << "'new' requires one or two ingredients, but got " << to_string(inst) << '\n' << end();
     break;
   }
   // End NEW Check Special-cases
@@ -95,7 +95,7 @@ case NEW: {
     break;
   }
   if (!product_of_new_is_valid(inst)) {
-    raise_error << maybe(caller.name) << "product of 'new' has incorrect type: " << inst.to_string() << '\n' << end();
+    raise_error << maybe(caller.name) << "product of 'new' has incorrect type: " << to_string(inst) << '\n' << end();
     break;
   }
   break;
@@ -301,7 +301,7 @@ put(Recipe_ordinal, "abandon", ABANDON);
 :(before "End Primitive Recipe Checks")
 case ABANDON: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'abandon' requires one ingredient, but got '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'abandon' requires one ingredient, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   reagent types = inst.ingredients.at(0);

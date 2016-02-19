@@ -15,7 +15,7 @@ put(Recipe_ordinal, "hash", HASH);
 :(before "End Primitive Recipe Checks")
 case HASH: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'hash' takes exactly one ingredient rather than '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'hash' takes exactly one ingredient rather than '" << to_string(inst) << "'\n" << end();
     break;
   }
   break;
@@ -363,7 +363,7 @@ put(Recipe_ordinal, "hash_old", HASH_OLD);
 :(before "End Primitive Recipe Checks")
 case HASH_OLD: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'hash_old' takes exactly one ingredient rather than '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'hash_old' takes exactly one ingredient rather than '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_string(inst.ingredients.at(0))) {

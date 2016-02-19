@@ -7,7 +7,7 @@ put(Recipe_ordinal, "equal", EQUAL);
 :(before "End Primitive Recipe Checks")
 case EQUAL: {
   if (SIZE(inst.ingredients) <= 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'equal' needs at least two ingredients to compare in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'equal' needs at least two ingredients to compare in '" << to_string(inst) << "'\n" << end();
     break;
   }
   break;
@@ -66,7 +66,7 @@ put(Recipe_ordinal, "greater-than", GREATER_THAN);
 :(before "End Primitive Recipe Checks")
 case GREATER_THAN: {
   if (SIZE(inst.ingredients) <= 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'greater-than' needs at least two ingredients to compare in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'greater-than' needs at least two ingredients to compare in '" << to_string(inst) << "'\n" << end();
     break;
   }
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
@@ -125,7 +125,7 @@ put(Recipe_ordinal, "lesser-than", LESSER_THAN);
 :(before "End Primitive Recipe Checks")
 case LESSER_THAN: {
   if (SIZE(inst.ingredients) <= 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'lesser-than' needs at least two ingredients to compare in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'lesser-than' needs at least two ingredients to compare in '" << to_string(inst) << "'\n" << end();
     break;
   }
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
@@ -184,7 +184,7 @@ put(Recipe_ordinal, "greater-or-equal", GREATER_OR_EQUAL);
 :(before "End Primitive Recipe Checks")
 case GREATER_OR_EQUAL: {
   if (SIZE(inst.ingredients) <= 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'greater-or-equal' needs at least two ingredients to compare in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'greater-or-equal' needs at least two ingredients to compare in '" << to_string(inst) << "'\n" << end();
     break;
   }
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
@@ -251,7 +251,7 @@ put(Recipe_ordinal, "lesser-or-equal", LESSER_OR_EQUAL);
 :(before "End Primitive Recipe Checks")
 case LESSER_OR_EQUAL: {
   if (SIZE(inst.ingredients) <= 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'lesser-or-equal' needs at least two ingredients to compare in '" << inst.to_string() << "'\n" << end();
+    raise_error << maybe(get(Recipe, r).name) << "'lesser-or-equal' needs at least two ingredients to compare in '" << to_string(inst) << "'\n" << end();
     break;
   }
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {

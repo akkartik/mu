@@ -243,9 +243,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       // primitive recipe
       if (inst.operation == GET_ADDRESS || inst.operation == INDEX_ADDRESS) {
         if (current_ingredient_name == original_ingredient_name)
-          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << inst.to_string() << "' because it's not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
         else
-          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << inst.to_string() << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
       }
     }
     else {
@@ -253,9 +253,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       if (!is_mu_address(current_ingredient)) return;  // making a copy is ok
       if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller)) {
         if (current_ingredient_name == original_ingredient_name)
-          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << inst.to_string() << "' because it's not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
         else
-          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << inst.to_string() << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
       }
     }
   }

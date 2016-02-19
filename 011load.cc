@@ -75,9 +75,9 @@ void slurp_body(istream& in, recipe& result) {
   instruction curr;
   while (next_instruction(in, &curr)) {
     // End Rewrite Instruction(curr, recipe result)
-    trace(9992, "load") << "after rewriting: " << curr.to_string() << end();
+    trace(9992, "load") << "after rewriting: " << to_string(curr) << end();
     if (!curr.is_clear()) {
-      curr.original_string = curr.to_string();
+      curr.original_string = to_string(curr);
       result.steps.push_back(curr);
     }
   }
@@ -140,10 +140,10 @@ bool next_instruction(istream& in, instruction* curr) {
   trace(9993, "parse") << "instruction: " << curr->name << end();
   trace(9993, "parse") << "  number of ingredients: " << SIZE(curr->ingredients) << end();
   for (vector<reagent>::iterator p = curr->ingredients.begin(); p != curr->ingredients.end(); ++p) {
-    trace(9993, "parse") << "  ingredient: " << p->to_string() << end();
+    trace(9993, "parse") << "  ingredient: " << to_string(*p) << end();
   }
   for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p) {
-    trace(9993, "parse") << "  product: " << p->to_string() << end();
+    trace(9993, "parse") << "  product: " << to_string(*p) << end();
   }
   if (!has_data(in)) {
     raise_error << "9: unbalanced '[' for recipe\n" << end();
