@@ -238,13 +238,22 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
   if (element_type->value >= START_TYPE_INGREDIENTS) {
-    if (!has_nth_type(callsite_type, element_type->value-START_TYPE_INGREDIENTS)) {
+    const long long int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
+    if (!has_nth_type(callsite_type, type_ingredient_index)) {
       raise_error << "illegal type '" << debug_string(callsite_type) << "' seems to be missing a type ingredient or three\n" << end();
       return;
     }
-    const long long int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
-    // update value/left/right of both element_type and element_type_name
-    const type_tree* replacement = nth_type(callsite_type, type_ingredient_index);
+    // update value/left/right of element_type
+    const type_tree* replacement = NULL;
+    {
+      const type_tree* curr = callsite_type;
+      for (long long int i = 0; i < type_ingredient_index; ++i)
+        curr = curr->right;
+      if (curr && curr->left)
+        replacement = curr->left;
+      else
+        replacement = curr;
+    }
     element_type->value = replacement->value;
     assert(!element_type->left);  // since value is set
     element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
@@ -252,7 +261,17 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
     element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
     append(element_type->right, old_right);
 
-    const string_tree* replacement_name = nth_type_name(callsite_type_name, type_ingredient_index);
+    // analogously update value/left/right of element_type_name
+    const string_tree* replacement_name = NULL;
+    {
+      const string_tree* curr = callsite_type_name;
+      for (long long int i = 0; i < type_ingredient_index; ++i)
+        curr = curr->right;
+      if (curr && curr->left)
+        replacement_name = curr->left;
+      else
+        replacement_name = curr;
+    }
     element_type_name->value = replacement_name->value;
     assert(!element_type_name->left);  // since value is set
     element_type_name->left = replacement_name->left ? new string_tree(*replacement_name->left) : NULL;
@@ -392,22 +411,6 @@ void test_replace_middle_type_ingredient_with_multiple() {
   CHECK_EQ(element.name, "z");
   CHECK_EQ(element.properties.at(0).second->value, "boolean");
   CHECK(!element.properties.at(0).second->right);
-}
-
-const type_tree* nth_type(const type_tree* base, long long int n) {
-  assert(n >= 0);
-  for (; n > 0; --n)
-    base = base->right;
-  if (base && base->left) return base->left;
-  return base;
-}
-
-const string_tree* nth_type_name(const string_tree* base, long long int n) {
-  assert(n >= 0);
-  for (; n > 0; --n)
-    base = base->right;
-  if (base && base->left) return base->left;
-  return base;
 }
 
 bool has_nth_type(const type_tree* base, long long int n) {
