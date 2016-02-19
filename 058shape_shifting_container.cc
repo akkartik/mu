@@ -233,6 +233,7 @@ bool contains_type_ingredient(const type_tree* type) {
   return contains_type_ingredient(type->left) || contains_type_ingredient(type->right);
 }
 
+// ugly and likely wrong; maybe avoid replacing in place?
 void replace_type_ingredients(type_tree* element_type, string_tree* element_type_name, const type_tree* callsite_type, const string_tree* callsite_type_name) {
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
@@ -250,6 +251,7 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
     type_tree* old_right = element_type->right;
     element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
     append(element_type->right, old_right);
+
     const string_tree* replacement_name = nth_type_name(callsite_type_name, type_ingredient_index);
     element_type_name->value = replacement_name->value;
     assert(!element_type_name->left);  // since value is set
@@ -257,8 +259,12 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
     string_tree* old_right_name = element_type_name->right;
     element_type_name->right = replacement_name->right ? new string_tree(*replacement_name->right) : NULL;
     append(element_type_name->right, old_right_name);
+
+    replace_type_ingredients(old_right, old_right_name, callsite_type, callsite_type_name);
   }
-  replace_type_ingredients(element_type->right, element_type_name->right, callsite_type, callsite_type_name);
+  else {
+    replace_type_ingredients(element_type->right, element_type_name->right, callsite_type, callsite_type_name);
+  }
 }
 
 void append(type_tree*& base, type_tree* extra) {
