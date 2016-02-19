@@ -16,6 +16,7 @@ recipe main [
 +mem: storing 16 in location 5
 
 :(scenario size_of_shape_shifting_container_2)
+% Hide_errors = true;
 # multiple type ingredients
 container foo:_a:_b [
   x:_a
@@ -24,8 +25,10 @@ container foo:_a:_b [
 recipe main [
   1:foo:number:boolean <- merge 34, 1/true
 ]
+$error: 0
 
 :(scenario size_of_shape_shifting_container_3)
+% Hide_errors = true;
 container foo:_a:_b [
   x:_a
   y:_b
@@ -35,8 +38,10 @@ recipe main [
   # compound types for type ingredients
   {2: (foo number (address shared array character))} <- merge 34/x, 1:address:shared:array:character/y
 ]
+$error: 0
 
 :(scenario size_of_shape_shifting_container_4)
+% Hide_errors = true;
 container foo:_a:_b [
   x:_a
   y:_b
@@ -49,6 +54,7 @@ recipe main [
   1:address:shared:array:character <- new [abc]
   2:bar:number:array:character <- merge 34/x, 1:address:shared:array:character/y
 ]
+$error: 0
 
 :(before "End Globals")
 // We'll use large type ordinals to mean "the following type of the variable".
@@ -345,7 +351,11 @@ void test_replace_last_type_ingredient_with_multiple() {
       "  y:_b\n"
       "]\n");
   reagent callsite("{f: (foo number (address shared array character))}");
-  reagent element = element_type(callsite, 1);
+  reagent element = element_type(callsite, 0);
+  CHECK_EQ(element.name, "x");
+  CHECK_EQ(element.properties.at(0).second->value, "number");
+  CHECK(!element.properties.at(0).second->right);
+  element = element_type(callsite, 1);
   CHECK_EQ(element.name, "y");
   CHECK_EQ(element.properties.at(0).second->value, "address");
   CHECK_EQ(element.properties.at(0).second->right->value, "shared");
@@ -361,13 +371,21 @@ void test_replace_middle_type_ingredient_with_multiple() {
       "  z:_c\n"
       "]\n");
   reagent callsite("{f: (foo number (address shared array character) boolean)}");
-  reagent element = element_type(callsite, 1);
+  reagent element = element_type(callsite, 0);
+  CHECK_EQ(element.name, "x");
+  CHECK_EQ(element.properties.at(0).second->value, "number");
+  CHECK(!element.properties.at(0).second->right);
+  element = element_type(callsite, 1);
   CHECK_EQ(element.name, "y");
   CHECK_EQ(element.properties.at(0).second->value, "address");
   CHECK_EQ(element.properties.at(0).second->right->value, "shared");
   CHECK_EQ(element.properties.at(0).second->right->right->value, "array");
   CHECK_EQ(element.properties.at(0).second->right->right->right->value, "character");
   CHECK(!element.properties.at(0).second->right->right->right->right);
+  element = element_type(callsite, 2);
+  CHECK_EQ(element.name, "z");
+  CHECK_EQ(element.properties.at(0).second->value, "boolean");
+  CHECK(!element.properties.at(0).second->right);
 }
 
 const type_tree* nth_type(const type_tree* base, long long int n) {
