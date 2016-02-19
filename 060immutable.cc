@@ -343,6 +343,6 @@ if (has_property(current_ingredient, "contained-in")) {
   if (tmp->left || tmp->right
       || !is_present_in_ingredients(caller, tmp->value)
       || !is_present_in_products(caller, tmp->value))
-    raise_error << maybe(caller.name) << "contained-in can only point to another ingredient+product, but got " << debug_string(property(current_ingredient, "contained-in")) << '\n' << end();
+    raise_error << maybe(caller.name) << "contained-in can only point to another ingredient+product, but got " << to_string(property(current_ingredient, "contained-in")) << '\n' << end();
   continue;
 }

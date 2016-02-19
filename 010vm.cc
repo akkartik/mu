@@ -401,6 +401,8 @@ void dump_memory() {
 //: Use to_string() in trace(), and try to avoid relying on unstable codes that
 //: will perturb .traces/ from commit to commit.
 //: Use debug_string() while debugging, and throw everything into it.
+//: Use inspect() only for emitting a canonical format that can be parsed back
+//: into the value.
 
 string to_string(const recipe& r) {
   ostringstream out;
@@ -450,7 +452,7 @@ string to_string(const reagent& r) {
     out << "{";
     for (long long int i = 0; i < SIZE(r.properties); ++i) {
       if (i > 0) out << ", ";
-      out << "\"" << r.properties.at(i).first << "\": " << debug_string(r.properties.at(i).second);
+      out << "\"" << r.properties.at(i).first << "\": " << to_string(r.properties.at(i).second);
     }
     out << "}";
   }
@@ -463,9 +465,36 @@ string debug_string(const reagent& x) {
   return out.str();
 }
 
-string to_string(const string_tree* x) {
+string inspect(const string_tree* x) {
   ostringstream out;
-  dump(x, out);
+  dump_inspect(x, out);
+  return out.str();
+}
+
+void dump_inspect(const string_tree* x, ostream& out) {
+  if (!x->left && !x->right) {
+    out << x->value;
+    return;
+  }
+  out << '(';
+  for (const string_tree* curr = x; curr; curr = curr->right) {
+    if (curr != x) out << ' ';
+    if (curr->left)
+      dump_inspect(curr->left, out);
+    else
+      out << curr->value;
+  }
+  out << ')';
+}
+
+string to_string(const string_tree* property) {
+  if (!property) return "()";
+  ostringstream out;
+  if (!property->left && !property->right)
+    // abbreviate a single-node tree to just its contents
+    out << '"' << property->value << '"';
+  else
+    dump(property, out);
   return out.str();
 }
 
@@ -479,33 +508,6 @@ void dump(const string_tree* x, ostream& out) {
     if (curr != x) out << ' ';
     if (curr->left)
       dump(curr->left, out);
-    else
-      out << curr->value;
-  }
-  out << ')';
-}
-
-string debug_string(const string_tree* property) {
-  if (!property) return "()";
-  ostringstream out;
-  if (!property->left && !property->right)
-    // abbreviate a single-node tree to just its contents
-    out << '"' << property->value << '"';
-  else
-    dump_debug(property, out);
-  return out.str();
-}
-
-void dump_debug(const string_tree* x, ostream& out) {
-  if (!x->left && !x->right) {
-    out << x->value;
-    return;
-  }
-  out << '(';
-  for (const string_tree* curr = x; curr; curr = curr->right) {
-    if (curr != x) out << ' ';
-    if (curr->left)
-      dump_debug(curr->left, out);
     else
       out << '"' << curr->value << '"';
   }

@@ -310,10 +310,10 @@ void compute_type_names(recipe& variant) {
 }
 
 void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name, const recipe& variant) {
-  trace(9994, "transform") << "    checking " << to_string(x) << ": " << debug_string(x.properties.at(0).second) << end();
+  trace(9994, "transform") << "    checking " << to_string(x) << ": " << to_string(x.properties.at(0).second) << end();
   if (!x.properties.at(0).second && contains_key(type_name, x.name)) {
     x.properties.at(0).second = new string_tree(*get(type_name, x.name));
-    trace(9994, "transform") << "    deducing type to " << debug_string(x.properties.at(0).second) << end();
+    trace(9994, "transform") << "    deducing type to " << to_string(x.properties.at(0).second) << end();
     return;
   }
   if (!x.properties.at(0).second) {
@@ -323,7 +323,7 @@ void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name, 
   if (contains_key(type_name, x.name)) return;
   if (x.properties.at(0).second->value == "offset" || x.properties.at(0).second->value == "variant") return;  // special-case for container-access instructions
   put(type_name, x.name, x.properties.at(0).second);
-  trace(9993, "transform") << "type of " << x.name << " is " << debug_string(x.properties.at(0).second) << end();
+  trace(9993, "transform") << "type of " << x.name << " is " << to_string(x.properties.at(0).second) << end();
 }
 
 void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, const string_tree*>& mappings, const recipe& caller_recipe, bool* error) {
@@ -369,7 +369,7 @@ void accumulate_type_ingredients(const string_tree* exemplar_type, const string_
       return;
     }
     if (!contains_key(mappings, exemplar_type->value)) {
-      trace(9993, "transform") << "adding mapping from " << exemplar_type->value << " to " << debug_string(refinement_type) << end();
+      trace(9993, "transform") << "adding mapping from " << exemplar_type->value << " to " << to_string(refinement_type) << end();
       put(mappings, exemplar_type->value, new string_tree(*refinement_type));
     }
     else {
@@ -413,7 +413,7 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const string
     if (inst.name == "new" && inst.ingredients.at(0).properties.at(0).second->value != "literal-string") {
       string_tree* type_name = parse_string_tree(inst.ingredients.at(0).name);
       replace_type_ingredients(type_name, mappings);
-      inst.ingredients.at(0).name = to_string(type_name);
+      inst.ingredients.at(0).name = inspect(type_name);
       delete type_name;
     }
   }
@@ -438,7 +438,7 @@ void replace_type_ingredients(string_tree* type, const map<string, const string_
   if (!type) return;
   if (is_type_ingredient_name(type->value) && contains_key(mappings, type->value)) {
     const string_tree* replacement = get(mappings, type->value);
-    trace(9993, "transform") << type->value << " => " << debug_string(replacement) << end();
+    trace(9993, "transform") << type->value << " => " << to_string(replacement) << end();
     if (replacement->value == "literal")
       type->value = "number";
     else
