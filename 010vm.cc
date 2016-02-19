@@ -492,19 +492,19 @@ string debug_string(const string_tree* property) {
     // abbreviate a single-node tree to just its contents
     out << '"' << property->value << '"';
   else
-    dump_property_tree(property, out);
+    dump_debug(property, out);
   return out.str();
 }
 
-void dump_property_tree(const string_tree* property, ostream& out) {
+void dump_debug(const string_tree* property, ostream& out) {
   out << "<";
   if (property->left)
-    dump_property_tree(property->left, out);
+    dump_debug(property->left, out);
   else
     out << '"' << property->value << '"';
   out << " : ";
   if (property->right)
-    dump_property_tree(property->right, out);
+    dump_debug(property->right, out);
   else
     out << "<>";
   out << ">";
@@ -515,27 +515,27 @@ string debug_string(const type_tree* type) {
   if (!type) return "NULLNULLNULL";  // should never happen
   ostringstream out;
   if (!type->left && !type->right)
-    dump_type_name(type->value, out);
+    dump(type->value, out);
   else
-    dump_types_tree(type, out);
+    dump_debug(type, out);
   return out.str();
 }
 
-void dump_types_tree(const type_tree* type, ostream& out) {
+void dump_debug(const type_tree* type, ostream& out) {
   out << "<";
   if (type->left)
-    dump_types_tree(type->left, out);
+    dump_debug(type->left, out);
   else
-    dump_type_name(type->value, out);
+    dump(type->value, out);
   out << " : ";
   if (type->right)
-    dump_types_tree(type->right, out);
+    dump_debug(type->right, out);
   else
     out << "<>";
   out << ">";
 }
 
-void dump_type_name(type_ordinal type, ostream& out) {
+void dump(type_ordinal type, ostream& out) {
   if (contains_key(Type, type))
     out << get(Type, type).name;
   else
