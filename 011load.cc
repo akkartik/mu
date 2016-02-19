@@ -321,7 +321,7 @@ recipe main [
   1:number <- copy 23/foo:bar:baz
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal", "foo": <"bar" : <"baz" : <>>>}
++parse:   ingredient: {"23": "literal", "foo": ("bar" "baz")}
 +parse:   product: {"1": "number"}
 
 :(scenario parse_multiple_products)
@@ -351,13 +351,13 @@ recipe main [
 +parse:   ingredient: {"23": "literal"}
 +parse:   ingredient: {"4": "number"}
 +parse:   product: {"1": "number"}
-+parse:   product: {"2": <"address" : <"number" : <>>>}
++parse:   product: {"2": ("address" "number")}
 
 :(scenario parse_properties)
 recipe main [
-  1:number:address/lookup <- copy 23
+  1:address:number/lookup <- copy 23
 ]
-+parse:   product: {"1": <"number" : <"address" : <>>>, "lookup": <>}
++parse:   product: {"1": ("address" "number"), "lookup": ()}
 
 //: this test we can't represent with a scenario
 :(code)

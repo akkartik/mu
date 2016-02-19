@@ -7,7 +7,7 @@
 recipe main [
   {1: number, foo: (bar (baz quux))} <- copy 34
 ]
-+parse:   product: {"1": "number", "foo": <"bar" : <<"baz" : <"quux" : <>>> : <>>>}
++parse:   product: {"1": "number", "foo": ("bar" ("baz" "quux"))}
 
 :(before "End Parsing Reagent Property(value)")
 value = parse_string_tree(value);
@@ -65,7 +65,7 @@ container foo [
 ]
 container bar [
 ]
-+parse:   product: {"1": <"foo" : <<"address" : <"array" : <"character" : <>>>> : <<"bar" : <"number" : <>>> : <>>>>}
++parse:   product: {"1": ("foo" ("address" "array" "character") ("bar" "number"))}
 
 //: an exception is 'new', which takes a type tree as its ingredient *value*
 
@@ -73,7 +73,7 @@ container bar [
 recipe main [
   x:address:shared:address:number <- new {(address number): type}
 ]
-+new: size of <"address" : <"number" : <>>> is 1
++new: size of ("address" "number") is 1
 
 :(before "End Post-processing(expected_product) When Checking 'new'")
 expected_product.properties.at(0).second = parse_string_tree(expected_product.properties.at(0).second);

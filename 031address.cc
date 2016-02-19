@@ -194,7 +194,7 @@ recipe main [
   2:number <- copy 34
   3:number <- copy *1:address:number
 ]
-+parse: ingredient: {"1": <"address" : <"number" : <>>>, "lookup": <>}
++parse: ingredient: {"1": ("address" "number"), "lookup": ()}
 +mem: storing 34 in location 3
 
 :(before "End Parsing reagent")

@@ -172,7 +172,7 @@ recipe main [
 +parse: instruction: copy
 +parse:   number of ingredients: 1
 +parse:   ingredient: {"abc": "literal-string"}
-+parse:   product: {"1": <"address" : <"array" : <"character" : <>>>>}
++parse:   product: {"1": ("address" "array" "character")}
 
 :(scenario string_literal_escapes_newlines_in_trace)
 recipe main [

@@ -486,7 +486,7 @@ void dump(const string_tree* x, ostream& out) {
 }
 
 string debug_string(const string_tree* property) {
-  if (!property) return "<>";
+  if (!property) return "()";
   ostringstream out;
   if (!property->left && !property->right)
     // abbreviate a single-node tree to just its contents
@@ -496,18 +496,20 @@ string debug_string(const string_tree* property) {
   return out.str();
 }
 
-void dump_debug(const string_tree* property, ostream& out) {
-  out << "<";
-  if (property->left)
-    dump_debug(property->left, out);
-  else
-    out << '"' << property->value << '"';
-  out << " : ";
-  if (property->right)
-    dump_debug(property->right, out);
-  else
-    out << "<>";
-  out << ">";
+void dump_debug(const string_tree* x, ostream& out) {
+  if (!x->left && !x->right) {
+    out << x->value;
+    return;
+  }
+  out << '(';
+  for (const string_tree* curr = x; curr; curr = curr->right) {
+    if (curr != x) out << ' ';
+    if (curr->left)
+      dump_debug(curr->left, out);
+    else
+      out << '"' << curr->value << '"';
+  }
+  out << ')';
 }
 
 string debug_string(const type_tree* type) {
