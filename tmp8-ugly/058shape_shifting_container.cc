@@ -265,14 +265,12 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
     const type_tree* curr = callsite_type;
     for (long long int i = 0; i < type_ingredient_index; ++i)
       curr = curr->right;
-    if (curr && curr->left) {
+    if (!curr || !curr->left)
+      splice_right = final_type_ingredient(type_ingredient_index, container_info);
+    if (curr && curr->left)
       replacement = curr->left;
-    }
-    else {
+    else
       replacement = curr;
-      if (!final_type_ingredient(type_ingredient_index, container_info))
-        splice_right = false;
-    }
   }
   element_type->value = replacement->value;
   assert(!element_type->left);  // since value is set

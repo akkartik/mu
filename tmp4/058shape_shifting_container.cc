@@ -260,7 +260,7 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
   // B. replace the current location
   // B1. update value/left/right of element_type
   const type_tree* replacement = NULL;
-  bool splice_right = true ;
+  bool erase_right = false;
   {
     const type_tree* curr = callsite_type;
     for (long long int i = 0; i < type_ingredient_index; ++i)
@@ -271,13 +271,13 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
     else {
       replacement = curr;
       if (!final_type_ingredient(type_ingredient_index, container_info))
-        splice_right = false;
+        erase_right = true;
     }
   }
   element_type->value = replacement->value;
   assert(!element_type->left);  // since value is set
   element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
-  if (splice_right) {
+  if (!erase_right) {
     type_tree* old_right = element_type->right;
     element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
     append(element_type->right, old_right);
@@ -286,7 +286,7 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
   // B2. update value/left/right of element_type_name
   if (!callsite_type_name || !element_type_name) return;
   const string_tree* replacement_name = NULL;
-  // could compute splice_right again here, but why bother
+  // could compute erase_right again here, but why bother
   {
     const string_tree* curr = callsite_type_name;
     for (long long int i = 0; i < type_ingredient_index; ++i)
@@ -299,7 +299,7 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
   element_type_name->value = replacement_name->value;
   assert(!element_type_name->left);  // since value is set
   element_type_name->left = replacement_name->left ? new string_tree(*replacement_name->left) : NULL;
-  if (splice_right) {
+  if (!erase_right) {
     string_tree* old_right = element_type_name->right;
     element_type_name->right = replacement_name->right ? new string_tree(*replacement_name->right) : NULL;
     append(element_type_name->right, old_right);
