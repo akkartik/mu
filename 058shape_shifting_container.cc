@@ -210,6 +210,19 @@ recipe main [
 ]
 +mem: storing 17 in location 2
 
+:(scenario get_on_complex_shape_shifting_container)
+container foo:_a:_b [
+  x:_a
+  y:_b
+]
+recipe main [
+  1:address:shared:array:character <- new [abc]
+  {2: (foo number (address shared array character))} <- merge 34/x, 1:address:shared:array:character/y
+  3:address:shared:array:character <- get {2: (foo number (address shared array character))}, y:offset
+  4:boolean <- equal 1:address:shared:array:character, 3:address:shared:array:character
+]
++mem: storing 1 in location 4
+
 :(before "End element_type Special-cases")
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
