@@ -350,6 +350,100 @@ reagent::reagent() :value(0), initialized(false), type(NULL) {
   properties.push_back(pair<string, string_tree*>("", NULL));
 }
 
+string slurp_until(istream& in, char delim) {
+  ostringstream out;
+  char c;
+  while (in >> c) {
+    if (c == delim) {
+      // drop the delim
+      break;
+    }
+    out << c;
+  }
+  return out.str();
+}
+
+bool has_property(reagent x, string name) {
+  for (long long int i = /*skip name:type*/1; i < SIZE(x.properties); ++i) {
+    if (x.properties.at(i).first == name) return true;
+  }
+  return false;
+}
+
+string_tree* property(const reagent& r, const string& name) {
+  for (long long int p = /*skip name:type*/1; p != SIZE(r.properties); ++p) {
+    if (r.properties.at(p).first == name)
+      return r.properties.at(p).second;
+  }
+  return NULL;
+}
+
+:(before "End Globals")
+const string Ignore(",");  // commas are ignored in mu except within [] strings
+:(code)
+void skip_whitespace_but_not_newline(istream& in) {
+  while (true) {
+    if (!has_data(in)) break;
+    else if (in.peek() == '\n') break;
+    else if (isspace(in.peek())) in.get();
+    else if (Ignore.find(in.peek()) != string::npos) in.get();
+    else break;
+  }
+}
+
+void dump_memory() {
+  for (map<long long int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
+    cout << p->first << ": " << no_scientific(p->second) << '\n';
+  }
+}
+
+//:: Helpers for converting various values to string
+//: Use to_string() in trace(), and try to avoid relying on unstable codes that
+//: will perturb .traces/ from commit to commit.
+//: Use debug_string() while debugging, and throw everything into it.
+
+string to_string(const recipe& r) {
+  ostringstream out;
+  out << "recipe " << r.name << " [\n";
+  for (long long int i = 0; i < SIZE(r.steps); ++i)
+    out << "  " << to_string(r.steps.at(i)) << '\n';
+  out << "]\n";
+  return out.str();
+}
+
+string debug_string(const recipe& x) {
+  ostringstream out;
+  out << "- recipe " << x.name << '\n';
+  // Begin debug_string(recipe x)
+  for (long long int index = 0; index < SIZE(x.steps); ++index) {
+    const instruction& inst = x.steps.at(index);
+    out << "inst: " << to_string(inst) << '\n';
+    out << "  ingredients\n";
+    for (long long int i = 0; i < SIZE(inst.ingredients); ++i)
+      out << "    " << debug_string(inst.ingredients.at(i)) << '\n';
+    out << "  products\n";
+    for (long long int i = 0; i < SIZE(inst.products); ++i)
+      out << "    " << debug_string(inst.products.at(i)) << '\n';
+  }
+  return out.str();
+}
+
+string to_string(const instruction& inst) {
+  if (inst.is_label) return inst.label;
+  ostringstream out;
+  for (long long int i = 0; i < SIZE(inst.products); ++i) {
+    if (i > 0) out << ", ";
+    out << inst.products.at(i).original_string;
+  }
+  if (!inst.products.empty()) out << " <- ";
+  out << inst.name << ' ';
+  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+    if (i > 0) out << ", ";
+    out << inst.ingredients.at(i).original_string;
+  }
+  return out.str();
+}
+
 string to_string(const reagent& r) {
   ostringstream out;
   if (!r.properties.empty()) {
@@ -367,6 +461,28 @@ string debug_string(const reagent& x) {
   ostringstream out;
   out << x.name << ": " << debug_string(x.type) << " -- " << to_string(x);
   return out.str();
+}
+
+string to_string(const string_tree* x) {
+  ostringstream out;
+  dump(x, out);
+  return out.str();
+}
+
+void dump(const string_tree* x, ostream& out) {
+  if (!x->left && !x->right) {
+    out << x->value;
+    return;
+  }
+  out << '(';
+  for (const string_tree* curr = x; curr; curr = curr->right) {
+    if (curr != x) out << ' ';
+    if (curr->left)
+      dump(curr->left, out);
+    else
+      out << curr->value;
+  }
+  out << ')';
 }
 
 string debug_string(const string_tree* property) {
@@ -424,117 +540,6 @@ void dump_type_name(type_ordinal type, ostream& out) {
     out << get(Type, type).name;
   else
     out << "?" << type;
-}
-
-string to_string(const instruction& inst) {
-  if (inst.is_label) return inst.label;
-  ostringstream out;
-  for (long long int i = 0; i < SIZE(inst.products); ++i) {
-    if (i > 0) out << ", ";
-    out << inst.products.at(i).original_string;
-  }
-  if (!inst.products.empty()) out << " <- ";
-  out << inst.name << ' ';
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-    if (i > 0) out << ", ";
-    out << inst.ingredients.at(i).original_string;
-  }
-  return out.str();
-}
-
-string debug_string(const recipe& x) {
-  ostringstream out;
-  out << "- recipe " << x.name << '\n';
-  // Begin debug_string(recipe x)
-  for (long long int index = 0; index < SIZE(x.steps); ++index) {
-    const instruction& inst = x.steps.at(index);
-    out << "inst: " << to_string(inst) << '\n';
-    out << "  ingredients\n";
-    for (long long int i = 0; i < SIZE(inst.ingredients); ++i)
-      out << "    " << debug_string(inst.ingredients.at(i)) << '\n';
-    out << "  products\n";
-    for (long long int i = 0; i < SIZE(inst.products); ++i)
-      out << "    " << debug_string(inst.products.at(i)) << '\n';
-  }
-  return out.str();
-}
-
-string slurp_until(istream& in, char delim) {
-  ostringstream out;
-  char c;
-  while (in >> c) {
-    if (c == delim) {
-      // drop the delim
-      break;
-    }
-    out << c;
-  }
-  return out.str();
-}
-
-bool has_property(reagent x, string name) {
-  for (long long int i = /*skip name:type*/1; i < SIZE(x.properties); ++i) {
-    if (x.properties.at(i).first == name) return true;
-  }
-  return false;
-}
-
-string_tree* property(const reagent& r, const string& name) {
-  for (long long int p = /*skip name:type*/1; p != SIZE(r.properties); ++p) {
-    if (r.properties.at(p).first == name)
-      return r.properties.at(p).second;
-  }
-  return NULL;
-}
-
-void dump_memory() {
-  for (map<long long int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
-    cout << p->first << ": " << no_scientific(p->second) << '\n';
-  }
-}
-
-string to_string(const recipe& r) {
-  ostringstream out;
-  out << "recipe " << r.name << " [\n";
-  for (long long int i = 0; i < SIZE(r.steps); ++i)
-    out << "  " << to_string(r.steps.at(i)) << '\n';
-  out << "]\n";
-  return out.str();
-}
-
-string to_string(const string_tree* x) {
-  ostringstream out;
-  dump(x, out);
-  return out.str();
-}
-
-void dump(const string_tree* x, ostream& out) {
-  if (!x->left && !x->right) {
-    out << x->value;
-    return;
-  }
-  out << '(';
-  for (const string_tree* curr = x; curr; curr = curr->right) {
-    if (curr != x) out << ' ';
-    if (curr->left)
-      dump(curr->left, out);
-    else
-      out << curr->value;
-  }
-  out << ')';
-}
-
-:(before "End Globals")
-const string Ignore(",");  // commas are ignored in mu except within [] strings
-:(code)
-void skip_whitespace_but_not_newline(istream& in) {
-  while (true) {
-    if (!has_data(in)) break;
-    else if (in.peek() == '\n') break;
-    else if (isspace(in.peek())) in.get();
-    else if (Ignore.find(in.peek()) != string::npos) in.get();
-    else break;
-  }
 }
 
 :(before "End Types")
