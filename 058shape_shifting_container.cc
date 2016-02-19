@@ -219,7 +219,7 @@ recipe main [
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
     raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredient(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second->right);
+  replace_type_ingredients(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second->right);
 }
 
 :(code)
@@ -233,7 +233,7 @@ bool contains_type_ingredient(const type_tree* type) {
   return contains_type_ingredient(type->left) || contains_type_ingredient(type->right);
 }
 
-void replace_type_ingredient(type_tree* element_type, string_tree* element_type_name, const type_tree* callsite_type, const string_tree* callsite_type_name) {
+void replace_type_ingredients(type_tree* element_type, string_tree* element_type_name, const type_tree* callsite_type, const string_tree* callsite_type_name) {
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
   if (element_type->value >= START_TYPE_INGREDIENTS) {
@@ -258,7 +258,7 @@ void replace_type_ingredient(type_tree* element_type, string_tree* element_type_
     element_type_name->right = replacement_name->right ? new string_tree(*replacement_name->right) : NULL;
     append(element_type_name->right, old_right_name);
   }
-  replace_type_ingredient(element_type->right, element_type_name->right, callsite_type, callsite_type_name);
+  replace_type_ingredients(element_type->right, element_type_name->right, callsite_type, callsite_type_name);
 }
 
 void append(type_tree*& base, type_tree* extra) {
@@ -281,7 +281,7 @@ void append(string_tree*& base, string_tree* extra) {
   curr->right = extra;
 }
 
-void test_replace_type_ingredient_entire() {
+void test_replace_type_ingredients_entire() {
   run("container foo:_elem [\n"
       "  x:_elem\n"
       "  y:number\n"
@@ -293,7 +293,7 @@ void test_replace_type_ingredient_entire() {
   CHECK(!element.properties.at(0).second->right);
 }
 
-void test_replace_type_ingredient_tail() {
+void test_replace_type_ingredients_tail() {
   run("container foo:_elem [\n"
       "  x:_elem\n"
       "]\n"
@@ -308,7 +308,7 @@ void test_replace_type_ingredient_tail() {
   CHECK(!element.properties.at(0).second->right->right);
 }
 
-void test_replace_type_ingredient_head_tail_multiple() {
+void test_replace_type_ingredients_head_tail_multiple() {
   run("container foo:_elem [\n"
       "  x:_elem\n"
       "]\n"
@@ -326,7 +326,7 @@ void test_replace_type_ingredient_head_tail_multiple() {
   CHECK(!element.properties.at(0).second->right->right->right->right->right);
 }
 
-void test_replace_type_ingredient_head_middle() {
+void test_replace_type_ingredients_head_middle() {
   run("container foo:_elem [\n"
       "  x:_elem\n"
       "]\n"
@@ -550,5 +550,5 @@ recipe main [
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
     raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredient(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second->right);
+  replace_type_ingredients(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second->right);
 }
