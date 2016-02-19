@@ -461,7 +461,7 @@ string to_string(const reagent& r) {
 
 string debug_string(const reagent& x) {
   ostringstream out;
-  out << x.name << ": " << debug_string(x.type) << " -- " << to_string(x);
+  out << x.name << ": " << x.value << ' ' << to_string(x.type) << " -- " << to_string(x);
   return out.str();
 }
 
@@ -514,7 +514,7 @@ void dump(const string_tree* x, ostream& out) {
   out << ')';
 }
 
-string debug_string(const type_tree* type) {
+string to_string(const type_tree* type) {
   // abbreviate a single-node tree to just its contents
   if (!type) return "NULLNULLNULL";  // should never happen
   ostringstream out;

@@ -162,7 +162,7 @@ case GET: {
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
   if (!types_coercible(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << debug_string(element.type) << " but " << product.name << " has type " << debug_string(product.type) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << to_string(element.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
     break;
   }
   break;
@@ -187,7 +187,7 @@ case GET: {
   trace(9998, "run") << "address to copy is " << src << end();
   reagent tmp = element_type(base, offset);
   tmp.set_value(src);
-  trace(9998, "run") << "its type is " << debug_string(tmp.type) << end();
+  trace(9998, "run") << "its type is " << to_string(tmp.type) << end();
   products.push_back(read_memory(tmp));
   break;
 }
@@ -303,7 +303,7 @@ case GET_ADDRESS: {
   // ..except for an address at the start
   element.type = new type_tree(get(Type_ordinal, "address"), element.type);
   if (!types_coercible(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << debug_string(element.type) << " but " << product.name << " has type " << debug_string(product.type) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << to_string(element.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
     break;
   }
   break;
@@ -373,8 +373,8 @@ container foo [
   y:number
 ]
 +parse: --- defining container foo
-+parse: element: x: number -- {"x": "number"}
-+parse: element: y: number -- {"y": "number"}
++parse: element: {"x": "number"}
++parse: element: {"y": "number"}
 
 :(scenario container_use_before_definition)
 container foo [
@@ -388,15 +388,15 @@ container bar [
 ]
 +parse: --- defining container foo
 +parse: type number: 1000
-+parse:   element: x: number -- {"x": "number"}
++parse:   element: {"x": "number"}
 # todo: brittle
 # type bar is unknown at this point, but we assign it a number
-+parse:   element: y: ?1001 -- {"y": "bar"}
-# later type bar gets a definition
++parse:   element: {"y": "bar"}
+# later type bar geon
 +parse: --- defining container bar
 +parse: type number: 1001
-+parse:   element: x: number -- {"x": "number"}
-+parse:   element: y: number -- {"y": "number"}
++parse:   element: {"x": "number"}
++parse:   element: {"y": "number"}
 
 :(before "End Command Handlers")
 else if (command == "container") {
@@ -427,7 +427,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     // handle undefined types
     delete info.elements.back().type;
     info.elements.back().type = new_type_tree_with_new_types_for_unknown(info.elements.back().properties.at(0).second, info);
-    trace(9993, "parse") << "  element: " << debug_string(info.elements.back()) << end();
+    trace(9993, "parse") << "  element: " << to_string(info.elements.back()) << end();
     // End Load Container Element Definition
   }
   info.size = SIZE(info.elements);
@@ -592,8 +592,8 @@ container foo [
   y:number
 ]
 +parse: --- defining container foo
-+parse: element: x: number -- {"x": "number"}
-+parse: element: y: number -- {"y": "number"}
++parse: element: {"x": "number"}
++parse: element: {"y": "number"}
 
 :(before "End Transform All")
 check_container_field_types();
@@ -787,7 +787,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
     switch (container_info.kind) {
       case CONTAINER: {
         reagent expected_ingredient = element_type(container, state.data.top().container_element_index);
-        trace(9999, "transform") << "checking container " << debug_string(container) << " || " << debug_string(expected_ingredient) << " vs ingredient " << ingredient_index << end();
+        trace(9999, "transform") << "checking container " << to_string(container) << " || " << to_string(expected_ingredient) << " vs ingredient " << ingredient_index << end();
         // if the current element is the ingredient we expect, move on to the next element/ingredient
         if (types_coercible(expected_ingredient, ingredients.at(ingredient_index))) {
           ++ingredient_index;

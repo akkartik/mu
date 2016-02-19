@@ -157,7 +157,7 @@ case START_RUNNING: {
     break;
   }
   if (!is_mu_recipe(inst.ingredients.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'start-running' should be a recipe, but got " << debug_string(inst.ingredients.at(0)) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'start-running' should be a recipe, but got " << to_string(inst.ingredients.at(0)) << '\n' << end();
     break;
   }
   break;

@@ -40,7 +40,7 @@ void deduce_missing_type(map<string, type_tree*>& type, map<string, string_tree*
   if (x.type) return;
   if (!contains_key(type, x.name)) return;
   x.type = new type_tree(*type[x.name]);
-  trace(9992, "transform") << x.name << " <= " << debug_string(x.type) << end();
+  trace(9992, "transform") << x.name << " <= " << to_string(x.type) << end();
   assert(!x.properties.at(0).second);
   x.properties.at(0).second = new string_tree(*type_name[x.name]);
 }
@@ -50,7 +50,7 @@ void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_n
   if (is_integer(x.name)) return;  // if you use raw locations you're probably doing something unsafe
   if (!x.type) return;  // might get filled in by other logic later
   if (!contains_key(type, x.name)) {
-    trace(9992, "transform") << x.name << " => " << debug_string(x.type) << end();
+    trace(9992, "transform") << x.name << " => " << to_string(x.type) << end();
     put(type, x.name, x.type);
   }
   if (!contains_key(type_name, x.name))

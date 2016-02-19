@@ -369,12 +369,12 @@ void deduce_types_from_header(const recipe_ordinal r) {
   for (long long int i = 0; i < SIZE(caller_recipe.ingredients); ++i) {
     put(header_type, caller_recipe.ingredients.at(i).name, caller_recipe.ingredients.at(i).type);
     put(header_type_name, caller_recipe.ingredients.at(i).name, caller_recipe.ingredients.at(i).properties.at(0).second);
-    trace(9993, "transform") << "type of " << caller_recipe.ingredients.at(i).name << " is " << debug_string(caller_recipe.ingredients.at(i).type) << end();
+    trace(9993, "transform") << "type of " << caller_recipe.ingredients.at(i).name << " is " << to_string(caller_recipe.ingredients.at(i).type) << end();
   }
   for (long long int i = 0; i < SIZE(caller_recipe.products); ++i) {
     put(header_type, caller_recipe.products.at(i).name, caller_recipe.products.at(i).type);
     put(header_type_name, caller_recipe.products.at(i).name, caller_recipe.products.at(i).properties.at(0).second);
-    trace(9993, "transform") << "type of " << caller_recipe.products.at(i).name << " is " << debug_string(caller_recipe.products.at(i).type) << end();
+    trace(9993, "transform") << "type of " << caller_recipe.products.at(i).name << " is " << to_string(caller_recipe.products.at(i).type) << end();
   }
   for (long long int i = 0; i < SIZE(caller_recipe.steps); ++i) {
     instruction& inst = caller_recipe.steps.at(i);
@@ -387,10 +387,10 @@ void deduce_types_from_header(const recipe_ordinal r) {
         inst.ingredients.at(i).type = new type_tree(*get(header_type, inst.ingredients.at(i).name));
       if (!inst.ingredients.at(i).properties.at(0).second)
         inst.ingredients.at(i).properties.at(0).second = new string_tree(*get(header_type_name, inst.ingredients.at(i).name));
-      trace(9993, "transform") << "type of " << inst.ingredients.at(i).name << " is " << debug_string(inst.ingredients.at(i).type) << end();
+      trace(9993, "transform") << "type of " << inst.ingredients.at(i).name << " is " << to_string(inst.ingredients.at(i).type) << end();
     }
     for (long long int i = 0; i < SIZE(inst.products); ++i) {
-      trace(9993, "transform") << "  product: " << debug_string(inst.products.at(i)) << end();
+      trace(9993, "transform") << "  product: " << to_string(inst.products.at(i)) << end();
       if (inst.products.at(i).type) continue;
       if (header_type.find(inst.products.at(i).name) == header_type.end())
         continue;
@@ -398,7 +398,7 @@ void deduce_types_from_header(const recipe_ordinal r) {
         inst.products.at(i).type = new type_tree(*get(header_type, inst.products.at(i).name));
       if (!inst.products.at(i).properties.at(0).second)
         inst.products.at(i).properties.at(0).second = new string_tree(*get(header_type_name, inst.products.at(i).name));
-      trace(9993, "transform") << "type of " << inst.products.at(i).name << " is " << debug_string(inst.products.at(i).type) << end();
+      trace(9993, "transform") << "type of " << inst.products.at(i).name << " is " << to_string(inst.products.at(i).type) << end();
     }
   }
 }

@@ -167,7 +167,7 @@ const type_tree* type = get(Type, base_type).elements.at(i).type;
 if (type->value >= START_TYPE_INGREDIENTS) {
   long long int size = size_of_type_ingredient(type, base.type->right);
   if (!size)
-    raise_error << "illegal field type '" << debug_string(type) << "' seems to be missing a type ingredient or three\n" << end();
+    raise_error << "illegal field type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
   src += size;
   continue;
 }
@@ -226,7 +226,7 @@ recipe main [
 :(before "End element_type Special-cases")
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
-    raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
+    raise_error << "illegal type '" << to_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
   replace_type_ingredients(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second ? canonized_base.properties.at(0).second->right : NULL, info);
 }
 
@@ -253,7 +253,7 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
 
   const long long int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
   if (!has_nth_type(callsite_type, type_ingredient_index)) {
-    raise_error << "illegal type '" << debug_string(callsite_type) << "' seems to be missing a type ingredient or three\n" << end();
+    raise_error << "illegal type '" << to_string(callsite_type) << "' seems to be missing a type ingredient or three\n" << end();
     return;
   }
 
@@ -479,7 +479,7 @@ const type_tree* type = get(Type, base_type).elements.at(i).type;
 if (type->value >= START_TYPE_INGREDIENTS) {
   long long int size = size_of_type_ingredient(type, base.type->right);
   if (!size)
-    raise_error << "illegal type '" << debug_string(type) << "' seems to be missing a type ingredient or three\n" << end();
+    raise_error << "illegal type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
   result += size;
   continue;
 }
@@ -570,6 +570,6 @@ recipe main [
 :(before "End variant_type Special-cases")
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
-    raise_error << "illegal type '" << debug_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
+    raise_error << "illegal type '" << to_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
   replace_type_ingredients(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second ? canonized_base.properties.at(0).second->right : NULL, info);
 }

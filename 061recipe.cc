@@ -180,7 +180,7 @@ recipe f x:boolean -> y:boolean [
 :(before "End Matching Types For Literal(to)")
 if (is_mu_recipe(to)) {
   if (!contains_key(Recipe, from.value)) {
-    raise_error << "trying to store recipe " << from.name << " into " << debug_string(to) << " but there's no such recipe\n" << end();
+    raise_error << "trying to store recipe " << from.name << " into " << to_string(to) << " but there's no such recipe\n" << end();
     return false;
   }
   const recipe& rrhs = get(Recipe, from.value);

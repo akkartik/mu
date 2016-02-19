@@ -87,7 +87,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
           canonize_type(lhs);
           reagent rhs = caller_instruction.products.at(i);
           canonize_type(rhs);
-          raise_error << debug_string(lhs.type) << " vs " << debug_string(rhs.type) << '\n' << end();
+          raise_error << to_string(lhs.type) << " vs " << to_string(rhs.type) << '\n' << end();
           goto finish_reply_check;
         }
       }

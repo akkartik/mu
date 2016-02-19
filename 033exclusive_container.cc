@@ -106,7 +106,7 @@ case MAYBE_CONVERT: {
   reagent variant = variant_type(base, offset.value);
   variant.type = new type_tree(get(Type_ordinal, "address"), variant.type);
   if (!types_coercible(product, variant)) {
-    raise_error << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << debug_string(variant.type) << " but " << product.name << " has type " << debug_string(product.type) << '\n' << end();
+    raise_error << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << to_string(variant.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
     break;
   }
   break;
@@ -164,8 +164,8 @@ exclusive-container foo [
   y:number
 ]
 +parse: --- defining exclusive-container foo
-+parse: element: x: number -- {"x": "number"}
-+parse: element: y: number -- {"y": "number"}
++parse: element: {"x": "number"}
++parse: element: {"y": "number"}
 
 :(before "End Command Handlers")
 else if (command == "exclusive-container") {
@@ -243,7 +243,7 @@ recipe main [
 :(before "End valid_merge Cases")
 case EXCLUSIVE_CONTAINER: {
   assert(state.data.top().container_element_index == 0);
-  trace(9999, "transform") << "checking exclusive container " << debug_string(container) << " vs ingredient " << ingredient_index << end();
+  trace(9999, "transform") << "checking exclusive container " << to_string(container) << " vs ingredient " << ingredient_index << end();
   if (!is_literal(ingredients.at(ingredient_index))) {
     raise_error << maybe(caller.name) << "ingredient " << ingredient_index << " of 'merge' should be a literal, for the tag of exclusive-container " << container_info.name << '\n' << end();
     return;

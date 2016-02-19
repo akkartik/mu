@@ -91,7 +91,7 @@ if (!canonize_type(product)) continue;
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
     if (!r.type || r.type->value != get(Type_ordinal, "address")) {
-      raise_error << "can't lookup non-address: " << to_string(r) << ": " << debug_string(r.type) << '\n' << end();
+      raise_error << "can't lookup non-address: " << to_string(r) << ": " << to_string(r.type) << '\n' << end();
       return false;
     }
     drop_from_type(r, "address");
@@ -103,11 +103,11 @@ bool canonize_type(reagent& r) {
 
 void drop_from_type(reagent& r, string expected_type) {
   if (!r.type) {
-    raise_error << "can't drop " << expected_type << " from " << debug_string(r) << '\n' << end();
+    raise_error << "can't drop " << expected_type << " from " << to_string(r) << '\n' << end();
     return;
   }
   if (r.properties.at(0).second->value != expected_type) {
-    raise_error << "can't drop " << expected_type << " from " << debug_string(r) << '\n' << end();
+    raise_error << "can't drop " << expected_type << " from " << to_string(r) << '\n' << end();
     return;
   }
   type_tree* tmp = r.type;

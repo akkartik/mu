@@ -165,26 +165,6 @@ recipe_ordinal best_shape_shifting_variant(const instruction& inst, vector<recip
   return candidates.at(best_index);
 }
 
-
-string header(const recipe& caller) {
-  if (!caller.has_header) return maybe(caller.name);
-  ostringstream out;
-  out << caller.name;
-  for (long long int i = 0; i < SIZE(caller.ingredients); ++i) {
-    if (i > 0) out << ',';
-    out << ' ' << debug_string(caller.ingredients.at(i));
-  }
-  if (!caller.products.empty()) {
-    out << " ->";
-    for (long long int i = 0; i < SIZE(caller.products); ++i) {
-      if (i > 0) out << ',';
-      out << ' ' << debug_string(caller.products.at(i));
-    }
-  }
-  out << ": ";
-  return out.str();
-}
-
 bool any_type_ingredient_in_header(recipe_ordinal variant) {
   const recipe& caller = get(Recipe, variant);
   for (long long int i = 0; i < SIZE(caller.ingredients); ++i) {
@@ -431,7 +411,7 @@ void replace_type_ingredients(reagent& x, const map<string, const string_tree*>&
   delete x.type;
   x.type = new_type_tree(x.properties.at(0).second);
   if (x.type)
-    trace(9993, "transform") << "  after: " << debug_string(x.type) << end();
+    trace(9993, "transform") << "  after: " << to_string(x.type) << end();
 }
 
 void replace_type_ingredients(string_tree* type, const map<string, const string_tree*>& mappings) {
