@@ -521,19 +521,19 @@ string to_string(const type_tree* type) {
   if (!type->left && !type->right)
     dump(type->value, out);
   else
-    dump_debug(type, out);
+    dump(type, out);
   return out.str();
 }
 
-void dump_debug(const type_tree* type, ostream& out) {
+void dump(const type_tree* type, ostream& out) {
   out << "<";
   if (type->left)
-    dump_debug(type->left, out);
+    dump(type->left, out);
   else
     dump(type->value, out);
   out << " : ";
   if (type->right)
-    dump_debug(type->right, out);
+    dump(type->right, out);
   else
     out << "<>";
   out << ">";
