@@ -301,7 +301,7 @@ case GET_ADDRESS: {
   // same type as for GET..
   reagent element = element_type(base, offset_value);
   // ..except for an address at the start
-  element.type = new type_tree(get(Type_ordinal, "address"), element.type);
+  element.type = new type_tree("address", get(Type_ordinal, "address"), element.type);
   if (!types_coercible(product, element)) {
     raise_error << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << to_string(element.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
     break;
@@ -435,7 +435,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
 
 type_tree* new_type_tree_with_new_types_for_unknown(const string_tree* properties, const type_info& info) {
   if (!properties) return NULL;
-  type_tree* result = new type_tree(0);
+  type_tree* result = new type_tree("", 0);
   if (!properties->value.empty()) {
     const string& type_name = properties->value;
     if (contains_key(Type_ordinal, type_name)) {

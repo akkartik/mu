@@ -73,15 +73,16 @@ struct property {
 // Types can range from a simple type ordinal, to arbitrarily complex trees of
 // type parameters, like (map (address array character) (list number))
 struct type_tree {
+  string name;
   type_ordinal value;
   type_tree* left;
   type_tree* right;
   ~type_tree();
   type_tree(const type_tree& old);
   // simple: type ordinal
-  explicit type_tree(type_ordinal v) :value(v), left(NULL), right(NULL) {}
+  explicit type_tree(string name, type_ordinal v) :name(name), value(v), left(NULL), right(NULL) {}
   // intermediate: list of type ordinals
-  type_tree(type_ordinal v, type_tree* r) :value(v), left(NULL), right(r) {}
+  type_tree(string name, type_ordinal v, type_tree* r) :name(name), value(v), left(NULL), right(r) {}
   // advanced: tree containing type ordinals
   type_tree(type_tree* l, type_tree* r) :value(0), left(l), right(r) {}
 };
@@ -245,12 +246,12 @@ reagent::reagent(string s) :original_string(s), type(NULL), value(0), initialize
   if (is_integer(name) && type == NULL) {
     assert(!properties.at(0).second);
     properties.at(0).second = new string_tree("literal");
-    type = new type_tree(get(Type_ordinal, "literal"));
+    type = new type_tree("literal", get(Type_ordinal, "literal"));
   }
   if (name == "_" && type == NULL) {
     assert(!properties.at(0).second);
     properties.at(0).second = new string_tree("dummy");
-    type = new type_tree(get(Type_ordinal, "literal"));
+    type = new type_tree("literal", get(Type_ordinal, "literal"));
   }
   // End Parsing reagent
 }
@@ -263,9 +264,10 @@ string_tree* parse_property_list(istream& in) {
   return result;
 }
 
+// TODO: delete
 type_tree* new_type_tree(const string_tree* properties) {
   if (!properties) return NULL;
-  type_tree* result = new type_tree(0);
+  type_tree* result = new type_tree("", 0);
   if (!properties->value.empty()) {
     const string& type_name = properties->value;
     if (contains_key(Type_ordinal, type_name))

@@ -34,7 +34,7 @@ get_or_insert(Type, recipe).name = "recipe";
 :(before "End Null-type is_disqualified Exceptions")
 if (!x.properties.at(0).second && contains_key(Recipe_ordinal, x.name)) {
   x.properties.at(0).second = new string_tree("recipe-literal");
-  x.type = new type_tree(get(Type_ordinal, "recipe-literal"));
+  x.type = new type_tree("recipe-literal", get(Type_ordinal, "recipe-literal"));
   x.set_value(get(Recipe_ordinal, x.name));
   return true;
 }

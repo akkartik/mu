@@ -10,7 +10,7 @@ recipe main [
 :(after "Parsing reagent(string s)")
 if (is_noninteger(s)) {
   name = s;
-  type = new type_tree(0);
+  type = new type_tree("literal-number", 0);
   properties.push_back(pair<string, string_tree*>(name, new string_tree("literal-number")));
   set_value(to_double(s));
   return;

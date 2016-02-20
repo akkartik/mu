@@ -104,7 +104,7 @@ case MAYBE_CONVERT: {
     break;
   }
   reagent variant = variant_type(base, offset.value);
-  variant.type = new type_tree(get(Type_ordinal, "address"), variant.type);
+  variant.type = new type_tree("address", get(Type_ordinal, "address"), variant.type);
   if (!types_coercible(product, variant)) {
     raise_error << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << to_string(variant.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
     break;

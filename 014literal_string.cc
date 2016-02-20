@@ -110,7 +110,7 @@ if (s.at(0) == '[') {
   s.erase(0, 1);
   strip_last(s);
   name = s;
-  type = new type_tree(0);
+  type = new type_tree("literal-string", 0);
   properties.push_back(pair<string, string_tree*>(name, new string_tree("literal-string")));
   return;
 }

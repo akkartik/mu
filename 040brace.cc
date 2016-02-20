@@ -114,7 +114,7 @@ void transform_braces(const recipe_ordinal r) {
     }
     // if implicit, compute target
     reagent target;
-    target.type = new type_tree(get(Type_ordinal, "offset"));
+    target.type = new type_tree("offset", get(Type_ordinal, "offset"));
     target.properties.at(0).second = new string_tree("offset");
     target.set_value(0);
     if (open_braces.empty())
