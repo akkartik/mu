@@ -51,11 +51,11 @@ struct instruction {
 // properties besides types, but we're getting ahead of ourselves.
 struct reagent {
   string original_string;
-  vector<pair<string, string_tree*> > properties;
   string name;
+  type_tree* type;
+  vector<pair<string, string_tree*> > properties;
   double value;
   bool initialized;
-  type_tree* type;
   reagent(string s);
   reagent();
   ~reagent();
@@ -227,7 +227,7 @@ void instruction::clear() { is_label=false; label.clear(); name.clear(); old_nam
 bool instruction::is_empty() { return !is_label && name.empty(); }
 
 // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
-reagent::reagent(string s) :original_string(s), value(0), initialized(false), type(NULL) {
+reagent::reagent(string s) :original_string(s), type(NULL), value(0), initialized(false) {
   // Parsing reagent(string s)
   istringstream in(s);
   in >> std::noskipws;
@@ -342,7 +342,7 @@ string_tree::~string_tree() {
   delete right;
 }
 
-reagent::reagent() :value(0), initialized(false), type(NULL) {
+reagent::reagent() :type(NULL), value(0), initialized(false) {
   // The first property is special, so ensure we always have it.
   // Other properties can be pushed back, but the first must always be
   // assigned to.
