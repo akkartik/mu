@@ -98,7 +98,6 @@ struct string_tree {
   string_tree(string v, string_tree* r) :value(v), left(NULL), right(r) {}
   // advanced: tree containing strings
   string_tree(string_tree* l, string_tree* r) :left(l), right(r) {}
-  // print as s-expression
 };
 
 :(before "End Globals")
@@ -545,6 +544,8 @@ void dump(type_ordinal type, ostream& out) {
   else
     out << "?" << type;
 }
+
+//: helper to print numbers without excessive precision
 
 :(before "End Types")
 struct no_scientific {
