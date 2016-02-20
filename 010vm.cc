@@ -87,17 +87,16 @@ struct type_tree {
 };
 
 struct string_tree {
-  string value;
-  string_tree* left;
-  string_tree* right;
+  bool is_leaf;
+  string value;  // only if is_leaf is true
+  string_tree* left;  // only if is_leaf is false
+  string_tree* right;  // only if is_leaf is false
   ~string_tree();
   string_tree(const string_tree& old);
   // simple: flat string
-  explicit string_tree(string v) :value(v), left(NULL), right(NULL) {}
-  // intermediate: list of strings
-  string_tree(string v, string_tree* r) :value(v), left(NULL), right(r) {}
+  explicit string_tree(string v) :is_leaf(true), value(v), left(NULL), right(NULL) {}
   // advanced: tree containing strings
-  string_tree(string_tree* l, string_tree* r) :left(l), right(r) {}
+  string_tree(string_tree* l, string_tree* r) :is_leaf(false), value(""), left(l), right(r) {}
 };
 
 :(before "End Globals")
@@ -237,6 +236,7 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false), ty
     row >> std::noskipws;
     string key = slurp_until(row, ':');
     string_tree* value = parse_property_list(row);
+    cerr << "bb: " << to_string(value) << '\n';
     properties.push_back(pair<string, string_tree*>(key, value));
   }
   // structures for the first row of properties: name and list of types
@@ -258,9 +258,14 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false), ty
 string_tree* parse_property_list(istream& in) {
   skip_whitespace_but_not_newline(in);
   if (!has_data(in)) return NULL;
-  string_tree* result = new string_tree(slurp_until(in, ':'));
-  result->right = parse_property_list(in);
-  return result;
+  string next = slurp_until(in, ':');
+  if (!has_data(in)) {
+    string_tree* result = new string_tree(next);
+    cerr << "aa: " << to_string(result) << '\n';
+    return result;
+  }
+  return new string_tree(new string_tree(next),
+                         parse_property_list(in));
 }
 
 type_tree* new_type_tree(const string_tree* properties) {
@@ -471,7 +476,7 @@ string inspect(const string_tree* x) {
 }
 
 void dump_inspect(const string_tree* x, ostream& out) {
-  if (!x->left && !x->right) {
+  if (x->is_leaf) {
     out << x->value;
     return;
   }
@@ -489,17 +494,14 @@ void dump_inspect(const string_tree* x, ostream& out) {
 string to_string(const string_tree* property) {
   if (!property) return "()";
   ostringstream out;
-  if (!property->left && !property->right)
-    // abbreviate a single-node tree to just its contents
-    out << '"' << property->value << '"';
-  else
-    dump(property, out);
+  cerr << "AAA " << property->is_leaf << " " << property->value << '\n';
+  dump(property, out);
   return out.str();
 }
 
 void dump(const string_tree* x, ostream& out) {
-  if (!x->left && !x->right) {
-    out << x->value;
+  if (x->is_leaf) {
+    out << '"' + x->value + '"';
     return;
   }
   out << '(';
@@ -540,7 +542,7 @@ void dump(const type_tree* type, ostream& out) {
 
 void dump(type_ordinal type, ostream& out) {
   if (contains_key(Type, type))
-    out << get(Type, type).name;
+    out << get(Type, type).name << '(' << type << ") ";
   else
     out << "?" << type;
 }

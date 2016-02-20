@@ -269,6 +269,9 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
       replacement = curr->left;
     }
     else {
+      // We want foo:_t to be used like foo:number, which expands to {foo: number}
+      // rather than {foo: (number)}
+      // We'd also like to use it with multiple types: foo:address:number.
       replacement = curr;
       if (!final_type_ingredient(type_ingredient_index, container_info))
         splice_right = false;
