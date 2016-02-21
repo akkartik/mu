@@ -467,28 +467,6 @@ string debug_string(const reagent& x) {
   return out.str();
 }
 
-string inspect(const string_tree* x) {
-  ostringstream out;
-  dump_inspect(x, out);
-  return out.str();
-}
-
-void dump_inspect(const string_tree* x, ostream& out) {
-  if (!x->left && !x->right) {
-    out << x->value;
-    return;
-  }
-  out << '(';
-  for (const string_tree* curr = x; curr; curr = curr->right) {
-    if (curr != x) out << ' ';
-    if (curr->left)
-      dump_inspect(curr->left, out);
-    else
-      out << curr->value;
-  }
-  out << ')';
-}
-
 string to_string(const string_tree* property) {
   if (!property) return "()";
   ostringstream out;

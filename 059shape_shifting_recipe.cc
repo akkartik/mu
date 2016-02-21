@@ -430,6 +430,28 @@ void replace_type_ingredients(string_tree* type, const map<string, const string_
   replace_type_ingredients(type->right, mappings);
 }
 
+string inspect(const string_tree* x) {
+  ostringstream out;
+  dump_inspect(x, out);
+  return out.str();
+}
+
+void dump_inspect(const string_tree* x, ostream& out) {
+  if (!x->left && !x->right) {
+    out << x->value;
+    return;
+  }
+  out << '(';
+  for (const string_tree* curr = x; curr; curr = curr->right) {
+    if (curr != x) out << ' ';
+    if (curr->left)
+      dump_inspect(curr->left, out);
+    else
+      out << curr->value;
+  }
+  out << ')';
+}
+
 void ensure_all_concrete_types(/*const*/ recipe& new_recipe, const recipe& exemplar) {
   for (long long int i = 0; i < SIZE(new_recipe.ingredients); ++i)
     ensure_all_concrete_types(new_recipe.ingredients.at(i), exemplar);
