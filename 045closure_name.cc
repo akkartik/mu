@@ -73,8 +73,8 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
         continue;
       }
       if (contains_key(Surrounding_space, r)
-          && Surrounding_space[r] != get(Recipe_ordinal, surrounding_recipe_name)) {
-        raise_error << "recipe " << get(Recipe, r).name << " can have only one 'surrounding' recipe but has " << get(Recipe, Surrounding_space[r]).name << " and " << surrounding_recipe_name << '\n' << end();
+          && get(Surrounding_space, r) != get(Recipe_ordinal, surrounding_recipe_name)) {
+        raise_error << "recipe " << get(Recipe, r).name << " can have only one 'surrounding' recipe but has " << get(Recipe, get(Surrounding_space, r)).name << " and " << surrounding_recipe_name << '\n' << end();
         continue;
       }
       trace(9993, "name") << "lexically surrounding space for recipe " << get(Recipe, r).name << " comes from " << surrounding_recipe_name << end();
@@ -83,7 +83,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
         raise << "can't find recipe providing surrounding space for " << get(Recipe, r).name << ": " << surrounding_recipe_name << '\n' << end();
         continue;
       }
-      Surrounding_space[r] = get(Recipe_ordinal, surrounding_recipe_name);
+      put(Surrounding_space, r, get(Recipe_ordinal, surrounding_recipe_name));
     }
   }
 }
@@ -132,8 +132,8 @@ recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n
     raise_error << "don't know surrounding recipe of " << get(Recipe, r).name << '\n' << end();
     return 0;
   }
-  assert(Surrounding_space[r]);
-  return lookup_surrounding_recipe(Surrounding_space[r], n-1);
+  assert(contains_key(Surrounding_space, r));
+  return lookup_surrounding_recipe(get(Surrounding_space, r), n-1);
 }
 
 //: weaken use-before-set detection just a tad

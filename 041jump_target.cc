@@ -28,12 +28,12 @@ void transform_labels(const recipe_ordinal r) {
     const instruction& inst = get(Recipe, r).steps.at(i);
     if (!inst.label.empty() && inst.label.at(0) == '+') {
       if (!contains_key(offset, inst.label)) {
-        offset[inst.label] = i;
+        put(offset, inst.label, i);
       }
       else {
         raise_error << maybe(get(Recipe, r).name) << "duplicate label '" << inst.label << "'" << end();
         // have all jumps skip some random but noticeable and deterministic amount of code
-        offset[inst.label] = 9999;
+        put(offset, inst.label, 9999);
       }
     }
   }
@@ -76,7 +76,7 @@ void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, co
     x.set_value(0);  // no jump by default
     return;
   }
-  x.set_value(offset[x.name]-current_offset);
+  x.set_value(get(offset, x.name) - current_offset);
 }
 
 bool is_jump_target(string label) {

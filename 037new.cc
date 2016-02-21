@@ -329,7 +329,7 @@ case ABANDON: {
   abandon(address, size_of(types)+/*refcount*/1);
   // clear the address
   trace(9999, "mem") << "resetting location " << address_location << end();
-  Memory[address_location] = 0;
+  put(Memory, address_location, 0);
   break;
 }
 
@@ -343,15 +343,15 @@ void abandon(long long int address, long long int size) {
   for (long long int curr = address; curr < address+size; ++curr)
     put(Memory, curr, 0);
   // append existing free list to address
-  put(Memory, address, Free_list[size]);
-  Free_list[size] = address;
+  put(Memory, address, get_or_insert(Free_list, size));
+  put(Free_list, size, address);
 }
 
 :(before "ensure_space(size)" following "case ALLOCATE")
-if (Free_list[size]) {
+if (get_or_insert(Free_list, size)) {
   trace(9999, "abandon") << "picking up space from free-list of size " << size << end();
-  long long int result = Free_list[size];
-  Free_list[size] = get_or_insert(Memory, result);
+  long long int result = get_or_insert(Free_list, size);
+  put(Free_list, size, get_or_insert(Memory, result));
   for (long long int curr = result+1; curr < result+size; ++curr) {
     if (get_or_insert(Memory, curr) != 0) {
       raise_error << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();

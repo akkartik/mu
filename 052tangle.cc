@@ -84,13 +84,13 @@ void insert_fragments(const recipe_ordinal r) {
       Fragments_used.insert(inst.label);
       ostringstream prefix;
       prefix << '+' << get(Recipe, r).name << '_' << pass << '_' << i;
-      if (contains_key(Before_fragments, inst.label)) {
+      // ok to use contains_key even though Before_fragments uses [],
+      // because appending an empty recipe is a noop
+      if (contains_key(Before_fragments, inst.label))
         append_fragment(result, Before_fragments[inst.label].steps, prefix.str());
-      }
       result.push_back(inst);
-      if (contains_key(After_fragments, inst.label)) {
+      if (contains_key(After_fragments, inst.label))
         append_fragment(result, After_fragments[inst.label].steps, prefix.str());
-      }
     }
     get(Recipe, r).steps.swap(result);
     ++pass;

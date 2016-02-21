@@ -39,10 +39,10 @@ void check_or_set_types_by_name(const recipe_ordinal r) {
 void deduce_missing_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, reagent& x) {
   if (x.type) return;
   if (!contains_key(type, x.name)) return;
-  x.type = new type_tree(*type[x.name]);
+  x.type = new type_tree(*get(type, x.name));
   trace(9992, "transform") << x.name << " <= " << to_string(x.type) << end();
   assert(!x.properties.at(0).second);
-  x.properties.at(0).second = new string_tree(*type_name[x.name]);
+  x.properties.at(0).second = new string_tree(*get(type_name, x.name));
 }
 
 void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, const reagent& x, const recipe_ordinal r) {
@@ -55,16 +55,16 @@ void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_n
   }
   if (!contains_key(type_name, x.name))
     put(type_name, x.name, x.properties.at(0).second);
-  if (!types_strictly_match(type[x.name], x.type)) {
+  if (!types_strictly_match(get(type, x.name), x.type)) {
     raise_error << maybe(get(Recipe, r).name) << x.name << " used with multiple types\n" << end();
     return;
   }
-  if (type_name[x.name]->value == "array") {
-    if (!type_name[x.name]->right) {
+  if (get(type_name, x.name)->value == "array") {
+    if (!get(type_name, x.name)->right) {
       raise_error << maybe(get(Recipe, r).name) << x.name << " can't be just an array. What is it an array of?\n" << end();
       return;
     }
-    if (!type_name[x.name]->right->right) {
+    if (!get(type_name, x.name)->right->right) {
       raise_error << get(Recipe, r).name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:shared:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
       return;
     }

@@ -79,7 +79,7 @@ void start_trace_browser() {
     if (key == 'J' || key == TB_KEY_PGDN) {
       // page-down
       if (Trace_index.find(tb_height()-1) != Trace_index.end()) {
-        Top_of_screen = Trace_index[tb_height()-1]+1;
+        Top_of_screen = get(Trace_index, tb_height()-1) + 1;
         refresh_screen_rows();
       }
     }
@@ -111,7 +111,7 @@ void start_trace_browser() {
     if (key == TB_KEY_CARRIAGE_RETURN) {
       // expand lines under current by one level
       assert(contains_key(Trace_index, Display_row));
-      long long int start_index = Trace_index[Display_row];
+      long long int start_index = get(Trace_index, Display_row);
       long long int index = 0;
       // simultaneously compute end_index and min_depth
       int min_depth = 9999;
@@ -134,7 +134,7 @@ void start_trace_browser() {
     if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
       // collapse all lines under current
       assert(contains_key(Trace_index, Display_row));
-      long long int start_index = Trace_index[Display_row];
+      long long int start_index = get(Trace_index, Display_row);
       long long int index = 0;
       // end_index is the next line at a depth same as or lower than start_index
       int initial_depth = Trace_stream->past_lines.at(start_index).depth;
@@ -165,7 +165,7 @@ void refresh_screen_rows() {
       if (index >= SIZE(Trace_stream->past_lines)) goto done;
     }
     assert(index < SIZE(Trace_stream->past_lines));
-    Trace_index[screen_row] = index;
+    put(Trace_index, screen_row, index);
   }
 done:;
 }
@@ -174,7 +174,7 @@ void render() {
   long long int screen_row = 0;
   for (screen_row = 0; screen_row < tb_height(); ++screen_row) {
     if (!contains_key(Trace_index, screen_row)) break;
-    trace_line& curr_line = Trace_stream->past_lines.at(Trace_index[screen_row]);
+    trace_line& curr_line = Trace_stream->past_lines.at(get(Trace_index, screen_row));
     ostringstream out;
     out << std::setw(4) << curr_line.depth << ' ' << curr_line.label << ": " << curr_line.contents;
     if (screen_row < tb_height()-1) {
@@ -199,9 +199,9 @@ void render() {
 long long int lines_hidden(long long int screen_row) {
   assert(contains_key(Trace_index, screen_row));
   if (!contains_key(Trace_index, screen_row+1))
-    return SIZE(Trace_stream->past_lines)-Trace_index[screen_row];
+    return SIZE(Trace_stream->past_lines) - get(Trace_index, screen_row);
   else
-    return Trace_index[screen_row+1] - Trace_index[screen_row];
+    return get(Trace_index, screen_row+1) - get(Trace_index, screen_row);
 }
 
 void render_line(int screen_row, const string& s) {
