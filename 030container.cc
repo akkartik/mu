@@ -437,7 +437,7 @@ type_tree* new_type_tree_with_new_types_for_unknown(const string_tree* propertie
   if (!properties) return NULL;
   type_tree* result = new type_tree("", 0);
   if (!properties->value.empty()) {
-    const string& type_name = properties->value;
+    const string& type_name = result->name = properties->value;
     if (contains_key(Type_ordinal, type_name)) {
       result->value = get(Type_ordinal, type_name);
     }

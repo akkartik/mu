@@ -106,8 +106,8 @@ void drop_from_type(reagent& r, string expected_type) {
     raise_error << "can't drop " << expected_type << " from " << to_string(r) << '\n' << end();
     return;
   }
-  if (r.properties.at(0).second->value != expected_type) {
-    raise_error << "can't drop " << expected_type << " from " << to_string(r) << '\n' << end();
+  if (r.type->name != expected_type) {
+    raise_error << "can't drop2 " << expected_type << " from " << to_string(r) << '\n' << end();
     return;
   }
   type_tree* tmp = r.type;

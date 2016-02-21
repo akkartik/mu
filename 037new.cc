@@ -34,13 +34,13 @@
 type_ordinal shared = put(Type_ordinal, "shared", Next_type_ordinal++);
 get_or_insert(Type, shared).name = "shared";
 :(before "End Drop Address In lookup_memory(x)")
-if (x.properties.at(0).second->value == "shared") {
+if (x.type->name == "shared") {
   trace(9999, "mem") << "skipping refcount at " << x.value << end();
   x.set_value(x.value+1);  // skip refcount
   drop_from_type(x, "shared");
 }
 :(before "End Drop Address In canonize_type(r)")
-if (r.properties.at(0).second->value == "shared") {
+if (r.type->name == "shared") {
   drop_from_type(r, "shared");
 }
 
@@ -655,5 +655,5 @@ string read_mu_string(long long int address) {
 bool is_mu_type_literal(reagent r) {
 //?   if (!r.properties.empty())
 //?     dump_property(r.properties.at(0).second, cerr);
-  return is_literal(r) && !r.properties.empty() && r.properties.at(0).second && r.properties.at(0).second->value == "type";
+  return is_literal(r) && !r.properties.empty() && r.properties.at(0).second && r.type->name == "type";
 }

@@ -273,10 +273,12 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
       // rather than {foo: (number)}
       // We'd also like to use it with multiple types: foo:address:number.
       replacement = curr;
-      if (!final_type_ingredient(type_ingredient_index, container_info))
+      if (!final_type_ingredient(type_ingredient_index, container_info)) {
         splice_right = false;
+      }
     }
   }
+  element_type->name = replacement->name;
   element_type->value = replacement->value;
   assert(!element_type->left);  // since value is set
   element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
@@ -346,8 +348,8 @@ void test_replace_type_ingredients_entire() {
   reagent callsite("x:foo:point");
   reagent element = element_type(callsite, 0);
   CHECK_EQ(element.name, "x");
-  CHECK_EQ(element.properties.at(0).second->value, "point");
-  CHECK(!element.properties.at(0).second->right);
+  CHECK_EQ(element.type->name, "point");
+  CHECK(!element.type->right);
 }
 
 void test_replace_type_ingredients_tail() {
@@ -360,9 +362,9 @@ void test_replace_type_ingredients_tail() {
   reagent callsite("x:bar:point");
   reagent element = element_type(callsite, 0);
   CHECK_EQ(element.name, "x");
-  CHECK_EQ(element.properties.at(0).second->value, "foo");
-  CHECK_EQ(element.properties.at(0).second->right->value, "point");
-  CHECK(!element.properties.at(0).second->right->right);
+  CHECK_EQ(element.type->name, "foo");
+  CHECK_EQ(element.type->right->name, "point");
+  CHECK(!element.type->right->right);
 }
 
 void test_replace_type_ingredients_head_tail_multiple() {
@@ -375,12 +377,12 @@ void test_replace_type_ingredients_head_tail_multiple() {
   reagent callsite("x:bar:address:shared:array:character");
   reagent element = element_type(callsite, 0);
   CHECK_EQ(element.name, "x");
-  CHECK_EQ(element.properties.at(0).second->value, "foo");
-  CHECK_EQ(element.properties.at(0).second->right->value, "address");
-  CHECK_EQ(element.properties.at(0).second->right->right->value, "shared");
-  CHECK_EQ(element.properties.at(0).second->right->right->right->value, "array");
-  CHECK_EQ(element.properties.at(0).second->right->right->right->right->value, "character");
-  CHECK(!element.properties.at(0).second->right->right->right->right->right);
+  CHECK_EQ(element.type->name, "foo");
+  CHECK_EQ(element.type->right->name, "address");
+  CHECK_EQ(element.type->right->right->name, "shared");
+  CHECK_EQ(element.type->right->right->right->name, "array");
+  CHECK_EQ(element.type->right->right->right->right->name, "character");
+  CHECK(!element.type->right->right->right->right->right);
 }
 
 void test_replace_type_ingredients_head_middle() {
@@ -393,13 +395,13 @@ void test_replace_type_ingredients_head_middle() {
   reagent callsite("x:bar:address");
   reagent element = element_type(callsite, 0);
   CHECK_EQ(element.name, "x");
-  CHECK(element.properties.at(0).second)
-  CHECK_EQ(element.properties.at(0).second->value, "foo");
-  CHECK(element.properties.at(0).second->right)
-  CHECK_EQ(element.properties.at(0).second->right->value, "address");
-  CHECK(element.properties.at(0).second->right->right)
-  CHECK_EQ(element.properties.at(0).second->right->right->value, "number");
-  CHECK(!element.properties.at(0).second->right->right->right);
+  CHECK(element.type)
+  CHECK_EQ(element.type->name, "foo");
+  CHECK(element.type->right)
+  CHECK_EQ(element.type->right->name, "address");
+  CHECK(element.type->right->right)
+  CHECK_EQ(element.type->right->right->name, "number");
+  CHECK(!element.type->right->right->right);
 }
 
 void test_replace_last_type_ingredient_with_multiple() {
@@ -410,15 +412,15 @@ void test_replace_last_type_ingredient_with_multiple() {
   reagent callsite("{f: (foo number (address shared array character))}");
   reagent element1 = element_type(callsite, 0);
   CHECK_EQ(element1.name, "x");
-  CHECK_EQ(element1.properties.at(0).second->value, "number");
-  CHECK(!element1.properties.at(0).second->right);
+  CHECK_EQ(element1.type->name, "number");
+  CHECK(!element1.type->right);
   reagent element2 = element_type(callsite, 1);
   CHECK_EQ(element2.name, "y");
-  CHECK_EQ(element2.properties.at(0).second->value, "address");
-  CHECK_EQ(element2.properties.at(0).second->right->value, "shared");
-  CHECK_EQ(element2.properties.at(0).second->right->right->value, "array");
-  CHECK_EQ(element2.properties.at(0).second->right->right->right->value, "character");
-  CHECK(!element2.properties.at(0).second->right->right->right->right);
+  CHECK_EQ(element2.type->name, "address");
+  CHECK_EQ(element2.type->right->name, "shared");
+  CHECK_EQ(element2.type->right->right->name, "array");
+  CHECK_EQ(element2.type->right->right->right->name, "character");
+  CHECK(!element2.type->right->right->right->right);
 }
 
 void test_replace_middle_type_ingredient_with_multiple() {
@@ -430,19 +432,19 @@ void test_replace_middle_type_ingredient_with_multiple() {
   reagent callsite("{f: (foo number (address shared array character) boolean)}");
   reagent element1 = element_type(callsite, 0);
   CHECK_EQ(element1.name, "x");
-  CHECK_EQ(element1.properties.at(0).second->value, "number");
-  CHECK(!element1.properties.at(0).second->right);
+  CHECK_EQ(element1.type->name, "number");
+  CHECK(!element1.type->right);
   reagent element2 = element_type(callsite, 1);
   CHECK_EQ(element2.name, "y");
-  CHECK_EQ(element2.properties.at(0).second->value, "address");
-  CHECK_EQ(element2.properties.at(0).second->right->value, "shared");
-  CHECK_EQ(element2.properties.at(0).second->right->right->value, "array");
-  CHECK_EQ(element2.properties.at(0).second->right->right->right->value, "character");
-  CHECK(!element2.properties.at(0).second->right->right->right->right);
+  CHECK_EQ(element2.type->name, "address");
+  CHECK_EQ(element2.type->right->name, "shared");
+  CHECK_EQ(element2.type->right->right->name, "array");
+  CHECK_EQ(element2.type->right->right->right->name, "character");
+  CHECK(!element2.type->right->right->right->right);
   reagent element3 = element_type(callsite, 2);
   CHECK_EQ(element3.name, "z");
-  CHECK_EQ(element3.properties.at(0).second->value, "boolean");
-  CHECK(!element3.properties.at(0).second->right);
+  CHECK_EQ(element3.type->name, "boolean");
+  CHECK(!element3.type->right);
 }
 
 bool has_nth_type(const type_tree* base, long long int n) {

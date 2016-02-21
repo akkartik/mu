@@ -58,7 +58,7 @@ size_t hash_mu_address(size_t h, reagent& r) {
   if (r.value == 0) return 0;
   r.value = get_or_insert(Memory, r.value);
   drop_from_type(r, "address");
-  if (r.properties.at(0).second->value == "shared") {
+  if (r.type->name == "shared") {
     ++r.value;
     drop_from_type(r, "shared");
   }

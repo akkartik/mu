@@ -121,14 +121,14 @@ bool all_concrete_header_reagents_strictly_match(const instruction& inst, const 
     return false;
   }
   for (long long int i = 0; i < SIZE(variant.ingredients); ++i) {
-    if (!concrete_types_strictly_match(variant.ingredients.at(i), inst.ingredients.at(i))) {
+    if (!concrete_type_names_strictly_match(variant.ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "concrete-type match failed: ingredient " << i << end();
       return false;
     }
   }
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
     if (is_dummy(inst.products.at(i))) continue;
-    if (!concrete_types_strictly_match(variant.products.at(i), inst.products.at(i))) {
+    if (!concrete_type_names_strictly_match(variant.products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "strict match failed: product " << i << end();
       return false;
     }
@@ -142,7 +142,7 @@ recipe_ordinal best_shape_shifting_variant(const instruction& inst, vector<recip
   // primary score
   long long int max_score = -1;
   for (long long int i = 0; i < SIZE(candidates); ++i) {
-    long long int score = number_of_concrete_types(candidates.at(i));
+    long long int score = number_of_concrete_type_names(candidates.at(i));
     assert(score > -1);
     if (score > max_score) max_score = score;
   }
@@ -150,7 +150,7 @@ recipe_ordinal best_shape_shifting_variant(const instruction& inst, vector<recip
   long long int min_score2 = 999;
   long long int best_index = 0;
   for (long long int i = 0; i < SIZE(candidates); ++i) {
-    long long int score1 = number_of_concrete_types(candidates.at(i));
+    long long int score1 = number_of_concrete_type_names(candidates.at(i));
     assert(score1 <= max_score);
     if (score1 != max_score) continue;
     const recipe& candidate = get(Recipe, candidates.at(i));
@@ -178,63 +178,63 @@ bool any_type_ingredient_in_header(recipe_ordinal variant) {
   return false;
 }
 
-bool concrete_types_strictly_match(reagent to, reagent from) {
+bool concrete_type_names_strictly_match(reagent to, reagent from) {
   canonize_type(to);
   canonize_type(from);
-  return concrete_types_strictly_match(to.properties.at(0).second, from.properties.at(0).second, from);
+  return concrete_type_names_strictly_match(to.type, from.type, from);
 }
 
-long long int number_of_concrete_types(recipe_ordinal r) {
+long long int number_of_concrete_type_names(recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   long long int result = 0;
   for (long long int i = 0; i < SIZE(caller.ingredients); ++i)
-    result += number_of_concrete_types(caller.ingredients.at(i));
+    result += number_of_concrete_type_names(caller.ingredients.at(i));
   for (long long int i = 0; i < SIZE(caller.products); ++i)
-    result += number_of_concrete_types(caller.products.at(i));
+    result += number_of_concrete_type_names(caller.products.at(i));
   return result;
 }
 
-long long int number_of_concrete_types(const reagent& r) {
-  return number_of_concrete_types(r.properties.at(0).second);
+long long int number_of_concrete_type_names(const reagent& r) {
+  return number_of_concrete_type_names(r.type);
 }
 
-long long int number_of_concrete_types(const string_tree* type) {
+long long int number_of_concrete_type_names(const type_tree* type) {
   if (!type) return 0;
   long long int result = 0;
-  if (!type->value.empty() && !is_type_ingredient_name(type->value))
+  if (!type->name.empty() && !is_type_ingredient_name(type->name))
     result++;
-  result += number_of_concrete_types(type->left);
-  result += number_of_concrete_types(type->right);
+  result += number_of_concrete_type_names(type->left);
+  result += number_of_concrete_type_names(type->right);
   return result;
 }
 
-bool concrete_types_strictly_match(const string_tree* to, const string_tree* from, const reagent& rhs_reagent) {
+bool concrete_type_names_strictly_match(const type_tree* to, const type_tree* from, const reagent& rhs_reagent) {
   if (!to) return !from;
   if (!from) return !to;
-  if (is_type_ingredient_name(to->value)) return true;  // type ingredient matches anything
-  if (to->value == "literal" && from->value == "literal")
+  if (is_type_ingredient_name(to->name)) return true;  // type ingredient matches anything
+  if (to->name == "literal" && from->name == "literal")
     return true;
-  if (to->value == "literal"
-      && Literal_type_names.find(from->value) != Literal_type_names.end())
+  if (to->name == "literal"
+      && Literal_type_names.find(from->name) != Literal_type_names.end())
     return true;
-  if (from->value == "literal"
-      && Literal_type_names.find(to->value) != Literal_type_names.end())
+  if (from->name == "literal"
+      && Literal_type_names.find(to->name) != Literal_type_names.end())
     return true;
-  if (from->value == "literal" && to->value == "address")
+  if (from->name == "literal" && to->name == "address")
     return rhs_reagent.name == "0";
-//?   cerr << to->value << " vs " << from->value << '\n';
-  return to->value == from->value
-      && concrete_types_strictly_match(to->left, from->left, rhs_reagent)
-      && concrete_types_strictly_match(to->right, from->right, rhs_reagent);
+//?   cerr << to->name << " vs " << from->name << '\n';
+  return to->name == from->name
+      && concrete_type_names_strictly_match(to->left, from->left, rhs_reagent)
+      && concrete_type_names_strictly_match(to->right, from->right, rhs_reagent);
 }
 
 bool contains_type_ingredient_name(const reagent& x) {
-  return contains_type_ingredient_name(x.properties.at(0).second);
+  return contains_type_ingredient_name(x.type);
 }
 
-bool contains_type_ingredient_name(const string_tree* type) {
+bool contains_type_ingredient_name(const type_tree* type) {
   if (!type) return false;
-  if (is_type_ingredient_name(type->value)) return true;
+  if (is_type_ingredient_name(type->name)) return true;
   return contains_type_ingredient_name(type->left) || contains_type_ingredient_name(type->right);
 }
 
@@ -301,7 +301,7 @@ void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name, 
     return;
   }
   if (contains_key(type_name, x.name)) return;
-  if (x.properties.at(0).second->value == "offset" || x.properties.at(0).second->value == "variant") return;  // special-case for container-access instructions
+  if (x.type->name == "offset" || x.type->name == "variant") return;  // special-case for container-access instructions
   put(type_name, x.name, x.properties.at(0).second);
   trace(9993, "transform") << "type of " << x.name << " is " << to_string(x.properties.at(0).second) << end();
 }
@@ -390,7 +390,7 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const string
     for (long long int j = 0; j < SIZE(inst.products); ++j)
       replace_type_ingredients(inst.products.at(j), mappings, new_recipe);
     // special-case for new: replace type ingredient in first ingredient *value*
-    if (inst.name == "new" && inst.ingredients.at(0).properties.at(0).second->value != "literal-string") {
+    if (inst.name == "new" && inst.ingredients.at(0).type->name != "literal-string") {
       string_tree* type_name = parse_string_tree(inst.ingredients.at(0).name);
       replace_type_ingredients(type_name, mappings);
       inst.ingredients.at(0).name = inspect(type_name);

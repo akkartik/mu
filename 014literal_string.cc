@@ -124,7 +124,7 @@ if (s.at(0) == '[') {
 
 :(code)
 bool is_literal_string(const reagent& x) {
-  return x.properties.at(0).second && x.properties.at(0).second->value == "literal-string";
+  return x.type && x.type->name == "literal-string";
 }
 
 string emit_literal_string(string name) {

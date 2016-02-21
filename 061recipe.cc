@@ -32,7 +32,7 @@ type_ordinal recipe = put(Type_ordinal, "recipe", Next_type_ordinal++);
 get_or_insert(Type, recipe).name = "recipe";
 
 :(before "End Null-type is_disqualified Exceptions")
-if (!x.properties.at(0).second && contains_key(Recipe_ordinal, x.name)) {
+if (!x.type && contains_key(Recipe_ordinal, x.name)) {
   x.properties.at(0).second = new string_tree("recipe-literal");
   x.type = new type_tree("recipe-literal", get(Type_ordinal, "recipe-literal"));
   x.set_value(get(Recipe_ordinal, x.name));
@@ -126,27 +126,26 @@ void check_indirect_calls_against_header(const recipe_ordinal r) {
 }
 
 recipe from_reagent(const reagent& r) {
-  assert(r.properties.at(0).second->value == "recipe");
+  assert(r.type->name == "recipe");
   recipe result_header;  // will contain only ingredients and products, nothing else
   result_header.has_header = true;
-  const string_tree* curr = r.properties.at(0).second->right;
+  const type_tree* curr = r.type->right;
   for (; curr; curr=curr->right) {
-    if (curr->value == "->") {
+    if (curr->name == "->") {
       curr = curr->right;  // skip delimiter
       break;
     }
-    result_header.ingredients.push_back("recipe:"+curr->value);
+    result_header.ingredients.push_back("recipe:"+curr->name);
   }
-  for (; curr; curr=curr->right) {
-    result_header.products.push_back("recipe:"+curr->value);
-  }
+  for (; curr; curr=curr->right)
+    result_header.products.push_back("recipe:"+curr->name);
   return result_header;
 }
 
 bool is_mu_recipe(reagent r) {
   if (!r.type) return false;
-  if (r.properties.at(0).second->value == "recipe") return true;
-  if (r.properties.at(0).second->value == "recipe-literal") return true;
+  if (r.type->name == "recipe") return true;
+  if (r.type->name == "recipe-literal") return true;
   // End is_mu_recipe Cases
   return false;
 }

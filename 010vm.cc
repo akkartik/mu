@@ -269,7 +269,7 @@ type_tree* new_type_tree(const string_tree* properties) {
   if (!properties) return NULL;
   type_tree* result = new type_tree("", 0);
   if (!properties->value.empty()) {
-    const string& type_name = properties->value;
+    const string& type_name = result->name = properties->value;
     if (contains_key(Type_ordinal, type_name))
       result->value = get(Type_ordinal, type_name);
     else if (is_integer(type_name))  // sometimes types will contain non-type tags, like numbers for the size of an array
@@ -298,6 +298,7 @@ reagent::reagent(const reagent& old) {
 }
 
 type_tree::type_tree(const type_tree& old) {
+  name = old.name;
   value = old.value;
   left = old.left ? new type_tree(*old.left) : NULL;
   right = old.right ? new type_tree(*old.right) : NULL;
