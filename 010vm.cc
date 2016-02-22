@@ -496,7 +496,7 @@ string to_string(const type_tree* type) {
 
 void dump(const type_tree* x, ostream& out) {
   if (!x->left && !x->right) {
-    out << x->value;
+    dump(x->value, out);
     return;
   }
   out << '(';
