@@ -400,7 +400,7 @@ void replace_type_ingredients(reagent& x, const map<string, const type_tree*>& m
 
 void replace_type_ingredients(type_tree* type, const map<string, const type_tree*>& mappings) {
   if (!type) return;
-  if (contains_key(Type_ordinal, type->name))  // todo: ugly side effect. bugfix #0
+  if (contains_key(Type_ordinal, type->name))  // todo: ugly side effect
     type->value = get(Type_ordinal, type->name);
   if (is_type_ingredient_name(type->name) && contains_key(mappings, type->name)) {
     const type_tree* replacement = get(mappings, type->name);
@@ -451,7 +451,7 @@ type_tree* parse_type_tree(istream& in) {
       (*curr)->left = parse_type_tree(in);
     else {
       (*curr)->name = next_word(in);
-      if (!is_type_ingredient_name((*curr)->name)) {  // adding this condition was bugfix #2
+      if (!is_type_ingredient_name((*curr)->name)) {
         if (!contains_key(Type_ordinal, (*curr)->name))
           put(Type_ordinal, (*curr)->name, Next_type_ordinal++);
         (*curr)->value = get(Type_ordinal, (*curr)->name);
@@ -500,7 +500,7 @@ void ensure_all_concrete_types(/*const*/ recipe& new_recipe, const recipe& exemp
 }
 
 void ensure_all_concrete_types(/*const*/ reagent& x, const recipe& exemplar) {
-  if (!x.type || contains_type_ingredient_name(x.type)) {  // adding the second clause was bugfix #1
+  if (!x.type || contains_type_ingredient_name(x.type)) {
     raise_error << maybe(exemplar.name) << "failed to map a type to " << x.original_string << '\n' << end();
     x.type = new type_tree("", 0);  // just to prevent crashes later
     return;
