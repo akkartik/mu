@@ -57,7 +57,7 @@ struct reagent {
   double value;
   bool initialized;
   reagent(string s);
-  reagent();
+  reagent() :type(NULL), value(0), initialized(false) {}
   ~reagent();
   void clear();
   reagent(const reagent& old);
@@ -232,26 +232,25 @@ reagent::reagent(string s) :original_string(s), type(NULL), value(0), initialize
   // Parsing reagent(string s)
   istringstream in(s);
   in >> std::noskipws;
-  // properties
+  // name and type
+  istringstream first_row(slurp_until(in, '/'));
+  first_row >> std::noskipws;
+  name = slurp_until(first_row, ':');
+  string_tree* type_names = parse_property_list(first_row);
+  type = new_type_tree(type_names);
+  delete type_names;
+  // special cases
+  if (is_integer(name) && type == NULL)
+    type = new type_tree("literal", get(Type_ordinal, "literal"));
+  if (name == "_" && type == NULL)
+    type = new type_tree("literal", get(Type_ordinal, "literal"));
+  // other properties
   while (has_data(in)) {
     istringstream row(slurp_until(in, '/'));
     row >> std::noskipws;
     string key = slurp_until(row, ':');
     string_tree* value = parse_property_list(row);
     properties.push_back(pair<string, string_tree*>(key, value));
-  }
-  // structures for the first row of properties: name and list of types
-  name = properties.at(0).first;
-  type = new_type_tree(properties.at(0).second);
-  if (is_integer(name) && type == NULL) {
-    assert(!properties.at(0).second);
-    properties.at(0).second = new string_tree("literal");
-    type = new type_tree("literal", get(Type_ordinal, "literal"));
-  }
-  if (name == "_" && type == NULL) {
-    assert(!properties.at(0).second);
-    properties.at(0).second = new string_tree("dummy");
-    type = new type_tree("literal", get(Type_ordinal, "literal"));
   }
   // End Parsing reagent
 }
@@ -264,7 +263,6 @@ string_tree* parse_property_list(istream& in) {
   return result;
 }
 
-// TODO: delete
 type_tree* new_type_tree(const string_tree* properties) {
   if (!properties) return NULL;
   type_tree* result = new type_tree("", 0);
@@ -345,13 +343,6 @@ string_tree::~string_tree() {
   delete right;
 }
 
-reagent::reagent() :type(NULL), value(0), initialized(false) {
-  // The first property is special, so ensure we always have it.
-  // Other properties can be pushed back, but the first must always be
-  // assigned to.
-  properties.push_back(pair<string, string_tree*>("", NULL));
-}
-
 string slurp_until(istream& in, char delim) {
   ostringstream out;
   char c;
@@ -366,14 +357,14 @@ string slurp_until(istream& in, char delim) {
 }
 
 bool has_property(reagent x, string name) {
-  for (long long int i = /*skip name:type*/1; i < SIZE(x.properties); ++i) {
+  for (long long int i = 0; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == name) return true;
   }
   return false;
 }
 
 string_tree* property(const reagent& r, const string& name) {
-  for (long long int p = /*skip name:type*/1; p != SIZE(r.properties); ++p) {
+  for (long long int p = 0; p != SIZE(r.properties); ++p) {
     if (r.properties.at(p).first == name)
       return r.properties.at(p).second;
   }
@@ -450,8 +441,9 @@ string to_string(const instruction& inst) {
 
 string to_string(const reagent& r) {
   ostringstream out;
+  out << r.name << ": " << names_to_string(r.type);
   if (!r.properties.empty()) {
-    out << "{";
+    out << ", {";
     for (long long int i = 0; i < SIZE(r.properties); ++i) {
       if (i > 0) out << ", ";
       out << "\"" << r.properties.at(i).first << "\": " << to_string(r.properties.at(i).second);
@@ -498,25 +490,24 @@ string to_string(const type_tree* type) {
   // abbreviate a single-node tree to just its contents
   if (!type) return "NULLNULLNULL";  // should never happen
   ostringstream out;
-  if (!type->left && !type->right)
-    dump(type->value, out);
-  else
-    dump(type, out);
+  dump(type, out);
   return out.str();
 }
 
-void dump(const type_tree* type, ostream& out) {
-  out << "<";
-  if (type->left)
-    dump(type->left, out);
-  else
-    dump(type->value, out);
-  out << " : ";
-  if (type->right)
-    dump(type->right, out);
-  else
-    out << "<>";
-  out << ">";
+void dump(const type_tree* x, ostream& out) {
+  if (!x->left && !x->right) {
+    out << x->value;
+    return;
+  }
+  out << '(';
+  for (const type_tree* curr = x; curr; curr = curr->right) {
+    if (curr != x) out << ' ';
+    if (curr->left)
+      dump(curr->left, out);
+    else
+      dump(curr->value, out);
+  }
+  out << ')';
 }
 
 void dump(type_ordinal type, ostream& out) {
@@ -524,6 +515,54 @@ void dump(type_ordinal type, ostream& out) {
     out << get(Type, type).name;
   else
     out << "?" << type;
+}
+
+string names_to_string(const type_tree* type) {
+  // abbreviate a single-node tree to just its contents
+  if (!type) return "()";  // should never happen
+  ostringstream out;
+  dump_names(type, out);
+  return out.str();
+}
+
+void dump_names(const type_tree* type, ostream& out) {
+  if (!type->left && !type->right) {
+    out << '"' << type->name << '"';
+    return;
+  }
+  out << '(';
+  for (const type_tree* curr = type; curr; curr = curr->right) {
+    if (curr != type) out << ' ';
+    if (curr->left)
+      dump_names(curr->left, out);
+    else
+      out << '"' << curr->name << '"';
+  }
+  out << ')';
+}
+
+string names_to_string_without_quotes(const type_tree* type) {
+  // abbreviate a single-node tree to just its contents
+  if (!type) return "NULLNULLNULL";  // should never happen
+  ostringstream out;
+  dump_names_without_quotes(type, out);
+  return out.str();
+}
+
+void dump_names_without_quotes(const type_tree* type, ostream& out) {
+  if (!type->left && !type->right) {
+    out << type->name;
+    return;
+  }
+  out << '(';
+  for (const type_tree* curr = type; curr; curr = curr->right) {
+    if (curr != type) out << ' ';
+    if (curr->left)
+      dump_names_without_quotes(curr->left, out);
+    else
+      out << curr->name;
+  }
+  out << ')';
 }
 
 //: helper to print numbers without excessive precision
@@ -555,7 +594,6 @@ string trim_floating_point(const string& in) {
     --len;
   }
   if (in.at(len-1) == '.') --len;
-//?   cerr << in << ": " << in.substr(0, len) << '\n';
   return in.substr(0, len);
 }
 

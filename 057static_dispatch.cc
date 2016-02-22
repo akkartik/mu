@@ -69,12 +69,12 @@ bool all_reagents_match(const recipe& r1, const recipe& r2) {
   if (SIZE(r1.ingredients) != SIZE(r2.ingredients)) return false;
   if (SIZE(r1.products) != SIZE(r2.products)) return false;
   for (long long int i = 0; i < SIZE(r1.ingredients); ++i) {
-    if (!deeply_equal_types(r1.ingredients.at(i), r2.ingredients.at(i))) {
+    if (!deeply_equal_type_names(r1.ingredients.at(i), r2.ingredients.at(i))) {
       return false;
     }
   }
   for (long long int i = 0; i < SIZE(r1.products); ++i) {
-    if (!deeply_equal_types(r1.products.at(i), r2.products.at(i))) {
+    if (!deeply_equal_type_names(r1.products.at(i), r2.products.at(i))) {
       return false;
     }
   }
@@ -87,21 +87,21 @@ set<string> Literal_type_names;
 Literal_type_names.insert("number");
 Literal_type_names.insert("character");
 :(code)
-bool deeply_equal_types(const reagent& a, const reagent& b) {
-  return deeply_equal_types(a.properties.at(0).second, b.properties.at(0).second);
+bool deeply_equal_type_names(const reagent& a, const reagent& b) {
+  return deeply_equal_type_names(a.type, b.type);
 }
-bool deeply_equal_types(const string_tree* a, const string_tree* b) {
+bool deeply_equal_type_names(const type_tree* a, const type_tree* b) {
   if (!a) return !b;
   if (!b) return !a;
-  if (a->value == "literal" && b->value == "literal")
+  if (a->name == "literal" && b->name == "literal")
     return true;
-  if (a->value == "literal")
-    return Literal_type_names.find(b->value) != Literal_type_names.end();
-  if (b->value == "literal")
-    return Literal_type_names.find(a->value) != Literal_type_names.end();
-  return a->value == b->value
-      && deeply_equal_types(a->left, b->left)
-      && deeply_equal_types(a->right, b->right);
+  if (a->name == "literal")
+    return Literal_type_names.find(b->name) != Literal_type_names.end();
+  if (b->name == "literal")
+    return Literal_type_names.find(a->name) != Literal_type_names.end();
+  return a->name == b->name
+      && deeply_equal_type_names(a->left, b->left)
+      && deeply_equal_type_names(a->right, b->right);
 }
 
 string next_unused_recipe_name(const string& recipe_name) {
@@ -130,14 +130,10 @@ recipe test a:number, b:number -> z:number [
 
 //: support recipe headers in a previous transform to fill in missing types
 :(before "End check_or_set_invalid_types")
-for (long long int i = 0; i < SIZE(caller.ingredients); ++i) {
-  check_or_set_invalid_types(caller.ingredients.at(i).type, caller.ingredients.at(i).properties.at(0).second,
-                             maybe(caller.name), "recipe header ingredient");
-}
-for (long long int i = 0; i < SIZE(caller.products); ++i) {
-  check_or_set_invalid_types(caller.products.at(i).type, caller.products.at(i).properties.at(0).second,
-                             maybe(caller.name), "recipe header product");
-}
+for (long long int i = 0; i < SIZE(caller.ingredients); ++i)
+  check_or_set_invalid_types(caller.ingredients.at(i).type, maybe(caller.name), "recipe header ingredient");
+for (long long int i = 0; i < SIZE(caller.products); ++i)
+  check_or_set_invalid_types(caller.products.at(i).type, maybe(caller.name), "recipe header product");
 
 //: after filling in all missing types (because we'll be introducing 'blank' types in this transform in a later layer, for shape-shifting recipes)
 :(after "Transform.push_back(transform_names)")
@@ -156,7 +152,6 @@ list<call> resolve_stack;
 void resolve_ambiguous_calls(recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   trace(9991, "transform") << "--- resolve ambiguous calls for recipe " << caller_recipe.name << end();
-//?   cerr << "--- resolve ambiguous calls for recipe " << caller_recipe.name << '\n';
   for (long long int index = 0; index < SIZE(caller_recipe.steps); ++index) {
     instruction& inst = caller_recipe.steps.at(index);
     if (inst.is_label) continue;

@@ -97,14 +97,24 @@ void read_type_ingredients(string& name) {
 
 :(before "End insert_container Special-cases")
 // check for use of type ingredients
-else if (!properties->value.empty() && properties->value.at(0) == '_') {
-  result->value = get(info.type_ingredient_names, properties->value);
+else if (is_type_ingredient_name(type->name)) {
+  type->value = get(info.type_ingredient_names, type->name);
+}
+:(code)
+bool is_type_ingredient_name(const string& type) {
+  return !type.empty() && type.at(0) == '_';
 }
 
 :(before "End Container Type Checks")
 if (type->value >= START_TYPE_INGREDIENTS
     && (type->value - START_TYPE_INGREDIENTS) < SIZE(get(Type, type->value).type_ingredient_names))
   return;
+:(code)
+//? //: TODO: is this necessary?
+//? :(before "End Container Type Checks2")
+//? if (type->value >= START_TYPE_INGREDIENTS
+//?     && (type->value - START_TYPE_INGREDIENTS) < SIZE(get(Type, type->value).type_ingredient_names))
+//?   return;
 
 :(scenario size_of_shape_shifting_exclusive_container)
 exclusive-container foo:_t [
@@ -226,8 +236,8 @@ recipe main [
 :(before "End element_type Special-cases")
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
-    raise_error << "illegal type '" << to_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredients(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second ? canonized_base.properties.at(0).second->right : NULL, info);
+    raise_error << "illegal type " << names_to_string(canonized_base.type) << " seems to be missing a type ingredient or three\n" << end();
+  replace_type_ingredients(element.type, canonized_base.type->right, info);
 }
 
 :(code)
@@ -242,23 +252,22 @@ bool contains_type_ingredient(const type_tree* type) {
 }
 
 // todo: too complicated and likely incomplete; maybe avoid replacing in place? Maybe process element_type and element_type_name in separate functions?
-void replace_type_ingredients(type_tree* element_type, string_tree* element_type_name, const type_tree* callsite_type, const string_tree* callsite_type_name, const type_info& container_info) {
+void replace_type_ingredients(type_tree* element_type, const type_tree* callsite_type, const type_info& container_info) {
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
 
   // A. recurse first to avoid nested replaces (which I can't reason about yet)
-  replace_type_ingredients(element_type->left, element_type_name ? element_type_name->left : NULL, callsite_type, callsite_type_name, container_info);
-  replace_type_ingredients(element_type->right, element_type_name ? element_type_name->right : NULL, callsite_type, callsite_type_name, container_info);
+  replace_type_ingredients(element_type->left, callsite_type, container_info);
+  replace_type_ingredients(element_type->right, callsite_type, container_info);
   if (element_type->value < START_TYPE_INGREDIENTS) return;
 
   const long long int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
   if (!has_nth_type(callsite_type, type_ingredient_index)) {
-    raise_error << "illegal type '" << to_string(callsite_type) << "' seems to be missing a type ingredient or three\n" << end();
+    raise_error << "illegal type " << names_to_string(callsite_type) << " seems to be missing a type ingredient or three\n" << end();
     return;
   }
 
   // B. replace the current location
-  // B1. update value/left/right of element_type
   const type_tree* replacement = NULL;
   bool splice_right = true ;
   {
@@ -286,28 +295,6 @@ void replace_type_ingredients(type_tree* element_type, string_tree* element_type
     type_tree* old_right = element_type->right;
     element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
     append(element_type->right, old_right);
-  }
-
-  // B2. update value/left/right of element_type_name
-  if (!callsite_type_name || !element_type_name) return;
-  const string_tree* replacement_name = NULL;
-  // could compute splice_right again here, but why bother
-  {
-    const string_tree* curr = callsite_type_name;
-    for (long long int i = 0; i < type_ingredient_index; ++i)
-      curr = curr->right;
-    if (curr && curr->left)
-      replacement_name = curr->left;
-    else
-      replacement_name = curr;
-  }
-  element_type_name->value = replacement_name->value;
-  assert(!element_type_name->left);  // since value is set
-  element_type_name->left = replacement_name->left ? new string_tree(*replacement_name->left) : NULL;
-  if (splice_right) {
-    string_tree* old_right = element_type_name->right;
-    element_type_name->right = replacement_name->right ? new string_tree(*replacement_name->right) : NULL;
-    append(element_type_name->right, old_right);
   }
 }
 
@@ -464,7 +451,7 @@ recipe main [
   10:foo:point <- merge 14, 15, 16
   1:number <- get 10:foo, 1:offset
 ]
-+error: illegal type 'foo' seems to be missing a type ingredient or three
++error: illegal type "foo" seems to be missing a type ingredient or three
 
 //: get-address similarly
 
@@ -576,5 +563,5 @@ recipe main [
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
     raise_error << "illegal type '" << to_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredients(element.type, element.properties.at(0).second, canonized_base.type->right, canonized_base.properties.at(0).second ? canonized_base.properties.at(0).second->right : NULL, info);
+  replace_type_ingredients(element.type, canonized_base.type->right, info);
 }

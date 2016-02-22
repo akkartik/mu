@@ -125,7 +125,6 @@ Transform.push_back(transform_new_to_allocate);  // idempotent
 :(code)
 void transform_new_to_allocate(const recipe_ordinal r) {
   trace(9991, "transform") << "--- convert 'new' to 'allocate' for recipe " << get(Recipe, r).name << end();
-//?   cerr << "--- convert 'new' to 'allocate' for recipe " << get(Recipe, r).name << '\n';
   for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);
     // Convert 'new' To 'allocate'
@@ -429,27 +428,21 @@ if (x.type->value == get(Type_ordinal, "address")
   // decrement refcount of old address
   if (old_address) {
     long long int old_refcount = get_or_insert(Memory, old_address);
-//?     cerr << old_refcount << '\n';
-//?     assert(old_refcount > 0);
     trace(9999, "mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << (old_refcount-1) << end();
     put(Memory, old_address, old_refcount-1);
   }
   // perform the write
-//?   trace(9999, "mem") << "038new.cc:424: location " << x.value << " contains " << old_address << " with refcount " << get_or_insert(Memory, old_address) << end();
   trace(9999, "mem") << "storing " << no_scientific(data.at(0)) << " in location " << base << end();
   put(Memory, base, new_address);
   // increment refcount of new address
   if (new_address) {
     long long int new_refcount = get_or_insert(Memory, new_address);
-//?       assert(new_refcount >= 0);  // == 0 only when new_address == old_address
+    assert(new_refcount >= 0);  // == 0 only when new_address == old_address
     trace(9999, "mem") << "incrementing refcount of " << new_address << ": " << new_refcount << " -> " << (new_refcount+1) << end();
     put(Memory, new_address, new_refcount+1);
   }
   // abandon old address if necessary
   // do this after all refcount updates are done just in case old and new are identical
-//?   if (get_or_insert(Memory, old_address) < 0) {
-//?     DUMP("");
-//?   }
   assert(get_or_insert(Memory, old_address) >= 0);
   if (old_address && get_or_insert(Memory, old_address) == 0) {
     // lookup_memory without drop_one_lookup {
@@ -459,7 +452,6 @@ if (x.type->value == get(Type_ordinal, "address")
     drop_from_type(x, "address");
     drop_from_type(x, "shared");
     // }
-//?     cerr << "ABANDON\n";
     abandon(old_address, size_of(x)+/*refcount*/1);
   }
   return;
@@ -653,7 +645,5 @@ string read_mu_string(long long int address) {
 }
 
 bool is_mu_type_literal(reagent r) {
-//?   if (!r.properties.empty())
-//?     dump_property(r.properties.at(0).second, cerr);
-  return is_literal(r) && !r.properties.empty() && r.properties.at(0).second && r.type->name == "type";
+  return is_literal(r) && r.type && r.type->name == "type";
 }

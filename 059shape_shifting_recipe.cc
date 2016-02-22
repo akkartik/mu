@@ -49,14 +49,12 @@ if (contains_type_ingredient_name(to)) return false;
 :(before "End Globals")
 vector<recipe_ordinal> Recently_added_shape_shifting_recipes;
 :(before "End Setup")
-//? cerr << "setup: clearing recently-added shape-shifting recipes\n";
 Recently_added_shape_shifting_recipes.clear();
 
 //: make sure we don't clear any of these recipes when we start running tests
 :(before "End Loading .mu Files")
 Recently_added_recipes.clear();
 Recently_added_types.clear();
-//? cerr << "clearing recently-added shape-shifting recipes\n";
 Recently_added_shape_shifting_recipes.clear();
 
 //: save original name of specialized recipes
@@ -222,7 +220,6 @@ bool concrete_type_names_strictly_match(const type_tree* to, const type_tree* fr
     return true;
   if (from->name == "literal" && to->name == "address")
     return rhs_reagent.name == "0";
-//?   cerr << to->name << " vs " << from->name << '\n';
   return to->name == from->name
       && concrete_type_names_strictly_match(to->left, from->left, rhs_reagent)
       && concrete_type_names_strictly_match(to->right, from->right, rhs_reagent);
@@ -236,10 +233,6 @@ bool contains_type_ingredient_name(const type_tree* type) {
   if (!type) return false;
   if (is_type_ingredient_name(type->name)) return true;
   return contains_type_ingredient_name(type->left) || contains_type_ingredient_name(type->right);
-}
-
-bool is_type_ingredient_name(const string& type) {
-  return !type.empty() && type.at(0) == '_';
 }
 
 recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, const recipe& caller_recipe) {
@@ -260,11 +253,11 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
   compute_type_names(new_recipe);
   // that gives enough information to replace type-ingredients with concrete types
   {
-    map<string, const string_tree*> mappings;
+    map<string, const type_tree*> mappings;
     bool error = false;
     compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings, caller_recipe, &error);
     if (!error) replace_type_ingredients(new_recipe, mappings);
-    for (map<string, const string_tree*>::iterator p = mappings.begin(); p != mappings.end(); ++p)
+    for (map<string, const type_tree*>::iterator p = mappings.begin(); p != mappings.end(); ++p)
       delete p->second;
     if (error) return 0;  // todo: delete new_recipe_ordinal from Recipes and other global state
   }
@@ -274,7 +267,7 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
 
 void compute_type_names(recipe& variant) {
   trace(9993, "transform") << "compute type names: " << variant.name << end();
-  map<string, string_tree*> type_names;
+  map<string, type_tree*> type_names;
   for (long long int i = 0; i < SIZE(variant.ingredients); ++i)
     save_or_deduce_type_name(variant.ingredients.at(i), type_names, variant);
   for (long long int i = 0; i < SIZE(variant.products); ++i)
@@ -289,29 +282,28 @@ void compute_type_names(recipe& variant) {
   }
 }
 
-void save_or_deduce_type_name(reagent& x, map<string, string_tree*>& type_name, const recipe& variant) {
-  trace(9994, "transform") << "    checking " << to_string(x) << ": " << to_string(x.properties.at(0).second) << end();
-  if (!x.properties.at(0).second && contains_key(type_name, x.name)) {
-    x.properties.at(0).second = new string_tree(*get(type_name, x.name));
-    trace(9994, "transform") << "    deducing type to " << to_string(x.properties.at(0).second) << end();
+void save_or_deduce_type_name(reagent& x, map<string, type_tree*>& type, const recipe& variant) {
+  trace(9994, "transform") << "    checking " << to_string(x) << ": " << names_to_string(x.type) << end();
+  if (!x.type && contains_key(type, x.name)) {
+    x.type = new type_tree(*get(type, x.name));
+    trace(9994, "transform") << "    deducing type to " << names_to_string(x.type) << end();
     return;
   }
-  if (!x.properties.at(0).second) {
+  if (!x.type) {
     raise_error << maybe(variant.original_name) << "unknown type for " << x.original_string << " (check the name for typos)\n" << end();
     return;
   }
-  if (contains_key(type_name, x.name)) return;
+  if (contains_key(type, x.name)) return;
   if (x.type->name == "offset" || x.type->name == "variant") return;  // special-case for container-access instructions
-  put(type_name, x.name, x.properties.at(0).second);
-  trace(9993, "transform") << "type of " << x.name << " is " << to_string(x.properties.at(0).second) << end();
+  put(type, x.name, x.type);
+  trace(9993, "transform") << "type of " << x.name << " is " << names_to_string(x.type) << end();
 }
 
-void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, const string_tree*>& mappings, const recipe& caller_recipe, bool* error) {
+void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, const type_tree*>& mappings, const recipe& caller_recipe, bool* error) {
   long long int limit = min(SIZE(inst.ingredients), SIZE(exemplar.ingredients));
   for (long long int i = 0; i < limit; ++i) {
     const reagent& exemplar_reagent = exemplar.ingredients.at(i);
     reagent ingredient = inst.ingredients.at(i);
-    assert(ingredient.properties.at(0).second);
     canonize_type(ingredient);
     if (is_mu_address(exemplar_reagent) && ingredient.name == "0") continue;  // assume it matches
     accumulate_type_ingredients(exemplar_reagent, ingredient, mappings, exemplar, inst, caller_recipe, error);
@@ -320,7 +312,6 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
   for (long long int i = 0; i < limit; ++i) {
     const reagent& exemplar_reagent = exemplar.products.at(i);
     reagent product = inst.products.at(i);
-    assert(product.properties.at(0).second);
     canonize_type(product);
     accumulate_type_ingredients(exemplar_reagent, product, mappings, exemplar, inst, caller_recipe, error);
   }
@@ -330,39 +321,37 @@ inline long long int min(long long int a, long long int b) {
   return (a < b) ? a : b;
 }
 
-void accumulate_type_ingredients(const reagent& exemplar_reagent, reagent& refinement, map<string, const string_tree*>& mappings, const recipe& exemplar, const instruction& call_instruction, const recipe& caller_recipe, bool* error) {
-  assert(refinement.properties.at(0).second);
-  accumulate_type_ingredients(exemplar_reagent.properties.at(0).second, refinement.properties.at(0).second, mappings, exemplar, exemplar_reagent, call_instruction, caller_recipe, error);
+void accumulate_type_ingredients(const reagent& exemplar_reagent, reagent& refinement, map<string, const type_tree*>& mappings, const recipe& exemplar, const instruction& call_instruction, const recipe& caller_recipe, bool* error) {
+  assert(refinement.type);
+  accumulate_type_ingredients(exemplar_reagent.type, refinement.type, mappings, exemplar, exemplar_reagent, call_instruction, caller_recipe, error);
 }
 
-void accumulate_type_ingredients(const string_tree* exemplar_type, const string_tree* refinement_type, map<string, const string_tree*>& mappings, const recipe& exemplar, const reagent& exemplar_reagent, const instruction& call_instruction, const recipe& caller_recipe, bool* error) {
+void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree* refinement_type, map<string, const type_tree*>& mappings, const recipe& exemplar, const reagent& exemplar_reagent, const instruction& call_instruction, const recipe& caller_recipe, bool* error) {
   if (!exemplar_type) return;
   if (!refinement_type) {
     // todo: make this smarter; only warn if exemplar_type contains some *new* type ingredient
     raise_error << maybe(exemplar.name) << "missing type ingredient in " << exemplar_reagent.original_string << '\n' << end();
     return;
   }
-  if (!exemplar_type->value.empty() && exemplar_type->value.at(0) == '_') {
-    assert(!refinement_type->value.empty());
+  if (is_type_ingredient_name(exemplar_type->name)) {
+    assert(!refinement_type->name.empty());
     if (exemplar_type->right) {
       raise_error << "type_ingredients in non-last position not currently supported\n" << end();
       return;
     }
-    if (!contains_key(mappings, exemplar_type->value)) {
-      trace(9993, "transform") << "adding mapping from " << exemplar_type->value << " to " << to_string(refinement_type) << end();
-      put(mappings, exemplar_type->value, new string_tree(*refinement_type));
+    if (!contains_key(mappings, exemplar_type->name)) {
+      trace(9993, "transform") << "adding mapping from " << exemplar_type->name << " to " << to_string(refinement_type) << end();
+      put(mappings, exemplar_type->name, new type_tree(*refinement_type));
     }
     else {
-      if (!deeply_equal_types(get(mappings, exemplar_type->value), refinement_type)) {
+      if (!deeply_equal_type_names(get(mappings, exemplar_type->name), refinement_type)) {
         raise_error << maybe(caller_recipe.name) << "no call found for '" << to_string(call_instruction) << "'\n" << end();
-//?         cerr << exemplar_type->value << ": " << debug_string(get(mappings, exemplar_type->value)) << " vs " << debug_string(refinement_type) << '\n';
         *error = true;
         return;
       }
-//?       cerr << exemplar_type->value << ": " << debug_string(get(mappings, exemplar_type->value)) << " <= " << debug_string(refinement_type) << '\n';
-      if (get(mappings, exemplar_type->value)->value == "literal") {
-        delete get(mappings, exemplar_type->value);
-        put(mappings, exemplar_type->value, new string_tree(*refinement_type));
+      if (get(mappings, exemplar_type->name)->name == "literal") {
+        delete get(mappings, exemplar_type->name);
+        put(mappings, exemplar_type->name, new type_tree(*refinement_type));
       }
     }
   }
@@ -372,7 +361,7 @@ void accumulate_type_ingredients(const string_tree* exemplar_type, const string_
   accumulate_type_ingredients(exemplar_type->right, refinement_type->right, mappings, exemplar, exemplar_reagent, call_instruction, caller_recipe, error);
 }
 
-void replace_type_ingredients(recipe& new_recipe, const map<string, const string_tree*>& mappings) {
+void replace_type_ingredients(recipe& new_recipe, const map<string, const type_tree*>& mappings) {
   // update its header
   if (mappings.empty()) return;
   trace(9993, "transform") << "replacing in recipe header ingredients" << end();
@@ -391,63 +380,107 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const string
       replace_type_ingredients(inst.products.at(j), mappings, new_recipe);
     // special-case for new: replace type ingredient in first ingredient *value*
     if (inst.name == "new" && inst.ingredients.at(0).type->name != "literal-string") {
-      string_tree* type_name = parse_string_tree(inst.ingredients.at(0).name);
-      replace_type_ingredients(type_name, mappings);
-      inst.ingredients.at(0).name = inspect(type_name);
-      delete type_name;
+      type_tree* type = parse_type_tree(inst.ingredients.at(0).name);
+      replace_type_ingredients(type, mappings);
+      inst.ingredients.at(0).name = inspect(type);
+      delete type;
     }
   }
 }
 
-void replace_type_ingredients(reagent& x, const map<string, const string_tree*>& mappings, const recipe& caller) {
+void replace_type_ingredients(reagent& x, const map<string, const type_tree*>& mappings, const recipe& caller) {
+  string before = to_string(x);
   trace(9993, "transform") << "replacing in ingredient " << x.original_string << end();
-  // replace properties
-  if (!x.properties.at(0).second) {
+  if (!x.type) {
     raise_error << "specializing " << caller.original_name << ": missing type for " << x.original_string << '\n' << end();
     return;
   }
-  replace_type_ingredients(x.properties.at(0).second, mappings);
-  // refresh types from properties
-  delete x.type;
-  x.type = new_type_tree(x.properties.at(0).second);
-  if (x.type)
-    trace(9993, "transform") << "  after: " << to_string(x.type) << end();
+  replace_type_ingredients(x.type, mappings);
 }
 
-void replace_type_ingredients(string_tree* type, const map<string, const string_tree*>& mappings) {
+void replace_type_ingredients(type_tree* type, const map<string, const type_tree*>& mappings) {
   if (!type) return;
-  if (is_type_ingredient_name(type->value) && contains_key(mappings, type->value)) {
-    const string_tree* replacement = get(mappings, type->value);
-    trace(9993, "transform") << type->value << " => " << to_string(replacement) << end();
-    if (replacement->value == "literal")
-      type->value = "number";
-    else
+  if (contains_key(Type_ordinal, type->name))  // todo: ugly side effect. bugfix #0
+    type->value = get(Type_ordinal, type->name);
+  if (is_type_ingredient_name(type->name) && contains_key(mappings, type->name)) {
+    const type_tree* replacement = get(mappings, type->name);
+    trace(9993, "transform") << type->name << " => " << names_to_string(replacement) << end();
+    if (replacement->name == "literal") {
+      type->name = "number";
+      type->value = get(Type_ordinal, "number");
+    }
+    else {
+      type->name = replacement->name;
       type->value = replacement->value;
-    if (replacement->left) type->left = new string_tree(*replacement->left);
-    if (replacement->right) type->right = new string_tree(*replacement->right);
+    }
+    if (replacement->left) type->left = new type_tree(*replacement->left);
+    if (replacement->right) type->right = new type_tree(*replacement->right);
   }
   replace_type_ingredients(type->left, mappings);
   replace_type_ingredients(type->right, mappings);
 }
 
-string inspect(const string_tree* x) {
+type_tree* parse_type_tree(const string& s) {
+  istringstream in(s);
+  in >> std::noskipws;
+  return parse_type_tree(in);
+}
+
+type_tree* parse_type_tree(istream& in) {
+  skip_whitespace_but_not_newline(in);
+  if (!has_data(in)) return NULL;
+  if (in.peek() == ')') {
+    in.get();
+    return NULL;
+  }
+  if (in.peek() != '(') {
+    string type_name = next_word(in);
+    if (!contains_key(Type_ordinal, type_name))
+      put(Type_ordinal, type_name, Next_type_ordinal++);
+    type_tree* result = new type_tree(type_name, get(Type_ordinal, type_name));
+    return result;
+  }
+  in.get();  // skip '('
+  type_tree* result = NULL;
+  type_tree** curr = &result;
+  while (in.peek() != ')') {
+    assert(has_data(in));
+    *curr = new type_tree("", 0);
+    skip_whitespace_but_not_newline(in);
+    if (in.peek() == '(')
+      (*curr)->left = parse_type_tree(in);
+    else {
+      (*curr)->name = next_word(in);
+      if (!is_type_ingredient_name((*curr)->name)) {  // adding this condition was bugfix #2
+        if (!contains_key(Type_ordinal, (*curr)->name))
+          put(Type_ordinal, (*curr)->name, Next_type_ordinal++);
+        (*curr)->value = get(Type_ordinal, (*curr)->name);
+      }
+    }
+    curr = &(*curr)->right;
+  }
+  in.get();  // skip ')'
+  return result;
+}
+
+string inspect(const type_tree* x) {
   ostringstream out;
   dump_inspect(x, out);
   return out.str();
 }
 
-void dump_inspect(const string_tree* x, ostream& out) {
+void dump_inspect(const type_tree* x, ostream& out) {
   if (!x->left && !x->right) {
-    out << x->value;
+    out << x->name;
     return;
   }
   out << '(';
-  for (const string_tree* curr = x; curr; curr = curr->right) {
+  for (const type_tree* curr = x; curr; curr = curr->right) {
     if (curr != x) out << ' ';
     if (curr->left)
       dump_inspect(curr->left, out);
     else
-      out << curr->value;
+      out << curr->name;
   }
   out << ')';
 }
@@ -467,7 +500,7 @@ void ensure_all_concrete_types(/*const*/ recipe& new_recipe, const recipe& exemp
 }
 
 void ensure_all_concrete_types(/*const*/ reagent& x, const recipe& exemplar) {
-  if (!x.type) {
+  if (!x.type || contains_type_ingredient_name(x.type)) {  // adding the second clause was bugfix #1
     raise_error << maybe(exemplar.name) << "failed to map a type to " << x.original_string << '\n' << end();
     x.type = new type_tree("", 0);  // just to prevent crashes later
     return;

@@ -180,8 +180,8 @@ bool is_mu_boolean(reagent r) {
 bool is_mu_number(reagent r) {
   if (!r.type) return false;
   if (is_literal(r)) {
-    if (!r.properties.at(0).second) return false;
-    return r.type->name == "literal-number"
+    if (!r.type) return false;
+    return r.type->name == "literal-fractional-number"
         || r.type->name == "literal";
   }
   if (r.type->value == get(Type_ordinal, "character")) return true;  // permit arithmetic on unicode code points
@@ -191,7 +191,7 @@ bool is_mu_number(reagent r) {
 bool is_mu_scalar(reagent r) {
   if (!r.type) return false;
   if (is_literal(r))
-    return !r.properties.at(0).second || r.type->name != "literal-string";
+    return !r.type || r.type->name != "literal-string";
   if (is_mu_array(r)) return false;
   return size_of(r) == 1;
 }

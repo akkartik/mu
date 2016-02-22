@@ -34,12 +34,12 @@ case CREATE_ARRAY: {
     break;
   }
   // 'create-array' will need to check properties rather than types
-  if (!product.properties.at(0).second || !product.properties.at(0).second->right || !product.properties.at(0).second->right->right) {
+  if (!product.type->right->right) {
     raise_error << maybe(get(Recipe, r).name) << "create array of what size? " << to_string(inst) << '\n' << end();
     break;
   }
-  if (!is_integer(product.properties.at(0).second->right->right->value)) {
-    raise_error << maybe(get(Recipe, r).name) << "'create-array' product should specify size of array after its element type, but got " << product.properties.at(0).second->right->right->value << '\n' << end();
+  if (!is_integer(product.type->right->right->name)) {
+    raise_error << maybe(get(Recipe, r).name) << "'create-array' product should specify size of array after its element type, but got " << product.type->right->right->name << '\n' << end();
     break;
   }
   break;
@@ -49,7 +49,7 @@ case CREATE_ARRAY: {
   reagent product = current_instruction().products.at(0);
   canonize(product);
   long long int base_address = product.value;
-  long long int array_size = to_integer(product.properties.at(0).second->right->right->value);
+  long long int array_size = to_integer(product.type->right->right->name);
   // initialize array size, so that size_of will work
   put(Memory, base_address, array_size);  // in array elements
   long long int size = size_of(product);  // in locations
@@ -135,13 +135,13 @@ container foo [
 
 :(before "End Load Container Element Definition")
 {
-  const string_tree* type_name = info.elements.back().properties.at(0).second;
-  if (type_name->value == "array") {
-    if (!type_name->right) {
+  const type_tree* type = info.elements.back().type;
+  if (type->name == "array") {
+    if (!type->right) {
       raise_error << "container '" << name << "' doesn't specify type of array elements for " << info.elements.back().name << '\n' << end();
       continue;
     }
-    if (!type_name->right->right) {  // array has no length
+    if (!type->right->right) {  // array has no length
       raise_error << "container '" << name << "' cannot determine size of element " << info.elements.back().name << '\n' << end();
       continue;
     }
@@ -193,7 +193,7 @@ case INDEX: {
   reagent element;
   element.type = new type_tree(*array_element(base.type));
   if (!types_coercible(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << to_string(element.type) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << names_to_string_without_quotes(element.type) << '\n' << end();
     break;
   }
   break;
@@ -334,7 +334,7 @@ case INDEX_ADDRESS: {
   element.type = new type_tree("address", get(Type_ordinal, "address"),
                                new type_tree(*array_element(base.type)));
   if (!types_coercible(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << to_string(element.type) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << names_to_string_without_quotes(element.type) << '\n' << end();
     break;
   }
   break;
@@ -405,7 +405,7 @@ recipe main [
   8:address:array:point <- copy 1/unsafe
   9:address:number <- index-address *8:address:array:point, 0
 ]
-+error: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be <address : <point : <>>>
++error: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be (address point)
 
 //:: compute the length of an array
 

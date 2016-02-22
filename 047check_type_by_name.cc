@@ -20,51 +20,45 @@ Transform.push_back(check_or_set_types_by_name);  // idempotent
 :(code)
 void check_or_set_types_by_name(const recipe_ordinal r) {
   trace(9991, "transform") << "--- deduce types for recipe " << get(Recipe, r).name << end();
-//?   cerr << "--- deduce types for recipe " << get(Recipe, r).name << '\n';
   map<string, type_tree*> type;
-  map<string, string_tree*> type_name;
   for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
-      deduce_missing_type(type, type_name, inst.ingredients.at(in));
-      check_type(type, type_name, inst.ingredients.at(in), r);
+      deduce_missing_type(type, inst.ingredients.at(in));
+      check_type(type, inst.ingredients.at(in), r);
     }
     for (long long int out = 0; out < SIZE(inst.products); ++out) {
-      deduce_missing_type(type, type_name, inst.products.at(out));
-      check_type(type, type_name, inst.products.at(out), r);
+      deduce_missing_type(type, inst.products.at(out));
+      check_type(type, inst.products.at(out), r);
     }
   }
 }
 
-void deduce_missing_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, reagent& x) {
+void deduce_missing_type(map<string, type_tree*>& type, reagent& x) {
   if (x.type) return;
   if (!contains_key(type, x.name)) return;
   x.type = new type_tree(*get(type, x.name));
-  trace(9992, "transform") << x.name << " <= " << to_string(x.type) << end();
-  assert(!x.properties.at(0).second);
-  x.properties.at(0).second = new string_tree(*get(type_name, x.name));
+  trace(9992, "transform") << x.name << " <= " << names_to_string(x.type) << end();
 }
 
-void check_type(map<string, type_tree*>& type, map<string, string_tree*>& type_name, const reagent& x, const recipe_ordinal r) {
+void check_type(map<string, type_tree*>& type, const reagent& x, const recipe_ordinal r) {
   if (is_literal(x)) return;
   if (is_integer(x.name)) return;  // if you use raw locations you're probably doing something unsafe
   if (!x.type) return;  // might get filled in by other logic later
   if (!contains_key(type, x.name)) {
-    trace(9992, "transform") << x.name << " => " << to_string(x.type) << end();
+    trace(9992, "transform") << x.name << " => " << names_to_string(x.type) << end();
     put(type, x.name, x.type);
   }
-  if (!contains_key(type_name, x.name))
-    put(type_name, x.name, x.properties.at(0).second);
   if (!types_strictly_match(get(type, x.name), x.type)) {
     raise_error << maybe(get(Recipe, r).name) << x.name << " used with multiple types\n" << end();
     return;
   }
-  if (get(type_name, x.name)->value == "array") {
-    if (!get(type_name, x.name)->right) {
+  if (get(type, x.name)->name == "array") {
+    if (!get(type, x.name)->right) {
       raise_error << maybe(get(Recipe, r).name) << x.name << " can't be just an array. What is it an array of?\n" << end();
       return;
     }
-    if (!get(type_name, x.name)->right->right) {
+    if (!get(type, x.name)->right->right) {
       raise_error << get(Recipe, r).name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:shared:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
       return;
     }

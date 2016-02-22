@@ -6,8 +6,8 @@ recipe main [
   1:number <- copy 23
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal"}
-+parse:   product: {"1": "number"}
++parse:   ingredient: 23: "literal"
++parse:   product: 1: "number"
 
 :(code)
 vector<recipe_ordinal> load(string form) {
@@ -49,9 +49,8 @@ long long int slurp_recipe(istream& in) {
   if (result.name.empty())
     raise_error << "empty result.name\n" << end();
   trace(9991, "parse") << "--- defining " << result.name << end();
-  if (!contains_key(Recipe_ordinal, result.name)) {
+  if (!contains_key(Recipe_ordinal, result.name))
     put(Recipe_ordinal, result.name, Next_recipe_ordinal++);
-  }
   if (Recipe.find(get(Recipe_ordinal, result.name)) != Recipe.end()) {
     trace(9991, "parse") << "already exists" << end();
     if (warn_on_redefine(result.name))
@@ -103,9 +102,8 @@ bool next_instruction(istream& in, instruction* curr) {
     skip_whitespace_but_not_newline(in);
   }
   skip_whitespace_and_comments(in);
-  if (SIZE(words) == 1 && words.at(0) == "]") {
+  if (SIZE(words) == 1 && words.at(0) == "]")
     return false;  // end of recipe
-  }
 
   if (SIZE(words) == 1 && !isalnum(words.at(0).at(0)) && words.at(0).at(0) != '$') {
     curr->is_label = true;
@@ -120,9 +118,8 @@ bool next_instruction(istream& in, instruction* curr) {
 
   vector<string>::iterator p = words.begin();
   if (find(words.begin(), words.end(), "<-") != words.end()) {
-    for (; *p != "<-"; ++p) {
+    for (; *p != "<-"; ++p)
       curr->products.push_back(reagent(*p));
-    }
     ++p;  // skip <-
   }
 
@@ -133,18 +130,15 @@ bool next_instruction(istream& in, instruction* curr) {
   curr->old_name = curr->name = *p;  p++;
   // curr->operation will be set in a later layer
 
-  for (; p != words.end(); ++p) {
+  for (; p != words.end(); ++p)
     curr->ingredients.push_back(reagent(*p));
-  }
 
   trace(9993, "parse") << "instruction: " << curr->name << end();
   trace(9993, "parse") << "  number of ingredients: " << SIZE(curr->ingredients) << end();
-  for (vector<reagent>::iterator p = curr->ingredients.begin(); p != curr->ingredients.end(); ++p) {
+  for (vector<reagent>::iterator p = curr->ingredients.begin(); p != curr->ingredients.end(); ++p)
     trace(9993, "parse") << "  ingredient: " << to_string(*p) << end();
-  }
-  for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p) {
+  for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p)
     trace(9993, "parse") << "  product: " << to_string(*p) << end();
-  }
   if (!has_data(in)) {
     raise_error << "9: unbalanced '[' for recipe\n" << end();
     return false;
@@ -228,9 +222,8 @@ bool warn_on_redefine(const string& recipe_name) {
 void show_rest_of_stream(istream& in) {
   cerr << '^';
   char c;
-  while (in >> c) {
+  while (in >> c)
     cerr << c;
-  }
   cerr << "$\n";
   exit(0);
 }
@@ -261,8 +254,8 @@ recipe main [
   1:number <- copy 23
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal"}
-+parse:   product: {"1": "number"}
++parse:   ingredient: 23: "literal"
++parse:   product: 1: "number"
 
 :(scenario parse_comment_amongst_instruction)
 recipe main [
@@ -270,8 +263,8 @@ recipe main [
   1:number <- copy 23
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal"}
-+parse:   product: {"1": "number"}
++parse:   ingredient: 23: "literal"
++parse:   product: 1: "number"
 
 :(scenario parse_comment_amongst_instruction_2)
 recipe main [
@@ -280,8 +273,8 @@ recipe main [
   # comment
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal"}
-+parse:   product: {"1": "number"}
++parse:   ingredient: 23: "literal"
++parse:   product: 1: "number"
 
 :(scenario parse_comment_amongst_instruction_3)
 recipe main [
@@ -290,19 +283,19 @@ recipe main [
   2:number <- copy 23
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal"}
-+parse:   product: {"1": "number"}
++parse:   ingredient: 23: "literal"
++parse:   product: 1: "number"
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal"}
-+parse:   product: {"2": "number"}
++parse:   ingredient: 23: "literal"
++parse:   product: 2: "number"
 
 :(scenario parse_comment_after_instruction)
 recipe main [
   1:number <- copy 23  # comment
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal"}
-+parse:   product: {"1": "number"}
++parse:   ingredient: 23: "literal"
++parse:   product: 1: "number"
 
 :(scenario parse_label)
 recipe main [
@@ -321,43 +314,43 @@ recipe main [
   1:number <- copy 23/foo:bar:baz
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal", "foo": ("bar" "baz")}
-+parse:   product: {"1": "number"}
++parse:   ingredient: 23: "literal", {"foo": ("bar" "baz")}
++parse:   product: 1: "number"
 
 :(scenario parse_multiple_products)
 recipe main [
   1:number, 2:number <- copy 23
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal"}
-+parse:   product: {"1": "number"}
-+parse:   product: {"2": "number"}
++parse:   ingredient: 23: "literal"
++parse:   product: 1: "number"
++parse:   product: 2: "number"
 
 :(scenario parse_multiple_ingredients)
 recipe main [
   1:number, 2:number <- copy 23, 4:number
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal"}
-+parse:   ingredient: {"4": "number"}
-+parse:   product: {"1": "number"}
-+parse:   product: {"2": "number"}
++parse:   ingredient: 23: "literal"
++parse:   ingredient: 4: "number"
++parse:   product: 1: "number"
++parse:   product: 2: "number"
 
 :(scenario parse_multiple_types)
 recipe main [
   1:number, 2:address:number <- copy 23, 4:number
 ]
 +parse: instruction: copy
-+parse:   ingredient: {"23": "literal"}
-+parse:   ingredient: {"4": "number"}
-+parse:   product: {"1": "number"}
-+parse:   product: {"2": ("address" "number")}
++parse:   ingredient: 23: "literal"
++parse:   ingredient: 4: "number"
++parse:   product: 1: "number"
++parse:   product: 2: ("address" "number")
 
 :(scenario parse_properties)
 recipe main [
   1:address:number/lookup <- copy 23
 ]
-+parse:   product: {"1": ("address" "number"), "lookup": ()}
++parse:   product: 1: ("address" "number"), {"lookup": ()}
 
 //: this test we can't represent with a scenario
 :(code)

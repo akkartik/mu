@@ -7,9 +7,11 @@
 recipe main [
   {1: number, foo: (bar (baz quux))} <- copy 34
 ]
-+parse:   product: {"1": "number", "foo": ("bar" ("baz" "quux"))}
++parse:   product: 1: "number", {"foo": ("bar" ("baz" "quux"))}
 
 :(before "End Parsing Reagent Property(value)")
+value = parse_string_tree(value);
+:(before "End Parsing Reagent Type Property(value)")
 value = parse_string_tree(value);
 
 :(code)
@@ -65,7 +67,7 @@ container foo [
 ]
 container bar [
 ]
-+parse:   product: {"1": ("foo" ("address" "array" "character") ("bar" "number"))}
++parse:   product: 1: ("foo" ("address" "array" "character") ("bar" "number"))
 
 //: an exception is 'new', which takes a type tree as its ingredient *value*
 
@@ -76,8 +78,11 @@ recipe main [
 +new: size of ("address" "number") is 1
 
 :(before "End Post-processing(expected_product) When Checking 'new'")
-expected_product.properties.at(0).second = parse_string_tree(expected_product.properties.at(0).second);
-delete expected_product.type;
-expected_product.type = new_type_tree(expected_product.properties.at(0).second);
+{
+  string_tree* tmp_type_names = parse_string_tree(expected_product.type->name);
+  delete expected_product.type;
+  expected_product.type = new_type_tree(tmp_type_names);
+  delete tmp_type_names;
+}
 :(before "End Post-processing(type_name) When Converting 'new'")
 type_name = parse_string_tree(type_name);

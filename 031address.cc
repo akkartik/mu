@@ -114,13 +114,6 @@ void drop_from_type(reagent& r, string expected_type) {
   r.type = tmp->right;
   tmp->right = NULL;
   delete tmp;
-  // property
-  if (r.properties.at(0).second) {
-    string_tree* tmp2 = r.properties.at(0).second;
-    r.properties.at(0).second = tmp2->right;
-    tmp2->right = NULL;
-    delete tmp2;
-  }
 }
 
 void drop_one_lookup(reagent& r) {
@@ -194,7 +187,7 @@ recipe main [
   2:number <- copy 34
   3:number <- copy *1:address:number
 ]
-+parse: ingredient: {"1": ("address" "number"), "lookup": ()}
++parse: ingredient: 1: ("address" "number"), {"lookup": ()}
 +mem: storing 34 in location 3
 
 :(before "End Parsing reagent")
@@ -205,7 +198,6 @@ recipe main [
   }
   if (name.empty())
     raise_error << "illegal name " << original_string << '\n' << end();
-  properties.at(0).first = name;
 }
 
 //:: helpers for debugging

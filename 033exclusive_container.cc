@@ -153,8 +153,7 @@ recipe main [
   14:number <- copy 36
   20:address:number <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
-+error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to <address : <point : <>>> but 20 has type <address : <number : <>>>
-
++error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to (address point) but 20 has type (address number)
 
 //:: Allow exclusive containers to be defined in mu code.
 
@@ -164,8 +163,8 @@ exclusive-container foo [
   y:number
 ]
 +parse: --- defining exclusive-container foo
-+parse: element: {"x": "number"}
-+parse: element: {"y": "number"}
++parse: element: x: "number"
++parse: element: y: "number"
 
 :(before "End Command Handlers")
 else if (command == "exclusive-container") {

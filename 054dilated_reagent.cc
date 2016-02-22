@@ -7,7 +7,7 @@
 recipe main [
   {1: number, foo: bar} <- copy 34
 ]
-+parse:   product: {"1": "number", "foo": "bar"}
++parse:   product: 1: "number", {"foo": "bar"}
 
 :(scenario load_trailing_space_after_curly_bracket)
 recipe main [
@@ -22,7 +22,7 @@ recipe main [
 recipe main [
   {1: number, foo: bar} <- copy 34  # test comment
 ]
-+parse:   product: {"1": "number", "foo": "bar"}
++parse:   product: 1: "number", {"foo": "bar"}
 $error: 0
 
 :(scenario dilated_reagent_with_comment_immediately_following)
@@ -97,6 +97,21 @@ if (s.at(0) == '{') {
   istringstream in(s);
   in >> std::noskipws;
   in.get();  // skip '{'
+  name = slurp_key(in);
+  if (name.empty()) {
+    raise_error << "invalid reagent " << s << " without a name\n";
+    return;
+  }
+  if (name == "}") {
+    raise_error << "invalid empty reagent " << s << '\n';
+    return;
+  }
+  {
+    string_tree* value = new string_tree(next_word(in));
+    // End Parsing Reagent Type Property(value)
+    type = new_type_tree(value);
+    delete value;
+  }
   while (has_data(in)) {
     string key = slurp_key(in);
     if (key.empty()) continue;
@@ -105,14 +120,6 @@ if (s.at(0) == '{') {
     // End Parsing Reagent Property(value)
     properties.push_back(pair<string, string_tree*>(key, value));
   }
-  // structures for the first row of properties
-  name = properties.at(0).first;
-  string type_name = properties.at(0).second->value;
-  if (!contains_key(Type_ordinal, type_name)) {
-      // this type can't be an integer literal
-    put(Type_ordinal, type_name, Next_type_ordinal++);
-  }
-  type = new_type_tree(properties.at(0).second);
   return;
 }
 

@@ -319,10 +319,9 @@ void check_memory(const string& s) {
 
 void check_type(const string& lhs, istream& in) {
   reagent x(lhs);
-  const string_tree* type_name = x.properties.at(0).second;
-  if (type_name->value == "array"
-      && type_name->right && type_name->right->value == "character"
-      && !type_name->right->right) {
+  if (x.type->name == "array"
+      && x.type->right && x.type->right->name == "character"
+      && !x.type->right->right) {
     x.set_value(to_integer(x.name));
     skip_whitespace_and_comments(in);
     string _assign = next_word(in);

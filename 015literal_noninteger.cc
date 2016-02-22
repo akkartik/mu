@@ -5,13 +5,12 @@
 recipe main [
   1:number <- copy 3.14159
 ]
-+parse:   ingredient: {"3.14159": "literal-number"}
++parse:   ingredient: 3.14159: "literal-fractional-number"
 
 :(after "Parsing reagent(string s)")
 if (is_noninteger(s)) {
   name = s;
-  type = new type_tree("literal-number", 0);
-  properties.push_back(pair<string, string_tree*>(name, new string_tree("literal-number")));
+  type = new type_tree("literal-fractional-number", 0);
   set_value(to_double(s));
   return;
 }

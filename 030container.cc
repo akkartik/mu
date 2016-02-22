@@ -162,7 +162,7 @@ case GET: {
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
   if (!types_coercible(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << to_string(element.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;
   }
   break;
@@ -187,7 +187,7 @@ case GET: {
   trace(9998, "run") << "address to copy is " << src << end();
   reagent tmp = element_type(base, offset);
   tmp.set_value(src);
-  trace(9998, "run") << "its type is " << to_string(tmp.type) << end();
+  trace(9998, "run") << "its type is " << names_to_string(tmp.type) << end();
   products.push_back(read_memory(tmp));
   break;
 }
@@ -241,7 +241,7 @@ recipe main [
   14:number <- copy 36
   15:address:number <- get 12:point-number/raw, 1:offset
 ]
-+error: main: 'get 12:point-number/raw, 1:offset' should write to number but 15 has type <address : <number : <>>>
++error: main: 'get 12:point-number/raw, 1:offset' should write to number but 15 has type (address number)
 
 //: we might want to call 'get' without saving the results, say in a sandbox
 
@@ -303,7 +303,7 @@ case GET_ADDRESS: {
   // ..except for an address at the start
   element.type = new type_tree("address", get(Type_ordinal, "address"), element.type);
   if (!types_coercible(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << to_string(element.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
+    raise_error << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;
   }
   break;
@@ -362,7 +362,7 @@ recipe main [
   13:boolean <- copy 0
   15:boolean <- get-address 12:boolbool, 1:offset
 ]
-+error: main: 'get-address 12:boolbool, 1:offset' should write to <address : <boolean : <>>> but 15 has type boolean
++error: main: 'get-address 12:boolbool, 1:offset' should write to (address boolean) but 15 has type boolean
 
 //:: Allow containers to be defined in mu code.
 
@@ -373,8 +373,8 @@ container foo [
   y:number
 ]
 +parse: --- defining container foo
-+parse: element: {"x": "number"}
-+parse: element: {"y": "number"}
++parse: element: x: "number"
++parse: element: y: "number"
 
 :(scenario container_use_before_definition)
 container foo [
@@ -388,15 +388,15 @@ container bar [
 ]
 +parse: --- defining container foo
 +parse: type number: 1000
-+parse:   element: {"x": "number"}
++parse:   element: x: "number"
 # todo: brittle
 # type bar is unknown at this point, but we assign it a number
-+parse:   element: {"y": "bar"}
++parse:   element: y: "bar"
 # later type bar geon
 +parse: --- defining container bar
 +parse: type number: 1001
-+parse:   element: {"x": "number"}
-+parse:   element: {"y": "number"}
++parse:   element: x: "number"
++parse:   element: y: "number"
 
 :(before "End Command Handlers")
 else if (command == "container") {
@@ -424,35 +424,30 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     string element = next_word(in);
     if (element == "]") break;
     info.elements.push_back(reagent(element));
-    // handle undefined types
-    delete info.elements.back().type;
-    info.elements.back().type = new_type_tree_with_new_types_for_unknown(info.elements.back().properties.at(0).second, info);
+    replace_unknown_types_with_unique_ordinals(info.elements.back().type, info);
     trace(9993, "parse") << "  element: " << to_string(info.elements.back()) << end();
     // End Load Container Element Definition
   }
   info.size = SIZE(info.elements);
 }
 
-type_tree* new_type_tree_with_new_types_for_unknown(const string_tree* properties, const type_info& info) {
-  if (!properties) return NULL;
-  type_tree* result = new type_tree("", 0);
-  if (!properties->value.empty()) {
-    const string& type_name = result->name = properties->value;
-    if (contains_key(Type_ordinal, type_name)) {
-      result->value = get(Type_ordinal, type_name);
+void replace_unknown_types_with_unique_ordinals(type_tree* type, const type_info& info) {
+  if (!type) return;
+  if (!type->name.empty()) {
+    if (contains_key(Type_ordinal, type->name)) {
+      type->value = get(Type_ordinal, type->name);
     }
-    else if (is_integer(type_name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
-      result->value = 0;
+    else if (is_integer(type->name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
+      type->value = 0;
     }
     // End insert_container Special-cases
-    else if (properties->value != "->") {  // used in recipe types
-      put(Type_ordinal, type_name, Next_type_ordinal++);
-      result->value = get(Type_ordinal, type_name);
+    else if (type->name != "->") {  // used in recipe types
+      put(Type_ordinal, type->name, Next_type_ordinal++);
+      type->value = get(Type_ordinal, type->name);
     }
   }
-  result->left = new_type_tree_with_new_types_for_unknown(properties->left, info);
-  result->right = new_type_tree_with_new_types_for_unknown(properties->right, info);
-  return result;
+  replace_unknown_types_with_unique_ordinals(type->left, info);
+  replace_unknown_types_with_unique_ordinals(type->right, info);
 }
 
 void skip_bracket(istream& in, string message) {
@@ -548,33 +543,27 @@ void check_or_set_invalid_types(const recipe_ordinal r) {
   trace(9991, "transform") << "--- check for invalid types in recipe " << caller.name << end();
   for (long long int index = 0; index < SIZE(caller.steps); ++index) {
     instruction& inst = caller.steps.at(index);
-    for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-      check_or_set_invalid_types(inst.ingredients.at(i).type, inst.ingredients.at(i).properties.at(0).second,
-                                 maybe(caller.name), "'"+to_string(inst)+"'");
-    }
-    for (long long int i = 0; i < SIZE(inst.products); ++i) {
-      check_or_set_invalid_types(inst.products.at(i).type, inst.products.at(i).properties.at(0).second,
-                                 maybe(caller.name), "'"+to_string(inst)+"'");
-    }
+    for (long long int i = 0; i < SIZE(inst.ingredients); ++i)
+      check_or_set_invalid_types(inst.ingredients.at(i).type, maybe(caller.name), "'"+to_string(inst)+"'");
+    for (long long int i = 0; i < SIZE(inst.products); ++i)
+      check_or_set_invalid_types(inst.products.at(i).type, maybe(caller.name), "'"+to_string(inst)+"'");
   }
   // End check_or_set_invalid_types
 }
 
-void check_or_set_invalid_types(type_tree* type, const string_tree* type_name, const string& block, const string& name) {
-  // can't assert that type_name is non-null, even at the top of a recursive call tree
+void check_or_set_invalid_types(type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
   // End Container Type Checks
   if (type->value == 0) return;
   if (!contains_key(Type, type->value)) {
-    if (type_name && contains_key(Type_ordinal, type_name->value))
-      type->value = get(Type_ordinal, type_name->value);
-    else if (type_name)
-      raise_error << block << "unknown type " << type_name->value << " in " << name << '\n' << end();
+    assert(!type->name.empty());
+    if (contains_key(Type_ordinal, type->name))
+      type->value = get(Type_ordinal, type->name);
     else
-      raise_error << block << "missing type in " << name << '\n' << end();
+      raise_error << block << "unknown type " << type->name << " in " << name << '\n' << end();
   }
-  check_or_set_invalid_types(type->left, type_name ? type_name->left : NULL, block, name);
-  check_or_set_invalid_types(type->right, type_name ? type_name->right : NULL, block, name);
+  check_or_set_invalid_types(type->left, block, name);
+  check_or_set_invalid_types(type->right, block, name);
 }
 
 :(scenario container_unknown_field)
@@ -592,8 +581,8 @@ container foo [
   y:number
 ]
 +parse: --- defining container foo
-+parse: element: {"x": "number"}
-+parse: element: {"y": "number"}
++parse: element: x: "number"
++parse: element: y: "number"
 
 :(before "End Transform All")
 check_container_field_types();
@@ -608,23 +597,9 @@ void check_container_field_types() {
   }
 }
 
-void check_invalid_types(const recipe_ordinal r) {
-  for (long long int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
-    const instruction& inst = get(Recipe, r).steps.at(index);
-    for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
-      check_invalid_types(inst.ingredients.at(i).type,
-                          maybe(get(Recipe, r).name), "'"+to_string(inst)+"'");
-    }
-    for (long long int i = 0; i < SIZE(inst.products); ++i) {
-      check_invalid_types(inst.products.at(i).type,
-                          maybe(get(Recipe, r).name), "'"+to_string(inst)+"'");
-    }
-  }
-}
-
 void check_invalid_types(const type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
-  // End Container Type Checks
+  // End Container Type Checks2
   if (type->value == 0) {
     assert(!type->left && !type->right);
     return;
