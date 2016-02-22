@@ -109,12 +109,6 @@ bool is_type_ingredient_name(const string& type) {
 if (type->value >= START_TYPE_INGREDIENTS
     && (type->value - START_TYPE_INGREDIENTS) < SIZE(get(Type, type->value).type_ingredient_names))
   return;
-:(code)
-//? //: TODO: is this necessary?
-//? :(before "End Container Type Checks2")
-//? if (type->value >= START_TYPE_INGREDIENTS
-//?     && (type->value - START_TYPE_INGREDIENTS) < SIZE(get(Type, type->value).type_ingredient_names))
-//?   return;
 
 :(scenario size_of_shape_shifting_exclusive_container)
 exclusive-container foo:_t [

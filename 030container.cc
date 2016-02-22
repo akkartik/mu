@@ -599,7 +599,6 @@ void check_container_field_types() {
 
 void check_invalid_types(const type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
-  // End Container Type Checks2
   if (type->value == 0) {
     assert(!type->left && !type->right);
     return;
