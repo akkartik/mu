@@ -99,11 +99,11 @@ if (s.at(0) == '{') {
   in.get();  // skip '{'
   name = slurp_key(in);
   if (name.empty()) {
-    raise_error << "invalid reagent " << s << " without a name\n";
+    raise_error << "invalid reagent " << s << " without a name\n" << end();
     return;
   }
   if (name == "}") {
-    raise_error << "invalid empty reagent " << s << '\n';
+    raise_error << "invalid empty reagent " << s << '\n' << end();
     return;
   }
   {

@@ -285,7 +285,7 @@ void compute_type_names(recipe& variant) {
 void save_or_deduce_type_name(reagent& x, map<string, type_tree*>& type, const recipe& variant) {
   trace(9994, "transform") << "    checking " << to_string(x) << ": " << names_to_string(x.type) << end();
   if (!x.type && contains_key(type, x.name)) {
-    x.type = new type_tree(*get(type, x.name));
+    x.type = new type_tree(*get(type, x.name)); //TODO
     trace(9994, "transform") << "    deducing type to " << names_to_string(x.type) << end();
     return;
   }

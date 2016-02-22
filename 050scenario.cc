@@ -615,9 +615,8 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (count != expected_count) {
     if (Current_scenario && !Scenario_testing_scenario) {
       // genuine test in a mu file
-      raise_error << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label " << label << " in trace: ";
+      raise_error << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label " << label << " in trace: " << end();
       DUMP(label);
-      raise_error;
     }
     else {
       // just testing scenario support

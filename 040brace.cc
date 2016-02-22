@@ -61,7 +61,7 @@ void transform_braces(const recipe_ordinal r) {
     }
     if (inst.label == "}") {
       if (open_braces.empty()) {
-        raise << "missing '{' in " << get(Recipe, r).name << '\n';
+        raise << "missing '{' in " << get(Recipe, r).name << '\n' << end();
         return;
       }
       open_braces.pop();
