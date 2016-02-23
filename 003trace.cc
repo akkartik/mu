@@ -343,14 +343,6 @@ using std::map;
 using std::set;
 #include<algorithm>
 
-#include<iostream>
-using std::istream;
-using std::ostream;
-using std::cin;
-using std::cout;
-using std::cerr;
-#include<iomanip>
-
 #include<sstream>
 using std::istringstream;
 using std::ostringstream;

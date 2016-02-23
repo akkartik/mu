@@ -66,10 +66,6 @@ struct reagent {
 };
 
 :(before "struct reagent")
-struct property {
-  vector<string> values;
-};
-
 // Types can range from a simple type ordinal, to arbitrarily complex trees of
 // type parameters, like (map (address array character) (list number))
 struct type_tree {

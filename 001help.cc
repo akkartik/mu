@@ -134,6 +134,7 @@ using std::iostream;
 using std::cin;
 using std::cout;
 using std::cerr;
+#include<iomanip>
 
 #include<cstring>
 #include<string>
