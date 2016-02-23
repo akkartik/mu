@@ -283,7 +283,6 @@ reagent::reagent(const reagent& old) {
   name = old.name;
   value = old.value;
   initialized = old.initialized;
-  properties.clear();
   for (long long int i = 0; i < SIZE(old.properties); ++i) {
     properties.push_back(pair<string, string_tree*>(old.properties.at(i).first,
                                                     old.properties.at(i).second ? new string_tree(*old.properties.at(i).second) : NULL));
@@ -306,12 +305,15 @@ string_tree::string_tree(const string_tree& old) {  // :value(old.value) {
 
 reagent& reagent::operator=(const reagent& old) {
   original_string = old.original_string;
+  for (long long int i = 0; i < SIZE(properties); ++i)
+    if (properties.at(i).second) delete properties.at(i).second;
   properties.clear();
   for (long long int i = 0; i < SIZE(old.properties); ++i)
     properties.push_back(pair<string, string_tree*>(old.properties.at(i).first, old.properties.at(i).second ? new string_tree(*old.properties.at(i).second) : NULL));
   name = old.name;
   value = old.value;
   initialized = old.initialized;
+  if (type) delete type;
   type = old.type ? new type_tree(*old.type) : NULL;
   return *this;
 }
