@@ -502,7 +502,7 @@ void ensure_all_concrete_types(/*const*/ recipe& new_recipe, const recipe& exemp
 void ensure_all_concrete_types(/*const*/ reagent& x, const recipe& exemplar) {
   if (!x.type || contains_type_ingredient_name(x.type)) {
     raise_error << maybe(exemplar.name) << "failed to map a type to " << x.original_string << '\n' << end();
-    x.type = new type_tree("", 0);  // just to prevent crashes later
+    if (!x.type) x.type = new type_tree("", 0);  // just to prevent crashes later
     return;
   }
   if (x.type->value == -1) {
