@@ -14,7 +14,7 @@ void update_instruction_operations(recipe_ordinal r) {
     if (inst.is_label) continue;
     if (!contains_key(Recipe_ordinal, inst.name)) {
       raise_error << maybe(caller.name) << "instruction " << inst.name << " has no recipe\n" << end();
-      return;
+      continue;
     }
     inst.operation = get(Recipe_ordinal, inst.name);
     // End Instruction Operation Checks
