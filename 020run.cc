@@ -235,8 +235,8 @@ void load_all_permanently(string dir) {
   int num_files = scandir(dir.c_str(), &files, NULL, alphasort);
   for (int i = 0; i < num_files; ++i) {
     string curr_file = files[i]->d_name;
-    if (!isdigit(curr_file.at(0))) continue;
-    load_permanently(dir+'/'+curr_file);
+    if (isdigit(curr_file.at(0)))
+      load_permanently(dir+'/'+curr_file);
     free(files[i]);
     files[i] = NULL;
   }
