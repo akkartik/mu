@@ -210,12 +210,10 @@ void load_permanently(string filename) {
     return;
   }
   ifstream fin(filename.c_str());
-  fin.peek();
   if (!fin) {
     raise_error << "no such file " << filename << '\n' << end();
     return;
   }
-  fin >> std::noskipws;
   trace(9990, "load") << "=== " << filename << end();
   load(fin);
   fin.close();
