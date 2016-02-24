@@ -53,7 +53,7 @@ struct reagent {
   string original_string;
   string name;
   type_tree* type;
-  vector<pair<string, string_tree*> > properties;
+  vector<pair<string, string_tree*> > properties;  // can't be a map because the string_tree sometimes needs to be NULL, which can be confusing
   double value;
   bool initialized;
   reagent(string s);
