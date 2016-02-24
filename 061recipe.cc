@@ -1,6 +1,8 @@
 //: So far we've been calling a fixed recipe in each instruction, but we'd
 //: also like to make the recipe a variable, pass recipes to "higher-order"
 //: recipes, return recipes from recipes and so on.
+//:
+//: todo: support storing shape-shifting recipes into recipe variables and calling them
 
 :(scenario call_literal_recipe)
 recipe main [
