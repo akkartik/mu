@@ -81,12 +81,12 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
         break;
       }
       for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
-        if (!types_coercible(caller_instruction.products.at(i), reply_inst.ingredients.at(i))) {
-          raise_error << maybe(callee.name) << "reply ingredient " << reply_inst.ingredients.at(i).original_string << " can't be saved in " << caller_instruction.products.at(i).original_string << '\n' << end();
-          reagent lhs = reply_inst.ingredients.at(i);
-          canonize_type(lhs);
-          reagent rhs = caller_instruction.products.at(i);
-          canonize_type(rhs);
+        reagent lhs = reply_inst.ingredients.at(i);
+        canonize_type(lhs);
+        reagent rhs = caller_instruction.products.at(i);
+        canonize_type(rhs);
+        if (!types_coercible(rhs, lhs)) {
+          raise_error << maybe(callee.name) << "reply ingredient " << lhs.original_string << " can't be saved in " << rhs.original_string << '\n' << end();
           raise_error << to_string(lhs.type) << " vs " << to_string(rhs.type) << '\n' << end();
           goto finish_reply_check;
         }
