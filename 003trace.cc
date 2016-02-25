@@ -142,8 +142,8 @@ struct trace_stream {
     curr_depth = Max_depth;
   }
 
-  // Useful for debugging.
-  string readable_contents(string label) {  // missing label = everything
+  // useful for debugging
+  string readable_contents(string label) {  // empty label = show everything
     ostringstream output;
     label = trim(label);
     for (vector<trace_line>::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
@@ -158,10 +158,20 @@ struct trace_stream {
 
 trace_stream* Trace_stream = NULL;
 
-// Top-level helper. IMPORTANT: can't nest.
+// Top-level helper. IMPORTANT: can't nest
 #define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
+
+// Errors and warnings are special layers.
 #define raise  (!Trace_stream ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Warning_depth, "warn"))
 #define raise_error  (!Trace_stream ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
+// Inside tests, fail any tests that displayed (unexpected) errors.
+// Expected errors in tests should always be hidden and silently checked for.
+:(before "End Test Teardown")
+if (Passed && ((!Hide_errors && trace_count("error") > 0)
+                || (!Hide_warnings && trace_count("warn") > 0))) {
+  Passed = false;
+  ++Num_failures;
+}
 
 :(before "End Types")
 struct end {};
@@ -252,6 +262,7 @@ int trace_count(string label) {
 }
 
 int trace_count(string label, string line) {
+  if (!Trace_stream) return 0;
   long result = 0;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (label == p->label) {

@@ -77,8 +77,9 @@ void run_test(size_t i) {
   setup();
   // End Test Setup
   (*Tests[i])();
+  // End Test Teardown
   teardown();
-  if (Passed) cerr << ".";
+  if (Passed) cerr << '.';
 }
 
 bool is_integer(const string& s) {
