@@ -2,7 +2,7 @@
 //: also products. This layer will start enforcing this check.
 
 :(scenario can_modify_value_ingredients)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   local-scope
   p:address:shared:point <- new point:type
@@ -14,10 +14,10 @@ recipe foo p:point [
   x:address:number <- get-address p, x:offset
   *x <- copy 34
 ]
-$warn: 0
+$error: 0
 
 :(scenario can_modify_ingredients_that_are_also_products)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   local-scope
   p:address:shared:point <- new point:type
@@ -29,10 +29,10 @@ recipe foo p:address:shared:point -> p:address:shared:point [
   x:address:number <- get-address *p, x:offset
   *x <- copy 34
 ]
-$warn: 0
+$error: 0
 
 :(scenario ignore_literal_ingredients_for_immutability_checks)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   local-scope
   p:address:shared:d1 <- new d1:type
@@ -49,10 +49,10 @@ container d1 [
   p:number
   q:number
 ]
-$warn: 0
+$error: 0
 
 :(scenario cannot_take_address_inside_immutable_ingredients)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   local-scope
   p:address:shared:point <- new point:type
@@ -64,10 +64,10 @@ recipe foo p:address:shared:point [
   x:address:number <- get-address *p, x:offset
   *x <- copy 34
 ]
-+warn: foo: cannot modify ingredient p after instruction 'x:address:number <- get-address *p, x:offset' because it's not also a product of foo
++error: foo: cannot modify ingredient p after instruction 'x:address:number <- get-address *p, x:offset' because it's not also a product of foo
 
 :(scenario cannot_call_mutating_recipes_on_immutable_ingredients)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   local-scope
   p:address:shared:point <- new point:type
@@ -84,10 +84,10 @@ recipe bar p:address:shared:point -> p:address:shared:point [
   x:address:number <- get-address *p, x:offset
   *x <- copy 34
 ]
-+warn: foo: cannot modify ingredient p at instruction 'bar p' because it's not also a product of foo
++error: foo: cannot modify ingredient p at instruction 'bar p' because it's not also a product of foo
 
 :(scenario cannot_modify_copies_of_immutable_ingredients)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   local-scope
   p:address:shared:point <- new point:type
@@ -99,10 +99,10 @@ recipe foo p:address:shared:point [
   q:address:shared:point <- copy p
   x:address:number <- get-address *q, x:offset
 ]
-+warn: foo: cannot modify q after instruction 'x:address:number <- get-address *q, x:offset' because that would modify ingredient p which is not also a product of foo
++error: foo: cannot modify q after instruction 'x:address:number <- get-address *q, x:offset' because that would modify ingredient p which is not also a product of foo
 
 :(scenario can_traverse_immutable_ingredients)
-% Hide_warnings = true;
+% Hide_errors = true;
 container test-list [
   next:address:shared:test-list
 ]
@@ -121,10 +121,10 @@ recipe bar x:address:shared:test-list -> y:address:shared:test-list [
   load-ingredients
   y <- get *x, next:offset
 ]
-$warn: 0
+$error: 0
 
 :(scenario handle_optional_ingredients_in_immutability_checks)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   k:address:shared:number <- new number:type
   test k
@@ -141,7 +141,7 @@ recipe foo -> [
   load-ingredients
   k:address:shared:number, found?:boolean <- next-ingredient
 ]
-$warn: 0
+$error: 0
 
 :(before "End Transforms")
 Transform.push_back(check_immutable_ingredients);  // idempotent
@@ -208,7 +208,7 @@ set<long long int> scan_contained_in_product_indices(const instruction& inst, se
 
 :(scenarios transform)
 :(scenario immutability_infects_contained_in_variables)
-% Hide_warnings = true;
+% Hide_errors = true;
 container test-list [
   next:address:shared:test-list
 ]
@@ -228,7 +228,7 @@ recipe test-next x:address:shared:test-list -> y:address:shared:test-list/contai
   load-ingredients
   y <- get *x, next:offset
 ]
-+warn: foo: cannot modify p2 after instruction 'p3:address:address:shared:test-list <- get-address *p2, next:offset' because that would modify ingredient p which is not also a product of foo
++error: foo: cannot modify p2 after instruction 'p3:address:address:shared:test-list <- get-address *p2, next:offset' because that would modify ingredient p which is not also a product of foo
 
 :(code)
 void check_immutable_ingredient_in_instruction(const instruction& inst, const set<string>& current_ingredient_and_aliases, const string& original_ingredient_name, const recipe& caller) {
@@ -243,9 +243,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       // primitive recipe
       if (inst.operation == GET_ADDRESS || inst.operation == INDEX_ADDRESS) {
         if (current_ingredient_name == original_ingredient_name)
-          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
+          raise_error << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
         else
-          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
+          raise_error << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
       }
     }
     else {
@@ -253,9 +253,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       if (!is_mu_address(current_ingredient)) return;  // making a copy is ok
       if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller)) {
         if (current_ingredient_name == original_ingredient_name)
-          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
+          raise_error << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
         else
-          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
+          raise_error << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
       }
     }
   }
@@ -264,7 +264,7 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
 bool is_modified_in_recipe(recipe_ordinal r, long long int ingredient_index, const recipe& caller) {
   const recipe& callee = get(Recipe, r);
   if (!callee.has_header) {
-    raise << maybe(caller.name) << "can't check mutability of ingredients in " << callee.name << " because it uses 'next-ingredient' directly, rather than a recipe header.\n" << end();
+    raise_error << maybe(caller.name) << "can't check mutability of ingredients in " << callee.name << " because it uses 'next-ingredient' directly, rather than a recipe header.\n" << end();
     return true;
   }
   if (ingredient_index >= SIZE(callee.ingredients)) return false;  // optional immutable ingredient
@@ -310,7 +310,7 @@ set<long long int> ingredient_indices(const instruction& inst, const set<string>
 
 :(scenarios transform)
 :(scenario can_modify_contained_in_addresses)
-% Hide_warnings = true;
+% Hide_errors = true;
 container test-list [
   next:address:shared:test-list
 ]
@@ -335,7 +335,7 @@ recipe test-remove x:address:shared:test-list/contained-in:from, from:address:sh
   load-ingredients
   x2:address:address:shared:test-list <- get-address *x, next:offset  # pretend modification
 ]
-$warn: 0
+$error: 0
 
 :(before "End Immutable Ingredients Special-cases")
 if (has_property(current_ingredient, "contained-in")) {

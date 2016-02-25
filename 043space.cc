@@ -264,7 +264,7 @@ void check_default_space(const recipe_ordinal r) {
   if (caller.steps.empty()) return;
   if (caller.steps.at(0).products.empty()
       || caller.steps.at(0).products.at(0).name != "default-space") {
-    raise << maybe(caller.name) << " does not seem to start with default-space or local-scope\n" << end();
+    raise_error << maybe(caller.name) << " does not seem to start with default-space or local-scope\n" << end();
 //?     cerr << maybe(caller.name) << " does not seem to start with default-space or local-scope\n" << '\n';
   }
 }

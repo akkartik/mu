@@ -187,14 +187,14 @@ case ALLOCATE: {
 //:: ensure we never call 'allocate' directly; its types are not checked
 :(before "End Primitive Recipe Checks")
 case ALLOCATE: {
-  raise << "never call 'allocate' directly'; always use 'new'\n" << end();
+  raise_error << "never call 'allocate' directly'; always use 'new'\n" << end();
   break;
 }
 
 //:: ensure we never call 'new' without translating it (unless we add special-cases later)
 :(before "End Primitive Recipe Implementations")
 case NEW: {
-  raise << "no implementation for 'new'; why wasn't it translated to 'allocate'?\n" << end();
+  raise_error << "no implementation for 'new'; why wasn't it translated to 'allocate'? Please save a copy of your program and send it to Kartik.\n" << end();
   break;
 }
 
