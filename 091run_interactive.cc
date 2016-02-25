@@ -111,7 +111,6 @@ bool run_interactive(long long int address) {
 void run_code_begin(bool snapshot_recently_added_recipes) {
 //?   cerr << "loading new trace\n";
   // stuff to undo later, in run_code_end()
-  Hide_warnings = true;
   Hide_errors = true;
   Disable_redefine_errors = true;
   if (snapshot_recently_added_recipes) {
@@ -129,7 +128,6 @@ void run_code_begin(bool snapshot_recently_added_recipes) {
 
 void run_code_end() {
 //?   cerr << "back to old trace\n";
-  Hide_warnings = false;
   Hide_errors = false;
   Disable_redefine_errors = false;
   delete Trace_stream;
@@ -225,15 +223,15 @@ case _MOST_RECENT_PRODUCTS: {
 }
 
 :(before "End Primitive Recipe Declarations")
-SAVE_ERRORS_WARNINGS,
+SAVE_ERRORS,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "save-errors", SAVE_ERRORS_WARNINGS);
+put(Recipe_ordinal, "save-errors", SAVE_ERRORS);
 :(before "End Primitive Recipe Checks")
-case SAVE_ERRORS_WARNINGS: {
+case SAVE_ERRORS: {
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case SAVE_ERRORS_WARNINGS: {
+case SAVE_ERRORS: {
   products.resize(1);
   products.at(0).push_back(trace_error_contents());
   break;

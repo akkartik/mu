@@ -120,7 +120,7 @@ size_t hash_mu_exclusive_container(size_t h, const reagent& r) {
   assert(r.type->value);
   long long int tag = get(Memory, r.value);
   reagent variant = variant_type(r, tag);
-  // todo: move this warning to container definition time
+  // todo: move this error to container definition time
   if (has_property(variant, "ignore-for-hash"))
     raise_error << get(Type, r.type->value).name << ": /ignore-for-hash won't work in exclusive containers\n" << end();
   variant.set_value(r.value + /*skip tag*/1);

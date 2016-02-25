@@ -247,12 +247,12 @@ void rewrite_default_space_instruction(instruction& curr) {
 //:: all recipes must set default-space one way or another
 
 :(before "End Globals")
-bool Warn_on_missing_default_space = false;
+bool Hide_missing_default_space_errors = true;
 :(before "End Checks")
 Transform.push_back(check_default_space);  // idempotent
 :(code)
 void check_default_space(const recipe_ordinal r) {
-  if (!Warn_on_missing_default_space) return;  // skip previous core tests; this is only for mu code
+  if (Hide_missing_default_space_errors) return;  // skip previous core tests; this is only for mu code
   const recipe& caller = get(Recipe, r);
   // skip scenarios (later layer)
   // user code should never create recipes with underscores in their names
@@ -269,11 +269,11 @@ void check_default_space(const recipe_ordinal r) {
   }
 }
 :(after "Load .mu Core")
-Warn_on_missing_default_space = true;
+Hide_missing_default_space_errors = false;
 :(after "Test Runs")
-Warn_on_missing_default_space = false;
+Hide_missing_default_space_errors = true;
 :(after "Running Main")
-Warn_on_missing_default_space = true;
+Hide_missing_default_space_errors = false;
 
 :(code)
 bool contains_non_special_name(const recipe_ordinal r) {

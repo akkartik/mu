@@ -15,7 +15,7 @@ recipe test a:number, b:number -> z:number [
 +mem: storing 1 in location 7
 
 //: When loading recipes, accumulate variants if headers don't collide, and
-//: raise a warning if headers collide.
+//: flag an error if headers collide.
 
 :(before "End Globals")
 map<string, vector<recipe_ordinal> > Recipe_variants;

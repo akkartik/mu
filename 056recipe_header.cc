@@ -220,7 +220,7 @@ void check_calls_against_header(const recipe_ordinal r) {
       if (!types_coercible(callee.ingredients.at(i), inst.ingredients.at(i)))
         raise_error << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
       if (is_unique_address(inst.ingredients.at(i)))
-        raise_error << maybe(caller.name) << "try to avoid passing non-shared addresses into calls, like ingredient " << i << " at '" << to_string(inst) << "'\n" << end();
+        raise_error << maybe(caller.name) << "avoid passing non-shared addresses into calls, like ingredient " << i << " at '" << to_string(inst) << "'\n" << end();
     }
     for (long int i = 0; i < min(SIZE(inst.products), SIZE(callee.products)); ++i) {
       if (is_dummy(inst.products.at(i))) continue;
@@ -228,7 +228,7 @@ void check_calls_against_header(const recipe_ordinal r) {
       if (!types_coercible(inst.products.at(i), callee.products.at(i)))
         raise_error << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
       if (is_unique_address(inst.products.at(i)))
-        raise_error << maybe(caller.name) << "try to avoid getting non-shared addresses out of calls, like product " << i << " at '" << to_string(inst) << "'\n" << end();
+        raise_error << maybe(caller.name) << "avoid getting non-shared addresses out of calls, like product " << i << " at '" << to_string(inst) << "'\n" << end();
     }
   }
 }
@@ -241,19 +241,19 @@ bool is_unique_address(reagent x) {
   return x.type->right->value != get(Type_ordinal, "shared");
 }
 
-//: additionally, warn on calls receiving non-shared addresses
+//: additionally, flag an error on calls receiving non-shared addresses
 
 :(scenario warn_on_calls_with_addresses)
 % Hide_errors = true;
 recipe main [
-  1:address:number <- copy 3/unsafe
+  1:address:number <- copy 0
   foo 1:address:number
 ]
 recipe foo x:address:number [
   local-scope
   load-ingredients
 ]
-+error: main: try to avoid passing non-shared addresses into calls, like ingredient 0 at 'foo 1:address:number'
++error: main: avoid passing non-shared addresses into calls, like ingredient 0 at 'foo 1:address:number'
 
 :(scenario warn_on_calls_with_addresses_2)
 % Hide_errors = true;
@@ -265,7 +265,7 @@ recipe foo -> x:address:number [
   load-ingredients
   x <- copy 0
 ]
-+error: main: try to avoid getting non-shared addresses out of calls, like product 0 at '1:address:number <- foo '
++error: main: avoid getting non-shared addresses out of calls, like product 0 at '1:address:number <- foo '
 
 //:: Check types going in and out of all recipes with headers.
 

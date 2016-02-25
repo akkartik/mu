@@ -111,7 +111,7 @@ long long int Num_core_mu_tests = 0;
 :(after "Check For .mu Files")
 Num_core_mu_tests = SIZE(Scenarios);
 :(before "End Tests")
-Warn_on_missing_default_space = true;
+Hide_missing_default_space_errors = false;
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
 for (long long int i = 0; i < SIZE(Scenarios); ++i) {
