@@ -82,9 +82,9 @@ void run_test(size_t i) {
 }
 
 bool is_integer(const string& s) {
-  return s.find_first_not_of("0123456789-") == string::npos
-      && s.find('-', 1) == string::npos
-      && s.find_first_of("0123456789") != string::npos;
+  return s.find_first_not_of("0123456789-") == string::npos  // no other characters
+      && s.find_first_of("0123456789") != string::npos  // at least one digit
+      && s.find('-', 1) == string::npos;  // '-' only at first position
 }
 
 long long int to_integer(string n) {

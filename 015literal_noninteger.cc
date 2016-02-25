@@ -17,9 +17,10 @@ if (is_noninteger(s)) {
 
 :(code)
 bool is_noninteger(const string& s) {
-  return s.find_first_not_of("0123456789-.") == string::npos
-      && s.find_first_of    ("0123456789-") != string::npos
-      && std::count(s.begin(), s.end(), '.') == 1;
+  return s.find_first_not_of("0123456789-.") == string::npos  // no other characters
+      && s.find_first_of("0123456789") != string::npos  // at least one digit
+      && s.find('-', 1) == string::npos  // '-' only at first position
+      && std::count(s.begin(), s.end(), '.') == 1;  // exactly one decimal point
 }
 
 double to_double(string n) {
@@ -38,4 +39,9 @@ void test_is_noninteger() {
   CHECK(!is_noninteger("."));
   CHECK(is_noninteger("2."));
   CHECK(is_noninteger(".2"));
+  CHECK(is_noninteger("-.2"));
+  CHECK(is_noninteger("-2."));
+  CHECK(!is_noninteger("--.2"));
+  CHECK(!is_noninteger(".-2"));
+  CHECK(!is_noninteger("..2"));
 }
