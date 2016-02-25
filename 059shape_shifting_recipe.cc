@@ -335,10 +335,6 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
   }
   if (is_type_ingredient_name(exemplar_type->name)) {
     assert(!refinement_type->name.empty());
-    if (exemplar_type->right) {
-      raise_error << "type_ingredients in non-last position not currently supported\n" << end();
-      return;
-    }
     if (!contains_key(mappings, exemplar_type->name)) {
       trace(9993, "transform") << "adding mapping from " << exemplar_type->name << " to " << to_string(refinement_type) << end();
       put(mappings, exemplar_type->name, new type_tree(*refinement_type));
