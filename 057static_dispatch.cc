@@ -348,24 +348,24 @@ recipe test [
 +mem: storing 34 in location 1
 
 :(scenario static_dispatch_disabled_on_headerless_definition)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe test a:number -> z:number [
   z <- copy 1
 ]
 recipe test [
   reply 34
 ]
-+warn: redefining recipe test
++error: redefining recipe test
 
 :(scenario static_dispatch_disabled_on_headerless_definition_2)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe test [
   reply 34
 ]
 recipe test a:number -> z:number [
   z <- copy 1
 ]
-+warn: redefining recipe test
++error: redefining recipe test
 
 :(scenario static_dispatch_on_primitive_names)
 recipe main [
@@ -549,7 +549,6 @@ recipe! foo x:address:number -> y:number [
 ]
 +mem: storing 34 in location 2
 $error: 0
-$warn: 0
 
 :(scenario dispatch_errors_come_after_unknown_name_errors)
 % Hide_errors = true;

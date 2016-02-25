@@ -171,8 +171,8 @@ void run_mu_scenario(const scenario& s) {
 //: doing that, regardless of anything else.
 :(scenarios run)
 :(scenario warn_on_redefine_scenario)
-% Hide_warnings = true;
-% Disable_redefine_warnings = true;
+% Hide_errors = true;
+% Disable_redefine_errors = true;
 recipe scenario-foo [
   1:number <- copy 34
 ]
@@ -180,7 +180,7 @@ recipe scenario-foo [
 recipe scenario-foo [
   1:number <- copy 35
 ]
-+warn: redefining recipe scenario-foo
++error: redefining recipe scenario-foo
 
 :(after "bool warn_on_redefine(const string& recipe_name)")
   if (recipe_name.find("scenario-") == 0) return true;

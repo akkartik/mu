@@ -18,9 +18,9 @@ recipe main [
 # result is null
 +mem: storing 0 in location 2
 
-//: run code in 'interactive mode', i.e. with errors+warnings off and return:
+//: run code in 'interactive mode', i.e. with errors off and return:
 //:   stringified output in case we want to print it to screen
-//:   any errors+warnings encountered
+//:   any errors encountered
 //:   simulated screen any prints went to
 //:   any 'app' layer traces generated
 :(before "End Primitive Recipe Declarations")
@@ -45,7 +45,7 @@ case RUN_INTERACTIVE: {
   if (!new_code_pushed_to_stack) {
     products.resize(5);
     products.at(0).push_back(0);
-    products.at(1).push_back(trace_error_warning_contents());
+    products.at(1).push_back(trace_error_contents());
     products.at(2).push_back(0);
     products.at(3).push_back(trace_app_contents());
     products.at(4).push_back(1);  // completed
@@ -68,7 +68,7 @@ vector<recipe_ordinal> Save_recently_added_shape_shifting_recipes;
 Track_most_recent_products = false;
 :(code)
 // reads a string, tries to call it as code (treating it as a test), saving
-// all warnings.
+// all errors.
 // returns true if successfully called (no errors found during load and transform)
 bool run_interactive(long long int address) {
   assert(contains_key(Recipe_ordinal, "interactive") && get(Recipe_ordinal, "interactive") != 0);
@@ -113,7 +113,7 @@ void run_code_begin(bool snapshot_recently_added_recipes) {
   // stuff to undo later, in run_code_end()
   Hide_warnings = true;
   Hide_errors = true;
-  Disable_redefine_warnings = true;
+  Disable_redefine_errors = true;
   if (snapshot_recently_added_recipes) {
     Save_recently_added_recipes = Recently_added_recipes;
     Recently_added_recipes.clear();
@@ -131,7 +131,7 @@ void run_code_end() {
 //?   cerr << "back to old trace\n";
   Hide_warnings = false;
   Hide_errors = false;
-  Disable_redefine_warnings = false;
+  Disable_redefine_errors = false;
   delete Trace_stream;
   Trace_stream = Save_trace_stream;
   Save_trace_stream = NULL;
@@ -160,15 +160,15 @@ load(string(
   "sandbox-state:number <- routine-state r/routine_id\n" +
   "completed?:boolean <- equal sandbox-state, 1/completed\n" +
   "output:address:shared:array:character <- $most-recent-products\n" +
-  "warnings:address:shared:array:character <- save-errors-warnings\n" +
+  "errors:address:shared:array:character <- save-errors\n" +
   "stashes:address:shared:array:character <- save-app-trace\n" +
   "$cleanup-run-interactive\n" +
-  "reply output, warnings, screen, stashes, completed?\n" +
+  "reply output, errors, screen, stashes, completed?\n" +
 "]\n");
 transform_all();
 Recently_added_recipes.clear();
 
-//: adjust errors/warnings in the sandbox
+//: adjust errors in the sandbox
 :(after "string maybe(string s)")
   if (s == "interactive") return "";
 
@@ -227,7 +227,7 @@ case _MOST_RECENT_PRODUCTS: {
 :(before "End Primitive Recipe Declarations")
 SAVE_ERRORS_WARNINGS,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "save-errors-warnings", SAVE_ERRORS_WARNINGS);
+put(Recipe_ordinal, "save-errors", SAVE_ERRORS_WARNINGS);
 :(before "End Primitive Recipe Checks")
 case SAVE_ERRORS_WARNINGS: {
   break;
@@ -235,7 +235,7 @@ case SAVE_ERRORS_WARNINGS: {
 :(before "End Primitive Recipe Implementations")
 case SAVE_ERRORS_WARNINGS: {
   products.resize(1);
-  products.at(0).push_back(trace_error_warning_contents());
+  products.at(0).push_back(trace_error_contents());
   break;
 }
 
@@ -361,7 +361,7 @@ void track_most_recent_products(const instruction& instruction, const vector<vec
       if (is_mu_string(instruction.products.at(i))) {
         if (!scalar(products.at(i))) {
           tb_shutdown();
-          cerr << read_mu_string(trace_error_warning_contents()) << '\n';
+          cerr << read_mu_string(trace_error_contents()) << '\n';
           cerr << SIZE(products.at(i)) << ": ";
           for (long long int j = 0; j < SIZE(products.at(i)); ++j)
             cerr << no_scientific(products.at(i).at(j)) << ' ';
@@ -402,11 +402,11 @@ long long int stringified_value_of_location(long long int address) {
   return new_mu_string(out.str());
 }
 
-long long int trace_error_warning_contents() {
+long long int trace_error_contents() {
   if (!Trace_stream) return 0;
   ostringstream out;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (p->depth > Warning_depth) continue;
+    if (p->label != "error") continue;
     out << p->contents;
     if (*--p->contents.end() != '\n') out << '\n';
   }
@@ -440,7 +440,7 @@ void truncate(string& x) {
 }
 
 //: simpler version of run-interactive: doesn't do any running, just loads
-//: recipes and reports errors+warnings.
+//: recipes and reports errors.
 
 :(before "End Primitive Recipe Declarations")
 RELOAD,
@@ -496,7 +496,7 @@ case RELOAD: {
   Trace_stream->newline();  // flush trace
   Current_routine = save_current_routine;
   products.resize(1);
-  products.at(0).push_back(trace_error_warning_contents());
+  products.at(0).push_back(trace_error_contents());
   run_code_end();  // wait until we're done with the trace contents
 //?   cerr << "reload done\n";
   break;

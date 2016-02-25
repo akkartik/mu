@@ -28,9 +28,9 @@ vector<recipe_ordinal> load(istream& in) {
       result.push_back(slurp_recipe(in));
     }
     else if (command == "recipe!") {
-      Disable_redefine_warnings = true;
+      Disable_redefine_errors = true;
       result.push_back(slurp_recipe(in));
-      Disable_redefine_warnings = false;
+      Disable_redefine_errors = false;
     }
     // End Command Handlers
     else {
@@ -54,7 +54,7 @@ long long int slurp_recipe(istream& in) {
   if (Recipe.find(get(Recipe_ordinal, result.name)) != Recipe.end()) {
     trace(9991, "parse") << "already exists" << end();
     if (warn_on_redefine(result.name))
-      raise << "redefining recipe " << result.name << "\n" << end();
+      raise_error << "redefining recipe " << result.name << "\n" << end();
     Recipe.erase(get(Recipe_ordinal, result.name));
   }
   slurp_body(in, result);
@@ -206,14 +206,14 @@ void skip_comment(istream& in) {
 
 //: Warn if a recipe gets redefined, because large codebases can accidentally
 //: step on their own toes. But there'll be many occasions later where
-//: we'll want to disable the warnings.
+//: we'll want to disable the errors.
 :(before "End Globals")
-bool Disable_redefine_warnings = false;
+bool Disable_redefine_errors = false;
 :(before "End Setup")
-Disable_redefine_warnings = false;
+Disable_redefine_errors = false;
 :(code)
 bool warn_on_redefine(const string& recipe_name) {
-  if (Disable_redefine_warnings) return false;
+  if (Disable_redefine_errors) return false;
   return true;
 }
 
@@ -364,22 +364,22 @@ void test_parse_comment_terminated_by_eof() {
 }
 
 :(scenario warn_on_redefine)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:number <- copy 23
 ]
 recipe main [
   1:number <- copy 24
 ]
-+warn: redefining recipe main
++error: redefining recipe main
 
 :(scenario redefine_without_warning)
-% Hide_warnings = true;
+% Hide_errors = true;
 recipe main [
   1:number <- copy 23
 ]
 recipe! main [
   1:number <- copy 24
 ]
--warn: redefining recipe main
-$warn: 0
+-error: redefining recipe main
+$error: 0
