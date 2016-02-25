@@ -294,7 +294,21 @@ void check_memory(const string& s) {
     skip_whitespace_and_comments(in);
     string _assign;  in >> _assign;  assert(_assign == "<-");
     skip_whitespace_and_comments(in);
-    double value = 0;  in >> value;
+    string rhs = next_word(in);
+    if (!is_integer(rhs) && !is_noninteger(rhs)) {
+      if (Current_scenario && !Scenario_testing_scenario)
+        // genuine test in a mu file
+        raise_error << "\nF - " << Current_scenario->name << ": location " << address << " can't contain non-number " << rhs << '\n' << end();
+      else
+        // just testing scenario support
+        raise_error << "location " << address << " can't contain non-number " << rhs << '\n' << end();
+      if (!Scenario_testing_scenario) {
+        Passed = false;
+        ++Num_failures;
+      }
+      return;
+    }
+    double value = to_double(rhs);
     if (contains_key(locations_checked, address))
       raise_error << "duplicate expectation for location " << address << '\n' << end();
     trace(9999, "run") << "checking location " << address << end();
@@ -335,6 +349,7 @@ void check_type(const string& lhs, istream& in) {
     check_string(address, literal);
     return;
   }
+  // End Scenario Type Cases
   raise_error << "don't know how to check memory for " << lhs << '\n' << end();
 }
 
@@ -411,6 +426,26 @@ recipe main [
 +run: checking location 2
 +run: checking location 3
 +run: checking location 4
+
+:(scenario memory_invalid_string_check)
+% Scenario_testing_scenario = true;
+% Hide_errors = true;
+recipe main [
+  memory-should-contain [
+    1 <- [abc]
+  ]
+]
++error: location 1 can't contain non-number [abc]
+
+:(scenario memory_check_with_comment)
+% Scenario_testing_scenario = true;
+% Hide_errors = true;
+recipe main [
+  memory-should-contain [
+    1 <- 34  # comment
+  ]
+]
+-error: location 1 can't contain non-number 34  # comment
 
 :(code)
 //: 'trace-should-contain' is like the '+' lines in our scenarios so far
