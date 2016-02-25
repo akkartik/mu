@@ -243,7 +243,7 @@ bool is_unique_address(reagent x) {
 
 //: additionally, flag an error on calls receiving non-shared addresses
 
-:(scenario warn_on_calls_with_addresses)
+:(scenario forbid_calls_with_nonshared_addresses)
 % Hide_errors = true;
 recipe main [
   1:address:number <- copy 0
@@ -255,7 +255,7 @@ recipe foo x:address:number [
 ]
 +error: main: avoid passing non-shared addresses into calls, like ingredient 0 at 'foo 1:address:number'
 
-:(scenario warn_on_calls_with_addresses_2)
+:(scenario forbid_calls_with_nonshared_addresses_2)
 % Hide_errors = true;
 recipe main [
   1:address:number <- foo

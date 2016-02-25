@@ -126,7 +126,7 @@ container foo [
 ]
 $error: 0
 
-:(scenario container_warns_on_dynamic_array_element)
+:(scenario container_disallows_dynamic_array_element)
 % Hide_errors = true;
 container foo [
   x:array:number

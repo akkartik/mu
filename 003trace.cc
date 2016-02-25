@@ -91,15 +91,12 @@ struct trace_line {
 
 :(before "End Globals")
 const int Max_depth = 9999;
-const int Error_depth = 0;  // definitely always print the error that caused death
-const int Warning_depth = 1;
+const int Error_depth = 0;  // definitely always print errors
 const int App_depth = 2;  // temporarily where all mu code will trace to
 :(before "End Tracing")
 bool Hide_errors = false;
-bool Hide_warnings = false;
 :(before "End Setup")
 Hide_errors = false;
-Hide_warnings = false;
 
 :(before "End Tracing")
 struct trace_stream {
@@ -134,8 +131,6 @@ struct trace_stream {
     past_lines.push_back(trace_line(curr_depth, trim(curr_label), curr_contents));  // preserve indent in contents
     if (!Hide_errors && curr_label == "error")
       cerr << curr_label << ": " << curr_contents << '\n';
-    else if (!Hide_warnings && curr_label == "warn")
-      cerr << curr_label << ": " << curr_contents << '\n';
     delete curr_stream;
     curr_stream = NULL;
     curr_label.clear();
@@ -161,14 +156,12 @@ trace_stream* Trace_stream = NULL;
 // Top-level helper. IMPORTANT: can't nest
 #define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
 
-// Errors and warnings are special layers.
-#define raise  (!Trace_stream ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Warning_depth, "warn"))
+// Errors are a special layer.
 #define raise_error  (!Trace_stream ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
 // Inside tests, fail any tests that displayed (unexpected) errors.
 // Expected errors in tests should always be hidden and silently checked for.
 :(before "End Test Teardown")
-if (Passed && ((!Hide_errors && trace_count("error") > 0)
-                || (!Hide_warnings && trace_count("warn") > 0))) {
+if (Passed && !Hide_errors && trace_count("error") > 0) {
   Passed = false;
   ++Num_failures;
 }
@@ -370,8 +363,7 @@ using std::ofstream;
 //: In future layers we'll use the depth field as follows:
 //:
 //: Errors will be depth 0.
-//: Warnings will be depth 1.
-//: Mu 'applications' will be able to use depths 2-100 as they like.
+//: Mu 'applications' will be able to use depths 1-100 as they like.
 //: Primitive statements will occupy 101-9989
 const int Initial_callstack_depth = 101;
 const int Max_callstack_depth = 9989;

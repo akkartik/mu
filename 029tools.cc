@@ -99,7 +99,6 @@ case HIDE_ERRORS: {
 :(before "End Primitive Recipe Implementations")
 case HIDE_ERRORS: {
   Hide_errors = true;
-  Hide_warnings = true;
   break;
 }
 
@@ -114,7 +113,6 @@ case SHOW_ERRORS: {
 :(before "End Primitive Recipe Implementations")
 case SHOW_ERRORS: {
   Hide_errors = false;
-  Hide_warnings = false;
   break;
 }
 

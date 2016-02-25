@@ -150,8 +150,7 @@ void run_mu_scenario(const scenario& s) {
   bind_special_scenario_names(tmp.at(0));
   transform_all();
   run(tmp.front());
-  if (Passed && ((!Hide_errors && trace_count("error") > 0)
-                  || (!Hide_warnings && trace_count("warn") > 0))) {
+  if (Passed && !Hide_errors && trace_count("error") > 0) {
     Passed = false;
     ++Num_failures;
   }
@@ -170,9 +169,9 @@ void run_mu_scenario(const scenario& s) {
 //: Watch out for redefinitions of scenario routines. We should never ever be
 //: doing that, regardless of anything else.
 :(scenarios run)
-:(scenario warn_on_redefine_scenario)
+:(scenario forbid_redefining_scenario_even_if_forced)
 % Hide_errors = true;
-% Disable_redefine_errors = true;
+% Disable_redefine_checks = true;
 recipe scenario-foo [
   1:number <- copy 34
 ]
@@ -182,7 +181,7 @@ recipe scenario-foo [
 ]
 +error: redefining recipe scenario-foo
 
-:(after "bool warn_on_redefine(const string& recipe_name)")
+:(after "bool should_check_for_redefine(const string& recipe_name)")
   if (recipe_name.find("scenario-") == 0) return true;
 
 //:: The special instructions we want to support inside scenarios.

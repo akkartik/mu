@@ -28,9 +28,9 @@ vector<recipe_ordinal> load(istream& in) {
       result.push_back(slurp_recipe(in));
     }
     else if (command == "recipe!") {
-      Disable_redefine_errors = true;
+      Disable_redefine_checks = true;
       result.push_back(slurp_recipe(in));
-      Disable_redefine_errors = false;
+      Disable_redefine_checks = false;
     }
     // End Command Handlers
     else {
@@ -53,7 +53,7 @@ long long int slurp_recipe(istream& in) {
     put(Recipe_ordinal, result.name, Next_recipe_ordinal++);
   if (Recipe.find(get(Recipe_ordinal, result.name)) != Recipe.end()) {
     trace(9991, "parse") << "already exists" << end();
-    if (warn_on_redefine(result.name))
+    if (should_check_for_redefine(result.name))
       raise_error << "redefining recipe " << result.name << "\n" << end();
     Recipe.erase(get(Recipe_ordinal, result.name));
   }
@@ -208,12 +208,12 @@ void skip_comment(istream& in) {
 //: step on their own toes. But there'll be many occasions later where
 //: we'll want to disable the errors.
 :(before "End Globals")
-bool Disable_redefine_errors = false;
+bool Disable_redefine_checks = false;
 :(before "End Setup")
-Disable_redefine_errors = false;
+Disable_redefine_checks = false;
 :(code)
-bool warn_on_redefine(const string& recipe_name) {
-  if (Disable_redefine_errors) return false;
+bool should_check_for_redefine(const string& recipe_name) {
+  if (Disable_redefine_checks) return false;
   return true;
 }
 
@@ -363,7 +363,7 @@ void test_parse_comment_terminated_by_eof() {
   cerr << ".";  // termination = success
 }
 
-:(scenario warn_on_redefine)
+:(scenario forbid_redefining_recipes)
 % Hide_errors = true;
 recipe main [
   1:number <- copy 23
@@ -373,7 +373,7 @@ recipe main [
 ]
 +error: redefining recipe main
 
-:(scenario redefine_without_warning)
+:(scenario permit_forcibly_redefining_recipes)
 % Hide_errors = true;
 recipe main [
   1:number <- copy 23

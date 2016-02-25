@@ -181,7 +181,7 @@ exclusive-container foo [
 ]
 $error: 0
 
-:(scenario exclusive_container_warns_on_dynamic_array_element)
+:(scenario exclusive_container_disallows_dynamic_array_element)
 % Hide_errors = true;
 exclusive-container foo [
   x:array:number

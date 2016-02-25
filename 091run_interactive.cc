@@ -112,7 +112,7 @@ void run_code_begin(bool snapshot_recently_added_recipes) {
 //?   cerr << "loading new trace\n";
   // stuff to undo later, in run_code_end()
   Hide_errors = true;
-  Disable_redefine_errors = true;
+  Disable_redefine_checks = true;
   if (snapshot_recently_added_recipes) {
     Save_recently_added_recipes = Recently_added_recipes;
     Recently_added_recipes.clear();
@@ -129,7 +129,7 @@ void run_code_begin(bool snapshot_recently_added_recipes) {
 void run_code_end() {
 //?   cerr << "back to old trace\n";
   Hide_errors = false;
-  Disable_redefine_errors = false;
+  Disable_redefine_checks = false;
   delete Trace_stream;
   Trace_stream = Save_trace_stream;
   Save_trace_stream = NULL;
