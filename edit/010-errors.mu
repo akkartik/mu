@@ -1,10 +1,10 @@
 ## handling malformed programs
 
 container programming-environment-data [
-  recipe-warnings:address:shared:array:character
+  recipe-errors:address:shared:array:character
 ]
 
-# copy code from recipe editor, persist, load into mu, save any warnings
+# copy code from recipe editor, persist, load into mu, save any errors
 recipe! update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
@@ -12,11 +12,11 @@ recipe! update-recipes env:address:shared:programming-environment-data, screen:a
   recipes:address:shared:editor-data <- get *env, recipes:offset
   in:address:shared:array:character <- editor-contents recipes
   save [recipes.mu], in
-  recipe-warnings:address:address:shared:array:character <- get-address *env, recipe-warnings:offset
-  *recipe-warnings <- reload in
+  recipe-errors:address:address:shared:array:character <- get-address *env, recipe-errors:offset
+  *recipe-errors <- reload in
   # if recipe editor has errors, stop
   {
-    break-unless *recipe-warnings
+    break-unless *recipe-errors
     status:address:shared:array:character <- new [errors found     ]
     update-status screen, status, 1/red
     errors-found? <- copy 1/true
@@ -27,9 +27,9 @@ recipe! update-recipes env:address:shared:programming-environment-data, screen:a
 
 before <render-components-end> [
   trace 11, [app], [render status]
-  recipe-warnings:address:shared:array:character <- get *env, recipe-warnings:offset
+  recipe-errors:address:shared:array:character <- get *env, recipe-errors:offset
   {
-    break-unless recipe-warnings
+    break-unless recipe-errors
     status:address:shared:array:character <- new [errors found     ]
     update-status screen, status, 1/red
   }
@@ -37,29 +37,29 @@ before <render-components-end> [
 
 before <render-recipe-components-end> [
   {
-    recipe-warnings:address:shared:array:character <- get *env, recipe-warnings:offset
-    break-unless recipe-warnings
-    row, screen <- render screen, recipe-warnings, left, right, 1/red, row
+    recipe-errors:address:shared:array:character <- get *env, recipe-errors:offset
+    break-unless recipe-errors
+    row, screen <- render screen, recipe-errors, left, right, 1/red, row
   }
 ]
 
 container programming-environment-data [
-  warning-index:number  # index of first sandbox with an error (or -1 if none)
+  error-index:number  # index of first sandbox with an error (or -1 if none)
 ]
 
 after <programming-environment-initialization> [
-  warning-index:address:number <- get-address *result, warning-index:offset
-  *warning-index <- copy -1
+  error-index:address:number <- get-address *result, error-index:offset
+  *error-index <- copy -1
 ]
 
 after <run-sandboxes-begin> [
-  warning-index:address:number <- get-address *env, warning-index:offset
-  *warning-index <- copy -1
+  error-index:address:number <- get-address *env, error-index:offset
+  *error-index <- copy -1
 ]
 
 before <run-sandboxes-end> [
   {
-    sandboxes-completed-successfully?:boolean <- equal *warning-index, -1
+    sandboxes-completed-successfully?:boolean <- equal *error-index, -1
     break-if sandboxes-completed-successfully?
     errors-found? <- copy 1/true
   }
@@ -67,21 +67,21 @@ before <run-sandboxes-end> [
 
 before <render-components-end> [
   {
-    break-if recipe-warnings
-    warning-index:number <- get *env, warning-index:offset
-    sandboxes-completed-successfully?:boolean <- equal warning-index, -1
+    break-if recipe-errors
+    error-index:number <- get *env, error-index:offset
+    sandboxes-completed-successfully?:boolean <- equal error-index, -1
     break-if sandboxes-completed-successfully?
     status-template:address:shared:array:character <- new [errors found (_)    ]
-    warning-index-text:address:shared:array:character <- to-text warning-index
-    status:address:shared:array:character <- interpolate status-template, warning-index-text
-#?     $print [update-status: sandbox warning], 10/newline
+    error-index-text:address:shared:array:character <- to-text error-index
+    status:address:shared:array:character <- interpolate status-template, error-index-text
+#?     $print [update-status: sandbox error], 10/newline
     update-status screen, status, 1/red
 #?     $print [run sandboxes end], 10/newline
   }
 ]
 
 container sandbox-data [
-  warnings:address:shared:array:character
+  errors:address:shared:array:character
 ]
 
 recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
@@ -90,24 +90,24 @@ recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:p
 #?   $log [update sandbox]
   data:address:shared:array:character <- get *sandbox, data:offset
   response:address:address:shared:array:character <- get-address *sandbox, response:offset
-  warnings:address:address:shared:array:character <- get-address *sandbox, warnings:offset
+  errors:address:address:shared:array:character <- get-address *sandbox, errors:offset
   trace:address:address:shared:array:character <- get-address *sandbox, trace:offset
   fake-screen:address:address:shared:screen <- get-address *sandbox, screen:offset
 #?   $print [run-interactive], 10/newline
-  *response, *warnings, *fake-screen, *trace, completed?:boolean <- run-interactive data
+  *response, *errors, *fake-screen, *trace, completed?:boolean <- run-interactive data
   {
-    break-if *warnings
+    break-if *errors
     break-if completed?:boolean
-    *warnings <- new [took too long!
+    *errors <- new [took too long!
 ]
   }
   {
-    break-unless *warnings
-#?     $print [setting warning-index to ], idx, 10/newline
-    warning-index:address:number <- get-address *env, warning-index:offset
-    warning-not-set?:boolean <- equal *warning-index, -1
-    break-unless warning-not-set?
-    *warning-index <- copy idx
+    break-unless *errors
+#?     $print [setting error-index to ], idx, 10/newline
+    error-index:address:number <- get-address *env, error-index:offset
+    error-not-set?:boolean <- equal *error-index, -1
+    break-unless error-not-set?
+    *error-index <- copy idx
   }
 #?   $print [done with run-interactive], 10/newline
 ]
@@ -115,17 +115,17 @@ recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:p
 # make sure we render any trace
 after <render-sandbox-trace-done> [
   {
-    sandbox-warnings:address:shared:array:character <- get *sandbox, warnings:offset
-    break-unless sandbox-warnings
+    sandbox-errors:address:shared:array:character <- get *sandbox, errors:offset
+    break-unless sandbox-errors
     response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
     *response-starting-row <- copy 0  # no response
-    row, screen <- render screen, sandbox-warnings, left, right, 1/red, row
+    row, screen <- render screen, sandbox-errors, left, right, 1/red, row
     # don't try to print anything more for this sandbox
     jump +render-sandbox-end:label
   }
 ]
 
-scenario run-shows-warnings-in-get [
+scenario run-shows-errors-in-get [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   1:address:shared:array:character <- new [ 
@@ -216,7 +216,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
   ]
 ]
 
-scenario run-hides-warnings-from-past-sandboxes [
+scenario run-hides-errors-from-past-sandboxes [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   1:address:shared:array:character <- new []
@@ -250,7 +250,7 @@ scenario run-hides-warnings-from-past-sandboxes [
   ]
 ]
 
-scenario run-updates-warnings-for-shape-shifting-recipes [
+scenario run-updates-errors-for-shape-shifting-recipes [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   # define a shape-shifting recipe with an error
@@ -297,7 +297,7 @@ z <- add x, [a]
   ]
 ]
 
-scenario run-avoids-spurious-warnings-on-reloading-shape-shifting-recipes [
+scenario run-avoids-spurious-errors-on-reloading-shape-shifting-recipes [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   # overload a well-known shape-shifting recipe
@@ -357,7 +357,7 @@ to-text x]
   ]
 ]
 
-scenario run-shows-missing-type-warnings [
+scenario run-shows-missing-type-errors [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   1:address:shared:array:character <- new [ 
@@ -382,7 +382,7 @@ recipe foo [
   ]
 ]
 
-scenario run-shows-unbalanced-bracket-warnings [
+scenario run-shows-unbalanced-bracket-errors [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   # recipe is incomplete (unbalanced '[')
@@ -411,7 +411,7 @@ recipe foo «
   ]
 ]
 
-scenario run-shows-get-on-non-container-warnings [
+scenario run-shows-get-on-non-container-errors [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   1:address:shared:array:character <- new [ 
@@ -443,7 +443,7 @@ recipe foo [
   ]
 ]
 
-scenario run-shows-non-literal-get-argument-warnings [
+scenario run-shows-non-literal-get-argument-errors [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   1:address:shared:array:character <- new [ 
@@ -479,7 +479,7 @@ recipe foo [
   ]
 ]
 
-scenario run-shows-warnings-everytime [
+scenario run-shows-errors-everytime [
   trace-until 100/app  # trace too long
   # try to run a file with an error
   assume-screen 100/width, 15/height
@@ -525,7 +525,7 @@ recipe foo [
   ]
 ]
 
-scenario run-instruction-and-print-warnings [
+scenario run-instruction-and-print-errors [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # left editor is empty
@@ -588,7 +588,7 @@ scenario run-instruction-and-print-warnings [
   ]
 ]
 
-scenario run-instruction-and-print-warnings-only-once [
+scenario run-instruction-and-print-errors-only-once [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # left editor is empty
@@ -650,10 +650,10 @@ scenario sandbox-can-handle-infinite-loop [
   ]
 ]
 
-scenario sandbox-with-warnings-shows-trace [
+scenario sandbox-with-errors-shows-trace [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
-  # generate a stash and a warning
+  # generate a stash and a error
   1:address:shared:array:character <- new [recipe foo [
 local-scope
 a:number <- next-ingredient
