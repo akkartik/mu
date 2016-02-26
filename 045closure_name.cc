@@ -78,7 +78,6 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
         continue;
       }
       trace(9993, "name") << "lexically surrounding space for recipe " << get(Recipe, r).name << " comes from " << surrounding_recipe_name << end();
-//?       cerr << "lexically surrounding space for recipe " << get(Recipe, r).name << " comes from " << surrounding_recipe_name << '\n';
       if (!contains_key(Recipe_ordinal, surrounding_recipe_name)) {
         raise_error << "can't find recipe providing surrounding space for " << get(Recipe, r).name << ": " << surrounding_recipe_name << '\n' << end();
         continue;

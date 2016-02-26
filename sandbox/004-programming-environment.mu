@@ -160,9 +160,7 @@ recipe render-all screen:address:shared:screen, env:address:shared:programming-e
   # top menu
   trace 11, [app], [render top menu]
   width:number <- screen-width screen
-#?   $print [draw menu], 10/newline
   draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
-#?   $print [draw menu end], 10/newline
   button-start:number <- subtract width, 20
   button-on-screen?:boolean <- greater-or-equal button-start, 0
   assert button-on-screen?, [screen too narrow for menu]

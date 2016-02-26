@@ -39,12 +39,9 @@ long long int space_base(const reagent& x) {
 }
 
 long long int space_base(const reagent& x, long long int space_index, long long int base) {
-//?   trace(9999, "space") << "space-base: " << space_index << " " << base << end();
-  if (space_index == 0) {
+  if (space_index == 0)
     return base;
-  }
   long long int result = space_base(x, space_index-1, get_or_insert(Memory, base+/*skip length*/1))+/*skip refcount*/1;
-//?   trace(9999, "space") << "space-base: " << space_index << " " << base << " => " << result << end();
   return result;
 }
 

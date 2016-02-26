@@ -165,8 +165,6 @@ case SCREEN_SHOULD_CONTAIN: {
 }
 :(before "End Primitive Recipe Implementations")
 case SCREEN_SHOULD_CONTAIN: {
-//?   cerr << SIZE(get(Recipe_variants, "insert")) << '\n';
-//?   cerr << debug_string(get(Recipe, get(Recipe_ordinal, "insert_4"))) << '\n';
   if (!Passed) break;
   assert(scalar(ingredients.at(0)));
   check_screen(current_instruction().ingredients.at(0).name, -1);

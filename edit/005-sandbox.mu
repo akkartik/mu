@@ -127,14 +127,11 @@ after <global-keypress> [
   {
     do-run?:boolean <- equal *k, 65532/F4
     break-unless do-run?
-#?     $log [F4 pressed]
     status:address:shared:array:character <- new [running...       ]
     screen <- update-status screen, status, 245/grey
     error?:boolean, env, screen <- run-sandboxes env, screen
     # F4 might update warnings and results on both sides
-#?     $print [render-all begin], 10/newline
     screen <- render-all screen, env
-#?     $print [render-all end], 10/newline
     {
       break-if error?
       status:address:shared:array:character <- new [                 ]
@@ -243,7 +240,6 @@ recipe save-sandboxes env:address:shared:programming-environment-data [
 recipe! render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen [
   local-scope
   load-ingredients
-#?   $log [render sandbox side]
   trace 11, [app], [render sandbox side]
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
   row:number, column:number <- copy 1, 0
@@ -268,7 +264,6 @@ recipe! render-sandbox-side screen:address:shared:screen, env:address:shared:pro
 recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbox-data, left:number, right:number, row:number, render-from:number, idx:number -> row:number, screen:address:shared:screen, sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
-#?   $log [render sandbox]
   reply-unless sandbox
   screen-height:number <- screen-height screen
   at-bottom?:boolean <- greater-or-equal row, screen-height

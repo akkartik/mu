@@ -121,7 +121,6 @@ after <global-keypress> [
     screen <- render-all screen, env
     {
       break-if error?
-#?       $print [update-status: clearing], 10/newline
       status:address:shared:array:character <- new [                 ]
       screen <- update-status screen, status, 245/grey
     }

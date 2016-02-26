@@ -23,8 +23,3 @@ scenario read-key-in-mu [
     8 <- 1
   ]
 ]
-
-#? recipe foo-editor [
-#?   local-scope
-#?   init:address:shared:list:character <- push 97/a, 0
-#? ]

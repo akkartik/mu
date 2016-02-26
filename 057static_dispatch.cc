@@ -33,7 +33,6 @@ for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin();
 // there can only ever be one variant for main
 if (result.name != "main" && contains_key(Recipe_ordinal, result.name)) {
   const recipe_ordinal r = get(Recipe_ordinal, result.name);
-//?   cerr << result.name << ": " << contains_key(Recipe, r) << (contains_key(Recipe, r) ? get(Recipe, r).has_header : 0) << matching_variant_name(result) << '\n';
   if (!contains_key(Recipe, r) || get(Recipe, r).has_header) {
     string new_name = matching_variant_name(result);
     if (new_name.empty()) {
@@ -44,7 +43,6 @@ if (result.name != "main" && contains_key(Recipe_ordinal, result.name)) {
     }
     trace(9999, "load") << "switching " << result.name << " to " << new_name << end();
     result.name = new_name;
-//?     cerr << "=> " << new_name << '\n';
   }
 }
 else {

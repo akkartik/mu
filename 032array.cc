@@ -112,7 +112,6 @@ if (r.type && r.type->value == get(Type_ordinal, "array")) {
     raise_error << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
     return 1;
   }
-//?   trace(9999, "mem") << "computing size of array starting at " << r.value << end();
   return 1 + get_or_insert(Memory, r.value)*size_of(array_element(r.type));
 }
 

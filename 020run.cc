@@ -151,7 +151,6 @@ if (argc > 1) {
     argc--;
   }
   transform_all();
-//?   dump_recipe("handle-keyboard-event"),  exit(0);
   if (Run_tests) Recipe.erase(get(Recipe_ordinal, "main"));
   // End Loading .mu Files
 }

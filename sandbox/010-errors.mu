@@ -71,9 +71,7 @@ before <render-components-end> [
     status-template:address:shared:array:character <- new [errors found (_)    ]
     error-index-text:address:shared:array:character <- to-text error-index
     status:address:shared:array:character <- interpolate status-template, error-index-text
-#?     $print [update-status: sandbox error], 10/newline
     update-status screen, status, 1/red
-#?     $print [run sandboxes end], 10/newline
   }
 ]
 
@@ -104,13 +102,11 @@ recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:p
   }
   {
     break-unless *errors
-#?     $print [setting error-index to ], idx, 10/newline
     error-index:address:number <- get-address *env, error-index:offset
     error-not-set?:boolean <- equal *error-index, -1
     break-unless error-not-set?
     *error-index <- copy idx
   }
-#?   $print [done with run-interactive], 10/newline
 ]
 
 # make sure we render any trace

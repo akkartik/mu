@@ -109,7 +109,6 @@ bool run_interactive(long long int address) {
 }
 
 void run_code_begin(bool snapshot_recently_added_recipes) {
-//?   cerr << "loading new trace\n";
   // stuff to undo later, in run_code_end()
   Hide_errors = true;
   Disable_redefine_checks = true;
@@ -127,7 +126,6 @@ void run_code_begin(bool snapshot_recently_added_recipes) {
 }
 
 void run_code_end() {
-//?   cerr << "back to old trace\n";
   Hide_errors = false;
   Disable_redefine_checks = false;
   delete Trace_stream;
@@ -458,7 +456,6 @@ case RELOAD: {
 }
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
-//?   cerr << "== reload\n";
   // clear any containers in advance
   for (long long int i = 0; i < SIZE(Recently_added_types); ++i) {
     if (!contains_key(Type, Recently_added_types.at(i))) continue;
@@ -466,14 +463,11 @@ case RELOAD: {
     Type.erase(Recently_added_types.at(i));
   }
   for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin(); p != Recipe_variants.end(); ++p) {
-//?     cerr << p->first << ":\n";
     vector<recipe_ordinal>& variants = p->second;
     for (long long int i = 0; i < SIZE(p->second); ++i) {
       if (variants.at(i) == -1) continue;
-      if (find(Recently_added_shape_shifting_recipes.begin(), Recently_added_shape_shifting_recipes.end(), variants.at(i)) != Recently_added_shape_shifting_recipes.end()) {
-//?         cerr << "  " << variants.at(i) << ' ' << get(Recipe, variants.at(i)).name << '\n';
+      if (find(Recently_added_shape_shifting_recipes.begin(), Recently_added_shape_shifting_recipes.end(), variants.at(i)) != Recently_added_shape_shifting_recipes.end())
         variants.at(i) = -1;  // ghost
-      }
     }
   }
   for (long long int i = 0; i < SIZE(Recently_added_shape_shifting_recipes); ++i) {
@@ -496,7 +490,6 @@ case RELOAD: {
   products.resize(1);
   products.at(0).push_back(trace_error_contents());
   run_code_end();  // wait until we're done with the trace contents
-//?   cerr << "reload done\n";
   break;
 }
 

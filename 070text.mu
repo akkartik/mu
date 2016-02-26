@@ -12,7 +12,6 @@ recipe to-text-line x:_elem -> y:address:shared:array:character [
 recipe to-text x:address:shared:array:character -> y:address:shared:array:character [
   local-scope
   load-ingredients
-#?   $print [to-text text], 10/newline
   reply x
 ]
 
@@ -163,7 +162,6 @@ recipe buffer-full? in:address:shared:buffer -> result:boolean [
 # most broadly applicable definition of append to a buffer: just call to-text
 recipe append buf:address:shared:buffer, x:_elem -> buf:address:shared:buffer [
   local-scope
-#?   $print [append _elem to buffer], 10/newline
   load-ingredients
   text:address:shared:array:character <- to-text x
   len:number <- length *text
@@ -180,7 +178,6 @@ recipe append buf:address:shared:buffer, x:_elem -> buf:address:shared:buffer [
 
 recipe append in:address:shared:buffer, c:character -> in:address:shared:buffer [
   local-scope
-#?   $print [append character to buffer], 10/newline
   load-ingredients
   len:address:number <- get-address *in, length:offset
   {
@@ -392,7 +389,6 @@ scenario integer-to-decimal-digit-negative [
 
 recipe append a:address:shared:array:character, b:address:shared:array:character -> result:address:shared:array:character [
   local-scope
-#?   $print [append text to text], 10/newline
   load-ingredients
   # result = new character[a.length + b.length]
   a-len:number <- length *a

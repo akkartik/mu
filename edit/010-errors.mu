@@ -8,7 +8,6 @@ container programming-environment-data [
 recipe! update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
-#?   $log [update recipes]
   recipes:address:shared:editor-data <- get *env, recipes:offset
   in:address:shared:array:character <- editor-contents recipes
   save [recipes.mu], in
@@ -74,9 +73,7 @@ before <render-components-end> [
     status-template:address:shared:array:character <- new [errors found (_)    ]
     error-index-text:address:shared:array:character <- to-text error-index
     status:address:shared:array:character <- interpolate status-template, error-index-text
-#?     $print [update-status: sandbox error], 10/newline
     update-status screen, status, 1/red
-#?     $print [run sandboxes end], 10/newline
   }
 ]
 
@@ -87,13 +84,11 @@ container sandbox-data [
 recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
-#?   $log [update sandbox]
   data:address:shared:array:character <- get *sandbox, data:offset
   response:address:address:shared:array:character <- get-address *sandbox, response:offset
   errors:address:address:shared:array:character <- get-address *sandbox, errors:offset
   trace:address:address:shared:array:character <- get-address *sandbox, trace:offset
   fake-screen:address:address:shared:screen <- get-address *sandbox, screen:offset
-#?   $print [run-interactive], 10/newline
   *response, *errors, *fake-screen, *trace, completed?:boolean <- run-interactive data
   {
     break-if *errors
@@ -103,13 +98,11 @@ recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:p
   }
   {
     break-unless *errors
-#?     $print [setting error-index to ], idx, 10/newline
     error-index:address:number <- get-address *env, error-index:offset
     error-not-set?:boolean <- equal *error-index, -1
     break-unless error-not-set?
     *error-index <- copy idx
   }
-#?   $print [done with run-interactive], 10/newline
 ]
 
 # make sure we render any trace

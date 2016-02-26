@@ -32,7 +32,6 @@ case HASH: {
 
 :(code)
 size_t hash(size_t h, reagent& r) {
-//?   cerr << debug_string(r) << '\n';
   canonize(r);
   if (is_mu_string(r))  // optimization
     return hash_mu_string(h, r);

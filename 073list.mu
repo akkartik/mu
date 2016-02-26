@@ -53,7 +53,6 @@ scenario list-handling [
 
 recipe to-text in:address:shared:list:_elem -> result:address:shared:array:character [
   local-scope
-#?   $print [to text: list], 10/newline
   load-ingredients
   buf:address:shared:buffer <- new-buffer 80
   buf <- to-buffer in, buf
@@ -63,7 +62,6 @@ recipe to-text in:address:shared:list:_elem -> result:address:shared:array:chara
 # variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)
 recipe to-text-line in:address:shared:list:_elem -> result:address:shared:array:character [
   local-scope
-#?   $print [to text line: list], 10/newline
   load-ingredients
   buf:address:shared:buffer <- new-buffer 80
   buf <- to-buffer in, buf, 6  # max elements to display
@@ -72,7 +70,6 @@ recipe to-text-line in:address:shared:list:_elem -> result:address:shared:array:
 
 recipe to-buffer in:address:shared:list:_elem, buf:address:shared:buffer -> buf:address:shared:buffer [
   local-scope
-#?   $print [to buffer: list], 10/newline
   load-ingredients
   {
     break-if in
@@ -85,7 +82,6 @@ recipe to-buffer in:address:shared:list:_elem, buf:address:shared:buffer -> buf:
   # now prepare next
   next:address:shared:list:_elem <- rest in
   nextn:number <- copy next
-#?   buf <- append buf, nextn
   reply-unless next
   space:character <- copy 32/space
   buf <- append buf, space:character
