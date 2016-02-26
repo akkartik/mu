@@ -246,14 +246,9 @@ case RUN: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>Name[Next_recipe_ordinal]<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   ostringstream tmp<span class="Delimiter">;</span>
   tmp &lt;&lt; <span class="Constant">&quot;recipe run_&quot;</span> &lt;&lt; Next_recipe_ordinal &lt;&lt; <span class="Constant">&quot; [ &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; ]&quot;</span><span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; tmp.str() &lt;&lt; '\n';</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;before load\n&quot;;</span>
   vector&lt;recipe_ordinal&gt; tmp_recipe = load<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;before bind\n&quot;;</span>
   bind_special_scenario_names<span class="Delimiter">(</span>tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;before transform\n&quot;;</span>
   transform_all<span class="Delimiter">();</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;end\n&quot;;</span>
   if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
     trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;run: incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
@@ -486,6 +481,7 @@ recipe main [
   ]
 ]
 <span class="traceAbsent">-error: location 1 can't contain non-number 34  # comment</span>
+<span class="Comment"># but there'll be an error signalled by memory-should-contain</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Comment">//: 'trace-should-contain' is like the '+' lines in our scenarios so far</span>
@@ -568,7 +564,6 @@ recipe main [
 
 <span class="Delimiter">:(scenario trace_check_passes_silently)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
-<span class="Special">% Hide_errors = true;</span>
 recipe main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [b]
@@ -630,7 +625,6 @@ bool check_trace_missing<span class="Delimiter">(</span>const string&amp; in<spa
 
 <span class="Delimiter">:(scenario trace_negative_check_passes_silently)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
-<span class="Special">% Hide_errors = true;</span>
 recipe main [
   trace-should-not-contain [
     a: b

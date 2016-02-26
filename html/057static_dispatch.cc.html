@@ -15,12 +15,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceAbsent { color: #c00000; }
 .traceContains { color: #008000; }
-.Identifier { color: #804000; }
 .cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
+.Identifier { color: #804000; }
 .Constant { color: #00a0a0; }
 -->
 </style>
@@ -68,7 +67,6 @@ for <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span
 <span class="Comment">// there can only ever be one variant for main</span>
 if <span class="Delimiter">(</span>result<span class="Delimiter">.</span>name != <span class="Constant">&quot;main&quot;</span> &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
   const recipe_ordinal r = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; result.name &lt;&lt; &quot;: &quot; &lt;&lt; contains_key(Recipe, r) &lt;&lt; (contains_key(Recipe, r) ? get(Recipe, r).has_header : 0) &lt;&lt; matching_variant_name(result) &lt;&lt; '\n';</span>
   if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">)</span> || get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>has_header<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     string new_name = matching_variant_name<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>new_name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
@@ -79,7 +77,6 @@ if <span class="Delimiter">(</span>result<span class="Delimiter">.</span>name !=
     <span class="Delimiter">}</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;load&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;switching &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; new_name &lt;&lt; end<span class="Delimiter">();</span>
     result<span class="Delimiter">.</span>name = new_name<span class="Delimiter">;</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; &quot;=&gt; &quot; &lt;&lt; new_name &lt;&lt; '\n';</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 else <span class="Delimiter">{</span>
@@ -424,7 +421,6 @@ recipe equal x:number<span class="Delimiter">,</span> y:number <span class="Deli
 <span class="traceContains">+mem: storing 1 in location 6</span>
 
 <span class="Delimiter">:(scenario static_dispatch_works_with_dummy_results_for_containers)</span>
-<span class="Special">% Hide_errors = true;</span>
 recipe main [
   _<span class="Special"> &lt;- </span>test <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
 ]
@@ -441,7 +437,6 @@ recipe test a:number<span class="Delimiter">,</span> b:number <span class="Delim
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_first_use)</span>
-<span class="Special">% Hide_errors = true;</span>
 recipe main [
   x:address:shared:foo<span class="Special"> &lt;- </span>new foo:type
   test x
@@ -457,7 +452,6 @@ recipe test a:address:shared:foo <span class="Delimiter">-&gt;</span> z:number [
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_second_use)</span>
-<span class="Special">% Hide_errors = true;</span>
 recipe main [
   x:address:shared:foo<span class="Special"> &lt;- </span>new foo:type
   test x

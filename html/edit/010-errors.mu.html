@@ -20,7 +20,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
-.CommentedCode { color: #6c6c6c; }
 .Delimiter { color: #a04060; }
 .muScenario { color: #00af00; }
 -->
@@ -44,7 +43,6 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">recipe!</span> update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-<span class="CommentedCode">#?   $log [update recipes]</span>
   recipes:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
   in:address:shared:array:character<span class="Special"> &lt;- </span>editor-contents recipes
   save <span class="Constant">[recipes.mu]</span>, in
@@ -110,9 +108,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     status-template:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[errors found (_)    ]</span>
     error-index-text:address:shared:array:character<span class="Special"> &lt;- </span>to-text error-index
     status:address:shared:array:character<span class="Special"> &lt;- </span>interpolate status-template, error-index-text
-<span class="CommentedCode">#?     $print [update-status: sandbox error], 10/newline</span>
     update-status screen, status, <span class="Constant">1/red</span>
-<span class="CommentedCode">#?     $print [run sandboxes end], 10/newline</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -123,13 +119,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">recipe!</span> update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-<span class="CommentedCode">#?   $log [update sandbox]</span>
   data:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
   response:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response:offset</span>
   errors:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">errors:offset</span>
   trace:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">trace:offset</span>
   fake-screen:address:address:shared:screen<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">screen:offset</span>
-<span class="CommentedCode">#?   $print [run-interactive], 10/newline</span>
   *response, *errors, *fake-screen, *trace, completed?:boolean<span class="Special"> &lt;- </span>run-interactive data
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> *errors
@@ -139,13 +133,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> *errors
-<span class="CommentedCode">#?     $print [setting error-index to ], idx, 10/newline</span>
     error-index:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">error-index:offset</span>
     error-not-set?:boolean<span class="Special"> &lt;- </span>equal *error-index, <span class="Constant">-1</span>
     <span class="muControl">break-unless</span> error-not-set?
     *error-index<span class="Special"> &lt;- </span>copy idx
   <span class="Delimiter">}</span>
-<span class="CommentedCode">#?   $print [done with run-interactive], 10/newline</span>
 ]
 
 <span class="Comment"># make sure we render any trace</span>
