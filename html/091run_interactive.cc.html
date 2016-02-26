@@ -52,9 +52,9 @@ recipe main [
 <span class="Comment"># result is null</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
 
-<span class="Comment">//: run code in 'interactive mode', i.e. with errors+warnings off and return:</span>
+<span class="Comment">//: run code in 'interactive mode', i.e. with errors off and return:</span>
 <span class="Comment">//:   stringified output in case we want to print it to screen</span>
-<span class="Comment">//:   any errors+warnings encountered</span>
+<span class="Comment">//:   any errors encountered</span>
 <span class="Comment">//:   simulated screen any prints went to</span>
 <span class="Comment">//:   any 'app' layer traces generated</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
@@ -64,11 +64,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 case RUN_INTERACTIVE: <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'run-interactive' requires exactly one ingredient, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'run-interactive' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'run-interactive' should be a string, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'run-interactive' should be a string, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -79,7 +79,7 @@ case RUN_INTERACTIVE: <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!new_code_pushed_to_stack<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">5</span><span class="Delimiter">);</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_error_warning_contents<span class="Delimiter">());</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_error_contents<span class="Delimiter">());</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">3</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_app_contents<span class="Delimiter">());</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// completed</span>
@@ -102,7 +102,7 @@ vector&lt;recipe_ordinal&gt; Save_recently_added_shape_shifting_recipes<span cla
 Track_most_recent_products = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// reads a string, tries to call it as code (treating it as a test), saving</span>
-<span class="Comment">// all warnings.</span>
+<span class="Comment">// all errors.</span>
 <span class="Comment">// returns true if successfully called (no errors found during load and transform)</span>
 bool run_interactive<span class="Delimiter">(</span>long long int address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">)</span> &amp;&amp; get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">)</span> != <span class="Constant">0</span><span class="Delimiter">);</span>
@@ -145,9 +145,8 @@ bool run_interactive<span class="Delimiter">(</span>long long int address<span c
 void run_code_begin<span class="Delimiter">(</span>bool snapshot_recently_added_recipes<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;loading new trace\n&quot;;</span>
   <span class="Comment">// stuff to undo later, in run_code_end()</span>
-  Hide_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
   Hide_errors = <span class="Constant">true</span><span class="Delimiter">;</span>
-  Disable_redefine_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
+  Disable_redefine_checks = <span class="Constant">true</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>snapshot_recently_added_recipes<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Save_recently_added_recipes = Recently_added_recipes<span class="Delimiter">;</span>
     Recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
@@ -163,9 +162,8 @@ void run_code_begin<span class="Delimiter">(</span>bool snapshot_recently_added_
 
 void run_code_end<span class="Delimiter">()</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;back to old trace\n&quot;;</span>
-  Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
   Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
-  Disable_redefine_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
+  Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
   delete Trace_stream<span class="Delimiter">;</span>
   Trace_stream = Save_trace_stream<span class="Delimiter">;</span>
   Save_trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
@@ -194,15 +192,15 @@ load<span class="Delimiter">(</span>string<span class="Delimiter">(</span>
   <span class="Constant">&quot;sandbox-state:number &lt;- routine-state r/routine_id</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;completed?:boolean &lt;- equal sandbox-state, 1/completed</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;output:address:shared:array:character &lt;- $most-recent-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;warnings:address:shared:array:character &lt;- save-errors-warnings</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;errors:address:shared:array:character &lt;- save-errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;stashes:address:shared:array:character &lt;- save-app-trace</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;$cleanup-run-interactive</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;reply output, warnings, screen, stashes, completed?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;reply output, errors, screen, stashes, completed?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
 <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
 transform_all<span class="Delimiter">();</span>
 Recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 
-<span class="Comment">//: adjust errors/warnings in the sandbox</span>
+<span class="Comment">//: adjust errors in the sandbox</span>
 <span class="Delimiter">:(after &quot;string maybe(string s)&quot;)</span>
   if <span class="Delimiter">(</span>s == <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 
@@ -259,17 +257,17 @@ case _MOST_RECENT_PRODUCTS: <span class="Delimiter">{</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-SAVE_ERRORS_WARNINGS<span class="Delimiter">,</span>
+SAVE_ERRORS<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;save-errors-warnings&quot;</span><span class="Delimiter">,</span> SAVE_ERRORS_WARNINGS<span class="Delimiter">);</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;save-errors&quot;</span><span class="Delimiter">,</span> SAVE_ERRORS<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case SAVE_ERRORS_WARNINGS: <span class="Delimiter">{</span>
+case SAVE_ERRORS: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case SAVE_ERRORS_WARNINGS: <span class="Delimiter">{</span>
+case SAVE_ERRORS: <span class="Delimiter">{</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_error_warning_contents<span class="Delimiter">());</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_error_contents<span class="Delimiter">());</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -395,7 +393,7 @@ void track_most_recent_products<span class="Delimiter">(</span>const instruction
       if <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
         if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
           tb_shutdown<span class="Delimiter">();</span>
-          cerr &lt;&lt; read_mu_string<span class="Delimiter">(</span>trace_error_warning_contents<span class="Delimiter">())</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+          cerr &lt;&lt; read_mu_string<span class="Delimiter">(</span>trace_error_contents<span class="Delimiter">())</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
           cerr &lt;&lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span><span class="Delimiter">;</span>
           for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
             cerr &lt;&lt; no_scientific<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
@@ -436,11 +434,11 @@ long long int stringified_value_of_location<span class="Delimiter">(</span>long 
   <span class="Identifier">return</span> new_mu_string<span class="Delimiter">(</span>out<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
 
-long long int trace_error_warning_contents<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+long long int trace_error_contents<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
   ostringstream out<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>depth &gt; Warning_depth<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>label != <span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     out &lt;&lt; p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>*--p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">.</span>end<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> out &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -474,7 +472,7 @@ void truncate<span class="Delimiter">(</span>string&amp; x<span class="Delimiter
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: simpler version of run-interactive: doesn't do any running, just loads</span>
-<span class="Comment">//: recipes and reports errors+warnings.</span>
+<span class="Comment">//: recipes and reports errors.</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 RELOAD<span class="Delimiter">,</span>
@@ -483,7 +481,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 case RELOAD: <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'reload' requires exactly one ingredient, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'reload' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
@@ -497,6 +495,7 @@ case RELOAD: <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;== reload\n&quot;;</span>
   <span class="Comment">// clear any containers in advance</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recently_added_types<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     Type_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
     Type<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
@@ -529,7 +528,7 @@ case RELOAD: <span class="Delimiter">{</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>  <span class="Comment">// flush trace</span>
   Current_routine = save_current_routine<span class="Delimiter">;</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_error_warning_contents<span class="Delimiter">());</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_error_contents<span class="Delimiter">());</span>
   run_code_end<span class="Delimiter">();</span>  <span class="Comment">// wait until we're done with the trace contents</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;reload done\n&quot;;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>

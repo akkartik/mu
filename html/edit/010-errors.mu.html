@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - edit/010-warnings.mu</title>
+<title>Mu - edit/010-errors.mu</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="none">
@@ -37,10 +37,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="SalientComment">## handling malformed programs</span>
 
 <span class="muData">container</span> programming-environment-data [
-  recipe-warnings:address:shared:array:character
+  recipe-errors:address:shared:array:character
 ]
 
-<span class="Comment"># copy code from recipe editor, persist, load into mu, save any warnings</span>
+<span class="Comment"># copy code from recipe editor, persist, load into mu, save any errors</span>
 <span class="muRecipe">recipe!</span> update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
@@ -48,11 +48,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   recipes:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
   in:address:shared:array:character<span class="Special"> &lt;- </span>editor-contents recipes
   save <span class="Constant">[recipes.mu]</span>, in
-  recipe-warnings:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">recipe-warnings:offset</span>
-  *recipe-warnings<span class="Special"> &lt;- </span>reload in
+  recipe-errors:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">recipe-errors:offset</span>
+  *recipe-errors<span class="Special"> &lt;- </span>reload in
   <span class="Comment"># if recipe editor has errors, stop</span>
   <span class="Delimiter">{</span>
-    <span class="muControl">break-unless</span> *recipe-warnings
+    <span class="muControl">break-unless</span> *recipe-errors
     status:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[errors found     ]</span>
     update-status screen, status, <span class="Constant">1/red</span>
     errors-found?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
@@ -63,9 +63,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;render-components-end&gt;</span> [
   trace <span class="Constant">11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render status]</span>
-  recipe-warnings:address:shared:array:character<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-warnings:offset</span>
+  recipe-errors:address:shared:array:character<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-errors:offset</span>
   <span class="Delimiter">{</span>
-    <span class="muControl">break-unless</span> recipe-warnings
+    <span class="muControl">break-unless</span> recipe-errors
     status:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[errors found     ]</span>
     update-status screen, status, <span class="Constant">1/red</span>
   <span class="Delimiter">}</span>
@@ -73,29 +73,29 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;render-recipe-components-end&gt;</span> [
   <span class="Delimiter">{</span>
-    recipe-warnings:address:shared:array:character<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-warnings:offset</span>
-    <span class="muControl">break-unless</span> recipe-warnings
-    row, screen<span class="Special"> &lt;- </span>render screen, recipe-warnings, left, right, <span class="Constant">1/red</span>, row
+    recipe-errors:address:shared:array:character<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-errors:offset</span>
+    <span class="muControl">break-unless</span> recipe-errors
+    row, screen<span class="Special"> &lt;- </span>render screen, recipe-errors, left, right, <span class="Constant">1/red</span>, row
   <span class="Delimiter">}</span>
 ]
 
 <span class="muData">container</span> programming-environment-data [
-  warning-index:number  <span class="Comment"># index of first sandbox with an error (or -1 if none)</span>
+  error-index:number  <span class="Comment"># index of first sandbox with an error (or -1 if none)</span>
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;programming-environment-initialization&gt;</span> [
-  warning-index:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">warning-index:offset</span>
-  *warning-index<span class="Special"> &lt;- </span>copy <span class="Constant">-1</span>
+  error-index:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">error-index:offset</span>
+  *error-index<span class="Special"> &lt;- </span>copy <span class="Constant">-1</span>
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;run-sandboxes-begin&gt;</span> [
-  warning-index:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">warning-index:offset</span>
-  *warning-index<span class="Special"> &lt;- </span>copy <span class="Constant">-1</span>
+  error-index:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">error-index:offset</span>
+  *error-index<span class="Special"> &lt;- </span>copy <span class="Constant">-1</span>
 ]
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;run-sandboxes-end&gt;</span> [
   <span class="Delimiter">{</span>
-    sandboxes-completed-successfully?:boolean<span class="Special"> &lt;- </span>equal *warning-index, <span class="Constant">-1</span>
+    sandboxes-completed-successfully?:boolean<span class="Special"> &lt;- </span>equal *error-index, <span class="Constant">-1</span>
     <span class="muControl">break-if</span> sandboxes-completed-successfully?
     errors-found?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
   <span class="Delimiter">}</span>
@@ -103,21 +103,21 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;render-components-end&gt;</span> [
   <span class="Delimiter">{</span>
-    <span class="muControl">break-if</span> recipe-warnings
-    warning-index:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">warning-index:offset</span>
-    sandboxes-completed-successfully?:boolean<span class="Special"> &lt;- </span>equal warning-index, <span class="Constant">-1</span>
+    <span class="muControl">break-if</span> recipe-errors
+    error-index:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
+    sandboxes-completed-successfully?:boolean<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
     <span class="muControl">break-if</span> sandboxes-completed-successfully?
     status-template:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[errors found (_)    ]</span>
-    warning-index-text:address:shared:array:character<span class="Special"> &lt;- </span>to-text warning-index
-    status:address:shared:array:character<span class="Special"> &lt;- </span>interpolate status-template, warning-index-text
-<span class="CommentedCode">#?     $print [update-status: sandbox warning], 10/newline</span>
+    error-index-text:address:shared:array:character<span class="Special"> &lt;- </span>to-text error-index
+    status:address:shared:array:character<span class="Special"> &lt;- </span>interpolate status-template, error-index-text
+<span class="CommentedCode">#?     $print [update-status: sandbox error], 10/newline</span>
     update-status screen, status, <span class="Constant">1/red</span>
 <span class="CommentedCode">#?     $print [run sandboxes end], 10/newline</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="muData">container</span> sandbox-data [
-  warnings:address:shared:array:character
+  errors:address:shared:array:character
 ]
 
 <span class="muRecipe">recipe!</span> update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
@@ -126,24 +126,24 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="CommentedCode">#?   $log [update sandbox]</span>
   data:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
   response:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response:offset</span>
-  warnings:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">warnings:offset</span>
+  errors:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">errors:offset</span>
   trace:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">trace:offset</span>
   fake-screen:address:address:shared:screen<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">screen:offset</span>
 <span class="CommentedCode">#?   $print [run-interactive], 10/newline</span>
-  *response, *warnings, *fake-screen, *trace, completed?:boolean<span class="Special"> &lt;- </span>run-interactive data
+  *response, *errors, *fake-screen, *trace, completed?:boolean<span class="Special"> &lt;- </span>run-interactive data
   <span class="Delimiter">{</span>
-    <span class="muControl">break-if</span> *warnings
+    <span class="muControl">break-if</span> *errors
     <span class="muControl">break-if</span> completed?:boolean
-    *warnings<span class="Special"> &lt;- </span>new <span class="Constant">[took too long!</span>
+    *errors<span class="Special"> &lt;- </span>new <span class="Constant">[took too long!</span>
 <span class="Constant">]</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    <span class="muControl">break-unless</span> *warnings
-<span class="CommentedCode">#?     $print [setting warning-index to ], idx, 10/newline</span>
-    warning-index:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">warning-index:offset</span>
-    warning-not-set?:boolean<span class="Special"> &lt;- </span>equal *warning-index, <span class="Constant">-1</span>
-    <span class="muControl">break-unless</span> warning-not-set?
-    *warning-index<span class="Special"> &lt;- </span>copy idx
+    <span class="muControl">break-unless</span> *errors
+<span class="CommentedCode">#?     $print [setting error-index to ], idx, 10/newline</span>
+    error-index:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">error-index:offset</span>
+    error-not-set?:boolean<span class="Special"> &lt;- </span>equal *error-index, <span class="Constant">-1</span>
+    <span class="muControl">break-unless</span> error-not-set?
+    *error-index<span class="Special"> &lt;- </span>copy idx
   <span class="Delimiter">}</span>
 <span class="CommentedCode">#?   $print [done with run-interactive], 10/newline</span>
 ]
@@ -151,17 +151,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># make sure we render any trace</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;render-sandbox-trace-done&gt;</span> [
   <span class="Delimiter">{</span>
-    sandbox-warnings:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">warnings:offset</span>
-    <span class="muControl">break-unless</span> sandbox-warnings
+    sandbox-errors:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">errors:offset</span>
+    <span class="muControl">break-unless</span> sandbox-errors
     response-starting-row:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>
     *response-starting-row<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># no response</span>
-    row, screen<span class="Special"> &lt;- </span>render screen, sandbox-warnings, left, right, <span class="Constant">1/red</span>, row
+    row, screen<span class="Special"> &lt;- </span>render screen, sandbox-errors, left, right, <span class="Constant">1/red</span>, row
     <span class="Comment"># don't try to print anything more for this sandbox</span>
     <span class="muControl">jump</span> <span class="Constant">+render-sandbox-end:label</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muScenario">scenario</span> run-shows-warnings-in-get [
+<span class="muScenario">scenario</span> run-shows-errors-in-get [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
@@ -252,7 +252,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> run-hides-warnings-from-past-sandboxes [
+<span class="muScenario">scenario</span> run-hides-errors-from-past-sandboxes [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
@@ -286,7 +286,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> run-updates-warnings-for-shape-shifting-recipes [
+<span class="muScenario">scenario</span> run-updates-errors-for-shape-shifting-recipes [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># define a shape-shifting recipe with an error</span>
@@ -333,7 +333,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> run-avoids-spurious-warnings-on-reloading-shape-shifting-recipes [
+<span class="muScenario">scenario</span> run-avoids-spurious-errors-on-reloading-shape-shifting-recipes [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># overload a well-known shape-shifting recipe</span>
@@ -393,7 +393,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> run-shows-missing-type-warnings [
+<span class="muScenario">scenario</span> run-shows-missing-type-errors [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
@@ -418,7 +418,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> run-shows-unbalanced-bracket-warnings [
+<span class="muScenario">scenario</span> run-shows-unbalanced-bracket-errors [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># recipe is incomplete (unbalanced '[')</span>
@@ -447,7 +447,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> run-shows-get-on-non-container-warnings [
+<span class="muScenario">scenario</span> run-shows-get-on-non-container-errors [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
@@ -479,7 +479,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> run-shows-non-literal-get-argument-warnings [
+<span class="muScenario">scenario</span> run-shows-non-literal-get-argument-errors [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
@@ -515,7 +515,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> run-shows-warnings-everytime [
+<span class="muScenario">scenario</span> run-shows-errors-everytime [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   <span class="Comment"># try to run a file with an error</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
@@ -561,7 +561,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> run-instruction-and-print-warnings [
+<span class="muScenario">scenario</span> run-instruction-and-print-errors [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># left editor is empty</span>
@@ -624,7 +624,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> run-instruction-and-print-warnings-only-once [
+<span class="muScenario">scenario</span> run-instruction-and-print-errors-only-once [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># left editor is empty</span>
@@ -686,10 +686,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muScenario">scenario</span> sandbox-with-warnings-shows-trace [
+<span class="muScenario">scenario</span> sandbox-with-errors-shows-trace [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Comment"># generate a stash and a warning</span>
+  <span class="Comment"># generate a stash and a error</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo [</span>
 <span class="Constant">local-scope</span>
 <span class="Constant">a:number &lt;- next-ingredient</span>

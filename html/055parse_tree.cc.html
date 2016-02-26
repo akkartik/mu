@@ -39,9 +39,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 recipe main [
   <span class="Delimiter">{</span><span class="Constant">1</span>: number<span class="Delimiter">,</span> foo: <span class="Delimiter">(</span>bar <span class="Delimiter">(</span>baz quux<span class="Delimiter">))}</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;, &quot;foo&quot;: &lt;&quot;bar&quot; : &lt;&lt;&quot;baz&quot; : &lt;&quot;quux&quot; : &lt;&gt;&gt;&gt; : &lt;&gt;&gt;&gt;}</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;, {&quot;foo&quot;: (&quot;bar&quot; (&quot;baz&quot; &quot;quux&quot;))}</span>
 
 <span class="Delimiter">:(before &quot;End Parsing Reagent Property(value)&quot;)</span>
+value = parse_string_tree<span class="Delimiter">(</span>value<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Parsing Reagent Type Property(value)&quot;)</span>
 value = parse_string_tree<span class="Delimiter">(</span>value<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
@@ -97,7 +99,7 @@ container foo [
 ]
 container bar [
 ]
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &lt;&quot;foo&quot; : &lt;&lt;&quot;address&quot; : &lt;&quot;array&quot; : &lt;&quot;character&quot; : &lt;&gt;&gt;&gt;&gt; : &lt;&lt;&quot;bar&quot; : &lt;&quot;number&quot; : &lt;&gt;&gt;&gt; : &lt;&gt;&gt;&gt;&gt;}</span>
+<span class="traceContains">+parse:   product: 1: (&quot;foo&quot; (&quot;address&quot; &quot;array&quot; &quot;character&quot;) (&quot;bar&quot; &quot;number&quot;))</span>
 
 <span class="Comment">//: an exception is 'new', which takes a type tree as its ingredient *value*</span>
 
@@ -105,12 +107,15 @@ container bar [
 recipe main [
   x:address:shared:address:number<span class="Special"> &lt;- </span>new <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
 ]
-<span class="traceContains">+new: size of &lt;&quot;address&quot; : &lt;&quot;number&quot; : &lt;&gt;&gt;&gt; is 1</span>
+<span class="traceContains">+new: size of (&quot;address&quot; &quot;number&quot;) is 1</span>
 
 <span class="Delimiter">:(before &quot;End Post-processing(expected_product) When Checking 'new'&quot;)</span>
-expected_product<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second = parse_string_tree<span class="Delimiter">(</span>expected_product<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
-delete expected_product<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
-expected_product<span class="Delimiter">.</span>type = new_type_tree<span class="Delimiter">(</span>expected_product<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
+<span class="Delimiter">{</span>
+  string_tree* tmp_type_names = parse_string_tree<span class="Delimiter">(</span>expected_product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
+  delete expected_product<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
+  expected_product<span class="Delimiter">.</span>type = new_type_tree<span class="Delimiter">(</span>tmp_type_names<span class="Delimiter">);</span>
+  delete tmp_type_names<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Post-processing(type_name) When Converting 'new'&quot;)</span>
 type_name = parse_string_tree<span class="Delimiter">(</span>type_name<span class="Delimiter">);</span>
 </pre>

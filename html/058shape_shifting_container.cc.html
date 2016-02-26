@@ -32,12 +32,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="SalientComment">//:: Container definitions can contain type parameters.</span>
-<span class="Comment">//:</span>
-<span class="Comment">//: Extremely hacky initial implementation. We still don't support the full</span>
-<span class="Comment">//: complexity of type trees inside container definitions. So for example you</span>
-<span class="Comment">//: can't have a container element with this type:</span>
-<span class="Comment">//:   (map (array address character) (list number))</span>
+<span class="SalientComment">//:: Container definitions can contain 'type ingredients'</span>
 
 <span class="Delimiter">:(scenario size_of_shape_shifting_container)</span>
 container foo:_t [
@@ -53,6 +48,47 @@ recipe main [
 <span class="traceContains">+mem: storing 14 in location 3</span>
 <span class="traceContains">+mem: storing 15 in location 4</span>
 <span class="traceContains">+mem: storing 16 in location 5</span>
+
+<span class="Delimiter">:(scenario size_of_shape_shifting_container_2)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="Comment"># multiple type ingredients</span>
+container foo:_a:_b [
+  x:_a
+  y:_b
+]
+recipe main [
+  <span class="Constant">1</span>:foo:number:boolean<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">1</span>/<span class="Constant">true</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario size_of_shape_shifting_container_3)</span>
+<span class="Special">% Hide_errors = true;</span>
+container foo:_a:_b [
+  x:_a
+  y:_b
+]
+recipe main [
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [abc]
+  <span class="Comment"># compound types for type ingredients</span>
+  <span class="Delimiter">{</span><span class="Constant">2</span>: <span class="Delimiter">(</span>foo number <span class="Delimiter">(</span>address shared array character<span class="Delimiter">))}</span><span class="Special"> &lt;- </span>merge <span class="Constant">34</span>/x<span class="Delimiter">,</span> <span class="Constant">1</span>:address:shared:array:character/y
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario size_of_shape_shifting_container_4)</span>
+<span class="Special">% Hide_errors = true;</span>
+container foo:_a:_b [
+  x:_a
+  y:_b
+]
+container bar:_a:_b [
+  <span class="Comment"># dilated element</span>
+  <span class="Delimiter">{</span>data: <span class="Delimiter">(</span>foo _a <span class="Delimiter">(</span>address shared _b<span class="Delimiter">))}</span>
+]
+recipe main [
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [abc]
+  <span class="Constant">2</span>:bar:number:array:character<span class="Special"> &lt;- </span>merge <span class="Constant">34</span>/x<span class="Delimiter">,</span> <span class="Constant">1</span>:address:shared:array:character/y
+]
+$error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">// We'll use large type ordinals to mean &quot;the following type of the variable&quot;.</span>
@@ -93,12 +129,14 @@ void read_type_ingredients<span class="Delimiter">(</span>string&amp; name<span 
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(before &quot;End insert_container Special Uses(type_name)&quot;)</span>
+<span class="Delimiter">:(before &quot;End insert_container Special-cases&quot;)</span>
 <span class="Comment">// check for use of type ingredients</span>
-if <span class="Delimiter">(</span>type_name<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'_'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  *curr_type = new type_tree<span class="Delimiter">(</span>get<span class="Delimiter">(</span>info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">,</span> type_name<span class="Delimiter">));</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  type: &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">,</span> type_name<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Identifier">continue</span><span class="Delimiter">;</span>
+else if <span class="Delimiter">(</span>is_type_ingredient_name<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  type<span class="Delimiter">-&gt;</span>value = get<span class="Delimiter">(</span>info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(code)</span>
+bool is_type_ingredient_name<span class="Delimiter">(</span>const string&amp; type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> !type<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; type<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'_'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Container Type Checks&quot;)</span>
@@ -106,35 +144,49 @@ if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value
     &amp;&amp; <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value - START_TYPE_INGREDIENTS<span class="Delimiter">)</span> &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>type_ingredient_names<span class="Delimiter">))</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 
-<span class="Delimiter">:(before &quot;End size_of(type) Container Cases&quot;)</span>
-if <span class="Delimiter">(</span>t<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>value &gt;= START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;type&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking size of type ingredient</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  long long int size = size_of_type_ingredient<span class="Delimiter">(</span>t<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>!size<span class="Delimiter">)</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;illegal type '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  result += size<span class="Delimiter">;</span>
-  <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
+<span class="Delimiter">:(scenario size_of_shape_shifting_exclusive_container)</span>
+exclusive-container foo:_t [
+  x:_t
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo:number<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Constant">3</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span>
+  <span class="Constant">6</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">23</span>
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+<span class="traceContains">+mem: storing 34 in location 2</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+<span class="traceContains">+mem: storing 15 in location 4</span>
+<span class="traceContains">+mem: storing 16 in location 5</span>
+<span class="traceContains">+mem: storing 1 in location 6</span>
+<span class="traceContains">+mem: storing 23 in location 7</span>
+$mem: <span class="Constant">7</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// shape-shifting version of size_of</span>
 long long int size_of_type_ingredient<span class="Delimiter">(</span>const type_tree* element_template<span class="Delimiter">,</span> const type_tree* rest_of_use<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  type_tree* element_type = type_ingredient<span class="Delimiter">(</span>element_template<span class="Delimiter">,</span> rest_of_use<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!element_type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  long long int result = size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
+  delete element_type<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+type_tree* type_ingredient<span class="Delimiter">(</span>const type_tree* element_template<span class="Delimiter">,</span> const type_tree* rest_of_use<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   long long int type_ingredient_index = element_template<span class="Delimiter">-&gt;</span>value - START_TYPE_INGREDIENTS<span class="Delimiter">;</span>
   const type_tree* curr = rest_of_use<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>!curr<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>!curr<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>type_ingredient_index &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     --type_ingredient_index<span class="Delimiter">;</span>
     curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>!curr<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>!curr<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>!curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>  <span class="Comment">// unimplemented</span>
-  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> curr<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> curr = curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>value &gt; <span class="Constant">0</span><span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;type&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type deduced to be &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> curr<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;$&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  type_tree tmp<span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
-    tmp<span class="Delimiter">.</span>right = new type_tree<span class="Delimiter">(</span>*curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>&amp;tmp<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> new type_tree<span class="Delimiter">(</span>*curr<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario get_on_shape_shifting_container)</span>
@@ -149,11 +201,11 @@ recipe main [
 <span class="traceContains">+mem: storing 16 in location 2</span>
 
 <span class="Delimiter">:(before &quot;End GET field Cases&quot;)</span>
-const type_tree* type = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+const type_tree* type = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">;</span>
 if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value &gt;= START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   long long int size = size_of_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>!size<span class="Delimiter">)</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;illegal field type '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;illegal field type '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   src += size<span class="Delimiter">;</span>
   <span class="Identifier">continue</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -176,16 +228,44 @@ container foo:_t [
   y:number
 ]
 recipe main [
-  <span class="Constant">1</span>:foo:address:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">48</span>  <span class="Comment"># unsafe</span>
+  <span class="Constant">1</span>:foo:address:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span>/unsafe<span class="Delimiter">,</span> <span class="Constant">48</span>
   <span class="Constant">2</span>:address:point<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo:address:point<span class="Delimiter">,</span> x:offset
 ]
 <span class="traceContains">+mem: storing 34 in location 2</span>
 
+<span class="Delimiter">:(scenario get_on_shape_shifting_container_inside_container)</span>
+container foo:_t [
+  x:_t
+  y:number
+]
+container bar [
+  x:foo:point
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span><span class="Delimiter">,</span> <span class="Constant">17</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:bar<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+]
+<span class="traceContains">+mem: storing 17 in location 2</span>
+
+<span class="Delimiter">:(scenario get_on_complex_shape_shifting_container)</span>
+container foo:_a:_b [
+  x:_a
+  y:_b
+]
+recipe main [
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [abc]
+  <span class="Delimiter">{</span><span class="Constant">2</span>: <span class="Delimiter">(</span>foo number <span class="Delimiter">(</span>address shared array character<span class="Delimiter">))}</span><span class="Special"> &lt;- </span>merge <span class="Constant">34</span>/x<span class="Delimiter">,</span> <span class="Constant">1</span>:address:shared:array:character/y
+  <span class="Constant">3</span>:address:shared:array:character<span class="Special"> &lt;- </span>get <span class="Delimiter">{</span><span class="Constant">2</span>: <span class="Delimiter">(</span>foo number <span class="Delimiter">(</span>address shared array character<span class="Delimiter">))},</span> y:offset
+  <span class="Constant">4</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:shared:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:shared:array:character
+]
+<span class="traceContains">+mem: storing 1 in location 4</span>
+
 <span class="Delimiter">:(before &quot;End element_type Special-cases&quot;)</span>
 if <span class="Delimiter">(</span>contains_type_ingredient<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;illegal type '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  replace_type_ingredient<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;illegal type &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> info<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
@@ -199,26 +279,187 @@ bool contains_type_ingredient<span class="Delimiter">(</span>const type_tree* ty
   <span class="Identifier">return</span> contains_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> || contains_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-void replace_type_ingredient<span class="Delimiter">(</span>type_tree* element_type<span class="Delimiter">,</span> const type_tree* callsite_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Comment">// todo: too complicated and likely incomplete; maybe avoid replacing in place? Maybe process element_type and element_type_name in separate functions?</span>
+void replace_type_ingredients<span class="Delimiter">(</span>type_tree* element_type<span class="Delimiter">,</span> const type_tree* callsite_type<span class="Delimiter">,</span> const type_info&amp; container_info<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!callsite_type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error but it's already been raised above</span>
   if <span class="Delimiter">(</span>!element_type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>value &gt;= START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!has_nth_type<span class="Delimiter">(</span>callsite_type<span class="Delimiter">,</span> element_type<span class="Delimiter">-&gt;</span>value-START_TYPE_INGREDIENTS<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;illegal type '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>callsite_type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-      <span class="Identifier">return</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    const type_tree* replacement = nth_type<span class="Delimiter">(</span>callsite_type<span class="Delimiter">,</span> element_type<span class="Delimiter">-&gt;</span>value-START_TYPE_INGREDIENTS<span class="Delimiter">);</span>
-    element_type<span class="Delimiter">-&gt;</span>value = replacement<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
-    element_type<span class="Delimiter">-&gt;</span>left = replacement<span class="Delimiter">-&gt;</span>left ? new type_tree<span class="Delimiter">(</span>*replacement<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
-    element_type<span class="Delimiter">-&gt;</span>right = replacement<span class="Delimiter">-&gt;</span>right ? new type_tree<span class="Delimiter">(</span>*replacement<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+
+  <span class="Comment">// A. recurse first to avoid nested replaces (which I can't reason about yet)</span>
+  replace_type_ingredients<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> callsite_type<span class="Delimiter">,</span> container_info<span class="Delimiter">);</span>
+  replace_type_ingredients<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> callsite_type<span class="Delimiter">,</span> container_info<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>value &lt; START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+
+  const long long int type_ingredient_index = element_type<span class="Delimiter">-&gt;</span>value-START_TYPE_INGREDIENTS<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>!has_nth_type<span class="Delimiter">(</span>callsite_type<span class="Delimiter">,</span> type_ingredient_index<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;illegal type &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>callsite_type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  replace_type_ingredient<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> callsite_type<span class="Delimiter">);</span>
+
+  <span class="Comment">// B. replace the current location</span>
+  const type_tree* replacement = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  bool splice_right = <span class="Constant">true</span> <span class="Delimiter">;</span>
+  <span class="Delimiter">{</span>
+    const type_tree* curr = callsite_type<span class="Delimiter">;</span>
+    for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; type_ingredient_index<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span>
+      curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>curr &amp;&amp; curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      replacement = curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    else <span class="Delimiter">{</span>
+      <span class="Comment">// We want foo:_t to be used like foo:number, which expands to {foo: number}</span>
+      <span class="Comment">// rather than {foo: (number)}</span>
+      <span class="Comment">// We'd also like to use it with multiple types: foo:address:number.</span>
+      replacement = curr<span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>!final_type_ingredient<span class="Delimiter">(</span>type_ingredient_index<span class="Delimiter">,</span> container_info<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+        splice_right = <span class="Constant">false</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  element_type<span class="Delimiter">-&gt;</span>name = replacement<span class="Delimiter">-&gt;</span>name<span class="Delimiter">;</span>
+  element_type<span class="Delimiter">-&gt;</span>value = replacement<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>!element_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>  <span class="Comment">// since value is set</span>
+  element_type<span class="Delimiter">-&gt;</span>left = replacement<span class="Delimiter">-&gt;</span>left ? new type_tree<span class="Delimiter">(</span>*replacement<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>splice_right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    type_tree* old_right = element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+    element_type<span class="Delimiter">-&gt;</span>right = replacement<span class="Delimiter">-&gt;</span>right ? new type_tree<span class="Delimiter">(</span>*replacement<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+    append<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> old_right<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-const type_tree* nth_type<span class="Delimiter">(</span>const type_tree* base<span class="Delimiter">,</span> long long int n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>n &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>n == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> base<span class="Delimiter">;</span>
-  <span class="Identifier">return</span> nth_type<span class="Delimiter">(</span>base<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> n-<span class="Constant">1</span><span class="Delimiter">);</span>
+bool final_type_ingredient<span class="Delimiter">(</span>long long int type_ingredient_index<span class="Delimiter">,</span> const type_info&amp; container_info<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> type_ordinal&gt;::const_iterator p = container_info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>
+       p != container_info<span class="Delimiter">.</span>type_ingredient_names<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+       ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second &gt; START_TYPE_INGREDIENTS+type_ingredient_index<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+void append<span class="Delimiter">(</span>type_tree*&amp; base<span class="Delimiter">,</span> type_tree* extra<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    base = extra<span class="Delimiter">;</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  type_tree* curr = base<span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+  curr<span class="Delimiter">-&gt;</span>right = extra<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+void append<span class="Delimiter">(</span>string_tree*&amp; base<span class="Delimiter">,</span> string_tree* extra<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    base = extra<span class="Delimiter">;</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  string_tree* curr = base<span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+  curr<span class="Delimiter">-&gt;</span>right = extra<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+void test_replace_type_ingredients_entire<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo:_elem [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:_elem</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  y:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent callsite<span class="Delimiter">(</span><span class="Constant">&quot;x:foo:point&quot;</span><span class="Delimiter">);</span>
+  reagent element = element_type<span class="Delimiter">(</span>callsite<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;x&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;point&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+void test_replace_type_ingredients_tail<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo:_elem [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:_elem</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;container bar:_elem [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:foo:_elem</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent callsite<span class="Delimiter">(</span><span class="Constant">&quot;x:bar:point&quot;</span><span class="Delimiter">);</span>
+  reagent element = element_type<span class="Delimiter">(</span>callsite<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;x&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;point&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+void test_replace_type_ingredients_head_tail_multiple<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo:_elem [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:_elem</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;container bar:_elem [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:foo:_elem</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent callsite<span class="Delimiter">(</span><span class="Constant">&quot;x:bar:address:shared:array:character&quot;</span><span class="Delimiter">);</span>
+  reagent element = element_type<span class="Delimiter">(</span>callsite<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;x&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;character&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+void test_replace_type_ingredients_head_middle<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo:_elem [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:_elem</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;container bar:_elem [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:foo:_elem:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent callsite<span class="Delimiter">(</span><span class="Constant">&quot;x:bar:address&quot;</span><span class="Delimiter">);</span>
+  reagent element = element_type<span class="Delimiter">(</span>callsite<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;x&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+void test_replace_last_type_ingredient_with_multiple<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo:_a:_b [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:_a</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  y:_b</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent callsite<span class="Delimiter">(</span><span class="Constant">&quot;{f: (foo number (address shared array character))}&quot;</span><span class="Delimiter">);</span>
+  reagent element1 = element_type<span class="Delimiter">(</span>callsite<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element1<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;x&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element1<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!element1<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  reagent element2 = element_type<span class="Delimiter">(</span>callsite<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element2<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;y&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element2<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element2<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element2<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element2<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;character&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!element2<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+void test_replace_middle_type_ingredient_with_multiple<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo:_a:_b:_c [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:_a</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  y:_b</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  z:_c</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent callsite<span class="Delimiter">(</span><span class="Constant">&quot;{f: (foo number (address shared array character) boolean)}&quot;</span><span class="Delimiter">);</span>
+  reagent element1 = element_type<span class="Delimiter">(</span>callsite<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element1<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;x&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element1<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!element1<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  reagent element2 = element_type<span class="Delimiter">(</span>callsite<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element2<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;y&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element2<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element2<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element2<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element2<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;character&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!element2<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  reagent element3 = element_type<span class="Delimiter">(</span>callsite<span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element3<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;z&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element3<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!element3<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 bool has_nth_type<span class="Delimiter">(</span>const type_tree* base<span class="Delimiter">,</span> long long int n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -238,7 +479,7 @@ recipe main [
   <span class="Constant">10</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span>
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">10</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
 ]
-<span class="traceContains">+error: illegal type 'foo' seems to be missing a type ingredient or three</span>
+<span class="traceContains">+error: illegal type &quot;foo&quot; seems to be missing a type ingredient or three</span>
 
 <span class="Comment">//: get-address similarly</span>
 
@@ -254,29 +495,104 @@ recipe main [
 <span class="traceContains">+mem: storing 12 in location 1</span>
 
 <span class="Delimiter">:(before &quot;End GET_ADDRESS field Cases&quot;)</span>
-const type_tree* type = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+const type_tree* type = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">;</span>
 if <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value &gt;= START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   long long int size = size_of_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>!size<span class="Delimiter">)</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;illegal type '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;illegal type '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   result += size<span class="Delimiter">;</span>
   <span class="Identifier">continue</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(scenario get_on_shape_shifting_container_inside_shape_shifting_container)</span>
-container foo:_t [
-  x:_t
-  y:number
+<span class="Comment">//: 'merge' on shape-shifting containers</span>
+
+<span class="Delimiter">:(scenario merge_check_shape_shifting_container_containing_exclusive_container)</span>
+<span class="Special">% Hide_errors = true;</span>
+container foo:_elem [
+  x:number
+  y:_elem
 ]
-container bar [
-  x:foo:point
+exclusive-container bar [
+  x:number
   y:number
 ]
 recipe main [
-  <span class="Constant">1</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span><span class="Delimiter">,</span> <span class="Constant">17</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:bar<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+  <span class="Constant">1</span>:foo:bar<span class="Special"> &lt;- </span>merge <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
-<span class="traceContains">+mem: storing 17 in location 2</span>
+<span class="traceContains">+mem: storing 23 in location 1</span>
+<span class="traceContains">+mem: storing 1 in location 2</span>
+<span class="traceContains">+mem: storing 34 in location 3</span>
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario merge_check_shape_shifting_container_containing_exclusive_container_2)</span>
+<span class="Special">% Hide_errors = true;</span>
+container foo:_elem [
+  x:number
+  y:_elem
+]
+exclusive-container bar [
+  x:number
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo:bar<span class="Special"> &lt;- </span>merge <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+]
+<span class="traceContains">+error: main: too many ingredients in '1:foo:bar &lt;- merge 23, 1/y, 34, 35'</span>
+
+<span class="Delimiter">:(scenario merge_check_shape_shifting_exclusive_container_containing_container)</span>
+<span class="Special">% Hide_errors = true;</span>
+exclusive-container foo:_elem [
+  x:number
+  y:_elem
+]
+container bar [
+  x:number
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+<span class="traceContains">+mem: storing 1 in location 1</span>
+<span class="traceContains">+mem: storing 23 in location 2</span>
+<span class="traceContains">+mem: storing 34 in location 3</span>
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario merge_check_shape_shifting_exclusive_container_containing_container_2)</span>
+<span class="Special">% Hide_errors = true;</span>
+exclusive-container foo:_elem [
+  x:number
+  y:_elem
+]
+container bar [
+  x:number
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo:bar<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">23</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario merge_check_shape_shifting_exclusive_container_containing_container_3)</span>
+<span class="Special">% Hide_errors = true;</span>
+exclusive-container foo:_elem [
+  x:number
+  y:_elem
+]
+container bar [
+  x:number
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">23</span>
+]
+<span class="traceContains">+error: main: too few ingredients in '1:foo:bar &lt;- merge 1/y, 23'</span>
+
+<span class="Delimiter">:(before &quot;End variant_type Special-cases&quot;)</span>
+if <span class="Delimiter">(</span>contains_type_ingredient<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;illegal type '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> info<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

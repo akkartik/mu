@@ -147,7 +147,7 @@ long long int Num_core_mu_tests = <span class="Constant">0</span><span class="De
 <span class="Delimiter">:(after &quot;Check For .mu Files&quot;)</span>
 Num_core_mu_tests = SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Tests&quot;)</span>
-Warn_on_missing_default_space = <span class="Constant">true</span><span class="Delimiter">;</span>
+Hide_missing_default_space_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
 time_t mu_time<span class="Delimiter">;</span> time<span class="Delimiter">(</span>&amp;mu_time<span class="Delimiter">);</span>
 cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">Mu tests: &quot;</span> &lt;&lt; ctime<span class="Delimiter">(</span>&amp;mu_time<span class="Delimiter">);</span>
 for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -186,6 +186,10 @@ void run_mu_scenario<span class="Delimiter">(</span>const scenario&amp; s<span c
   bind_special_scenario_names<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   transform_all<span class="Delimiter">();</span>
   run<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>front<span class="Delimiter">());</span>
+  if <span class="Delimiter">(</span>Passed &amp;&amp; !Hide_errors &amp;&amp; trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+    ++Num_failures<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>not_already_inside_test &amp;&amp; Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     teardown<span class="Delimiter">();</span>
     ofstream fout<span class="Delimiter">((</span>Trace_dir+Trace_file<span class="Delimiter">).</span>c_str<span class="Delimiter">());</span>
@@ -201,9 +205,9 @@ void run_mu_scenario<span class="Delimiter">(</span>const scenario&amp; s<span c
 <span class="Comment">//: Watch out for redefinitions of scenario routines. We should never ever be</span>
 <span class="Comment">//: doing that, regardless of anything else.</span>
 <span class="Delimiter">:(scenarios run)</span>
-<span class="Delimiter">:(scenario warn_on_redefine_scenario)</span>
-<span class="Special">% Hide_warnings = true;</span>
-<span class="Special">% Disable_redefine_warnings = true;</span>
+<span class="Delimiter">:(scenario forbid_redefining_scenario_even_if_forced)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="Special">% Disable_redefine_checks = true;</span>
 recipe scenario-foo [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
@@ -211,9 +215,9 @@ recipe scenario-foo [
 recipe scenario-foo [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
 ]
-<span class="traceContains">+warn: redefining recipe scenario-foo</span>
+<span class="traceContains">+error: redefining recipe scenario-foo</span>
 
-<span class="Delimiter">:(after &quot;bool warn_on_redefine(const string&amp; recipe_name)&quot;)</span>
+<span class="Delimiter">:(after &quot;bool should_check_for_redefine(const string&amp; recipe_name)&quot;)</span>
   if <span class="Delimiter">(</span>recipe_name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;scenario-&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 
 <span class="SalientComment">//:: The special instructions we want to support inside scenarios.</span>
@@ -330,7 +334,21 @@ void check_memory<span class="Delimiter">(</span>const string&amp; s<span class=
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     string _assign<span class="Delimiter">;</span>  in &gt;&gt; _assign<span class="Delimiter">;</span>  assert<span class="Delimiter">(</span>_assign == <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">);</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    double value = <span class="Constant">0</span><span class="Delimiter">;</span>  in &gt;&gt; value<span class="Delimiter">;</span>
+    string rhs = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span>rhs<span class="Delimiter">)</span> &amp;&amp; !is_noninteger<span class="Delimiter">(</span>rhs<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      if <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span>
+        <span class="Comment">// genuine test in a mu file</span>
+        raise_error &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; can't contain non-number &quot;</span> &lt;&lt; rhs &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      else
+        <span class="Comment">// just testing scenario support</span>
+        raise_error &lt;&lt; <span class="Constant">&quot;location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; can't contain non-number &quot;</span> &lt;&lt; rhs &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      if <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+        ++Num_failures<span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    double value = to_double<span class="Delimiter">(</span>rhs<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>locations_checked<span class="Delimiter">,</span> address<span class="Delimiter">))</span>
       raise_error &lt;&lt; <span class="Constant">&quot;duplicate expectation for location &quot;</span> &lt;&lt; address &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking location &quot;</span> &lt;&lt; address &lt;&lt; end<span class="Delimiter">();</span>
@@ -355,10 +373,9 @@ void check_memory<span class="Delimiter">(</span>const string&amp; s<span class=
 
 void check_type<span class="Delimiter">(</span>const string&amp; lhs<span class="Delimiter">,</span> istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   reagent x<span class="Delimiter">(</span>lhs<span class="Delimiter">);</span>
-  const string_tree* type_name = x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>type_name<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;array&quot;</span>
-      &amp;&amp; type_name<span class="Delimiter">-&gt;</span>right &amp;&amp; type_name<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;character&quot;</span>
-      &amp;&amp; !type_name<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span>
+      &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;character&quot;</span>
+      &amp;&amp; !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>to_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     string _assign = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
@@ -372,6 +389,7 @@ void check_type<span class="Delimiter">(</span>const string&amp; lhs<span class=
     check_string<span class="Delimiter">(</span>address<span class="Delimiter">,</span> literal<span class="Delimiter">);</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  <span class="Comment">// End Scenario Type Cases</span>
   raise_error &lt;&lt; <span class="Constant">&quot;don't know how to check memory for &quot;</span> &lt;&lt; lhs &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
@@ -448,6 +466,26 @@ recipe main [
 <span class="traceContains">+run: checking location 2</span>
 <span class="traceContains">+run: checking location 3</span>
 <span class="traceContains">+run: checking location 4</span>
+
+<span class="Delimiter">:(scenario memory_invalid_string_check)</span>
+<span class="Special">% Scenario_testing_scenario = true;</span>
+<span class="Special">% Hide_errors = true;</span>
+recipe main [
+  memory-should-contain [
+    <span class="Constant">1</span><span class="Special"> &lt;- </span>[abc]
+  ]
+]
+<span class="traceContains">+error: location 1 can't contain non-number [abc]</span>
+
+<span class="Delimiter">:(scenario memory_check_with_comment)</span>
+<span class="Special">% Scenario_testing_scenario = true;</span>
+<span class="Special">% Hide_errors = true;</span>
+recipe main [
+  memory-should-contain [
+    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">34</span>  <span class="Comment"># comment</span>
+  ]
+]
+<span class="traceAbsent">-error: location 1 can't contain non-number 34  # comment</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Comment">//: 'trace-should-contain' is like the '+' lines in our scenarios so far</span>
@@ -630,7 +668,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 case CHECK_TRACE_COUNT_FOR_LABEL: <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'check-trace-for-label' requires exactly two ingredients, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'check-trace-for-label' requires exactly two ingredients, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
@@ -652,9 +690,8 @@ case CHECK_TRACE_COUNT_FOR_LABEL: <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>count != expected_count<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// genuine test in a mu file</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; in trace: &quot;</span><span class="Delimiter">;</span>
+      raise_error &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; in trace: &quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       DUMP<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
-      raise_error<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     else <span class="Delimiter">{</span>
       <span class="Comment">// just testing scenario support</span>

@@ -110,7 +110,7 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
     if <span class="Delimiter">(</span>key == <span class="Constant">'J'</span> || key == TB_KEY_PGDN<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// page-down</span>
       if <span class="Delimiter">(</span>Trace_index<span class="Delimiter">.</span>find<span class="Delimiter">(</span>tb_height<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">)</span> != Trace_index<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-        Top_of_screen = Trace_index[tb_height<span class="Delimiter">()</span>-<span class="Constant">1</span>]+<span class="Constant">1</span><span class="Delimiter">;</span>
+        Top_of_screen = get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> tb_height<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">)</span> + <span class="Constant">1</span><span class="Delimiter">;</span>
         refresh_screen_rows<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
@@ -142,7 +142,7 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
     if <span class="Delimiter">(</span>key == TB_KEY_CARRIAGE_RETURN<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// expand lines under current by one level</span>
       assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> Display_row<span class="Delimiter">));</span>
-      long long int start_index = Trace_index[Display_row]<span class="Delimiter">;</span>
+      long long int start_index = get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
       long long int index = <span class="Constant">0</span><span class="Delimiter">;</span>
       <span class="Comment">// simultaneously compute end_index and min_depth</span>
       int min_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
@@ -165,7 +165,7 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
     if <span class="Delimiter">(</span>key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// collapse all lines under current</span>
       assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> Display_row<span class="Delimiter">));</span>
-      long long int start_index = Trace_index[Display_row]<span class="Delimiter">;</span>
+      long long int start_index = get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
       long long int index = <span class="Constant">0</span><span class="Delimiter">;</span>
       <span class="Comment">// end_index is the next line at a depth same as or lower than start_index</span>
       int initial_depth = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>start_index<span class="Delimiter">).</span>depth<span class="Delimiter">;</span>
@@ -196,7 +196,7 @@ void refresh_screen_rows<span class="Delimiter">()</span> <span class="Delimiter
       if <span class="Delimiter">(</span>index &gt;= SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">))</span> <span class="Identifier">goto</span> done<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     assert<span class="Delimiter">(</span>index &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">));</span>
-    Trace_index[screen_row] = index<span class="Delimiter">;</span>
+    put<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">,</span> index<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 done:<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -205,7 +205,7 @@ void render<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   long long int screen_row = <span class="Constant">0</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>screen_row = <span class="Constant">0</span><span class="Delimiter">;</span> screen_row &lt; tb_height<span class="Delimiter">();</span> ++screen_row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-    trace_line&amp; curr_line = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Trace_index[screen_row]<span class="Delimiter">);</span>
+    trace_line&amp; curr_line = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">));</span>
     ostringstream out<span class="Delimiter">;</span>
     out &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">)</span> &lt;&lt; curr_line<span class="Delimiter">.</span>depth &lt;&lt; <span class="Constant">' '</span> &lt;&lt; curr_line<span class="Delimiter">.</span>label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_line<span class="Delimiter">.</span>contents<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>screen_row &lt; tb_height<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -230,9 +230,9 @@ void render<span class="Delimiter">()</span> <span class="Delimiter">{</span>
 long long int lines_hidden<span class="Delimiter">(</span>long long int screen_row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">));</span>
   if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row+<span class="Constant">1</span><span class="Delimiter">))</span>
-    <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">)</span>-Trace_index[screen_row]<span class="Delimiter">;</span>
+    <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">)</span> - get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">);</span>
   else
-    <span class="Identifier">return</span> Trace_index[screen_row+<span class="Constant">1</span>] - Trace_index[screen_row]<span class="Delimiter">;</span>
+    <span class="Identifier">return</span> get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row+<span class="Constant">1</span><span class="Delimiter">)</span> - get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 void render_line<span class="Delimiter">(</span>int screen_row<span class="Delimiter">,</span> const string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>

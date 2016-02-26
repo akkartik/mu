@@ -43,13 +43,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc def]  <span class="Comment"># copy can't really take a string</span>
 ]
-<span class="traceContains">+parse:   ingredient: {&quot;abc def&quot;: &quot;literal-string&quot;}</span>
+<span class="traceContains">+parse:   ingredient: &quot;abc def&quot;: &quot;literal-string&quot;</span>
 
 <span class="Delimiter">:(scenario string_literal_with_colons)</span>
 recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc:def/ghi]
 ]
-<span class="traceContains">+parse:   ingredient: {&quot;abc:def/ghi&quot;: &quot;literal-string&quot;}</span>
+<span class="traceContains">+parse:   ingredient: &quot;abc:def/ghi&quot;: &quot;literal-string&quot;</span>
 
 <span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
 put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
@@ -143,28 +143,27 @@ if <span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span clas
   s<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
   strip_last<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
   name = s<span class="Delimiter">;</span>
-  type = new type_tree<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>name<span class="Delimiter">,</span> new string_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)));</span>
+  type = new type_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: Unlike other reagents, escape newlines in literal strings to make them</span>
 <span class="Comment">//: more friendly to trace().</span>
 
-<span class="Delimiter">:(after &quot;string reagent::to_string()&quot;)</span>
-  if <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>*this<span class="Delimiter">))</span>
-    <span class="Identifier">return</span> emit_literal_string<span class="Delimiter">(</span>name<span class="Delimiter">);</span>
+<span class="Delimiter">:(after &quot;string to_string(const reagent&amp; r)&quot;)</span>
+  if <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
+    <span class="Identifier">return</span> emit_literal_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
 bool is_literal_string<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second &amp;&amp; x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> x<span class="Delimiter">.</span>type &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 string emit_literal_string<span class="Delimiter">(</span>string name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   size_t pos = <span class="Constant">0</span><span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>pos != string::npos<span class="Delimiter">)</span>
     pos = replace<span class="Delimiter">(</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;</span><span class="cSpecial">\\</span><span class="Constant">n&quot;</span><span class="Delimiter">,</span> pos<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> <span class="Constant">&quot;{</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span>+name+<span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: </span><span class="cSpecial">\&quot;</span><span class="Constant">literal-string</span><span class="cSpecial">\&quot;</span><span class="Constant">}&quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> <span class="Constant">'&quot;'</span>+name+<span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: </span><span class="cSpecial">\&quot;</span><span class="Constant">literal-string</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 size_t replace<span class="Delimiter">(</span>string&amp; str<span class="Delimiter">,</span> const string&amp; from<span class="Delimiter">,</span> const string&amp; to<span class="Delimiter">,</span> size_t n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -182,20 +181,20 @@ void strip_last<span class="Delimiter">(</span>string&amp; s<span class="Delimit
 recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc [def]]
 ]
-<span class="traceContains">+parse:   ingredient: {&quot;abc [def]&quot;: &quot;literal-string&quot;}</span>
+<span class="traceContains">+parse:   ingredient: &quot;abc [def]&quot;: &quot;literal-string&quot;</span>
 
 <span class="Delimiter">:(scenario string_literal_escaped)</span>
 recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc \[def]
 ]
-<span class="traceContains">+parse:   ingredient: {&quot;abc [def&quot;: &quot;literal-string&quot;}</span>
+<span class="traceContains">+parse:   ingredient: &quot;abc [def&quot;: &quot;literal-string&quot;</span>
 
 <span class="Delimiter">:(scenario string_literal_escaped_comment_aware)</span>
 recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [
 abc \\\[def]
 ]
-<span class="traceContains">+parse:   ingredient: {&quot;\nabc \[def&quot;: &quot;literal-string&quot;}</span>
+<span class="traceContains">+parse:   ingredient: &quot;\nabc \[def&quot;: &quot;literal-string&quot;</span>
 
 <span class="Delimiter">:(scenario string_literal_and_comment)</span>
 recipe main [
@@ -204,15 +203,15 @@ recipe main [
 <span class="traceContains">+parse: --- defining main</span>
 <span class="traceContains">+parse: instruction: copy</span>
 <span class="traceContains">+parse:   number of ingredients: 1</span>
-<span class="traceContains">+parse:   ingredient: {&quot;abc&quot;: &quot;literal-string&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &lt;&quot;address&quot; : &lt;&quot;array&quot; : &lt;&quot;character&quot; : &lt;&gt;&gt;&gt;&gt;}</span>
+<span class="traceContains">+parse:   ingredient: &quot;abc&quot;: &quot;literal-string&quot;</span>
+<span class="traceContains">+parse:   product: 1: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)</span>
 
 <span class="Delimiter">:(scenario string_literal_escapes_newlines_in_trace)</span>
 recipe main [
   copy [abc
 def]
 ]
-<span class="traceContains">+parse:   ingredient: {&quot;abc\ndef&quot;: &quot;literal-string&quot;}</span>
+<span class="traceContains">+parse:   ingredient: &quot;abc\ndef&quot;: &quot;literal-string&quot;</span>
 
 <span class="Delimiter">:(scenario string_literal_can_skip_past_comments)</span>
 recipe main [
@@ -221,13 +220,13 @@ recipe main [
     bar
   ]
 ]
-<span class="traceContains">+parse:   ingredient: {&quot;\n    # ']' inside comment\n    bar\n  &quot;: &quot;literal-string&quot;}</span>
+<span class="traceContains">+parse:   ingredient: &quot;\n    # ']' inside comment\n    bar\n  &quot;: &quot;literal-string&quot;</span>
 
 <span class="Delimiter">:(scenario string_literal_empty)</span>
 recipe main [
   copy []
 ]
-<span class="traceContains">+parse:   ingredient: {&quot;&quot;: &quot;literal-string&quot;}</span>
+<span class="traceContains">+parse:   ingredient: &quot;&quot;: &quot;literal-string&quot;</span>
 </pre>
 </body>
 </html>

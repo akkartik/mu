@@ -118,13 +118,13 @@ void insert_fragments<span class="Delimiter">(</span>const recipe_ordinal r<span
       Fragments_used<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label<span class="Delimiter">);</span>
       ostringstream prefix<span class="Delimiter">;</span>
       prefix &lt;&lt; <span class="Constant">'+'</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; pass &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; i<span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Before_fragments<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      <span class="Comment">// ok to use contains_key even though Before_fragments uses [],</span>
+      <span class="Comment">// because appending an empty recipe is a noop</span>
+      if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Before_fragments<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">))</span>
         append_fragment<span class="Delimiter">(</span>result<span class="Delimiter">,</span> Before_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">,</span> prefix<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
-      <span class="Delimiter">}</span>
       result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
-      if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>After_fragments<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>After_fragments<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">))</span>
         append_fragment<span class="Delimiter">(</span>result<span class="Delimiter">,</span> After_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">,</span> prefix<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
-      <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
     get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
     ++pass<span class="Delimiter">;</span>
@@ -155,7 +155,7 @@ void append_fragment<span class="Delimiter">(</span>vector&lt;instruction&gt;&am
     for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       reagent&amp; x = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
       if <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;label&quot;</span> &amp;&amp; contains_key<span class="Delimiter">(</span>jump_targets<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
+      if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;label&quot;</span> &amp;&amp; contains_key<span class="Delimiter">(</span>jump_targets<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
         x<span class="Delimiter">.</span>name = prefix+x<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     base<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>

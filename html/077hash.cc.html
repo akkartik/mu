@@ -1,0 +1,431 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 077hash.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1.05em; }
+.traceContains { color: #008000; }
+.cSpecial { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+.Identifier { color: #804000; }
+.Constant { color: #00a0a0; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">// A universal hash function that can handle objects of any type.</span>
+<span class="Comment">//</span>
+<span class="Comment">// The way it's currently implemented, two objects will have the same hash if</span>
+<span class="Comment">// all their non-address fields (all the way down) expand to the same sequence</span>
+<span class="Comment">// of scalar values. In particular, a container with all zero addresses hashes</span>
+<span class="Comment">// to 0. Hopefully this won't be an issue because we are usually hashing</span>
+<span class="Comment">// objects of a single type in any given hash table.</span>
+<span class="Comment">//</span>
+<span class="Comment">// Based on <a href="http://burtleburtle.net/bob/hash/hashfaq.html">http://burtleburtle.net/bob/hash/hashfaq.html</a></span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+HASH<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;hash&quot;</span><span class="Delimiter">,</span> HASH<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+case HASH: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'hash' takes exactly one ingredient rather than '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case HASH: <span class="Delimiter">{</span>
+  reagent input = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// copy</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>hash<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> input<span class="Delimiter">));</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: in all the code below, the intermediate results of hashing are threaded through 'h'</span>
+
+<span class="Delimiter">:(code)</span>
+size_t hash<span class="Delimiter">(</span>size_t h<span class="Delimiter">,</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; debug_string(r) &lt;&lt; '\n';</span>
+  canonize<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>r<span class="Delimiter">))</span>  <span class="Comment">// optimization</span>
+    <span class="Identifier">return</span> hash_mu_string<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  else if <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
+    <span class="Identifier">return</span> hash_mu_address<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  else if <span class="Delimiter">(</span>is_mu_scalar<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
+    <span class="Identifier">return</span> hash_mu_scalar<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  else if <span class="Delimiter">(</span>is_mu_array<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
+    <span class="Identifier">return</span> hash_mu_array<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  else if <span class="Delimiter">(</span>is_mu_container<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
+    <span class="Identifier">return</span> hash_mu_container<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  else if <span class="Delimiter">(</span>is_mu_exclusive_container<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
+    <span class="Identifier">return</span> hash_mu_exclusive_container<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+size_t hash_mu_scalar<span class="Delimiter">(</span>size_t h<span class="Delimiter">,</span> const reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  double input = is_literal<span class="Delimiter">(</span>r<span class="Delimiter">)</span> ? r<span class="Delimiter">.</span>value : get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> hash_iter<span class="Delimiter">(</span>h<span class="Delimiter">,</span> static_cast&lt;size_t&gt;<span class="Delimiter">(</span>input<span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+
+size_t hash_mu_address<span class="Delimiter">(</span>size_t h<span class="Delimiter">,</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  r<span class="Delimiter">.</span>value = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
+  drop_from_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    ++r<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+    drop_from_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> hash<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+size_t hash_mu_string<span class="Delimiter">(</span>size_t h<span class="Delimiter">,</span> const reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  string input = read_mu_string<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">));</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>input<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    h = hash_iter<span class="Delimiter">(</span>h<span class="Delimiter">,</span> static_cast&lt;size_t&gt;<span class="Delimiter">(</span>input<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; i &lt;&lt; &quot;: &quot; &lt;&lt; h &lt;&lt; '\n';</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> h<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+size_t hash_mu_array<span class="Delimiter">(</span>size_t h<span class="Delimiter">,</span> const reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  long long int size = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
+  reagent elem = r<span class="Delimiter">;</span>
+  delete elem<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
+  elem<span class="Delimiter">.</span>type = new type_tree<span class="Delimiter">(</span>*array_element<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  for <span class="Delimiter">(</span>long long int i=<span class="Constant">0</span><span class="Delimiter">,</span> address = r<span class="Delimiter">.</span>value+<span class="Constant">1</span><span class="Delimiter">;</span> i &lt; size<span class="Delimiter">;</span> ++i<span class="Delimiter">,</span> address += size_of<span class="Delimiter">(</span>elem<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    reagent tmp = elem<span class="Delimiter">;</span>
+    tmp<span class="Delimiter">.</span>value = address<span class="Delimiter">;</span>
+    h = hash<span class="Delimiter">(</span>h<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; i &lt;&lt; &quot; (&quot; &lt;&lt; address &lt;&lt; &quot;): &quot; &lt;&lt; h &lt;&lt; '\n';</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> h<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+bool is_mu_container<span class="Delimiter">(</span>const reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+size_t hash_mu_container<span class="Delimiter">(</span>size_t h<span class="Delimiter">,</span> const reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  long long int address = r<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  long long int offset = <span class="Constant">0</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    reagent element = element_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> i<span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>element<span class="Delimiter">,</span> <span class="Constant">&quot;ignore-for-hash&quot;</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    element<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>address+offset<span class="Delimiter">);</span>
+    h = hash<span class="Delimiter">(</span>h<span class="Delimiter">,</span> element<span class="Delimiter">);</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; i &lt;&lt; &quot;: &quot; &lt;&lt; h &lt;&lt; '\n';</span>
+    offset += size_of<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> h<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+bool is_mu_exclusive_container<span class="Delimiter">(</span>const reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+size_t hash_mu_exclusive_container<span class="Delimiter">(</span>size_t h<span class="Delimiter">,</span> const reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  long long int tag = get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
+  reagent variant = variant_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> tag<span class="Delimiter">);</span>
+  <span class="Comment">// todo: move this error to container definition time</span>
+  if <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>variant<span class="Delimiter">,</span> <span class="Constant">&quot;ignore-for-hash&quot;</span><span class="Delimiter">))</span>
+    raise_error &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;: /ignore-for-hash won't work in exclusive containers</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  variant<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>r<span class="Delimiter">.</span>value + <span class="Comment">/*</span><span class="Comment">skip tag</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  h = hash<span class="Delimiter">(</span>h<span class="Delimiter">,</span> variant<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> h<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+size_t hash_iter<span class="Delimiter">(</span>size_t h<span class="Delimiter">,</span> size_t input<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  h += input<span class="Delimiter">;</span>
+  h += <span class="Delimiter">(</span>h&lt;&lt;<span class="Constant">10</span><span class="Delimiter">);</span>
+  h ^= <span class="Delimiter">(</span>h&gt;&gt;<span class="Constant">6</span><span class="Delimiter">);</span>
+
+  h += <span class="Delimiter">(</span>h&lt;&lt;<span class="Constant">3</span><span class="Delimiter">);</span>
+  h ^= <span class="Delimiter">(</span>h&gt;&gt;<span class="Constant">11</span><span class="Delimiter">);</span>
+  h += <span class="Delimiter">(</span>h&lt;&lt;<span class="Constant">15</span><span class="Delimiter">);</span>
+  <span class="Identifier">return</span> h<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario hash_container_checks_all_elements)</span>
+container foo [
+  x:number
+  y:character
+]
+recipe main [
+  <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  reply-unless <span class="Constant">3</span>:number
+  <span class="Constant">4</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">98</span>/a
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">4</span>:foo
+  reply-unless <span class="Constant">6</span>:number
+  <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number<span class="Delimiter">,</span> <span class="Constant">6</span>:number
+]
+<span class="Comment"># hash on containers includes all elements</span>
+<span class="traceContains">+mem: storing 0 in location 7</span>
+
+<span class="Delimiter">:(scenario hash_exclusive_container_checks_all_elements)</span>
+exclusive-container foo [
+  x:bar
+  y:number
+]
+container bar [
+  a:number
+  b:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  reply-unless <span class="Constant">4</span>:number
+  <span class="Constant">5</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">36</span>
+  <span class="Constant">8</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">5</span>:foo
+  reply-unless <span class="Constant">8</span>:number
+  <span class="Constant">9</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number<span class="Delimiter">,</span> <span class="Constant">8</span>:number
+]
+<span class="Comment"># hash on containers includes all elements</span>
+<span class="traceContains">+mem: storing 0 in location 9</span>
+
+<span class="Delimiter">:(scenario hash_can_ignore_container_elements)</span>
+container foo [
+  x:number
+  y:character/ignore-for-hash
+]
+recipe main [
+  <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  reply-unless <span class="Constant">3</span>:number
+  <span class="Constant">4</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">98</span>/a
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">4</span>:foo
+  reply-unless <span class="Constant">6</span>:number
+  <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number<span class="Delimiter">,</span> <span class="Constant">6</span>:number
+]
+<span class="Comment"># hashes match even though y is different</span>
+<span class="traceContains">+mem: storing 1 in location 7</span>
+
+<span class="Comment">//: These properties aren't necessary for hash, they just test that the</span>
+<span class="Comment">//: current implementation works like we think it does.</span>
+
+<span class="Delimiter">:(scenario hash_of_zero_address)</span>
+recipe main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:number
+]
+<span class="traceContains">+mem: storing 0 in location 2</span>
+
+<span class="Comment">//: This is probably too aggressive, but we need some way to avoid depending</span>
+<span class="Comment">//: on the precise bit pattern of a floating-point number.</span>
+<span class="Delimiter">:(scenario hash_of_numbers_ignores_fractional_part)</span>
+recipe main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1.5</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
+]
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(scenario hash_of_array_same_as_string)</span>
+recipe main [
+  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">98</span>
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">99</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">10</span>:array:number/unsafe
+  reply-unless <span class="Constant">2</span>:number
+  <span class="Constant">3</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [abc]
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:shared:array:character
+  reply-unless <span class="Constant">4</span>:number
+  <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
+]
+<span class="traceContains">+mem: storing 1 in location 5</span>
+
+<span class="Delimiter">:(scenario hash_ignores_address_value)</span>
+recipe main [
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  *<span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:shared:number
+  <span class="Constant">3</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  *<span class="Constant">3</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:shared:number
+  <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
+]
+<span class="Comment"># different addresses hash to the same result as long as the values the point to do so</span>
+<span class="traceContains">+mem: storing 1 in location 5</span>
+
+<span class="Delimiter">:(scenario hash_ignores_address_refcount)</span>
+recipe main [
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  *<span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:shared:number
+  reply-unless <span class="Constant">2</span>:number
+  <span class="Comment"># increment refcount</span>
+  <span class="Constant">3</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:shared:number
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:shared:number
+  reply-unless <span class="Constant">4</span>:number
+  <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
+]
+<span class="Comment"># hash doesn't change when refcount changes</span>
+<span class="traceContains">+mem: storing 1 in location 5</span>
+
+<span class="Delimiter">:(scenario hash_container_depends_only_on_elements)</span>
+container foo [
+  x:number
+  y:character
+]
+container bar [
+  x:number
+  y:character
+]
+recipe main [
+  <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  reply-unless <span class="Constant">3</span>:number
+  <span class="Constant">4</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">4</span>:bar
+  reply-unless <span class="Constant">6</span>:number
+  <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number<span class="Delimiter">,</span> <span class="Constant">6</span>:number
+]
+<span class="Comment"># containers with identical elements return identical hashes</span>
+<span class="traceContains">+mem: storing 1 in location 7</span>
+
+<span class="Delimiter">:(scenario hash_container_depends_only_on_elements_2)</span>
+container foo [
+  x:number
+  y:character
+  z:address:shared:number
+]
+recipe main [
+  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  *<span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>:address:shared:number
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">2</span>:foo
+  reply-unless <span class="Constant">5</span>:number
+  <span class="Constant">6</span>:address:shared:number<span class="Special"> &lt;- </span>new number:type
+  *<span class="Constant">6</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">7</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">6</span>:address:shared:number
+  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">7</span>:foo
+  reply-unless <span class="Constant">10</span>:number
+  <span class="Constant">11</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">5</span>:number<span class="Delimiter">,</span> <span class="Constant">10</span>:number
+]
+<span class="Comment"># containers with identical 'leaf' elements return identical hashes</span>
+<span class="traceContains">+mem: storing 1 in location 11</span>
+
+<span class="Delimiter">:(scenario hash_container_depends_only_on_elements_3)</span>
+container foo [
+  x:number
+  y:character
+  z:bar
+]
+container bar [
+  x:number
+  y:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">47</span><span class="Delimiter">,</span> <span class="Constant">48</span>
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  reply-unless <span class="Constant">6</span>:number
+  <span class="Constant">7</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">47</span><span class="Delimiter">,</span> <span class="Constant">48</span>
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">7</span>:foo
+  reply-unless <span class="Constant">12</span>:number
+  <span class="Constant">13</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">6</span>:number<span class="Delimiter">,</span> <span class="Constant">12</span>:number
+]
+<span class="Comment"># containers with identical 'leaf' elements return identical hashes</span>
+<span class="traceContains">+mem: storing 1 in location 13</span>
+
+<span class="Delimiter">:(scenario hash_exclusive_container_ignores_tag)</span>
+exclusive-container foo [
+  x:bar
+  y:number
+]
+container bar [
+  a:number
+  b:number
+]
+recipe main [
+  <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  reply-unless <span class="Constant">4</span>:number
+  <span class="Constant">5</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">5</span>:bar
+  reply-unless <span class="Constant">7</span>:number
+  <span class="Constant">8</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number<span class="Delimiter">,</span> <span class="Constant">7</span>:number
+]
+<span class="Comment"># hash on containers includes all elements</span>
+<span class="traceContains">+mem: storing 1 in location 8</span>
+
+<span class="Comment">//: An older version that supported only strings.</span>
+<span class="Comment">//: Hash functions are subtle and easy to get wrong, so we keep the old</span>
+<span class="Comment">//: version around and check that the new one is consistent with it.</span>
+
+<span class="Delimiter">:(scenario hash_matches_old_version)</span>
+recipe main [
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [abc]
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:shared:array:character
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>hash_old <span class="Constant">1</span>:address:shared:array:character
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">3</span>:number
+]
+<span class="traceContains">+mem: storing 1 in location 4</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+HASH_OLD<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;hash_old&quot;</span><span class="Delimiter">,</span> HASH_OLD<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+case HASH_OLD: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'hash_old' takes exactly one ingredient rather than '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'hash_old' currently only supports strings (address:shared:array:character), but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case HASH_OLD: <span class="Delimiter">{</span>
+  string input = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  size_t h = <span class="Constant">0</span> <span class="Delimiter">;</span>
+
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>input<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    h += static_cast&lt;size_t&gt;<span class="Delimiter">(</span>input<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+    h += <span class="Delimiter">(</span>h&lt;&lt;<span class="Constant">10</span><span class="Delimiter">);</span>
+    h ^= <span class="Delimiter">(</span>h&gt;&gt;<span class="Constant">6</span><span class="Delimiter">);</span>
+
+    h += <span class="Delimiter">(</span>h&lt;&lt;<span class="Constant">3</span><span class="Delimiter">);</span>
+    h ^= <span class="Delimiter">(</span>h&gt;&gt;<span class="Constant">11</span><span class="Delimiter">);</span>
+    h += <span class="Delimiter">(</span>h&lt;&lt;<span class="Constant">15</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>h<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

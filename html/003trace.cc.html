@@ -123,15 +123,12 @@ struct trace_line <span class="Delimiter">{</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 const int Max_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
-const int Error_depth = <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// definitely always print the error that caused death</span>
-const int Warning_depth = <span class="Constant">1</span><span class="Delimiter">;</span>
+const int Error_depth = <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// definitely always print errors</span>
 const int App_depth = <span class="Constant">2</span><span class="Delimiter">;</span>  <span class="Comment">// temporarily where all mu code will trace to</span>
 <span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
 bool Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
-bool Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
-Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
 struct trace_stream <span class="Delimiter">{</span>
@@ -166,16 +163,14 @@ struct trace_stream <span class="Delimiter">{</span>
     past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>curr_depth<span class="Delimiter">,</span> trim<span class="Delimiter">(</span>curr_label<span class="Delimiter">),</span> curr_contents<span class="Delimiter">));</span>  <span class="Comment">// preserve indent in contents</span>
     if <span class="Delimiter">(</span>!Hide_errors &amp;&amp; curr_label == <span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span>
       cerr &lt;&lt; curr_label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-    else if <span class="Delimiter">(</span>!Hide_warnings &amp;&amp; curr_label == <span class="Constant">&quot;warn&quot;</span><span class="Delimiter">)</span>
-      cerr &lt;&lt; curr_label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     delete curr_stream<span class="Delimiter">;</span>
     curr_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
     curr_label<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
     curr_depth = Max_depth<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
-  <span class="Comment">// Useful for debugging.</span>
-  string readable_contents<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// missing label = everything</span>
+  <span class="Comment">// useful for debugging</span>
+  string readable_contents<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// empty label = show everything</span>
     ostringstream output<span class="Delimiter">;</span>
     label = trim<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
     for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
@@ -190,10 +185,18 @@ struct trace_stream <span class="Delimiter">{</span>
 
 trace_stream* Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 
-<span class="Comment">// Top-level helper. IMPORTANT: can't nest.</span>
+<span class="Comment">// Top-level helper. IMPORTANT: can't nest</span>
 <span class="PreProc">#define trace(</span><span class="Delimiter">...</span><span class="PreProc">)  !Trace_stream ? cerr </span><span class="Comment">/*</span><span class="Comment">print nothing</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(__VA_ARGS__)</span>
-<span class="PreProc">#define raise  (!Trace_stream ? (tb_shutdown()</span><span class="Delimiter">,</span><span class="PreProc">cerr) </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(Warning_depth</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">))</span>
+
+<span class="Comment">// Errors are a special layer.</span>
 <span class="PreProc">#define raise_error  (!Trace_stream ? (tb_shutdown()</span><span class="Delimiter">,</span><span class="PreProc">cerr) </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(Error_depth</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;error&quot;</span><span class="PreProc">))</span>
+<span class="Comment">// Inside tests, fail any tests that displayed (unexpected) errors.</span>
+<span class="Comment">// Expected errors in tests should always be hidden and silently checked for.</span>
+<span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
+if <span class="Delimiter">(</span>Passed &amp;&amp; !Hide_errors &amp;&amp; trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+  ++Num_failures<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 struct end <span class="Delimiter">{};</span>
@@ -284,6 +287,7 @@ int trace_count<span class="Delimiter">(</span>string label<span class="Delimite
 <span class="Delimiter">}</span>
 
 int trace_count<span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
   long result = <span class="Constant">0</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -375,14 +379,6 @@ using std::map<span class="Delimiter">;</span>
 using std::set<span class="Delimiter">;</span>
 <span class="PreProc">#include</span><span class="Constant">&lt;algorithm&gt;</span>
 
-<span class="PreProc">#include</span><span class="Constant">&lt;iostream&gt;</span>
-using std::istream<span class="Delimiter">;</span>
-using std::ostream<span class="Delimiter">;</span>
-using std::cin<span class="Delimiter">;</span>
-using std::cout<span class="Delimiter">;</span>
-using std::cerr<span class="Delimiter">;</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;iomanip&gt;</span>
-
 <span class="PreProc">#include</span><span class="Constant">&lt;sstream&gt;</span>
 using std::istringstream<span class="Delimiter">;</span>
 using std::ostringstream<span class="Delimiter">;</span>
@@ -399,8 +395,7 @@ using std::ofstream<span class="Delimiter">;</span>
 <span class="Comment">//: In future layers we'll use the depth field as follows:</span>
 <span class="Comment">//:</span>
 <span class="Comment">//: Errors will be depth 0.</span>
-<span class="Comment">//: Warnings will be depth 1.</span>
-<span class="Comment">//: Mu 'applications' will be able to use depths 2-100 as they like.</span>
+<span class="Comment">//: Mu 'applications' will be able to use depths 1-100 as they like.</span>
 <span class="Comment">//: Primitive statements will occupy 101-9989</span>
 const int Initial_callstack_depth = <span class="Constant">101</span><span class="Delimiter">;</span>
 const int Max_callstack_depth = <span class="Constant">9989</span><span class="Delimiter">;</span>

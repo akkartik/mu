@@ -109,7 +109,7 @@ void transform_names<span class="Delimiter">(</span>const recipe_ordinal r<span 
 bool is_disqualified<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">mutable</span><span class="Comment">*/</span> reagent&amp; x<span class="Delimiter">,</span> const instruction&amp; inst<span class="Delimiter">,</span> const string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// End Null-type is_disqualified Exceptions</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type for &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type for &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -140,9 +140,8 @@ type_ordinal skip_addresses<span class="Delimiter">(</span>type_tree* type<span 
 
 int find_element_name<span class="Delimiter">(</span>const type_ordinal t<span class="Delimiter">,</span> const string&amp; name<span class="Delimiter">,</span> const string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   const type_info&amp; container = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> t<span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>container<span class="Delimiter">.</span>element_names<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>container<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == name<span class="Delimiter">)</span> <span class="Identifier">return</span> i<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>container<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+    if <span class="Delimiter">(</span>container<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name == name<span class="Delimiter">)</span> <span class="Identifier">return</span> i<span class="Delimiter">;</span>
   raise_error &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;unknown element &quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot; in container &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> t<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -220,10 +219,6 @@ $error: <span class="Constant">0</span>
 
 <span class="SalientComment">//:: Support element names for containers in 'get' and 'get-address'.</span>
 
-<span class="Comment">//: update our running example container for the next test</span>
-<span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
-get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> point<span class="Delimiter">).</span>element_names<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;x&quot;</span><span class="Delimiter">);</span>
-get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> point<span class="Delimiter">).</span>element_names<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;y&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">:(scenario transform_names_transforms_container_elements)</span>
 recipe main [
   p:address:point<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -237,7 +232,7 @@ recipe main [
 <span class="Comment">// replace element names of containers with offsets</span>
 if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;get&quot;</span> || inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;get-address&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;exactly 2 ingredients expected in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;exactly 2 ingredients expected in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span>
@@ -279,7 +274,7 @@ recipe main [
 <span class="Comment">// convert variant names of exclusive containers</span>
 if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;maybe-convert&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;exactly 2 ingredients expected in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;exactly 2 ingredients expected in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>

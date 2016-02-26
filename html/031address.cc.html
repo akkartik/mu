@@ -60,7 +60,7 @@ recipe main [
 <span class="Delimiter">:(before &quot;long long int base = x.value&quot; following &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
 canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
 if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  raise_error &lt;&lt; <span class="Constant">&quot;can't write to location 0 in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  raise_error &lt;&lt; <span class="Constant">&quot;can't write to location 0 in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -119,11 +119,14 @@ recipe foo [
 <span class="Delimiter">:(after &quot;bool is_mu_number(reagent r)&quot;)</span>
   if <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 
+<span class="Delimiter">:(after &quot;Update product While Type-checking Merge&quot;)</span>
+if <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+
 <span class="Delimiter">:(code)</span>
 bool canonize_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   while <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type || r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;can't lookup non-address: &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise_error &lt;&lt; <span class="Constant">&quot;can't lookup non-address: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     drop_from_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
@@ -135,24 +138,17 @@ bool canonize_type<span class="Delimiter">(</span>reagent&amp; r<span class="Del
 
 void drop_from_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">,</span> string expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;can't drop &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;can't drop &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">-&gt;</span>value != expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;can't drop &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name != expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise_error &lt;&lt; <span class="Constant">&quot;can't drop2 &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   type_tree* tmp = r<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
   r<span class="Delimiter">.</span>type = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
   tmp<span class="Delimiter">-&gt;</span>right = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   delete tmp<span class="Delimiter">;</span>
-  <span class="Comment">// property</span>
-  if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    string_tree* tmp2 = r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">;</span>
-    r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second = tmp2<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
-    tmp2<span class="Delimiter">-&gt;</span>right = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-    delete tmp2<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 void drop_one_lookup<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -226,7 +222,7 @@ recipe main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:number
 ]
-<span class="traceContains">+parse: ingredient: {&quot;1&quot;: &lt;&quot;address&quot; : &lt;&quot;number&quot; : &lt;&gt;&gt;&gt;, &quot;lookup&quot;: &lt;&gt;}</span>
+<span class="traceContains">+parse: ingredient: 1: (&quot;address&quot; &quot;number&quot;), {&quot;lookup&quot;: ()}</span>
 <span class="traceContains">+mem: storing 34 in location 3</span>
 
 <span class="Delimiter">:(before &quot;End Parsing reagent&quot;)</span>
@@ -237,7 +233,6 @@ recipe main [
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
     raise_error &lt;&lt; <span class="Constant">&quot;illegal name &quot;</span> &lt;&lt; original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-  properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>first = name<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: helpers for debugging</span>

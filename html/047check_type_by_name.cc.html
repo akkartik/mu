@@ -14,13 +14,12 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceContains { color: #008000; }
-.Identifier { color: #804000; }
 .cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
+.Identifier { color: #804000; }
 -->
 </style>
 
@@ -54,43 +53,49 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Delimiter">:(code)</span>
 void check_or_set_types_by_name<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- deduce types for recipe &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;--- deduce types for recipe &quot; &lt;&lt; get(Recipe, r).name &lt;&lt; '\n';</span>
   map&lt;string<span class="Delimiter">,</span> type_tree*&gt; type<span class="Delimiter">;</span>
-  map&lt;string<span class="Delimiter">,</span> string_tree*&gt; type_name<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     for <span class="Delimiter">(</span>long long int in = <span class="Constant">0</span><span class="Delimiter">;</span> in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      deduce_missing_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> type_name<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
-      check_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> type_name<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> r<span class="Delimiter">);</span>
+      deduce_missing_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      check_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> r<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
     for <span class="Delimiter">(</span>long long int out = <span class="Constant">0</span><span class="Delimiter">;</span> out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      deduce_missing_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> type_name<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">));</span>
-      check_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> type_name<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">),</span> r<span class="Delimiter">);</span>
+      deduce_missing_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">));</span>
+      check_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">),</span> r<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-void deduce_missing_type<span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> type_tree*&gt;&amp; type<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> string_tree*&gt;&amp; type_name<span class="Delimiter">,</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void deduce_missing_type<span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> type_tree*&gt;&amp; type<span class="Delimiter">,</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  x<span class="Delimiter">.</span>type = new type_tree<span class="Delimiter">(</span>*type[x<span class="Delimiter">.</span>name]<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; &lt;= &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-  assert<span class="Delimiter">(</span>!x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
-  x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second = new string_tree<span class="Delimiter">(</span>*type_name[x<span class="Delimiter">.</span>name]<span class="Delimiter">);</span>
+  x<span class="Delimiter">.</span>type = new type_tree<span class="Delimiter">(</span>*get<span class="Delimiter">(</span>type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; &lt;= &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-void check_type<span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> type_tree*&gt;&amp; type<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> string_tree*&gt;&amp; type_name<span class="Delimiter">,</span> const reagent&amp; x<span class="Delimiter">,</span> const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void check_type<span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> type_tree*&gt;&amp; type<span class="Delimiter">,</span> const reagent&amp; x<span class="Delimiter">,</span> const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// if you use raw locations you're probably doing something unsafe</span>
   if <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// might get filled in by other logic later</span>
   if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; =&gt; &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; =&gt; &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
     put<span class="Delimiter">(</span>type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">,</span> x<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>type_name<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
-    put<span class="Delimiter">(</span>type_name<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">,</span> x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>type[x<span class="Delimiter">.</span>name]<span class="Delimiter">,</span> x<span class="Delimiter">.</span>type<span class="Delimiter">))</span>
+  if <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>get<span class="Delimiter">(</span>type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">),</span> x<span class="Delimiter">.</span>type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; used with multiple types</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>get<span class="Delimiter">(</span>type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">)-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>!get<span class="Delimiter">(</span>type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">)-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; can't be just an array. What is it an array of?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    if <span class="Delimiter">(</span>!get<span class="Delimiter">(</span>type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">)-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise_error &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; can't determine the size of array variable &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;. Either allocate it separately and make the type of &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; address:shared:..., or specify the length of the array in the type of &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario transform_fills_in_missing_types)</span>
@@ -127,6 +132,13 @@ recipe main [
   *y<span class="Special"> &lt;- </span>copy <span class="Constant">67</span>
 ]
 <span class="traceContains">+error: main: unknown type charcter in 'y:address:shared:charcter &lt;- new character:type'</span>
+
+<span class="Delimiter">:(scenario array_type_without_size_fails)</span>
+<span class="Special">% Hide_errors = true;</span>
+recipe main [
+  x:array:number<span class="Special"> &lt;- </span>merge <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">12</span><span class="Delimiter">,</span> <span class="Constant">13</span>
+]
+<span class="traceContains">+error: main can't determine the size of array variable x. Either allocate it separately and make the type of x address:shared:..., or specify the length of the array in the type of x.</span>
 </pre>
 </body>
 </html>

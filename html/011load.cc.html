@@ -40,8 +40,8 @@ recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(code)</span>
 vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -62,9 +62,9 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
       result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
     <span class="Delimiter">}</span>
     else if <span class="Delimiter">(</span>command == <span class="Constant">&quot;recipe!&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      Disable_redefine_warnings = <span class="Constant">true</span><span class="Delimiter">;</span>
+      Disable_redefine_checks = <span class="Constant">true</span><span class="Delimiter">;</span>
       result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
-      Disable_redefine_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
+      Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Comment">// End Command Handlers</span>
     else <span class="Delimiter">{</span>
@@ -77,22 +77,22 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
 long long int slurp_recipe<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe result<span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Comment">// End Load Recipe Name</span>
   skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  <span class="Comment">// End recipe Refinements</span>
+  <span class="Comment">// End Recipe Refinements</span>
   if <span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
     raise_error &lt;&lt; <span class="Constant">&quot;empty result.name</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- defining &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
     put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">,</span> Next_recipe_ordinal++<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span> != Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;already exists&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>warn_on_redefine<span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
-      raise &lt;&lt; <span class="Constant">&quot;redefining recipe &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    if <span class="Delimiter">(</span>should_check_for_redefine<span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
+      raise_error &lt;&lt; <span class="Constant">&quot;redefining recipe &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   slurp_body<span class="Delimiter">(</span>in<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
-  <span class="Comment">// End recipe Body(result)</span>
+  <span class="Comment">// End Recipe Body(result)</span>
   put<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">),</span> result<span class="Delimiter">);</span>
   <span class="Comment">// track added recipes because we may need to undo them in tests; see below</span>
   Recently_added_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
@@ -108,9 +108,9 @@ void slurp_body<span class="Delimiter">(</span>istream&amp; in<span class="Delim
   instruction curr<span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>next_instruction<span class="Delimiter">(</span>in<span class="Delimiter">,</span> &amp;curr<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     <span class="Comment">// End Rewrite Instruction(curr, recipe result)</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;load&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;after rewriting: &quot;</span> &lt;&lt; curr<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>!curr<span class="Delimiter">.</span>is_clear<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-      curr<span class="Delimiter">.</span>original_string = curr<span class="Delimiter">.</span>to_string<span class="Delimiter">();</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;load&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;after rewriting: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>curr<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+    if <span class="Delimiter">(</span>!curr<span class="Delimiter">.</span>is_empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      curr<span class="Delimiter">.</span>original_string = to_string<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
       result<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -136,9 +136,8 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
     skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>words<span class="Delimiter">)</span> == <span class="Constant">1</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;]&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>words<span class="Delimiter">)</span> == <span class="Constant">1</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;]&quot;</span><span class="Delimiter">)</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// end of recipe</span>
-  <span class="Delimiter">}</span>
 
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>words<span class="Delimiter">)</span> == <span class="Constant">1</span> &amp;&amp; !isalnum<span class="Delimiter">(</span>words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'$'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     curr<span class="Delimiter">-&gt;</span>is_label = <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -153,9 +152,8 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
 
   vector&lt;string&gt;::iterator p = words<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>find<span class="Delimiter">(</span>words<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> words<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">)</span> != words<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    for <span class="Delimiter">(;</span> *p != <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">;</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    for <span class="Delimiter">(;</span> *p != <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">;</span> ++p<span class="Delimiter">)</span>
       curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>*p<span class="Delimiter">));</span>
-    <span class="Delimiter">}</span>
     ++p<span class="Delimiter">;</span>  <span class="Comment">// skip &lt;-</span>
   <span class="Delimiter">}</span>
 
@@ -166,18 +164,15 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
   curr<span class="Delimiter">-&gt;</span>old_name = curr<span class="Delimiter">-&gt;</span>name = *p<span class="Delimiter">;</span>  p++<span class="Delimiter">;</span>
   <span class="Comment">// curr-&gt;operation will be set in a later layer</span>
 
-  for <span class="Delimiter">(;</span> p != words<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(;</span> p != words<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
     curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>*p<span class="Delimiter">));</span>
-  <span class="Delimiter">}</span>
 
   trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction: &quot;</span> &lt;&lt; curr<span class="Delimiter">-&gt;</span>name &lt;&lt; end<span class="Delimiter">();</span>
   trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  number of ingredients: &quot;</span> &lt;&lt; SIZE<span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-  for <span class="Delimiter">(</span>vector&lt;reagent&gt;::iterator p = curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  ingredient: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>to_string<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Delimiter">}</span>
-  for <span class="Delimiter">(</span>vector&lt;reagent&gt;::iterator p = curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  product: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>to_string<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Delimiter">}</span>
+  for <span class="Delimiter">(</span>vector&lt;reagent&gt;::iterator p = curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  ingredient: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>*p<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+  for <span class="Delimiter">(</span>vector&lt;reagent&gt;::iterator p = curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  product: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>*p<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise_error &lt;&lt; <span class="Constant">&quot;9: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -245,14 +240,14 @@ void skip_comment<span class="Delimiter">(</span>istream&amp; in<span class="Del
 
 <span class="Comment">//: Warn if a recipe gets redefined, because large codebases can accidentally</span>
 <span class="Comment">//: step on their own toes. But there'll be many occasions later where</span>
-<span class="Comment">//: we'll want to disable the warnings.</span>
+<span class="Comment">//: we'll want to disable the errors.</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-bool Disable_redefine_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
+bool Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Disable_redefine_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
+Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(code)</span>
-bool warn_on_redefine<span class="Delimiter">(</span>const string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>Disable_redefine_warnings<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+bool should_check_for_redefine<span class="Delimiter">(</span>const string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>Disable_redefine_checks<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -261,9 +256,8 @@ bool warn_on_redefine<span class="Delimiter">(</span>const string&amp; recipe_na
 void show_rest_of_stream<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   cerr &lt;&lt; <span class="Constant">'^'</span><span class="Delimiter">;</span>
   char c<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  while <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span>
     cerr &lt;&lt; c<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
   cerr &lt;&lt; <span class="Constant">&quot;$</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
@@ -294,8 +288,8 @@ recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction)</span>
 recipe main [
@@ -303,8 +297,8 @@ recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction_2)</span>
 recipe main [
@@ -313,8 +307,8 @@ recipe main [
   <span class="Comment"># comment</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction_3)</span>
 recipe main [
@@ -323,19 +317,19 @@ recipe main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;2&quot;: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
+<span class="traceContains">+parse:   product: 2: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_comment_after_instruction)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>  <span class="Comment"># comment</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_label)</span>
 recipe main [
@@ -354,43 +348,43 @@ recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>/foo:bar:baz
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;, &quot;foo&quot;: &lt;&quot;bar&quot; : &lt;&quot;baz&quot; : &lt;&gt;&gt;&gt;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;, {&quot;foo&quot;: (&quot;bar&quot; &quot;baz&quot;)}</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_multiple_products)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;2&quot;: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
+<span class="traceContains">+parse:   product: 2: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_multiple_ingredients)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;}</span>
-<span class="traceContains">+parse:   ingredient: {&quot;4&quot;: &quot;number&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;2&quot;: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
+<span class="traceContains">+parse:   ingredient: 4: &quot;number&quot;</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
+<span class="traceContains">+parse:   product: 2: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_multiple_types)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {&quot;23&quot;: &quot;literal&quot;}</span>
-<span class="traceContains">+parse:   ingredient: {&quot;4&quot;: &quot;number&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &quot;number&quot;}</span>
-<span class="traceContains">+parse:   product: {&quot;2&quot;: &lt;&quot;address&quot; : &lt;&quot;number&quot; : &lt;&gt;&gt;&gt;}</span>
+<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
+<span class="traceContains">+parse:   ingredient: 4: &quot;number&quot;</span>
+<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
+<span class="traceContains">+parse:   product: 2: (&quot;address&quot; &quot;number&quot;)</span>
 
 <span class="Delimiter">:(scenario parse_properties)</span>
 recipe main [
-  <span class="Constant">1</span>:number:address/lookup<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
+  <span class="Constant">1</span>:address:number/lookup<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
-<span class="traceContains">+parse:   product: {&quot;1&quot;: &lt;&quot;number&quot; : &lt;&quot;address&quot; : &lt;&gt;&gt;&gt;, &quot;lookup&quot;: &lt;&gt;}</span>
+<span class="traceContains">+parse:   product: 1: (&quot;address&quot; &quot;number&quot;), {&quot;lookup&quot;: ()}</span>
 
 <span class="Comment">//: this test we can't represent with a scenario</span>
 <span class="Delimiter">:(code)</span>
@@ -403,26 +397,26 @@ void test_parse_comment_terminated_by_eof<span class="Delimiter">()</span> <span
   cerr &lt;&lt; <span class="Constant">&quot;.&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// termination = success</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(scenario warn_on_redefine)</span>
-<span class="Special">% Hide_warnings = true;</span>
+<span class="Delimiter">:(scenario forbid_redefining_recipes)</span>
+<span class="Special">% Hide_errors = true;</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
-<span class="traceContains">+warn: redefining recipe main</span>
+<span class="traceContains">+error: redefining recipe main</span>
 
-<span class="Delimiter">:(scenario redefine_without_warning)</span>
-<span class="Special">% Hide_warnings = true;</span>
+<span class="Delimiter">:(scenario permit_forcibly_redefining_recipes)</span>
+<span class="Special">% Hide_errors = true;</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 recipe! main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
-<span class="traceAbsent">-warn: redefining recipe main</span>
-$warn: <span class="Constant">0</span>
+<span class="traceAbsent">-error: redefining recipe main</span>
+$error: <span class="Constant">0</span>
 </pre>
 </body>
 </html>

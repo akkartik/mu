@@ -244,14 +244,18 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Constant">local-scope</span>
     x:address:shared:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">3</span>
     s1:address:shared:array:character<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
-    x<span class="Special"> &lt;- </span>append x, <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
-    x<span class="Special"> &lt;- </span>append x, <span class="Constant">98</span>  <span class="Comment"># 'b'</span>
-    x<span class="Special"> &lt;- </span>append x, <span class="Constant">99</span>  <span class="Comment"># 'c'</span>
+    c:character<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+    x<span class="Special"> &lt;- </span>append x, c
+    c:character<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
+    x<span class="Special"> &lt;- </span>append x, c
+    c:character<span class="Special"> &lt;- </span>copy <span class="Constant">99/c</span>
+    x<span class="Special"> &lt;- </span>append x, c
     s2:address:shared:array:character<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
     <span class="Constant">1</span>:boolean/<span class="Special">raw &lt;- </span>equal s1, s2
     <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2
 <span class="Constant">    +buffer-filled</span>
-    x<span class="Special"> &lt;- </span>append x, <span class="Constant">100</span>  <span class="Comment"># 'd'</span>
+    c:character<span class="Special"> &lt;- </span>copy <span class="Constant">100/d</span>
+    x<span class="Special"> &lt;- </span>append x, c
     s3:address:shared:array:character<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
     <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal s1, s3
     <span class="Constant">11</span>:number/<span class="Special">raw &lt;- </span>get *x, <span class="Constant">length:offset</span>
@@ -281,9 +285,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   run [
     <span class="Constant">local-scope</span>
     x:address:shared:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">3</span>
-    x<span class="Special"> &lt;- </span>append x, <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
-    x<span class="Special"> &lt;- </span>append x, <span class="Constant">98</span>  <span class="Comment"># 'b'</span>
-    x<span class="Special"> &lt;- </span>append x, <span class="Constant">8/backspace</span>
+    c:character<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+    x<span class="Special"> &lt;- </span>append x, c
+    c:character<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
+    x<span class="Special"> &lt;- </span>append x, c
+    c:character<span class="Special"> &lt;- </span>copy <span class="Constant">8/backspace</span>
+    x<span class="Special"> &lt;- </span>append x, c
     s:address:shared:array:character<span class="Special"> &lt;- </span>buffer-to-array x
     <span class="Constant">1</span>:array:character/<span class="Special">raw &lt;- </span>copy *s
   ]
@@ -325,7 +332,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># add sign</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> negate-result:boolean
-    tmp<span class="Special"> &lt;- </span>append tmp, <span class="Constant">45</span>  <span class="Comment"># '-'</span>
+    minus:character<span class="Special"> &lt;- </span>copy <span class="Constant">45/-</span>
+    tmp<span class="Special"> &lt;- </span>append tmp, minus
   <span class="Delimiter">}</span>
   <span class="Comment"># reverse buffer into text result</span>
   len:number<span class="Special"> &lt;- </span>get *tmp, <span class="Constant">length:offset</span>
@@ -354,6 +362,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   result<span class="Special"> &lt;- </span>to-text n
 ]
 
+<span class="muRecipe">recipe</span> to-text x:address:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  n:number<span class="Special"> &lt;- </span>copy x
+  result<span class="Special"> &lt;- </span>to-text n
+]
 
 <span class="muRecipe">recipe</span> buffer-to-array in:address:shared:buffer<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>

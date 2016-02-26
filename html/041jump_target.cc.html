@@ -62,12 +62,12 @@ void transform_labels<span class="Delimiter">(</span>const recipe_ordinal r<span
     const instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>label<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; inst<span class="Delimiter">.</span>label<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'+'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>offset<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-        offset[inst<span class="Delimiter">.</span>label] = i<span class="Delimiter">;</span>
+        put<span class="Delimiter">(</span>offset<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">,</span> i<span class="Delimiter">);</span>
       <span class="Delimiter">}</span>
       else <span class="Delimiter">{</span>
         raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;duplicate label '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>label &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
         <span class="Comment">// have all jumps skip some random but noticeable and deterministic amount of code</span>
-        offset[inst<span class="Delimiter">.</span>label] = <span class="Constant">9999</span><span class="Delimiter">;</span>
+        put<span class="Delimiter">(</span>offset<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">,</span> <span class="Constant">9999</span><span class="Delimiter">);</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -110,7 +110,7 @@ void replace_offset<span class="Delimiter">(</span>reagent&amp; x<span class="De
     x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// no jump by default</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>offset[x<span class="Delimiter">.</span>name]-current_offset<span class="Delimiter">);</span>
+  x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>get<span class="Delimiter">(</span>offset<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> - current_offset<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 bool is_jump_target<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
