@@ -83,6 +83,8 @@ recipe foo [
 
 :(after "bool is_mu_number(reagent r)")
   if (!canonize_type(r)) return false;
+:(after "bool is_mu_boolean(reagent r)")
+  if (!canonize_type(r)) return false;
 
 :(after "Update product While Type-checking Merge")
 if (!canonize_type(product)) continue;

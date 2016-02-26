@@ -12,6 +12,14 @@ case AND: {
       goto finish_checking_instruction;
     }
   }
+  if (SIZE(inst.products) > 1) {
+    raise << maybe(get(Recipe, r).name) << "'and' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'and' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -61,6 +69,14 @@ case OR: {
       raise << maybe(get(Recipe, r).name) << "'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
+  }
+  if (SIZE(inst.products) > 1) {
+    raise << maybe(get(Recipe, r).name) << "'or' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'or' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    break;
   }
   break;
 }
@@ -113,6 +129,13 @@ case NOT: {
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_scalar(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'not' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      goto finish_checking_instruction;
+    }
+  }
+  for (long long int i = 0; i < SIZE(inst.products); ++i) {
+    if (is_dummy(inst.products.at(i))) continue;
+    if (!is_mu_boolean(inst.products.at(i))) {
+      raise << maybe(get(Recipe, r).name) << "'not' should yield a boolean, but got " << inst.products.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }

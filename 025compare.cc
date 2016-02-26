@@ -10,6 +10,14 @@ case EQUAL: {
     raise << maybe(get(Recipe, r).name) << "'equal' needs at least two ingredients to compare in '" << to_string(inst) << "'\n" << end();
     break;
   }
+  if (SIZE(inst.products) > 1) {
+    raise << maybe(get(Recipe, r).name) << "'equal' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'equal' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -31,7 +39,7 @@ case EQUAL: {
 recipe main [
   1:number <- copy 34
   2:number <- copy 33
-  3:number <- equal 1:number, 2:number
+  3:boolean <- equal 1:number, 2:number
 ]
 +mem: location 1 is 34
 +mem: location 2 is 33
@@ -41,7 +49,7 @@ recipe main [
 recipe main [
   1:number <- copy 34
   2:number <- copy 34
-  3:number <- equal 1:number, 2:number
+  3:boolean <- equal 1:number, 2:number
 ]
 +mem: location 1 is 34
 +mem: location 2 is 34
@@ -49,13 +57,13 @@ recipe main [
 
 :(scenario equal_multiple)
 recipe main [
-  1:number <- equal 34, 34, 34
+  1:boolean <- equal 34, 34, 34
 ]
 +mem: storing 1 in location 1
 
 :(scenario equal_multiple_2)
 recipe main [
-  1:number <- equal 34, 34, 35
+  1:boolean <- equal 34, 34, 35
 ]
 +mem: storing 0 in location 1
 
@@ -74,6 +82,14 @@ case GREATER_THAN: {
       raise << maybe(get(Recipe, r).name) << "'greater-than' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
+  }
+  if (SIZE(inst.products) > 1) {
+    raise << maybe(get(Recipe, r).name) << "'greater-than' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'greater-than' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    break;
   }
   break;
 }
@@ -134,6 +150,14 @@ case LESSER_THAN: {
       goto finish_checking_instruction;
     }
   }
+  if (SIZE(inst.products) > 1) {
+    raise << maybe(get(Recipe, r).name) << "'lesser-than' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'lesser-than' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -192,6 +216,14 @@ case GREATER_OR_EQUAL: {
       raise << maybe(get(Recipe, r).name) << "'greater-or-equal' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
+  }
+  if (SIZE(inst.products) > 1) {
+    raise << maybe(get(Recipe, r).name) << "'greater-or-equal' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'greater-or-equal' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    break;
   }
   break;
 }
@@ -259,6 +291,14 @@ case LESSER_OR_EQUAL: {
       raise << maybe(get(Recipe, r).name) << "'lesser-or-equal' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
+  }
+  if (SIZE(inst.products) > 1) {
+    raise << maybe(get(Recipe, r).name) << "'greater-or-equal' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'greater-or-equal' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    break;
   }
   break;
 }

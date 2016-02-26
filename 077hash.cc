@@ -351,7 +351,7 @@ recipe main [
   1:address:shared:array:character <- new [abc]
   2:number <- hash 1:address:shared:array:character
   3:number <- hash_old 1:address:shared:array:character
-  4:number <- equal 2:number, 3:number
+  4:boolean <- equal 2:number, 3:number
 ]
 +mem: storing 1 in location 4
 
