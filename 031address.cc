@@ -25,7 +25,7 @@ recipe main [
 :(before "long long int base = x.value" following "void write_memory(reagent x, vector<double> data)")
 canonize(x);
 if (x.value == 0) {
-  raise_error << "can't write to location 0 in '" << to_string(current_instruction()) << "'\n" << end();
+  raise << "can't write to location 0 in '" << to_string(current_instruction()) << "'\n" << end();
   return;
 }
 
@@ -49,12 +49,12 @@ void canonize(reagent& x) {
 
 void lookup_memory(reagent& x) {
   if (!x.type || x.type->value != get(Type_ordinal, "address")) {
-    raise_error << maybe(current_recipe_name()) << "tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
     return;
   }
   // compute value
   if (x.value == 0) {
-    raise_error << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
     return;
   }
   trace(9999, "mem") << "location " << x.value << " is " << no_scientific(get_or_insert(Memory, x.value)) << end();
@@ -91,7 +91,7 @@ if (!canonize_type(product)) continue;
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
     if (!r.type || r.type->value != get(Type_ordinal, "address")) {
-      raise_error << "can't lookup non-address: " << to_string(r) << ": " << to_string(r.type) << '\n' << end();
+      raise << "can't lookup non-address: " << to_string(r) << ": " << to_string(r.type) << '\n' << end();
       return false;
     }
     drop_from_type(r, "address");
@@ -103,11 +103,11 @@ bool canonize_type(reagent& r) {
 
 void drop_from_type(reagent& r, string expected_type) {
   if (!r.type) {
-    raise_error << "can't drop " << expected_type << " from " << to_string(r) << '\n' << end();
+    raise << "can't drop " << expected_type << " from " << to_string(r) << '\n' << end();
     return;
   }
   if (r.type->name != expected_type) {
-    raise_error << "can't drop2 " << expected_type << " from " << to_string(r) << '\n' << end();
+    raise << "can't drop2 " << expected_type << " from " << to_string(r) << '\n' << end();
     return;
   }
   type_tree* tmp = r.type;
@@ -197,7 +197,7 @@ recipe main [
     properties.push_back(pair<string, string_tree*>("lookup", NULL));
   }
   if (name.empty())
-    raise_error << "illegal name " << original_string << '\n' << end();
+    raise << "illegal name " << original_string << '\n' << end();
 }
 
 //:: helpers for debugging

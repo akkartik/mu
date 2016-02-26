@@ -81,21 +81,21 @@ put(Recipe_ordinal, "new", NEW);
 case NEW: {
   const recipe& caller = get(Recipe, r);
   if (inst.ingredients.empty() || SIZE(inst.ingredients) > 2) {
-    raise_error << maybe(caller.name) << "'new' requires one or two ingredients, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "'new' requires one or two ingredients, but got " << to_string(inst) << '\n' << end();
     break;
   }
   // End NEW Check Special-cases
   reagent type = inst.ingredients.at(0);
   if (!is_mu_type_literal(type)) {
-    raise_error << maybe(caller.name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
+    raise << maybe(caller.name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
     break;
   }
   if (inst.products.empty()) {
-    raise_error << maybe(caller.name) << "result of 'new' should never be ignored\n" << end();
+    raise << maybe(caller.name) << "result of 'new' should never be ignored\n" << end();
     break;
   }
   if (!product_of_new_is_valid(inst)) {
-    raise_error << maybe(caller.name) << "product of 'new' has incorrect type: " << to_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "product of 'new' has incorrect type: " << to_string(inst) << '\n' << end();
     break;
   }
   break;
@@ -187,14 +187,14 @@ case ALLOCATE: {
 //:: ensure we never call 'allocate' directly; its types are not checked
 :(before "End Primitive Recipe Checks")
 case ALLOCATE: {
-  raise_error << "never call 'allocate' directly'; always use 'new'\n" << end();
+  raise << "never call 'allocate' directly'; always use 'new'\n" << end();
   break;
 }
 
 //:: ensure we never call 'new' without translating it (unless we add special-cases later)
 :(before "End Primitive Recipe Implementations")
 case NEW: {
-  raise_error << "no implementation for 'new'; why wasn't it translated to 'allocate'? Please save a copy of your program and send it to Kartik.\n" << end();
+  raise << "no implementation for 'new'; why wasn't it translated to 'allocate'? Please save a copy of your program and send it to Kartik.\n" << end();
   break;
 }
 
@@ -300,13 +300,13 @@ put(Recipe_ordinal, "abandon", ABANDON);
 :(before "End Primitive Recipe Checks")
 case ABANDON: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'abandon' requires one ingredient, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'abandon' requires one ingredient, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   reagent types = inst.ingredients.at(0);
   canonize_type(types);
   if (!types.type || types.type->value != get(Type_ordinal, "address") || types.type->right->value != get(Type_ordinal, "shared")) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'abandon' should be an address:shared:___, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'abandon' should be an address:shared:___, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -353,7 +353,7 @@ if (get_or_insert(Free_list, size)) {
   put(Free_list, size, get_or_insert(Memory, result));
   for (long long int curr = result+1; curr < result+size; ++curr) {
     if (get_or_insert(Memory, curr) != 0) {
-      raise_error << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
+      raise << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
       break;  // always fatal
     }
   }

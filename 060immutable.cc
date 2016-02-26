@@ -238,9 +238,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       // primitive recipe
       if (inst.operation == GET_ADDRESS || inst.operation == INDEX_ADDRESS) {
         if (current_ingredient_name == original_ingredient_name)
-          raise_error << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
         else
-          raise_error << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
       }
     }
     else {
@@ -248,9 +248,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       if (!is_mu_address(current_ingredient)) return;  // making a copy is ok
       if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller)) {
         if (current_ingredient_name == original_ingredient_name)
-          raise_error << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
         else
-          raise_error << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
       }
     }
   }
@@ -259,7 +259,7 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
 bool is_modified_in_recipe(recipe_ordinal r, long long int ingredient_index, const recipe& caller) {
   const recipe& callee = get(Recipe, r);
   if (!callee.has_header) {
-    raise_error << maybe(caller.name) << "can't check mutability of ingredients in " << callee.name << " because it uses 'next-ingredient' directly, rather than a recipe header.\n" << end();
+    raise << maybe(caller.name) << "can't check mutability of ingredients in " << callee.name << " because it uses 'next-ingredient' directly, rather than a recipe header.\n" << end();
     return true;
   }
   if (ingredient_index >= SIZE(callee.ingredients)) return false;  // optional immutable ingredient
@@ -337,6 +337,6 @@ if (has_property(current_ingredient, "contained-in")) {
   if (tmp->left || tmp->right
       || !is_present_in_ingredients(caller, tmp->value)
       || !is_present_in_products(caller, tmp->value))
-    raise_error << maybe(caller.name) << "contained-in can only point to another ingredient+product, but got " << to_string(property(current_ingredient, "contained-in")) << '\n' << end();
+    raise << maybe(caller.name) << "contained-in can only point to another ingredient+product, but got " << to_string(property(current_ingredient, "contained-in")) << '\n' << end();
   continue;
 }

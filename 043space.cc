@@ -56,7 +56,7 @@ void absolutize(reagent& x) {
   if (is_raw(x) || is_dummy(x)) return;
   if (x.name == "default-space") return;
   if (!x.initialized) {
-    raise_error << to_string(current_instruction()) << ": reagent not initialized: " << x.original_string << '\n' << end();
+    raise << to_string(current_instruction()) << ": reagent not initialized: " << x.original_string << '\n' << end();
   }
   x.set_value(address(x.value, space_base(x)));
   x.properties.push_back(pair<string, string_tree*>("raw", NULL));
@@ -73,7 +73,7 @@ long long int address(long long int offset, long long int base) {
   long long int size = get_or_insert(Memory, base);
   if (offset >= size) {
     // todo: test
-    raise_error << "location " << offset << " is out of bounds " << size << " at " << base << '\n' << end();
+    raise << "location " << offset << " is out of bounds " << size << " at " << base << '\n' << end();
     return 0;
   }
   return base + /*skip length*/1 + offset;
@@ -93,7 +93,7 @@ long long int address(long long int offset, long long int base) {
         || !x.type->right->right->right
         || x.type->right->right->right->value != get(Type_ordinal, "location")
         || x.type->right->right->right->right) {
-      raise_error << maybe(current_recipe_name()) << "'default-space' should be of type address:shared:array:location, but tried to write " << to_string(data) << '\n' << end();
+      raise << maybe(current_recipe_name()) << "'default-space' should be of type address:shared:array:location, but tried to write " << to_string(data) << '\n' << end();
     }
     current_call().default_space = data.at(0);
     return;
@@ -184,12 +184,12 @@ if (curr.name == "new-default-space") {
     vector<double> result;
     result.push_back(Name[get(Recipe_ordinal, current_recipe_name())][""]);
     if (result.back() == 0)
-      raise_error << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names?\n" << end();
+      raise << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names?\n" << end();
     return result;
   }
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "number-of-locals") {
-    raise_error << maybe(current_recipe_name()) << "can't write to special name 'number-of-locals'\n" << end();
+    raise << maybe(current_recipe_name()) << "can't write to special name 'number-of-locals'\n" << end();
     return;
   }
 
@@ -235,12 +235,12 @@ void try_reclaim_locals() {
 
 void rewrite_default_space_instruction(instruction& curr) {
   if (!curr.ingredients.empty())
-    raise_error << to_string(curr) << " can't take any ingredients\n" << end();
+    raise << to_string(curr) << " can't take any ingredients\n" << end();
   curr.name = "new";
   curr.ingredients.push_back(reagent("location:type"));
   curr.ingredients.push_back(reagent("number-of-locals:literal"));
   if (!curr.products.empty())
-    raise_error << "new-default-space can't take any results\n" << end();
+    raise << "new-default-space can't take any results\n" << end();
   curr.products.push_back(reagent("default-space:address:shared:array:location"));
 }
 
@@ -264,7 +264,7 @@ void check_default_space(const recipe_ordinal r) {
   if (caller.steps.empty()) return;
   if (caller.steps.at(0).products.empty()
       || caller.steps.at(0).products.at(0).name != "default-space") {
-    raise_error << maybe(caller.name) << " does not seem to start with default-space or local-scope\n" << end();
+    raise << maybe(caller.name) << " does not seem to start with default-space or local-scope\n" << end();
   }
 }
 :(after "Load .mu Core")

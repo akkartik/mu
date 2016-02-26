@@ -15,7 +15,7 @@ put(Recipe_ordinal, "hash", HASH);
 :(before "End Primitive Recipe Checks")
 case HASH: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'hash' takes exactly one ingredient rather than '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'hash' takes exactly one ingredient rather than '" << to_string(inst) << "'\n" << end();
     break;
   }
   break;
@@ -121,7 +121,7 @@ size_t hash_mu_exclusive_container(size_t h, const reagent& r) {
   reagent variant = variant_type(r, tag);
   // todo: move this error to container definition time
   if (has_property(variant, "ignore-for-hash"))
-    raise_error << get(Type, r.type->value).name << ": /ignore-for-hash won't work in exclusive containers\n" << end();
+    raise << get(Type, r.type->value).name << ": /ignore-for-hash won't work in exclusive containers\n" << end();
   variant.set_value(r.value + /*skip tag*/1);
   h = hash(h, variant);
   return h;
@@ -362,11 +362,11 @@ put(Recipe_ordinal, "hash_old", HASH_OLD);
 :(before "End Primitive Recipe Checks")
 case HASH_OLD: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'hash_old' takes exactly one ingredient rather than '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'hash_old' takes exactly one ingredient rather than '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_string(inst.ingredients.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'hash_old' currently only supports strings (address:shared:array:character), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'hash_old' currently only supports strings (address:shared:array:character), but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;

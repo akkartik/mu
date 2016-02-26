@@ -42,7 +42,7 @@ put(Recipe_ordinal, "next-ingredient", NEXT_INGREDIENT);
 :(before "End Primitive Recipe Checks")
 case NEXT_INGREDIENT: {
   if (!inst.ingredients.empty()) {
-    raise_error << maybe(get(Recipe, r).name) << "'next-ingredient' didn't expect any ingredients in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'next-ingredient' didn't expect any ingredients in '" << to_string(inst) << "'\n" << end();
     break;
   }
   break;
@@ -57,11 +57,11 @@ case NEXT_INGREDIENT: {
       // no ingredient types since the call might be implicit; assume ingredients are always strings
       // todo: how to test this?
       if (!is_mu_string(product))
-        raise_error << "main: wrong type for ingredient " << product.original_string << '\n' << end();
+        raise << "main: wrong type for ingredient " << product.original_string << '\n' << end();
     }
     else if (!types_coercible(product,
                               current_call().ingredients.at(current_call().next_ingredient_to_process))) {
-      raise_error << maybe(current_recipe_name()) << "wrong type for ingredient " << product.original_string << '\n' << end();
+      raise << maybe(current_recipe_name()) << "wrong type for ingredient " << product.original_string << '\n' << end();
       // End next-ingredient Type Mismatch Error
     }
     products.push_back(
@@ -72,7 +72,7 @@ case NEXT_INGREDIENT: {
   }
   else {
     if (SIZE(current_instruction().products) < 2)
-      raise_error << maybe(current_recipe_name()) << "no ingredient to save in " << current_instruction().products.at(0).original_string << '\n' << end();
+      raise << maybe(current_recipe_name()) << "no ingredient to save in " << current_instruction().products.at(0).original_string << '\n' << end();
     if (current_instruction().products.empty()) break;
     products.resize(2);
     // pad the first product with sufficient zeros to match its type
@@ -141,11 +141,11 @@ put(Recipe_ordinal, "ingredient", INGREDIENT);
 :(before "End Primitive Recipe Checks")
 case INGREDIENT: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'ingredient' expects exactly one ingredient, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'ingredient' expects exactly one ingredient, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(0)) && !is_mu_number(inst.ingredients.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'ingredient' expects a literal ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'ingredient' expects a literal ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;

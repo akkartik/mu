@@ -50,16 +50,16 @@ void check_type(map<string, type_tree*>& type, const reagent& x, const recipe_or
     put(type, x.name, x.type);
   }
   if (!types_strictly_match(get(type, x.name), x.type)) {
-    raise_error << maybe(get(Recipe, r).name) << x.name << " used with multiple types\n" << end();
+    raise << maybe(get(Recipe, r).name) << x.name << " used with multiple types\n" << end();
     return;
   }
   if (get(type, x.name)->name == "array") {
     if (!get(type, x.name)->right) {
-      raise_error << maybe(get(Recipe, r).name) << x.name << " can't be just an array. What is it an array of?\n" << end();
+      raise << maybe(get(Recipe, r).name) << x.name << " can't be just an array. What is it an array of?\n" << end();
       return;
     }
     if (!get(type, x.name)->right->right) {
-      raise_error << get(Recipe, r).name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:shared:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
+      raise << get(Recipe, r).name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:shared:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
       return;
     }
   }

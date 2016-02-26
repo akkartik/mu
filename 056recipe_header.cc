@@ -218,17 +218,17 @@ void check_calls_against_header(const recipe_ordinal r) {
     for (long int i = 0; i < min(SIZE(inst.ingredients), SIZE(callee.ingredients)); ++i) {
       // ingredients coerced from call to callee
       if (!types_coercible(callee.ingredients.at(i), inst.ingredients.at(i)))
-        raise_error << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
       if (is_unique_address(inst.ingredients.at(i)))
-        raise_error << maybe(caller.name) << "avoid passing non-shared addresses into calls, like ingredient " << i << " at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "avoid passing non-shared addresses into calls, like ingredient " << i << " at '" << to_string(inst) << "'\n" << end();
     }
     for (long int i = 0; i < min(SIZE(inst.products), SIZE(callee.products)); ++i) {
       if (is_dummy(inst.products.at(i))) continue;
       // products coerced from callee to call
       if (!types_coercible(inst.products.at(i), callee.products.at(i)))
-        raise_error << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
       if (is_unique_address(inst.products.at(i)))
-        raise_error << maybe(caller.name) << "avoid getting non-shared addresses out of calls, like product " << i << " at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "avoid getting non-shared addresses out of calls, like product " << i << " at '" << to_string(inst) << "'\n" << end();
     }
   }
 }
@@ -292,12 +292,12 @@ void check_reply_instructions_against_header(const recipe_ordinal r) {
     const instruction& inst = caller_recipe.steps.at(i);
     if (inst.name != "reply") continue;
     if (SIZE(caller_recipe.products) != SIZE(inst.ingredients)) {
-      raise_error << maybe(caller_recipe.name) << "replied with the wrong number of products at '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller_recipe.name) << "replied with the wrong number of products at '" << to_string(inst) << "'\n" << end();
       continue;
     }
     for (long long int i = 0; i < SIZE(caller_recipe.products); ++i) {
       if (!types_match(caller_recipe.products.at(i), inst.ingredients.at(i)))
-        raise_error << maybe(caller_recipe.name) << "replied with the wrong type at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller_recipe.name) << "replied with the wrong type at '" << to_string(inst) << "'\n" << end();
     }
   }
 }
@@ -335,7 +335,7 @@ void check_header_ingredients(const recipe_ordinal r) {
   trace(9991, "transform") << "--- checking reply instructions against header for " << caller_recipe.name << end();
   for (long long int i = 0; i < SIZE(caller_recipe.ingredients); ++i) {
     if (contains_key(caller_recipe.ingredient_index, caller_recipe.ingredients.at(i).name))
-      raise_error << maybe(caller_recipe.name) << caller_recipe.ingredients.at(i).name << " can't repeat in the ingredients\n" << end();
+      raise << maybe(caller_recipe.name) << caller_recipe.ingredients.at(i).name << " can't repeat in the ingredients\n" << end();
     put(caller_recipe.ingredient_index, caller_recipe.ingredients.at(i).name, i);
   }
 }

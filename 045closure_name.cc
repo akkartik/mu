@@ -58,28 +58,28 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
           || !type->right->right->right
           || type->right->right->right->value != get(Type_ordinal, "location")
           || type->right->right->right->right) {
-        raise_error << "slot 0 should always have type address:shared:array:location, but is " << to_string(inst.products.at(j)) << '\n' << end();
+        raise << "slot 0 should always have type address:shared:array:location, but is " << to_string(inst.products.at(j)) << '\n' << end();
         continue;
       }
       string_tree* s = property(inst.products.at(j), "names");
       if (!s) {
-        raise_error << "slot 0 requires a /names property in recipe " << get(Recipe, r).name << end();
+        raise << "slot 0 requires a /names property in recipe " << get(Recipe, r).name << end();
         continue;
       }
-      if (s->right) raise_error << "slot 0 should have a single value in /names, but got " << to_string(inst.products.at(j)) << '\n' << end();
+      if (s->right) raise << "slot 0 should have a single value in /names, but got " << to_string(inst.products.at(j)) << '\n' << end();
       const string& surrounding_recipe_name = s->value;
       if (surrounding_recipe_name.empty()) {
-        raise_error << "slot 0 doesn't initialize its /names property in recipe " << get(Recipe, r).name << end();
+        raise << "slot 0 doesn't initialize its /names property in recipe " << get(Recipe, r).name << end();
         continue;
       }
       if (contains_key(Surrounding_space, r)
           && get(Surrounding_space, r) != get(Recipe_ordinal, surrounding_recipe_name)) {
-        raise_error << "recipe " << get(Recipe, r).name << " can have only one 'surrounding' recipe but has " << get(Recipe, get(Surrounding_space, r)).name << " and " << surrounding_recipe_name << '\n' << end();
+        raise << "recipe " << get(Recipe, r).name << " can have only one 'surrounding' recipe but has " << get(Recipe, get(Surrounding_space, r)).name << " and " << surrounding_recipe_name << '\n' << end();
         continue;
       }
       trace(9993, "name") << "lexically surrounding space for recipe " << get(Recipe, r).name << " comes from " << surrounding_recipe_name << end();
       if (!contains_key(Recipe_ordinal, surrounding_recipe_name)) {
-        raise_error << "can't find recipe providing surrounding space for " << get(Recipe, r).name << ": " << surrounding_recipe_name << '\n' << end();
+        raise << "can't find recipe providing surrounding space for " << get(Recipe, r).name << ": " << surrounding_recipe_name << '\n' << end();
         continue;
       }
       put(Surrounding_space, r, get(Recipe_ordinal, surrounding_recipe_name));
@@ -93,11 +93,11 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
 :(replace{} "long long int lookup_name(const reagent& r, const recipe_ordinal default_recipe)")
 long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe) {
   if (!has_property(x, "space")) {
-    if (Name[default_recipe].empty()) raise_error << "name not found: " << x.name << '\n' << end();
+    if (Name[default_recipe].empty()) raise << "name not found: " << x.name << '\n' << end();
     return Name[default_recipe][x.name];
   }
   string_tree* p = property(x, "space");
-  if (!p || p->right) raise_error << "/space property should have exactly one (non-negative integer) value\n" << end();
+  if (!p || p->right) raise << "/space property should have exactly one (non-negative integer) value\n" << end();
   long long int n = to_integer(p->value);
   assert(n >= 0);
   recipe_ordinal surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
@@ -111,11 +111,11 @@ long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe)
 long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_ordinal>& done, vector<recipe_ordinal>& path) {
   if (!Name[r].empty()) return Name[r][x.name];
   if (contains_key(done, r)) {
-    raise_error << "can't compute address of " << to_string(x) << " because " << end();
+    raise << "can't compute address of " << to_string(x) << " because " << end();
     for (long long int i = 1; i < SIZE(path); ++i) {
-      raise_error << path.at(i-1) << " requires computing names of " << path.at(i) << '\n' << end();
+      raise << path.at(i-1) << " requires computing names of " << path.at(i) << '\n' << end();
     }
-    raise_error << path.at(SIZE(path)-1) << " requires computing names of " << r << "..ad infinitum\n" << end();
+    raise << path.at(SIZE(path)-1) << " requires computing names of " << r << "..ad infinitum\n" << end();
     return 0;
   }
   done.insert(r);
@@ -128,7 +128,7 @@ long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_o
 recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n) {
   if (n == 0) return r;
   if (!contains_key(Surrounding_space, r)) {
-    raise_error << "don't know surrounding recipe of " << get(Recipe, r).name << '\n' << end();
+    raise << "don't know surrounding recipe of " << get(Recipe, r).name << '\n' << end();
     return 0;
   }
   assert(contains_key(Surrounding_space, r));
@@ -141,7 +141,7 @@ bool already_transformed(const reagent& r, const map<string, long long int>& nam
   if (has_property(r, "space")) {
     string_tree* p = property(r, "space");
     if (!p || p->right) {
-      raise_error << "/space property should have exactly one (non-negative integer) value in " << r.original_string << '\n' << end();
+      raise << "/space property should have exactly one (non-negative integer) value in " << r.original_string << '\n' << end();
       return false;
     }
     if (p->value != "0") return true;

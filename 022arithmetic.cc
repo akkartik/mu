@@ -9,16 +9,16 @@ case ADD: {
   // primary goal of these checks is to forbid address arithmetic
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise_error << maybe(get(Recipe, r).name) << "'add' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'add' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }
   if (SIZE(inst.products) > 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'add' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'add' yields exactly one product in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'add' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'add' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -75,22 +75,22 @@ put(Recipe_ordinal, "subtract", SUBTRACT);
 :(before "End Primitive Recipe Checks")
 case SUBTRACT: {
   if (inst.ingredients.empty()) {
-    raise_error << maybe(get(Recipe, r).name) << "'subtract' has no ingredients\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'subtract' has no ingredients\n" << end();
     break;
   }
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (is_raw(inst.ingredients.at(i))) continue;  // permit address offset computations in tests
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise_error << maybe(get(Recipe, r).name) << "'subtract' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'subtract' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }
   if (SIZE(inst.products) > 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'subtract' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'subtract' yields exactly one product in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'subtract' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'subtract' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -137,16 +137,16 @@ put(Recipe_ordinal, "multiply", MULTIPLY);
 case MULTIPLY: {
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise_error << maybe(get(Recipe, r).name) << "'multiply' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'multiply' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }
   if (SIZE(inst.products) > 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'multiply' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'multiply' yields exactly one product in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'multiply' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'multiply' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -189,21 +189,21 @@ put(Recipe_ordinal, "divide", DIVIDE);
 :(before "End Primitive Recipe Checks")
 case DIVIDE: {
   if (inst.ingredients.empty()) {
-    raise_error << maybe(get(Recipe, r).name) << "'divide' has no ingredients\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'divide' has no ingredients\n" << end();
     break;
   }
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise_error << maybe(get(Recipe, r).name) << "'divide' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'divide' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }
   if (SIZE(inst.products) > 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'divide' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'divide' yields exactly one product in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'divide' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'divide' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -247,20 +247,20 @@ put(Recipe_ordinal, "divide-with-remainder", DIVIDE_WITH_REMAINDER);
 :(before "End Primitive Recipe Checks")
 case DIVIDE_WITH_REMAINDER: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'divide-with-remainder' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'divide-with-remainder' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0)) || !is_mu_number(inst.ingredients.at(1))) {
-    raise_error << maybe(get(Recipe, r).name) << "'divide-with-remainder' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'divide-with-remainder' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (SIZE(inst.products) > 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'divide-with-remainder' yields two products in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'divide-with-remainder' yields two products in '" << to_string(inst) << "'\n" << end();
     break;
   }
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
     if (!is_dummy(inst.products.at(i)) && !is_mu_number(inst.products.at(i))) {
-      raise_error << maybe(get(Recipe, r).name) << "'divide-with-remainder' should yield a number, but got " << inst.products.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'divide-with-remainder' should yield a number, but got " << inst.products.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }
@@ -272,7 +272,7 @@ case DIVIDE_WITH_REMAINDER: {
   long long int a = static_cast<long long int>(ingredients.at(0).at(0));
   long long int b = static_cast<long long int>(ingredients.at(1).at(0));
   if (b == 0) {
-    raise_error << maybe(current_recipe_name()) << "divide by zero in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "divide by zero in '" << to_string(current_instruction()) << "'\n" << end();
     products.resize(2);
     products.at(0).push_back(0);
     products.at(1).push_back(0);
@@ -331,19 +331,19 @@ put(Recipe_ordinal, "shift-left", SHIFT_LEFT);
 :(before "End Primitive Recipe Checks")
 case SHIFT_LEFT: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'shift-left' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'shift-left' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0)) || !is_mu_number(inst.ingredients.at(1))) {
-    raise_error << maybe(get(Recipe, r).name) << "'shift-left' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'shift-left' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (SIZE(inst.products) > 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'shift-left' yields one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'shift-left' yields one product in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'shift-left' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'shift-left' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     goto finish_checking_instruction;
   }
   break;
@@ -355,7 +355,7 @@ case SHIFT_LEFT: {
   long long int b = static_cast<long long int>(ingredients.at(1).at(0));
   products.resize(1);
   if (b < 0) {
-    raise_error << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << to_string(current_instruction()) << "'\n" << end();
     products.at(0).push_back(0);
     break;
   }
@@ -402,19 +402,19 @@ put(Recipe_ordinal, "shift-right", SHIFT_RIGHT);
 :(before "End Primitive Recipe Checks")
 case SHIFT_RIGHT: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'shift-right' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'shift-right' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0)) || !is_mu_number(inst.ingredients.at(1))) {
-    raise_error << maybe(get(Recipe, r).name) << "'shift-right' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'shift-right' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (SIZE(inst.products) > 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'shift-right' yields one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'shift-right' yields one product in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'shift-right' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'shift-right' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     goto finish_checking_instruction;
   }
   break;
@@ -426,7 +426,7 @@ case SHIFT_RIGHT: {
   long long int b = static_cast<long long int>(ingredients.at(1).at(0));
   products.resize(1);
   if (b < 0) {
-    raise_error << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << to_string(current_instruction()) << "'\n" << end();
     products.at(0).push_back(0);
     break;
   }
@@ -473,19 +473,19 @@ put(Recipe_ordinal, "and-bits", AND_BITS);
 :(before "End Primitive Recipe Checks")
 case AND_BITS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'and-bits' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'and-bits' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0)) || !is_mu_number(inst.ingredients.at(1))) {
-    raise_error << maybe(get(Recipe, r).name) << "'and-bits' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'and-bits' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (SIZE(inst.products) > 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'and-bits' yields one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'and-bits' yields one product in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'and-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'and-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     goto finish_checking_instruction;
   }
   break;
@@ -531,19 +531,19 @@ put(Recipe_ordinal, "or-bits", OR_BITS);
 :(before "End Primitive Recipe Checks")
 case OR_BITS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'or-bits' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'or-bits' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0)) || !is_mu_number(inst.ingredients.at(1))) {
-    raise_error << maybe(get(Recipe, r).name) << "'or-bits' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'or-bits' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (SIZE(inst.products) > 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'or-bits' yields one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'or-bits' yields one product in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'or-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'or-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     goto finish_checking_instruction;
   }
   break;
@@ -583,19 +583,19 @@ put(Recipe_ordinal, "xor-bits", XOR_BITS);
 :(before "End Primitive Recipe Checks")
 case XOR_BITS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'xor-bits' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'xor-bits' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0)) || !is_mu_number(inst.ingredients.at(1))) {
-    raise_error << maybe(get(Recipe, r).name) << "'xor-bits' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'xor-bits' requires number ingredients, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (SIZE(inst.products) > 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'xor-bits' yields one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'xor-bits' yields one product in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'xor-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'xor-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     goto finish_checking_instruction;
   }
   break;
@@ -635,19 +635,19 @@ put(Recipe_ordinal, "flip-bits", FLIP_BITS);
 :(before "End Primitive Recipe Checks")
 case FLIP_BITS: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'flip-bits' requires exactly one ingredient, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'flip-bits' requires exactly one ingredient, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'flip-bits' requires a number ingredient, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'flip-bits' requires a number ingredient, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (SIZE(inst.products) > 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'flip-bits' yields one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'flip-bits' yields one product in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "'flip-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'flip-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
     goto finish_checking_instruction;
   }
   break;

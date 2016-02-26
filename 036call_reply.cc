@@ -77,7 +77,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
       if (reply_inst.operation != REPLY) continue;
       // check types with the caller
       if (SIZE(caller_instruction.products) > SIZE(reply_inst.ingredients)) {
-        raise_error << maybe(caller.name) << "too few values replied from " << callee.name << '\n' << end();
+        raise << maybe(caller.name) << "too few values replied from " << callee.name << '\n' << end();
         break;
       }
       for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
@@ -86,8 +86,8 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
         reagent rhs = caller_instruction.products.at(i);
         canonize_type(rhs);
         if (!types_coercible(rhs, lhs)) {
-          raise_error << maybe(callee.name) << "reply ingredient " << lhs.original_string << " can't be saved in " << rhs.original_string << '\n' << end();
-          raise_error << to_string(lhs.type) << " vs " << to_string(rhs.type) << '\n' << end();
+          raise << maybe(callee.name) << "reply ingredient " << lhs.original_string << " can't be saved in " << rhs.original_string << '\n' << end();
+          raise << to_string(lhs.type) << " vs " << to_string(rhs.type) << '\n' << end();
           goto finish_reply_check;
         }
       }
@@ -97,16 +97,16 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
         if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
           string_tree* tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
           if (!tmp || tmp->right) {
-            raise_error << maybe(caller.name) << "'same-as-ingredient' metadata should take exactly one value in " << to_string(reply_inst) << '\n' << end();
+            raise << maybe(caller.name) << "'same-as-ingredient' metadata should take exactly one value in " << to_string(reply_inst) << '\n' << end();
             goto finish_reply_check;
           }
           long long int ingredient_index = to_integer(tmp->value);
           if (ingredient_index >= SIZE(caller_instruction.ingredients)) {
-            raise_error << maybe(caller.name) << "too few ingredients in '" << to_string(caller_instruction) << "'\n" << end();
+            raise << maybe(caller.name) << "too few ingredients in '" << to_string(caller_instruction) << "'\n" << end();
             goto finish_reply_check;
           }
           if (!is_dummy(caller_instruction.products.at(i)) && !is_literal(caller_instruction.ingredients.at(ingredient_index)) && caller_instruction.products.at(i).name != caller_instruction.ingredients.at(ingredient_index).name) {
-            raise_error << maybe(caller.name) << "'" << to_string(caller_instruction) << "' should write to " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
+            raise << maybe(caller.name) << "'" << to_string(caller_instruction) << "' should write to " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
           }
         }
       }
@@ -216,7 +216,7 @@ if (curr.name == "reply-if") {
     curr.ingredients.swap(results);
   }
   else {
-    raise_error << "'reply-if' never yields any products\n" << end();
+    raise << "'reply-if' never yields any products\n" << end();
   }
 }
 // rewrite `reply-unless a, b, c, ...` to
@@ -239,6 +239,6 @@ if (curr.name == "reply-unless") {
     curr.ingredients.swap(results);
   }
   else {
-    raise_error << "'reply-unless' never yields any products\n" << end();
+    raise << "'reply-unless' never yields any products\n" << end();
   }
 }

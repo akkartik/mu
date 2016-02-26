@@ -49,7 +49,7 @@ void transform_names(const recipe_ordinal r) {
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
       if (is_integer(inst.ingredients.at(in).name)) continue;
       if (!already_transformed(inst.ingredients.at(in), names)) {
-        raise_error << maybe(caller.name) << "use before set: " << inst.ingredients.at(in).name << '\n' << end();
+        raise << maybe(caller.name) << "use before set: " << inst.ingredients.at(in).name << '\n' << end();
       }
       inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
     }
@@ -67,13 +67,13 @@ void transform_names(const recipe_ordinal r) {
     }
   }
   if (names_used && numeric_locations_used)
-    raise_error << maybe(caller.name) << "mixing variable names and numeric addresses\n" << end();
+    raise << maybe(caller.name) << "mixing variable names and numeric addresses\n" << end();
 }
 
 bool is_disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
   if (!x.type) {
     // End Null-type is_disqualified Exceptions
-    raise_error << maybe(recipe_name) << "missing type for " << x.original_string << " in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(recipe_name) << "missing type for " << x.original_string << " in '" << to_string(inst) << "'\n" << end();
     return true;
   }
   if (is_raw(x)) return true;
@@ -98,7 +98,7 @@ type_ordinal skip_addresses(type_tree* type, const string& recipe_name) {
     if (type->value != address && type->value != shared)
       return type->value;
   }
-  raise_error << maybe(recipe_name) << "expected a container" << '\n' << end();
+  raise << maybe(recipe_name) << "expected a container" << '\n' << end();
   return -1;
 }
 
@@ -106,7 +106,7 @@ int find_element_name(const type_ordinal t, const string& name, const string& re
   const type_info& container = get(Type, t);
   for (long long int i = 0; i < SIZE(container.elements); ++i)
     if (container.elements.at(i).name == name) return i;
-  raise_error << maybe(recipe_name) << "unknown element " << name << " in container " << get(Type, t).name << '\n' << end();
+  raise << maybe(recipe_name) << "unknown element " << name << " in container " << get(Type, t).name << '\n' << end();
   return -1;
 }
 
@@ -194,11 +194,11 @@ recipe main [
 // replace element names of containers with offsets
 if (inst.name == "get" || inst.name == "get-address") {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1)))
-    raise_error << maybe(get(Recipe, r).name) << "expected ingredient 1 of " << (inst.name == "get" ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "expected ingredient 1 of " << (inst.name == "get" ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be a container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type, get(Recipe, r).name);
@@ -236,7 +236,7 @@ recipe main [
 // convert variant names of exclusive containers
 if (inst.name == "maybe-convert") {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << to_string(inst) << "'\n" << end();
     break;
   }
   assert(is_literal(inst.ingredients.at(1)));

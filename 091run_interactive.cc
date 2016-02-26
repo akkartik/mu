@@ -30,11 +30,11 @@ put(Recipe_ordinal, "run-interactive", RUN_INTERACTIVE);
 :(before "End Primitive Recipe Checks")
 case RUN_INTERACTIVE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'run-interactive' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'run-interactive' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_string(inst.ingredients.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'run-interactive' should be a string, but got " << to_string(inst.ingredients.at(0)) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'run-interactive' should be a string, but got " << to_string(inst.ingredients.at(0)) << '\n' << end();
     break;
   }
   break;
@@ -445,11 +445,11 @@ put(Recipe_ordinal, "reload", RELOAD);
 :(before "End Primitive Recipe Checks")
 case RELOAD: {
   if (SIZE(inst.ingredients) != 1) {
-    raise_error << maybe(get(Recipe, r).name) << "'reload' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'reload' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_string(inst.ingredients.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'reload' should be a string, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'reload' should be a string, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;

@@ -22,9 +22,9 @@ case OPEN_CONSOLE: {
   long long int height = tb_height();
   if (width > 222 || height > 222) tb_shutdown();
   if (width > 222)
-    raise_error << "sorry, mu doesn't support windows wider than 222 characters. Please resize your window.\n" << end();
+    raise << "sorry, mu doesn't support windows wider than 222 characters. Please resize your window.\n" << end();
   if (height > 222)
-    raise_error << "sorry, mu doesn't support windows taller than 222 characters. Please resize your window.\n" << end();
+    raise << "sorry, mu doesn't support windows taller than 222 characters. Please resize your window.\n" << end();
   break;
 }
 
@@ -100,22 +100,22 @@ put(Recipe_ordinal, "print-character-to-display", PRINT_CHARACTER_TO_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case PRINT_CHARACTER_TO_DISPLAY: {
   if (inst.ingredients.empty()) {
-    raise_error << maybe(get(Recipe, r).name) << "'print-character-to-display' requires at least one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'print-character-to-display' requires at least one ingredient, but got " << to_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'print-character-to-display' should be a character, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'print-character-to-display' should be a character, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (SIZE(inst.ingredients) > 1) {
     if (!is_mu_number(inst.ingredients.at(1))) {
-      raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'print-character-to-display' should be a foreground color number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "second ingredient of 'print-character-to-display' should be a foreground color number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
       break;
     }
   }
   if (SIZE(inst.ingredients) > 2) {
     if (!is_mu_number(inst.ingredients.at(2))) {
-      raise_error << maybe(get(Recipe, r).name) << "third ingredient of 'print-character-to-display' should be a background color number, but got " << inst.ingredients.at(2).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "third ingredient of 'print-character-to-display' should be a background color number, but got " << inst.ingredients.at(2).original_string << '\n' << end();
       break;
     }
   }
@@ -186,15 +186,15 @@ put(Recipe_ordinal, "move-cursor-on-display", MOVE_CURSOR_ON_DISPLAY);
 :(before "End Primitive Recipe Checks")
 case MOVE_CURSOR_ON_DISPLAY: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'move-cursor-on-display' requires two ingredients, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'move-cursor-on-display' requires two ingredients, but got " << to_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'move-cursor-on-display' should be a row number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'move-cursor-on-display' should be a row number, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(1))) {
-    raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'move-cursor-on-display' should be a column number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'move-cursor-on-display' should be a column number, but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;

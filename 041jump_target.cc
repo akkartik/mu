@@ -31,7 +31,7 @@ void transform_labels(const recipe_ordinal r) {
         put(offset, inst.label, i);
       }
       else {
-        raise_error << maybe(get(Recipe, r).name) << "duplicate label '" << inst.label << "'" << end();
+        raise << maybe(get(Recipe, r).name) << "duplicate label '" << inst.label << "'" << end();
         // have all jumps skip some random but noticeable and deterministic amount of code
         put(offset, inst.label, 9999);
       }
@@ -60,19 +60,19 @@ void transform_labels(const recipe_ordinal r) {
 :(code)
 void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, const long long int current_offset, const recipe_ordinal r) {
   if (!is_literal(x)) {
-    raise_error << maybe(get(Recipe, r).name) << "jump target must be offset or label but is " << x.original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "jump target must be offset or label but is " << x.original_string << '\n' << end();
     x.set_value(0);  // no jump by default
     return;
   }
   if (x.initialized) return;
   if (is_integer(x.name)) return;  // non-labels will be handled like other number operands
   if (!is_jump_target(x.name)) {
-    raise_error << maybe(get(Recipe, r).name) << "can't jump to label " << x.name << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "can't jump to label " << x.name << '\n' << end();
     x.set_value(0);  // no jump by default
     return;
   }
   if (!contains_key(offset, x.name)) {
-    raise_error << maybe(get(Recipe, r).name) << "can't find label " << x.name << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "can't find label " << x.name << '\n' << end();
     x.set_value(0);  // no jump by default
     return;
   }

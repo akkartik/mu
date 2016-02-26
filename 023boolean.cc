@@ -8,7 +8,7 @@ put(Recipe_ordinal, "and", AND);
 case AND: {
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_scalar(inst.ingredients.at(i))) {
-      raise_error << maybe(get(Recipe, r).name) << "'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }
@@ -58,7 +58,7 @@ put(Recipe_ordinal, "or", OR);
 case OR: {
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_scalar(inst.ingredients.at(i))) {
-      raise_error << maybe(get(Recipe, r).name) << "'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'and' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }
@@ -107,12 +107,12 @@ put(Recipe_ordinal, "not", NOT);
 :(before "End Primitive Recipe Checks")
 case NOT: {
   if (SIZE(inst.products) > SIZE(inst.ingredients)) {
-    raise_error << maybe(get(Recipe, r).name) << "'not' cannot have fewer ingredients than products in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'not' cannot have fewer ingredients than products in '" << to_string(inst) << "'\n" << end();
     break;
   }
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_scalar(inst.ingredients.at(i))) {
-      raise_error << maybe(get(Recipe, r).name) << "'not' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'not' requires boolean ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
     }
   }

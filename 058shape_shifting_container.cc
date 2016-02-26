@@ -85,7 +85,7 @@ void read_type_ingredients(string& name) {
   while (has_data(in)) {
     string curr = slurp_until(in, ':');
     if (info.type_ingredient_names.find(curr) != info.type_ingredient_names.end()) {
-      raise_error << "can't repeat type ingredient names in a single container definition\n" << end();
+      raise << "can't repeat type ingredient names in a single container definition\n" << end();
       return;
     }
     put(info.type_ingredient_names, curr, next_type_ordinal++);
@@ -168,7 +168,7 @@ const type_tree* type = get(Type, base_type).elements.at(i).type;
 if (type->value >= START_TYPE_INGREDIENTS) {
   long long int size = size_of_type_ingredient(type, base.type->right);
   if (!size)
-    raise_error << "illegal field type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
+    raise << "illegal field type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
   src += size;
   continue;
 }
@@ -227,7 +227,7 @@ recipe main [
 :(before "End element_type Special-cases")
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
-    raise_error << "illegal type " << names_to_string(canonized_base.type) << " seems to be missing a type ingredient or three\n" << end();
+    raise << "illegal type " << names_to_string(canonized_base.type) << " seems to be missing a type ingredient or three\n" << end();
   replace_type_ingredients(element.type, canonized_base.type->right, info);
 }
 
@@ -254,7 +254,7 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
 
   const long long int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
   if (!has_nth_type(callsite_type, type_ingredient_index)) {
-    raise_error << "illegal type " << names_to_string(callsite_type) << " seems to be missing a type ingredient or three\n" << end();
+    raise << "illegal type " << names_to_string(callsite_type) << " seems to be missing a type ingredient or three\n" << end();
     return;
   }
 
@@ -462,7 +462,7 @@ const type_tree* type = get(Type, base_type).elements.at(i).type;
 if (type->value >= START_TYPE_INGREDIENTS) {
   long long int size = size_of_type_ingredient(type, base.type->right);
   if (!size)
-    raise_error << "illegal type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
+    raise << "illegal type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
   result += size;
   continue;
 }
@@ -550,6 +550,6 @@ recipe main [
 :(before "End variant_type Special-cases")
 if (contains_type_ingredient(element)) {
   if (!canonized_base.type->right)
-    raise_error << "illegal type '" << to_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
+    raise << "illegal type '" << to_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
   replace_type_ingredients(element.type, canonized_base.type->right, info);
 }

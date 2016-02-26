@@ -32,7 +32,7 @@ if (any_type_ingredient_in_header(/*recipe_ordinal*/p->first)) continue;
 if (Current_routine->calls.front().running_step_index == 0
     && any_type_ingredient_in_header(Current_routine->calls.front().running_recipe)) {
 //?   DUMP("");
-  raise_error << "ran into unspecialized shape-shifting recipe " << current_recipe_name() << '\n' << end();
+  raise << "ran into unspecialized shape-shifting recipe " << current_recipe_name() << '\n' << end();
 }
 
 //: Make sure we don't match up literals with type ingredients without
@@ -92,7 +92,7 @@ skip_shape_shifting_variants:;
 :(before "End Instruction Operation Checks")
 if (contains_key(Recipe, inst.operation) && inst.operation >= MAX_PRIMITIVE_RECIPES
     && any_type_ingredient_in_header(inst.operation)) {
-  raise_error << maybe(caller.name) << "instruction " << inst.name << " has no valid specialization\n" << end();
+  raise << maybe(caller.name) << "instruction " << inst.name << " has no valid specialization\n" << end();
   return;
 }
 
@@ -290,7 +290,7 @@ void save_or_deduce_type_name(reagent& x, map<string, type_tree*>& type, const r
     return;
   }
   if (!x.type) {
-    raise_error << maybe(variant.original_name) << "unknown type for " << x.original_string << " (check the name for typos)\n" << end();
+    raise << maybe(variant.original_name) << "unknown type for " << x.original_string << " (check the name for typos)\n" << end();
     return;
   }
   if (contains_key(type, x.name)) return;
@@ -330,7 +330,7 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
   if (!exemplar_type) return;
   if (!refinement_type) {
     // todo: make this smarter; only flag an error if exemplar_type contains some *new* type ingredient
-    raise_error << maybe(exemplar.name) << "missing type ingredient in " << exemplar_reagent.original_string << '\n' << end();
+    raise << maybe(exemplar.name) << "missing type ingredient in " << exemplar_reagent.original_string << '\n' << end();
     return;
   }
   if (is_type_ingredient_name(exemplar_type->name)) {
@@ -341,7 +341,7 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
     }
     else {
       if (!deeply_equal_type_names(get(mappings, exemplar_type->name), refinement_type)) {
-        raise_error << maybe(caller_recipe.name) << "no call found for '" << to_string(call_instruction) << "'\n" << end();
+        raise << maybe(caller_recipe.name) << "no call found for '" << to_string(call_instruction) << "'\n" << end();
         *error = true;
         return;
       }
@@ -388,7 +388,7 @@ void replace_type_ingredients(reagent& x, const map<string, const type_tree*>& m
   string before = to_string(x);
   trace(9993, "transform") << "replacing in ingredient " << x.original_string << end();
   if (!x.type) {
-    raise_error << "specializing " << caller.original_name << ": missing type for " << x.original_string << '\n' << end();
+    raise << "specializing " << caller.original_name << ": missing type for " << x.original_string << '\n' << end();
     return;
   }
   replace_type_ingredients(x.type, mappings);
@@ -497,12 +497,12 @@ void ensure_all_concrete_types(/*const*/ recipe& new_recipe, const recipe& exemp
 
 void ensure_all_concrete_types(/*const*/ reagent& x, const recipe& exemplar) {
   if (!x.type || contains_type_ingredient_name(x.type)) {
-    raise_error << maybe(exemplar.name) << "failed to map a type to " << x.original_string << '\n' << end();
+    raise << maybe(exemplar.name) << "failed to map a type to " << x.original_string << '\n' << end();
     if (!x.type) x.type = new type_tree("", 0);  // just to prevent crashes later
     return;
   }
   if (x.type->value == -1) {
-    raise_error << maybe(exemplar.name) << "failed to map a type to the unknown " << x.original_string << '\n' << end();
+    raise << maybe(exemplar.name) << "failed to map a type to the unknown " << x.original_string << '\n' << end();
     return;
   }
 }

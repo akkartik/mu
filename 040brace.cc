@@ -61,7 +61,7 @@ void transform_braces(const recipe_ordinal r) {
     }
     if (inst.label == "}") {
       if (open_braces.empty()) {
-        raise_error << "missing '{' in " << get(Recipe, r).name << '\n' << end();
+        raise << "missing '{' in " << get(Recipe, r).name << '\n' << end();
         return;
       }
       open_braces.pop();
@@ -80,7 +80,7 @@ void transform_braces(const recipe_ordinal r) {
     // check for errors
     if (inst.old_name.find("-if") != string::npos || inst.old_name.find("-unless") != string::npos) {
       if (inst.ingredients.empty()) {
-        raise_error << inst.old_name << " expects 1 or 2 ingredients, but got none\n" << end();
+        raise << inst.old_name << " expects 1 or 2 ingredients, but got none\n" << end();
         continue;
       }
     }
@@ -117,7 +117,7 @@ void transform_braces(const recipe_ordinal r) {
     target.type = new type_tree("offset", get(Type_ordinal, "offset"));
     target.set_value(0);
     if (open_braces.empty())
-      raise_error << inst.old_name << " needs a '{' before\n" << end();
+      raise << inst.old_name << " needs a '{' before\n" << end();
     else if (inst.old_name.find("loop") != string::npos)
       target.set_value(open_braces.top()-index);
     else  // break instruction
@@ -140,7 +140,7 @@ long long int matching_brace(long long int index, const list<pair<int, long long
     stacksize += (p->first ? 1 : -1);
     if (stacksize == 0) return p->second;
   }
-  raise_error << maybe(get(Recipe, r).name) << "unbalanced '{'\n" << end();
+  raise << maybe(get(Recipe, r).name) << "unbalanced '{'\n" << end();
   return SIZE(get(Recipe, r).steps);  // exit current routine
 }
 

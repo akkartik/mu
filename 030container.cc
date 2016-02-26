@@ -88,7 +88,7 @@ if (type->value == 0) {
   return 1;
 }
 if (!contains_key(Type, type->value)) {
-  raise_error << "no such type " << type->value << '\n' << end();
+  raise << "no such type " << type->value << '\n' << end();
   return 0;
 }
 type_info t = get(Type, type->value);
@@ -98,7 +98,7 @@ if (t.kind == CONTAINER) {
   for (long long int i = 0; i < SIZE(t.elements); ++i) {
     // todo: strengthen assertion to disallow mutual type recursion
     if (t.elements.at(i).type->value == type->value) {
-      raise_error << "container " << t.name << " can't include itself as a member\n" << end();
+      raise << "container " << t.name << " can't include itself as a member\n" << end();
       return 0;
     }
     reagent tmp;
@@ -133,19 +133,19 @@ put(Recipe_ordinal, "get", GET);
 :(before "End Primitive Recipe Checks")
 case GET: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'get' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'get' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);  // new copy for every invocation
   // Update GET base in Check
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.type->value;
   reagent offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
-    raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   long long int offset_value = 0;
@@ -154,7 +154,7 @@ case GET: {
   else
     offset_value = offset.value;
   if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
-    raise_error << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
     break;
   }
   if (inst.products.empty()) break;
@@ -162,7 +162,7 @@ case GET: {
   // Update GET product in Check
   const reagent element = element_type(base, offset_value);
   if (!types_coercible(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;
   }
   break;
@@ -173,7 +173,7 @@ case GET: {
   // Update GET base in Run
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.type->value;
@@ -270,26 +270,26 @@ put(Recipe_ordinal, "get-address", GET_ADDRESS);
 :(before "End Primitive Recipe Checks")
 case GET_ADDRESS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(get(Recipe, r).name) << "'get-address' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'get-address' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
   // Update GET_ADDRESS base in Check
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.type->value;
   reagent offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
-    raise_error << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   long long int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
-      raise_error << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
       break;
     }
   }
@@ -303,7 +303,7 @@ case GET_ADDRESS: {
   // ..except for an address at the start
   element.type = new type_tree("address", get(Type_ordinal, "address"), element.type);
   if (!types_coercible(product, element)) {
-    raise_error << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;
   }
   break;
@@ -314,7 +314,7 @@ case GET_ADDRESS: {
   // Update GET_ADDRESS base in Run
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.type->value;
@@ -453,7 +453,7 @@ void replace_unknown_types_with_unique_ordinals(type_tree* type, const type_info
 void skip_bracket(istream& in, string message) {
   skip_whitespace_and_comments(in);
   if (in.get() != '[')
-    raise_error << message << '\n' << end();
+    raise << message << '\n' << end();
 }
 
 :(scenarios run)
@@ -559,7 +559,7 @@ void check_or_set_invalid_types(type_tree* type, const string& block, const stri
     if (contains_key(Type_ordinal, type->name))
       type->value = get(Type_ordinal, type->name);
     else
-      raise_error << block << "unknown type " << type->name << " in " << name << '\n' << end();
+      raise << block << "unknown type " << type->name << " in " << name << '\n' << end();
   }
   check_or_set_invalid_types(type->left, block, name);
   check_or_set_invalid_types(type->right, block, name);
@@ -603,7 +603,7 @@ void check_invalid_types(const type_tree* type, const string& block, const strin
     return;
   }
   if (!contains_key(Type, type->value))
-    raise_error << block << "unknown type in " << name << '\n' << end();
+    raise << block << "unknown type in " << name << '\n' << end();
   check_invalid_types(type->left, block, name);
   check_invalid_types(type->right, block, name);
 }
@@ -722,19 +722,19 @@ void check_merge_calls(const recipe_ordinal r) {
     const instruction& inst = caller.steps.at(i);
     if (inst.name != "merge") continue;
     if (SIZE(inst.products) != 1) {
-      raise_error << maybe(caller.name) << "'merge' should yield a single product in '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "'merge' should yield a single product in '" << to_string(inst) << "'\n" << end();
       continue;
     }
     reagent product = inst.products.at(0);
     // Update product While Type-checking Merge
     type_ordinal product_type = product.type->value;
     if (product_type == 0 || !contains_key(Type, product_type)) {
-      raise_error << maybe(caller.name) << "'merge' should yield a container in '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "'merge' should yield a container in '" << to_string(inst) << "'\n" << end();
       continue;
     }
     const type_info& info = get(Type, product_type);
     if (info.kind != CONTAINER && info.kind != EXCLUSIVE_CONTAINER) {
-      raise_error << maybe(caller.name) << "'merge' should yield a container in '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "'merge' should yield a container in '" << to_string(inst) << "'\n" << end();
       continue;
     }
     check_merge_call(inst.ingredients, product, caller, inst);
@@ -749,7 +749,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
     assert(!state.data.empty());
     trace(9999, "transform") << ingredient_index << " vs " << SIZE(ingredients) << end();
     if (ingredient_index >= SIZE(ingredients)) {
-      raise_error << maybe(caller.name) << "too few ingredients in '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "too few ingredients in '" << to_string(inst) << "'\n" << end();
       return;
     }
     reagent& container = state.data.top().container;
@@ -766,7 +766,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
             state.data.pop();
             if (state.data.empty()) {
               if (ingredient_index < SIZE(ingredients))
-                raise_error << maybe(caller.name) << "too many ingredients in '" << to_string(inst) << "'\n" << end();
+                raise << maybe(caller.name) << "too many ingredients in '" << to_string(inst) << "'\n" << end();
               return;
             }
             ++state.data.top().container_element_index;
@@ -782,7 +782,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
       // End valid_merge Cases
       default: {
         if (!types_coercible(container, ingredients.at(ingredient_index))) {
-          raise_error << maybe(caller.name) << "incorrect type of ingredient " << ingredient_index << " in '" << to_string(inst) << "'\n" << end();
+          raise << maybe(caller.name) << "incorrect type of ingredient " << ingredient_index << " in '" << to_string(inst) << "'\n" << end();
           cerr << "  expected " << debug_string(container) << '\n';
           cerr << "  got " << debug_string(ingredients.at(ingredient_index)) << '\n';
           return;
@@ -793,7 +793,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
           state.data.pop();
           if (state.data.empty()) {
             if (ingredient_index < SIZE(ingredients))
-              raise_error << maybe(caller.name) << "too many ingredients in '" << to_string(inst) << "'\n" << end();
+              raise << maybe(caller.name) << "too many ingredients in '" << to_string(inst) << "'\n" << end();
             return;
           }
           ++state.data.top().container_element_index;

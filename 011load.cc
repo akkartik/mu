@@ -34,7 +34,7 @@ vector<recipe_ordinal> load(istream& in) {
     }
     // End Command Handlers
     else {
-      raise_error << "unknown top-level command: " << command << '\n' << end();
+      raise << "unknown top-level command: " << command << '\n' << end();
     }
   }
   return result;
@@ -47,14 +47,14 @@ long long int slurp_recipe(istream& in) {
   skip_whitespace_but_not_newline(in);
   // End Recipe Refinements
   if (result.name.empty())
-    raise_error << "empty result.name\n" << end();
+    raise << "empty result.name\n" << end();
   trace(9991, "parse") << "--- defining " << result.name << end();
   if (!contains_key(Recipe_ordinal, result.name))
     put(Recipe_ordinal, result.name, Next_recipe_ordinal++);
   if (Recipe.find(get(Recipe_ordinal, result.name)) != Recipe.end()) {
     trace(9991, "parse") << "already exists" << end();
     if (should_check_for_redefine(result.name))
-      raise_error << "redefining recipe " << result.name << "\n" << end();
+      raise << "redefining recipe " << result.name << "\n" << end();
     Recipe.erase(get(Recipe_ordinal, result.name));
   }
   slurp_body(in, result);
@@ -69,7 +69,7 @@ void slurp_body(istream& in, recipe& result) {
   in >> std::noskipws;
   skip_whitespace_but_not_newline(in);
   if (in.get() != '[')
-    raise_error << "recipe body must begin with '['\n" << end();
+    raise << "recipe body must begin with '['\n" << end();
   skip_whitespace_and_comments(in);  // permit trailing comment after '['
   instruction curr;
   while (next_instruction(in, &curr)) {
@@ -86,7 +86,7 @@ bool next_instruction(istream& in, instruction* curr) {
   curr->clear();
   skip_whitespace_and_comments(in);
   if (!has_data(in)) {
-    raise_error << "0: unbalanced '[' for recipe\n" << end();
+    raise << "0: unbalanced '[' for recipe\n" << end();
     return false;
   }
 
@@ -94,7 +94,7 @@ bool next_instruction(istream& in, instruction* curr) {
   while (has_data(in) && in.peek() != '\n') {
     skip_whitespace_but_not_newline(in);
     if (!has_data(in)) {
-      raise_error << "1: unbalanced '[' for recipe\n" << end();
+      raise << "1: unbalanced '[' for recipe\n" << end();
       return false;
     }
     string word = next_word(in);
@@ -110,7 +110,7 @@ bool next_instruction(istream& in, instruction* curr) {
     curr->label = words.at(0);
     trace(9993, "parse") << "label: " << curr->label << end();
     if (!has_data(in)) {
-      raise_error << "7: unbalanced '[' for recipe\n" << end();
+      raise << "7: unbalanced '[' for recipe\n" << end();
       return false;
     }
     return true;
@@ -124,7 +124,7 @@ bool next_instruction(istream& in, instruction* curr) {
   }
 
   if (p == words.end()) {
-    raise_error << "instruction prematurely ended with '<-'\n" << end();
+    raise << "instruction prematurely ended with '<-'\n" << end();
     return false;
   }
   curr->old_name = curr->name = *p;  p++;
@@ -140,7 +140,7 @@ bool next_instruction(istream& in, instruction* curr) {
   for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p)
     trace(9993, "parse") << "  product: " << to_string(*p) << end();
   if (!has_data(in)) {
-    raise_error << "9: unbalanced '[' for recipe\n" << end();
+    raise << "9: unbalanced '[' for recipe\n" << end();
     return false;
   }
   return true;

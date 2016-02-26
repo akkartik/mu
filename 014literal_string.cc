@@ -72,7 +72,7 @@ void slurp_quoted_comment_oblivious(istream& in, ostream& out) {
     if (brace_depth == 0) break;
   }
   if (!has_data(in) && brace_depth > 0) {
-    raise_error << "unbalanced '['\n" << end();
+    raise << "unbalanced '['\n" << end();
     out.clear();
   }
 }
@@ -99,7 +99,7 @@ void slurp_quoted_comment_aware(istream& in, ostream& out) {
     out << c;
     if (c == ']') return;
   }
-  raise_error << "unbalanced '['\n" << end();
+  raise << "unbalanced '['\n" << end();
   out.clear();
 }
 

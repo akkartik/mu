@@ -46,10 +46,10 @@ global_space = 0;
         || !x.type->right->right->right
         || x.type->right->right->right->value != get(Type_ordinal, "location")
         || x.type->right->right->right->right) {
-      raise_error << maybe(current_recipe_name()) << "'global-space' should be of type address:shared:array:location, but tried to write " << to_string(data) << '\n' << end();
+      raise << maybe(current_recipe_name()) << "'global-space' should be of type address:shared:array:location, but tried to write " << to_string(data) << '\n' << end();
     }
     if (Current_routine->global_space)
-      raise_error << "routine already has a global-space; you can't over-write your globals" << end();
+      raise << "routine already has a global-space; you can't over-write your globals" << end();
     Current_routine->global_space = data.at(0);
     return;
   }
@@ -58,7 +58,7 @@ global_space = 0;
 :(after "long long int space_base(const reagent& x)")
   if (is_global(x)) {
     if (!Current_routine->global_space)
-      raise_error << "routine has no global space\n" << end();
+      raise << "routine has no global space\n" << end();
     return Current_routine->global_space + /*skip refcount*/1;
   }
 

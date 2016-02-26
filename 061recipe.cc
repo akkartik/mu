@@ -47,11 +47,11 @@ put(Recipe_ordinal, "call", CALL);
 :(before "End Primitive Recipe Checks")
 case CALL: {
   if (inst.ingredients.empty()) {
-    raise_error << maybe(get(Recipe, r).name) << "'call' requires at least one ingredient (the recipe to call)\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'call' requires at least one ingredient (the recipe to call)\n" << end();
     break;
   }
   if (!is_mu_recipe(inst.ingredients.at(0))) {
-    raise_error << maybe(get(Recipe, r).name) << "first ingredient of 'call' should be a recipe, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'call' should be a recipe, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;
@@ -116,12 +116,12 @@ void check_indirect_calls_against_header(const recipe_ordinal r) {
     if (!callee_header.has_header) continue;
     for (long int i = /*skip callee*/1; i < min(SIZE(inst.ingredients), SIZE(callee_header.ingredients)+/*skip callee*/1); ++i) {
       if (!types_coercible(callee_header.ingredients.at(i-/*skip callee*/1), inst.ingredients.at(i)))
-        raise_error << maybe(caller.name) << "ingredient " << i-/*skip callee*/1 << " has the wrong type at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "ingredient " << i-/*skip callee*/1 << " has the wrong type at '" << to_string(inst) << "'\n" << end();
     }
     for (long int i = 0; i < min(SIZE(inst.products), SIZE(callee_header.products)); ++i) {
       if (is_dummy(inst.products.at(i))) continue;
       if (!types_coercible(callee_header.products.at(i), inst.products.at(i)))
-        raise_error << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
     }
   }
 }
@@ -180,7 +180,7 @@ recipe f x:boolean -> y:boolean [
 :(before "End Matching Types For Literal(to)")
 if (is_mu_recipe(to)) {
   if (!contains_key(Recipe, from.value)) {
-    raise_error << "trying to store recipe " << from.name << " into " << to_string(to) << " but there's no such recipe\n" << end();
+    raise << "trying to store recipe " << from.name << " into " << to_string(to) << " but there's no such recipe\n" << end();
     return false;
   }
   const recipe& rrhs = get(Recipe, from.value);

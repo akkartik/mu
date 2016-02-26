@@ -233,11 +233,11 @@ void check_screen(const string& expected_contents, const int color) {
         // contents match but color is off
         if (Current_scenario && !Scenario_testing_scenario) {
           // genuine test in a mu file
-          raise_error << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(get_or_insert(Memory, addr)) << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << "\n" << end();
+          raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(get_or_insert(Memory, addr)) << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << "\n" << end();
         }
         else {
           // just testing check_screen
-          raise_error << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << '\n' << end();
+          raise << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << '\n' << end();
         }
         if (!Scenario_testing_scenario) {
           Passed = false;
@@ -263,12 +263,12 @@ void check_screen(const string& expected_contents, const int color) {
       if (color != -1) color_phrase << " in color " << color;
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise_error << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
+        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
         dump_screen();
       }
       else {
         // just testing check_screen
-        raise_error << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
+        raise << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -287,7 +287,7 @@ raw_string_stream::raw_string_stream(const string& backing) :index(0), max(SIZE(
 bool raw_string_stream::at_end() const {
   if (index >= max) return true;
   if (tb_utf8_char_length(buf[index]) > max-index) {
-    raise_error << "unicode string seems corrupted at index "<< index << " character " << static_cast<int>(buf[index]) << '\n' << end();
+    raise << "unicode string seems corrupted at index "<< index << " character " << static_cast<int>(buf[index]) << '\n' << end();
     return true;
   }
   return false;

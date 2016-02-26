@@ -97,7 +97,7 @@ inline const instruction& to_instruction(const call& call) {
 :(after "Defined Recipe Checks")
 // not a primitive; check that it's present in the book of recipes
 if (!contains_key(Recipe, inst.operation)) {
-  raise_error << maybe(get(Recipe, r).name) << "undefined operation in '" << to_string(inst) << "'\n" << end();
+  raise << maybe(get(Recipe, r).name) << "undefined operation in '" << to_string(inst) << "'\n" << end();
   break;
 }
 :(replace{} "default:" following "End Primitive Recipe Implementations")

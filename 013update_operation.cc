@@ -13,7 +13,7 @@ void update_instruction_operations(recipe_ordinal r) {
     instruction& inst = caller.steps.at(index);
     if (inst.is_label) continue;
     if (!contains_key(Recipe_ordinal, inst.name)) {
-      raise_error << maybe(caller.name) << "instruction " << inst.name << " has no recipe\n" << end();
+      raise << maybe(caller.name) << "instruction " << inst.name << " has no recipe\n" << end();
       continue;
     }
     inst.operation = get(Recipe_ordinal, inst.name);

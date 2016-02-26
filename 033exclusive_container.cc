@@ -81,17 +81,17 @@ put(Recipe_ordinal, "maybe-convert", MAYBE_CONVERT);
 case MAYBE_CONVERT: {
   const recipe& caller = get(Recipe, r);
   if (SIZE(inst.ingredients) != 2) {
-    raise_error << maybe(caller.name) << "'maybe-convert' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(caller.name) << "'maybe-convert' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
   canonize_type(base);
   if (!base.type || !base.type->value || get(Type, base.type->value).kind != EXCLUSIVE_CONTAINER) {
-    raise_error << maybe(caller.name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
+    raise << maybe(caller.name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1))) {
-    raise_error << maybe(caller.name) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(caller.name) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   if (inst.products.empty()) break;
@@ -100,13 +100,13 @@ case MAYBE_CONVERT: {
   reagent& offset = inst.ingredients.at(1);
   populate_value(offset);
   if (offset.value >= SIZE(get(Type, base.type->value).elements)) {
-    raise_error << maybe(caller.name) << "invalid tag " << offset.value << " in '" << to_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "invalid tag " << offset.value << " in '" << to_string(inst) << '\n' << end();
     break;
   }
   reagent variant = variant_type(base, offset.value);
   variant.type = new type_tree("address", get(Type_ordinal, "address"), variant.type);
   if (!types_coercible(product, variant)) {
-    raise_error << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << to_string(variant.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
+    raise << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << to_string(variant.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
     break;
   }
   break;
@@ -117,7 +117,7 @@ case MAYBE_CONVERT: {
   canonize(base);
   long long int base_address = base.value;
   if (base_address == 0) {
-    raise_error << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
     break;
   }
   long long int tag = current_instruction().ingredients.at(1).value;
@@ -242,13 +242,13 @@ case EXCLUSIVE_CONTAINER: {
   assert(state.data.top().container_element_index == 0);
   trace(9999, "transform") << "checking exclusive container " << to_string(container) << " vs ingredient " << ingredient_index << end();
   if (!is_literal(ingredients.at(ingredient_index))) {
-    raise_error << maybe(caller.name) << "ingredient " << ingredient_index << " of 'merge' should be a literal, for the tag of exclusive-container " << container_info.name << '\n' << end();
+    raise << maybe(caller.name) << "ingredient " << ingredient_index << " of 'merge' should be a literal, for the tag of exclusive-container " << container_info.name << '\n' << end();
     return;
   }
   reagent ingredient = ingredients.at(ingredient_index);  // unnecessary copy just to keep this function from modifying caller
   populate_value(ingredient);
   if (ingredient.value >= SIZE(container_info.elements)) {
-    raise_error << maybe(caller.name) << "invalid tag at " << ingredient_index << " for " << container_info.name << " in '" << to_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "invalid tag at " << ingredient_index << " for " << container_info.name << " in '" << to_string(inst) << '\n' << end();
     return;
   }
   reagent variant = variant_type(container, ingredient.value);
