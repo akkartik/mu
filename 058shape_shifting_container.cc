@@ -16,7 +16,6 @@ recipe main [
 +mem: storing 16 in location 5
 
 :(scenario size_of_shape_shifting_container_2)
-% Hide_errors = true;
 # multiple type ingredients
 container foo:_a:_b [
   x:_a
@@ -28,7 +27,6 @@ recipe main [
 $error: 0
 
 :(scenario size_of_shape_shifting_container_3)
-% Hide_errors = true;
 container foo:_a:_b [
   x:_a
   y:_b
@@ -41,7 +39,6 @@ recipe main [
 $error: 0
 
 :(scenario size_of_shape_shifting_container_4)
-% Hide_errors = true;
 container foo:_a:_b [
   x:_a
   y:_b
@@ -473,7 +470,6 @@ if (type->value >= START_TYPE_INGREDIENTS) {
 //: 'merge' on shape-shifting containers
 
 :(scenario merge_check_shape_shifting_container_containing_exclusive_container)
-% Hide_errors = true;
 container foo:_elem [
   x:number
   y:_elem
@@ -506,7 +502,6 @@ recipe main [
 +error: main: too many ingredients in '1:foo:bar <- merge 23, 1/y, 34, 35'
 
 :(scenario merge_check_shape_shifting_exclusive_container_containing_container)
-% Hide_errors = true;
 exclusive-container foo:_elem [
   x:number
   y:_elem
@@ -524,7 +519,6 @@ recipe main [
 $error: 0
 
 :(scenario merge_check_shape_shifting_exclusive_container_containing_container_2)
-% Hide_errors = true;
 exclusive-container foo:_elem [
   x:number
   y:_elem

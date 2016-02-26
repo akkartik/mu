@@ -18,7 +18,6 @@ recipe main [
 
 :(scenarios run)
 :(scenario dilated_reagent_with_comment)
-% Hide_errors = true;
 recipe main [
   {1: number, foo: bar} <- copy 34  # test comment
 ]
@@ -26,7 +25,6 @@ recipe main [
 $error: 0
 
 :(scenario dilated_reagent_with_comment_immediately_following)
-% Hide_errors = true;
 recipe main [
   1:number <- copy {34: literal}  # test comment
 ]

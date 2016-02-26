@@ -115,7 +115,6 @@ if (s == "screen") return true;
 :(scenarios run)
 :(scenario convert_names_does_not_fail_when_mixing_special_names_and_numeric_locations)
 % Scenario_testing_scenario = true;
-% Hide_errors = true;
 recipe main [
   screen:number <- copy 1:number
 ]

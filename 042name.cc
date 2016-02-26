@@ -166,7 +166,6 @@ recipe main [
 +error: main: mixing variable names and numeric addresses
 
 :(scenario transform_names_does_not_fail_when_mixing_names_and_raw_locations)
-% Hide_errors = true;
 recipe main [
   x:number <- copy 1:number/raw
 ]
@@ -174,7 +173,6 @@ recipe main [
 $error: 0
 
 :(scenario transform_names_does_not_fail_when_mixing_names_and_literals)
-% Hide_errors = true;
 recipe main [
   x:number <- copy 1
 ]

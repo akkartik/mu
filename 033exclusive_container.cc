@@ -175,7 +175,6 @@ else if (command == "exclusive-container") {
 //: fixed in advance
 
 :(scenario exclusive_container_contains_array)
-% Hide_errors = true;
 exclusive-container foo [
   x:array:number:3
 ]
@@ -208,7 +207,6 @@ recipe main [
 //: type-checking for 'merge' on exclusive containers
 
 :(scenario merge_handles_exclusive_container)
-% Hide_errors = true;
 exclusive-container foo [
   x:number
   y:bar
@@ -263,7 +261,6 @@ case EXCLUSIVE_CONTAINER: {
 }
 
 :(scenario merge_check_container_containing_exclusive_container)
-% Hide_errors = true;
 container foo [
   x:number
   y:bar
@@ -296,7 +293,6 @@ recipe main [
 +error: main: too many ingredients in '1:foo <- merge 23, 1/y, 34, 35'
 
 :(scenario merge_check_exclusive_container_containing_container)
-% Hide_errors = true;
 exclusive-container foo [
   x:number
   y:bar
@@ -314,7 +310,6 @@ recipe main [
 $error: 0
 
 :(scenario merge_check_exclusive_container_containing_container_2)
-% Hide_errors = true;
 exclusive-container foo [
   x:number
   y:bar

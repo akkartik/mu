@@ -445,6 +445,7 @@ recipe main [
   ]
 ]
 -error: location 1 can't contain non-number 34  # comment
+# but there'll be an error signalled by memory-should-contain
 
 :(code)
 //: 'trace-should-contain' is like the '+' lines in our scenarios so far
@@ -527,7 +528,6 @@ recipe main [
 
 :(scenario trace_check_passes_silently)
 % Scenario_testing_scenario = true;
-% Hide_errors = true;
 recipe main [
   run [
     trace 1, [a], [b]
@@ -589,7 +589,6 @@ bool check_trace_missing(const string& in) {
 
 :(scenario trace_negative_check_passes_silently)
 % Scenario_testing_scenario = true;
-% Hide_errors = true;
 recipe main [
   trace-should-not-contain [
     a: b

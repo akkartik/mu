@@ -146,7 +146,6 @@ recipe test1 [
 +error: main: '2:number <- test1 1:number' should write to 1:number rather than 2:number
 
 :(scenario reply_same_as_ingredient_dummy)
-# % Hide_errors = true;
 recipe main [
   1:number <- copy 0
   _ <- test1 1:number  # call with different ingredient and product

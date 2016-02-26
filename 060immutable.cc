@@ -2,7 +2,6 @@
 //: also products. This layer will start enforcing this check.
 
 :(scenario can_modify_value_ingredients)
-% Hide_errors = true;
 recipe main [
   local-scope
   p:address:shared:point <- new point:type
@@ -17,7 +16,6 @@ recipe foo p:point [
 $error: 0
 
 :(scenario can_modify_ingredients_that_are_also_products)
-% Hide_errors = true;
 recipe main [
   local-scope
   p:address:shared:point <- new point:type
@@ -32,7 +30,6 @@ recipe foo p:address:shared:point -> p:address:shared:point [
 $error: 0
 
 :(scenario ignore_literal_ingredients_for_immutability_checks)
-% Hide_errors = true;
 recipe main [
   local-scope
   p:address:shared:d1 <- new d1:type
@@ -102,7 +99,6 @@ recipe foo p:address:shared:point [
 +error: foo: cannot modify q after instruction 'x:address:number <- get-address *q, x:offset' because that would modify ingredient p which is not also a product of foo
 
 :(scenario can_traverse_immutable_ingredients)
-% Hide_errors = true;
 container test-list [
   next:address:shared:test-list
 ]
@@ -124,7 +120,6 @@ recipe bar x:address:shared:test-list -> y:address:shared:test-list [
 $error: 0
 
 :(scenario handle_optional_ingredients_in_immutability_checks)
-% Hide_errors = true;
 recipe main [
   k:address:shared:number <- new number:type
   test k
@@ -310,7 +305,6 @@ set<long long int> ingredient_indices(const instruction& inst, const set<string>
 
 :(scenarios transform)
 :(scenario can_modify_contained_in_addresses)
-% Hide_errors = true;
 container test-list [
   next:address:shared:test-list
 ]

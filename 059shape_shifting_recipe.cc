@@ -681,7 +681,6 @@ recipe foo x:_elem -> y:_elem [
 +mem: storing 4 in location 1
 
 :(scenario specialize_with_literal_3)
-% Hide_errors = true;
 recipe main [
   local-scope
   # permit '0' to map to address to shape-shifting type-ingredient

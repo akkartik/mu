@@ -73,7 +73,6 @@ recipe main [
 +error: main: can't copy 34 to 1:address:number; types don't match
 
 :(scenario write_address_to_number_allowed)
-% Hide_errors = true;
 recipe main [
   1:address:number <- copy 12/unsafe
   2:number <- copy 1:address:number
@@ -82,7 +81,6 @@ recipe main [
 $error: 0
 
 :(scenario write_boolean_to_number_allowed)
-% Hide_errors = true;
 recipe main [
   1:boolean <- copy 1/true
   2:number <- copy 1:boolean

@@ -119,7 +119,6 @@ if (r.type && r.type->value == get(Type_ordinal, "array")) {
 //: advance
 
 :(scenario container_contains_array)
-% Hide_errors = true;
 container foo [
   x:array:number:3
 ]

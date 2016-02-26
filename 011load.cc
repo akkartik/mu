@@ -374,7 +374,6 @@ recipe main [
 +error: redefining recipe main
 
 :(scenario permit_forcibly_redefining_recipes)
-% Hide_errors = true;
 recipe main [
   1:number <- copy 23
 ]

@@ -522,7 +522,6 @@ recipe main [
 +error: main: unknown type integer in '1:integer <- copy 0'
 
 :(scenario run_allows_type_definition_after_use)
-% Hide_errors = true;
 recipe main [
   1:bar <- copy 0/unsafe
 ]
@@ -644,7 +643,6 @@ case MERGE: {
 //: type-check 'merge' to avoid interpreting numbers as addresses
 
 :(scenario merge_check)
-% Hide_errors = true;
 recipe main [
   1:point <- merge 3, 4
 ]
@@ -670,7 +668,6 @@ recipe main [
 //: container fields.
 
 :(scenario merge_check_recursive_containers)
-% Hide_errors = true;
 recipe main [
   1:point <- merge 3, 4
   1:point-number <- merge 1:point, 5
@@ -686,7 +683,6 @@ recipe main [
 +error: main: too few ingredients in '2:point-number <- merge 1:point'
 
 :(scenario merge_check_recursive_containers_3)
-% Hide_errors = true;
 recipe main [
   1:point-number <- merge 3, 4, 5
 ]

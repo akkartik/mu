@@ -66,7 +66,6 @@ global_space = 0;
 //: don't want to make them too comfortable to use.
 
 :(scenario global_space_with_names)
-% Hide_errors = true;
 recipe main [
   global-space:address:shared:array:location <- new location:type, 10
   x:number <- copy 23

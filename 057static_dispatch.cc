@@ -387,7 +387,6 @@ recipe equal x:number, y:number -> z:boolean [
 +mem: storing 1 in location 6
 
 :(scenario static_dispatch_works_with_dummy_results_for_containers)
-% Hide_errors = true;
 recipe main [
   _ <- test 3, 4
 ]
@@ -404,7 +403,6 @@ recipe test a:number, b:number -> z:point [
 $error: 0
 
 :(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_first_use)
-% Hide_errors = true;
 recipe main [
   x:address:shared:foo <- new foo:type
   test x
@@ -420,7 +418,6 @@ recipe test a:address:shared:foo -> z:number [
 $error: 0
 
 :(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_second_use)
-% Hide_errors = true;
 recipe main [
   x:address:shared:foo <- new foo:type
   test x
