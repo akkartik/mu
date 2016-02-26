@@ -185,7 +185,7 @@ case NEXT_INGREDIENT_WITHOUT_TYPECHECKING: {
 recipe main [
   1:number <- foo 34
 ]
-recipe foo x:boolean -> y:number [
+recipe foo x:point -> y:number [
   local-scope
   load-ingredients
   reply 35
@@ -195,14 +195,14 @@ recipe foo x:boolean -> y:number [
 :(scenario show_clear_error_on_bad_call_2)
 % Hide_errors = true;
 recipe main [
-  1:boolean <- foo 34
+  1:point <- foo 34
 ]
 recipe foo x:number -> y:number [
   local-scope
   load-ingredients
   reply x
 ]
-+error: main: product 0 has the wrong type at '1:boolean <- foo 34'
++error: main: product 0 has the wrong type at '1:point <- foo 34'
 
 :(after "Transform.push_back(check_instruction)")
 Transform.push_back(check_calls_against_header);  // idempotent

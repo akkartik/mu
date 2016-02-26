@@ -78,7 +78,7 @@ case CALL: {
 recipe main [
   1:number <- call f, 34
 ]
-recipe f x:boolean -> y:boolean [
+recipe f x:point -> y:point [
   local-scope
   load-ingredients
   y <- copy x
@@ -89,16 +89,16 @@ recipe f x:boolean -> y:boolean [
 :(scenario call_check_variable_recipe)
 % Hide_errors = true;
 recipe main [
-  {1: (recipe boolean -> boolean)} <- copy f
-  2:number <- call {1: (recipe boolean -> boolean)}, 34
+  {1: (recipe point -> point)} <- copy f
+  2:number <- call {1: (recipe point -> point)}, 34
 ]
-recipe f x:boolean -> y:boolean [
+recipe f x:point -> y:point [
   local-scope
   load-ingredients
   y <- copy x
 ]
-+error: main: ingredient 0 has the wrong type at '2:number <- call {1: (recipe boolean -> boolean)}, 34'
-+error: main: product 0 has the wrong type at '2:number <- call {1: (recipe boolean -> boolean)}, 34'
++error: main: ingredient 0 has the wrong type at '2:number <- call {1: (recipe point -> point)}, 34'
++error: main: product 0 has the wrong type at '2:number <- call {1: (recipe point -> point)}, 34'
 
 :(after "Transform.push_back(check_instruction)")
 Transform.push_back(check_indirect_calls_against_header);  // idempotent
