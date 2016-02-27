@@ -30,6 +30,17 @@ recipe main [
 ]
 $error: 0
 
+:(scenario dilated_reagent_in_static array)
+recipe main [
+  {1: (array (address shared number) 3)} <- create-array
+  5:address:address:shared:number <- index-address {1: (array (address shared number) 3)}, 0
+  *5:address:address:shared:number <- new number:type
+  **5:address:address:shared:number <- copy 34
+  6:number <- copy **5:address:address:shared:number
+]
++run: creating array of size 4
++mem: storing 34 in location 6
+
 //: First augment next_word to group balanced brackets together.
 
 :(before "End next_word Special-cases")

@@ -226,6 +226,10 @@ case INDEX: {
 
 :(code)
 type_tree* array_element(const type_tree* type) {
+  if (type->right->left) {
+    assert(!type->right->left->left);
+    return type->right->left;
+  }
   return type->right;
 }
 
