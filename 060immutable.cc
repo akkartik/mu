@@ -48,6 +48,20 @@ container d1 [
 ]
 $error: 0
 
+:(scenario cannot_modify_immutable_ingredients)
+% Hide_errors = true;
+recipe main [
+  local-scope
+  x:address:shared:number <- new number:type
+  foo x
+]
+recipe foo x:address:shared:number [
+  local-scope
+  load-ingredients
+  *x <- copy 34
+]
++error: foo: cannot modify ingredient x in instruction '*x <- copy 34' because it's not also a product of foo
+
 :(scenario cannot_take_address_inside_immutable_ingredients)
 % Hide_errors = true;
 recipe main [
@@ -227,6 +241,15 @@ recipe test-next x:address:shared:test-list -> y:address:shared:test-list/contai
 
 :(code)
 void check_immutable_ingredient_in_instruction(const instruction& inst, const set<string>& current_ingredient_and_aliases, const string& original_ingredient_name, const recipe& caller) {
+  // first check if the instruction is directly modifying something it shouldn't
+  for (long long int i = 0; i < SIZE(inst.products); ++i) {
+    if (has_property(inst.products.at(i), "lookup")
+        && current_ingredient_and_aliases.find(inst.products.at(i).name) != current_ingredient_and_aliases.end()) {
+      raise << maybe(caller.name) << "cannot modify ingredient " << inst.products.at(i).name << " in instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
+      return;
+    }
+  }
+  // check if there's any indirect modification going on
   set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
   if (current_ingredient_indices.empty()) return;  // ingredient not found in call
   for (set<long long int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p) {
@@ -237,6 +260,7 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
     if (!contains_key(Recipe, inst.operation)) {
       // primitive recipe
       if (inst.operation == GET_ADDRESS || inst.operation == INDEX_ADDRESS) {
+        // only reason to use get-address or index-address is to modify, so stop right there
         if (current_ingredient_name == original_ingredient_name)
           raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
         else
