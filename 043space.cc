@@ -69,6 +69,7 @@ long long int space_base(const reagent& x) {
 }
 
 long long int address(long long int offset, long long int base) {
+  assert(offset >= 0);
   if (base == 0) return offset;  // raw
   long long int size = get_or_insert(Memory, base);
   if (offset >= size) {

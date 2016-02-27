@@ -51,7 +51,14 @@ void transform_names(const recipe_ordinal r) {
       if (!already_transformed(inst.ingredients.at(in), names)) {
         raise << maybe(caller.name) << "use before set: " << inst.ingredients.at(in).name << '\n' << end();
       }
-      inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
+      long long int v = lookup_name(inst.ingredients.at(in), r);
+      if (v >= 0) {
+        inst.ingredients.at(in).set_value(v);
+      }
+      else {
+        raise << maybe(caller.name) << "can't find a place to store " << inst.ingredients.at(in).name << '\n' << end();
+        return;
+      }
     }
     for (long long int out = 0; out < SIZE(inst.products); ++out) {
       if (is_disqualified(inst.products.at(out), inst, caller.name)) continue;
@@ -63,7 +70,14 @@ void transform_names(const recipe_ordinal r) {
         names[inst.products.at(out).name] = curr_idx;
         curr_idx += size_of(inst.products.at(out));
       }
-      inst.products.at(out).set_value(lookup_name(inst.products.at(out), r));
+      long long int v = lookup_name(inst.products.at(out), r);
+      if (v >= 0) {
+        inst.products.at(out).set_value(v);
+      }
+      else {
+        raise << maybe(caller.name) << "can't find a place to store " << inst.products.at(out).name << '\n' << end();
+        return;
+      }
     }
   }
   if (names_used && numeric_locations_used)

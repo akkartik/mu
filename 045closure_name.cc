@@ -101,6 +101,7 @@ long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe)
   long long int n = to_integer(p->value);
   assert(n >= 0);
   recipe_ordinal surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
+  if (surrounding_recipe == -1) return -1;
   set<recipe_ordinal> done;
   vector<recipe_ordinal> path;
   return lookup_name(x, surrounding_recipe, done, path);
@@ -116,7 +117,7 @@ long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_o
       raise << path.at(i-1) << " requires computing names of " << path.at(i) << '\n' << end();
     }
     raise << path.at(SIZE(path)-1) << " requires computing names of " << r << "..ad infinitum\n" << end();
-    return 0;
+    return -1;
   }
   done.insert(r);
   path.push_back(r);
@@ -129,7 +130,7 @@ recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n
   if (n == 0) return r;
   if (!contains_key(Surrounding_space, r)) {
     raise << "don't know surrounding recipe of " << get(Recipe, r).name << '\n' << end();
-    return 0;
+    return -1;
   }
   assert(contains_key(Surrounding_space, r));
   return lookup_surrounding_recipe(get(Surrounding_space, r), n-1);
@@ -148,3 +149,12 @@ bool already_transformed(const reagent& r, const map<string, long long int>& nam
   }
   return contains_key(names, r.name);
 }
+
+:(scenario missing_surrounding_space)
+% Hide_errors = true;
+recipe f [
+  local-scope
+  x:number/space:1 <- copy 34
+]
++error: don't know surrounding recipe of f
++error: f: can't find a place to store x
