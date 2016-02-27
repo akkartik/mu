@@ -60,7 +60,7 @@ recipe foo x:address:shared:number [
   load-ingredients
   *x <- copy 34
 ]
-+error: foo: cannot modify ingredient x in instruction '*x <- copy 34' because it's not also a product of foo
++error: foo: cannot modify x in instruction '*x <- copy 34' because it's not also a product of foo
 
 :(scenario cannot_take_address_inside_immutable_ingredients)
 % Hide_errors = true;
@@ -111,6 +111,87 @@ recipe foo p:address:shared:point [
   x:address:number <- get-address *q, x:offset
 ]
 +error: foo: cannot modify q after instruction 'x:address:number <- get-address *q, x:offset' because that would modify ingredient p which is not also a product of foo
+
+:(scenario can_modify_copies_of_mutable_ingredients)
+recipe main [
+  local-scope
+  p:address:shared:point <- new point:type
+  foo p
+]
+recipe foo p:address:shared:point -> p:address:shared:point [
+  local-scope
+  load-ingredients
+  q:address:shared:point <- copy p
+  x:address:number <- get-address *q, x:offset
+]
+$error: 0
+
+:(scenario cannot_modify_address_inside_immutable_ingredients)
+% Hide_errors = true;
+container foo [
+  x:address:shared:array:number  # contains an address
+]
+recipe main [
+  # don't run anything
+]
+recipe foo a:address:shared:foo [
+  local-scope
+  load-ingredients
+  x:address:shared:array:number <- get *a, x:offset  # just a regular get of the container
+  y:address:number <- index-address *x, 0  # but then index-address on the result
+  *y <- copy 34
+]
++error: foo: cannot modify x after instruction 'y:address:number <- index-address *x, 0' because that would modify ingredient a which is not also a product of foo
+
+:(scenario cannot_modify_address_inside_immutable_ingredients_2)
+container foo [
+  x:address:shared:array:number  # contains an address
+]
+recipe main [
+  # don't run anything
+]
+recipe foo a:address:shared:foo [
+  local-scope
+  load-ingredients
+  b:foo <- merge 0  # completely unrelated to 'a'
+  x:address:shared:array:number <- get b, x:offset  # just a regular get of the container
+  y:address:number <- index-address *x, 0  # but then index-address on the result
+  *y <- copy 34
+]
+$error: 0
+
+:(scenario cannot_modify_address_inside_immutable_ingredients_3)
+% Hide_errors = true;
+container foo [
+  x:number
+]
+recipe main [
+  # don't run anything
+]
+recipe foo a:address:shared:array:address:number [
+  local-scope
+  load-ingredients
+  x:address:number <- index *a, 0  # just a regular index of the array
+  *x <- copy 34  # but then modify the result
+]
+# +error: foo: cannot modify x in instruction '*x <- copy 34' because that would modify ingredient a which is not also a product of foo
++error: foo: cannot modify x in instruction '*x <- copy 34' because it's not also a product of foo
+
+:(scenario cannot_modify_address_inside_immutable_ingredients_4)
+container foo [
+  x:address:shared:array:number  # contains an address
+]
+recipe main [
+  # don't run anything
+]
+recipe foo a:address:shared:array:address:number [
+  local-scope
+  load-ingredients
+  b:address:shared:array:address:number <- new {(address number): type}, 3  # completely unrelated to 'a'
+  x:address:number <- index *b, 0  # just a regular index of the array
+  *x <- copy 34  # but then modify the result
+]
+$error: 0
 
 :(scenario can_traverse_immutable_ingredients)
 container test-list [
@@ -182,10 +263,20 @@ void update_aliases(const instruction& inst, set<string>& current_ingredient_and
   set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
   if (!contains_key(Recipe, inst.operation)) {
     // primitive recipe
-    if (inst.operation == COPY) {
-      for (set<long long int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p) {
-        current_ingredient_and_aliases.insert(inst.products.at(*p).name);
-      }
+    switch (inst.operation) {
+      case COPY:
+        for (set<long long int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p)
+          current_ingredient_and_aliases.insert(inst.products.at(*p).name);
+        break;
+      case GET:
+      case INDEX:
+          // current_ingredient_indices can only have 0 or one value
+        if (!current_ingredient_indices.empty()) {
+          if (is_mu_address(inst.products.at(0)))
+            current_ingredient_and_aliases.insert(inst.products.at(0).name);
+        }
+        break;
+      default: break;
     }
   }
   else {
@@ -245,7 +336,7 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
     if (has_property(inst.products.at(i), "lookup")
         && current_ingredient_and_aliases.find(inst.products.at(i).name) != current_ingredient_and_aliases.end()) {
-      raise << maybe(caller.name) << "cannot modify ingredient " << inst.products.at(i).name << " in instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
+      raise << maybe(caller.name) << "cannot modify " << inst.products.at(i).name << " in instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
       return;
     }
   }

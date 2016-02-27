@@ -372,7 +372,7 @@ def]
   ]
 ]
 
-recipe render-all screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen [
+recipe render-all screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   trace 10, [app], [render all]
@@ -405,7 +405,7 @@ recipe render-all screen:address:shared:screen, env:address:shared:programming-e
   show-screen screen
 ]
 
-recipe render-recipes screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen [
+recipe render-recipes screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   trace 11, [app], [render recipes]
@@ -424,7 +424,7 @@ recipe render-recipes screen:address:shared:screen, env:address:shared:programmi
 ]
 
 # replaced in a later layer
-recipe render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen [
+recipe render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset

@@ -55,8 +55,8 @@ recipe index table:address:shared:table:_key:_value, key:_key -> result:_value [
   capacity:number <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
   table-data:address:shared:array:table_row:_key:_value <- get *table, data:offset
-  x:address:table_row:_key:_value <- index-address *table-data, hash
-  occupied?:boolean <- get *x, occupied?:offset
+  x:table_row:_key:_value <- index *table-data, hash
+  occupied?:boolean <- get x, occupied?:offset
   assert occupied?, [can't handle missing elements yet]
-  result <- get *x, value:offset
+  result <- get x, value:offset
 ]

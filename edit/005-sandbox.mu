@@ -237,7 +237,7 @@ recipe save-sandboxes env:address:shared:programming-environment-data [
   }
 ]
 
-recipe! render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen [
+recipe! render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   trace 11, [app], [render sandbox side]
