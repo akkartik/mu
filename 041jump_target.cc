@@ -40,18 +40,26 @@ void transform_labels(const recipe_ordinal r) {
   for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.name == "jump") {
+      if (inst.ingredients.empty()) {
+        raise << maybe(get(Recipe, r).name) << "'jump' expects an ingredient but got none\n" << end();
+        return;
+      }
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
     if (inst.name == "jump-if" || inst.name == "jump-unless") {
+      if (SIZE(inst.ingredients) < 2) {
+        raise << maybe(get(Recipe, r).name) << "'" << inst.name << "' expects 2 ingredients but got " << SIZE(inst.ingredients) << '\n' << end();
+        return;
+      }
       replace_offset(inst.ingredients.at(1), offset, i, r);
     }
     if ((inst.name == "loop" || inst.name == "break")
-        && SIZE(inst.ingredients) == 1) {
+        && SIZE(inst.ingredients) >= 1) {
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
     if ((inst.name == "loop-if" || inst.name == "loop-unless"
             || inst.name == "break-if" || inst.name == "break-unless")
-        && SIZE(inst.ingredients) == 2) {
+        && SIZE(inst.ingredients) >= 2) {
       replace_offset(inst.ingredients.at(1), offset, i, r);
     }
   }
@@ -132,6 +140,20 @@ recipe main [
 ]
 +mem: storing 0 in location 5
 -mem: storing 0 in location 4
+
+:(scenario jump_fails_without_target)
+% Hide_errors = true;
+recipe main [
+  jump
+]
++error: main: 'jump' expects an ingredient but got none
+
+:(scenario jump_fails_without_target_2)
+% Hide_errors = true;
+recipe main [
+  jump-if 1/true
+]
++error: main: 'jump-if' expects 2 ingredients but got 1
 
 :(scenario recipe_fails_on_duplicate_jump_target)
 % Hide_errors = true;
