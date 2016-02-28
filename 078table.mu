@@ -12,6 +12,18 @@ scenario table-read-write [
   ]
 ]
 
+scenario table-read-write-non-integer [
+  run [
+    1:address:shared:array:character <- new [abc def]
+    {2: (address shared table (address shared array character) number)} <- new-table 30
+    put {2: (address shared table (address shared array character) number)}, 1:address:shared:array:character, 34
+    3:number <- index {2: (address shared table (address shared array character) number)}, 1:address:shared:array:character
+  ]
+  memory-should-contain [
+    3 <- 34
+  ]
+]
+
 container table:_key:_value [
   length:number
   capacity:number
@@ -38,8 +50,10 @@ recipe put table:address:shared:table:_key:_value, key:_key, value:_value -> tab
   local-scope
   load-ingredients
   hash:number <- hash key
+  hash <- abs hash
   capacity:number <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
+  hash <- abs hash  # in case hash overflows into a negative integer
   table-data:address:shared:array:table_row:_key:_value <- get *table, data:offset
   x:address:table_row:_key:_value <- index-address *table-data, hash
   occupied?:boolean <- get *x, occupied?:offset
@@ -48,12 +62,22 @@ recipe put table:address:shared:table:_key:_value, key:_key, value:_value -> tab
   *x <- merge 1/true, key, value
 ]
 
+recipe abs n:number -> result:number [
+  local-scope
+  load-ingredients
+  positive?:boolean <- greater-or-equal n, 0
+  reply-if positive?, n
+  result <- multiply n, -1
+]
+
 recipe index table:address:shared:table:_key:_value, key:_key -> result:_value [
   local-scope
   load-ingredients
   hash:number <- hash key
+  hash <- abs hash
   capacity:number <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
+  hash <- abs hash  # in case hash overflows into a negative integer
   table-data:address:shared:array:table_row:_key:_value <- get *table, data:offset
   x:table_row:_key:_value <- index *table-data, hash
   occupied?:boolean <- get x, occupied?:offset

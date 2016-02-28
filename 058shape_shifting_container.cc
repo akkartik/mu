@@ -242,7 +242,8 @@ bool contains_type_ingredient(const type_tree* type) {
   return contains_type_ingredient(type->left) || contains_type_ingredient(type->right);
 }
 
-// todo: too complicated and likely incomplete; maybe avoid replacing in place? Maybe process element_type and element_type_name in separate functions?
+// replace all type_ingredients in element_type with corresponding elements of callsite_type
+// todo: too complicated and likely incomplete; maybe avoid replacing in place?
 void replace_type_ingredients(type_tree* element_type, const type_tree* callsite_type, const type_info& container_info) {
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
@@ -261,31 +262,40 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
   // B. replace the current location
   const type_tree* replacement = NULL;
   bool splice_right = true ;
+  bool zig_left = false;
   {
     const type_tree* curr = callsite_type;
     for (long long int i = 0; i < type_ingredient_index; ++i)
       curr = curr->right;
     if (curr && curr->left) {
       replacement = curr->left;
+      zig_left = true;
     }
     else {
       // We want foo:_t to be used like foo:number, which expands to {foo: number}
       // rather than {foo: (number)}
       // We'd also like to use it with multiple types: foo:address:number.
       replacement = curr;
-      if (!final_type_ingredient(type_ingredient_index, container_info)) {
+      if (!final_type_ingredient(type_ingredient_index, container_info))
         splice_right = false;
-      }
     }
   }
-  element_type->name = replacement->name;
-  element_type->value = replacement->value;
-  assert(!element_type->left);  // since value is set
-  element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
-  if (splice_right) {
-    type_tree* old_right = element_type->right;
-    element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
-    append(element_type->right, old_right);
+  if (element_type->right && replacement->right && zig_left) {  // ZERO confidence that this condition is accurate
+    element_type->name = "";
+    element_type->value = 0;
+    element_type->left = new type_tree(*replacement);
+  }
+  else {
+    string old_name = element_type->name;
+    element_type->name = replacement->name;
+    element_type->value = replacement->value;
+    assert(!element_type->left);  // since value is set
+    element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
+    if (splice_right) {
+      type_tree* old_right = element_type->right;
+      element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
+      append(element_type->right, old_right);
+    }
   }
 }
 
@@ -423,6 +433,46 @@ void test_replace_middle_type_ingredient_with_multiple() {
   CHECK_EQ(element3.name, "z");
   CHECK_EQ(element3.type->name, "boolean");
   CHECK(!element3.type->right);
+}
+
+void test_replace_middle_type_ingredient_with_multiple2() {
+  run("container foo:_key:_value [\n"
+      "  key:_key\n"
+      "  value:_value\n"
+      "]\n");
+  reagent callsite("{f: (foo (address shared array character) number)}");
+  reagent element = element_type(callsite, 0);
+  CHECK_EQ(element.name, "key");
+  CHECK_EQ(element.type->name, "address");
+  CHECK_EQ(element.type->right->name, "shared");
+  CHECK_EQ(element.type->right->right->name, "array");
+  CHECK_EQ(element.type->right->right->right->name, "character");
+  CHECK(!element.type->right->right->right->right);
+}
+
+void test_replace_middle_type_ingredient_with_multiple3() {
+  run("container foo_table:_key:_value [\n"
+      "  data:address:shared:array:foo_table_row:_key:_value\n"
+      "]\n"
+      "\n"
+      "container foo_table_row:_key:_value [\n"
+      "  key:_key\n"
+      "  value:_value\n"
+      "]\n");
+  reagent callsite("{f: (foo_table (address shared array character) number)}");
+  reagent element = element_type(callsite, 0);
+  CHECK_EQ(element.name, "data");
+  CHECK_EQ(element.type->name, "address");
+  CHECK_EQ(element.type->right->name, "shared");
+  CHECK_EQ(element.type->right->right->name, "array");
+  CHECK_EQ(element.type->right->right->right->name, "foo_table_row");
+    CHECK(element.type->right->right->right->right->left);
+    CHECK_EQ(element.type->right->right->right->right->left->name, "address");
+    CHECK_EQ(element.type->right->right->right->right->left->right->name, "shared");
+    CHECK_EQ(element.type->right->right->right->right->left->right->right->name, "array");
+    CHECK_EQ(element.type->right->right->right->right->left->right->right->right->name, "character");
+  CHECK_EQ(element.type->right->right->right->right->right->name, "number");
+  CHECK(!element.type->right->right->right->right->right->right);
 }
 
 bool has_nth_type(const type_tree* base, long long int n) {
