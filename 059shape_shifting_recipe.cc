@@ -33,6 +33,7 @@ if (Current_routine->calls.front().running_step_index == 0
     && any_type_ingredient_in_header(Current_routine->calls.front().running_recipe)) {
 //?   DUMP("");
   raise << "ran into unspecialized shape-shifting recipe " << current_recipe_name() << '\n' << end();
+//?   exit(0);
 }
 
 //: Make sure we don't match up literals with type ingredients without
@@ -334,22 +335,32 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
     return;
   }
   if (is_type_ingredient_name(exemplar_type->name)) {
-    assert(!refinement_type->name.empty());
+    const type_tree* curr_refinement_type = NULL;  // temporary heap allocation; must always be deleted before it goes out of scope
+    if (refinement_type->left)
+      curr_refinement_type = new type_tree(*refinement_type->left);
+    else if (exemplar_type->right)
+      // splice out refinement_type->right, it'll be used later by the exemplar_type->right
+      curr_refinement_type = new type_tree(refinement_type->name, refinement_type->value, NULL);
+    else
+      curr_refinement_type = new type_tree(*refinement_type);
+    assert(!curr_refinement_type->left);
     if (!contains_key(mappings, exemplar_type->name)) {
-      trace(9993, "transform") << "adding mapping from " << exemplar_type->name << " to " << to_string(refinement_type) << end();
-      put(mappings, exemplar_type->name, new type_tree(*refinement_type));
+      trace(9993, "transform") << "adding mapping from " << exemplar_type->name << " to " << to_string(curr_refinement_type) << end();
+      put(mappings, exemplar_type->name, new type_tree(*curr_refinement_type));
     }
     else {
-      if (!deeply_equal_type_names(get(mappings, exemplar_type->name), refinement_type)) {
+      if (!deeply_equal_type_names(get(mappings, exemplar_type->name), curr_refinement_type)) {
         raise << maybe(caller_recipe.name) << "no call found for '" << to_string(call_instruction) << "'\n" << end();
         *error = true;
+        delete curr_refinement_type;
         return;
       }
       if (get(mappings, exemplar_type->name)->name == "literal") {
         delete get(mappings, exemplar_type->name);
-        put(mappings, exemplar_type->name, new type_tree(*refinement_type));
+        put(mappings, exemplar_type->name, new type_tree(*curr_refinement_type));
       }
     }
+    delete curr_refinement_type;
   }
   else {
     accumulate_type_ingredients(exemplar_type->left, refinement_type->left, mappings, exemplar, exemplar_reagent, call_instruction, caller_recipe, error);
@@ -398,22 +409,44 @@ void replace_type_ingredients(type_tree* type, const map<string, const type_tree
   if (!type) return;
   if (contains_key(Type_ordinal, type->name))  // todo: ugly side effect
     type->value = get(Type_ordinal, type->name);
-  if (is_type_ingredient_name(type->name) && contains_key(mappings, type->name)) {
-    const type_tree* replacement = get(mappings, type->name);
-    trace(9993, "transform") << type->name << " => " << names_to_string(replacement) << end();
-    if (replacement->name == "literal") {
-      type->name = "number";
-      type->value = get(Type_ordinal, "number");
+  if (!is_type_ingredient_name(type->name) || !contains_key(mappings, type->name)) {
+    replace_type_ingredients(type->left, mappings);
+    replace_type_ingredients(type->right, mappings);
+    return;
+  }
+
+  const type_tree* replacement = get(mappings, type->name);
+  trace(9993, "transform") << type->name << " => " << names_to_string(replacement) << end();
+
+  // type is a single type ingredient
+  assert(!type->left);
+  if (!type->right) assert(!replacement->left);
+
+  if (!replacement->right) {
+    if (!replacement->left) {
+      type->name = (replacement->name == "literal") ? "number" : replacement->name;
+      type->value = get(Type_ordinal, type->name);
     }
     else {
-      type->name = replacement->name;
-      type->value = replacement->value;
+      type->name = "";
+      type->value = 0;
+      type->left = new type_tree(*replacement);
     }
-    if (replacement->left) type->left = new type_tree(*replacement->left);
-    if (replacement->right) type->right = new type_tree(*replacement->right);
+    replace_type_ingredients(type->right, mappings);
   }
-  replace_type_ingredients(type->left, mappings);
-  replace_type_ingredients(type->right, mappings);
+  // replace non-last type?
+  else if (type->right) {
+    type->name = "";
+    type->value = 0;
+    type->left = new type_tree(*replacement);
+    replace_type_ingredients(type->right, mappings);
+  }
+  // replace last type?
+  else {
+    type->name = replacement->name;
+    type->value = get(Type_ordinal, type->name);
+    type->right = new type_tree(*replacement->right);
+  }
 }
 
 type_tree* parse_type_tree(const string& s) {
@@ -544,6 +577,21 @@ container foo:_t [
 ]
 +mem: storing 14 in location 20
 +mem: storing 15 in location 21
+
+:(scenario shape_shifting_recipe_nested)
+container c:_a:_b [
+  a:_a
+  b:_b
+]
+recipe main [
+  s:address:shared:array:character <- new [abc]
+  {x: (c (address shared array character) number)} <- merge s, 34
+  foo x
+]
+recipe foo x:c:_bar:_baz [
+  local-scope
+  load-ingredients
+]
 
 :(scenario shape_shifting_recipe_type_deduction_ignores_offsets)
 recipe main [
