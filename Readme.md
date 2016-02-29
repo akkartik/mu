@@ -465,11 +465,8 @@ to browse. To add to the trace, use `stash`. For example:
 Invaluable for understanding complex control flow without cluttering up the
 screen.
 
-The next major milestone on Mu's roadmap is support for recording and faking
-console input to a sandbox, so that you can type in an input once and have it
-replay everytime you hit F4. Once this support is in place it will be easy to
-generalize to more interfaces, like requesting urls over a network or reading
-files on a disk.
+The next major milestone on Mu's roadmap is dependency-injected interfaces for
+the network and file system.
 
 **Credits**
 
