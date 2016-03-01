@@ -1,7 +1,13 @@
-// So far we have local variables, and we can nest local variables of short
-// lifetimes inside longer ones. Now let's support 'global' variables that
-// last for the life of a routine. If we create multiple routines they won't
-// have access to each other's globals.
+//: So far we have local variables, and we can nest local variables of short
+//: lifetimes inside longer ones. Now let's support 'global' variables that
+//: last for the life of a routine. If we create multiple routines they won't
+//: have access to each other's globals.
+//:
+//: This feature is still experimental and half-baked. You can't name global
+//: variables, and so like in most tests they don't get checked for types (the
+//: only known hole in the type system, can cause memory corruption). We might
+//: fix these issues if we ever use globals. Or we might just drop the feature
+//: entirely.
 
 :(scenario global_space)
 recipe main [
