@@ -58,3 +58,4 @@ clean:
 	cd tangle && make clean
 	cd termbox && make clean
 	-rm mu.cc core.mu mu_bin *_list
+	-rm -rf mu_bin.*
