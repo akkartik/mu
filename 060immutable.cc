@@ -238,9 +238,10 @@ Transform.push_back(check_immutable_ingredients);  // idempotent
 
 :(code)
 void check_immutable_ingredients(recipe_ordinal r) {
-  // to ensure a reagent isn't modified, it suffices to show that we never
-  // call get-address or index-address with it, and that any non-primitive
-  // recipe calls in the body aren't returning it as a product.
+  // to ensure an address reagent isn't modified, it suffices to show that
+  //   a) we never write to its contents directly,
+  //   b) we never call get-address or index-address with it, and
+  //   c) any non-primitive recipe calls in the body aren't returning it as a product
   const recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- check mutability of ingredients in recipe " << caller.name << end();
   if (!caller.has_header) return;  // skip check for old-style recipes calling next-ingredient directly
