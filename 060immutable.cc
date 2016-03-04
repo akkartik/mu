@@ -1,5 +1,7 @@
 //: Addresses passed into of a recipe are meant to be immutable unless they're
 //: also products. This layer will start enforcing this check.
+//:
+//: One hole for now: variables in surrounding spaces are implicitly mutable.
 
 :(scenario can_modify_value_ingredients)
 recipe main [
@@ -233,6 +235,26 @@ recipe foo -> [
 ]
 $error: 0
 
+//: when checking for immutable ingredients, remember to take space into account
+:(scenario check_space_of_reagents_in_immutability_checks)
+recipe main [
+  a:address:shared:array:location <- new-closure
+  b:address:shared:number <- new number:type
+  run-closure b:address:shared:number, a:address:shared:array:location
+]
+recipe new-closure [
+  new-default-space
+  x:address:shared:number <- new number:type
+  reply default-space
+]
+recipe run-closure x:address:shared:number, s:address:shared:array:location [
+  local-scope
+  load-ingredients
+  0:address:shared:array:location/names:new-closure <- copy s
+  *x/space:1 <- copy 34
+]
+$error: 0
+
 :(before "End Transforms")
 Transform.push_back(check_immutable_ingredients);  // idempotent
 
@@ -250,8 +272,8 @@ void check_immutable_ingredients(recipe_ordinal r) {
     if (!is_mu_address(current_ingredient)) continue;  // will be copied
     if (is_present_in_products(caller, current_ingredient.name)) continue;  // not expected to be immutable
     // End Immutable Ingredients Special-cases
-    set<string> immutable_vars;
-    immutable_vars.insert(current_ingredient.name);
+    set<reagent> immutable_vars;
+    immutable_vars.insert(current_ingredient);
     for (long long int i = 0; i < SIZE(caller.steps); ++i) {
       const instruction& inst = caller.steps.at(i);
       check_immutable_ingredient_in_instruction(inst, immutable_vars, current_ingredient.name, caller);
@@ -260,7 +282,7 @@ void check_immutable_ingredients(recipe_ordinal r) {
   }
 }
 
-void update_aliases(const instruction& inst, set<string>& current_ingredient_and_aliases) {
+void update_aliases(const instruction& inst, set<reagent>& current_ingredient_and_aliases) {
   set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
   if (!contains_key(Recipe, inst.operation)) {
     // primitive recipe
@@ -274,7 +296,7 @@ void update_aliases(const instruction& inst, set<string>& current_ingredient_and
           // current_ingredient_indices can only have 0 or one value
         if (!current_ingredient_indices.empty()) {
           if (is_mu_address(inst.products.at(0)))
-            current_ingredient_and_aliases.insert(inst.products.at(0).name);
+            current_ingredient_and_aliases.insert(inst.products.at(0));
         }
         break;
       default: break;
@@ -285,23 +307,24 @@ void update_aliases(const instruction& inst, set<string>& current_ingredient_and
     set<long long int> contained_in_product_indices = scan_contained_in_product_indices(inst, current_ingredient_indices);
     for (set<long long int>::iterator p = contained_in_product_indices.begin(); p != contained_in_product_indices.end(); ++p) {
       if (*p < SIZE(inst.products))
-        current_ingredient_and_aliases.insert(inst.products.at(*p).name);
+        current_ingredient_and_aliases.insert(inst.products.at(*p));
     }
   }
 }
 
 set<long long int> scan_contained_in_product_indices(const instruction& inst, set<long long int>& ingredient_indices) {
-  set<string> selected_ingredient_names;
+  set<reagent> selected_ingredients;
   const recipe& callee = get(Recipe, inst.operation);
   for (set<long long int>::iterator p = ingredient_indices.begin(); p != ingredient_indices.end(); ++p) {
     if (*p >= SIZE(callee.ingredients)) continue;  // optional immutable ingredient
-    selected_ingredient_names.insert(callee.ingredients.at(*p).name);
+    selected_ingredients.insert(callee.ingredients.at(*p));
   }
   set<long long int> result;
   for (long long int i = 0; i < SIZE(callee.products); ++i) {
     const reagent& current_product = callee.products.at(i);
+    // TODO
     const string_tree* contained_in_name = property(current_product, "contained-in");
-    if (contained_in_name && selected_ingredient_names.find(contained_in_name->value) != selected_ingredient_names.end())
+    if (contained_in_name && selected_ingredients.find(contained_in_name->value) != selected_ingredients.end())
       result.insert(i);
   }
   return result;
@@ -332,11 +355,11 @@ recipe test-next x:address:shared:test-list -> y:address:shared:test-list/contai
 +error: foo: cannot modify p2 after instruction 'p3:address:address:shared:test-list <- get-address *p2, next:offset' because that would modify ingredient p which is not also a product of foo
 
 :(code)
-void check_immutable_ingredient_in_instruction(const instruction& inst, const set<string>& current_ingredient_and_aliases, const string& original_ingredient_name, const recipe& caller) {
+void check_immutable_ingredient_in_instruction(const instruction& inst, const set<reagent>& current_ingredient_and_aliases, const string& original_ingredient_name, const recipe& caller) {
   // first check if the instruction is directly modifying something it shouldn't
   for (long long int i = 0; i < SIZE(inst.products); ++i) {
     if (has_property(inst.products.at(i), "lookup")
-        && current_ingredient_and_aliases.find(inst.products.at(i).name) != current_ingredient_and_aliases.end()) {
+        && current_ingredient_and_aliases.find(inst.products.at(i)) != current_ingredient_and_aliases.end()) {
       raise << maybe(caller.name) << "cannot modify " << inst.products.at(i).name << " in instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
       return;
     }
@@ -398,14 +421,29 @@ bool is_present_in_ingredients(const recipe& callee, const string& ingredient_na
   return false;
 }
 
-set<long long int> ingredient_indices(const instruction& inst, const set<string>& ingredient_names) {
+set<long long int> ingredient_indices(const instruction& inst, const set<reagent>& ingredient_names) {
   set<long long int> result;
   for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (is_literal(inst.ingredients.at(i))) continue;
-    if (ingredient_names.find(inst.ingredients.at(i).name) != ingredient_names.end())
+    if (ingredient_names.find(inst.ingredients.at(i)) != ingredient_names.end())
       result.insert(i);
   }
   return result;
+}
+
+// reagent comparison just for this layer; assumes reagents are in the same recipe
+bool operator==(const reagent& a, const reagent& b) {
+  if (a.name != b.name) return false;
+  if (property(a, "space") != property(b, "space")) return false;
+  return true;
+}
+
+bool operator<(const reagent& a, const reagent& b) {
+  long long int aspace = 0, bspace = 0;
+  if (has_property(a, "space")) aspace = to_integer(property(a, "space")->value);
+  if (has_property(b, "space")) bspace = to_integer(property(b, "space")->value);
+  if (aspace != bspace) return aspace < bspace;
+  return a.name < b.name;
 }
 
 //: Sometimes you want to pass in two addresses, one pointing inside the
