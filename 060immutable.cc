@@ -251,7 +251,7 @@ recipe run-closure x:address:shared:number, s:address:shared:array:location [
   local-scope
   load-ingredients
   0:address:shared:array:location/names:new-closure <- copy s
-  *x/space:1 <- copy 34
+  *x:address:number/space:1 <- copy 34
 ]
 $error: 0
 
@@ -429,21 +429,6 @@ set<long long int> ingredient_indices(const instruction& inst, const set<reagent
       result.insert(i);
   }
   return result;
-}
-
-// reagent comparison just for this layer; assumes reagents are in the same recipe
-bool operator==(const reagent& a, const reagent& b) {
-  if (a.name != b.name) return false;
-  if (property(a, "space") != property(b, "space")) return false;
-  return true;
-}
-
-bool operator<(const reagent& a, const reagent& b) {
-  long long int aspace = 0, bspace = 0;
-  if (has_property(a, "space")) aspace = to_integer(property(a, "space")->value);
-  if (has_property(b, "space")) bspace = to_integer(property(b, "space")->value);
-  if (aspace != bspace) return aspace < bspace;
-  return a.name < b.name;
 }
 
 //: Sometimes you want to pass in two addresses, one pointing inside the

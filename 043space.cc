@@ -285,3 +285,18 @@ bool contains_non_special_name(const recipe_ordinal r) {
   }
   return false;
 }
+
+// reagent comparison -- only between reagents in a single recipe
+bool operator==(const reagent& a, const reagent& b) {
+  if (a.name != b.name) return false;
+  if (property(a, "space") != property(b, "space")) return false;
+  return true;
+}
+
+bool operator<(const reagent& a, const reagent& b) {
+  long long int aspace = 0, bspace = 0;
+  if (has_property(a, "space")) aspace = to_integer(property(a, "space")->value);
+  if (has_property(b, "space")) bspace = to_integer(property(b, "space")->value);
+  if (aspace != bspace) return aspace < bspace;
+  return a.name < b.name;
+}

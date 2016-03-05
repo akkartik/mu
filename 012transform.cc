@@ -79,3 +79,9 @@ void populate_value(reagent& r) {
   if (!is_integer(r.name)) return;
   r.set_value(to_integer(r.name));
 }
+
+// helper for tests -- temporarily suppress run
+void transform(string form) {
+  load(form);
+  transform_all();
+}

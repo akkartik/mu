@@ -20,45 +20,46 @@ Transform.push_back(check_or_set_types_by_name);  // idempotent
 :(code)
 void check_or_set_types_by_name(const recipe_ordinal r) {
   trace(9991, "transform") << "--- deduce types for recipe " << get(Recipe, r).name << end();
-  map<string, type_tree*> type;
-  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
-    instruction& inst = get(Recipe, r).steps.at(i);
+  recipe& caller = get(Recipe, r);
+  set<reagent> known;
+  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+    instruction& inst = caller.steps.at(i);
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
-      deduce_missing_type(type, inst.ingredients.at(in));
-      check_type(type, inst.ingredients.at(in), r);
+      deduce_missing_type(known, inst.ingredients.at(in));
+      check_type(known, inst.ingredients.at(in), r);
     }
     for (long long int out = 0; out < SIZE(inst.products); ++out) {
-      deduce_missing_type(type, inst.products.at(out));
-      check_type(type, inst.products.at(out), r);
+      deduce_missing_type(known, inst.products.at(out));
+      check_type(known, inst.products.at(out), r);
     }
   }
 }
 
-void deduce_missing_type(map<string, type_tree*>& type, reagent& x) {
+void deduce_missing_type(set<reagent>& known, reagent& x) {
   if (x.type) return;
-  if (!contains_key(type, x.name)) return;
-  x.type = new type_tree(*get(type, x.name));
+  if (known.find(x) == known.end()) return;
+  x.type = new type_tree(*known.find(x)->type);
   trace(9992, "transform") << x.name << " <= " << names_to_string(x.type) << end();
 }
 
-void check_type(map<string, type_tree*>& type, const reagent& x, const recipe_ordinal r) {
+void check_type(set<reagent>& known, const reagent& x, const recipe_ordinal r) {
   if (is_literal(x)) return;
   if (is_integer(x.name)) return;  // if you use raw locations you're probably doing something unsafe
   if (!x.type) return;  // might get filled in by other logic later
-  if (!contains_key(type, x.name)) {
+  if (known.find(x) == known.end()) {
     trace(9992, "transform") << x.name << " => " << names_to_string(x.type) << end();
-    put(type, x.name, x.type);
+    known.insert(x);
   }
-  if (!types_strictly_match(get(type, x.name), x.type)) {
+  if (!types_strictly_match(known.find(x)->type, x.type)) {
     raise << maybe(get(Recipe, r).name) << x.name << " used with multiple types\n" << end();
     return;
   }
-  if (get(type, x.name)->name == "array") {
-    if (!get(type, x.name)->right) {
+  if (x.type->name == "array") {
+    if (!x.type->right) {
       raise << maybe(get(Recipe, r).name) << x.name << " can't be just an array. What is it an array of?\n" << end();
       return;
     }
-    if (!get(type, x.name)->right->right) {
+    if (!x.type->right->right) {
       raise << get(Recipe, r).name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:shared:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
       return;
     }
@@ -106,3 +107,16 @@ recipe main [
   x:array:number <- merge 2, 12, 13
 ]
 +error: main can't determine the size of array variable x. Either allocate it separately and make the type of x address:shared:..., or specify the length of the array in the type of x.
+
+:(scenarios transform)
+:(scenario transform_checks_types_of_identical_reagents_in_multiple_spaces)
+recipe foo [  # dummy
+]
+recipe main [
+  local-scope
+  0:address:shared:array:location/names:foo <- copy 0  # specify surrounding space
+  x:boolean <- copy 1/true
+  x:number/space:1 <- copy 34
+  x/space:1 <- copy 35
+]
+$error: 0

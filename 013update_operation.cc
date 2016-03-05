@@ -25,9 +25,3 @@ void update_instruction_operations(recipe_ordinal r) {
 string maybe(string s) {
   return s + ": ";
 }
-
-// temporarily suppress run
-void transform(string form) {
-  load(form);
-  transform_all();
-}
