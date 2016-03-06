@@ -32,13 +32,18 @@ recording manual tests right after the first time you perform them:
 
 I hope to attain this world by creating a comprehensive library of fakes and
 hooks for the entire software stack, at all layers of abstraction (programming
-language, OS, standard libraries, application libraries).
+language, OS, standard libraries, application libraries). As a concrete
+example, the `open()` syscall in modern unix implicitly requires the file
+system. The implicit dependency makes it hard to test code that calls
+`open()`. The Mu Way is to make the file system an explicit argument, thereby
+allowing us to use a fake file system in tests. We do this for every syscall,
+every possible way the system can interact with the outside world.
 
-To reduce my workload and get to a proof-of-concept quickly, this is a very
-*alien* software stack. I've stolen ideas from lots of previous systems, but
-it's not like anything you're used to. The 'OS' will lack virtual memory, user
-accounts, any unprivileged mode, address space isolation, and many other
-features.
+As you might surmise, this is a lot of work. To reduce my workload and get to
+a proof-of-concept quickly, this is a very *alien* software stack. I've stolen
+ideas from lots of previous systems, but it's not like anything you're used
+to. The 'OS' will lack virtual memory, user accounts, any unprivileged mode,
+address space isolation, and many other features.
 
 To avoid building a compiler I'm going to do all my programming in (extremely
 type-safe) assembly (for an idealized virtual machine that nonetheless will
