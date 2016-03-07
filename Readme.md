@@ -1,5 +1,121 @@
 **Mu: making programs easier to understand in the large**
 
+Mu explores an unconventional hypothesis: that all the ills of software
+directly or indirectly stem from a single historical accident -- automatic
+tests became mainstream *after* operating systems and high-level languages. As
+a result the foundations of modern software have fatal flaws that very smart
+people have tried heroically and unsuccessfully to fix at higher levels. Mu
+attempts to undo this historical accident by recreating a software stack from
+the ground up with testable interfaces. Unlike prior attempts, the goal isn't
+to create a perfectly designed programming language and operating system (I'm
+not smart enough). Rather, the goal is to preserve optionality, to avoid ever
+committing to a design decision, so that any new lessons yielded by experience
+are always able to rework all aspects of the design. The goal is to learn to
+make software *rewrite-friendly* by giving up on backwards compatibility.
+
+*The fundamental problem of software*
+
+We programmers love to chase after silver bullets, to argue the pros and cons
+of different programming languages and tools and methodologies, of whether
+rewrites are a good idea or not. When I see smart and reasonable people
+disagreeing on these questions I often track their difference down to
+variations in personal experience. In particular, people with good experiences
+of X seem disproportionately to have tried to use X at a smaller scale or
+earlier in a project's life than people with bad experiences with X. I surmise
+that that difference explains the lion's share of the benefits and drawbacks
+people observe. It doesn't matter what programming language you use, whether
+you program functionally or not, whether you follow an Object-Oriented
+methodology or go Agile, whether you use shared memory or the Actor model.
+What matters is whether you did this when the project was relatively early in
+its life; how many man-hours had been spent on it already before your
+alteration; how many people had contributed and then lost interest and moved
+on, taking some hard-won unique knowledge of the system and its users out the
+door with them. All projects decay over time and get slower to change with
+age, and it's not because of some unavoidable increase in entropy. It's
+because they grow monotonically more complex over time, because they are
+gradually boxed in by compatibility guarantees, and because their increased
+complexity makes them harder and harder for new team members to understand,
+team members who inevitably take over when the original authors inevitably
+move on.
+
+If I'm right about all this, one guiding principle shines above all others:
+keep projects easy for outsiders to navigate. It should be orders of magnitude
+easier than it is today for a reasonably competent programmer to get your code
+up and running, identify the start of the program, figure out what the major
+sub-systems are and where they connect up, run parts of your program and
+observe them in action in different situations with different inputs. All this
+should require zero hand-holding by another human, and it should require very
+little effort spent tracing through program logic. We all have the ability to
+laboriously think through what a function does, but none of us is motivated to
+do this for some strange program we've just encountered. And encountering a
+strange program is the first step for someone on the long road to becoming a
+regular contributor to your project. Make things dead simple for them. If they
+make a change, make it dead simple for them to see if it breaks something.
+
+But this is a hard property for a codebase to start out with, even harder to
+preserve, and impossible to regain once lost. It is a truth universally
+acknowledged that the lucid clarity of initial versions of a program is
+quickly and inevitably lost. The culprit here is monotonically growing
+complexity that makes it impossible to tell when some aspect of the program
+grows irrelevant and can be taken out. If you can't easily take something out,
+you'll never do so because there'll always be more urgent things you could be
+doing.
+
+A big source of complexity creep is your project's interface to external
+users, because you can't know all the ways in which they use the services you
+provide. Historically we react to this by assuming that our users can do
+anything that we ever allowed them to do in the past, and require ourselves to
+support all such features. We can only add features, not drop them or change
+how we provide them. We might, if we're forward thinking, keep the project
+stable for a time. But the goal is usually to stabilize the interface, and
+inevitably the stabilization is *premature*, because you can't anticipate what
+the future holds. Stable interfaces inevitably get bolted-on features, grow
+complex and breed a new generation of unsatisfied users who then attempt to
+wrap them in sane interfaces, freeze *those* interfaces, start bolting on
+features to them, rise and repeat. This dynamic of interfaces wrapping other
+interfaces is how unix cat grows from a screenful of code in the original unix
+to <a href='http://landley.net/aboriginal/history.html'>800 lines</a> in 2002
+to 36 *thousand* lines of code in 2013.
+
+To summarize, the arc you want to avoid is: you make backwards compatibility
+guarantees &rarr; complexity creeps monotonically upward &rarr; funnel of
+newcomer contributions slows &rarr; conversion of newcomers to insiders stalls
+&rarr; knowledge of the system and its rationales gradually evaporates &rarr;
+rate of change slows.
+
+But what should we replace this arc with? It's hard to imagine how a world
+could work without the division of labor that necessitates compatibility
+guarantees. Here's my tentative proposal: when you build libraries or
+interfaces for programmers, tell your users to write tests. Tell your users
+that you reserve the right to change your interface in arbitrarily subtle
+ways, and that in spite of any notifications over mailing lists and so on, the
+only situation in which it will be safe to upgrade your library is if they've
+written enough tests to cover all the edge cases of their domain that they
+care about. "It doesn't exist if you haven't written a test for it."
+
+But that's hard today because nobody's tests are that good. You can tell that
+this is true, because even the best projects with tons of tests routinely
+require manual QA when releasing a new version. A newcomer who's just starting
+to hack on your project can't do that manual QA, so he doesn't know if this
+line of code in your program is written *just so* because of some arcane
+reason of performance or just because that was the first phrasing that came to
+mind. The nice experience for an outsider would be to just change that line
+and see if any tests fail. This is only possible if we eliminate all manual QA
+from our release process.
+
+*So*
+
+In Mu, it will be possible for any aspect of any program that you can manually
+test to also be turned into a reproducible automatic test. This may seem like
+a tall order, and it is when you try to do it in a high-level language or <a
+href='http://www.seleniumhq.org'>on top of a web browser</a>. If you drop down
+to the lowest levels of your system's software, however, you find that it
+really only interacts with the outside world over a handful of modalities. The
+screen, the keyboard, the mouse, the disk, the network, maybe a couple more
+that I haven't thought of yet. All Mu has to do is make these interfaces to
+the outside world testable, give us the ability to record what we receive
+through them and replay our recordings in tests.
+
 Imagine a world where you can:
 
 1. think of a tiny improvement to a program you use, clone its sources,
@@ -16,28 +132,21 @@ have considered has been encoded as a test.
 4. Run first simple and successively more complex versions to stage your
 learning.
 
-I think all these abilities might be strongly correlated; not only are they
-achievable with a few common concepts, but you can't easily attack one of them
-without also chasing after the others. The core mechanism enabling them all is
-recording manual tests right after the first time you perform them:
+I think all these abilities might be strongly correlated; the right testable
+OS interfaces make them all achieveable. What's more, I can't see any way to
+attain some of these abilities without the others.
 
-* keyboard input
-* printing to screen
-* website layout
-* disk filling up
-* performance metrics
-* race conditions
-* fault tolerance
-* ...
+As a concrete example, Unix lets you open a file by calling `open()` and
+giving it a filename. But it implicitly modifies the file system, which means
+that you can't easily call it from a test. In mu, the `open()` syscall would
+take a file system object as an explicit argument. You'd then be able to
+access the real file system or fake it out inside a test. I'll be adding
+similar explicit arguments to handle the keyboard, the network, and so on.
+(This process is called *dependency injection* and considered good practice in
+modern application software. Why shouldn't our system software evolve to
+benefit from it as well?)
 
-I hope to attain this world by creating a comprehensive library of fakes and
-hooks for the entire software stack, at all layers of abstraction (programming
-language, OS, standard libraries, application libraries). As a concrete
-example, the `open()` syscall in modern unix implicitly requires the file
-system. The implicit dependency makes it hard to test code that calls
-`open()`. The Mu Way is to make the file system an explicit argument, thereby
-allowing us to use a fake file system in tests. We do this for every syscall,
-every possible way the system can interact with the outside world.
+**Brass tacks**
 
 As you might surmise, this is a lot of work. To reduce my workload and get to
 a proof-of-concept quickly, this is a very *alien* software stack. I've stolen
@@ -46,26 +155,33 @@ to. The 'OS' will lack virtual memory, user accounts, any unprivileged mode,
 address space isolation, and many other features.
 
 To avoid building a compiler I'm going to do all my programming in (extremely
-type-safe) assembly (for an idealized virtual machine that nonetheless will
-translate easily to x86). To keep assembly from getting too painful I'm going
-to pervasively use one trick: load-time directives to let me order code
-however I want, and to write boilerplate once and insert it in multiple
-places. If you're familiar with literate programming or aspect-oriented
-programming, these directives may seem vaguely familiar. If you're not, think
-of them as a richer interface for function inlining.
+type-safe) assembly (for an idealized virtual machine that nonetheless is
+designed to translate easily to real processors). To keep assembly from
+getting too painful I'm going to pervasively use one trick: load-time
+directives to let me order code however I want, and to write boilerplate once
+and insert it in multiple places. If you're familiar with literate programming
+or aspect-oriented programming, these directives may seem vaguely familiar. If
+you're not, think of them as a richer interface for function inlining. (More
+details: http://akkartik.name/post/wart-layers)
 
-Trading off notational convenience for tests may seem regressive, but I
-suspect high-level languages aren't particularly helpful in understanding
-large codebases. No matter how good a notation is, it can only let you see a
-tiny fraction of a large program at a time. Logs, on the other hand, can let
-you zoom out and take in an entire *run* at a glance, making them a superior
-unit of comprehension. If I'm right, it makes sense to prioritize the right
-*tactile* interface for working with and getting feedback on large programs
-before we invest in the *visual* tools for making them concise.
+It probably makes you sad to have to give up the notational convenience of
+modern high-level languages. I had to go through the five stages of grief
+myself. But the benefits of the right foundation were eventually too
+compelling to resist. If I turn out to be on the right track Mu will
+eventually get high-level languages and more familiar mechanisms across the
+board. And in the meantime, I'm actually seeing signs that syntax doesn't
+really matter all that much when the goal is to understand global structure. A
+recent, more speculative hypothesis of mine is that syntax is useful for
+people who already understand the global structure of a program and who need
+to repetitively perform tasks. But if you are a newcomer to a project and you
+have a tiny peephole into it (your screen), no amount of syntactic compression
+is going to get the big picture on your screen all at once. Instead you have
+to pan around and reconstruct the big picture laboriously in your head. Tests
+help, as I've described above. Another thing that helps is a zoomable
+interface to the *trace* of operations performed in the course of a test (More
+details: http://akkartik.name/post/tracing-tests)
 
-([More details.](http://akkartik.name/about))
-
-**Taking Mu for a spin**
+*Taking Mu for a spin*
 
 Mu is currently implemented in C++ and requires a unix-like environment. It's
 been tested on ubuntu 14.04 on x86, x86\_64 and ARMv7 with recent versions of
@@ -137,7 +253,7 @@ Here's a second example, of a recipe that can take ingredients:
 <img alt='fahrenheit to celsius' src='html/f2c-1.png' width='426px'>
 
 Recipes can specify headers showing their expected ingredients and products,
-separated by `->` (unlike the `<-` in *calls*).
+separated by `-&gt;` (unlike the `&lt;-` in *calls*).
 
 Since mu is a low-level VM language, it provides extra control at the cost of
 verbosity. Using `local-scope`, you have explicit control over stack frames to
