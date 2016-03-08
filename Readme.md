@@ -138,11 +138,11 @@ attain some of these abilities without the others.
 
 As a concrete example, Unix lets you open a file by calling `open()` and
 giving it a filename. But it implicitly modifies the file system, which means
-that you can't easily call it from a test. In mu, the `open()` syscall would
+that you can't easily call it from a test. In Mu, the `open()` syscall would
 take a file system object as an explicit argument. You'd then be able to
-access the real file system or fake it out inside a test. I'll be adding
-similar explicit arguments to handle the keyboard, the network, and so on.
-(This process is called *dependency injection* and considered good practice in
+access the real file system or fake it out inside a test. I'm adding similar
+explicit arguments to handle the keyboard, the network, and so on. (This
+process is called *dependency injection* and considered good practice in
 modern application software. Why shouldn't our system software evolve to
 benefit from it as well?)
 
@@ -264,9 +264,9 @@ Here's a second example, of a recipe that can take ingredients:
 <img alt='fahrenheit to celsius' src='html/f2c-1.png' width='426px'>
 
 Recipes can specify headers showing their expected ingredients and products,
-separated by `-&gt;` (unlike the `&lt;-` in *calls*).
+separated by `->` (unlike the `<-` in *calls*).
 
-Since mu is a low-level VM language, it provides extra control at the cost of
+Since Mu is a low-level VM language, it provides extra control at the cost of
 verbosity. Using `local-scope`, you have explicit control over stack frames to
 isolate your recipes (in a type-safe manner; more on that below). One
 consequence: you have to explicitly `load-ingredients` after you set up the
@@ -376,7 +376,7 @@ something you rarely want. (Luckily, this is also the sort of mistake that
 will be easily caught by tests.) *With* this line, all addresses in your
 recipe will by default refer to one of the (30, in the final case) slots
 inside this local space. (If you choose the last, most explicit option and
-need more than 30 slots, mu will complain asking you to increase capacity.)
+need more than 30 slots, Mu will complain asking you to increase capacity.)
 
 Spaces can do more than just implement local variables. You can string them
 together, pass them around, return them from functions, share them between
