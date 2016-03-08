@@ -103,7 +103,7 @@ mind. The nice experience for an outsider would be to just change that line
 and see if any tests fail. This is only possible if we eliminate all manual QA
 from our release process.
 
-*So&hellip;*
+*Therefore&hellip;*
 
 In Mu, it will be possible for any aspect of any program that you can manually
 test to also be turned into a reproducible automatic test. This may seem like
@@ -180,6 +180,15 @@ to pan around and reconstruct the big picture laboriously in your head. Tests
 help, as I've described above. Another thing that helps is a zoomable
 interface to the *trace* of operations performed in the course of a test (More
 details: http://akkartik.name/post/tracing-tests)
+
+High-level languages provide three things:
+
+a) Expressiveness (nested expressions, function calls, etc.)
+b) Safety (type checking, warnings, etc.)
+c) Automation (garbage collection, a scheduler for green threads, etc.)
+
+Mu ignores a) for a time, but there's no reason it can't provide b) and c), as
+you'll see below.
 
 *Taking Mu for a spin*
 
