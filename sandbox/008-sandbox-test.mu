@@ -5,8 +5,8 @@ scenario sandbox-click-on-result-toggles-color-to-green [
   assume-screen 50/width, 20/height
   # basic recipe
   1:address:shared:array:character <- new [ 
-recipe foo [
-  reply 4
+def foo [
+  return 4
 ]]
   # run it
   2:address:shared:array:character <- new [foo]
@@ -59,8 +59,8 @@ recipe foo [
   ]
   # now change the result
   1:address:shared:array:character <- new [ 
-recipe foo [
-  reply 3
+def foo [
+  return 3
 ]]
   # then rerun
   assume-console [
@@ -131,7 +131,7 @@ after <global-touch> [
   }
 ]
 
-recipe find-click-in-sandbox-output env:address:shared:programming-environment-data, click-row:number -> sandbox:address:shared:sandbox-data [
+def find-click-in-sandbox-output env:address:shared:programming-environment-data, click-row:number -> sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
@@ -151,13 +151,13 @@ recipe find-click-in-sandbox-output env:address:shared:programming-environment-d
   }
   # return sandbox if click is in its output region
   response-starting-row:number <- get *sandbox, response-starting-row-on-screen:offset
-  reply-unless response-starting-row, 0/no-click-in-sandbox-output
+  return-unless response-starting-row, 0/no-click-in-sandbox-output
   click-in-response?:boolean <- greater-or-equal click-row, response-starting-row
-  reply-unless click-in-response?, 0/no-click-in-sandbox-output
-  reply sandbox
+  return-unless click-in-response?, 0/no-click-in-sandbox-output
+  return sandbox
 ]
 
-recipe toggle-expected-response sandbox:address:shared:sandbox-data -> sandbox:address:shared:sandbox-data [
+def toggle-expected-response sandbox:address:shared:sandbox-data -> sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
   expected-response:address:address:shared:array:character <- get-address *sandbox, expected-response:offset
@@ -165,7 +165,7 @@ recipe toggle-expected-response sandbox:address:shared:sandbox-data -> sandbox:a
     # if expected-response is set, reset
     break-unless *expected-response
     *expected-response <- copy 0
-    reply sandbox/same-as-ingredient:0
+    return sandbox/same-as-ingredient:0
   }
   # if not, current response is the expected response
   response:address:shared:array:character <- get *sandbox, response:offset

@@ -1,7 +1,7 @@
 //: Jump primitives
 
 :(scenario jump_can_skip_instructions)
-recipe main [
+def main [
   jump 1:offset
   1:number <- copy 1
 ]
@@ -38,7 +38,7 @@ case JUMP: {
 put(Type_ordinal, "offset", 0);
 
 :(scenario jump_backward)
-recipe main [
+def main [
   jump 1:offset  # 0 -+
   jump 3:offset  #    |   +-+ 1
                  #   \/  /\ |
@@ -81,7 +81,7 @@ case JUMP_IF: {
 }
 
 :(scenario jump_if)
-recipe main [
+def main [
   jump-if 999, 1:offset
   123:number <- copy 1
 ]
@@ -91,7 +91,7 @@ recipe main [
 -mem: storing 1 in location 123
 
 :(scenario jump_if_fallthrough)
-recipe main [
+def main [
   jump-if 0, 1:offset
   123:number <- copy 1
 ]
@@ -133,7 +133,7 @@ case JUMP_UNLESS: {
 }
 
 :(scenario jump_unless)
-recipe main [
+def main [
   jump-unless 0, 1:offset
   123:number <- copy 1
 ]
@@ -143,7 +143,7 @@ recipe main [
 -mem: storing 1 in location 123
 
 :(scenario jump_unless_fallthrough)
-recipe main [
+def main [
   jump-unless 999, 1:offset
   123:number <- copy 1
 ]

@@ -14,7 +14,7 @@ container screen-cell [
   color:number
 ]
 
-recipe new-fake-screen w:number, h:number -> result:address:shared:screen [
+def new-fake-screen w:number, h:number -> result:address:shared:screen [
   local-scope
   load-ingredients
   result <- new screen:type
@@ -32,7 +32,7 @@ recipe new-fake-screen w:number, h:number -> result:address:shared:screen [
   result <- clear-screen result
 ]
 
-recipe clear-screen screen:address:shared:screen -> screen:address:shared:screen [
+def clear-screen screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists
@@ -58,13 +58,13 @@ recipe clear-screen screen:address:shared:screen -> screen:address:shared:screen
     *x <- copy 0
     x <- get-address *screen, cursor-column:offset
     *x <- copy 0
-    reply
+    return
   }
   # otherwise, real screen
   clear-display
 ]
 
-recipe sync-screen screen:address:shared:screen -> screen:address:shared:screen [
+def sync-screen screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   {
@@ -74,10 +74,10 @@ recipe sync-screen screen:address:shared:screen -> screen:address:shared:screen 
   # do nothing for fake screens
 ]
 
-recipe fake-screen-is-empty? screen:address:shared:screen -> result:boolean [
+def fake-screen-is-empty? screen:address:shared:screen -> result:boolean [
   local-scope
   load-ingredients
-  reply-unless screen, 1/true
+  return-unless screen, 1/true
   buf:address:shared:array:screen-cell <- get *screen, data:offset
   i:number <- copy 0
   len:number <- length *buf
@@ -89,12 +89,12 @@ recipe fake-screen-is-empty? screen:address:shared:screen -> result:boolean [
     i <- add i, 1
     loop-unless curr-contents
     # not 0
-    reply 0/false
+    return 0/false
   }
-  reply 1/true
+  return 1/true
 ]
 
-recipe print screen:address:shared:screen, c:character -> screen:address:shared:screen [
+def print screen:address:shared:screen, c:character -> screen:address:shared:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient
@@ -119,14 +119,14 @@ recipe print screen:address:shared:screen, c:character -> screen:address:shared:
     # if cursor is out of bounds, silently exit
     row:address:number <- get-address *screen, cursor-row:offset
     legal?:boolean <- greater-or-equal *row, 0
-    reply-unless legal?
+    return-unless legal?
     legal? <- lesser-than *row, height
-    reply-unless legal?
+    return-unless legal?
     column:address:number <- get-address *screen, cursor-column:offset
     legal? <- greater-or-equal *column, 0
-    reply-unless legal?
+    return-unless legal?
     legal? <- lesser-than *column, width
-    reply-unless legal?
+    return-unless legal?
 #?     $print [print-character (], *row, [, ], *column, [): ], c, 10/newline
     # special-case: newline
     {
@@ -141,7 +141,7 @@ recipe print screen:address:shared:screen, c:character -> screen:address:shared:
         *column <- copy 0
         *row <- add *row, 1
       }
-      reply
+      return
     }
     # save character in fake screen
     index:number <- multiply *row, width
@@ -165,7 +165,7 @@ recipe print screen:address:shared:screen, c:character -> screen:address:shared:
         cursor-color:address:number <- get-address *cursor, color:offset
         *cursor-color <- copy 7/white
       }
-      reply
+      return
     }
     cursor:address:screen-cell <- index-address *buf, index
     cursor-contents:address:character <- get-address *cursor, contents:offset
@@ -179,7 +179,7 @@ recipe print screen:address:shared:screen, c:character -> screen:address:shared:
       break-if at-right?
       *column <- add *column, 1
     }
-    reply
+    return
   }
   # otherwise, real screen
   print-character-to-display c, color, bg-color
@@ -356,7 +356,7 @@ scenario print-character-at-bottom-right [
   ]
 ]
 
-recipe clear-line screen:address:shared:screen -> screen:address:shared:screen [
+def clear-line screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   space:character <- copy 0/nul
@@ -376,13 +376,13 @@ recipe clear-line screen:address:shared:screen -> screen:address:shared:screen [
     }
     # now back to where the cursor was
     *column <- copy original-column
-    reply
+    return
   }
   # otherwise, real screen
   clear-line-on-display
 ]
 
-recipe cursor-position screen:address:shared:screen -> row:number, column:number [
+def cursor-position screen:address:shared:screen -> row:number, column:number [
   local-scope
   load-ingredients
   # if x exists, lookup cursor in fake screen
@@ -390,12 +390,12 @@ recipe cursor-position screen:address:shared:screen -> row:number, column:number
     break-unless screen
     row:number <- get *screen, cursor-row:offset
     column:number <- get *screen, cursor-column:offset
-    reply
+    return
   }
   row, column <- cursor-position-on-display
 ]
 
-recipe move-cursor screen:address:shared:screen, new-row:number, new-column:number -> screen:address:shared:screen [
+def move-cursor screen:address:shared:screen, new-row:number, new-column:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -405,7 +405,7 @@ recipe move-cursor screen:address:shared:screen, new-row:number, new-column:numb
     *row <- copy new-row
     column:address:number <- get-address *screen, cursor-column:offset
     *column <- copy new-column
-    reply
+    return
   }
   # otherwise, real screen
   move-cursor-on-display new-row, new-column
@@ -442,7 +442,7 @@ scenario clear-line-erases-printed-characters [
   ]
 ]
 
-recipe cursor-down screen:address:shared:screen -> screen:address:shared:screen [
+def cursor-down screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -457,13 +457,13 @@ recipe cursor-down screen:address:shared:screen -> screen:address:shared:screen 
       break-if at-bottom?
       *row <- add *row, 1
     }
-    reply
+    return
   }
   # otherwise, real screen
   move-cursor-down-on-display
 ]
 
-recipe cursor-up screen:address:shared:screen -> screen:address:shared:screen [
+def cursor-up screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -476,13 +476,13 @@ recipe cursor-up screen:address:shared:screen -> screen:address:shared:screen [
       break-if at-top?
       *row <- subtract *row, 1
     }
-    reply
+    return
   }
   # otherwise, real screen
   move-cursor-up-on-display
 ]
 
-recipe cursor-right screen:address:shared:screen -> screen:address:shared:screen [
+def cursor-right screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -497,13 +497,13 @@ recipe cursor-right screen:address:shared:screen -> screen:address:shared:screen
       break-if at-bottom?
       *column <- add *column, 1
     }
-    reply
+    return
   }
   # otherwise, real screen
   move-cursor-right-on-display
 ]
 
-recipe cursor-left screen:address:shared:screen -> screen:address:shared:screen [
+def cursor-left screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -516,13 +516,13 @@ recipe cursor-left screen:address:shared:screen -> screen:address:shared:screen 
       break-if at-top?
       *column <- subtract *column, 1
     }
-    reply
+    return
   }
   # otherwise, real screen
   move-cursor-left-on-display
 ]
 
-recipe cursor-to-start-of-line screen:address:shared:screen -> screen:address:shared:screen [
+def cursor-to-start-of-line screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   row:number <- cursor-position screen
@@ -530,90 +530,90 @@ recipe cursor-to-start-of-line screen:address:shared:screen -> screen:address:sh
   screen <- move-cursor screen, row, column
 ]
 
-recipe cursor-to-next-line screen:address:shared:screen -> screen:address:shared:screen [
+def cursor-to-next-line screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   screen <- cursor-down screen
   screen <- cursor-to-start-of-line screen
 ]
 
-recipe screen-width screen:address:shared:screen -> width:number [
+def screen-width screen:address:shared:screen -> width:number [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
   {
     break-unless screen
     width <- get *screen, num-columns:offset
-    reply
+    return
   }
   # otherwise, real screen
   width <- display-width
 ]
 
-recipe screen-height screen:address:shared:screen -> height:number [
+def screen-height screen:address:shared:screen -> height:number [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
   {
     break-unless screen
     height <- get *screen, num-rows:offset
-    reply
+    return
   }
   # otherwise, real screen
   height <- display-height
 ]
 
-recipe hide-cursor screen:address:shared:screen -> screen:address:shared:screen [
+def hide-cursor screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
   {
     break-unless screen
-    reply
+    return
   }
   # otherwise, real screen
   hide-cursor-on-display
 ]
 
-recipe show-cursor screen:address:shared:screen -> screen:address:shared:screen [
+def show-cursor screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
   {
     break-unless screen
-    reply
+    return
   }
   # otherwise, real screen
   show-cursor-on-display
 ]
 
-recipe hide-screen screen:address:shared:screen -> screen:address:shared:screen [
+def hide-screen screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
   # todo: help test this
   {
     break-unless screen
-    reply
+    return
   }
   # otherwise, real screen
   hide-display
 ]
 
-recipe show-screen screen:address:shared:screen -> screen:address:shared:screen [
+def show-screen screen:address:shared:screen -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
   # todo: help test this
   {
     break-unless screen
-    reply
+    return
   }
   # otherwise, real screen
   show-display
 ]
 
-recipe print screen:address:shared:screen, s:address:shared:array:character -> screen:address:shared:screen [
+def print screen:address:shared:screen, s:address:shared:array:character -> screen:address:shared:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient
@@ -660,7 +660,7 @@ scenario print-text-stops-at-right-margin [
   ]
 ]
 
-recipe print-integer screen:address:shared:screen, n:number -> screen:address:shared:screen [
+def print-integer screen:address:shared:screen, n:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient
@@ -681,7 +681,7 @@ recipe print-integer screen:address:shared:screen, n:number -> screen:address:sh
 ]
 
 # for now, we can only print integers
-recipe print screen:address:shared:screen, n:number -> screen:address:shared:screen [
+def print screen:address:shared:screen, n:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient
@@ -700,7 +700,7 @@ recipe print screen:address:shared:screen, n:number -> screen:address:shared:scr
 ]
 
 # addresses
-recipe print screen:address:shared:screen, n:address:_elem -> screen:address:shared:screen [
+def print screen:address:shared:screen, n:address:_elem -> screen:address:shared:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient

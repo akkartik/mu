@@ -6,7 +6,7 @@
 
 :(scenario surrounding_space)
 # location 1 in space 1 refers to the space surrounding the default space, here 20.
-recipe main [
+def main [
   # pretend shared:array:location; in practice we'll use new
   10:number <- copy 0  # refcount
   11:number <- copy 5  # length
@@ -19,7 +19,7 @@ recipe main [
   1:number <- copy 32
   1:number/space:1 <- copy 33
 ]
-recipe dummy [  # just for the /names: property above
+def dummy [  # just for the /names: property above
 ]
 # chain space: 10 + /*skip refcount*/1 + /*skip length*/1
 +mem: storing 20 in location 12
@@ -57,6 +57,6 @@ long long int space_index(const reagent& x) {
 }
 
 :(scenario permit_space_as_variable_name)
-recipe main [
+def main [
   space:number <- copy 0
 ]

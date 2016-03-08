@@ -10,14 +10,14 @@
 //: another. Later layers will add more primitives.
 
 :(scenario copy_literal)
-recipe main [
+def main [
   1:number <- copy 23
 ]
 +run: 1:number <- copy 23
 +mem: storing 23 in location 1
 
 :(scenario copy)
-recipe main [
+def main [
   1:number <- copy 23
   2:number <- copy 1:number
 ]
@@ -26,7 +26,7 @@ recipe main [
 +mem: storing 23 in location 2
 
 :(scenario copy_multiple)
-recipe main [
+def main [
   1:number, 2:number <- copy 23, 24
 ]
 +mem: storing 23 in location 1
@@ -330,7 +330,7 @@ void run(string form) {
 }
 
 :(scenario run_label)
-recipe main [
+def main [
   +foo
   1:number <- copy 23
   2:number <- copy 1:number
@@ -340,14 +340,14 @@ recipe main [
 -run: +foo
 
 :(scenario run_dummy)
-recipe main [
+def main [
   _ <- copy 0
 ]
 +run: _ <- copy 0
 
 :(scenario write_to_0_disallowed)
 % Hide_errors = true;
-recipe main [
+def main [
   0:number <- copy 34
 ]
 -mem: storing 34 in location 0
@@ -356,25 +356,25 @@ recipe main [
 //: to put spaces around the '<-'.
 
 :(scenario comma_without_space)
-recipe main [
+def main [
   1:number, 2:number <- copy 2,2
 ]
 +mem: storing 2 in location 1
 
 :(scenario space_without_comma)
-recipe main [
+def main [
   1:number, 2:number <- copy 2 2
 ]
 +mem: storing 2 in location 1
 
 :(scenario comma_before_space)
-recipe main [
+def main [
   1:number, 2:number <- copy 2, 2
 ]
 +mem: storing 2 in location 1
 
 :(scenario comma_after_space)
-recipe main [
+def main [
   1:number, 2:number <- copy 2 ,2
 ]
 +mem: storing 2 in location 1

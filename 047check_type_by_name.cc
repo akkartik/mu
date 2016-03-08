@@ -8,7 +8,7 @@
 
 :(scenario transform_fails_on_reusing_name_with_different_type)
 % Hide_errors = true;
-recipe main [
+def main [
   x:number <- copy 1
   x:boolean <- copy 1
 ]
@@ -67,19 +67,19 @@ void check_type(set<reagent>& known, const reagent& x, const recipe_ordinal r) {
 }
 
 :(scenario transform_fills_in_missing_types)
-recipe main [
+def main [
   x:number <- copy 1
   y:number <- add x, 1
 ]
 
 :(scenario transform_fills_in_missing_types_in_product)
-recipe main [
+def main [
   x:number <- copy 1
   x <- copy 2
 ]
 
 :(scenario transform_fills_in_missing_types_in_product_and_ingredient)
-recipe main [
+def main [
   x:number <- copy 1
   x <- add x, 1
 ]
@@ -87,7 +87,7 @@ recipe main [
 
 :(scenario transform_fails_on_missing_types_in_first_mention)
 % Hide_errors = true;
-recipe main [
+def main [
   x <- copy 1
   x:number <- copy 2
 ]
@@ -95,7 +95,7 @@ recipe main [
 
 :(scenario typo_in_address_type_fails)
 % Hide_errors = true;
-recipe main [
+def main [
   y:address:shared:charcter <- new character:type
   *y <- copy 67
 ]
@@ -103,16 +103,16 @@ recipe main [
 
 :(scenario array_type_without_size_fails)
 % Hide_errors = true;
-recipe main [
+def main [
   x:array:number <- merge 2, 12, 13
 ]
 +error: main can't determine the size of array variable x. Either allocate it separately and make the type of x address:shared:..., or specify the length of the array in the type of x.
 
 :(scenarios transform)
 :(scenario transform_checks_types_of_identical_reagents_in_multiple_spaces)
-recipe foo [  # dummy
+def foo [  # dummy
 ]
-recipe main [
+def main [
   local-scope
   0:address:shared:array:location/names:foo <- copy 0  # specify surrounding space
   x:boolean <- copy 1/true

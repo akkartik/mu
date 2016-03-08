@@ -2,7 +2,7 @@
 # display the position after each move.
 
 # recipes are mu's names for functions
-recipe main [
+def main [
   open-console  # take control of screen, keyboard and mouse
 
   # The chessboard recipe takes keyboard and screen objects as 'ingredients'.
@@ -66,7 +66,7 @@ scenario print-board-and-read-move [
 
 ## Here's how 'chessboard' is implemented.
 
-recipe chessboard screen:address:shared:screen, console:address:shared:console -> screen:address:shared:screen, console:address:shared:console [
+def chessboard screen:address:shared:screen, console:address:shared:console -> screen:address:shared:screen, console:address:shared:console [
   local-scope
   load-ingredients
   board:address:shared:array:address:shared:array:character <- initial-position
@@ -109,7 +109,7 @@ recipe chessboard screen:address:shared:screen, console:address:shared:console -
 
 ## a board is an array of files, a file is an array of characters (squares)
 
-recipe new-board initial-position:address:shared:array:character -> board:address:shared:array:address:shared:array:character [
+def new-board initial-position:address:shared:array:character -> board:address:shared:array:address:shared:array:character [
   local-scope
   load-ingredients
   # assert(length(initial-position) == 64)
@@ -129,7 +129,7 @@ recipe new-board initial-position:address:shared:array:character -> board:addres
   }
 ]
 
-recipe new-file position:address:shared:array:character, index:number -> result:address:shared:array:character [
+def new-file position:address:shared:array:character, index:number -> result:address:shared:array:character [
   local-scope
   load-ingredients
   index <- multiply index, 8
@@ -146,7 +146,7 @@ recipe new-file position:address:shared:array:character, index:number -> result:
   }
 ]
 
-recipe print-board screen:address:shared:screen, board:address:shared:array:address:shared:array:character -> screen:address:shared:screen [
+def print-board screen:address:shared:screen, board:address:shared:array:address:shared:array:character -> screen:address:shared:screen [
   local-scope
   load-ingredients
   row:number <- copy 7  # start printing from the top of the board
@@ -185,7 +185,7 @@ recipe print-board screen:address:shared:screen, board:address:shared:array:addr
   screen <- cursor-to-next-line screen
 ]
 
-recipe initial-position -> board:address:shared:array:address:shared:array:character [
+def initial-position -> board:address:shared:array:address:shared:array:character [
   local-scope
   # layout in memory (in raster order):
   #   R P _ _ _ _ p r
@@ -242,61 +242,61 @@ container move [
 ]
 
 # prints only error messages to screen
-recipe read-move stdin:address:shared:channel, screen:address:shared:screen -> result:address:shared:move, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+def read-move stdin:address:shared:channel, screen:address:shared:screen -> result:address:shared:move, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   local-scope
   load-ingredients
   from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
-  reply-if quit?, 0/dummy, quit?, error?
-  reply-if error?, 0/dummy, quit?, error?
+  return-if quit?, 0/dummy, quit?, error?
+  return-if error?, 0/dummy, quit?, error?
   # construct the move object
   result:address:shared:move <- new move:type
   x:address:number <- get-address *result, from-file:offset
   *x <- copy from-file
   x <- get-address *result, from-rank:offset
   *x, quit?, error? <- read-rank stdin, screen
-  reply-if quit?, 0/dummy, quit?, error?
-  reply-if error?, 0/dummy, quit?, error?
+  return-if quit?, 0/dummy, quit?, error?
+  return-if error?, 0/dummy, quit?, error?
   error? <- expect-from-channel stdin, 45/dash, screen
-  reply-if error?, 0/dummy, 0/quit, error?
+  return-if error?, 0/dummy, 0/quit, error?
   x <- get-address *result, to-file:offset
   *x, quit?, error? <- read-file stdin, screen
-  reply-if quit?:boolean, 0/dummy, quit?:boolean, error?:boolean
-  reply-if error?:boolean, 0/dummy, quit?:boolean, error?:boolean
+  return-if quit?:boolean, 0/dummy, quit?:boolean, error?:boolean
+  return-if error?:boolean, 0/dummy, quit?:boolean, error?:boolean
   x:address:number <- get-address *result, to-rank:offset
   *x, quit?, error? <- read-rank stdin, screen
-  reply-if quit?, 0/dummy, quit?, error?
-  reply-if error?, 0/dummy, quit?, error?
+  return-if quit?, 0/dummy, quit?, error?
+  return-if error?, 0/dummy, quit?, error?
   error? <- expect-from-channel stdin, 10/newline, screen
-  reply-if error?, 0/dummy, 0/quit, error?
-  reply result, quit?, error?
+  return-if error?, 0/dummy, 0/quit, error?
+  return result, quit?, error?
 ]
 
 # valid values for file: 0-7
-recipe read-file stdin:address:shared:channel, screen:address:shared:screen -> file:number, quit:boolean, error:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+def read-file stdin:address:shared:channel, screen:address:shared:screen -> file:number, quit:boolean, error:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
   {
     q-pressed?:boolean <- equal c, 81/Q
     break-unless q-pressed?
-    reply 0/dummy, 1/quit, 0/error
+    return 0/dummy, 1/quit, 0/error
   }
   {
     q-pressed? <- equal c, 113/q
     break-unless q-pressed?
-    reply 0/dummy, 1/quit, 0/error
+    return 0/dummy, 1/quit, 0/error
   }
   {
     empty-fake-keyboard?:boolean <- equal c, 0/eof
     break-unless empty-fake-keyboard?
-    reply 0/dummy, 1/quit, 0/error
+    return 0/dummy, 1/quit, 0/error
   }
   {
     newline?:boolean <- equal c, 10/newline
     break-unless newline?
     error-message:address:shared:array:character <- new [that's not enough]
     print screen, error-message
-    reply 0/dummy, 0/quit, 1/error
+    return 0/dummy, 0/quit, 1/error
   }
   file:number <- subtract c, 97/a
   # 'a' <= file <= 'h'
@@ -307,7 +307,7 @@ recipe read-file stdin:address:shared:channel, screen:address:shared:screen -> f
     print screen, error-message
     print screen, c
     cursor-to-next-line screen
-    reply 0/dummy, 0/quit, 1/error
+    return 0/dummy, 0/quit, 1/error
   }
   {
     below-max:boolean <- lesser-than file, 8
@@ -315,32 +315,32 @@ recipe read-file stdin:address:shared:channel, screen:address:shared:screen -> f
     error-message <- new [file too high: ]
     print screen, error-message
     print screen, c
-    reply 0/dummy, 0/quit, 1/error
+    return 0/dummy, 0/quit, 1/error
   }
-  reply file, 0/quit, 0/error
+  return file, 0/quit, 0/error
 ]
 
 # valid values: 0-7, -1 (quit), -2 (error)
-recipe read-rank stdin:address:shared:channel, screen:address:shared:screen -> rank:number, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+def read-rank stdin:address:shared:channel, screen:address:shared:screen -> rank:number, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
   {
     q-pressed?:boolean <- equal c, 8/Q
     break-unless q-pressed?
-    reply 0/dummy, 1/quit, 0/error
+    return 0/dummy, 1/quit, 0/error
   }
   {
     q-pressed? <- equal c, 113/q
     break-unless q-pressed?
-    reply 0/dummy, 1/quit, 0/error
+    return 0/dummy, 1/quit, 0/error
   }
   {
     newline?:boolean <- equal c, 10  # newline
     break-unless newline?
     error-message:address:shared:array:character <- new [that's not enough]
     print screen, error-message
-    reply 0/dummy, 0/quit, 1/error
+    return 0/dummy, 0/quit, 1/error
   }
   rank:number <- subtract c, 49/'1'
   # assert'1' <= rank <= '8'
@@ -350,7 +350,7 @@ recipe read-rank stdin:address:shared:channel, screen:address:shared:screen -> r
     error-message <- new [rank too low: ]
     print screen, error-message
     print screen, c
-    reply 0/dummy, 0/quit, 1/error
+    return 0/dummy, 0/quit, 1/error
   }
   {
     below-max:boolean <- lesser-or-equal rank, 7
@@ -358,14 +358,14 @@ recipe read-rank stdin:address:shared:channel, screen:address:shared:screen -> r
     error-message <- new [rank too high: ]
     print screen, error-message
     print screen, c
-    reply 0/dummy, 0/quit, 1/error
+    return 0/dummy, 0/quit, 1/error
   }
-  reply rank, 0/quit, 0/error
+  return rank, 0/quit, 0/error
 ]
 
 # read a character from the given channel and check that it's what we expect
 # return true on error
-recipe expect-from-channel stdin:address:shared:channel, expected:character, screen:address:shared:screen -> result:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+def expect-from-channel stdin:address:shared:channel, expected:character, screen:address:shared:screen -> result:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
@@ -542,7 +542,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
   ]
 ]
 
-recipe make-move board:address:shared:array:address:shared:array:character, m:address:shared:move -> board:address:shared:array:address:shared:array:character [
+def make-move board:address:shared:array:address:shared:array:character, m:address:shared:move -> board:address:shared:array:address:shared:array:character [
   local-scope
   load-ingredients
   from-file:number <- get *m, from-file:offset

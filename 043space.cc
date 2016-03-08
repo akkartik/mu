@@ -5,7 +5,7 @@
 :(scenario set_default_space)
 # if default-space is 10, and if an array of 5 locals lies from location 12 to 16 (inclusive),
 # then local 0 is really location 12, local 1 is really location 13, and so on.
-recipe main [
+def main [
   # pretend shared:array:location; in practice we'll use new
   10:number <- copy 0  # refcount
   11:number <- copy 5  # length
@@ -15,7 +15,7 @@ recipe main [
 +mem: storing 23 in location 13
 
 :(scenario lookup_sidesteps_default_space)
-recipe main [
+def main [
   # pretend pointer from outside
   3:number <- copy 34
   # pretend shared:array:location; in practice we'll use new
@@ -31,7 +31,7 @@ recipe main [
 //:: first disable name conversion for 'default-space'
 :(scenario convert_names_passes_default_space)
 % Hide_errors = true;
-recipe main [
+def main [
   default-space:number, x:number <- copy 0, 1
 ]
 +name: assign x 1
@@ -101,7 +101,7 @@ long long int address(long long int offset, long long int base) {
   }
 
 :(scenario get_default_space)
-recipe main [
+def main [
   default-space:address:shared:array:location <- copy 10/unsafe
   1:address:shared:array:location/raw <- copy default-space:address:shared:array:location
 ]
@@ -117,7 +117,7 @@ recipe main [
 //:: fix 'get'
 
 :(scenario lookup_sidesteps_default_space_in_get)
-recipe main [
+def main [
   # pretend pointer to container from outside
   12:number <- copy 34
   13:number <- copy 35
@@ -137,7 +137,7 @@ tmp.properties.push_back(pair<string, string_tree*>("raw", NULL));
 //:: fix 'index'
 
 :(scenario lookup_sidesteps_default_space_in_index)
-recipe main [
+def main [
   # pretend pointer to array from outside
   12:number <- copy 2
   13:number <- copy 34
@@ -159,7 +159,7 @@ tmp.properties.push_back(pair<string, string_tree*>("raw", NULL));
 //:: allocate in a default space with names
 
 :(scenario new_default_space)
-recipe main [
+def main [
   new-default-space
   x:number <- copy 0
   y:number <- copy 3
@@ -198,15 +198,15 @@ if (curr.name == "new-default-space") {
 //:: from a recipe
 
 :(scenario local_scope)
-recipe main [
+def main [
   1:address <- foo
   2:address <- foo
   3:boolean <- equal 1:address, 2:address
 ]
-recipe foo [
+def foo [
   local-scope
   x:number <- copy 34
-  reply default-space:address:shared:array:location
+  return default-space:address:shared:array:location
 ]
 # both calls to foo should have received the same default-space
 +mem: storing 1 in location 3

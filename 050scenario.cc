@@ -172,11 +172,11 @@ void run_mu_scenario(const scenario& s) {
 :(scenario forbid_redefining_scenario_even_if_forced)
 % Hide_errors = true;
 % Disable_redefine_checks = true;
-recipe scenario-foo [
+def scenario-foo [
   1:number <- copy 34
 ]
 
-recipe scenario-foo [
+def scenario-foo [
   1:number <- copy 35
 ]
 +error: redefining recipe scenario-foo
@@ -190,7 +190,7 @@ recipe scenario-foo [
 //: 'run' interprets a string as a set of instructions
 
 :(scenario run)
-recipe main [
+def main [
   run [
     1:number <- copy 13
   ]
@@ -231,7 +231,7 @@ void bind_special_scenario_names(recipe_ordinal r) {
 }
 
 :(scenario run_multiple)
-recipe main [
+def main [
   run [
     1:number <- copy 13
   ]
@@ -253,7 +253,7 @@ Scenario_testing_scenario = false;
 :(scenario memory_check)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-recipe main [
+def main [
   memory-should-contain [
     1 <- 13
   ]
@@ -389,7 +389,7 @@ void check_string(long long int address, const string& literal) {
 :(scenario memory_check_multiple)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-recipe main [
+def main [
   memory-should-contain [
     1 <- 0
     1 <- 0
@@ -400,7 +400,7 @@ recipe main [
 :(scenario memory_check_string_length)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- copy 3
   2:number <- copy 97  # 'a'
   3:number <- copy 98  # 'b'
@@ -412,7 +412,7 @@ recipe main [
 +error: expected location 1 to contain length 2 of string [ab] but saw 3
 
 :(scenario memory_check_string)
-recipe main [
+def main [
   1:number <- copy 3
   2:number <- copy 97  # 'a'
   3:number <- copy 98  # 'b'
@@ -429,7 +429,7 @@ recipe main [
 :(scenario memory_invalid_string_check)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-recipe main [
+def main [
   memory-should-contain [
     1 <- [abc]
   ]
@@ -439,7 +439,7 @@ recipe main [
 :(scenario memory_check_with_comment)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-recipe main [
+def main [
   memory-should-contain [
     1 <- 34  # comment
   ]
@@ -456,7 +456,7 @@ recipe main [
 :(scenario trace_check_fails)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-recipe main [
+def main [
   trace-should-contain [
     a: b
     a: d
@@ -515,7 +515,7 @@ vector<trace_line> parse_trace(const string& expected) {
 :(scenario trace_check_fails_in_nonfirst_line)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-recipe main [
+def main [
   run [
     trace 1, [a], [b]
   ]
@@ -528,7 +528,7 @@ recipe main [
 
 :(scenario trace_check_passes_silently)
 % Scenario_testing_scenario = true;
-recipe main [
+def main [
   run [
     trace 1, [a], [b]
   ]
@@ -546,7 +546,7 @@ $error: 0
 :(scenario trace_negative_check_fails)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-recipe main [
+def main [
   run [
     trace 1, [a], [b]
   ]
@@ -589,7 +589,7 @@ bool check_trace_missing(const string& in) {
 
 :(scenario trace_negative_check_passes_silently)
 % Scenario_testing_scenario = true;
-recipe main [
+def main [
   trace-should-not-contain [
     a: b
   ]
@@ -600,7 +600,7 @@ $error: 0
 :(scenario trace_negative_check_fails_on_any_unexpected_line)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-recipe main [
+def main [
   run [
     trace 1, [a], [d]
   ]
@@ -612,7 +612,7 @@ recipe main [
 +error: unexpected [d] in trace with label a
 
 :(scenario trace_count_check)
-recipe main [
+def main [
   run [
     trace 1, [a], [foo]
   ]
@@ -666,7 +666,7 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
 :(scenario trace_count_check_2)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-recipe main [
+def main [
   run [
     trace 1, [a], [foo]
   ]

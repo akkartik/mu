@@ -1,16 +1,16 @@
-recipe test a:number -> b:number [
+def test a:number -> b:number [
   local-scope
   load-ingredients
   b <- add a, 1
 ]
 
-recipe test a:number, b:number -> c:number [
+def test a:number, b:number -> c:number [
   local-scope
   load-ingredients
   c <- add a, b
 ]
 
-recipe main [
+def main [
   local-scope
   a:number <- test 3  # selects single-ingredient version
   $print a, 10/newline

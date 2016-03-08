@@ -2,20 +2,20 @@
 //: ingredients, use 'next-ingredient'.
 
 :(scenario next_ingredient)
-recipe main [
+def main [
   f 2
 ]
-recipe f [
+def f [
   12:number <- next-ingredient
   13:number <- add 1, 12:number
 ]
 +mem: storing 3 in location 13
 
 :(scenario next_ingredient_missing)
-recipe main [
+def main [
   f
 ]
-recipe f [
+def f [
   _, 12:number <- next-ingredient
 ]
 +mem: storing 0 in location 12
@@ -86,19 +86,19 @@ case NEXT_INGREDIENT: {
 
 :(scenario next_ingredient_fail_on_missing)
 % Hide_errors = true;
-recipe main [
+def main [
   f
 ]
-recipe f [
+def f [
   11:number <- next-ingredient
 ]
 +error: f: no ingredient to save in 11:number
 
 :(scenario rewind_ingredients)
-recipe main [
+def main [
   f 2
 ]
-recipe f [
+def f [
   12:number <- next-ingredient  # consume ingredient
   _, 1:boolean <- next-ingredient  # will not find any ingredients
   rewind-ingredients
@@ -124,10 +124,10 @@ case REWIND_INGREDIENTS: {
 }
 
 :(scenario ingredient)
-recipe main [
+def main [
   f 1, 2
 ]
-recipe f [
+def f [
   12:number <- ingredient 1  # consume second ingredient first
   13:number, 1:boolean <- next-ingredient  # next-ingredient tries to scan past that
 ]

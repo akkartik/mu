@@ -2,14 +2,14 @@
 //: number of ingredients and yields some fixed number of products.
 
 :(scenario recipe_with_header)
-recipe main [
+def main [
   1:number/raw <- add2 3, 5
 ]
-recipe add2 x:number, y:number -> z:number [
+def add2 x:number, y:number -> z:number [
   local-scope
   load-ingredients
   z:number <- add x, y
-  reply z
+  return z
 ]
 +mem: storing 8 in location 1
 
@@ -48,38 +48,38 @@ void load_recipe_header(istream& in, recipe& result) {
 }
 
 :(scenario recipe_handles_stray_comma)
-recipe main [
+def main [
   1:number/raw <- add2 3, 5
 ]
-recipe add2 x:number, y:number -> z:number, [
+def add2 x:number, y:number -> z:number, [
   local-scope
   load-ingredients
   z:number <- add x, y
-  reply z
+  return z
 ]
 +mem: storing 8 in location 1
 
 :(scenario recipe_handles_stray_comma_2)
-recipe main [
+def main [
   foo
 ]
-recipe foo, [
+def foo, [
   1:number/raw <- add 2, 2
 ]
-recipe bar [
+def bar [
   1:number/raw <- add 2, 3
 ]
 +mem: storing 4 in location 1
 
 :(scenario recipe_handles_missing_bracket)
 % Hide_errors = true;
-recipe main
+def main
 ]
 +error: recipe body must begin with '['
 
 :(scenario recipe_handles_missing_bracket_2)
 % Hide_errors = true;
-recipe main
+def main
   local-scope
   {
   }
@@ -90,7 +90,7 @@ recipe main
 
 :(scenario recipe_handles_missing_bracket_3)
 % Hide_errors = true;
-recipe main  # comment
+def main  # comment
   local-scope
   {
   }
@@ -110,7 +110,7 @@ for (long long int i = 0; i < SIZE(x.products); ++i)
 //: If a recipe never mentions any ingredients or products, assume it has a header.
 
 :(scenario recipe_without_ingredients_or_products_has_header)
-recipe test [
+def test [
   1:number <- copy 34
 ]
 +parse: recipe test has a header
@@ -121,6 +121,7 @@ if (!result.has_header) {
   for (long long int i = 0; i < SIZE(result.steps); ++i) {
     const instruction& inst = result.steps.at(i);
     if ((inst.name == "reply" && !inst.ingredients.empty())
+        || (inst.name == "return" && !inst.ingredients.empty())
         || inst.name == "next-ingredient"
         || inst.name == "ingredient"
         || inst.name == "rewind-ingredients") {
@@ -182,25 +183,25 @@ case NEXT_INGREDIENT_WITHOUT_TYPECHECKING: {
 
 :(scenario show_clear_error_on_bad_call)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- foo 34
 ]
-recipe foo x:point -> y:number [
+def foo x:point -> y:number [
   local-scope
   load-ingredients
-  reply 35
+  return 35
 ]
 +error: main: ingredient 0 has the wrong type at '1:number <- foo 34'
 
 :(scenario show_clear_error_on_bad_call_2)
 % Hide_errors = true;
-recipe main [
+def main [
   1:point <- foo 34
 ]
-recipe foo x:number -> y:number [
+def foo x:number -> y:number [
   local-scope
   load-ingredients
-  reply x
+  return x
 ]
 +error: main: product 0 has the wrong type at '1:point <- foo 34'
 
@@ -245,11 +246,11 @@ bool is_unique_address(reagent x) {
 
 :(scenario forbid_calls_with_nonshared_addresses)
 % Hide_errors = true;
-recipe main [
+def main [
   1:address:number <- copy 0
   foo 1:address:number
 ]
-recipe foo x:address:number [
+def foo x:address:number [
   local-scope
   load-ingredients
 ]
@@ -257,10 +258,10 @@ recipe foo x:address:number [
 
 :(scenario forbid_calls_with_nonshared_addresses_2)
 % Hide_errors = true;
-recipe main [
+def main [
   1:address:number <- foo
 ]
-recipe foo -> x:address:number [
+def foo -> x:address:number [
   local-scope
   load-ingredients
   x <- copy 0
@@ -272,13 +273,13 @@ recipe foo -> x:address:number [
 :(scenarios transform)
 :(scenario recipe_headers_are_checked)
 % Hide_errors = true;
-recipe add2 x:number, y:number -> z:number [
+def add2 x:number, y:number -> z:number [
   local-scope
   load-ingredients
   z:address:number <- copy 0/unsafe
-  reply z
+  return z
 ]
-+error: add2: replied with the wrong type at 'reply z'
++error: add2: replied with the wrong type at 'return z'
 
 :(before "End Checks")
 Transform.push_back(check_reply_instructions_against_header);  // idempotent
@@ -290,7 +291,7 @@ void check_reply_instructions_against_header(const recipe_ordinal r) {
   trace(9991, "transform") << "--- checking reply instructions against header for " << caller_recipe.name << end();
   for (long long int i = 0; i < SIZE(caller_recipe.steps); ++i) {
     const instruction& inst = caller_recipe.steps.at(i);
-    if (inst.name != "reply") continue;
+    if (inst.name != "reply" && inst.name != "return") continue;
     if (SIZE(caller_recipe.products) != SIZE(inst.ingredients)) {
       raise << maybe(caller_recipe.name) << "replied with the wrong number of products at '" << to_string(inst) << "'\n" << end();
       continue;
@@ -304,20 +305,20 @@ void check_reply_instructions_against_header(const recipe_ordinal r) {
 
 :(scenario recipe_headers_are_checked_2)
 % Hide_errors = true;
-recipe add2 x:number, y:number [
+def add2 x:number, y:number [
   local-scope
   load-ingredients
   z:address:number <- copy 0/unsafe
-  reply z
+  return z
 ]
-+error: add2: replied with the wrong number of products at 'reply z'
++error: add2: replied with the wrong number of products at 'return z'
 
 :(scenario recipe_headers_check_for_duplicate_names)
 % Hide_errors = true;
-recipe add2 x:number, x:number -> z:number [
+def add2 x:number, x:number -> z:number [
   local-scope
   load-ingredients
-  reply z
+  return z
 ]
 +error: add2: x can't repeat in the ingredients
 
@@ -344,14 +345,14 @@ void check_header_ingredients(const recipe_ordinal r) {
 
 :(scenarios run)
 :(scenario deduce_instruction_types_from_recipe_header)
-recipe main [
+def main [
   1:number/raw <- add2 3, 5
 ]
-recipe add2 x:number, y:number -> z:number [
+def add2 x:number, y:number -> z:number [
   local-scope
   load-ingredients
   z <- add x, y  # no type for z
-  reply z
+  return z
 ]
 +mem: storing 8 in location 1
 
@@ -399,14 +400,14 @@ void deduce_types_from_header(const recipe_ordinal r) {
 //: in the header.
 
 :(scenario reply_based_on_header)
-recipe main [
+def main [
   1:number/raw <- add2 3, 5
 ]
-recipe add2 x:number, y:number -> z:number [
+def add2 x:number, y:number -> z:number [
   local-scope
   load-ingredients
   z <- add x, y
-  reply
+  return
 ]
 +mem: storing 8 in location 1
 
@@ -420,11 +421,12 @@ void fill_in_reply_ingredients(recipe_ordinal r) {
   trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << caller_recipe.name << end();
   for (long long int i = 0; i < SIZE(caller_recipe.steps); ++i) {
     instruction& inst = caller_recipe.steps.at(i);
-    if (inst.name == "reply")
+    if (inst.name == "reply" || inst.name == "return")
       add_header_products(inst, caller_recipe);
   }
   // fall through reply
-  if (caller_recipe.steps.at(SIZE(caller_recipe.steps)-1).name != "reply") {
+  const instruction& final_instruction = caller_recipe.steps.at(SIZE(caller_recipe.steps)-1);
+  if (final_instruction.name != "reply" && final_instruction.name != "return") {
     instruction inst;
     inst.name = "reply";
     add_header_products(inst, caller_recipe);
@@ -433,7 +435,7 @@ void fill_in_reply_ingredients(recipe_ordinal r) {
 }
 
 void add_header_products(instruction& inst, const recipe& caller_recipe) {
-  assert(inst.name == "reply");
+  assert(inst.name == "reply" || inst.name == "return");
   // collect any products with the same names as ingredients
   for (long long int i = 0; i < SIZE(caller_recipe.products); ++i) {
     // if the ingredient is missing, add it from the header
@@ -449,24 +451,24 @@ void add_header_products(instruction& inst, const recipe& caller_recipe) {
 }
 
 :(scenario explicit_reply_ignores_header)
-recipe main [
+def main [
   1:number/raw, 2:number/raw <- add2 3, 5
 ]
-recipe add2 a:number, b:number -> y:number, z:number [
+def add2 a:number, b:number -> y:number, z:number [
   local-scope
   load-ingredients
   y <- add a, b
   z <- subtract a, b
-  reply a, z
+  return a, z
 ]
 +mem: storing 3 in location 1
 +mem: storing -2 in location 2
 
 :(scenario reply_on_fallthrough_based_on_header)
-recipe main [
+def main [
   1:number/raw <- add2 3, 5
 ]
-recipe add2 x:number, y:number -> z:number [
+def add2 x:number, y:number -> z:number [
   local-scope
   load-ingredients
   z <- add x, y
@@ -475,27 +477,27 @@ recipe add2 x:number, y:number -> z:number [
 +mem: storing 8 in location 1
 
 :(scenario reply_on_fallthrough_already_exists)
-recipe main [
+def main [
   1:number/raw <- add2 3, 5
 ]
-recipe add2 x:number, y:number -> z:number [
+def add2 x:number, y:number -> z:number [
   local-scope
   load-ingredients
   z <- add x, y  # no type for z
-  reply z
+  return z
 ]
-+transform: instruction: reply z
++transform: instruction: return z
 -transform: instruction: reply z:number
 +mem: storing 8 in location 1
 
 :(scenario recipe_headers_perform_same_ingredient_check)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 34
   3:number <- add2 1:number, 2:number
 ]
-recipe add2 x:number, y:number -> x:number [
+def add2 x:number, y:number -> x:number [
   local-scope
   load-ingredients
 ]

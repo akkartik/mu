@@ -1,6 +1,6 @@
 # example program: managing the display
 
-recipe main [
+def main [
   open-console
   print-character-to-display 97, 1/red, 2/green
   1:number/raw, 2:number/raw <- cursor-position-on-display

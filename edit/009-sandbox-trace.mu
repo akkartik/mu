@@ -81,7 +81,7 @@ scenario sandbox-shows-app-trace-and-result [
   1:address:shared:array:character <- new [ 
 recipe foo [
   stash [abc]
-  reply 4 
+  reply 4
 ]]
   # run it
   2:address:shared:array:character <- new [foo]
@@ -127,7 +127,7 @@ container sandbox-data [
 ]
 
 # replaced in a later layer
-recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+def! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   data:address:shared:array:character <- get *sandbox, data:offset
@@ -166,7 +166,7 @@ after <global-touch> [
   }
 ]
 
-recipe find-click-in-sandbox-code env:address:shared:programming-environment-data, click-row:number -> sandbox:address:shared:sandbox-data [
+def find-click-in-sandbox-code env:address:shared:programming-environment-data, click-row:number -> sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
@@ -192,9 +192,9 @@ recipe find-click-in-sandbox-code env:address:shared:programming-environment-dat
   click-on-sandbox-code?:boolean <- and click-above-response?, click-below-menu?
   {
     break-if click-on-sandbox-code?
-    reply 0/no-click-in-sandbox-output
+    return 0/no-click-in-sandbox-output
   }
-  reply sandbox
+  return sandbox
 ]
 
 # when rendering a sandbox, dump its trace before response/warning if display-trace? property is set

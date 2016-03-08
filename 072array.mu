@@ -12,7 +12,7 @@ scenario array-from-args [
 ]
 
 # create an array out of a list of scalar args
-recipe new-array -> result:address:shared:array:character [
+def new-array -> result:address:shared:array:character [
   local-scope
   capacity:number <- copy 0
   {
@@ -36,5 +36,5 @@ recipe new-array -> result:address:shared:array:character [
     i <- add i, 1
     loop
   }
-  reply result
+  return result
 ]

@@ -7,7 +7,7 @@ container duplex-list:_elem [
 ]
 
 # should I say in/contained-in:result, allow ingredients to refer to products?
-recipe push x:_elem, in:address:shared:duplex-list:_elem -> in:address:shared:duplex-list:_elem [
+def push x:_elem, in:address:shared:duplex-list:_elem -> in:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   result:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
@@ -20,29 +20,29 @@ recipe push x:_elem, in:address:shared:duplex-list:_elem -> in:address:shared:du
     prev:address:address:shared:duplex-list:_elem <- get-address *in, prev:offset
     *prev <- copy result
   }
-  reply result  # needed explicitly because we need to replace 'in' with 'result'
+  return result  # needed explicitly because we need to replace 'in' with 'result'
 ]
 
-recipe first in:address:shared:duplex-list:_elem -> result:_elem [
+def first in:address:shared:duplex-list:_elem -> result:_elem [
   local-scope
   load-ingredients
-  reply-unless in, 0
+  return-unless in, 0
   result <- get *in, value:offset
 ]
 
-recipe next in:address:shared:duplex-list:_elem -> result:address:shared:duplex-list:_elem/contained-in:in [
+def next in:address:shared:duplex-list:_elem -> result:address:shared:duplex-list:_elem/contained-in:in [
   local-scope
   load-ingredients
-  reply-unless in, 0
+  return-unless in, 0
   result <- get *in, next:offset
 ]
 
-recipe prev in:address:shared:duplex-list:_elem -> result:address:shared:duplex-list:_elem/contained-in:in [
+def prev in:address:shared:duplex-list:_elem -> result:address:shared:duplex-list:_elem/contained-in:in [
   local-scope
   load-ingredients
-  reply-unless in, 0
+  return-unless in, 0
   result <- get *in, prev:offset
-  reply result
+  return result
 ]
 
 scenario duplex-list-handling [
@@ -87,7 +87,7 @@ scenario duplex-list-handling [
 ]
 
 # insert 'x' after 'in'
-recipe insert x:_elem, in:address:shared:duplex-list:_elem -> in:address:shared:duplex-list:_elem [
+def insert x:_elem, in:address:shared:duplex-list:_elem -> in:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   new-node:address:shared:duplex-list:_elem <- new {(duplex-list _elem): type}
@@ -104,7 +104,7 @@ recipe insert x:_elem, in:address:shared:duplex-list:_elem -> in:address:shared:
   y <- get-address *new-node, next:offset
   *y <- copy next-node
   # if next-node is not null
-  reply-unless next-node
+  return-unless next-node
   # next-node.prev = new-node
   y <- get-address *next-node, prev:offset
   *y <- copy new-node
@@ -222,11 +222,11 @@ scenario inserting-after-start-of-duplex-list [
 #
 # Returns null if and only if list is empty. Beware: in that case any other
 # pointers to the head are now invalid.
-recipe remove x:address:shared:duplex-list:_elem/contained-in:in, in:address:shared:duplex-list:_elem -> in:address:shared:duplex-list:_elem [
+def remove x:address:shared:duplex-list:_elem/contained-in:in, in:address:shared:duplex-list:_elem -> in:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   # if 'x' is null, return
-  reply-unless x
+  return-unless x
   next-node:address:shared:duplex-list:_elem <- get *x, next:offset
   prev-node:address:shared:duplex-list:_elem <- get *x, prev:offset
   # null x's pointers
@@ -245,11 +245,11 @@ recipe remove x:address:shared:duplex-list:_elem/contained-in:in, in:address:sha
     break-unless prev-node
     tmp <- get-address *prev-node, next:offset
     *tmp <- copy next-node
-    reply
+    return
   }
   # if prev-node is null, then we removed the node at 'in'
   # return the new head rather than the old 'in'
-  reply next-node
+  return next-node
 ]
 
 scenario removing-from-duplex-list [
@@ -347,19 +347,19 @@ scenario removing-from-singleton-list [
 
 # remove values between 'start' and 'end' (both exclusive)
 # also clear pointers back out from start/end for hygiene
-recipe remove-between start:address:shared:duplex-list:_elem, end:address:shared:duplex-list:_elem/contained-in:start -> start:address:shared:duplex-list:_elem [
+def remove-between start:address:shared:duplex-list:_elem, end:address:shared:duplex-list:_elem/contained-in:start -> start:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
-  reply-unless start
+  return-unless start
   # start->next->prev = 0
   # start->next = end
   next:address:address:shared:duplex-list:_elem <- get-address *start, next:offset
   nothing-to-delete?:boolean <- equal *next, end
-  reply-if nothing-to-delete?
+  return-if nothing-to-delete?
   prev:address:address:shared:duplex-list:_elem <- get-address **next, prev:offset
   *prev <- copy 0
   *next <- copy end
-  reply-unless end
+  return-unless end
   # end->prev->next = 0
   # end->prev = start
   prev <- get-address *end, prev:offset
@@ -455,11 +455,11 @@ scenario remove-range-empty [
 ]
 
 # insert list beginning at 'new' after 'in'
-recipe insert-range in:address:shared:duplex-list:_elem, start:address:shared:duplex-list:_elem/contained-in:in -> in:address:shared:duplex-list:_elem [
+def insert-range in:address:shared:duplex-list:_elem, start:address:shared:duplex-list:_elem/contained-in:in -> in:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
-  reply-unless in
-  reply-unless start
+  return-unless in
+  return-unless start
   end:address:shared:duplex-list:_elem <- copy start
   {
     next:address:shared:duplex-list:_elem <- next end/insert-range
@@ -481,18 +481,18 @@ recipe insert-range in:address:shared:duplex-list:_elem, start:address:shared:du
   *dest <- copy in
 ]
 
-recipe append in:address:shared:duplex-list:_elem, new:address:shared:duplex-list:_elem/contained-in:in -> in:address:shared:duplex-list:_elem [
+def append in:address:shared:duplex-list:_elem, new:address:shared:duplex-list:_elem/contained-in:in -> in:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   last:address:shared:duplex-list:_elem <- last in
   dest:address:address:shared:duplex-list:_elem <- get-address *last, next:offset
   *dest <- copy new
-  reply-unless new
+  return-unless new
   dest <- get-address *new, prev:offset
   *dest <- copy last
 ]
 
-recipe last in:address:shared:duplex-list:_elem -> result:address:shared:duplex-list:_elem [
+def last in:address:shared:duplex-list:_elem -> result:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   result <- copy in
@@ -505,7 +505,7 @@ recipe last in:address:shared:duplex-list:_elem -> result:address:shared:duplex-
 ]
 
 # helper for debugging
-recipe dump-from x:address:shared:duplex-list:_elem [
+def dump-from x:address:shared:duplex-list:_elem [
   local-scope
   load-ingredients
   $print x, [: ]

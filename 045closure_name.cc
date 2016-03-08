@@ -4,26 +4,26 @@
 //: surrounding space of the surrounding space, etc.
 
 :(scenario closure)
-recipe main [
+def main [
   default-space:address:shared:array:location <- new location:type, 30
   1:address:shared:array:location/names:new-counter <- new-counter
   2:number/raw <- increment-counter 1:address:shared:array:location/names:new-counter
   3:number/raw <- increment-counter 1:address:shared:array:location/names:new-counter
 ]
 
-recipe new-counter [
+def new-counter [
   default-space:address:shared:array:location <- new location:type, 30
   x:number <- copy 23
   y:number <- copy 3  # variable that will be incremented
-  reply default-space:address:shared:array:location
+  return default-space:address:shared:array:location
 ]
 
-recipe increment-counter [
+def increment-counter [
   default-space:address:shared:array:location <- new location:type, 30
   0:address:shared:array:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
   y:number/space:1 <- add y:number/space:1, 1  # increment
   y:number <- copy 234  # dummy
-  reply y:number/space:1
+  return y:number/space:1
 ]
 
 +name: lexically surrounding space for recipe increment-counter comes from new-counter
@@ -152,7 +152,7 @@ bool already_transformed(const reagent& r, const map<string, long long int>& nam
 
 :(scenario missing_surrounding_space)
 % Hide_errors = true;
-recipe f [
+def f [
   local-scope
   x:number/space:1 <- copy 34
 ]

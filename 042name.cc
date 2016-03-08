@@ -3,7 +3,7 @@
 //: convenience.
 
 :(scenario transform_names)
-recipe main [
+def main [
   x:number <- copy 0
 ]
 +name: assign x 1
@@ -12,7 +12,7 @@ recipe main [
 :(scenarios transform)
 :(scenario transform_names_fails_on_use_before_define)
 % Hide_errors = true;
-recipe main [
+def main [
   x:number <- copy y:number
 ]
 +error: main: use before set: y
@@ -147,7 +147,7 @@ bool is_special_name(const string& s) {
 
 :(scenario transform_names_passes_dummy)
 # _ is just a dummy result that never gets consumed
-recipe main [
+def main [
   _, x:number <- copy 0, 1
 ]
 +name: assign x 1
@@ -157,7 +157,7 @@ recipe main [
 :(scenarios run)
 :(scenario transform_names_passes_raw)
 % Hide_errors = true;
-recipe main [
+def main [
   x:number/raw <- copy 0
 ]
 -name: assign x 1
@@ -166,28 +166,28 @@ recipe main [
 :(scenarios transform)
 :(scenario transform_names_fails_when_mixing_names_and_numeric_locations)
 % Hide_errors = true;
-recipe main [
+def main [
   x:number <- copy 1:number
 ]
 +error: main: mixing variable names and numeric addresses
 
 :(scenario transform_names_fails_when_mixing_names_and_numeric_locations_2)
 % Hide_errors = true;
-recipe main [
+def main [
   x:number <- copy 1
   1:number <- copy x:number
 ]
 +error: main: mixing variable names and numeric addresses
 
 :(scenario transform_names_does_not_fail_when_mixing_names_and_raw_locations)
-recipe main [
+def main [
   x:number <- copy 1:number/raw
 ]
 -error: main: mixing variable names and numeric addresses
 $error: 0
 
 :(scenario transform_names_does_not_fail_when_mixing_names_and_literals)
-recipe main [
+def main [
   x:number <- copy 1
 ]
 -error: main: mixing variable names and numeric addresses
@@ -196,7 +196,7 @@ $error: 0
 //:: Support element names for containers in 'get' and 'get-address'.
 
 :(scenario transform_names_transforms_container_elements)
-recipe main [
+def main [
   p:address:point <- copy 0
   a:number <- get *p:address:point, y:offset
   b:number <- get *p:address:point, x:offset
@@ -226,7 +226,7 @@ if (inst.name == "get" || inst.name == "get-address") {
 //: this test is actually illegal so can't call run
 :(scenarios transform)
 :(scenario transform_names_handles_containers)
-recipe main [
+def main [
   a:point <- copy 0/unsafe
   b:number <- copy 0/unsafe
 ]
@@ -237,7 +237,7 @@ recipe main [
 
 :(scenarios run)
 :(scenario transform_names_handles_exclusive_containers)
-recipe main [
+def main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36

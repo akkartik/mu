@@ -7,7 +7,7 @@
 
 //: You can create arrays using 'create-array'.
 :(scenario create_array)
-recipe main [
+def main [
   # create an array occupying locations 1 (for the size) and 2-4 (for the elements)
   1:array:number:3 <- create-array
 ]
@@ -67,7 +67,7 @@ case CREATE_ARRAY: {
 :(scenario copy_array)
 # Arrays can be copied around with a single instruction just like numbers,
 # no matter how large they are.
-recipe main [
+def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -80,7 +80,7 @@ recipe main [
 +mem: storing 16 in location 8
 
 :(scenario copy_array_indirect)
-recipe main [
+def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -94,7 +94,7 @@ recipe main [
 +mem: storing 16 in location 9
 
 :(scenario stash_array)
-recipe main [
+def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -149,7 +149,7 @@ container foo [
 //:: To access elements of an array, use 'index'
 
 :(scenario index)
-recipe main [
+def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -159,7 +159,7 @@ recipe main [
 +mem: storing 14 in location 5
 
 :(scenario index_direct_offset)
-recipe main [
+def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -234,7 +234,7 @@ type_tree* array_element(const type_tree* type) {
 }
 
 :(scenario index_indirect)
-recipe main [
+def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -246,7 +246,7 @@ recipe main [
 
 :(scenario index_out_of_bounds)
 % Hide_errors = true;
-recipe main [
+def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -261,7 +261,7 @@ recipe main [
 
 :(scenario index_out_of_bounds_2)
 % Hide_errors = true;
-recipe main [
+def main [
   1:array:point:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -276,7 +276,7 @@ recipe main [
 
 :(scenario index_product_type_mismatch)
 % Hide_errors = true;
-recipe main [
+def main [
   1:array:point:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -292,7 +292,7 @@ recipe main [
 //: we might want to call 'index' without saving the results, say in a sandbox
 
 :(scenario index_without_product)
-recipe main [
+def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -304,7 +304,7 @@ recipe main [
 //:: To write to elements of containers, you need their address.
 
 :(scenario index_address)
-recipe main [
+def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -366,7 +366,7 @@ case INDEX_ADDRESS: {
 
 :(scenario index_address_out_of_bounds)
 % Hide_errors = true;
-recipe main [
+def main [
   1:array:point:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -381,7 +381,7 @@ recipe main [
 
 :(scenario index_address_out_of_bounds_2)
 % Hide_errors = true;
-recipe main [
+def main [
   1:array:point:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -396,7 +396,7 @@ recipe main [
 
 :(scenario index_address_product_type_mismatch)
 % Hide_errors = true;
-recipe main [
+def main [
   1:array:point:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
@@ -412,7 +412,7 @@ recipe main [
 //:: compute the length of an array
 
 :(scenario array_length)
-recipe main [
+def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15

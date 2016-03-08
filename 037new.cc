@@ -47,7 +47,7 @@ if (r.type->name == "shared") {
 :(scenarios run)
 :(scenario new)
 # call new two times with identical arguments; you should get back different results
-recipe main [
+def main [
   1:address:shared:number/raw <- new number:type
   2:address:shared:number/raw <- new number:type
   3:boolean/raw <- equal 1:address:shared:number/raw, 2:address:shared:number/raw
@@ -229,7 +229,7 @@ void ensure_space(long long int size) {
 :(scenario new_initializes)
 % Memory_allocated_until = 10;
 % put(Memory, Memory_allocated_until, 1);
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   2:number <- copy *1:address:shared:number
 ]
@@ -237,13 +237,13 @@ recipe main [
 
 :(scenario new_error)
 % Hide_errors = true;
-recipe main [
+def main [
   1:address:number/raw <- new number:type
 ]
 +error: main: product of 'new' has incorrect type: 1:address:number/raw <- new number:type
 
 :(scenario new_array)
-recipe main [
+def main [
   1:address:shared:array:number/raw <- new number:type, 5
   2:address:shared:number/raw <- new number:type
   3:number/raw <- subtract 2:address:shared:number/raw, 1:address:shared:array:number/raw
@@ -254,7 +254,7 @@ recipe main [
 +mem: storing 7 in location 3
 
 :(scenario new_empty_array)
-recipe main [
+def main [
   1:address:shared:array:number/raw <- new number:type, 0
   2:address:shared:number/raw <- new number:type
   3:number/raw <- subtract 2:address:shared:number/raw, 1:address:shared:array:number/raw
@@ -267,7 +267,7 @@ recipe main [
 //: If a routine runs out of its initial allocation, it should allocate more.
 :(scenario new_overflow)
 % Initial_memory_per_routine = 3;  // barely enough room for point allocation below
-recipe main [
+def main [
   1:address:shared:number/raw <- new number:type
   2:address:shared:point/raw <- new point:type  # not enough room in initial page
 ]
@@ -278,7 +278,7 @@ recipe main [
 //: todo: custodians, etc. Following malloc/free is a temporary hack.
 
 :(scenario new_reclaim)
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   2:address:shared:number <- copy 1:address:shared:number  # because 1 will get reset during abandon below
   abandon 1:address:shared:number  # unsafe
@@ -367,7 +367,7 @@ if (get_or_insert(Free_list, size)) {
 }
 
 :(scenario new_differing_size_no_reclaim)
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   2:address:shared:number <- copy 1:address:shared:number
   abandon 1:address:shared:number
@@ -378,7 +378,7 @@ recipe main [
 +mem: storing 0 in location 4
 
 :(scenario new_reclaim_array)
-recipe main [
+def main [
   1:address:shared:array:number <- new number:type, 2
   2:address:shared:array:number <- copy 1:address:shared:array:number
   abandon 1:address:shared:array:number  # unsafe
@@ -389,7 +389,7 @@ recipe main [
 +mem: storing 1 in location 4
 
 :(scenario reset_on_abandon)
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   abandon 1:address:shared:number
 ]
@@ -400,7 +400,7 @@ recipe main [
 //:: Manage refcounts when copying addresses.
 
 :(scenario refcounts)
-recipe main [
+def main [
   1:address:shared:number <- copy 1000/unsafe
   2:address:shared:number <- copy 1:address:shared:number
   1:address:shared:number <- copy 0
@@ -458,7 +458,7 @@ if (x.type->value == get(Type_ordinal, "address")
 }
 
 :(scenario refcounts_2)
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   # over-writing one allocation with another
   1:address:shared:number <- new number:type
@@ -470,13 +470,13 @@ recipe main [
 +mem: automatically abandoning 1000
 
 :(scenario refcounts_3)
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   # passing in addresses to recipes increments refcount
   foo 1:address:shared:number
   1:address:shared:number <- copy 0
 ]
-recipe foo [
+def foo [
   2:address:shared:number <- next-ingredient
   # return does NOT yet decrement refcount; memory must be explicitly managed
   2:address:shared:number <- copy 0
@@ -492,7 +492,7 @@ recipe foo [
 +mem: automatically abandoning 1000
 
 :(scenario refcounts_4)
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   # idempotent copies leave refcount unchanged
   1:address:shared:number <- copy 1:address:shared:number
@@ -504,14 +504,14 @@ recipe main [
 +mem: incrementing refcount of 1000: 0 -> 1
 
 :(scenario refcounts_5)
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   # passing in addresses to recipes increments refcount
   foo 1:address:shared:number
   # return does NOT yet decrement refcount; memory must be explicitly managed
   1:address:shared:number <- new number:type
 ]
-recipe foo [
+def foo [
   2:address:shared:number <- next-ingredient
 ]
 +run: 1:address:shared:number <- new number:type
@@ -524,7 +524,7 @@ recipe foo [
 //:: Extend 'new' to handle a unicode string literal argument.
 
 :(scenario new_string)
-recipe main [
+def main [
   1:address:shared:array:character <- new [abc def]
   2:character <- index *1:address:shared:array:character, 5
 ]
@@ -532,7 +532,7 @@ recipe main [
 +mem: storing 101 in location 2
 
 :(scenario new_string_handles_unicode)
-recipe main [
+def main [
   1:address:shared:array:character <- new [a«c]
   2:number <- length *1:address:shared:array:character
   3:character <- index *1:address:shared:array:character, 1
@@ -582,7 +582,7 @@ long long int new_mu_string(const string& contents) {
 //: stash recognizes strings
 
 :(scenario stash_string)
-recipe main [
+def main [
   1:address:shared:array:character <- new [abc]
   stash [foo:], 1:address:shared:array:character
 ]
@@ -595,14 +595,14 @@ if (is_mu_string(r)) {
 }
 
 :(scenario unicode_string)
-recipe main [
+def main [
   1:address:shared:array:character <- new [♠]
   stash [foo:], 1:address:shared:array:character
 ]
 +app: foo: ♠
 
 :(scenario stash_space_after_string)
-recipe main [
+def main [
   1:address:shared:array:character <- new [abc]
   stash 1:address:shared:array:character, [foo]
 ]
@@ -611,7 +611,7 @@ recipe main [
 //: Allocate more to routine when initializing a literal string
 :(scenario new_string_overflow)
 % Initial_memory_per_routine = 2;
-recipe main [
+def main [
   1:address:shared:number/raw <- new number:type
   2:address:shared:array:character/raw <- new [a]  # not enough room in initial page, if you take the array size into account
 ]

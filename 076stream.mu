@@ -4,7 +4,7 @@ container stream [
   data:address:shared:array:character
 ]
 
-recipe new-stream s:address:shared:array:character -> result:address:shared:stream [
+def new-stream s:address:shared:array:character -> result:address:shared:stream [
   local-scope
   load-ingredients
   result <- new stream:type
@@ -14,14 +14,14 @@ recipe new-stream s:address:shared:array:character -> result:address:shared:stre
   *d <- copy s
 ]
 
-recipe rewind-stream in:address:shared:stream -> in:address:shared:stream [
+def rewind-stream in:address:shared:stream -> in:address:shared:stream [
   local-scope
   load-ingredients
   x:address:number <- get-address *in, index:offset
   *x <- copy 0
 ]
 
-recipe read-line in:address:shared:stream -> result:address:shared:array:character, in:address:shared:stream [
+def read-line in:address:shared:stream -> result:address:shared:array:character, in:address:shared:stream [
   local-scope
   load-ingredients
   idx:address:number <- get-address *in, index:offset
@@ -31,7 +31,7 @@ recipe read-line in:address:shared:stream -> result:address:shared:array:charact
   *idx <- add next-idx, 1  # skip newline
 ]
 
-recipe end-of-stream? in:address:shared:stream -> result:boolean [
+def end-of-stream? in:address:shared:stream -> result:boolean [
   local-scope
   load-ingredients
   idx:number <- get *in, index:offset

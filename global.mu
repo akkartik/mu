@@ -1,6 +1,6 @@
 # example program: creating and using global variables
 
-recipe main [
+def main [
   # allocate 5 locations for globals
   global-space:address:shared:array:location <- new location:type, 5
   # read to globals by using /space:global
@@ -8,7 +8,7 @@ recipe main [
   foo
 ]
 
-recipe foo [
+def foo [
   # ditto for writing to globals
   $print 1:number/space:global, 10/newline
 ]

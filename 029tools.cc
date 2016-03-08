@@ -1,7 +1,7 @@
 //: Allow mu programs to log facts just like we've been doing in C++ so far.
 
 :(scenario trace)
-recipe main [
+def main [
   trace 1, [foo], [this is a trace in mu]
 ]
 +foo: this is a trace in mu
@@ -59,19 +59,19 @@ case STASH: {
 }
 
 :(scenario stash_literal_string)
-recipe main [
+def main [
   stash [foo]
 ]
 +app: foo
 
 :(scenario stash_literal_number)
-recipe main [
+def main [
   stash [foo:], 4
 ]
 +app: foo: 4
 
 :(scenario stash_number)
-recipe main [
+def main [
   1:number <- copy 34
   stash [foo:], 1:number
 ]
@@ -187,7 +187,7 @@ case _SAVE_TRACE: {
 
 :(scenario assert)
 % Hide_errors = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.
-recipe main [
+def main [
   assert 0, [this is an assert in mu]
 ]
 +error: this is an assert in mu

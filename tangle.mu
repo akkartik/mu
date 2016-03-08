@@ -6,7 +6,7 @@
 # This isn't a very tasteful example, just a simple demonstration of
 # possibilities.
 
-recipe factorial n:number -> result:number [
+def factorial n:number -> result:number [
   local-scope
   load-ingredients
   {
@@ -19,7 +19,7 @@ after <base-case> [
   # if n=0 return 1
   zero?:boolean <- equal n, 0
   break-unless zero?
-  reply 1
+  return 1
 ]
 
 after <recursive-case> [
@@ -29,7 +29,7 @@ after <recursive-case> [
   result <- multiply subresult, n
 ]
 
-recipe main [
+def main [
   1:number <- factorial 5
   $print [result: ], 1:number, [
 ]

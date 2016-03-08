@@ -4,7 +4,7 @@
 // (address to array of charaters) to (list of numbers)".
 
 :(scenario dilated_reagent_with_nested_brackets)
-recipe main [
+def main [
   {1: number, foo: (bar (baz quux))} <- copy 34
 ]
 +parse:   product: 1: "number", {"foo": ("bar" ("baz" "quux"))}
@@ -59,7 +59,7 @@ string_tree* parse_string_tree(istream& in) {
 
 :(scenario dilated_reagent_with_type_tree)
 % Hide_errors = true;  // 'map' isn't defined yet
-recipe main [
+def main [
   {1: (foo (address array character) (bar number))} <- copy 34
 ]
 # just to avoid errors
@@ -70,7 +70,7 @@ container bar [
 +parse:   product: 1: ("foo" ("address" "array" "character") ("bar" "number"))
 
 :(scenario dilated_reagent_in_static_array)
-recipe main [
+def main [
   {1: (array (address shared number) 3)} <- create-array
   5:address:address:shared:number <- index-address {1: (array (address shared number) 3)}, 0
   *5:address:address:shared:number <- new number:type
@@ -83,7 +83,7 @@ recipe main [
 //: an exception is 'new', which takes a type tree as its ingredient *value*
 
 :(scenario dilated_reagent_with_new)
-recipe main [
+def main [
   x:address:shared:address:number <- new {(address number): type}
 ]
 +new: size of ("address" "number") is 1

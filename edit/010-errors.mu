@@ -5,7 +5,7 @@ container programming-environment-data [
 ]
 
 # copy code from recipe editor, persist, load into mu, save any errors
-recipe! update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+def! update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
   recipes:address:shared:editor-data <- get *env, recipes:offset
@@ -19,7 +19,7 @@ recipe! update-recipes env:address:shared:programming-environment-data, screen:a
     status:address:shared:array:character <- new [errors found     ]
     update-status screen, status, 1/red
     errors-found? <- copy 1/true
-    reply
+    return
   }
   errors-found? <- copy 0/false
 ]
@@ -81,7 +81,7 @@ container sandbox-data [
   errors:address:shared:array:character
 ]
 
-recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+def! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   data:address:shared:array:character <- get *sandbox, data:offset

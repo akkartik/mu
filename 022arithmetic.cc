@@ -35,13 +35,13 @@ case ADD: {
 }
 
 :(scenario add_literal)
-recipe main [
+def main [
   1:number <- add 23, 34
 ]
 +mem: storing 57 in location 1
 
 :(scenario add)
-recipe main [
+def main [
   1:number <- copy 23
   2:number <- copy 34
   3:number <- add 1:number, 2:number
@@ -49,21 +49,21 @@ recipe main [
 +mem: storing 57 in location 3
 
 :(scenario add_multiple)
-recipe main [
+def main [
   1:number <- add 3, 4, 5
 ]
 +mem: storing 12 in location 1
 
 :(scenario add_checks_type)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- add 2:boolean, 1
 ]
 +error: main: 'add' requires number ingredients, but got 2:boolean
 
 :(scenario add_checks_return_type)
 % Hide_errors = true;
-recipe main [
+def main [
   1:address:number <- add 2, 2
 ]
 +error: main: 'add' should yield a number, but got 1:address:number
@@ -110,13 +110,13 @@ bool is_raw(const reagent& r) {
 }
 
 :(scenario subtract_literal)
-recipe main [
+def main [
   1:number <- subtract 5, 2
 ]
 +mem: storing 3 in location 1
 
 :(scenario subtract)
-recipe main [
+def main [
   1:number <- copy 23
   2:number <- copy 34
   3:number <- subtract 1:number, 2:number
@@ -124,7 +124,7 @@ recipe main [
 +mem: storing -11 in location 3
 
 :(scenario subtract_multiple)
-recipe main [
+def main [
   1:number <- subtract 6, 3, 2
 ]
 +mem: storing 1 in location 1
@@ -163,13 +163,13 @@ case MULTIPLY: {
 }
 
 :(scenario multiply_literal)
-recipe main [
+def main [
   1:number <- multiply 2, 3
 ]
 +mem: storing 6 in location 1
 
 :(scenario multiply)
-recipe main [
+def main [
   1:number <- copy 4
   2:number <- copy 6
   3:number <- multiply 1:number, 2:number
@@ -177,7 +177,7 @@ recipe main [
 +mem: storing 24 in location 3
 
 :(scenario multiply_multiple)
-recipe main [
+def main [
   1:number <- multiply 2, 3, 4
 ]
 +mem: storing 24 in location 1
@@ -219,13 +219,13 @@ case DIVIDE: {
 }
 
 :(scenario divide_literal)
-recipe main [
+def main [
   1:number <- divide 8, 2
 ]
 +mem: storing 4 in location 1
 
 :(scenario divide)
-recipe main [
+def main [
   1:number <- copy 27
   2:number <- copy 3
   3:number <- divide 1:number, 2:number
@@ -233,7 +233,7 @@ recipe main [
 +mem: storing 9 in location 3
 
 :(scenario divide_multiple)
-recipe main [
+def main [
   1:number <- divide 12, 3, 2
 ]
 +mem: storing 2 in location 1
@@ -287,14 +287,14 @@ case DIVIDE_WITH_REMAINDER: {
 }
 
 :(scenario divide_with_remainder_literal)
-recipe main [
+def main [
   1:number, 2:number <- divide-with-remainder 9, 2
 ]
 +mem: storing 4 in location 1
 +mem: storing 1 in location 2
 
 :(scenario divide_with_remainder)
-recipe main [
+def main [
   1:number <- copy 27
   2:number <- copy 11
   3:number, 4:number <- divide-with-remainder 1:number, 2:number
@@ -303,20 +303,20 @@ recipe main [
 +mem: storing 5 in location 4
 
 :(scenario divide_with_decimal_point)
-recipe main [
+def main [
   1:number <- divide 5, 2
 ]
 +mem: storing 2.5 in location 1
 
 :(scenario divide_by_zero)
-recipe main [
+def main [
   1:number <- divide 4, 0
 ]
 +mem: storing inf in location 1
 
 :(scenario divide_by_zero_2)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- divide-with-remainder 4, 0
 ]
 # integer division can't return floating-point infinity
@@ -364,32 +364,32 @@ case SHIFT_LEFT: {
 }
 
 :(scenario shift_left_by_zero)
-recipe main [
+def main [
   1:number <- shift-left 1, 0
 ]
 +mem: storing 1 in location 1
 
 :(scenario shift_left_1)
-recipe main [
+def main [
   1:number <- shift-left 1, 4
 ]
 +mem: storing 16 in location 1
 
 :(scenario shift_left_2)
-recipe main [
+def main [
   1:number <- shift-left 3, 2
 ]
 +mem: storing 12 in location 1
 
 :(scenario shift_left_by_negative)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- shift-left 3, -1
 ]
 +error: main: second ingredient can't be negative in '1:number <- shift-left 3, -1'
 
 :(scenario shift_left_ignores_fractional_part)
-recipe main [
+def main [
   1:number <- divide 3, 2
   2:number <- shift-left 1:number, 1
 ]
@@ -435,32 +435,32 @@ case SHIFT_RIGHT: {
 }
 
 :(scenario shift_right_by_zero)
-recipe main [
+def main [
   1:number <- shift-right 1, 0
 ]
 +mem: storing 1 in location 1
 
 :(scenario shift_right_1)
-recipe main [
+def main [
   1:number <- shift-right 1024, 1
 ]
 +mem: storing 512 in location 1
 
 :(scenario shift_right_2)
-recipe main [
+def main [
   1:number <- shift-right 3, 1
 ]
 +mem: storing 1 in location 1
 
 :(scenario shift_right_by_negative)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- shift-right 4, -1
 ]
 +error: main: second ingredient can't be negative in '1:number <- shift-right 4, -1'
 
 :(scenario shift_right_ignores_fractional_part)
-recipe main [
+def main [
   1:number <- divide 3, 2
   2:number <- shift-right 1:number, 1
 ]
@@ -501,25 +501,25 @@ case AND_BITS: {
 }
 
 :(scenario and_bits_1)
-recipe main [
+def main [
   1:number <- and-bits 8, 3
 ]
 +mem: storing 0 in location 1
 
 :(scenario and_bits_2)
-recipe main [
+def main [
   1:number <- and-bits 3, 2
 ]
 +mem: storing 2 in location 1
 
 :(scenario and_bits_3)
-recipe main [
+def main [
   1:number <- and-bits 14, 3
 ]
 +mem: storing 2 in location 1
 
 :(scenario and_bits_negative)
-recipe main [
+def main [
   1:number <- and-bits -3, 4
 ]
 +mem: storing 4 in location 1
@@ -559,19 +559,19 @@ case OR_BITS: {
 }
 
 :(scenario or_bits_1)
-recipe main [
+def main [
   1:number <- or-bits 3, 8
 ]
 +mem: storing 11 in location 1
 
 :(scenario or_bits_2)
-recipe main [
+def main [
   1:number <- or-bits 3, 10
 ]
 +mem: storing 11 in location 1
 
 :(scenario or_bits_3)
-recipe main [
+def main [
   1:number <- or-bits 4, 6
 ]
 +mem: storing 6 in location 1
@@ -611,19 +611,19 @@ case XOR_BITS: {
 }
 
 :(scenario xor_bits_1)
-recipe main [
+def main [
   1:number <- xor-bits 3, 8
 ]
 +mem: storing 11 in location 1
 
 :(scenario xor_bits_2)
-recipe main [
+def main [
   1:number <- xor-bits 3, 10
 ]
 +mem: storing 9 in location 1
 
 :(scenario xor_bits_3)
-recipe main [
+def main [
   1:number <- xor-bits 4, 6
 ]
 +mem: storing 2 in location 1
@@ -662,25 +662,25 @@ case FLIP_BITS: {
 }
 
 :(scenario flip_bits_zero)
-recipe main [
+def main [
   1:number <- flip-bits 0
 ]
 +mem: storing -1 in location 1
 
 :(scenario flip_bits_negative)
-recipe main [
+def main [
   1:number <- flip-bits -1
 ]
 +mem: storing 0 in location 1
 
 :(scenario flip_bits_1)
-recipe main [
+def main [
   1:number <- flip-bits 3
 ]
 +mem: storing -4 in location 1
 
 :(scenario flip_bits_2)
-recipe main [
+def main [
   1:number <- flip-bits 12
 ]
 +mem: storing -13 in location 1

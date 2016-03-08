@@ -115,7 +115,7 @@ if (s == "screen") return true;
 :(scenarios run)
 :(scenario convert_names_does_not_fail_when_mixing_special_names_and_numeric_locations)
 % Scenario_testing_scenario = true;
-recipe main [
+def main [
   screen:number <- copy 1:number
 ]
 -error: mixing variable names and numeric addresses in main

@@ -3,13 +3,13 @@
 //: names like 'print' or 'length' in many mutually extensible ways.
 
 :(scenario static_dispatch)
-recipe main [
+def main [
   7:number/raw <- test 3
 ]
-recipe test a:number -> z:number [
+def test a:number -> z:number [
   z <- copy 1
 ]
-recipe test a:number, b:number -> z:number [
+def test a:number, b:number -> z:number [
   z <- copy 2
 ]
 +mem: storing 1 in location 7
@@ -115,13 +115,13 @@ string next_unused_recipe_name(const string& recipe_name) {
 //: call with the most suitable variant.
 
 :(scenario static_dispatch_picks_most_similar_variant)
-recipe main [
+def main [
   7:number/raw <- test 3, 4, 5
 ]
-recipe test a:number -> z:number [
+def test a:number -> z:number [
   z <- copy 1
 ]
-recipe test a:number, b:number -> z:number [
+def test a:number, b:number -> z:number [
   z <- copy 2
 ]
 +mem: storing 2 in location 7
@@ -336,37 +336,37 @@ bool next_stash(const call& c, instruction* stash_inst) {
 }
 
 :(scenario static_dispatch_disabled_in_recipe_without_variants)
-recipe main [
+def main [
   1:number <- test 3
 ]
-recipe test [
+def test [
   2:number <- next-ingredient  # ensure no header
-  reply 34
+  return 34
 ]
 +mem: storing 34 in location 1
 
 :(scenario static_dispatch_disabled_on_headerless_definition)
 % Hide_errors = true;
-recipe test a:number -> z:number [
+def test a:number -> z:number [
   z <- copy 1
 ]
-recipe test [
-  reply 34
+def test [
+  return 34
 ]
 +error: redefining recipe test
 
 :(scenario static_dispatch_disabled_on_headerless_definition_2)
 % Hide_errors = true;
-recipe test [
-  reply 34
+def test [
+  return 34
 ]
-recipe test a:number -> z:number [
+def test a:number -> z:number [
   z <- copy 1
 ]
 +error: redefining recipe test
 
 :(scenario static_dispatch_on_primitive_names)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 34
   3:boolean <- equal 1:number, 2:number
@@ -376,7 +376,7 @@ recipe main [
 ]
 
 # temporarily hardcode number equality to always fail
-recipe equal x:number, y:number -> z:boolean [
+def equal x:number, y:number -> z:boolean [
   local-scope
   load-ingredients
   z <- copy 0/false
@@ -387,15 +387,15 @@ recipe equal x:number, y:number -> z:boolean [
 +mem: storing 1 in location 6
 
 :(scenario static_dispatch_works_with_dummy_results_for_containers)
-recipe main [
+def main [
   _ <- test 3, 4
 ]
-recipe test a:number -> z:point [
+def test a:number -> z:point [
   local-scope
   load-ingredients
   z <- merge a, 0
 ]
-recipe test a:number, b:number -> z:point [
+def test a:number, b:number -> z:point [
   local-scope
   load-ingredients
   z <- merge a, b
@@ -403,14 +403,14 @@ recipe test a:number, b:number -> z:point [
 $error: 0
 
 :(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_first_use)
-recipe main [
+def main [
   x:address:shared:foo <- new foo:type
   test x
 ]
 container foo [
   x:number
 ]
-recipe test a:address:shared:foo -> z:number [
+def test a:address:shared:foo -> z:number [
   local-scope
   load-ingredients
   z:number <- get *a, x:offset
@@ -418,11 +418,11 @@ recipe test a:address:shared:foo -> z:number [
 $error: 0
 
 :(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_second_use)
-recipe main [
+def main [
   x:address:shared:foo <- new foo:type
   test x
 ]
-recipe test a:address:shared:foo -> z:number [
+def test a:address:shared:foo -> z:number [
   local-scope
   load-ingredients
   z:number <- get *a, x:offset
@@ -433,78 +433,78 @@ container foo [
 $error: 0
 
 :(scenario static_dispatch_prefers_literals_to_be_numbers_rather_than_addresses)
-recipe main [
+def main [
   1:number <- foo 0
 ]
-recipe foo x:address:number -> y:number [
-  reply 34
+def foo x:address:number -> y:number [
+  return 34
 ]
-recipe foo x:number -> y:number [
-  reply 35
+def foo x:number -> y:number [
+  return 35
 ]
 +mem: storing 35 in location 1
 
 :(scenario static_dispatch_on_non_literal_character_ignores_variant_with_numbers)
 % Hide_errors = true;
-recipe main [
+def main [
   local-scope
   x:character <- copy 10/newline
   1:number/raw <- foo x
 ]
-recipe foo x:number -> y:number [
+def foo x:number -> y:number [
   load-ingredients
-  reply 34
+  return 34
 ]
 +error: main: ingredient 0 has the wrong type at '1:number/raw <- foo x'
 -mem: storing 34 in location 1
 
 :(scenario static_dispatch_dispatches_literal_to_boolean_before_character)
-recipe main [
+def main [
   1:number/raw <- foo 0  # valid literal for boolean
 ]
-recipe foo x:character -> y:number [
+def foo x:character -> y:number [
   local-scope
   load-ingredients
-  reply 34
+  return 34
 ]
-recipe foo x:boolean -> y:number [
+def foo x:boolean -> y:number [
   local-scope
   load-ingredients
-  reply 35
+  return 35
 ]
 # boolean variant is preferred
 +mem: storing 35 in location 1
 
 :(scenario static_dispatch_dispatches_literal_to_character_when_out_of_boolean_range)
-recipe main [
+def main [
   1:number/raw <- foo 97  # not a valid literal for boolean
 ]
-recipe foo x:character -> y:number [
+def foo x:character -> y:number [
   local-scope
   load-ingredients
-  reply 34
+  return 34
 ]
-recipe foo x:boolean -> y:number [
+def foo x:boolean -> y:number [
   local-scope
   load-ingredients
-  reply 35
+  return 35
 ]
 # character variant is preferred
 +mem: storing 34 in location 1
 
 :(scenario static_dispatch_dispatches_literal_to_number_if_at_all_possible)
-recipe main [
+def main [
   1:number/raw <- foo 97
 ]
-recipe foo x:character -> y:number [
+def foo x:character -> y:number [
   local-scope
   load-ingredients
-  reply 34
+  return 34
 ]
-recipe foo x:number -> y:number [
+def foo x:number -> y:number [
   local-scope
   load-ingredients
-  reply 35
+  return 35
 ]
 # number variant is preferred
 +mem: storing 35 in location 1
@@ -523,42 +523,42 @@ string header_label(recipe_ordinal r) {
 }
 
 :(scenario reload_variant_retains_other_variants)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- foo 1:number
 ]
-recipe foo x:number -> y:number [
+def foo x:number -> y:number [
   local-scope
   load-ingredients
-  reply 34
+  return 34
 ]
-recipe foo x:address:number -> y:number [
+def foo x:address:number -> y:number [
   local-scope
   load-ingredients
-  reply 35
+  return 35
 ]
-recipe! foo x:address:number -> y:number [
+def! foo x:address:number -> y:number [
   local-scope
   load-ingredients
-  reply 36
+  return 36
 ]
 +mem: storing 34 in location 2
 $error: 0
 
 :(scenario dispatch_errors_come_after_unknown_name_errors)
 % Hide_errors = true;
-recipe main [
+def main [
   y:number <- foo x
 ]
-recipe foo a:number -> b:number [
+def foo a:number -> b:number [
   local-scope
   load-ingredients
-  reply 34
+  return 34
 ]
-recipe foo a:boolean -> b:number [
+def foo a:boolean -> b:number [
   local-scope
   load-ingredients
-  reply 35
+  return 35
 ]
 +error: main: missing type for x in 'y:number <- foo x'
 +error: main: failed to find a matching call for 'y:number <- foo x'

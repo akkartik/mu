@@ -25,7 +25,7 @@ container console [
   events:address:shared:array:event
 ]
 
-recipe new-fake-console events:address:shared:array:event -> result:address:shared:console [
+def new-fake-console events:address:shared:array:event -> result:address:shared:console [
   local-scope
   load-ingredients
   result:address:shared:console <- new console:type
@@ -35,7 +35,7 @@ recipe new-fake-console events:address:shared:array:event -> result:address:shar
   *idx <- copy 0
 ]
 
-recipe read-event console:address:shared:console -> result:event, console:address:shared:console, found?:boolean, quit?:boolean [
+def read-event console:address:shared:console -> result:event, console:address:shared:console, found?:boolean, quit?:boolean [
   local-scope
   load-ingredients
   {
@@ -47,32 +47,32 @@ recipe read-event console:address:shared:console -> result:event, console:addres
       done?:boolean <- greater-or-equal *current-event-index, max
       break-unless done?
       dummy:address:shared:event <- new event:type
-      reply *dummy, console/same-as-ingredient:0, 1/found, 1/quit
+      return *dummy, console/same-as-ingredient:0, 1/found, 1/quit
     }
     result <- index *buf, *current-event-index
     *current-event-index <- add *current-event-index, 1
-    reply result, console/same-as-ingredient:0, 1/found, 0/quit
+    return result, console/same-as-ingredient:0, 1/found, 0/quit
   }
   switch  # real event source is infrequent; avoid polling it too much
   result:event, found?:boolean <- check-for-interaction
-  reply result, console/same-as-ingredient:0, found?, 0/quit
+  return result, console/same-as-ingredient:0, found?, 0/quit
 ]
 
 # variant of read-event for just keyboard events. Discards everything that
 # isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get
 # newlines, tabs, ctrl-d..
-recipe read-key console:address:shared:console -> result:character, console:address:shared:console, found?:boolean, quit?:boolean [
+def read-key console:address:shared:console -> result:character, console:address:shared:console, found?:boolean, quit?:boolean [
   local-scope
   load-ingredients
   x:event, console, found?:boolean, quit?:boolean <- read-event console
-  reply-if quit?, 0, console/same-as-ingredient:0, found?, quit?
-  reply-unless found?, 0, console/same-as-ingredient:0, found?, quit?
+  return-if quit?, 0, console/same-as-ingredient:0, found?, quit?
+  return-unless found?, 0, console/same-as-ingredient:0, found?, quit?
   c:address:character <- maybe-convert x, text:variant
-  reply-unless c, 0, console/same-as-ingredient:0, 0/found, 0/quit
-  reply *c, console/same-as-ingredient:0, 1/found, 0/quit
+  return-unless c, 0, console/same-as-ingredient:0, 0/found, 0/quit
+  return *c, console/same-as-ingredient:0, 1/found, 0/quit
 ]
 
-recipe send-keys-to-channel console:address:shared:console, chan:address:shared:channel, screen:address:shared:screen -> console:address:shared:console, chan:address:shared:channel, screen:address:shared:screen [
+def send-keys-to-channel console:address:shared:console, chan:address:shared:channel, screen:address:shared:screen -> console:address:shared:console, chan:address:shared:channel, screen:address:shared:screen [
   local-scope
   load-ingredients
   {
@@ -86,7 +86,7 @@ recipe send-keys-to-channel console:address:shared:console, chan:address:shared:
   }
 ]
 
-recipe wait-for-event console:address:shared:console -> console:address:shared:console [
+def wait-for-event console:address:shared:console -> console:address:shared:console [
   local-scope
   load-ingredients
   {
@@ -96,13 +96,13 @@ recipe wait-for-event console:address:shared:console -> console:address:shared:c
 ]
 
 # use this helper to skip rendering if there's lots of other events queued up
-recipe has-more-events? console:address:shared:console -> result:boolean [
+def has-more-events? console:address:shared:console -> result:boolean [
   local-scope
   load-ingredients
   {
     break-unless console
     # fake consoles should be plenty fast; never skip
-    reply 0/false
+    return 0/false
   }
   result <- interactions-left?
 ]

@@ -2,7 +2,7 @@
 #
 # Keeps printing 'a' until you press a key or click on the mouse.
 
-recipe main [
+def main [
   local-scope
   open-console
   {

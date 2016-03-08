@@ -72,7 +72,7 @@ after <handle-special-character> [
     redo:address:address:shared:list:address:shared:operation <- get-address *editor, redo:offset
     *redo <- push op, *redo
     <handle-undo>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    return screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -88,7 +88,7 @@ after <handle-special-character> [
     undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
     *undo <- push op, *undo
     <handle-redo>
-    reply screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    return screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
 ]
 
@@ -189,14 +189,14 @@ before <insert-enter-end> [
 # redo stack, because it's now obsolete.
 # Beware: since we're counting cursor moves as operations, this means just
 # moving the cursor can lose work on the undo stack.
-recipe add-operation editor:address:shared:editor-data, op:address:shared:operation -> editor:address:shared:editor-data [
+def add-operation editor:address:shared:editor-data, op:address:shared:operation -> editor:address:shared:editor-data [
   local-scope
   load-ingredients
   undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
   *undo <- push op *undo
   redo:address:address:shared:list:address:shared:operation <- get-address *editor, redo:offset
   *redo <- copy 0
-  reply editor/same-as-ingredient:0
+  return editor/same-as-ingredient:0
 ]
 
 after <handle-undo> [

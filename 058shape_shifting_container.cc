@@ -5,7 +5,7 @@ container foo:_t [
   x:_t
   y:number
 ]
-recipe main [
+def main [
   1:foo:number <- merge 12, 13
   3:foo:point <- merge 14, 15, 16
 ]
@@ -21,7 +21,7 @@ container foo:_a:_b [
   x:_a
   y:_b
 ]
-recipe main [
+def main [
   1:foo:number:boolean <- merge 34, 1/true
 ]
 $error: 0
@@ -31,7 +31,7 @@ container foo:_a:_b [
   x:_a
   y:_b
 ]
-recipe main [
+def main [
   1:address:shared:array:character <- new [abc]
   # compound types for type ingredients
   {2: (foo number (address shared array character))} <- merge 34/x, 1:address:shared:array:character/y
@@ -47,7 +47,7 @@ container bar:_a:_b [
   # dilated element
   {data: (foo _a (address shared _b))}
 ]
-recipe main [
+def main [
   1:address:shared:array:character <- new [abc]
   2:bar:number:array:character <- merge 34/x, 1:address:shared:array:character/y
 ]
@@ -112,7 +112,7 @@ exclusive-container foo:_t [
   x:_t
   y:number
 ]
-recipe main [
+def main [
   1:foo:number <- merge 0/x, 34
   3:foo:point <- merge 0/x, 15, 16
   6:foo:point <- merge 1/y, 23
@@ -157,7 +157,7 @@ container foo:_t [
   x:_t
   y:number
 ]
-recipe main [
+def main [
   1:foo:point <- merge 14, 15, 16
   2:number <- get 1:foo:point, y:offset
 ]
@@ -178,7 +178,7 @@ container foo:_t [
   x:_t
   y:number
 ]
-recipe main [
+def main [
   1:foo:point <- merge 14, 15, 16
   2:point <- get 1:foo:point, x:offset
 ]
@@ -190,7 +190,7 @@ container foo:_t [
   x:_t
   y:number
 ]
-recipe main [
+def main [
   1:foo:address:point <- merge 34/unsafe, 48
   2:address:point <- get 1:foo:address:point, x:offset
 ]
@@ -205,7 +205,7 @@ container bar [
   x:foo:point
   y:number
 ]
-recipe main [
+def main [
   1:bar <- merge 14, 15, 16, 17
   2:number <- get 1:bar, 1:offset
 ]
@@ -216,7 +216,7 @@ container foo:_a:_b [
   x:_a
   y:_b
 ]
-recipe main [
+def main [
   1:address:shared:array:character <- new [abc]
   {2: (foo number (address shared array character))} <- merge 34/x, 1:address:shared:array:character/y
   3:address:shared:array:character <- get {2: (foo number (address shared array character))}, y:offset
@@ -488,7 +488,7 @@ container foo:_t [
   x:_t
   y:number
 ]
-recipe main [
+def main [
   10:foo:point <- merge 14, 15, 16
   1:number <- get 10:foo, 1:offset
 ]
@@ -501,7 +501,7 @@ container foo:_t [
   x:_t
   y:number
 ]
-recipe main [
+def main [
   10:foo:point <- merge 14, 15, 16
   1:address:number <- get-address 10:foo:point, 1:offset
 ]
@@ -528,7 +528,7 @@ exclusive-container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo:bar <- merge 23, 1/y, 34
 ]
 +mem: storing 23 in location 1
@@ -546,7 +546,7 @@ exclusive-container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo:bar <- merge 23, 1/y, 34, 35
 ]
 +error: main: too many ingredients in '1:foo:bar <- merge 23, 1/y, 34, 35'
@@ -560,7 +560,7 @@ container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo:bar <- merge 1/y, 23, 34
 ]
 +mem: storing 1 in location 1
@@ -577,7 +577,7 @@ container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo:bar <- merge 0/x, 23
 ]
 $error: 0
@@ -592,7 +592,7 @@ container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo:bar <- merge 1/y, 23
 ]
 +error: main: too few ingredients in '1:foo:bar <- merge 1/y, 23'

@@ -36,7 +36,7 @@ container table_row:_key:_value [
   value:_value
 ]
 
-recipe new-table capacity:number -> result:address:shared:table:_key:_value [
+def new-table capacity:number -> result:address:shared:table:_key:_value [
   local-scope
   load-ingredients
   result <- new {(table _key _value): type}
@@ -46,7 +46,7 @@ recipe new-table capacity:number -> result:address:shared:table:_key:_value [
   *data <- new {(table_row _key _value): type}, capacity
 ]
 
-recipe put table:address:shared:table:_key:_value, key:_key, value:_value -> table:address:shared:table:_key:_value [
+def put table:address:shared:table:_key:_value, key:_key, value:_value -> table:address:shared:table:_key:_value [
   local-scope
   load-ingredients
   hash:number <- hash key
@@ -62,15 +62,15 @@ recipe put table:address:shared:table:_key:_value, key:_key, value:_value -> tab
   *x <- merge 1/true, key, value
 ]
 
-recipe abs n:number -> result:number [
+def abs n:number -> result:number [
   local-scope
   load-ingredients
   positive?:boolean <- greater-or-equal n, 0
-  reply-if positive?, n
+  return-if positive?, n
   result <- multiply n, -1
 ]
 
-recipe index table:address:shared:table:_key:_value, key:_key -> result:_value [
+def index table:address:shared:table:_key:_value, key:_key -> result:_value [
   local-scope
   load-ingredients
   hash:number <- hash key

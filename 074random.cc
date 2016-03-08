@@ -53,7 +53,7 @@ case ROUND: {
 }
 
 :(scenario round_to_nearest_integer)
-recipe main [
+def main [
   1:number <- round 12.2
 ]
 +mem: storing 12 in location 1

@@ -2,14 +2,14 @@
 //: guarantees on how the operations in each are interleaved with each other.
 
 :(scenario scheduler)
-recipe f1 [
+def f1 [
   start-running f2
   # wait for f2 to run
   {
     jump-unless 1:number, -1
   }
 ]
-recipe f2 [
+def f2 [
   1:number <- copy 1
 ]
 +schedule: f1
@@ -181,7 +181,7 @@ case START_RUNNING: {
 
 :(scenario scheduler_runs_single_routine)
 % Scheduling_interval = 1;
-recipe f1 [
+def f1 [
   1:number <- copy 0
   2:number <- copy 0
 ]
@@ -192,12 +192,12 @@ recipe f1 [
 
 :(scenario scheduler_interleaves_routines)
 % Scheduling_interval = 1;
-recipe f1 [
+def f1 [
   start-running f2
   1:number <- copy 0
   2:number <- copy 0
 ]
-recipe f2 [
+def f2 [
   3:number <- copy 0
   4:number <- copy 0
 ]
@@ -213,24 +213,24 @@ recipe f2 [
 +run: 2:number <- copy 0
 
 :(scenario start_running_takes_ingredients)
-recipe f1 [
+def f1 [
   start-running f2, 3
   # wait for f2 to run
   {
     jump-unless 1:number, -1
   }
 ]
-recipe f2 [
+def f2 [
   1:number <- next-ingredient
   2:number <- add 1:number, 1
 ]
 +mem: storing 4 in location 2
 
 :(scenario start_running_returns_routine_id)
-recipe f1 [
+def f1 [
   1:number <- start-running f2
 ]
-recipe f2 [
+def f2 [
   12:number <- copy 44
 ]
 +mem: storing 2 in location 1
@@ -244,7 +244,7 @@ recipe f2 [
 % Routines.push_back(new routine(f2));
 % Routines.back()->state = COMPLETED;  // f2 not meant to run
 # must have at least one routine without escaping
-recipe f3 [
+def f3 [
   3:number <- copy 0
 ]
 # by interleaving '+' lines with '-' lines, we allow f1 and f3 to run in any order
@@ -258,7 +258,7 @@ recipe f3 [
 :(scenario scheduler_starts_at_middle_of_routines)
 % Routines.push_back(new routine(COPY));
 % Routines.back()->state = COMPLETED;
-recipe f1 [
+def f1 [
   1:number <- copy 0
   2:number <- copy 0
 ]
@@ -270,12 +270,12 @@ recipe f1 [
 :(scenario scheduler_terminates_routines_after_errors)
 % Hide_errors = true;
 % Scheduling_interval = 2;
-recipe f1 [
+def f1 [
   start-running f2
   1:number <- copy 0
   2:number <- copy 0
 ]
-recipe f2 [
+def f2 [
   # divide by 0 twice
   3:number <- divide-with-remainder 4, 0
   4:number <- divide-with-remainder 4, 0
@@ -292,11 +292,11 @@ recipe f2 [
 //:: Routines are marked completed when their parent completes.
 
 :(scenario scheduler_kills_orphans)
-recipe main [
+def main [
   start-running f1
   # f1 never actually runs because its parent completes without waiting for it
 ]
-recipe f1 [
+def f1 [
   1:number <- copy 0
 ]
 -schedule: f1
@@ -323,13 +323,13 @@ bool has_completed_parent(long long int routine_index) {
 
 :(scenario routine_state_test)
 % Scheduling_interval = 2;
-recipe f1 [
+def f1 [
   1:number/child-id <- start-running f2
   12:number <- copy 0  # race condition since we don't care about location 12
   # thanks to Scheduling_interval, f2's one instruction runs in between here and completes
   2:number/state <- routine-state 1:number/child-id
 ]
-recipe f2 [
+def f2 [
   12:number <- copy 0
   # trying to run a second instruction marks routine as completed
 ]
@@ -445,7 +445,7 @@ case _DUMP_ROUTINES: {
 
 :(scenario routine_discontinues_past_limit)
 % Scheduling_interval = 2;
-recipe f1 [
+def f1 [
   1:number/child-id <- start-running f2
   limit-time 1:number/child-id, 10
   # padding loop just to make sure f2 has time to completed
@@ -453,7 +453,7 @@ recipe f1 [
   2:number <- subtract 2:number, 1
   jump-if 2:number, -2:offset
 ]
-recipe f2 [
+def f2 [
   jump -1:offset  # run forever
   $print [should never get here], 10/newline
 ]
@@ -514,7 +514,7 @@ case LIMIT_TIME: {
 //:: make sure that each routine gets a different alloc to start
 
 :(scenario new_concurrent)
-recipe f1 [
+def f1 [
   start-running f2
   1:address:shared:number/raw <- new number:type
   # wait for f2 to complete
@@ -522,7 +522,7 @@ recipe f1 [
     loop-unless 4:number/raw
   }
 ]
-recipe f2 [
+def f2 [
   2:address:shared:number/raw <- new number:type
   # hack: assumes scheduler implementation
   3:boolean/raw <- equal 1:address:shared:number/raw, 2:address:shared:number/raw

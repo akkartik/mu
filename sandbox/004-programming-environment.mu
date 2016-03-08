@@ -1,6 +1,6 @@
 ## putting the environment together out of editors
 
-recipe! main [
+def! main [
   local-scope
   open-console
   initial-sandbox:address:shared:array:character <- new []
@@ -19,7 +19,7 @@ container programming-environment-data [
   current-sandbox:address:shared:editor-data
 ]
 
-recipe new-programming-environment screen:address:shared:screen, initial-sandbox-contents:address:shared:array:character -> result:address:shared:programming-environment-data, screen:address:shared:screen [
+def new-programming-environment screen:address:shared:screen, initial-sandbox-contents:address:shared:array:character -> result:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
   width:number <- screen-width screen
@@ -39,7 +39,7 @@ recipe new-programming-environment screen:address:shared:screen, initial-sandbox
   <programming-environment-initialization>
 ]
 
-recipe event-loop screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data -> screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data [
+def event-loop screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data -> screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
@@ -136,7 +136,7 @@ recipe event-loop screen:address:shared:screen, console:address:shared:console, 
   }
 ]
 
-recipe resize screen:address:shared:screen, env:address:shared:programming-environment-data -> env:address:shared:programming-environment-data, screen:address:shared:screen [
+def resize screen:address:shared:screen, env:address:shared:programming-environment-data -> env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
   clear-screen screen  # update screen dimensions
@@ -152,7 +152,7 @@ recipe resize screen:address:shared:screen, env:address:shared:programming-envir
   *cursor-column <- copy 0
 ]
 
-recipe render-all screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen [
+def render-all screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   trace 10, [app], [render all]
@@ -178,7 +178,7 @@ recipe render-all screen:address:shared:screen, env:address:shared:programming-e
 ]
 
 # replaced in a later layer
-recipe render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen [
+def render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
@@ -193,7 +193,7 @@ recipe render-sandbox-side screen:address:shared:screen, env:address:shared:prog
   clear-screen-from screen, row, left, left, right
 ]
 
-recipe update-cursor screen:address:shared:screen, current-sandbox:address:shared:editor-data, env:address:shared:programming-environment-data -> screen:address:shared:screen [
+def update-cursor screen:address:shared:screen, current-sandbox:address:shared:editor-data, env:address:shared:programming-environment-data -> screen:address:shared:screen [
   local-scope
   load-ingredients
   <update-cursor-special-cases>
@@ -204,10 +204,10 @@ recipe update-cursor screen:address:shared:screen, current-sandbox:address:share
 
 # print a text 's' to 'editor' in 'color' starting at 'row'
 # clear rest of last line, move cursor to next line
-recipe render screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:shared:screen [
+def render screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:shared:screen [
   local-scope
   load-ingredients
-  reply-unless s
+  return-unless s
   column:number <- copy left
   screen <- move-cursor screen, row, column
   screen-height:number <- screen-height screen
@@ -265,10 +265,10 @@ recipe render screen:address:shared:screen, s:address:shared:array:character, le
 ]
 
 # like 'render' for texts, but with colorization for comments like in the editor
-recipe render-code screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, row:number -> row:number, screen:address:shared:screen [
+def render-code screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, row:number -> row:number, screen:address:shared:screen [
   local-scope
   load-ingredients
-  reply-unless s
+  return-unless s
   color:number <- copy 7/white
   column:number <- copy left
   screen <- move-cursor screen, row, column
@@ -340,6 +340,6 @@ after <global-type> [
 ]
 
 # dummy
-recipe restore-sandboxes env:address:shared:programming-environment-data -> env:address:shared:programming-environment-data [
+def restore-sandboxes env:address:shared:programming-environment-data -> env:address:shared:programming-environment-data [
   # do nothing; redefined later
 ]

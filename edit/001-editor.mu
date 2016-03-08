@@ -2,7 +2,7 @@
 
 # temporary main for this layer: just render the given text at the given
 # screen dimensions, then stop
-recipe! main text:address:shared:array:character [
+def! main text:address:shared:array:character [
   local-scope
   load-ingredients
   open-console
@@ -48,7 +48,7 @@ container editor-data [
 # creates a new editor widget and renders its initial appearance to screen
 #   top/left/right constrain the screen area available to the new editor
 #   right is exclusive
-recipe new-editor s:address:shared:array:character, screen:address:shared:screen, left:number, right:number -> result:address:shared:editor-data, screen:address:shared:screen [
+def new-editor s:address:shared:array:character, screen:address:shared:screen, left:number, right:number -> result:address:shared:editor-data, screen:address:shared:screen [
   local-scope
   load-ingredients
   # no clipping of bounds
@@ -79,13 +79,13 @@ recipe new-editor s:address:shared:array:character, screen:address:shared:screen
   <editor-initialization>
 ]
 
-recipe insert-text editor:address:shared:editor-data, text:address:shared:array:character -> editor:address:shared:editor-data [
+def insert-text editor:address:shared:editor-data, text:address:shared:array:character -> editor:address:shared:editor-data [
   local-scope
   load-ingredients
   # early exit if text is empty
-  reply-unless text, editor/same-as-ingredient:0
+  return-unless text, editor/same-as-ingredient:0
   len:number <- length *text
-  reply-unless len, editor/same-as-ingredient:0
+  return-unless len, editor/same-as-ingredient:0
   idx:number <- copy 0
   # now we can start appending the rest, character by character
   curr:address:shared:duplex-list:character <- get *editor, data:offset
@@ -99,7 +99,7 @@ recipe insert-text editor:address:shared:editor-data, text:address:shared:array:
     idx <- add idx, 1
     loop
   }
-  reply editor/same-as-ingredient:0
+  return editor/same-as-ingredient:0
 ]
 
 scenario editor-initializes-without-data [
@@ -129,10 +129,10 @@ scenario editor-initializes-without-data [
 # Assumes cursor should be at coordinates (cursor-row, cursor-column) and
 # updates before-cursor to match. Might also move coordinates if they're
 # outside text.
-recipe render screen:address:shared:screen, editor:address:shared:editor-data -> last-row:number, last-column:number, screen:address:shared:screen, editor:address:shared:editor-data [
+def render screen:address:shared:screen, editor:address:shared:editor-data -> last-row:number, last-column:number, screen:address:shared:screen, editor:address:shared:editor-data [
   local-scope
   load-ingredients
-  reply-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  return-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
   left:number <- get *editor, left:offset
   screen-height:number <- screen-height screen
   right:number <- get *editor, right:offset
@@ -226,10 +226,10 @@ recipe render screen:address:shared:screen, editor:address:shared:editor-data ->
   }
   bottom:address:number <- get-address *editor, bottom:offset
   *bottom <- copy row
-  reply row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
-recipe clear-line-delimited screen:address:shared:screen, column:number, right:number -> screen:address:shared:screen [
+def clear-line-delimited screen:address:shared:screen, column:number, right:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   space:character <- copy 32/space
@@ -248,23 +248,23 @@ recipe clear-line-delimited screen:address:shared:screen, column:number, right:n
   }
 ]
 
-recipe clear-screen-from screen:address:shared:screen, row:number, column:number, left:number, right:number -> screen:address:shared:screen [
+def clear-screen-from screen:address:shared:screen, row:number, column:number, left:number, right:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   # if it's the real screen, use the optimized primitive
   {
     break-if screen
     clear-display-from row, column, left, right
-    reply screen/same-as-ingredient:0
+    return screen/same-as-ingredient:0
   }
   # if not, go the slower route
   screen <- move-cursor screen, row, column
   clear-line-delimited screen, column, right
   clear-rest-of-screen screen, row, left, right
-  reply screen/same-as-ingredient:0
+  return screen/same-as-ingredient:0
 ]
 
-recipe clear-rest-of-screen screen:address:shared:screen, row:number, left:number, right:number -> screen:address:shared:screen [
+def clear-rest-of-screen screen:address:shared:screen, row:number, left:number, right:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   row <- add row, 1
@@ -422,7 +422,7 @@ after <character-c-received> [
 ]
 
 # so far the previous color is all the information we need; that may change
-recipe get-color color:number, c:character -> color:number [
+def get-color color:number, c:character -> color:number [
   local-scope
   load-ingredients
   color-is-white?:boolean <- equal color, 7/white
@@ -464,7 +464,7 @@ recipe get-color color:number, c:character -> color:number [
   }
   # otherwise no change
   +exit
-  reply color
+  return color
 ]
 
 scenario render-colors-assignment [

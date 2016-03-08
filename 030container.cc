@@ -16,7 +16,7 @@ get(Type, point).elements.push_back(reagent("y:number"));
 //: container. Don't do this in general. I'm tagging exceptions with /raw to
 //: avoid errors.
 :(scenario copy_multiple_locations)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 35
   3:point <- copy 1:point/unsafe
@@ -27,7 +27,7 @@ recipe main [
 //: trying to copy to a differently-typed destination will fail
 :(scenario copy_checks_size)
 % Hide_errors = true;
-recipe main [
+def main [
   2:point <- copy 1:number
 ]
 +error: main: can't copy 1:number to 2:point; types don't match
@@ -43,7 +43,7 @@ get(Type, point_number).elements.push_back(reagent("xy:point"));
 get(Type, point_number).elements.push_back(reagent("z:number"));
 
 :(scenario copy_handles_nested_container_elements)
-recipe main [
+def main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
@@ -55,7 +55,7 @@ recipe main [
 //: numbers, no matter how large they are.
 
 :(scenario compare_multiple_locations)
-recipe main [
+def main [
   1:number <- copy 34  # first
   2:number <- copy 35
   3:number <- copy 36
@@ -67,7 +67,7 @@ recipe main [
 +mem: storing 1 in location 7
 
 :(scenario compare_multiple_locations_2)
-recipe main [
+def main [
   1:number <- copy 34  # first
   2:number <- copy 35
   3:number <- copy 36
@@ -109,7 +109,7 @@ if (t.kind == CONTAINER) {
 }
 
 :(scenario stash_container)
-recipe main [
+def main [
   1:number <- copy 34  # first
   2:number <- copy 35
   3:number <- copy 36
@@ -119,7 +119,7 @@ recipe main [
 
 //:: To access elements of a container, use 'get'
 :(scenario get)
-recipe main [
+def main [
   12:number <- copy 34
   13:number <- copy 35
   15:number <- get 12:point/raw, 1:offset  # unsafe
@@ -205,7 +205,7 @@ const reagent element_type(const reagent& canonized_base, long long int offset_v
 }
 
 :(scenario get_handles_nested_container_elements)
-recipe main [
+def main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
@@ -215,7 +215,7 @@ recipe main [
 
 :(scenario get_out_of_bounds)
 % Hide_errors = true;
-recipe main [
+def main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
@@ -225,7 +225,7 @@ recipe main [
 
 :(scenario get_out_of_bounds_2)
 % Hide_errors = true;
-recipe main [
+def main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
@@ -235,7 +235,7 @@ recipe main [
 
 :(scenario get_product_type_mismatch)
 % Hide_errors = true;
-recipe main [
+def main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
@@ -246,7 +246,7 @@ recipe main [
 //: we might want to call 'get' without saving the results, say in a sandbox
 
 :(scenario get_without_product)
-recipe main [
+def main [
   12:number <- copy 34
   13:number <- copy 35
   get 12:point/raw, 1:offset  # unsafe
@@ -256,7 +256,7 @@ recipe main [
 //:: To write to elements of containers, you need their address.
 
 :(scenario get_address)
-recipe main [
+def main [
   12:number <- copy 34
   13:number <- copy 35
   15:address:number <- get-address 12:point/raw, 1:offset  # unsafe
@@ -333,7 +333,7 @@ case GET_ADDRESS: {
 
 :(scenario get_address_out_of_bounds)
 % Hide_errors = true;
-recipe main [
+def main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
@@ -343,7 +343,7 @@ recipe main [
 
 :(scenario get_address_out_of_bounds_2)
 % Hide_errors = true;
-recipe main [
+def main [
   12:number <- copy 34
   13:number <- copy 35
   14:number <- copy 36
@@ -357,7 +357,7 @@ container boolbool [
   x:boolean
   y:boolean
 ]
-recipe main [
+def main [
   12:boolean <- copy 1
   13:boolean <- copy 0
   15:boolean <- get-address 12:boolbool, 1:offset
@@ -466,7 +466,7 @@ container foo [
   y:number
 ]
 
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 35
   3:number <- get 1:foo, 0:offset
@@ -515,14 +515,14 @@ Next_type_ordinal = 1000;
 
 :(scenario run_complains_on_unknown_types)
 % Hide_errors = true;
-recipe main [
+def main [
   # integer is not a type
   1:integer <- copy 0
 ]
 +error: main: unknown type integer in '1:integer <- copy 0'
 
 :(scenario run_allows_type_definition_after_use)
-recipe main [
+def main [
   1:bar <- copy 0/unsafe
 ]
 
@@ -616,7 +616,7 @@ container foo [
   y:number
 ]
 
-recipe main [
+def main [
   1:foo <- merge 3, 4
 ]
 +mem: storing 3 in location 1
@@ -643,21 +643,21 @@ case MERGE: {
 //: type-check 'merge' to avoid interpreting numbers as addresses
 
 :(scenario merge_check)
-recipe main [
+def main [
   1:point <- merge 3, 4
 ]
 $error: 0
 
 :(scenario merge_check_missing_element)
 % Hide_errors = true;
-recipe main [
+def main [
   1:point <- merge 3
 ]
 +error: main: too few ingredients in '1:point <- merge 3'
 
 :(scenario merge_check_extra_element)
 % Hide_errors = true;
-recipe main [
+def main [
   1:point <- merge 3, 4, 5
 ]
 +error: main: too many ingredients in '1:point <- merge 3, 4, 5'
@@ -668,7 +668,7 @@ recipe main [
 //: container fields.
 
 :(scenario merge_check_recursive_containers)
-recipe main [
+def main [
   1:point <- merge 3, 4
   1:point-number <- merge 1:point, 5
 ]
@@ -676,21 +676,21 @@ $error: 0
 
 :(scenario merge_check_recursive_containers_2)
 % Hide_errors = true;
-recipe main [
+def main [
   1:point <- merge 3, 4
   2:point-number <- merge 1:point
 ]
 +error: main: too few ingredients in '2:point-number <- merge 1:point'
 
 :(scenario merge_check_recursive_containers_3)
-recipe main [
+def main [
   1:point-number <- merge 3, 4, 5
 ]
 $error: 0
 
 :(scenario merge_check_recursive_containers_4)
 % Hide_errors = true;
-recipe main [
+def main [
   1:point-number <- merge 3, 4
 ]
 +error: main: too few ingredients in '1:point-number <- merge 3, 4'
@@ -807,7 +807,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
 
 :(scenario merge_check_product)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- merge 3
 ]
 +error: main: 'merge' should yield a container in '1:number <- merge 3'

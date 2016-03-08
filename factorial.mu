@@ -1,20 +1,20 @@
 # example program: compute the factorial of 5
 
-recipe main [
+def main [
   local-scope
   x:number <- factorial 5
   $print [result: ], x, [ 
 ]
 ]
 
-recipe factorial n:number -> result:number [
+def factorial n:number -> result:number [
   local-scope
   load-ingredients
   {
     # if n=0 return 1
     zero?:boolean <- equal n, 0
     break-unless zero?
-    reply 1
+    return 1
   }
   # return n * factorial(n-1)
   x:number <- subtract n, 1

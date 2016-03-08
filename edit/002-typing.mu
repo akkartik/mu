@@ -2,7 +2,7 @@
 
 # temporary main: interactive editor
 # hit ctrl-c to exit
-recipe! main text:address:shared:array:character [
+def! main text:address:shared:array:character [
   local-scope
   load-ingredients
   open-console
@@ -11,7 +11,7 @@ recipe! main text:address:shared:array:character [
   close-console
 ]
 
-recipe editor-event-loop screen:address:shared:screen, console:address:shared:console, editor:address:shared:editor-data -> screen:address:shared:screen, console:address:shared:console, editor:address:shared:editor-data [
+def editor-event-loop screen:address:shared:screen, console:address:shared:console, editor:address:shared:editor-data -> screen:address:shared:screen, console:address:shared:console, editor:address:shared:editor-data [
   local-scope
   load-ingredients
   {
@@ -45,35 +45,35 @@ recipe editor-event-loop screen:address:shared:screen, console:address:shared:co
 ]
 
 # process click, return if it was on current editor
-recipe move-cursor-in-editor screen:address:shared:screen, editor:address:shared:editor-data, t:touch-event -> in-focus?:boolean, editor:address:shared:editor-data [
+def move-cursor-in-editor screen:address:shared:screen, editor:address:shared:editor-data, t:touch-event -> in-focus?:boolean, editor:address:shared:editor-data [
   local-scope
   load-ingredients
-  reply-unless editor, 0/false
+  return-unless editor, 0/false
   click-row:number <- get t, row:offset
-  reply-unless click-row, 0/false  # ignore clicks on 'menu'
+  return-unless click-row, 0/false  # ignore clicks on 'menu'
   click-column:number <- get t, column:offset
   left:number <- get *editor, left:offset
   too-far-left?:boolean <- lesser-than click-column, left
-  reply-if too-far-left?, 0/false
+  return-if too-far-left?, 0/false
   right:number <- get *editor, right:offset
   too-far-right?:boolean <- greater-than click-column, right
-  reply-if too-far-right?, 0/false
+  return-if too-far-right?, 0/false
   # position cursor
   <move-cursor-begin>
   editor <- snap-cursor screen, editor, click-row, click-column
   undo-coalesce-tag:number <- copy 0/never
   <move-cursor-end>
   # gain focus
-  reply 1/true
+  return 1/true
 ]
 
 # Variant of 'render' that only moves the cursor (coordinates and
 # before-cursor). If it's past the end of a line, it 'slides' it left. If it's
 # past the last line it positions at end of last line.
-recipe snap-cursor screen:address:shared:screen, editor:address:shared:editor-data, target-row:number, target-column:number -> editor:address:shared:editor-data [
+def snap-cursor screen:address:shared:screen, editor:address:shared:editor-data, target-row:number, target-column:number -> editor:address:shared:editor-data [
   local-scope
   load-ingredients
-  reply-unless editor
+  return-unless editor
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   screen-height:number <- screen-height screen
@@ -155,11 +155,11 @@ recipe snap-cursor screen:address:shared:screen, editor:address:shared:editor-da
 
 # Process an event 'e' and try to minimally update the screen.
 # Set 'go-render?' to true to indicate the caller must perform a non-minimal update.
-recipe handle-keyboard-event screen:address:shared:screen, editor:address:shared:editor-data, e:event -> screen:address:shared:screen, editor:address:shared:editor-data, go-render?:boolean [
+def handle-keyboard-event screen:address:shared:screen, editor:address:shared:editor-data, e:event -> screen:address:shared:screen, editor:address:shared:editor-data, go-render?:boolean [
   local-scope
   load-ingredients
   go-render? <- copy 0/false
-  reply-unless editor
+  return-unless editor
   screen-width:number <- screen-width screen
   screen-height:number <- screen-height screen
   left:number <- get *editor, left:offset
@@ -179,12 +179,12 @@ recipe handle-keyboard-event screen:address:shared:screen, editor:address:shared
     # ignore any other special characters
     regular-character?:boolean <- greater-or-equal *c, 32/space
     go-render? <- copy 0/false
-    reply-unless regular-character?
+    return-unless regular-character?
     # otherwise type it in
     <insert-character-begin>
     editor, screen, go-render?:boolean <- insert-at-cursor editor, *c, screen
     <insert-character-end>
-    reply
+    return
   }
   # special key to modify the text or move the cursor
   k:address:number <- maybe-convert e:event, keycode:variant
@@ -192,10 +192,10 @@ recipe handle-keyboard-event screen:address:shared:screen, editor:address:shared
   # handlers for each special key will go here
   <handle-special-key>
   go-render? <- copy 1/true
-  reply
+  return
 ]
 
-recipe insert-at-cursor editor:address:shared:editor-data, c:character, screen:address:shared:screen -> editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean [
+def insert-at-cursor editor:address:shared:editor-data, c:character, screen:address:shared:screen -> editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean [
   local-scope
   load-ingredients
   before-cursor:address:address:shared:duplex-list:character <- get-address *editor, before-cursor:offset
@@ -226,7 +226,7 @@ recipe insert-at-cursor editor:address:shared:editor-data, c:character, screen:a
     move-cursor screen, save-row, save-column
     print screen, c
     go-render? <- copy 0/false
-    reply
+    return
   }
   {
     # not at right margin? print the character and rest of line
@@ -240,7 +240,7 @@ recipe insert-at-cursor editor:address:shared:editor-data, c:character, screen:a
       # hit right margin? give up and let caller render
       go-render? <- copy 1/true
       at-right?:boolean <- greater-than curr-column, right
-      reply-if at-right?
+      return-if at-right?
       break-unless curr
       # newline? done.
       currc:character <- get *curr, value:offset
@@ -252,14 +252,14 @@ recipe insert-at-cursor editor:address:shared:editor-data, c:character, screen:a
       loop
     }
     go-render? <- copy 0/false
-    reply
+    return
   }
   go-render? <- copy 1/true
-  reply
+  return
 ]
 
 # helper for tests
-recipe editor-render screen:address:shared:screen, editor:address:shared:editor-data -> screen:address:shared:screen, editor:address:shared:editor-data [
+def editor-render screen:address:shared:screen, editor:address:shared:editor-data -> screen:address:shared:screen, editor:address:shared:editor-data [
   local-scope
   load-ingredients
   left:number <- get *editor, left:offset
@@ -697,7 +697,7 @@ after <insert-character-special-case> [
       <scroll-down>
     }
     go-render? <- copy 1/true
-    reply
+    return
   }
 ]
 
@@ -818,11 +818,11 @@ after <handle-special-character> [
     editor <- insert-new-line-and-indent editor, screen
     <insert-enter-end>
     go-render? <- copy 1/true
-    reply
+    return
   }
 ]
 
-recipe insert-new-line-and-indent editor:address:shared:editor-data, screen:address:shared:screen -> editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean [
+def insert-new-line-and-indent editor:address:shared:editor-data, screen:address:shared:screen -> editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean [
   local-scope
   load-ingredients
   cursor-row:address:number <- get-address *editor, cursor-row:offset
@@ -846,7 +846,7 @@ recipe insert-new-line-and-indent editor:address:shared:editor-data, screen:addr
   }
   # indent if necessary
   indent?:boolean <- get *editor, indent?:offset
-  reply-unless indent?
+  return-unless indent?
   d:address:shared:duplex-list:character <- get *editor, data:offset
   end-of-previous-line:address:shared:duplex-list:character <- prev *before-cursor
   indent:number <- line-indent end-of-previous-line, d
@@ -862,13 +862,13 @@ recipe insert-new-line-and-indent editor:address:shared:editor-data, screen:addr
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
 # the number of spaces at the start of the line containing 'curr'.
-recipe line-indent curr:address:shared:duplex-list:character, start:address:shared:duplex-list:character -> result:number [
+def line-indent curr:address:shared:duplex-list:character, start:address:shared:duplex-list:character -> result:number [
   local-scope
   load-ingredients
   result:number <- copy 0
-  reply-unless curr
+  return-unless curr
   at-start?:boolean <- equal curr, start
-  reply-if at-start?
+  return-if at-start?
   {
     curr <- prev curr
     break-unless curr
@@ -995,7 +995,7 @@ after <handle-special-key> [
     indent?:address:boolean <- get-address *editor, indent?:offset
     *indent? <- copy 0/false
     go-render? <- copy 1/true
-    reply
+    return
   }
 ]
 
@@ -1006,13 +1006,13 @@ after <handle-special-key> [
     indent?:address:boolean <- get-address *editor, indent?:offset
     *indent? <- copy 1/true
     go-render? <- copy 1/true
-    reply
+    return
   }
 ]
 
 ## helpers
 
-recipe draw-horizontal screen:address:shared:screen, row:number, x:number, right:number -> screen:address:shared:screen [
+def draw-horizontal screen:address:shared:screen, row:number, x:number, right:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   style:character, style-found?:boolean <- next-ingredient

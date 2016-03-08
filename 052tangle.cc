@@ -7,7 +7,7 @@
 //: todo: switch recipe.steps to a more efficient data structure.
 
 :(scenario tangle_before)
-recipe main [
+def main [
   1:number <- copy 0
   <label1>
   3:number <- copy 0
@@ -152,7 +152,7 @@ void check_insert_fragments(unused recipe_ordinal) {
 }
 
 :(scenario tangle_before_and_after)
-recipe main [
+def main [
   1:number <- copy 0
   <label1>
   4:number <- copy 0
@@ -173,7 +173,7 @@ $mem: 4
 
 :(scenario tangle_ignores_jump_target)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- copy 0
   +label1
   4:number <- copy 0
@@ -184,7 +184,7 @@ before +label1 [
 +error: can't tangle before label +label1
 
 :(scenario tangle_keeps_labels_separate)
-recipe main [
+def main [
   1:number <- copy 0
   <label1>
   <label2>
@@ -215,7 +215,7 @@ after <label2> [
 $mem: 6
 
 :(scenario tangle_stacks_multiple_fragments)
-recipe main [
+def main [
   1:number <- copy 0
   <label1>
   6:number <- copy 0
@@ -245,7 +245,7 @@ after <label1> [
 $mem: 6
 
 :(scenario tangle_supports_fragments_with_multiple_instructions)
-recipe main [
+def main [
   1:number <- copy 0
   <label1>
   6:number <- copy 0
@@ -269,13 +269,13 @@ after <label1> [
 $mem: 6
 
 :(scenario tangle_tangles_into_all_labels_with_same_name)
-recipe main [
+def main [
   1:number <- copy 10
   <label1>
   4:number <- copy 10
   recipe2
 ]
-recipe recipe2 [
+def recipe2 [
   1:number <- copy 11
   <label1>
   4:number <- copy 11
@@ -301,7 +301,7 @@ after <label1> [
 $mem: 8
 
 :(scenario tangle_tangles_into_all_labels_with_same_name_2)
-recipe main [
+def main [
   1:number <- copy 10
   <label1>
   <label1>
@@ -325,7 +325,7 @@ after <label1> [
 $mem: 6
 
 :(scenario tangle_tangles_into_all_labels_with_same_name_3)
-recipe main [
+def main [
   1:number <- copy 10
   <label1>
   <foo>
@@ -352,7 +352,7 @@ after <foo> [
 $mem: 6
 
 :(scenario tangle_handles_jump_target_inside_fragment)
-recipe main [
+def main [
   1:number <- copy 10
   <label1>
   4:number <- copy 10
@@ -373,7 +373,7 @@ before <label1> [
 $mem: 3
 
 :(scenario tangle_renames_jump_target)
-recipe main [
+def main [
   1:number <- copy 10
   <label1>
   +label2
@@ -395,7 +395,7 @@ before <label1> [
 $mem: 3
 
 :(scenario tangle_jump_to_base_recipe)
-recipe main [
+def main [
   1:number <- copy 10
   <label1>
   +label2

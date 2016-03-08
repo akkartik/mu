@@ -58,9 +58,9 @@ syntax keyword muKeyword default-space global-space new-default-space local-scop
 syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
 syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
 syntax match muGlobal %[^ ]\+:global/\?[^ ,]*% | highlight link muGlobal SpecialChar
-syntax keyword muControl reply reply-if reply-unless jump jump-if jump-unless loop loop-if loop-unless break break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
+syntax keyword muControl reply reply-if reply-unless return return-if return-unless jump jump-if jump-unless loop loop-if loop-unless break break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
 " common keywords
-syntax keyword muRecipe recipe recipe! before after | highlight muRecipe ctermfg=208
+syntax keyword muRecipe recipe recipe! def def! before after | highlight muRecipe ctermfg=208
 syntax match muRecipe " -> "
 syntax keyword muScenario scenario | highlight muScenario ctermfg=34
 syntax keyword muData container exclusive-container | highlight muData ctermfg=226

@@ -1,22 +1,22 @@
 //: So far the recipes we define can't run each other. Let's fix that.
 
 :(scenario calling_recipe)
-recipe main [
+def main [
   f
 ]
-recipe f [
+def f [
   3:number <- add 2, 2
 ]
 +mem: storing 4 in location 3
 
 :(scenario return_on_fallthrough)
-recipe main [
+def main [
   f
   1:number <- copy 0
   2:number <- copy 0
   3:number <- copy 0
 ]
-recipe f [
+def f [
   4:number <- copy 0
   5:number <- copy 0
 ]
@@ -125,14 +125,14 @@ void finish_call_housekeeping(const instruction& call_instruction, const vector<
 
 :(scenario calling_undefined_recipe_fails)
 % Hide_errors = true;
-recipe main [
+def main [
   foo
 ]
 +error: main: undefined operation in 'foo '
 
 :(scenario calling_undefined_recipe_handles_missing_result)
 % Hide_errors = true;
-recipe main [
+def main [
   x:number <- foo
 ]
 +error: main: undefined operation in 'x:number <- foo '

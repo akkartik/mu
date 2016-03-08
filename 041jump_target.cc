@@ -8,7 +8,7 @@
 //: iteration of some containing loop nest.
 
 :(scenario jump_to_label)
-recipe main [
+def main [
   jump +target:label
   1:number <- copy 0
   +target
@@ -92,7 +92,7 @@ bool is_jump_target(string label) {
 }
 
 :(scenario break_to_label)
-recipe main [
+def main [
   {
     {
       break +target:label
@@ -104,7 +104,7 @@ recipe main [
 -mem: storing 0 in location 1
 
 :(scenario jump_if_to_label)
-recipe main [
+def main [
   {
     {
       jump-if 1, +target:label
@@ -116,7 +116,7 @@ recipe main [
 -mem: storing 0 in location 1
 
 :(scenario loop_unless_to_label)
-recipe main [
+def main [
   {
     {
       loop-unless 0, +target:label  # loop/break with a label don't care about braces
@@ -128,7 +128,7 @@ recipe main [
 -mem: storing 0 in location 1
 
 :(scenario jump_runs_code_after_label)
-recipe main [
+def main [
   # first a few lines of padding to exercise the offset computation
   1:number <- copy 0
   2:number <- copy 0
@@ -143,21 +143,21 @@ recipe main [
 
 :(scenario jump_fails_without_target)
 % Hide_errors = true;
-recipe main [
+def main [
   jump
 ]
 +error: main: 'jump' expects an ingredient but got none
 
 :(scenario jump_fails_without_target_2)
 % Hide_errors = true;
-recipe main [
+def main [
   jump-if 1/true
 ]
 +error: main: 'jump-if' expects 2 ingredients but got 1
 
 :(scenario recipe_fails_on_duplicate_jump_target)
 % Hide_errors = true;
-recipe main [
+def main [
   +label
   1:number <- copy 0
   +label
@@ -167,7 +167,7 @@ recipe main [
 
 :(scenario jump_ignores_nontarget_label)
 % Hide_errors = true;
-recipe main [
+def main [
   # first a few lines of padding to exercise the offset computation
   1:number <- copy 0
   2:number <- copy 0

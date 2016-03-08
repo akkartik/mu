@@ -43,7 +43,7 @@ assert(Max_callstack_depth == 9989);
 //:
 //:   begin instruction modifying transforms
 //:     56.2 check header ingredients
-//:      ↳ 56.4 fill in reply ingredients
+//:      ↳ 56.4 fill in return ingredients
 //:     48 check or set types by name
 //:
 //:     begin type modifying transforms
@@ -68,9 +68,9 @@ assert(Max_callstack_depth == 9989);
 //:     ↳ 56 check calls against header
 //:     ↳ 43 transform 'new' to 'allocate'
 //:     30 check merge calls
-//:     36 check types of reply instructions
+//:     36 check types of return instructions
 //:     43 check default space
-//:     56 check reply instructions against header
+//:     56 check return instructions against header
 //:   end checks
 //: end transforms
 

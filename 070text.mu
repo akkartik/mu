@@ -2,20 +2,20 @@
 
 # to-text-line gets called implicitly in various places
 # define it to be identical to 'to-text' by default
-recipe to-text-line x:_elem -> y:address:shared:array:character [
+def to-text-line x:_elem -> y:address:shared:array:character [
   local-scope
   load-ingredients
   y <- to-text x
 ]
 
 # to-text on text is just the identity function
-recipe to-text x:address:shared:array:character -> y:address:shared:array:character [
+def to-text x:address:shared:array:character -> y:address:shared:array:character [
   local-scope
   load-ingredients
-  reply x
+  return x
 ]
 
-recipe equal a:address:shared:array:character, b:address:shared:array:character -> result:boolean [
+def equal a:address:shared:array:character, b:address:shared:array:character -> result:boolean [
   local-scope
   load-ingredients
   a-len:number <- length *a
@@ -25,7 +25,7 @@ recipe equal a:address:shared:array:character, b:address:shared:array:character 
     trace 99, [text-equal], [comparing lengths]
     length-equal?:boolean <- equal a-len, b-len
     break-if length-equal?
-    reply 0
+    return 0
   }
   # compare each corresponding character
   trace 99, [text-equal], [comparing characters]
@@ -38,12 +38,12 @@ recipe equal a:address:shared:array:character, b:address:shared:array:character 
     {
       chars-match?:boolean <- equal a2, b2
       break-if chars-match?
-      reply 0
+      return 0
     }
     i <- add i, 1
     loop
   }
-  reply 1
+  return 1
 ]
 
 scenario text-equal-reflexive [
@@ -117,7 +117,7 @@ container buffer [
   data:address:shared:array:character
 ]
 
-recipe new-buffer capacity:number -> result:address:shared:buffer [
+def new-buffer capacity:number -> result:address:shared:buffer [
   local-scope
   load-ingredients
   result <- new buffer:type
@@ -125,10 +125,10 @@ recipe new-buffer capacity:number -> result:address:shared:buffer [
   *len:address:number <- copy 0
   s:address:address:shared:array:character <- get-address *result, data:offset
   *s <- new character:type, capacity
-  reply result
+  return result
 ]
 
-recipe grow-buffer in:address:shared:buffer -> in:address:shared:buffer [
+def grow-buffer in:address:shared:buffer -> in:address:shared:buffer [
   local-scope
   load-ingredients
   # double buffer size
@@ -150,7 +150,7 @@ recipe grow-buffer in:address:shared:buffer -> in:address:shared:buffer [
   }
 ]
 
-recipe buffer-full? in:address:shared:buffer -> result:boolean [
+def buffer-full? in:address:shared:buffer -> result:boolean [
   local-scope
   load-ingredients
   len:number <- get *in, length:offset
@@ -160,7 +160,7 @@ recipe buffer-full? in:address:shared:buffer -> result:boolean [
 ]
 
 # most broadly applicable definition of append to a buffer: just call to-text
-recipe append buf:address:shared:buffer, x:_elem -> buf:address:shared:buffer [
+def append buf:address:shared:buffer, x:_elem -> buf:address:shared:buffer [
   local-scope
   load-ingredients
   text:address:shared:array:character <- to-text x
@@ -176,7 +176,7 @@ recipe append buf:address:shared:buffer, x:_elem -> buf:address:shared:buffer [
   }
 ]
 
-recipe append in:address:shared:buffer, c:character -> in:address:shared:buffer [
+def append in:address:shared:buffer, c:character -> in:address:shared:buffer [
   local-scope
   load-ingredients
   len:address:number <- get-address *in, length:offset
@@ -185,9 +185,9 @@ recipe append in:address:shared:buffer, c:character -> in:address:shared:buffer 
     backspace?:boolean <- equal c, 8/backspace
     break-unless backspace?
     empty?:boolean <- lesser-or-equal *len, 0
-    reply-if empty?
+    return-if empty?
     *len <- subtract *len, 1
-    reply
+    return
   }
   {
     # grow buffer if necessary
@@ -263,14 +263,14 @@ scenario buffer-append-handles-backspace [
   ]
 ]
 
-recipe to-text n:number -> result:address:shared:array:character [
+def to-text n:number -> result:address:shared:array:character [
   local-scope
   load-ingredients
   # is n zero?
   {
     break-if n
     result <- new [0]
-    reply
+    return
   }
   # save sign
   negate-result:boolean <- copy 0
@@ -317,27 +317,27 @@ recipe to-text n:number -> result:address:shared:array:character [
   }
 ]
 
-recipe to-text x:boolean -> result:address:shared:array:character [
+def to-text x:boolean -> result:address:shared:array:character [
   local-scope
   load-ingredients
   n:number <- copy x:boolean
   result <- to-text n
 ]
 
-recipe to-text x:address:_elem -> result:address:shared:array:character [
+def to-text x:address:_elem -> result:address:shared:array:character [
   local-scope
   load-ingredients
   n:number <- copy x
   result <- to-text n
 ]
 
-recipe buffer-to-array in:address:shared:buffer -> result:address:shared:array:character [
+def buffer-to-array in:address:shared:buffer -> result:address:shared:array:character [
   local-scope
   load-ingredients
   {
     # propagate null buffer
     break-if in
-    reply 0
+    return 0
   }
   len:number <- get *in, length:offset
   s:address:shared:array:character <- get *in, data:offset
@@ -387,7 +387,7 @@ scenario integer-to-decimal-digit-negative [
   ]
 ]
 
-recipe append a:address:shared:array:character, b:address:shared:array:character -> result:address:shared:array:character [
+def append a:address:shared:array:character, b:address:shared:array:character -> result:address:shared:array:character [
   local-scope
   load-ingredients
   # result = new character[a.length + b.length]
@@ -449,13 +449,13 @@ scenario replace-character-in-text [
   ]
 ]
 
-recipe replace s:address:shared:array:character, oldc:character, newc:character, from:number/optional -> s:address:shared:array:character [
+def replace s:address:shared:array:character, oldc:character, newc:character, from:number/optional -> s:address:shared:array:character [
   local-scope
   load-ingredients
   len:number <- length *s
   i:number <- find-next s, oldc, from
   done?:boolean <- greater-or-equal i, len
-  reply-if done?, s/same-as-ingredient:0
+  return-if done?, s/same-as-ingredient:0
   dest:address:character <- index-address *s, i
   *dest <- copy newc
   i <- add i, 1
@@ -507,7 +507,7 @@ scenario replace-all-characters [
 ]
 
 # replace underscores in first with remaining args
-recipe interpolate template:address:shared:array:character -> result:address:shared:array:character [
+def interpolate template:address:shared:array:character -> result:address:shared:array:character [
   local-scope
   load-ingredients  # consume just the template
   # compute result-len, space to allocate for result
@@ -621,68 +621,68 @@ scenario interpolate-at-end [
 ]
 
 # result:boolean <- space? c:character
-recipe space? c:character -> result:boolean [
+def space? c:character -> result:boolean [
   local-scope
   load-ingredients
   # most common case first
   result <- equal c, 32/space
-  reply-if result
+  return-if result
   result <- equal c, 10/newline
-  reply-if result
+  return-if result
   result <- equal c, 9/tab
-  reply-if result
+  return-if result
   result <- equal c, 13/carriage-return
-  reply-if result
+  return-if result
   # remaining uncommon cases in sorted order
   # http://unicode.org code-points in unicode-set Z and Pattern_White_Space
   result <- equal c, 11/ctrl-k
-  reply-if result
+  return-if result
   result <- equal c, 12/ctrl-l
-  reply-if result
+  return-if result
   result <- equal c, 133/ctrl-0085
-  reply-if result
+  return-if result
   result <- equal c, 160/no-break-space
-  reply-if result
+  return-if result
   result <- equal c, 5760/ogham-space-mark
-  reply-if result
+  return-if result
   result <- equal c, 8192/en-quad
-  reply-if result
+  return-if result
   result <- equal c, 8193/em-quad
-  reply-if result
+  return-if result
   result <- equal c, 8194/en-space
-  reply-if result
+  return-if result
   result <- equal c, 8195/em-space
-  reply-if result
+  return-if result
   result <- equal c, 8196/three-per-em-space
-  reply-if result
+  return-if result
   result <- equal c, 8197/four-per-em-space
-  reply-if result
+  return-if result
   result <- equal c, 8198/six-per-em-space
-  reply-if result
+  return-if result
   result <- equal c, 8199/figure-space
-  reply-if result
+  return-if result
   result <- equal c, 8200/punctuation-space
-  reply-if result
+  return-if result
   result <- equal c, 8201/thin-space
-  reply-if result
+  return-if result
   result <- equal c, 8202/hair-space
-  reply-if result
+  return-if result
   result <- equal c, 8206/left-to-right
-  reply-if result
+  return-if result
   result <- equal c, 8207/right-to-left
-  reply-if result
+  return-if result
   result <- equal c, 8232/line-separator
-  reply-if result
+  return-if result
   result <- equal c, 8233/paragraph-separator
-  reply-if result
+  return-if result
   result <- equal c, 8239/narrow-no-break-space
-  reply-if result
+  return-if result
   result <- equal c, 8287/medium-mathematical-space
-  reply-if result
+  return-if result
   result <- equal c, 12288/ideographic-space
 ]
 
-recipe trim s:address:shared:array:character -> result:address:shared:array:character [
+def trim s:address:shared:array:character -> result:address:shared:array:character [
   local-scope
   load-ingredients
   len:number <- length *s
@@ -693,7 +693,7 @@ recipe trim s:address:shared:array:character -> result:address:shared:array:char
       at-end?:boolean <- greater-or-equal start, len
       break-unless at-end?
       result <- new character:type, 0
-      reply
+      return
     }
     curr:character <- index *s, start
     whitespace?:boolean <- space? curr
@@ -788,7 +788,7 @@ scenario trim-newline-tab [
   ]
 ]
 
-recipe find-next text:address:shared:array:character, pattern:character, idx:number -> next-index:number [
+def find-next text:address:shared:array:character, pattern:character, idx:number -> next-index:number [
   local-scope
   load-ingredients
   len:number <- length *text
@@ -801,7 +801,7 @@ recipe find-next text:address:shared:array:character, pattern:character, idx:num
     idx <- add idx, 1
     loop
   }
-  reply idx
+  return idx
 ]
 
 scenario text-find-next [
@@ -886,7 +886,7 @@ scenario text-find-next-second [
 
 # search for a pattern of multiple characters
 # fairly dumb algorithm
-recipe find-next text:address:shared:array:character, pattern:address:shared:array:character, idx:number -> next-index:number [
+def find-next text:address:shared:array:character, pattern:address:shared:array:character, idx:number -> next-index:number [
   local-scope
   load-ingredients
   first:character <- index *pattern, 0
@@ -903,7 +903,7 @@ recipe find-next text:address:shared:array:character, pattern:address:shared:arr
     idx <- find-next text, first, idx
     loop
   }
-  reply idx
+  return idx
 ]
 
 scenario find-next-text-1 [
@@ -962,7 +962,7 @@ scenario find-next-suffix-match-2 [
 ]
 
 # checks if pattern matches at index 'idx'
-recipe match-at text:address:shared:array:character, pattern:address:shared:array:character, idx:number -> result:boolean [
+def match-at text:address:shared:array:character, pattern:address:shared:array:character, idx:number -> result:boolean [
   local-scope
   load-ingredients
   pattern-len:number <- length *pattern
@@ -972,7 +972,7 @@ recipe match-at text:address:shared:array:character, pattern:address:shared:arra
     x <- subtract x, pattern-len
     enough-room?:boolean <- lesser-or-equal idx, x
     break-if enough-room?
-    reply 0/not-found
+    return 0/not-found
   }
   # check each character of pattern
   pattern-idx:number <- copy 0
@@ -984,13 +984,13 @@ recipe match-at text:address:shared:array:character, pattern:address:shared:arra
     {
       match?:boolean <- equal c, exp
       break-if match?
-      reply 0/not-found
+      return 0/not-found
     }
     idx <- add idx, 1
     pattern-idx <- add pattern-idx, 1
     loop
   }
-  reply 1/found
+  return 1/found
 ]
 
 scenario match-at-checks-pattern-at-index [
@@ -1090,7 +1090,7 @@ scenario match-at-inside-bounds-2 [
   ]
 ]
 
-recipe split s:address:shared:array:character, delim:character -> result:address:shared:array:address:shared:array:character [
+def split s:address:shared:array:character, delim:character -> result:address:shared:array:address:shared:array:character [
   local-scope
   load-ingredients
   # empty text? return empty array
@@ -1099,7 +1099,7 @@ recipe split s:address:shared:array:character, delim:character -> result:address
     empty?:boolean <- equal len, 0
     break-unless empty?
     result <- new {(address shared array character): type}, 0
-    reply
+    return
   }
   # count #pieces we need room for
   count:number <- copy 1  # n delimiters = n+1 pieces
@@ -1217,7 +1217,7 @@ scenario text-split-empty-piece [
   ]
 ]
 
-recipe split-first text:address:shared:array:character, delim:character -> x:address:shared:array:character, y:address:shared:array:character [
+def split-first text:address:shared:array:character, delim:character -> x:address:shared:array:character, y:address:shared:array:character [
   local-scope
   load-ingredients
   # empty text? return empty texts
@@ -1227,7 +1227,7 @@ recipe split-first text:address:shared:array:character, delim:character -> x:add
     break-unless empty?
     x:address:shared:array:character <- new []
     y:address:shared:array:character <- new []
-    reply
+    return
   }
   idx:number <- find-next text, delim, 0
   x:address:shared:array:character <- copy-range text, 0, idx
@@ -1248,7 +1248,7 @@ scenario text-split-first [
   ]
 ]
 
-recipe copy-range buf:address:shared:array:character, start:number, end:number -> result:address:shared:array:character [
+def copy-range buf:address:shared:array:character, start:number, end:number -> result:address:shared:array:character [
   local-scope
   load-ingredients
   # if end is out of bounds, trim it
@@ -1305,24 +1305,24 @@ scenario text-copy-out-of-bounds-2 [
   ]
 ]
 
-recipe min x:number, y:number -> z:number [
+def min x:number, y:number -> z:number [
   local-scope
   load-ingredients
   {
     return-x?:boolean <- lesser-than x, y
     break-if return-x?
-    reply y
+    return y
   }
-  reply x
+  return x
 ]
 
-recipe max x:number, y:number -> z:number [
+def max x:number, y:number -> z:number [
   local-scope
   load-ingredients
   {
     return-x?:boolean <- greater-than x, y
     break-if return-x?
-    reply y
+    return y
   }
-  reply x
+  return x
 ]

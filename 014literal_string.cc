@@ -7,13 +7,13 @@
 
 :(scenarios load)
 :(scenario string_literal)
-recipe main [
+def main [
   1:address:array:character <- copy [abc def]  # copy can't really take a string
 ]
 +parse:   ingredient: "abc def": "literal-string"
 
 :(scenario string_literal_with_colons)
-recipe main [
+def main [
   1:address:array:character <- copy [abc:def/ghi]
 ]
 +parse:   ingredient: "abc:def/ghi": "literal-string"
@@ -145,26 +145,26 @@ void strip_last(string& s) {
 }
 
 :(scenario string_literal_nested)
-recipe main [
+def main [
   1:address:array:character <- copy [abc [def]]
 ]
 +parse:   ingredient: "abc [def]": "literal-string"
 
 :(scenario string_literal_escaped)
-recipe main [
+def main [
   1:address:array:character <- copy [abc \[def]
 ]
 +parse:   ingredient: "abc [def": "literal-string"
 
 :(scenario string_literal_escaped_comment_aware)
-recipe main [
+def main [
   1:address:array:character <- copy [
 abc \\\[def]
 ]
 +parse:   ingredient: "\nabc \[def": "literal-string"
 
 :(scenario string_literal_and_comment)
-recipe main [
+def main [
   1:address:array:character <- copy [abc]  # comment
 ]
 +parse: --- defining main
@@ -174,14 +174,14 @@ recipe main [
 +parse:   product: 1: ("address" "array" "character")
 
 :(scenario string_literal_escapes_newlines_in_trace)
-recipe main [
+def main [
   copy [abc
 def]
 ]
 +parse:   ingredient: "abc\ndef": "literal-string"
 
 :(scenario string_literal_can_skip_past_comments)
-recipe main [
+def main [
   copy [
     # ']' inside comment
     bar
@@ -190,7 +190,7 @@ recipe main [
 +parse:   ingredient: "\n    # ']' inside comment\n    bar\n  ": "literal-string"
 
 :(scenario string_literal_empty)
-recipe main [
+def main [
   copy []
 ]
 +parse:   ingredient: "": "literal-string"

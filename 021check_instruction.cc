@@ -46,34 +46,34 @@ void check_instruction(const recipe_ordinal r) {
 
 :(scenario copy_checks_reagent_count)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- copy 34, 35
 ]
 +error: ingredients and products should match in '1:number <- copy 34, 35'
 
 :(scenario write_scalar_to_array_disallowed)
 % Hide_errors = true;
-recipe main [
+def main [
   1:array:number <- copy 34
 ]
 +error: main: can't copy 34 to 1:array:number; types don't match
 
 :(scenario write_scalar_to_array_disallowed_2)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number, 2:array:number <- copy 34, 35
 ]
 +error: main: can't copy 35 to 2:array:number; types don't match
 
 :(scenario write_scalar_to_address_disallowed)
 % Hide_errors = true;
-recipe main [
+def main [
   1:address:number <- copy 34
 ]
 +error: main: can't copy 34 to 1:address:number; types don't match
 
 :(scenario write_address_to_number_allowed)
-recipe main [
+def main [
   1:address:number <- copy 12/unsafe
   2:number <- copy 1:address:number
 ]
@@ -81,7 +81,7 @@ recipe main [
 $error: 0
 
 :(scenario write_boolean_to_number_allowed)
-recipe main [
+def main [
   1:boolean <- copy 1/true
   2:number <- copy 1:boolean
 ]
@@ -89,7 +89,7 @@ recipe main [
 $error: 0
 
 :(scenario write_number_to_boolean_allowed)
-recipe main [
+def main [
   1:number <- copy 34
   2:boolean <- copy 1:number
 ]

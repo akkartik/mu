@@ -1,10 +1,10 @@
-//: Calls can also generate products, using 'reply'.
+//: Calls can also generate products, using 'reply' or 'return'.
 
 :(scenario reply)
-recipe main [
+def main [
   1:number, 2:number <- f 34
 ]
-recipe f [
+def f [
   12:number <- next-ingredient
   13:number <- add 1, 12:number
   reply 12:number, 13:number
@@ -16,6 +16,7 @@ recipe f [
 REPLY,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "reply", REPLY);
+put(Recipe_ordinal, "return", REPLY);
 :(before "End Primitive Recipe Checks")
 case REPLY: {
   break;  // checks will be performed by a transform below
@@ -46,13 +47,13 @@ case REPLY: {
 
 //: Products can include containers and exclusive containers, addresses and arrays.
 :(scenario reply_container)
-recipe main [
+def main [
   3:point <- f 2
 ]
-recipe f [
+def f [
   12:number <- next-ingredient
   13:number <- copy 35
-  reply 12:point/raw
+  return 12:point/raw
 ]
 +run: result 0 is [2, 35]
 +mem: storing 2 in location 3
@@ -86,7 +87,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
         reagent rhs = caller_instruction.products.at(i);
         canonize_type(rhs);
         if (!types_coercible(rhs, lhs)) {
-          raise << maybe(callee.name) << "reply ingredient " << lhs.original_string << " can't be saved in " << rhs.original_string << '\n' << end();
+          raise << maybe(callee.name) << reply_inst.name << " ingredient " << lhs.original_string << " can't be saved in " << rhs.original_string << '\n' << end();
           raise << to_string(lhs.type) << " vs " << to_string(rhs.type) << '\n' << end();
           goto finish_reply_check;
         }
@@ -117,16 +118,16 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
 
 :(scenario reply_type_mismatch)
 % Hide_errors = true;
-recipe main [
+def main [
   3:number <- f 2
 ]
-recipe f [
+def f [
   12:number <- next-ingredient
   13:number <- copy 35
   14:point <- copy 12:point/raw
-  reply 14:point
+  return 14:point
 ]
-+error: f: reply ingredient 14:point can't be saved in 3:number
++error: f: return ingredient 14:point can't be saved in 3:number
 
 //: In mu we'd like to assume that any instruction doesn't modify its
 //: ingredients unless they're also products. The /same-as-ingredient inside
@@ -135,24 +136,24 @@ recipe f [
 
 :(scenario reply_same_as_ingredient)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- copy 0
   2:number <- test1 1:number  # call with different ingredient and product
 ]
-recipe test1 [
+def test1 [
   10:number <- next-ingredient
-  reply 10:number/same-as-ingredient:0
+  return 10:number/same-as-ingredient:0
 ]
 +error: main: '2:number <- test1 1:number' should write to 1:number rather than 2:number
 
 :(scenario reply_same_as_ingredient_dummy)
-recipe main [
+def main [
   1:number <- copy 0
   _ <- test1 1:number  # call with different ingredient and product
 ]
-recipe test1 [
+def test1 [
   10:number <- next-ingredient
-  reply 10:number/same-as-ingredient:0
+  return 10:number/same-as-ingredient:0
 ]
 $error: 0
 
@@ -176,22 +177,22 @@ string to_string(const vector<double>& in) {
 //: Conditional reply.
 
 :(scenario reply_if)
-recipe main [
+def main [
   1:number <- test1
 ]
-recipe test1 [
-  reply-if 0, 34
-  reply 35
+def test1 [
+  return-if 0, 34
+  return 35
 ]
 +mem: storing 35 in location 1
 
 :(scenario reply_if_2)
-recipe main [
+def main [
   1:number <- test1
 ]
-recipe test1 [
-  reply-if 1, 34
-  reply 35
+def test1 [
+  return-if 1, 34
+  return 35
 ]
 +mem: storing 34 in location 1
 
@@ -201,7 +202,7 @@ recipe test1 [
 //   jump-unless a, 1:offset
 //   reply b, c, ...
 //   ```
-if (curr.name == "reply-if") {
+if (curr.name == "reply-if" || curr.name == "return-if") {
   if (curr.products.empty()) {
     curr.operation = get(Recipe_ordinal, "jump-unless");
     curr.name = "jump-unless";
@@ -216,7 +217,7 @@ if (curr.name == "reply-if") {
     curr.ingredients.swap(results);
   }
   else {
-    raise << "'reply-if' never yields any products\n" << end();
+    raise << "'" << curr.name << "' never yields any products\n" << end();
   }
 }
 // rewrite `reply-unless a, b, c, ...` to
@@ -224,7 +225,7 @@ if (curr.name == "reply-if") {
 //   jump-if a, 1:offset
 //   reply b, c, ...
 //   ```
-if (curr.name == "reply-unless") {
+if (curr.name == "reply-unless" || curr.name == "return-unless") {
   if (curr.products.empty()) {
     curr.operation = get(Recipe_ordinal, "jump-if");
     curr.name = "jump-if";
@@ -239,6 +240,6 @@ if (curr.name == "reply-unless") {
     curr.ingredients.swap(results);
   }
   else {
-    raise << "'reply-unless' never yields any products\n" << end();
+    raise << "'" << curr.name << "' never yields any products\n" << end();
   }
 }

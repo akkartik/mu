@@ -2,7 +2,7 @@
 
 :(scenarios load)
 :(scenario noninteger_literal)
-recipe main [
+def main [
   1:number <- copy 3.14159
 ]
 +parse:   ingredient: 3.14159: "literal-fractional-number"

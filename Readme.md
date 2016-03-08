@@ -210,7 +210,7 @@ Running Mu will always recompile it if necessary:
 As a sneak peek, here's how you perform some simple arithmetic:
 
   ```nim
-  recipe example1 [
+  def example1 [
     a:number <- add 2, 2
     a <- multiply a, 3
   ]
@@ -218,10 +218,10 @@ As a sneak peek, here's how you perform some simple arithmetic:
 
 But it's easier to read in color:
 
-<img alt='code example' src='html/example1.png' width='188px'>
+<img alt='code example' src='html/example1.png'>
 
-Mu functions or 'recipes' are lists of instructions, one to a line. Each
-instruction operates on some *ingredients* and returns some *products*.
+Mu functions are lists of instructions, one to a line. Each instruction
+operates on some *ingredients* and returns some *products*.
 
   ```
   [products] <- instruction [ingredients]
@@ -255,31 +255,31 @@ Try out the program now:
   ```
 
 Not much to see yet, since it doesn't print anything. To print the result, try
-adding the instruction `$print a` to the recipe.
+adding the instruction `$print a` to the function.
 
 ---
 
-Here's a second example, of a recipe that can take ingredients:
+Here's a second example, of a function that can take ingredients:
 
-<img alt='fahrenheit to celsius' src='html/f2c-1.png' width='426px'>
+<img alt='fahrenheit to celsius' src='html/f2c-1.png'>
 
 Recipes can specify headers showing their expected ingredients and products,
 separated by `->` (unlike the `<-` in *calls*).
 
 Since Mu is a low-level VM language, it provides extra control at the cost of
 verbosity. Using `local-scope`, you have explicit control over stack frames to
-isolate your recipes (in a type-safe manner; more on that below). One
+isolate your functions (in a type-safe manner; more on that below). One
 consequence: you have to explicitly `load-ingredients` after you set up the
 stack.
 
 An alternative syntax is what the above example is converted to internally:
 
-<img alt='fahrenheit to celsius desugared' src='html/f2c-2.png' width='426px'>
+<img alt='fahrenheit to celsius desugared' src='html/f2c-2.png'>
 
 The header gets dropped after checking types at call-sites, and after
 replacing `load-ingredients` with explicit instructions to load each
 ingredient separately, and to explicitly return products to the caller. After
-this translation recipes are once again just lists of instructions.
+this translation functions are once again just lists of instructions.
 
 This alternative syntax isn't just an implementation detail. I've actually
 found it easier to teach functions to non-programmers by starting with this
@@ -290,7 +290,7 @@ names of variables gradually get translated through the pipe.
 
 A third example, this time illustrating conditionals:
 
-<img alt='factorial example' src='html/factorial.png' width='330px'>
+<img alt='factorial example' src='html/factorial.png'>
 
 In spite of how it looks, this is still just a list of instructions.
 Internally, the instructions `break` and `loop` get converted to `jump`
@@ -311,7 +311,7 @@ You can also run its unit tests:
 
 Here's what one of the tests inside `factorial.mu` looks like:
 
-<img alt='test example' src='html/factorial-test.png' width='250px'>
+<img alt='test example' src='html/factorial-test.png'>
 
 Every test conceptually spins up a really lightweight virtual machine, so you
 can do things like check the value of specific locations in memory. You can
@@ -319,7 +319,7 @@ also print to screen and check that the screen contains what you expect at the
 end of a test. For example, `chessboard.mu` checks the initial position of a
 game of chess (delimiting the edges of the screen with periods):
 
-<img alt='screen test' src='html/chessboard-test.png' width='320px'>
+<img alt='screen test' src='html/chessboard-test.png'>
 
 Similarly you can fake the keyboard to pretend someone typed something:
 
@@ -348,11 +348,11 @@ might turn into this:
 
 You shouldn't rely on the specific address Mu chooses for a variable, but it
 will be unique (other variables won't clobber it) and consistent (all mentions
-of the name will map to the same address inside a recipe).
+of the name will map to the same address inside a function).
 
-Things get more complicated when your recipes call other recipes. Mu
-doesn't preserve uniqueness of addresses across recipes, so you need to
-organize your names into spaces. At the start of each recipe (like
+Things get more complicated when your functions call other functions. Mu
+doesn't preserve uniqueness of addresses across functions, so you need to
+organize your names into spaces. At the start of each function (like
 `factorial` above), set its *default space*:
 
   ```nim
@@ -371,10 +371,10 @@ or
   default-space:address:array:location <- new location:type, 30/capacity
   ```
 
-Without one of these lines, all variables in the recipe will be *global*,
+Without one of these lines, all variables in the function will be *global*,
 something you rarely want. (Luckily, this is also the sort of mistake that
 will be easily caught by tests.) *With* this line, all addresses in your
-recipe will by default refer to one of the (30, in the final case) slots
+function will by default refer to one of the (30, in the final case) slots
 inside this local space. (If you choose the last, most explicit option and
 need more than 30 slots, Mu will complain asking you to increase capacity.)
 
@@ -444,7 +444,7 @@ An alternative way to define factorial is by inserting *labels* and later
 inserting code at them.
 
   ```nim
-  recipe factorial [
+  def factorial [
     local-scope
     n:number <- next-ingredient
     {
@@ -457,7 +457,7 @@ inserting code at them.
     # if n=0 return 1
     zero?:boolean <- equal n, 0
     break-unless zero?
-    reply 1
+    return 1
   ]
 
   after <recursive-case> [
@@ -465,7 +465,7 @@ inserting code at them.
     x:number <- subtract n, 1
     subresult:number <- factorial x
     result:number <- multiply subresult, n
-    reply result
+    return result
   ]
   ```
 
@@ -473,7 +473,7 @@ inserting code at them.
 
 Any instruction without ingredients or products that starts with a
 non-alphanumeric character is a label. By convention we use '+' to indicate
-recipe-local label names you can jump to, and surround in '<>' global label
+function-local label names you can jump to, and surround in '<>' global label
 names for inserting code at.
 
 ---
@@ -481,7 +481,7 @@ names for inserting code at.
 Another example, this time with concurrency.
 
   ```
-  recipe main [
+  def main [
     start-running thread2
     {
       $print 34
@@ -489,7 +489,7 @@ Another example, this time with concurrency.
     }
   ]
 
-  recipe thread2 [
+  def thread2 [
     {
       $print 35
       loop
@@ -569,9 +569,9 @@ d) Try out the programming environment:
 
 Screenshot:
 
-<img alt='programming environment' src='html/edit.png' width='720px'>
+<img alt='programming environment' src='html/edit.png'>
 
-You write recipes on the left and try them out in *sandboxes* on the right.
+You write functions on the left and try them out in *sandboxes* on the right.
 Hit F4 to rerun all sandboxes with the latest version of the code. More
 details: http://akkartik.name/post/mu. Beware, it won't save your edits by
 default. But if you create a sub-directory called `lesson/` under `mu/` it
@@ -580,12 +580,12 @@ back up each version you try out.
 
 Once you have a sandbox you can click on its result to mark it as expected:
 
-<img alt='expected result' src='html/expected-result.png' width='180px'>
+<img alt='expected result' src='html/expected-result.png'>
 
 Later if the result changes it'll be flagged in red to draw your attention to
 it. Thus, manually tested sandboxes become reproducible automated tests.
 
-<img alt='unexpected result' src='html/unexpected-result.png' width='180px'>
+<img alt='unexpected result' src='html/unexpected-result.png'>
 
 Another feature: Clicking on the code in a sandbox expands its trace for you
 to browse. To add to the trace, use `stash`. For example:

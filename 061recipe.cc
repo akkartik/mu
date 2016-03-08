@@ -5,10 +5,10 @@
 //: todo: support storing shape-shifting recipes into recipe variables and calling them
 
 :(scenario call_literal_recipe)
-recipe main [
+def main [
   1:number <- call f, 34
 ]
-recipe f x:number -> y:number [
+def f x:number -> y:number [
   local-scope
   load-ingredients
   y <- copy x
@@ -16,11 +16,11 @@ recipe f x:number -> y:number [
 +mem: storing 34 in location 1
 
 :(scenario call_variable)
-recipe main [
+def main [
   {1: (recipe number -> number)} <- copy f
   2:number <- call {1: (recipe number -> number)}, 34
 ]
-recipe f x:number -> y:number [
+def f x:number -> y:number [
   local-scope
   load-ingredients
   y <- copy x
@@ -75,10 +75,10 @@ case CALL: {
 
 :(scenario call_check_literal_recipe)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- call f, 34
 ]
-recipe f x:point -> y:point [
+def f x:point -> y:point [
   local-scope
   load-ingredients
   y <- copy x
@@ -88,11 +88,11 @@ recipe f x:point -> y:point [
 
 :(scenario call_check_variable_recipe)
 % Hide_errors = true;
-recipe main [
+def main [
   {1: (recipe point -> point)} <- copy f
   2:number <- call {1: (recipe point -> point)}, 34
 ]
-recipe f x:point -> y:point [
+def f x:point -> y:point [
   local-scope
   load-ingredients
   y <- copy x
@@ -153,12 +153,12 @@ bool is_mu_recipe(reagent r) {
 
 :(scenario copy_typecheck_recipe_variable)
 % Hide_errors = true;
-recipe main [
+def main [
   3:number <- copy 34  # abc def
   {1: (recipe number -> number)} <- copy f  # store literal in a matching variable
   {2: (recipe boolean -> boolean)} <- copy {1: (recipe number -> number)}  # mismatch between recipe variables
 ]
-recipe f x:number -> y:number [
+def f x:number -> y:number [
   local-scope
   load-ingredients
   y <- copy x
@@ -167,10 +167,10 @@ recipe f x:number -> y:number [
 
 :(scenario copy_typecheck_recipe_variable_2)
 % Hide_errors = true;
-recipe main [
+def main [
   {1: (recipe number -> number)} <- copy f  # mismatch with a recipe literal
 ]
-recipe f x:boolean -> y:boolean [
+def f x:boolean -> y:boolean [
   local-scope
   load-ingredients
   y <- copy x

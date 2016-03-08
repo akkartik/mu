@@ -92,7 +92,7 @@ after <global-touch> [
   }
 ]
 
-recipe empty-editor? editor:address:shared:editor-data -> result:boolean [
+def empty-editor? editor:address:shared:editor-data -> result:boolean [
   local-scope
   load-ingredients
   head:address:shared:duplex-list:character <- get *editor, data:offset
@@ -100,13 +100,13 @@ recipe empty-editor? editor:address:shared:editor-data -> result:boolean [
   result <- not first
 ]
 
-recipe extract-sandbox env:address:shared:programming-environment-data, click-row:number -> result:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+def extract-sandbox env:address:shared:programming-environment-data, click-row:number -> result:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   sandbox:address:address:shared:sandbox-data <- get-address *env, sandbox:offset
   start:number <- get **sandbox, starting-row-on-screen:offset
   in-editor?:boolean <- lesser-than click-row, start
-  reply-if in-editor?, 0
+  return-if in-editor?, 0
   {
     next-sandbox:address:shared:sandbox-data <- get **sandbox, next-sandbox:offset
     break-unless next-sandbox

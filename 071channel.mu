@@ -31,7 +31,7 @@ container channel [
   data:address:shared:array:character
 ]
 
-recipe new-channel capacity:number -> result:address:shared:channel [
+def new-channel capacity:number -> result:address:shared:channel [
   local-scope
   load-ingredients
   result <- new channel:type
@@ -47,7 +47,7 @@ recipe new-channel capacity:number -> result:address:shared:channel [
   *dest <- new character:type, capacity
 ]
 
-recipe write chan:address:shared:channel, val:character -> chan:address:shared:channel [
+def write chan:address:shared:channel, val:character -> chan:address:shared:channel [
   local-scope
   load-ingredients
   {
@@ -73,7 +73,7 @@ recipe write chan:address:shared:channel, val:character -> chan:address:shared:c
   }
 ]
 
-recipe read chan:address:shared:channel -> result:character, chan:address:shared:channel [
+def read chan:address:shared:channel -> result:character, chan:address:shared:channel [
   local-scope
   load-ingredients
   {
@@ -98,7 +98,7 @@ recipe read chan:address:shared:channel -> result:character, chan:address:shared
   }
 ]
 
-recipe clear-channel chan:address:shared:channel -> chan:address:shared:channel [
+def clear-channel chan:address:shared:channel -> chan:address:shared:channel [
   local-scope
   load-ingredients
   {
@@ -175,7 +175,7 @@ scenario channel-wrap [
 ## helpers
 
 # An empty channel has first-empty and first-full both at the same value.
-recipe channel-empty? chan:address:shared:channel -> result:boolean [
+def channel-empty? chan:address:shared:channel -> result:boolean [
   local-scope
   load-ingredients
   # return chan.first-full == chan.first-free
@@ -186,7 +186,7 @@ recipe channel-empty? chan:address:shared:channel -> result:boolean [
 
 # A full channel has first-empty just before first-full, wasting one slot.
 # (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
-recipe channel-full? chan:address:shared:channel -> result:boolean [
+def channel-full? chan:address:shared:channel -> result:boolean [
   local-scope
   load-ingredients
   # tmp = chan.first-free + 1
@@ -204,7 +204,7 @@ recipe channel-full? chan:address:shared:channel -> result:boolean [
   result <- equal full, tmp
 ]
 
-recipe channel-capacity chan:address:shared:channel -> result:number [
+def channel-capacity chan:address:shared:channel -> result:number [
   local-scope
   load-ingredients
   q:address:shared:array:character <- get *chan, data:offset
@@ -264,7 +264,7 @@ scenario channel-read-not-full [
 ]
 
 # helper for channels of characters in particular
-recipe buffer-lines in:address:shared:channel, out:address:shared:channel -> out:address:shared:channel, in:address:shared:channel [
+def buffer-lines in:address:shared:channel, out:address:shared:channel -> out:address:shared:channel, in:address:shared:channel [
   local-scope
   load-ingredients
   # repeat forever

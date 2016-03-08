@@ -76,14 +76,14 @@ after <global-touch> [
   }
 ]
 
-recipe delete-sandbox t:touch-event, env:address:shared:programming-environment-data -> was-delete?:boolean, env:address:shared:programming-environment-data [
+def delete-sandbox t:touch-event, env:address:shared:programming-environment-data -> was-delete?:boolean, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   click-column:number <- get t, column:offset
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
   right:number <- get *current-sandbox, right:offset
   at-right?:boolean <- equal click-column, right
-  reply-unless at-right?, 0/false
+  return-unless at-right?, 0/false
   click-row:number <- get t, row:offset
   prev:address:address:shared:sandbox-data <- get-address *env, sandbox:offset
   curr:address:shared:sandbox-data <- get *env, sandbox:offset
@@ -107,13 +107,13 @@ recipe delete-sandbox t:touch-event, env:address:shared:programming-environment-
         break-unless reset-scroll?
         *render-from <- copy -1
       }
-      reply 1/true  # force rerender
+      return 1/true  # force rerender
     }
     prev <- get-address *curr, next-sandbox:offset
     curr <- get *curr, next-sandbox:offset
     loop
   }
-  reply 0/false
+  return 0/false
 ]
 
 scenario deleting-sandbox-after-scroll [

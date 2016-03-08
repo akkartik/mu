@@ -8,7 +8,7 @@ container list:_elem [
   next:address:shared:list:_elem
 ]
 
-recipe push x:_elem, in:address:shared:list:_elem -> in:address:shared:list:_elem [
+def push x:_elem, in:address:shared:list:_elem -> in:address:shared:list:_elem [
   local-scope
   load-ingredients
   result:address:shared:list:_elem <- new {(list _elem): type}
@@ -16,16 +16,16 @@ recipe push x:_elem, in:address:shared:list:_elem -> in:address:shared:list:_ele
   *val <- copy x
   next:address:address:shared:list:_elem <- get-address *result, next:offset
   *next <- copy in
-  reply result  # needed explicitly because we need to replace 'in' with 'result'
+  return result  # needed explicitly because we need to replace 'in' with 'result'
 ]
 
-recipe first in:address:shared:list:_elem -> result:_elem [
+def first in:address:shared:list:_elem -> result:_elem [
   local-scope
   load-ingredients
   result <- get *in, value:offset
 ]
 
-recipe rest in:address:shared:list:_elem -> result:address:shared:list:_elem/contained-in:in [
+def rest in:address:shared:list:_elem -> result:address:shared:list:_elem/contained-in:in [
   local-scope
   load-ingredients
   result <- get *in, next:offset
@@ -51,7 +51,7 @@ scenario list-handling [
   ]
 ]
 
-recipe to-text in:address:shared:list:_elem -> result:address:shared:array:character [
+def to-text in:address:shared:list:_elem -> result:address:shared:array:character [
   local-scope
   load-ingredients
   buf:address:shared:buffer <- new-buffer 80
@@ -60,7 +60,7 @@ recipe to-text in:address:shared:list:_elem -> result:address:shared:array:chara
 ]
 
 # variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)
-recipe to-text-line in:address:shared:list:_elem -> result:address:shared:array:character [
+def to-text-line in:address:shared:list:_elem -> result:address:shared:array:character [
   local-scope
   load-ingredients
   buf:address:shared:buffer <- new-buffer 80
@@ -68,13 +68,13 @@ recipe to-text-line in:address:shared:list:_elem -> result:address:shared:array:
   result <- buffer-to-array buf
 ]
 
-recipe to-buffer in:address:shared:list:_elem, buf:address:shared:buffer -> buf:address:shared:buffer [
+def to-buffer in:address:shared:list:_elem, buf:address:shared:buffer -> buf:address:shared:buffer [
   local-scope
   load-ingredients
   {
     break-if in
     buf <- append buf, 48/0
-    reply
+    return
   }
   # append in.value to buf
   val:_elem <- get *in, value:offset
@@ -82,7 +82,7 @@ recipe to-buffer in:address:shared:list:_elem, buf:address:shared:buffer -> buf:
   # now prepare next
   next:address:shared:list:_elem <- rest in
   nextn:number <- copy next
-  reply-unless next
+  return-unless next
   space:character <- copy 32/space
   buf <- append buf, space:character
   s:address:shared:array:character <- new [-> ]
@@ -94,14 +94,14 @@ recipe to-buffer in:address:shared:list:_elem, buf:address:shared:buffer -> buf:
     break-if optional-ingredient-found?
     # unlimited recursion
     buf <- to-buffer next, buf
-    reply
+    return
   }
   {
     break-unless remaining
     # limited recursion
     remaining <- subtract remaining, 1
     buf <- to-buffer next, buf, remaining
-    reply
+    return
   }
   # past recursion depth; insert ellipses and stop
   s:address:shared:array:character <- new [...]

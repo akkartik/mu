@@ -1,6 +1,6 @@
 # example program: running multiple routines
 
-recipe main [
+def main [
   start-running thread2
   {
     $print 34
@@ -8,7 +8,7 @@ recipe main [
   }
 ]
 
-recipe thread2 [
+def thread2 [
   {
     $print 35
     loop

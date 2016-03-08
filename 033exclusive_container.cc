@@ -20,7 +20,7 @@ get(Type, tmp).elements.push_back(reagent("p:point"));
 //: avoid errors.
 :(scenario copy_exclusive_container)
 # Copying exclusive containers copies all their contents and an extra location for the tag.
-recipe main [
+def main [
   1:number <- copy 1  # 'point' variant
   2:number <- copy 34
   3:number <- copy 35
@@ -56,7 +56,7 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
 put(Type_ordinal, "variant", 0);
 
 :(scenario maybe_convert)
-recipe main [
+def main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
@@ -65,7 +65,7 @@ recipe main [
 +mem: storing 13 in location 20
 
 :(scenario maybe_convert_fail)
-recipe main [
+def main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
@@ -147,7 +147,7 @@ const reagent variant_type(const reagent& canonized_base, long long int tag) {
 
 :(scenario maybe_convert_product_type_mismatch)
 % Hide_errors = true;
-recipe main [
+def main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
@@ -194,7 +194,7 @@ exclusive-container foo [
   y:number
 ]
 
-recipe main [
+def main [
   1:number <- copy 34
   2:foo <- merge 0/x, 1:number  # tag must be a literal when merging exclusive containers
   4:foo <- merge 1/y, 1:number
@@ -214,7 +214,7 @@ exclusive-container foo [
 container bar [
   z:number
 ]
-recipe main [
+def main [
   1:foo <- merge 0/x, 34
 ]
 +mem: storing 0 in location 1
@@ -230,7 +230,7 @@ exclusive-container foo [
 container bar [
   z:number
 ]
-recipe main [
+def main [
   local-scope
   1:number <- copy 0
   2:foo <- merge 1:number, 34
@@ -269,7 +269,7 @@ exclusive-container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo <- merge 23, 1/y, 34
 ]
 +mem: storing 23 in location 1
@@ -287,7 +287,7 @@ exclusive-container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo <- merge 23, 1/y, 34, 35
 ]
 +error: main: too many ingredients in '1:foo <- merge 23, 1/y, 34, 35'
@@ -301,7 +301,7 @@ container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo <- merge 1/y, 23, 34
 ]
 +mem: storing 1 in location 1
@@ -318,7 +318,7 @@ container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo <- merge 0/x, 23
 ]
 $error: 0
@@ -333,7 +333,7 @@ container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo <- merge 1/y, 23
 ]
 +error: main: too few ingredients in '1:foo <- merge 1/y, 23'
@@ -362,7 +362,7 @@ exclusive-container bar [
   y:foo
 ]
 
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 35
   3:bar <- merge 0/x, 1:number

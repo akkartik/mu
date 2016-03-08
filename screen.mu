@@ -3,7 +3,7 @@
 # The zero screen below means 'use the real screen'. Tests can also use fake
 # screens.
 
-recipe main [
+def main [
   open-console
   10:character <- copy 97/a
   print 0/screen, 10:character/a, 2/red

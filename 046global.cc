@@ -10,7 +10,7 @@
 //: entirely.
 
 :(scenario global_space)
-recipe main [
+def main [
   # pretend shared:array:location; in practice we'll use new
   10:number <- copy 0  # refcount
   11:number <- copy 5  # length
@@ -72,7 +72,7 @@ global_space = 0;
 //: don't want to make them too comfortable to use.
 
 :(scenario global_space_with_names)
-recipe main [
+def main [
   global-space:address:shared:array:location <- new location:type, 10
   x:number <- copy 23
   1:number/space:global <- copy 24

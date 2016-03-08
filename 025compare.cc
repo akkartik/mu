@@ -36,7 +36,7 @@ case EQUAL: {
 }
 
 :(scenario equal)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 33
   3:boolean <- equal 1:number, 2:number
@@ -46,7 +46,7 @@ recipe main [
 +mem: storing 0 in location 3
 
 :(scenario equal_2)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 34
   3:boolean <- equal 1:number, 2:number
@@ -56,13 +56,13 @@ recipe main [
 +mem: storing 1 in location 3
 
 :(scenario equal_multiple)
-recipe main [
+def main [
   1:boolean <- equal 34, 34, 34
 ]
 +mem: storing 1 in location 1
 
 :(scenario equal_multiple_2)
-recipe main [
+def main [
   1:boolean <- equal 34, 34, 35
 ]
 +mem: storing 0 in location 1
@@ -107,7 +107,7 @@ case GREATER_THAN: {
 }
 
 :(scenario greater_than)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 33
   3:boolean <- greater-than 1:number, 2:number
@@ -115,7 +115,7 @@ recipe main [
 +mem: storing 1 in location 3
 
 :(scenario greater_than_2)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 34
   3:boolean <- greater-than 1:number, 2:number
@@ -123,13 +123,13 @@ recipe main [
 +mem: storing 0 in location 3
 
 :(scenario greater_than_multiple)
-recipe main [
+def main [
   1:boolean <- greater-than 36, 35, 34
 ]
 +mem: storing 1 in location 1
 
 :(scenario greater_than_multiple_2)
-recipe main [
+def main [
   1:boolean <- greater-than 36, 35, 35
 ]
 +mem: storing 0 in location 1
@@ -174,7 +174,7 @@ case LESSER_THAN: {
 }
 
 :(scenario lesser_than)
-recipe main [
+def main [
   1:number <- copy 32
   2:number <- copy 33
   3:boolean <- lesser-than 1:number, 2:number
@@ -182,7 +182,7 @@ recipe main [
 +mem: storing 1 in location 3
 
 :(scenario lesser_than_2)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 33
   3:boolean <- lesser-than 1:number, 2:number
@@ -190,13 +190,13 @@ recipe main [
 +mem: storing 0 in location 3
 
 :(scenario lesser_than_multiple)
-recipe main [
+def main [
   1:boolean <- lesser-than 34, 35, 36
 ]
 +mem: storing 1 in location 1
 
 :(scenario lesser_than_multiple_2)
-recipe main [
+def main [
   1:boolean <- lesser-than 34, 35, 35
 ]
 +mem: storing 0 in location 1
@@ -241,7 +241,7 @@ case GREATER_OR_EQUAL: {
 }
 
 :(scenario greater_or_equal)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 33
   3:boolean <- greater-or-equal 1:number, 2:number
@@ -249,7 +249,7 @@ recipe main [
 +mem: storing 1 in location 3
 
 :(scenario greater_or_equal_2)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 34
   3:boolean <- greater-or-equal 1:number, 2:number
@@ -257,7 +257,7 @@ recipe main [
 +mem: storing 1 in location 3
 
 :(scenario greater_or_equal_3)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 35
   3:boolean <- greater-or-equal 1:number, 2:number
@@ -265,13 +265,13 @@ recipe main [
 +mem: storing 0 in location 3
 
 :(scenario greater_or_equal_multiple)
-recipe main [
+def main [
   1:boolean <- greater-or-equal 36, 35, 35
 ]
 +mem: storing 1 in location 1
 
 :(scenario greater_or_equal_multiple_2)
-recipe main [
+def main [
   1:boolean <- greater-or-equal 36, 35, 36
 ]
 +mem: storing 0 in location 1
@@ -316,7 +316,7 @@ case LESSER_OR_EQUAL: {
 }
 
 :(scenario lesser_or_equal)
-recipe main [
+def main [
   1:number <- copy 32
   2:number <- copy 33
   3:boolean <- lesser-or-equal 1:number, 2:number
@@ -324,7 +324,7 @@ recipe main [
 +mem: storing 1 in location 3
 
 :(scenario lesser_or_equal_2)
-recipe main [
+def main [
   1:number <- copy 33
   2:number <- copy 33
   3:boolean <- lesser-or-equal 1:number, 2:number
@@ -332,7 +332,7 @@ recipe main [
 +mem: storing 1 in location 3
 
 :(scenario lesser_or_equal_3)
-recipe main [
+def main [
   1:number <- copy 34
   2:number <- copy 33
   3:boolean <- lesser-or-equal 1:number, 2:number
@@ -340,13 +340,13 @@ recipe main [
 +mem: storing 0 in location 3
 
 :(scenario lesser_or_equal_multiple)
-recipe main [
+def main [
   1:boolean <- lesser-or-equal 34, 35, 35
 ]
 +mem: storing 1 in location 1
 
 :(scenario lesser_or_equal_multiple_2)
-recipe main [
+def main [
   1:boolean <- lesser-or-equal 34, 35, 34
 ]
 +mem: storing 0 in location 1

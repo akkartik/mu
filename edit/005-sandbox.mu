@@ -4,7 +4,7 @@
 # (non-editable) sandboxes below the editor, showing the result and a maybe
 # few other things.
 
-recipe! main [
+def! main [
   local-scope
   open-console
   initial-recipe:address:shared:array:character <- restore [recipes.mu]
@@ -142,11 +142,11 @@ after <global-keypress> [
   }
 ]
 
-recipe run-sandboxes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+def run-sandboxes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
   errors-found?:boolean, env, screen <- update-recipes env, screen
-  reply-if errors-found?
+  return-if errors-found?
   # check contents of right editor (sandbox)
   <run-sandboxes-begin>
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
@@ -189,7 +189,7 @@ recipe run-sandboxes env:address:shared:programming-environment-data, screen:add
 
 # copy code from recipe editor, persist, load into mu
 # replaced in a later layer (whereupon errors-found? will actually be set)
-recipe update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+def update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
   recipes:address:shared:editor-data <- get *env, recipes:offset
@@ -200,7 +200,7 @@ recipe update-recipes env:address:shared:programming-environment-data, screen:ad
 ]
 
 # replaced in a later layer
-recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+def! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   data:address:shared:array:character <- get *sandbox, data:offset
@@ -209,14 +209,14 @@ recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:p
   *response, _, *fake-screen <- run-interactive data
 ]
 
-recipe update-status screen:address:shared:screen, msg:address:shared:array:character, color:number -> screen:address:shared:screen [
+def update-status screen:address:shared:screen, msg:address:shared:array:character, color:number -> screen:address:shared:screen [
   local-scope
   load-ingredients
   screen <- move-cursor screen, 0, 2
   screen <- print screen, msg, color, 238/grey/background
 ]
 
-recipe save-sandboxes env:address:shared:programming-environment-data [
+def save-sandboxes env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
@@ -237,7 +237,7 @@ recipe save-sandboxes env:address:shared:programming-environment-data [
   }
 ]
 
-recipe! render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
+def! render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   trace 11, [app], [render sandbox side]
@@ -261,13 +261,13 @@ recipe! render-sandbox-side screen:address:shared:screen, env:address:shared:pro
   clear-rest-of-screen screen, row, left, right
 ]
 
-recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbox-data, left:number, right:number, row:number, render-from:number, idx:number -> row:number, screen:address:shared:screen, sandbox:address:shared:sandbox-data [
+def render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbox-data, left:number, right:number, row:number, render-from:number, idx:number -> row:number, screen:address:shared:screen, sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
-  reply-unless sandbox
+  return-unless sandbox
   screen-height:number <- screen-height screen
   at-bottom?:boolean <- greater-or-equal row, screen-height
-  reply-if at-bottom?:boolean
+  return-if at-bottom?:boolean
   hidden?:boolean <- lesser-than idx, render-from
   {
     break-if hidden?
@@ -304,7 +304,7 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
     }
     +render-sandbox-end
     at-bottom?:boolean <- greater-or-equal row, screen-height
-    reply-if at-bottom?
+    return-if at-bottom?
     # draw solid line after sandbox
     draw-horizontal screen, row, left, right, 9473/horizontal-double
   }
@@ -324,7 +324,7 @@ recipe render-sandboxes screen:address:shared:screen, sandbox:address:shared:san
 ]
 
 # assumes programming environment has no sandboxes; restores them from previous session
-recipe restore-sandboxes env:address:shared:programming-environment-data -> env:address:shared:programming-environment-data [
+def restore-sandboxes env:address:shared:programming-environment-data -> env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   # read all scenarios, pushing them to end of a list of scenarios
@@ -358,10 +358,10 @@ recipe restore-sandboxes env:address:shared:programming-environment-data -> env:
 
 # print the fake sandbox screen to 'screen' with appropriate delimiters
 # leave cursor at start of next line
-recipe render-screen screen:address:shared:screen, sandbox-screen:address:shared:screen, left:number, right:number, row:number -> row:number, screen:address:shared:screen [
+def render-screen screen:address:shared:screen, sandbox-screen:address:shared:screen, left:number, right:number, row:number -> row:number, screen:address:shared:screen [
   local-scope
   load-ingredients
-  reply-unless sandbox-screen
+  return-unless sandbox-screen
   # print 'screen:'
   header:address:shared:array:character <- new [screen:]
   row <- render screen, header, left, right, 245/grey, row
@@ -510,7 +510,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   ]
 ]
 
-recipe editor-contents editor:address:shared:editor-data -> result:address:shared:array:character [
+def editor-contents editor:address:shared:editor-data -> result:address:shared:array:character [
   local-scope
   load-ingredients
   buf:address:shared:buffer <- new-buffer 80
@@ -518,7 +518,7 @@ recipe editor-contents editor:address:shared:editor-data -> result:address:share
   # skip § sentinel
   assert curr, [editor without data is illegal; must have at least a sentinel]
   curr <- next curr
-  reply-unless curr, 0
+  return-unless curr, 0
   {
     break-unless curr
     c:character <- get *curr, value:offset
@@ -655,7 +655,7 @@ after <update-cursor-special-cases> [
     break-unless scrolling?
     cursor-column:number <- get *current-sandbox, left:offset
     screen <- move-cursor screen, 2/row, cursor-column  # highlighted sandbox will always start at row 2
-    reply
+    return
   }
 ]
 
@@ -678,21 +678,21 @@ after <global-keypress> [
 
 # sandbox belonging to 'env' whose next-sandbox is 'in'
 # return 0 if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox
-recipe previous-sandbox env:address:shared:programming-environment-data, in:address:shared:sandbox-data -> out:address:shared:sandbox-data [
+def previous-sandbox env:address:shared:programming-environment-data, in:address:shared:sandbox-data -> out:address:shared:sandbox-data [
   local-scope
   load-ingredients
   curr:address:shared:sandbox-data <- get *env, sandbox:offset
-  reply-unless curr, 0/nil
+  return-unless curr, 0/nil
   next:address:shared:sandbox-data <- get *curr, next-sandbox:offset
   {
-    reply-unless next, 0/nil
+    return-unless next, 0/nil
     found?:boolean <- equal next, in
     break-if found?
     curr <- copy next
     next <- get *curr, next-sandbox:offset
     loop
   }
-  reply curr
+  return curr
 ]
 
 scenario scrolling-down-on-recipe-side [

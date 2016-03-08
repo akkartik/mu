@@ -2,7 +2,7 @@
 //: 'lookup' property.
 
 :(scenario copy_indirect)
-recipe main [
+def main [
   1:address:number <- copy 2/unsafe
   2:number <- copy 34
   # This loads location 1 as an address and looks up *that* location.
@@ -16,7 +16,7 @@ canonize(x);
 //: similarly, write to addresses pointing at other locations using the
 //: 'lookup' property
 :(scenario store_indirect)
-recipe main [
+def main [
   1:address:number <- copy 2/unsafe
   1:address:number/lookup <- copy 34
 ]
@@ -32,7 +32,7 @@ if (x.value == 0) {
 //: writes to address 0 always loudly fail
 :(scenario store_to_0_fails)
 % Hide_errors = true;
-recipe main [
+def main [
   1:address:number <- copy 0
   1:address:number/lookup <- copy 34
 ]
@@ -66,7 +66,7 @@ void lookup_memory(reagent& x) {
 
 :(scenario canonize_non_pointer_fails_without_crashing)
 % Hide_errors = true;
-recipe foo [
+def foo [
   1:address:number <- get-address *p, x:offset
 ]
 # don't crash
@@ -130,7 +130,7 @@ void drop_one_lookup(reagent& r) {
 
 //:: 'get' can read from container address
 :(scenario get_indirect)
-recipe main [
+def main [
   1:number <- copy 2
   2:number <- copy 34
   3:number <- copy 35
@@ -139,7 +139,7 @@ recipe main [
 +mem: storing 34 in location 4
 
 :(scenario get_indirect2)
-recipe main [
+def main [
   1:number <- copy 2
   2:number <- copy 34
   3:number <- copy 35
@@ -149,7 +149,7 @@ recipe main [
 +mem: storing 34 in location 5
 
 :(scenario include_nonlookup_properties)
-recipe main [
+def main [
   1:number <- copy 2
   2:number <- copy 34
   3:number <- copy 35
@@ -166,7 +166,7 @@ canonize(base);
 
 :(scenario get_address_indirect)
 # 'get' can read from container address
-recipe main [
+def main [
   1:number <- copy 2
   2:number <- copy 34
   3:number <- copy 35
@@ -184,7 +184,7 @@ canonize(base);
 //:: abbreviation for '/lookup': a prefix '*'
 
 :(scenario lookup_abbreviation)
-recipe main [
+def main [
   1:address:number <- copy 2/unsafe
   2:number <- copy 34
   3:number <- copy *1:address:number

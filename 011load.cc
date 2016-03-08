@@ -2,7 +2,7 @@
 
 :(scenarios load)  // use 'load' instead of 'run' in all scenarios in this layer
 :(scenario first_recipe)
-recipe main [
+def main [
   1:number <- copy 23
 ]
 +parse: instruction: copy
@@ -24,10 +24,10 @@ vector<recipe_ordinal> load(istream& in) {
     if (!has_data(in)) break;
     string command = next_word(in);
     // Command Handlers
-    if (command == "recipe") {
+    if (command == "recipe" || command == "def") {
       result.push_back(slurp_recipe(in));
     }
-    else if (command == "recipe!") {
+    else if (command == "recipe!" || command == "def!") {
       Disable_redefine_checks = true;
       result.push_back(slurp_recipe(in));
       Disable_redefine_checks = false;
@@ -248,9 +248,10 @@ void clear_recently_added_recipes() {
 
 :(scenario parse_comment_outside_recipe)
 # this comment will be dropped by the tangler, so we need a dummy recipe to stop that
-recipe f1 [ ]
+def f1 [
+]
 # this comment will go through to 'load'
-recipe main [
+def main [
   1:number <- copy 23
 ]
 +parse: instruction: copy
@@ -258,7 +259,7 @@ recipe main [
 +parse:   product: 1: "number"
 
 :(scenario parse_comment_amongst_instruction)
-recipe main [
+def main [
   # comment
   1:number <- copy 23
 ]
@@ -267,7 +268,7 @@ recipe main [
 +parse:   product: 1: "number"
 
 :(scenario parse_comment_amongst_instruction_2)
-recipe main [
+def main [
   # comment
   1:number <- copy 23
   # comment
@@ -277,7 +278,7 @@ recipe main [
 +parse:   product: 1: "number"
 
 :(scenario parse_comment_amongst_instruction_3)
-recipe main [
+def main [
   1:number <- copy 23
   # comment
   2:number <- copy 23
@@ -290,7 +291,7 @@ recipe main [
 +parse:   product: 2: "number"
 
 :(scenario parse_comment_after_instruction)
-recipe main [
+def main [
   1:number <- copy 23  # comment
 ]
 +parse: instruction: copy
@@ -298,19 +299,19 @@ recipe main [
 +parse:   product: 1: "number"
 
 :(scenario parse_label)
-recipe main [
+def main [
   +foo
 ]
 +parse: label: +foo
 
 :(scenario parse_dollar_as_recipe_name)
-recipe main [
+def main [
   $foo
 ]
 +parse: instruction: $foo
 
 :(scenario parse_multiple_properties)
-recipe main [
+def main [
   1:number <- copy 23/foo:bar:baz
 ]
 +parse: instruction: copy
@@ -318,7 +319,7 @@ recipe main [
 +parse:   product: 1: "number"
 
 :(scenario parse_multiple_products)
-recipe main [
+def main [
   1:number, 2:number <- copy 23
 ]
 +parse: instruction: copy
@@ -327,7 +328,7 @@ recipe main [
 +parse:   product: 2: "number"
 
 :(scenario parse_multiple_ingredients)
-recipe main [
+def main [
   1:number, 2:number <- copy 23, 4:number
 ]
 +parse: instruction: copy
@@ -337,7 +338,7 @@ recipe main [
 +parse:   product: 2: "number"
 
 :(scenario parse_multiple_types)
-recipe main [
+def main [
   1:number, 2:address:number <- copy 23, 4:number
 ]
 +parse: instruction: copy
@@ -347,7 +348,7 @@ recipe main [
 +parse:   product: 2: ("address" "number")
 
 :(scenario parse_properties)
-recipe main [
+def main [
   1:address:number/lookup <- copy 23
 ]
 +parse:   product: 1: ("address" "number"), {"lookup": ()}
@@ -365,19 +366,19 @@ void test_parse_comment_terminated_by_eof() {
 
 :(scenario forbid_redefining_recipes)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- copy 23
 ]
-recipe main [
+def main [
   1:number <- copy 24
 ]
 +error: redefining recipe main
 
 :(scenario permit_forcibly_redefining_recipes)
-recipe main [
+def main [
   1:number <- copy 23
 ]
-recipe! main [
+def! main [
   1:number <- copy 24
 ]
 -error: redefining recipe main

@@ -143,13 +143,13 @@ container foo [
   x:number
   y:character
 ]
-recipe main [
+def main [
   1:foo <- merge 34, 97/a
   3:number <- hash 1:foo
-  reply-unless 3:number
+  return-unless 3:number
   4:foo <- merge 34, 98/a
   6:number <- hash 4:foo
-  reply-unless 6:number
+  return-unless 6:number
   7:boolean <- equal 3:number, 6:number
 ]
 # hash on containers includes all elements
@@ -164,13 +164,13 @@ container bar [
   a:number
   b:number
 ]
-recipe main [
+def main [
   1:foo <- merge 0/x, 34, 35
   4:number <- hash 1:foo
-  reply-unless 4:number
+  return-unless 4:number
   5:foo <- merge 0/x, 34, 36
   8:number <- hash 5:foo
-  reply-unless 8:number
+  return-unless 8:number
   9:boolean <- equal 4:number, 8:number
 ]
 # hash on containers includes all elements
@@ -181,13 +181,13 @@ container foo [
   x:number
   y:character/ignore-for-hash
 ]
-recipe main [
+def main [
   1:foo <- merge 34, 97/a
   3:number <- hash 1:foo
-  reply-unless 3:number
+  return-unless 3:number
   4:foo <- merge 34, 98/a
   6:number <- hash 4:foo
-  reply-unless 6:number
+  return-unless 6:number
   7:boolean <- equal 3:number, 6:number
 ]
 # hashes match even though y is different
@@ -197,7 +197,7 @@ recipe main [
 //: current implementation works like we think it does.
 
 :(scenario hash_of_zero_address)
-recipe main [
+def main [
   1:address:number <- copy 0
   2:number <- hash 1:address:number
 ]
@@ -206,7 +206,7 @@ recipe main [
 //: This is probably too aggressive, but we need some way to avoid depending
 //: on the precise bit pattern of a floating-point number.
 :(scenario hash_of_numbers_ignores_fractional_part)
-recipe main [
+def main [
   1:number <- hash 1.5
   2:number <- hash 1
   3:boolean <- equal 1:number, 2:number
@@ -214,22 +214,22 @@ recipe main [
 +mem: storing 1 in location 3
 
 :(scenario hash_of_array_same_as_string)
-recipe main [
+def main [
   10:number <- copy 3
   11:number <- copy 97
   12:number <- copy 98
   13:number <- copy 99
   2:number <- hash 10:array:number/unsafe
-  reply-unless 2:number
+  return-unless 2:number
   3:address:shared:array:character <- new [abc]
   4:number <- hash 3:address:shared:array:character
-  reply-unless 4:number
+  return-unless 4:number
   5:boolean <- equal 2:number, 4:number
 ]
 +mem: storing 1 in location 5
 
 :(scenario hash_ignores_address_value)
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   *1:address:shared:number <- copy 34
   2:number <- hash 1:address:shared:number
@@ -242,15 +242,15 @@ recipe main [
 +mem: storing 1 in location 5
 
 :(scenario hash_ignores_address_refcount)
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   *1:address:shared:number <- copy 34
   2:number <- hash 1:address:shared:number
-  reply-unless 2:number
+  return-unless 2:number
   # increment refcount
   3:address:shared:number <- copy 1:address:shared:number
   4:number <- hash 3:address:shared:number
-  reply-unless 4:number
+  return-unless 4:number
   5:boolean <- equal 2:number, 4:number
 ]
 # hash doesn't change when refcount changes
@@ -265,13 +265,13 @@ container bar [
   x:number
   y:character
 ]
-recipe main [
+def main [
   1:foo <- merge 34, 97/a
   3:number <- hash 1:foo
-  reply-unless 3:number
+  return-unless 3:number
   4:bar <- merge 34, 97/a
   6:number <- hash 4:bar
-  reply-unless 6:number
+  return-unless 6:number
   7:boolean <- equal 3:number, 6:number
 ]
 # containers with identical elements return identical hashes
@@ -283,17 +283,17 @@ container foo [
   y:character
   z:address:shared:number
 ]
-recipe main [
+def main [
   1:address:shared:number <- new number:type
   *1:address:shared:number <- copy 34
   2:foo <- merge 34, 97/a, 1:address:shared:number
   5:number <- hash 2:foo
-  reply-unless 5:number
+  return-unless 5:number
   6:address:shared:number <- new number:type
   *6:address:shared:number <- copy 34
   7:foo <- merge 34, 97/a, 6:address:shared:number
   10:number <- hash 7:foo
-  reply-unless 10:number
+  return-unless 10:number
   11:boolean <- equal 5:number, 10:number
 ]
 # containers with identical 'leaf' elements return identical hashes
@@ -309,13 +309,13 @@ container bar [
   x:number
   y:number
 ]
-recipe main [
+def main [
   1:foo <- merge 34, 97/a, 47, 48
   6:number <- hash 1:foo
-  reply-unless 6:number
+  return-unless 6:number
   7:foo <- merge 34, 97/a, 47, 48
   12:number <- hash 7:foo
-  reply-unless 12:number
+  return-unless 12:number
   13:boolean <- equal 6:number, 12:number
 ]
 # containers with identical 'leaf' elements return identical hashes
@@ -330,13 +330,13 @@ container bar [
   a:number
   b:number
 ]
-recipe main [
+def main [
   1:foo <- merge 0/x, 34, 35
   4:number <- hash 1:foo
-  reply-unless 4:number
+  return-unless 4:number
   5:bar <- merge 34, 35
   7:number <- hash 5:bar
-  reply-unless 7:number
+  return-unless 7:number
   8:boolean <- equal 4:number, 7:number
 ]
 # hash on containers includes all elements
@@ -347,7 +347,7 @@ recipe main [
 //: version around and check that the new one is consistent with it.
 
 :(scenario hash_matches_old_version)
-recipe main [
+def main [
   1:address:shared:array:character <- new [abc]
   2:number <- hash 1:address:shared:array:character
   3:number <- hash_old 1:address:shared:array:character

@@ -6,7 +6,7 @@ container programming-environment-data [
 
 # copy code from recipe editor, persist, load into mu, save any errors
 # test-recipes is a hook for testing
-recipe! update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen, test-recipes:address:shared:array:character -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+def! update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen, test-recipes:address:shared:array:character -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
   recipe-errors:address:address:shared:array:character <- get-address *env, recipe-errors:offset
@@ -25,7 +25,7 @@ recipe! update-recipes env:address:shared:programming-environment-data, screen:a
     status:address:shared:array:character <- new [errors found     ]
     update-status screen, status, 1/red
     errors-found? <- copy 1/true
-    reply
+    return
   }
   errors-found? <- copy 0/false
 ]
@@ -79,7 +79,7 @@ container sandbox-data [
   errors:address:shared:array:character
 ]
 
-recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+def! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
   data:address:shared:array:character <- get *sandbox, data:offset
@@ -91,7 +91,7 @@ recipe! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:p
   {
     break-unless recipe-errors
     *errors <- copy recipe-errors
-    reply
+    return
   }
   *response, *errors, *fake-screen, *trace, completed?:boolean <- run-interactive data
   {
@@ -131,7 +131,7 @@ scenario run-shows-errors-in-get [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   1:address:shared:array:character <- new [ 
-recipe foo [
+def foo [
   get 123:number, foo:offset
 ]]
   2:address:shared:array:character <- new [foo]
@@ -379,7 +379,7 @@ scenario run-shows-missing-type-errors [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   1:address:shared:array:character <- new [ 
-recipe foo [
+def foo [
   x <- copy 0
 ]]
   2:address:shared:array:character <- new [foo]
@@ -410,7 +410,7 @@ scenario run-shows-unbalanced-bracket-errors [
   assume-screen 50/width, 20/height
   # recipe is incomplete (unbalanced '[')
   1:address:shared:array:character <- new [ 
-recipe foo «
+def foo «
   x <- copy 0
 ]
   replace 1:address:shared:array:character, 171/«, 91  # '['
@@ -439,7 +439,7 @@ scenario run-shows-get-on-non-container-errors [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   1:address:shared:array:character <- new [ 
-recipe foo [
+def foo [
   local-scope
   x:address:shared:point <- new point:type
   get x:address:shared:point, 1:offset
@@ -467,7 +467,7 @@ scenario run-shows-non-literal-get-argument-errors [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   1:address:shared:array:character <- new [ 
-recipe foo [
+def foo [
   local-scope
   x:number <- copy 0
   y:address:shared:point <- new point:type
@@ -497,7 +497,7 @@ scenario run-shows-errors-everytime [
   assume-screen 50/width, 20/height
   # try to run a file with an error
   1:address:shared:array:character <- new [ 
-recipe foo [
+def foo [
   local-scope
   x:number <- copy y:number
 ]]
@@ -635,7 +635,7 @@ a:number <- next-ingredient
 b:number <- next-ingredient
 stash [dividing by], b
 _, c:number <- divide-with-remainder a, b
-reply b
+return b
 ]]
   2:address:shared:array:character <- new [foo 4, 0]
   3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 2:address:shared:array:character

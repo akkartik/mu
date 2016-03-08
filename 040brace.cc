@@ -21,7 +21,7 @@
 
 :(scenarios transform)
 :(scenario brace_conversion)
-recipe main [
+def main [
   {
     break
     1:number <- copy 0
@@ -145,7 +145,7 @@ long long int matching_brace(long long int index, const list<pair<int, long long
 }
 
 :(scenario loop)
-recipe main [
+def main [
   1:number <- copy 0
   2:number <- copy 0
   {
@@ -160,7 +160,7 @@ recipe main [
 +transform: jump -2:offset
 
 :(scenario break_empty_block)
-recipe main [
+def main [
   1:number <- copy 0
   {
     break
@@ -171,7 +171,7 @@ recipe main [
 +transform: jump 0:offset
 
 :(scenario break_cascading)
-recipe main [
+def main [
   1:number <- copy 0
   {
     break
@@ -186,7 +186,7 @@ recipe main [
 +transform: jump 0:offset
 
 :(scenario break_cascading_2)
-recipe main [
+def main [
   1:number <- copy 0
   2:number <- copy 0
   {
@@ -205,7 +205,7 @@ recipe main [
 +transform: jump 0:offset
 
 :(scenario break_if)
-recipe main [
+def main [
   1:number <- copy 0
   2:number <- copy 0
   {
@@ -224,7 +224,7 @@ recipe main [
 +transform: jump 0:offset
 
 :(scenario break_nested)
-recipe main [
+def main [
   1:number <- copy 0
   {
     2:number <- copy 0
@@ -238,7 +238,7 @@ recipe main [
 +transform: jump 4:offset
 
 :(scenario break_nested_degenerate)
-recipe main [
+def main [
   1:number <- copy 0
   {
     2:number <- copy 0
@@ -251,7 +251,7 @@ recipe main [
 +transform: jump 3:offset
 
 :(scenario break_nested_degenerate_2)
-recipe main [
+def main [
   1:number <- copy 0
   {
     2:number <- copy 0
@@ -264,7 +264,7 @@ recipe main [
 
 :(scenario break_label)
 % Hide_errors = true;
-recipe main [
+def main [
   1:number <- copy 0
   {
     break +foo:offset
@@ -273,7 +273,7 @@ recipe main [
 +transform: jump +foo:offset
 
 :(scenario break_unless)
-recipe main [
+def main [
   1:number <- copy 0
   2:number <- copy 0
   {
@@ -288,7 +288,7 @@ recipe main [
 +transform: copy ...
 
 :(scenario loop_unless)
-recipe main [
+def main [
   1:number <- copy 0
   2:number <- copy 0
   {
@@ -303,7 +303,7 @@ recipe main [
 +transform: copy ...
 
 :(scenario loop_nested)
-recipe main [
+def main [
   1:number <- copy 0
   {
     2:number <- copy 0
@@ -318,7 +318,7 @@ recipe main [
 +transform: jump-if 4, -5:offset
 
 :(scenario loop_label)
-recipe main [
+def main [
   1:number <- copy 0
   +foo
   2:number <- copy 0
@@ -330,7 +330,7 @@ recipe main [
 //: test how things actually run
 :(scenarios run)
 :(scenario brace_conversion_and_run)
-recipe test-factorial [
+def test-factorial [
   1:number <- copy 5
   2:number <- copy 1
   {
@@ -347,14 +347,14 @@ recipe test-factorial [
 
 :(scenario break_outside_braces_fails)
 % Hide_errors = true;
-recipe main [
+def main [
   break
 ]
 +error: break needs a '{' before
 
 :(scenario break_conditional_without_ingredient_fails)
 % Hide_errors = true;
-recipe main [
+def main [
   {
     break-if
   }
