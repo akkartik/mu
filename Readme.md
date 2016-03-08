@@ -263,7 +263,7 @@ Here's a second example, of a function that can take ingredients:
 
 <img alt='fahrenheit to celsius' src='html/f2c-1.png'>
 
-Recipes can specify headers showing their expected ingredients and products,
+Functions can specify headers showing their expected ingredients and products,
 separated by `->` (unlike the `<-` in *calls*).
 
 Since Mu is a low-level VM language, it provides extra control at the cost of
