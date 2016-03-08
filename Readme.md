@@ -184,7 +184,9 @@ details: http://akkartik.name/post/tracing-tests)
 High-level languages provide three things:
 
 a) Expressiveness (nested expressions, function calls, etc.)
+
 b) Safety (type checking, warnings, etc.)
+
 c) Automation (garbage collection, a scheduler for green threads, etc.)
 
 Mu ignores a) for a time, but there's no reason it can't provide b) and c), as
