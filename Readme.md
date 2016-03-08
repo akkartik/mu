@@ -22,7 +22,7 @@ disagreeing on these questions I often track their difference down to
 variations in personal experience. In particular, people with good experiences
 of X seem disproportionately to have tried to use X at a smaller scale or
 earlier in a project's life than people with bad experiences with X. I surmise
-that that difference explains the lion's share of the benefits and drawbacks
+that this difference explains the lion's share of the benefits and drawbacks
 people observe. It doesn't matter what programming language you use, whether
 you program functionally or not, whether you follow an Object-Oriented
 methodology or go Agile, whether you use shared memory or the Actor model.
@@ -61,21 +61,21 @@ grows irrelevant and can be taken out. If you can't easily take something out,
 you'll never do so because there'll always be more urgent things you could be
 doing.
 
-A big source of complexity creep is your project's interface to external
-users, because you can't know all the ways in which they use the services you
-provide. Historically we react to this by assuming that our users can do
-anything that we ever allowed them to do in the past, and require ourselves to
-support all such features. We can only add features, not drop them or change
-how we provide them. We might, if we're forward thinking, keep the project
-stable for a time. But the goal is usually to stabilize the interface, and
-inevitably the stabilization is *premature*, because you can't anticipate what
-the future holds. Stable interfaces inevitably get bolted-on features, grow
-complex and breed a new generation of unsatisfied users who then attempt to
-wrap them in sane interfaces, freeze *those* interfaces, start bolting on
-features to them, rise and repeat. This dynamic of interfaces wrapping other
-interfaces is how unix cat grows from a screenful of code in the original unix
-to <a href='http://landley.net/aboriginal/history.html'>800 lines</a> in 2002
-to 36 *thousand* lines of code in 2013.
+A big source of complexity creep is a project's interface to external users,
+because you can't know all the ways in which users use a service. Historically
+we react to this constraint by assuming that our users can do anything that we
+ever allowed them to do in the past, and require ourselves to support all such
+features. We can only add features, not drop them or change how we provide
+them. We might, if we're forward thinking, keep our interfaces unstable for a
+time. But the goal is usually to stabilize the interface, and inevitably the
+stabilization is *premature*, because you can't anticipate what the future
+holds. Stable interfaces inevitably get bolted-on features, grow complex and
+breed a new generation of unsatisfied users who then attempt to wrap them in
+sane interfaces, freeze *those* interfaces, start bolting on features to them,
+rise and repeat. This dynamic of interfaces wrapping other interfaces is how
+unix cat grows from a screenful of code in the original unix to
+<a href='http://landley.net/aboriginal/history.html'>800 lines</a> in 2002 to
+36 *thousand* lines of code in 2013.
 
 To summarize, the arc you want to avoid is: you make backwards compatibility
 guarantees &rarr; complexity creeps monotonically upward &rarr; funnel of
