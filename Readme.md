@@ -103,7 +103,7 @@ mind. The nice experience for an outsider would be to just change that line
 and see if any tests fail. This is only possible if we eliminate all manual QA
 from our release process.
 
-*So*
+*So&hellip;*
 
 In Mu, it will be possible for any aspect of any program that you can manually
 test to also be turned into a reproducible automatic test. This may seem like
