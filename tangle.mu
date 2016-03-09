@@ -1,4 +1,4 @@
-# example program: constructing recipes out of order
+# example program: constructing functions out of order
 #
 # We construct a factorial function with separate base and recursive cases.
 # Compare factorial.mu.

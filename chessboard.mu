@@ -1,17 +1,16 @@
 # Chessboard program: you type in moves in algebraic notation, and it'll
 # display the position after each move.
 
-# recipes are mu's names for functions
 def main [
   open-console  # take control of screen, keyboard and mouse
 
-  # The chessboard recipe takes keyboard and screen objects as 'ingredients'.
+  # The chessboard function takes keyboard and screen objects as 'ingredients'.
   #
   # In mu it is good form (though not required) to explicitly show the
   # hardware you rely on.
   #
   # The chessboard also returns the same keyboard and screen objects. In mu it
-  # is good form to not modify ingredients of a recipe unless they are also
+  # is good form to not modify ingredients of a function unless they are also
   # results. Here we clearly modify both keyboard and screen, so we return
   # both.
   #
