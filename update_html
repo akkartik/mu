@@ -8,12 +8,15 @@ process() {
 
   sed -i 's,<title>\~/mu/,<title>Mu - ,' $1.html
   sed -i 's,\.html</title>,</title>,' $1.html
-  sed -i 's/^\*.*/* { font-size: 1.05em; }/g' $1.html
+  sed -i 's/^\* { \(.*\) }/* { font-size: 12pt; \1 }/g' $1.html
+  sed -i 's/^body { \(.*\) }/body { font-size: 12pt; \1 }/g' $1.html
   # tweak contrast
   sed -i 's/^\.Constant .*/.Constant { color: #00a0a0; }/' $1.html
   sed -i 's/^\.muControl .*/.muControl { color: #c0a020; }/' $1.html
   sed -i 's/^\.Comment .*/.Comment { color: #9090ff; }/' $1.html
-  sed -i 's/^\.Delimiter .*/.Delimiter { color: #a04060; }/' $1.html  # not meant to be read/ can be lower-contrast
+  sed -i 's/^\.Delimiter .*/.Delimiter { color: #800080; }/' $1.html  # not meant to be read; can be lower-contrast
+  sed -i 's/^\.PreProc .*/.PreProc { color: #800080; }/' $1.html  # not meant to be read; can be lower-contrast
+  sed -i 's/^\.Identifier .*/.Identifier { color: #fcb165; }/' $1.html
 
   mv -i $1.html html/`dirname $1`
 }
