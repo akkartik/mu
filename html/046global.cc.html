@@ -3,41 +3,40 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 046global.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
-.Special { color: #ff6060; }
 .Identifier { color: #804000; }
+.traceContains { color: #008000; }
+.Normal { color: #eeeeee; background-color: #080808; }
+.Special { color: #ff6060; }
 .Constant { color: #00a0a0; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
-<span class="Comment">// So far we have local variables, and we can nest local variables of short</span>
-<span class="Comment">// lifetimes inside longer ones. Now let's support 'global' variables that</span>
-<span class="Comment">// last for the life of a routine. If we create multiple routines they won't</span>
-<span class="Comment">// have access to each other's globals.</span>
+<pre>
+<span class="Comment">//: So far we have local variables, and we can nest local variables of short</span>
+<span class="Comment">//: lifetimes inside longer ones. Now let's support 'global' variables that</span>
+<span class="Comment">//: last for the life of a routine. If we create multiple routines they won't</span>
+<span class="Comment">//: have access to each other's globals.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: This feature is still experimental and half-baked. You can't name global</span>
+<span class="Comment">//: variables, and so like in most tests they don't get checked for types (the</span>
+<span class="Comment">//: only known hole in the type system, can cause memory corruption). We might</span>
+<span class="Comment">//: fix these issues if we ever use globals. Or we might just drop the feature</span>
+<span class="Comment">//: entirely.</span>
 
 <span class="Delimiter">:(scenario global_space)</span>
-recipe main [
+def main [
   <span class="Comment"># pretend shared:array:location; in practice we'll use new</span>
   <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
   <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
@@ -46,7 +45,7 @@ recipe main [
   <span class="Constant">21</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
   <span class="Comment"># actual start of this recipe</span>
   global-space:address:shared:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
-  default-space:address:shared:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Normal">default</span>-space:address:shared:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Constant">1</span>:number/space:global<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
@@ -57,19 +56,19 @@ recipe main [
 
 <span class="Comment">//: to support it, create another special variable called global space</span>
 <span class="Delimiter">:(before &quot;End is_disqualified Cases&quot;)</span>
-if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span>
   x<span class="Delimiter">.</span>initialized = <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End is_special_name Cases&quot;)</span>
-if <span class="Delimiter">(</span>s == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 
 <span class="Comment">//: writes to this variable go to a field in the current routine</span>
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-long long int global_space<span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> global_space<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(after &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
-  if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>data<span class="Delimiter">)</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>data<span class="Delimiter">)</span>
         || !x<span class="Delimiter">.</span>type
         || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span>
         || !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right
@@ -79,19 +78,19 @@ global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
         || !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
         || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">)</span>
         || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'global-space' should be of type address:shared:array:location, but tried to write &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'global-space' should be of type address:shared:array:location, but tried to write &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;routine already has a global-space; you can't over-write your globals&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
+      raise &lt;&lt; <span class="Constant">&quot;routine already has a global-space; you can't over-write your globals&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     Current_routine<span class="Delimiter">-&gt;</span>global_space = data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
 <span class="Comment">//: now marking variables as /space:global looks them up inside this field</span>
 <span class="Delimiter">:(after &quot;long long int space_base(const reagent&amp; x)&quot;)</span>
-  if <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;routine has no global space</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
+      raise &lt;&lt; <span class="Constant">&quot;routine has no global space</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>global_space + <span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
@@ -99,8 +98,8 @@ global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Comment">//: don't want to make them too comfortable to use.</span>
 
 <span class="Delimiter">:(scenario global_space_with_names)</span>
-recipe main [
-  global-space:address:shared:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">10</span>
+def main [
+  global-space:address:shared:array:location<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">10</span>
   x:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Constant">1</span>:number/space:global<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
@@ -108,14 +107,14 @@ recipe main [
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(after &quot;bool is_numeric_location(const reagent&amp; x)&quot;)</span>
-  if <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Comment">//: helpers</span>
 
 <span class="Delimiter">:(code)</span>
-bool is_global<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span>
+<span class="Normal">bool</span> is_global<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span>
       <span class="Identifier">return</span> x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second &amp;&amp; x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;global&quot;</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -123,4 +122,3 @@ bool is_global<span class="Delimiter">(</span>const reagent&amp; x<span class="D
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

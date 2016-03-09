@@ -3,35 +3,27 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 073list.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 .muScenario { color: #00af00; }
+.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
+.muRecipe { color: #ff8700; }
 .muData { color: #ffff00; }
 .Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.Special { color: #ff6060; }
-.Delimiter { color: #a04060; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment"># A list links up multiple objects together to make them easier to manage.</span>
 <span class="Comment">#</span>
 <span class="Comment"># The objects must be of the same type. If you want to store multiple types in</span>
@@ -42,7 +34,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   next:address:shared:list:_elem
 ]
 
-<span class="muRecipe">recipe</span> push x:_elem, in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>in:address:shared:list:_elem [
+<span class="muRecipe">def</span> push x:_elem, in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>in:address:shared:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result:address:shared:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
@@ -50,16 +42,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   *val<span class="Special"> &lt;- </span>copy x
   next:address:address:shared:list:_elem<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">next:offset</span>
   *next<span class="Special"> &lt;- </span>copy in
-  <span class="muControl">reply</span> result  <span class="Comment"># needed explicitly because we need to replace 'in' with 'result'</span>
+  <span class="muControl">return</span> result  <span class="Comment"># needed explicitly because we need to replace 'in' with 'result'</span>
 ]
 
-<span class="muRecipe">recipe</span> first in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
+<span class="muRecipe">def</span> first in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
 ]
 
-<span class="muRecipe">recipe</span> rest in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:list:_elem/contained-in:in [
+<span class="muRecipe">def</span> rest in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:list:_elem/contained-in:in [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
@@ -85,7 +77,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> to-text in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> to-text in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   buf:address:shared:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
@@ -94,7 +86,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)</span>
-<span class="muRecipe">recipe</span> to-text-line in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> to-text-line in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   buf:address:shared:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
@@ -102,13 +94,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   result<span class="Special"> &lt;- </span>buffer-to-array buf
 ]
 
-<span class="muRecipe">recipe</span> to-buffer in:address:shared:list:_elem, buf:address:shared:buffer<span class="muRecipe"> -&gt; </span>buf:address:shared:buffer [
+<span class="muRecipe">def</span> to-buffer in:address:shared:list:_elem, buf:address:shared:buffer<span class="muRecipe"> -&gt; </span>buf:address:shared:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> in
     buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">48/0</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># append in.value to buf</span>
   val:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
@@ -116,7 +108,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># now prepare next</span>
   next:address:shared:list:_elem<span class="Special"> &lt;- </span>rest in
   nextn:number<span class="Special"> &lt;- </span>copy next
-  <span class="muControl">reply-unless</span> next
+  <span class="muControl">return-unless</span> next
   space:character<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
   buf<span class="Special"> &lt;- </span>append buf, space:character
   s:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[-&gt; ]</span>
@@ -128,14 +120,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-if</span> optional-ingredient-found?
     <span class="Comment"># unlimited recursion</span>
     buf<span class="Special"> &lt;- </span>to-buffer next, buf
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> remaining
     <span class="Comment"># limited recursion</span>
     remaining<span class="Special"> &lt;- </span>subtract remaining, <span class="Constant">1</span>
     buf<span class="Special"> &lt;- </span>to-buffer next, buf, remaining
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># past recursion depth; insert ellipses and stop</span>
   s:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[...]</span>
@@ -168,4 +160,3 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

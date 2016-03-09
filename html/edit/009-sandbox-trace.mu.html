@@ -3,36 +3,28 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/009-sandbox-trace.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .muData { color: #ffff00; }
+.muControl { color: #c0a020; }
 .Special { color: #ff6060; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
+.muScenario { color: #00af00; }
 .SalientComment { color: #00ffff; }
-.Delimiter { color: #a04060; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="SalientComment">## clicking on the code typed into a sandbox toggles its trace</span>
 
 <span class="muScenario">scenario</span> sandbox-click-on-code-toggles-app-trace [
@@ -162,7 +154,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># replaced in a later layer</span>
-<span class="muRecipe">recipe!</span> update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+<span class="muRecipe">def!</span> update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   data:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
@@ -201,7 +193,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> find-click-in-sandbox-code env:address:shared:programming-environment-data, click-row:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data [
+<span class="muRecipe">def</span> find-click-in-sandbox-code env:address:shared:programming-environment-data, click-row:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># assert click-row &gt;= sandbox.starting-row-on-screen</span>
@@ -227,9 +219,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   click-on-sandbox-code?:boolean<span class="Special"> &lt;- </span>and click-above-response?, click-below-menu?
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> click-on-sandbox-code?
-    <span class="muControl">reply</span> <span class="Constant">0/no-click-in-sandbox-output</span>
+    <span class="muControl">return</span> <span class="Constant">0/no-click-in-sandbox-output</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> sandbox
+  <span class="muControl">return</span> sandbox
 ]
 
 <span class="Comment"># when rendering a sandbox, dump its trace before response/warning if display-trace? property is set</span>
@@ -246,4 +238,3 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

@@ -3,65 +3,58 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 035call_ingredient.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.traceContains { color: #008000; }
-.cSpecial { color: #008000; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
-.Special { color: #ff6060; }
 .Identifier { color: #804000; }
+.cSpecial { color: #008000; }
+.Normal { color: #eeeeee; background-color: #080808; }
+.traceContains { color: #008000; }
+.Special { color: #ff6060; }
 .Constant { color: #00a0a0; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment">//: Calls can take ingredients just like primitives. To access a recipe's</span>
 <span class="Comment">//: ingredients, use 'next-ingredient'.</span>
 
 <span class="Delimiter">:(scenario next_ingredient)</span>
-recipe main [
+def main [
   f <span class="Constant">2</span>
 ]
-recipe f [
+def f [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
   <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">12</span>:number
 ]
 <span class="traceContains">+mem: storing 3 in location 13</span>
 
 <span class="Delimiter">:(scenario next_ingredient_missing)</span>
-recipe main [
+def main [
   f
 ]
-recipe f [
+def f [
   _<span class="Delimiter">,</span> <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
 ]
 <span class="traceContains">+mem: storing 0 in location 12</span>
 
 <span class="Delimiter">:(before &quot;End call Fields&quot;)</span>
-vector&lt;vector&lt;double&gt; &gt; ingredient_atoms<span class="Delimiter">;</span>
+vector&lt;vector&lt;<span class="Normal">double</span>&gt; &gt; ingredient_atoms<span class="Delimiter">;</span>
 vector&lt;reagent&gt; ingredients<span class="Delimiter">;</span>
-long long int next_ingredient_to_process<span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> next_ingredient_to_process<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End call Constructor&quot;)</span>
 next_ingredient_to_process = <span class="Constant">0</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Call Housekeeping&quot;)</span>
-for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   reagent ingredient = call_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
   canonize_type<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
@@ -73,28 +66,28 @@ NEXT_INGREDIENT<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;next-ingredient&quot;</span><span class="Delimiter">,</span> NEXT_INGREDIENT<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case NEXT_INGREDIENT: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'next-ingredient' didn't expect any ingredients in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">case</span> NEXT_INGREDIENT: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'next-ingredient' didn't expect any ingredients in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case NEXT_INGREDIENT: <span class="Delimiter">{</span>
+<span class="Normal">case</span> NEXT_INGREDIENT: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  if <span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>next_ingredient_to_process &lt; SIZE<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>next_ingredient_to_process &lt; SIZE<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     reagent product = current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">()</span> == <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">()</span> == <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// no ingredient types since the call might be implicit; assume ingredients are always strings</span>
       <span class="Comment">// todo: how to test this?</span>
-      if <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>product<span class="Delimiter">))</span>
-        raise_error &lt;&lt; <span class="Constant">&quot;main: wrong type for ingredient &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>product<span class="Delimiter">))</span>
+        raise &lt;&lt; <span class="Constant">&quot;main: wrong type for ingredient &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
-    else if <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span>
                               current_call<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-      raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;wrong type for ingredient &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;wrong type for ingredient &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Comment">// End next-ingredient Type Mismatch Error</span>
     <span class="Delimiter">}</span>
     products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>
@@ -103,14 +96,14 @@ case NEXT_INGREDIENT: <span class="Delimiter">{</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
     ++current_call<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  else <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &lt; <span class="Constant">2</span><span class="Delimiter">)</span>
-      raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;no ingredient to save in &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &lt; <span class="Constant">2</span><span class="Delimiter">)</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;no ingredient to save in &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
     <span class="Comment">// pad the first product with sufficient zeros to match its type</span>
-    long long int size = size_of<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-    for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; size<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span>
+    <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size = size_of<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; size<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span>
       products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -119,19 +112,19 @@ case NEXT_INGREDIENT: <span class="Delimiter">{</span>
 
 <span class="Delimiter">:(scenario next_ingredient_fail_on_missing)</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   f
 ]
-recipe f [
+def f [
   <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>next-ingredient
 ]
 <span class="traceContains">+error: f: no ingredient to save in 11:number</span>
 
 <span class="Delimiter">:(scenario rewind_ingredients)</span>
-recipe main [
+def main [
   f <span class="Constant">2</span>
 ]
-recipe f [
+def f [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># consume ingredient</span>
   _<span class="Delimiter">,</span> <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># will not find any ingredients</span>
   rewind-ingredients
@@ -147,20 +140,20 @@ REWIND_INGREDIENTS<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;rewind-ingredients&quot;</span><span class="Delimiter">,</span> REWIND_INGREDIENTS<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case REWIND_INGREDIENTS: <span class="Delimiter">{</span>
+<span class="Normal">case</span> REWIND_INGREDIENTS: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case REWIND_INGREDIENTS: <span class="Delimiter">{</span>
+<span class="Normal">case</span> REWIND_INGREDIENTS: <span class="Delimiter">{</span>
   current_call<span class="Delimiter">().</span>next_ingredient_to_process = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario ingredient)</span>
-recipe main [
+def main [
   f <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
-recipe f [
+def f [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>ingredient <span class="Constant">1</span>  <span class="Comment"># consume second ingredient first</span>
   <span class="Constant">13</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># next-ingredient tries to scan past that</span>
 ]
@@ -172,20 +165,20 @@ INGREDIENT<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;ingredient&quot;</span><span class="Delimiter">,</span> INGREDIENT<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case INGREDIENT: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'ingredient' expects exactly one ingredient, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">case</span> INGREDIENT: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'ingredient' expects exactly one ingredient, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &amp;&amp; !is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'ingredient' expects a literal ingredient, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &amp;&amp; !is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'ingredient' expects a literal ingredient, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case INGREDIENT: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>static_cast&lt;long long int&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt; SIZE<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="Normal">case</span> INGREDIENT: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt; SIZE<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     current_call<span class="Delimiter">().</span>next_ingredient_to_process = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>
         current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>at<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">));</span>
@@ -193,8 +186,8 @@ case INGREDIENT: <span class="Delimiter">{</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
     ++current_call<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  else <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
       products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// todo: will fail noisily if we try to read a compound value</span>
       products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
@@ -205,4 +198,3 @@ case INGREDIENT: <span class="Delimiter">{</span>
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

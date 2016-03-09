@@ -3,36 +3,28 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/011-editor-undo.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
+.muScenario { color: #00af00; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 .Special { color: #ff6060; }
+.Delimiter { color: #a04060; }
+.Constant { color: #00a0a0; }
+.muRecipe { color: #ff8700; }
 .muData { color: #ffff00; }
 .Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
-.Delimiter { color: #a04060; }
-.muScenario { color: #00af00; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="SalientComment">## undo/redo</span>
 
 <span class="Comment"># for every undoable event, create a type of *operation* that contains all the</span>
@@ -107,7 +99,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     redo:address:address:shared:list:address:shared:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">redo:offset</span>
     *redo<span class="Special"> &lt;- </span>push op, *redo
 <span class="Constant">    &lt;handle-undo&gt;</span>
-    <span class="muControl">reply</span> screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>, <span class="Constant">1/go-render</span>
+    <span class="muControl">return</span> screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>, <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -123,7 +115,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     undo:address:address:shared:list:address:shared:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
     *undo<span class="Special"> &lt;- </span>push op, *undo
 <span class="Constant">    &lt;handle-redo&gt;</span>
-    <span class="muControl">reply</span> screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>, <span class="Constant">1/go-render</span>
+    <span class="muControl">return</span> screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>, <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -224,14 +216,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># redo stack, because it's now obsolete.</span>
 <span class="Comment"># Beware: since we're counting cursor moves as operations, this means just</span>
 <span class="Comment"># moving the cursor can lose work on the undo stack.</span>
-<span class="muRecipe">recipe</span> add-operation editor:address:shared:editor-data, op:address:shared:operation<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
+<span class="muRecipe">def</span> add-operation editor:address:shared:editor-data, op:address:shared:operation<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   undo:address:address:shared:list:address:shared:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">undo:offset</span>
   *undo<span class="Special"> &lt;- </span>push op *undo
   redo:address:address:shared:list:address:shared:operation<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">redo:offset</span>
   *redo<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="muControl">reply</span> editor/same-as-ingredient:<span class="Constant">0</span>
+  <span class="muControl">return</span> editor/same-as-ingredient:<span class="Constant">0</span>
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;handle-undo&gt;</span> [
@@ -2108,4 +2100,3 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

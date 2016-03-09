@@ -3,42 +3,34 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - chessboard.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .muData { color: #ffff00; }
-.Special { color: #ff6060; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.SalientComment { color: #00ffff; }
 .CommentedCode { color: #6c6c6c; }
+.muControl { color: #c0a020; }
 .Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+.muScenario { color: #00af00; }
+.SalientComment { color: #00ffff; }
+.Constant { color: #00a0a0; }
+.muRecipe { color: #ff8700; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment"># Chessboard program: you type in moves in algebraic notation, and it'll</span>
 <span class="Comment"># display the position after each move.</span>
 
 <span class="Comment"># recipes are mu's names for functions</span>
-<span class="muRecipe">recipe</span> main [
+<span class="muRecipe">def</span> main [
   open-console  <span class="Comment"># take control of screen, keyboard and mouse</span>
 
   <span class="Comment"># The chessboard recipe takes keyboard and screen objects as 'ingredients'.</span>
@@ -102,7 +94,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="SalientComment">## Here's how 'chessboard' is implemented.</span>
 
-<span class="muRecipe">recipe</span> chessboard screen:address:shared:screen, console:address:shared:console<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, console:address:shared:console [
+<span class="muRecipe">def</span> chessboard screen:address:shared:screen, console:address:shared:console<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, console:address:shared:console [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   board:address:shared:array:address:shared:array:character<span class="Special"> &lt;- </span>initial-position
@@ -145,7 +137,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="SalientComment">## a board is an array of files, a file is an array of characters (squares)</span>
 
-<span class="muRecipe">recipe</span> new-board initial-position:address:shared:array:character<span class="muRecipe"> -&gt; </span>board:address:shared:array:address:shared:array:character [
+<span class="muRecipe">def</span> new-board initial-position:address:shared:array:character<span class="muRecipe"> -&gt; </span>board:address:shared:array:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># assert(length(initial-position) == 64)</span>
@@ -165,7 +157,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> new-file position:address:shared:array:character, index:number<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> new-file position:address:shared:array:character, index:number<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   index<span class="Special"> &lt;- </span>multiply index, <span class="Constant">8</span>
@@ -182,7 +174,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> print-board screen:address:shared:screen, board:address:shared:array:address:shared:array:character<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> print-board screen:address:shared:screen, board:address:shared:array:address:shared:array:character<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   row:number<span class="Special"> &lt;- </span>copy <span class="Constant">7</span>  <span class="Comment"># start printing from the top of the board</span>
@@ -221,7 +213,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   screen<span class="Special"> &lt;- </span>cursor-to-next-line screen
 ]
 
-<span class="muRecipe">recipe</span> initial-position<span class="muRecipe"> -&gt; </span>board:address:shared:array:address:shared:array:character [
+<span class="muRecipe">def</span> initial-position<span class="muRecipe"> -&gt; </span>board:address:shared:array:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Comment"># layout in memory (in raster order):</span>
   <span class="Comment">#   R P _ _ _ _ p r</span>
@@ -278,61 +270,61 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># prints only error messages to screen</span>
-<span class="muRecipe">recipe</span> read-move stdin:address:shared:channel, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>result:address:shared:move, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+<span class="muRecipe">def</span> read-move stdin:address:shared:channel, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>result:address:shared:move, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   from-file:number, quit?:boolean, error?:boolean<span class="Special"> &lt;- </span>read-file stdin, screen
-  <span class="muControl">reply-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
-  <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
+  <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
+  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
   <span class="Comment"># construct the move object</span>
   result:address:shared:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
   x:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">from-file:offset</span>
   *x<span class="Special"> &lt;- </span>copy from-file
   x<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">from-rank:offset</span>
   *x, quit?, error?<span class="Special"> &lt;- </span>read-rank stdin, screen
-  <span class="muControl">reply-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
-  <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
+  <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
+  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
   error?<span class="Special"> &lt;- </span>expect-from-channel stdin, <span class="Constant">45/dash</span>, screen
-  <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, error?
+  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, error?
   x<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">to-file:offset</span>
   *x, quit?, error?<span class="Special"> &lt;- </span>read-file stdin, screen
-  <span class="muControl">reply-if</span> quit?:boolean, <span class="Constant">0/dummy</span>, quit?:boolean, error?:boolean
-  <span class="muControl">reply-if</span> error?:boolean, <span class="Constant">0/dummy</span>, quit?:boolean, error?:boolean
+  <span class="muControl">return-if</span> quit?:boolean, <span class="Constant">0/dummy</span>, quit?:boolean, error?:boolean
+  <span class="muControl">return-if</span> error?:boolean, <span class="Constant">0/dummy</span>, quit?:boolean, error?:boolean
   x:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">to-rank:offset</span>
   *x, quit?, error?<span class="Special"> &lt;- </span>read-rank stdin, screen
-  <span class="muControl">reply-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
-  <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
+  <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>, quit?, error?
+  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, quit?, error?
   error?<span class="Special"> &lt;- </span>expect-from-channel stdin, <span class="Constant">10/newline</span>, screen
-  <span class="muControl">reply-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, error?
-  <span class="muControl">reply</span> result, quit?, error?
+  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, error?
+  <span class="muControl">return</span> result, quit?, error?
 ]
 
 <span class="Comment"># valid values for file: 0-7</span>
-<span class="muRecipe">recipe</span> read-file stdin:address:shared:channel, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>file:number, quit:boolean, error:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+<span class="muRecipe">def</span> read-file stdin:address:shared:channel, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>file:number, quit:boolean, error:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   c:character, stdin<span class="Special"> &lt;- </span>read stdin
   <span class="Delimiter">{</span>
     q-pressed?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">81/Q</span>
     <span class="muControl">break-unless</span> q-pressed?
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     q-pressed?<span class="Special"> &lt;- </span>equal c, <span class="Constant">113/q</span>
     <span class="muControl">break-unless</span> q-pressed?
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     empty-fake-keyboard?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">0/eof</span>
     <span class="muControl">break-unless</span> empty-fake-keyboard?
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     newline?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
     <span class="muControl">break-unless</span> newline?
     error-message:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[that's not enough]</span>
     print screen, error-message
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
   file:number<span class="Special"> &lt;- </span>subtract c, <span class="Constant">97/a</span>
   <span class="Comment"># 'a' &lt;= file &lt;= 'h'</span>
@@ -343,7 +335,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     print screen, error-message
     print screen, c
     cursor-to-next-line screen
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     below-max:boolean<span class="Special"> &lt;- </span>lesser-than file, <span class="Constant">8</span>
@@ -351,32 +343,32 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     error-message<span class="Special"> &lt;- </span>new <span class="Constant">[file too high: ]</span>
     print screen, error-message
     print screen, c
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> file, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
+  <span class="muControl">return</span> file, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
 ]
 
 <span class="Comment"># valid values: 0-7, -1 (quit), -2 (error)</span>
-<span class="muRecipe">recipe</span> read-rank stdin:address:shared:channel, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>rank:number, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+<span class="muRecipe">def</span> read-rank stdin:address:shared:channel, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>rank:number, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   c:character, stdin<span class="Special"> &lt;- </span>read stdin
   <span class="Delimiter">{</span>
     q-pressed?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">8/Q</span>
     <span class="muControl">break-unless</span> q-pressed?
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     q-pressed?<span class="Special"> &lt;- </span>equal c, <span class="Constant">113/q</span>
     <span class="muControl">break-unless</span> q-pressed?
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     newline?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10</span>  <span class="Comment"># newline</span>
     <span class="muControl">break-unless</span> newline?
     error-message:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[that's not enough]</span>
     print screen, error-message
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
   rank:number<span class="Special"> &lt;- </span>subtract c, <span class="Constant">49/'1'</span>
   <span class="Comment"># assert'1' &lt;= rank &lt;= '8'</span>
@@ -386,7 +378,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     error-message<span class="Special"> &lt;- </span>new <span class="Constant">[rank too low: ]</span>
     print screen, error-message
     print screen, c
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     below-max:boolean<span class="Special"> &lt;- </span>lesser-or-equal rank, <span class="Constant">7</span>
@@ -394,14 +386,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     error-message<span class="Special"> &lt;- </span>new <span class="Constant">[rank too high: ]</span>
     print screen, error-message
     print screen, c
-    <span class="muControl">reply</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> rank, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
+  <span class="muControl">return</span> rank, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
 ]
 
 <span class="Comment"># read a character from the given channel and check that it's what we expect</span>
 <span class="Comment"># return true on error</span>
-<span class="muRecipe">recipe</span> expect-from-channel stdin:address:shared:channel, expected:character, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>result:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+<span class="muRecipe">def</span> expect-from-channel stdin:address:shared:channel, expected:character, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>result:boolean, stdin:address:shared:channel, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   c:character, stdin<span class="Special"> &lt;- </span>read stdin
@@ -578,7 +570,7 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
   ]
 ]
 
-<span class="muRecipe">recipe</span> make-move board:address:shared:array:address:shared:array:character, m:address:shared:move<span class="muRecipe"> -&gt; </span>board:address:shared:array:address:shared:array:character [
+<span class="muRecipe">def</span> make-move board:address:shared:array:address:shared:array:character, m:address:shared:move<span class="muRecipe"> -&gt; </span>board:address:shared:array:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   from-file:number<span class="Special"> &lt;- </span>get *m, <span class="Constant">from-file:offset</span>
@@ -627,4 +619,3 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

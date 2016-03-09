@@ -3,40 +3,33 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 011load.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
 .traceAbsent { color: #c00000; }
-.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
-.Special { color: #ff6060; }
+.Normal { color: #eeeeee; background-color: #080808; }
 .Identifier { color: #804000; }
+.traceContains { color: #008000; }
+.Special { color: #ff6060; }
 .Constant { color: #00a0a0; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment">//: Phase 1 of running mu code: load it from a textual representation.</span>
 
 <span class="Delimiter">:(scenarios load)</span>  <span class="Comment">// use 'load' instead of 'run' in all scenarios in this layer</span>
 <span class="Delimiter">:(scenario first_recipe)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -53,42 +46,42 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>string form<spa
 vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   vector&lt;recipe_ordinal&gt; result<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     string command = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Comment">// Command Handlers</span>
-    if <span class="Delimiter">(</span>command == <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;recipe&quot;</span> || command == <span class="Constant">&quot;def&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
     <span class="Delimiter">}</span>
-    else if <span class="Delimiter">(</span>command == <span class="Constant">&quot;recipe!&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;recipe!&quot;</span> || command == <span class="Constant">&quot;def!&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       Disable_redefine_checks = <span class="Constant">true</span><span class="Delimiter">;</span>
       result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
       Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Comment">// End Command Handlers</span>
-    else <span class="Delimiter">{</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;unknown top-level command: &quot;</span> &lt;&lt; command &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">else</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; <span class="Constant">&quot;unknown top-level command: &quot;</span> &lt;&lt; command &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-long long int slurp_recipe<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> slurp_recipe<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe result<span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Comment">// End Load Recipe Name</span>
   skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Comment">// End Recipe Refinements</span>
-  if <span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;empty result.name</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+    raise &lt;&lt; <span class="Constant">&quot;empty result.name</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- defining &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-  if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
     put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">,</span> Next_recipe_ordinal++<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span> != Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span> != Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;already exists&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>should_check_for_redefine<span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;redefining recipe &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>should_check_for_redefine<span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
+      raise &lt;&lt; <span class="Constant">&quot;redefining recipe &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   slurp_body<span class="Delimiter">(</span>in<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
@@ -99,36 +92,36 @@ long long int slurp_recipe<span class="Delimiter">(</span>istream&amp; in<span c
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-void slurp_body<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> recipe&amp; result<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> slurp_body<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> recipe&amp; result<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;recipe body must begin with '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span>
+    raise &lt;&lt; <span class="Constant">&quot;recipe body must begin with '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>  <span class="Comment">// permit trailing comment after '['</span>
   instruction curr<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>next_instruction<span class="Delimiter">(</span>in<span class="Delimiter">,</span> &amp;curr<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>next_instruction<span class="Delimiter">(</span>in<span class="Delimiter">,</span> &amp;curr<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     <span class="Comment">// End Rewrite Instruction(curr, recipe result)</span>
     trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;load&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;after rewriting: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>curr<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>!curr<span class="Delimiter">.</span>is_empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!curr<span class="Delimiter">.</span>is_empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
       curr<span class="Delimiter">.</span>original_string = to_string<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
       result<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> instruction* curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> next_instruction<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> instruction* curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   curr<span class="Delimiter">-&gt;</span>clear<span class="Delimiter">();</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;0: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;0: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
   vector&lt;string&gt; words<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;1: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; <span class="Constant">&quot;1: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     string word = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
@@ -136,45 +129,45 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
     skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>words<span class="Delimiter">)</span> == <span class="Constant">1</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;]&quot;</span><span class="Delimiter">)</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>words<span class="Delimiter">)</span> == <span class="Constant">1</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;]&quot;</span><span class="Delimiter">)</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// end of recipe</span>
 
-  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>words<span class="Delimiter">)</span> == <span class="Constant">1</span> &amp;&amp; !isalnum<span class="Delimiter">(</span>words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'$'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>words<span class="Delimiter">)</span> == <span class="Constant">1</span> &amp;&amp; !isalnum<span class="Delimiter">(</span>words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'$'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     curr<span class="Delimiter">-&gt;</span>is_label = <span class="Constant">true</span><span class="Delimiter">;</span>
     curr<span class="Delimiter">-&gt;</span>label = words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;label: &quot;</span> &lt;&lt; curr<span class="Delimiter">-&gt;</span>label &lt;&lt; end<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;7: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; <span class="Constant">&quot;7: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
   vector&lt;string&gt;::iterator p = words<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>
-  if <span class="Delimiter">(</span>find<span class="Delimiter">(</span>words<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> words<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">)</span> != words<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    for <span class="Delimiter">(;</span> *p != <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">;</span> ++p<span class="Delimiter">)</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>find<span class="Delimiter">(</span>words<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> words<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">)</span> != words<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    <span class="Normal">for</span> <span class="Delimiter">(;</span> *p != <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">;</span> ++p<span class="Delimiter">)</span>
       curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>*p<span class="Delimiter">));</span>
     ++p<span class="Delimiter">;</span>  <span class="Comment">// skip &lt;-</span>
   <span class="Delimiter">}</span>
 
-  if <span class="Delimiter">(</span>p == words<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;instruction prematurely ended with '&lt;-'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>p == words<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;instruction prematurely ended with '&lt;-'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   curr<span class="Delimiter">-&gt;</span>old_name = curr<span class="Delimiter">-&gt;</span>name = *p<span class="Delimiter">;</span>  p++<span class="Delimiter">;</span>
   <span class="Comment">// curr-&gt;operation will be set in a later layer</span>
 
-  for <span class="Delimiter">(;</span> p != words<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(;</span> p != words<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
     curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>*p<span class="Delimiter">));</span>
 
   trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction: &quot;</span> &lt;&lt; curr<span class="Delimiter">-&gt;</span>name &lt;&lt; end<span class="Delimiter">();</span>
   trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  number of ingredients: &quot;</span> &lt;&lt; SIZE<span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-  for <span class="Delimiter">(</span>vector&lt;reagent&gt;::iterator p = curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;reagent&gt;::iterator p = curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  ingredient: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>*p<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-  for <span class="Delimiter">(</span>vector&lt;reagent&gt;::iterator p = curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;reagent&gt;::iterator p = curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  product: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>*p<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-  if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;9: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;9: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -191,17 +184,17 @@ string next_word<span class="Delimiter">(</span>istream&amp; in<span class="Deli
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">// word boundaries</span>
-const string Terminators<span class="Delimiter">(</span><span class="Constant">&quot;(){}&quot;</span><span class="Delimiter">);</span>
+<span class="Normal">const</span> string Terminators<span class="Delimiter">(</span><span class="Constant">&quot;(){}&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">:(code)</span>
-void slurp_word<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  char c<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; Terminators<span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> slurp_word<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">char</span> c<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; Terminators<span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     in &gt;&gt; c<span class="Delimiter">;</span>
     out &lt;&lt; c<span class="Delimiter">;</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  while <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>c<span class="Delimiter">)</span> || Terminators<span class="Delimiter">.</span>find<span class="Delimiter">(</span>c<span class="Delimiter">)</span> != string::npos || Ignore<span class="Delimiter">.</span>find<span class="Delimiter">(</span>c<span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>c<span class="Delimiter">)</span> || Terminators<span class="Delimiter">.</span>find<span class="Delimiter">(</span>c<span class="Delimiter">)</span> != string::npos || Ignore<span class="Delimiter">.</span>find<span class="Delimiter">(</span>c<span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       in<span class="Delimiter">.</span>putback<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -209,32 +202,32 @@ void slurp_word<span class="Delimiter">(</span>istream&amp; in<span class="Delim
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-void skip_whitespace_and_comments<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  while <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-    else if <span class="Delimiter">(</span>Ignore<span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-    else if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    else <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Normal">void</span> skip_whitespace_and_comments<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>Ignore<span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">else</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">// confusing; move to the next line only to skip a comment, but never otherwise</span>
-void skip_whitespace_and_comments_but_not_newline<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  while <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-    else if <span class="Delimiter">(</span>Ignore<span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-    else if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    else <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Normal">void</span> skip_whitespace_and_comments_but_not_newline<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>Ignore<span class="Delimiter">.</span>find<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> != string::npos<span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">else</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-void skip_comment<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> skip_comment<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-    while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
@@ -242,21 +235,21 @@ void skip_comment<span class="Delimiter">(</span>istream&amp; in<span class="Del
 <span class="Comment">//: step on their own toes. But there'll be many occasions later where</span>
 <span class="Comment">//: we'll want to disable the errors.</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-bool Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Normal">bool</span> Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(code)</span>
-bool should_check_for_redefine<span class="Delimiter">(</span>const string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>Disable_redefine_checks<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Normal">bool</span> should_check_for_redefine<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Disable_redefine_checks<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">// for debugging</span>
 <span class="Delimiter">:(code)</span>
-void show_rest_of_stream<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> show_rest_of_stream<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   cerr &lt;&lt; <span class="Constant">'^'</span><span class="Delimiter">;</span>
-  char c<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span>
+  <span class="Normal">char</span> c<span class="Delimiter">;</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span>
     cerr &lt;&lt; c<span class="Delimiter">;</span>
   cerr &lt;&lt; <span class="Constant">&quot;$</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
@@ -265,13 +258,13 @@ void show_rest_of_stream<span class="Delimiter">(</span>istream&amp; in<span cla
 <span class="Comment">//: Have tests clean up any recipes they added.</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 vector&lt;recipe_ordinal&gt; Recently_added_recipes<span class="Delimiter">;</span>
-long long int Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 clear_recently_added_recipes<span class="Delimiter">();</span>
 <span class="Delimiter">:(code)</span>
-void clear_recently_added_recipes<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &gt;= Reserved_for_tests  <span class="Comment">// don't renumber existing recipes, like 'interactive'</span>
+<span class="Normal">void</span> clear_recently_added_recipes<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &gt;= Reserved_for_tests  <span class="Comment">// don't renumber existing recipes, like 'interactive'</span>
         &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>  <span class="Comment">// in case previous test had duplicate definitions</span>
       Recipe_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
     Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
@@ -282,9 +275,10 @@ void clear_recently_added_recipes<span class="Delimiter">()</span> <span class="
 
 <span class="Delimiter">:(scenario parse_comment_outside_recipe)</span>
 <span class="Comment"># this comment will be dropped by the tangler, so we need a dummy recipe to stop that</span>
-recipe f1 [ ]
+def f1 [
+]
 <span class="Comment"># this comment will go through to 'load'</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -292,7 +286,7 @@ recipe main [
 <span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction)</span>
-recipe main [
+def main [
   <span class="Comment"># comment</span>
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
@@ -301,7 +295,7 @@ recipe main [
 <span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction_2)</span>
-recipe main [
+def main [
   <span class="Comment"># comment</span>
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Comment"># comment</span>
@@ -311,7 +305,7 @@ recipe main [
 <span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction_3)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Comment"># comment</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
@@ -324,7 +318,7 @@ recipe main [
 <span class="traceContains">+parse:   product: 2: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_comment_after_instruction)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>  <span class="Comment"># comment</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -332,19 +326,19 @@ recipe main [
 <span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_label)</span>
-recipe main [
+def main [
   +foo
 ]
 <span class="traceContains">+parse: label: +foo</span>
 
 <span class="Delimiter">:(scenario parse_dollar_as_recipe_name)</span>
-recipe main [
+def main [
   $foo
 ]
 <span class="traceContains">+parse: instruction: $foo</span>
 
 <span class="Delimiter">:(scenario parse_multiple_properties)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>/foo:bar:baz
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -352,7 +346,7 @@ recipe main [
 <span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_multiple_products)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -361,7 +355,7 @@ recipe main [
 <span class="traceContains">+parse:   product: 2: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_multiple_ingredients)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -371,7 +365,7 @@ recipe main [
 <span class="traceContains">+parse:   product: 2: &quot;number&quot;</span>
 
 <span class="Delimiter">:(scenario parse_multiple_types)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -381,14 +375,14 @@ recipe main [
 <span class="traceContains">+parse:   product: 2: (&quot;address&quot; &quot;number&quot;)</span>
 
 <span class="Delimiter">:(scenario parse_properties)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:address:number/lookup<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse:   product: 1: (&quot;address&quot; &quot;number&quot;), {&quot;lookup&quot;: ()}</span>
 
 <span class="Comment">//: this test we can't represent with a scenario</span>
 <span class="Delimiter">:(code)</span>
-void test_parse_comment_terminated_by_eof<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> test_parse_comment_terminated_by_eof<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   Trace_file = <span class="Constant">&quot;parse_comment_terminated_by_eof&quot;</span><span class="Delimiter">;</span>
   load<span class="Delimiter">(</span><span class="Constant">&quot;recipe main [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        <span class="Constant">&quot;  a:number &lt;- copy 34</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
@@ -399,19 +393,19 @@ void test_parse_comment_terminated_by_eof<span class="Delimiter">()</span> <span
 
 <span class="Delimiter">:(scenario forbid_redefining_recipes)</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
 <span class="traceContains">+error: redefining recipe main</span>
 
 <span class="Delimiter">:(scenario permit_forcibly_redefining_recipes)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
-recipe! main [
+def! main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
 <span class="traceAbsent">-error: redefining recipe main</span>
@@ -419,4 +413,3 @@ $error: <span class="Constant">0</span>
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

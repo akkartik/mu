@@ -3,36 +3,28 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/008-sandbox-test.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
 .muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .muData { color: #ffff00; }
 .Special { color: #ff6060; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
+.muScenario { color: #00af00; }
 .SalientComment { color: #00ffff; }
-.Delimiter { color: #a04060; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="SalientComment">## clicking on sandbox results to 'fix' them and turn sandboxes into tests</span>
 
 <span class="muScenario">scenario</span> sandbox-click-on-result-toggles-color-to-green [
@@ -167,7 +159,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> find-click-in-sandbox-output env:address:shared:programming-environment-data, click-row:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data [
+<span class="muRecipe">def</span> find-click-in-sandbox-output env:address:shared:programming-environment-data, click-row:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># assert click-row &gt;= sandbox.starting-row-on-screen</span>
@@ -187,13 +179,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
   <span class="Comment"># return sandbox if click is in its output region</span>
   response-starting-row:number<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>
-  <span class="muControl">reply-unless</span> response-starting-row, <span class="Constant">0/no-click-in-sandbox-output</span>
+  <span class="muControl">return-unless</span> response-starting-row, <span class="Constant">0/no-click-in-sandbox-output</span>
   click-in-response?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-row, response-starting-row
-  <span class="muControl">reply-unless</span> click-in-response?, <span class="Constant">0/no-click-in-sandbox-output</span>
-  <span class="muControl">reply</span> sandbox
+  <span class="muControl">return-unless</span> click-in-response?, <span class="Constant">0/no-click-in-sandbox-output</span>
+  <span class="muControl">return</span> sandbox
 ]
 
-<span class="muRecipe">recipe</span> toggle-expected-response sandbox:address:shared:sandbox-data<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data [
+<span class="muRecipe">def</span> toggle-expected-response sandbox:address:shared:sandbox-data<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   expected-response:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">expected-response:offset</span>
@@ -201,7 +193,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Comment"># if expected-response is set, reset</span>
     <span class="muControl">break-unless</span> *expected-response
     *expected-response<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    <span class="muControl">reply</span> sandbox/same-as-ingredient:<span class="Constant">0</span>
+    <span class="muControl">return</span> sandbox/same-as-ingredient:<span class="Constant">0</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if not, current response is the expected response</span>
   response:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response:offset</span>
@@ -236,4 +228,3 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

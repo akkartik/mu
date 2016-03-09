@@ -3,41 +3,33 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/001-editor.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
+.Delimiter { color: #a04060; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .muData { color: #ffff00; }
 .Special { color: #ff6060; }
-.Comment { color: #9090ff; }
+.muScenario { color: #00af00; }
 .Constant { color: #00a0a0; }
+.muRecipe { color: #ff8700; }
+.Comment { color: #9090ff; }
 .SalientComment { color: #00ffff; }
-.Delimiter { color: #a04060; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="SalientComment">## the basic editor data structure, and how it displays text to the screen</span>
 
 <span class="Comment"># temporary main for this layer: just render the given text at the given</span>
 <span class="Comment"># screen dimensions, then stop</span>
-<span class="muRecipe">recipe!</span> main text:address:shared:array:character [
+<span class="muRecipe">def!</span> main text:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   open-console
@@ -83,7 +75,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># creates a new editor widget and renders its initial appearance to screen</span>
 <span class="Comment">#   top/left/right constrain the screen area available to the new editor</span>
 <span class="Comment">#   right is exclusive</span>
-<span class="muRecipe">recipe</span> new-editor s:address:shared:array:character, screen:address:shared:screen, left:number, right:number<span class="muRecipe"> -&gt; </span>result:address:shared:editor-data, screen:address:shared:screen [
+<span class="muRecipe">def</span> new-editor s:address:shared:array:character, screen:address:shared:screen, left:number, right:number<span class="muRecipe"> -&gt; </span>result:address:shared:editor-data, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># no clipping of bounds</span>
@@ -114,13 +106,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Constant">  &lt;editor-initialization&gt;</span>
 ]
 
-<span class="muRecipe">recipe</span> insert-text editor:address:shared:editor-data, text:address:shared:array:character<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
+<span class="muRecipe">def</span> insert-text editor:address:shared:editor-data, text:address:shared:array:character<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># early exit if text is empty</span>
-  <span class="muControl">reply-unless</span> text, editor/same-as-ingredient:<span class="Constant">0</span>
+  <span class="muControl">return-unless</span> text, editor/same-as-ingredient:<span class="Constant">0</span>
   len:number<span class="Special"> &lt;- </span>length *text
-  <span class="muControl">reply-unless</span> len, editor/same-as-ingredient:<span class="Constant">0</span>
+  <span class="muControl">return-unless</span> len, editor/same-as-ingredient:<span class="Constant">0</span>
   idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Comment"># now we can start appending the rest, character by character</span>
   curr:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
@@ -134,7 +126,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> editor/same-as-ingredient:<span class="Constant">0</span>
+  <span class="muControl">return</span> editor/same-as-ingredient:<span class="Constant">0</span>
 ]
 
 <span class="muScenario">scenario</span> editor-initializes-without-data [
@@ -164,10 +156,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># Assumes cursor should be at coordinates (cursor-row, cursor-column) and</span>
 <span class="Comment"># updates before-cursor to match. Might also move coordinates if they're</span>
 <span class="Comment"># outside text.</span>
-<span class="muRecipe">recipe</span> render screen:address:shared:screen, editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>last-row:number, last-column:number, screen:address:shared:screen, editor:address:shared:editor-data [
+<span class="muRecipe">def</span> render screen:address:shared:screen, editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>last-row:number, last-column:number, screen:address:shared:screen, editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> editor, <span class="Constant">1/top</span>, <span class="Constant">0/left</span>, screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>
+  <span class="muControl">return-unless</span> editor, <span class="Constant">1/top</span>, <span class="Constant">0/left</span>, screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>
   left:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">left:offset</span>
   screen-height:number<span class="Special"> &lt;- </span>screen-height screen
   right:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">right:offset</span>
@@ -261,10 +253,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
   bottom:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">bottom:offset</span>
   *bottom<span class="Special"> &lt;- </span>copy row
-  <span class="muControl">reply</span> row, column, screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>
+  <span class="muControl">return</span> row, column, screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>
 ]
 
-<span class="muRecipe">recipe</span> clear-line-delimited screen:address:shared:screen, column:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> clear-line-delimited screen:address:shared:screen, column:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   space:character<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
@@ -283,23 +275,23 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> clear-screen-from screen:address:shared:screen, row:number, column:number, left:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> clear-screen-from screen:address:shared:screen, row:number, column:number, left:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if it's the real screen, use the optimized primitive</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> screen
     clear-display-from row, column, left, right
-    <span class="muControl">reply</span> screen/same-as-ingredient:<span class="Constant">0</span>
+    <span class="muControl">return</span> screen/same-as-ingredient:<span class="Constant">0</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if not, go the slower route</span>
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
   clear-line-delimited screen, column, right
   clear-rest-of-screen screen, row, left, right
-  <span class="muControl">reply</span> screen/same-as-ingredient:<span class="Constant">0</span>
+  <span class="muControl">return</span> screen/same-as-ingredient:<span class="Constant">0</span>
 ]
 
-<span class="muRecipe">recipe</span> clear-rest-of-screen screen:address:shared:screen, row:number, left:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> clear-rest-of-screen screen:address:shared:screen, row:number, left:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
@@ -457,7 +449,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># so far the previous color is all the information we need; that may change</span>
-<span class="muRecipe">recipe</span> get-color color:number, c:character<span class="muRecipe"> -&gt; </span>color:number [
+<span class="muRecipe">def</span> get-color color:number, c:character<span class="muRecipe"> -&gt; </span>color:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   color-is-white?:boolean<span class="Special"> &lt;- </span>equal color, <span class="Constant">7/white</span>
@@ -499,7 +491,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise no change</span>
 <span class="Constant">  +exit</span>
-  <span class="muControl">reply</span> color
+  <span class="muControl">return</span> color
 ]
 
 <span class="muScenario">scenario</span> render-colors-assignment [
@@ -528,4 +520,3 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

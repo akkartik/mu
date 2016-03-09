@@ -3,49 +3,42 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 054dilated_reagent.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.PreProc { color: #c000c0; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
-.Special { color: #ff6060; }
 .Identifier { color: #804000; }
+.Normal { color: #eeeeee; background-color: #080808; }
+.Error { color: #ffffff; background-color: #ff6060; }
+.PreProc { color: #c000c0; }
+.traceContains { color: #008000; }
+.Special { color: #ff6060; }
 .Constant { color: #00a0a0; }
-.Error { color: #ffffff; background-color: #ff6060; padding-bottom: 1px; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment">//: An alternative syntax for reagents that permits whitespace in properties,</span>
 <span class="Comment">//: grouped by brackets. We'll use this ability in the next layer, when we</span>
 <span class="Comment">//: generalize types from lists to trees of properties.</span>
 
 <span class="Delimiter">:(scenarios load)</span>
 <span class="Delimiter">:(scenario dilated_reagent)</span>
-recipe main [
+def main [
   <span class="Delimiter">{</span><span class="Constant">1</span>: number<span class="Delimiter">,</span> foo: bar<span class="Delimiter">}</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 <span class="traceContains">+parse:   product: 1: &quot;number&quot;, {&quot;foo&quot;: &quot;bar&quot;}</span>
 
 <span class="Delimiter">:(scenario load_trailing_space_after_curly_bracket)</span>
-recipe main [
+def main [
 <span class="PreProc">  </span><span class="Comment"># line below has a space at the end</span>
   <span class="Delimiter">{</span><span class="Error"> </span>
 ]
@@ -53,14 +46,14 @@ recipe main [
 
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario dilated_reagent_with_comment)</span>
-recipe main [
+def main [
   <span class="Delimiter">{</span><span class="Constant">1</span>: number<span class="Delimiter">,</span> foo: bar<span class="Delimiter">}</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># test comment</span>
 ]
 <span class="traceContains">+parse:   product: 1: &quot;number&quot;, {&quot;foo&quot;: &quot;bar&quot;}</span>
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario dilated_reagent_with_comment_immediately_following)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Delimiter">{</span><span class="Constant">34</span>: literal<span class="Delimiter">}</span>  <span class="Comment"># test comment</span>
 ]
 $error: <span class="Constant">0</span>
@@ -68,21 +61,21 @@ $error: <span class="Constant">0</span>
 <span class="Comment">//: First augment next_word to group balanced brackets together.</span>
 
 <span class="Delimiter">:(before &quot;End next_word Special-cases&quot;)</span>
-if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">)</span>
   <span class="Identifier">return</span> slurp_balanced_bracket<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
 <span class="Comment">// treat curlies mostly like parens, but don't mess up labels</span>
-if <span class="Delimiter">(</span>start_of_dilated_reagent<span class="Delimiter">(</span>in<span class="Delimiter">))</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>start_of_dilated_reagent<span class="Delimiter">(</span>in<span class="Delimiter">))</span>
   <span class="Identifier">return</span> slurp_balanced_bracket<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// A curly is considered a label if it's the last thing on a line. Dilated</span>
 <span class="Comment">// reagents should remain all on one line.</span>
-bool start_of_dilated_reagent<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'{'</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  long long int pos = in<span class="Delimiter">.</span>tellg<span class="Delimiter">();</span>
+<span class="Normal">bool</span> start_of_dilated_reagent<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'{'</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> pos = in<span class="Delimiter">.</span>tellg<span class="Delimiter">();</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// slurp '{'</span>
   skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  char next = in<span class="Delimiter">.</span>peek<span class="Delimiter">();</span>
+  <span class="Normal">char</span> next = in<span class="Delimiter">.</span>peek<span class="Delimiter">();</span>
   in<span class="Delimiter">.</span>seekg<span class="Delimiter">(</span>pos<span class="Delimiter">);</span>
   <span class="Identifier">return</span> next != <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -92,64 +85,64 @@ bool start_of_dilated_reagent<span class="Delimiter">(</span>istream&amp; in<spa
 <span class="Comment">// We balance {} () and []. And we skip one character after '\'.</span>
 string slurp_balanced_bracket<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream result<span class="Delimiter">;</span>
-  char c<span class="Delimiter">;</span>
-  list&lt;char&gt; open_brackets<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">char</span> c<span class="Delimiter">;</span>
+  list&lt;<span class="Normal">char</span>&gt; open_brackets<span class="Delimiter">;</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// always silently skip the next character</span>
       result &lt;&lt; c<span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>!<span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!<span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
       result &lt;&lt; c<span class="Delimiter">;</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">'('</span><span class="Delimiter">)</span> open_brackets<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">')'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">'('</span><span class="Delimiter">)</span> open_brackets<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">')'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       assert<span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>back<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">);</span>
       open_brackets<span class="Delimiter">.</span>pop_back<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">'['</span><span class="Delimiter">)</span> open_brackets<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">'['</span><span class="Delimiter">)</span> open_brackets<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       assert<span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>back<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>
       open_brackets<span class="Delimiter">.</span>pop_back<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">'{'</span><span class="Delimiter">)</span> open_brackets<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">'}'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">'{'</span><span class="Delimiter">)</span> open_brackets<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">'}'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       assert<span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>back<span class="Delimiter">()</span> == <span class="Constant">'{'</span><span class="Delimiter">);</span>
       open_brackets<span class="Delimiter">.</span>pop_back<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     result &lt;&lt; c<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   skip_whitespace_and_comments_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(after &quot;Parsing reagent(string s)&quot;)</span>
-if <span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'{'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'{'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>properties<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   istringstream in<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip '{'</span>
   name = slurp_key<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;invalid reagent &quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot; without a name</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;invalid reagent &quot;</span> &lt;&lt; s &lt;&lt; <span class="Constant">&quot; without a name</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>name == <span class="Constant">&quot;}&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;invalid empty reagent &quot;</span> &lt;&lt; s &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>name == <span class="Constant">&quot;}&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;invalid empty reagent &quot;</span> &lt;&lt; s &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    string_tree* value = new string_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    string_tree* value = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
     <span class="Comment">// End Parsing Reagent Type Property(value)</span>
     type = new_type_tree<span class="Delimiter">(</span>value<span class="Delimiter">);</span>
-    delete value<span class="Delimiter">;</span>
+    <span class="Normal">delete</span> value<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  while <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     string key = slurp_key<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>key<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>key == <span class="Constant">&quot;}&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    string_tree* value = new string_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>key<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>key == <span class="Constant">&quot;}&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    string_tree* value = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
     <span class="Comment">// End Parsing Reagent Property(value)</span>
     properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>key<span class="Delimiter">,</span> value<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
@@ -159,13 +152,12 @@ if <span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span clas
 <span class="Delimiter">:(code)</span>
 string slurp_key<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   string result = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  while <span class="Delimiter">(</span>!result<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; *result<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>!result<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; *result<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span>
     strip_last<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
-  while <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> || in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> || in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span>
     in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

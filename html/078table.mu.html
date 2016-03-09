@@ -3,34 +3,27 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 078table.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .muData { color: #ffff00; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.Special { color: #ff6060; }
 .Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
+.muScenario { color: #00af00; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment"># A table is like an array, except that its keys are not integers but</span>
 <span class="Comment"># arbitrary types.</span>
 
@@ -42,6 +35,18 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">34</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> table-read-write-non-integer [
+  run [
+    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc def]</span>
+    <span class="Delimiter">{</span><span class="Constant">2</span>: (address shared table (address shared array character) number)<span class="Delimiter">}</span><span class="Special"> &lt;- </span>new-table <span class="Constant">30</span>
+    put <span class="Delimiter">{</span><span class="Constant">2</span>: (address shared table (address shared array character) number)<span class="Delimiter">}</span>, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">34</span>
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>index <span class="Delimiter">{</span><span class="Constant">2</span>: (address shared table (address shared array character) number)<span class="Delimiter">}</span>, <span class="Constant">1</span>:address:shared:array:character
+  ]
+  memory-should-contain [
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">34</span>
   ]
 ]
 
@@ -57,7 +62,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   value:_value
 ]
 
-<span class="muRecipe">recipe</span> new-table capacity:number<span class="muRecipe"> -&gt; </span>result:address:shared:table:_key:_value [
+<span class="muRecipe">def</span> new-table capacity:number<span class="muRecipe"> -&gt; </span>result:address:shared:table:_key:_value [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(table _key _value): type<span class="Delimiter">}</span>
@@ -67,12 +72,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   *data<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(table_row _key _value): type<span class="Delimiter">}</span>, capacity
 ]
 
-<span class="muRecipe">recipe</span> put table:address:shared:table:_key:_value, key:_key, value:_value<span class="muRecipe"> -&gt; </span>table:address:shared:table:_key:_value [
+<span class="muRecipe">def</span> put table:address:shared:table:_key:_value, key:_key, value:_value<span class="muRecipe"> -&gt; </span>table:address:shared:table:_key:_value [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   hash:number<span class="Special"> &lt;- </span>hash key
+  hash<span class="Special"> &lt;- </span>abs hash
   capacity:number<span class="Special"> &lt;- </span>get *table, <span class="Constant">capacity:offset</span>
   _, hash<span class="Special"> &lt;- </span>divide-with-remainder hash, capacity
+  hash<span class="Special"> &lt;- </span>abs hash  <span class="Comment"># in case hash overflows into a negative integer</span>
   table-data:address:shared:array:table_row:_key:_value<span class="Special"> &lt;- </span>get *table, <span class="Constant">data:offset</span>
   x:address:table_row:_key:_value<span class="Special"> &lt;- </span>index-address *table-data, hash
   occupied?:boolean<span class="Special"> &lt;- </span>get *x, <span class="Constant">occupied?:offset</span>
@@ -81,19 +88,28 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   *x<span class="Special"> &lt;- </span>merge <span class="Constant">1/true</span>, key, value
 ]
 
-<span class="muRecipe">recipe</span> index table:address:shared:table:_key:_value, key:_key<span class="muRecipe"> -&gt; </span>result:_value [
+<span class="muRecipe">def</span> abs n:number<span class="muRecipe"> -&gt; </span>result:number [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  positive?:boolean<span class="Special"> &lt;- </span>greater-or-equal n, <span class="Constant">0</span>
+  <span class="muControl">return-if</span> positive?, n
+  result<span class="Special"> &lt;- </span>multiply n, <span class="Constant">-1</span>
+]
+
+<span class="muRecipe">def</span> index table:address:shared:table:_key:_value, key:_key<span class="muRecipe"> -&gt; </span>result:_value [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   hash:number<span class="Special"> &lt;- </span>hash key
+  hash<span class="Special"> &lt;- </span>abs hash
   capacity:number<span class="Special"> &lt;- </span>get *table, <span class="Constant">capacity:offset</span>
   _, hash<span class="Special"> &lt;- </span>divide-with-remainder hash, capacity
+  hash<span class="Special"> &lt;- </span>abs hash  <span class="Comment"># in case hash overflows into a negative integer</span>
   table-data:address:shared:array:table_row:_key:_value<span class="Special"> &lt;- </span>get *table, <span class="Constant">data:offset</span>
-  x:address:table_row:_key:_value<span class="Special"> &lt;- </span>index-address *table-data, hash
-  occupied?:boolean<span class="Special"> &lt;- </span>get *x, <span class="Constant">occupied?:offset</span>
+  x:table_row:_key:_value<span class="Special"> &lt;- </span>index *table-data, hash
+  occupied?:boolean<span class="Special"> &lt;- </span>get x, <span class="Constant">occupied?:offset</span>
   assert occupied?, <span class="Constant">[can't handle missing elements yet]</span>
-  result<span class="Special"> &lt;- </span>get *x, <span class="Constant">value:offset</span>
+  result<span class="Special"> &lt;- </span>get x, <span class="Constant">value:offset</span>
 ]
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

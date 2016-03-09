@@ -3,35 +3,27 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/003-shortcuts.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
-.Special { color: #ff6060; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.SalientComment { color: #00ffff; }
 .Delimiter { color: #a04060; }
+.muRecipe { color: #ff8700; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
+.muScenario { color: #00af00; }
+.Comment { color: #9090ff; }
+.SalientComment { color: #00ffff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="SalientComment">## special shortcuts for manipulating the editor</span>
 <span class="Comment"># Some keys on the keyboard generate unicode characters, others generate</span>
 <span class="Comment"># terminfo key codes. We need to modify different places in the two cases.</span>
@@ -66,7 +58,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     editor, screen, go-render?:boolean<span class="Special"> &lt;- </span>insert-at-cursor editor, <span class="Constant">32/space</span>, screen
 <span class="Constant">    &lt;insert-character-end&gt;</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -107,14 +99,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Constant">    &lt;backspace-character-begin&gt;</span>
     editor, screen, go-render?:boolean, backspaced-cell:address:shared:duplex-list:character<span class="Special"> &lt;- </span>delete-before-cursor editor, screen
 <span class="Constant">    &lt;backspace-character-end&gt;</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="Comment"># return values:</span>
 <span class="Comment">#   go-render? - whether caller needs to update the screen</span>
 <span class="Comment">#   backspaced-cell - value deleted (or 0 if nothing was deleted) so we can save it for undo, etc.</span>
-<span class="muRecipe">recipe</span> delete-before-cursor editor:address:shared:editor-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean, backspaced-cell:address:shared:duplex-list:character [
+<span class="muRecipe">def</span> delete-before-cursor editor:address:shared:editor-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean, backspaced-cell:address:shared:duplex-list:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:address:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
@@ -122,7 +114,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># if at start of text (before-cursor at § sentinel), return</span>
   prev:address:shared:duplex-list:character<span class="Special"> &lt;- </span>prev *before-cursor
   go-render?, backspaced-cell<span class="Special"> &lt;- </span>copy <span class="Constant">0/no-more-render</span>, <span class="Constant">0/nothing-deleted</span>
-  <span class="muControl">reply-unless</span> prev
+  <span class="muControl">return-unless</span> prev
   trace <span class="Constant">10</span>, <span class="Constant">[app]</span>, <span class="Constant">[delete-before-cursor]</span>
   original-row:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-row:offset</span>
   editor, scroll?:boolean<span class="Special"> &lt;- </span>move-cursor-coordinates-left editor
@@ -130,14 +122,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   data<span class="Special"> &lt;- </span>remove *before-cursor, data  <span class="Comment"># will also neatly trim next/prev pointers in backspaced-cell/*before-cursor</span>
   *before-cursor<span class="Special"> &lt;- </span>copy prev
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-  <span class="muControl">reply-if</span> scroll?
+  <span class="muControl">return-if</span> scroll?
   screen-width:number<span class="Special"> &lt;- </span>screen-width screen
   cursor-row:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-row:offset</span>
   cursor-column:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-column:offset</span>
   <span class="Comment"># did we just backspace over a newline?</span>
   same-row?:boolean<span class="Special"> &lt;- </span>equal cursor-row, original-row
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-  <span class="muControl">reply-unless</span> same-row?
+  <span class="muControl">return-unless</span> same-row?
   left:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">left:offset</span>
   right:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">right:offset</span>
   curr:address:shared:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
@@ -147,7 +139,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Comment"># hit right margin? give up and let caller render</span>
     at-right?:boolean<span class="Special"> &lt;- </span>greater-or-equal curr-column, right
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-    <span class="muControl">reply-if</span> at-right?
+    <span class="muControl">return-if</span> at-right?
     <span class="muControl">break-unless</span> curr
     <span class="Comment"># newline? done.</span>
     currc:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
@@ -164,7 +156,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
 ]
 
-<span class="muRecipe">recipe</span> move-cursor-coordinates-left editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, go-render?:boolean [
+<span class="muRecipe">def</span> move-cursor-coordinates-left editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, go-render?:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">before-cursor:offset</span>
@@ -178,7 +170,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     trace <span class="Constant">10</span>, <span class="Constant">[app]</span>, <span class="Constant">[decrementing cursor column]</span>
     *cursor-column<span class="Special"> &lt;- </span>subtract *cursor-column, <span class="Constant">1</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if at left margin, we must move to previous row:</span>
   top-of-screen?:boolean<span class="Special"> &lt;- </span>equal *cursor-row, <span class="Constant">1</span>  <span class="Comment"># exclude menu bar</span>
@@ -213,7 +205,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       <span class="muControl">break-if</span> wrap?
       *cursor-column<span class="Special"> &lt;- </span>add left, end-of-line
     <span class="Delimiter">}</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># case 2: if previous-character was not newline, we're just at a wrapped line</span>
   trace <span class="Constant">10</span>, <span class="Constant">[app]</span>, <span class="Constant">[wrapping to previous line]</span>
@@ -223,13 +215,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># takes a pointer 'curr' into the doubly-linked list and its sentinel, counts</span>
 <span class="Comment"># the length of the previous line before the 'curr' pointer.</span>
-<span class="muRecipe">recipe</span> previous-line-length curr:address:shared:duplex-list:character, start:address:shared:duplex-list:character<span class="muRecipe"> -&gt; </span>result:number [
+<span class="muRecipe">def</span> previous-line-length curr:address:shared:duplex-list:character, start:address:shared:duplex-list:character<span class="muRecipe"> -&gt; </span>result:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="muControl">reply-unless</span> curr
+  <span class="muControl">return-unless</span> curr
   at-start?:boolean<span class="Special"> &lt;- </span>equal curr, start
-  <span class="muControl">reply-if</span> at-start?
+  <span class="muControl">return-if</span> at-start?
   <span class="Delimiter">{</span>
     curr<span class="Special"> &lt;- </span>prev curr
     <span class="muControl">break-unless</span> curr
@@ -372,23 +364,23 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Constant">    &lt;delete-character-begin&gt;</span>
     editor, screen, go-render?:boolean, deleted-cell:address:shared:duplex-list:character<span class="Special"> &lt;- </span>delete-at-cursor editor, screen
 <span class="Constant">    &lt;delete-character-end&gt;</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> delete-at-cursor editor:address:shared:editor-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean, deleted-cell:address:shared:duplex-list:character [
+<span class="muRecipe">def</span> delete-at-cursor editor:address:shared:editor-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean, deleted-cell:address:shared:duplex-list:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:address:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
   data:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
   deleted-cell:address:shared:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-  <span class="muControl">reply-unless</span> deleted-cell
+  <span class="muControl">return-unless</span> deleted-cell
   currc:character<span class="Special"> &lt;- </span>get *deleted-cell, <span class="Constant">value:offset</span>
   data<span class="Special"> &lt;- </span>remove deleted-cell, data
   deleted-newline?:boolean<span class="Special"> &lt;- </span>equal currc, <span class="Constant">10/newline</span>
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-  <span class="muControl">reply-if</span> deleted-newline?
+  <span class="muControl">return-if</span> deleted-newline?
   <span class="Comment"># wasn't a newline? render rest of line</span>
   curr:address:shared:duplex-list:character<span class="Special"> &lt;- </span>next *before-cursor  <span class="Comment"># refresh after remove above</span>
   cursor-row:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-row:offset</span>
@@ -400,7 +392,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Comment"># hit right margin? give up and let caller render</span>
     at-right?:boolean<span class="Special"> &lt;- </span>greater-or-equal curr-column, screen-width
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-    <span class="muControl">reply-if</span> at-right?
+    <span class="muControl">return-if</span> at-right?
     <span class="muControl">break-unless</span> curr
     <span class="Comment"># newline? done.</span>
     currc:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
@@ -455,11 +447,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     screen<span class="Special"> &lt;- </span>move-cursor screen, *cursor-row, *cursor-column
     undo-coalesce-tag:number<span class="Special"> &lt;- </span>copy <span class="Constant">2/right-arrow</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> move-cursor-coordinates-right editor:address:shared:editor-data, screen-height:number<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, go-render?:boolean [
+<span class="muRecipe">def</span> move-cursor-coordinates-right editor:address:shared:editor-data, screen-height:number<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, go-render?:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get *editor <span class="Constant">before-cursor:offset</span>
@@ -476,11 +468,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     *cursor-column<span class="Special"> &lt;- </span>copy left
     below-screen?:boolean<span class="Special"> &lt;- </span>greater-or-equal *cursor-row, screen-height  <span class="Comment"># must be equal</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-    <span class="muControl">reply-unless</span> below-screen?
+    <span class="muControl">return-unless</span> below-screen?
 <span class="Constant">    &lt;scroll-down&gt;</span>
     *cursor-row<span class="Special"> &lt;- </span>subtract *cursor-row, <span class="Constant">1</span>  <span class="Comment"># bring back into screen range</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if the line wraps, move cursor to start of next row</span>
   <span class="Delimiter">{</span>
@@ -497,11 +489,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     *cursor-row<span class="Special"> &lt;- </span>add *cursor-row, <span class="Constant">1</span>
     *cursor-column<span class="Special"> &lt;- </span>copy left
     below-screen?:boolean<span class="Special"> &lt;- </span>greater-or-equal *cursor-row, screen-height  <span class="Comment"># must be equal</span>
-    <span class="muControl">reply-unless</span> below-screen?, editor/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">0/no-more-render</span>
+    <span class="muControl">return-unless</span> below-screen?, editor/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">0/no-more-render</span>
 <span class="Constant">    &lt;scroll-down&gt;</span>
     *cursor-row<span class="Special"> &lt;- </span>subtract *cursor-row, <span class="Constant">1</span>  <span class="Comment"># bring back into screen range</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise move cursor one character right</span>
   *cursor-column<span class="Special"> &lt;- </span>add *cursor-column, <span class="Constant">1</span>
@@ -725,13 +717,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Comment"># if not at start of text (before-cursor at § sentinel)</span>
     prev:address:shared:duplex-list:character<span class="Special"> &lt;- </span>prev *before-cursor
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-    <span class="muControl">reply-unless</span> prev
+    <span class="muControl">return-unless</span> prev
 <span class="Constant">    &lt;move-cursor-begin&gt;</span>
     editor, go-render?<span class="Special"> &lt;- </span>move-cursor-coordinates-left editor
     *before-cursor<span class="Special"> &lt;- </span>copy prev
     undo-coalesce-tag:number<span class="Special"> &lt;- </span>copy <span class="Constant">1/left-arrow</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -988,11 +980,11 @@ d]
     editor, go-render?<span class="Special"> &lt;- </span>move-to-previous-line editor
     undo-coalesce-tag:number<span class="Special"> &lt;- </span>copy <span class="Constant">3/up-arrow</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> move-to-previous-line editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, go-render?:boolean [
+<span class="muRecipe">def</span> move-to-previous-line editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, go-render?:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   cursor-row:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-row:offset</span>
@@ -1016,14 +1008,14 @@ d]
       curr:address:shared:duplex-list:character<span class="Special"> &lt;- </span>before-previous-line curr, editor
       no-motion?:boolean<span class="Special"> &lt;- </span>equal curr, old
       go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-      <span class="muControl">reply-if</span> no-motion?
+      <span class="muControl">return-if</span> no-motion?
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
       old<span class="Special"> &lt;- </span>copy curr
       curr<span class="Special"> &lt;- </span>before-previous-line curr, editor
       no-motion?:boolean<span class="Special"> &lt;- </span>equal curr, old
       go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-      <span class="muControl">reply-if</span> no-motion?
+      <span class="muControl">return-if</span> no-motion?
     <span class="Delimiter">}</span>
     *before-cursor<span class="Special"> &lt;- </span>copy curr
     *cursor-row<span class="Special"> &lt;- </span>subtract *cursor-row, <span class="Constant">1</span>
@@ -1044,14 +1036,14 @@ d]
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if cursor already at top, scroll up</span>
     <span class="muControl">break-unless</span> already-at-top?
 <span class="Constant">    &lt;scroll-up&gt;</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -1094,7 +1086,7 @@ d]
 <span class="muScenario">scenario</span> editor-adjusts-column-at-empty-line [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [
-def]
+<span class="muRecipe">def</span>]
   <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:shared:editor-data
 <span class="Constant">  $clear-trace</span>
@@ -1213,11 +1205,11 @@ def]
     editor, go-render?<span class="Special"> &lt;- </span>move-to-next-line editor, screen-height
     undo-coalesce-tag:number<span class="Special"> &lt;- </span>copy <span class="Constant">4/down-arrow</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> move-to-next-line editor:address:shared:editor-data, screen-height:number<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, go-render?:boolean [
+<span class="muRecipe">def</span> move-to-next-line editor:address:shared:editor-data, screen-height:number<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data, go-render?:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   cursor-row:address:number<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">cursor-row:offset</span>
@@ -1241,7 +1233,7 @@ def]
       scroll?:boolean<span class="Special"> &lt;- </span>greater-than *cursor-row, <span class="Constant">1</span>
       <span class="muControl">break-if</span> scroll?, <span class="Constant">+try-to-scroll:label</span>
       go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-      <span class="muControl">reply</span>
+      <span class="muControl">return</span>
     <span class="Delimiter">}</span>
     *cursor-row<span class="Special"> &lt;- </span>add *cursor-row, <span class="Constant">1</span>
     *before-cursor<span class="Special"> &lt;- </span>copy next-line
@@ -1261,7 +1253,7 @@ def]
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 <span class="Constant">  +try-to-scroll</span>
 <span class="Constant">  &lt;scroll-down&gt;</span>
@@ -1340,7 +1332,7 @@ def]
     undo-coalesce-tag:number<span class="Special"> &lt;- </span>copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -1353,11 +1345,11 @@ def]
     undo-coalesce-tag:number<span class="Special"> &lt;- </span>copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> move-to-start-of-line editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
+<span class="muRecipe">def</span> move-to-start-of-line editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># update cursor column</span>
@@ -1511,7 +1503,7 @@ def]
     undo-coalesce-tag:number<span class="Special"> &lt;- </span>copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -1524,11 +1516,11 @@ def]
     undo-coalesce-tag:number<span class="Special"> &lt;- </span>copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> move-to-end-of-line editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
+<span class="muRecipe">def</span> move-to-end-of-line editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:address:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
@@ -1654,11 +1646,11 @@ def]
     deleted-cells:address:shared:duplex-list:character<span class="Special"> &lt;- </span>delete-to-start-of-line editor
 <span class="Constant">    &lt;delete-to-start-of-line-end&gt;</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> delete-to-start-of-line editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>result:address:shared:duplex-list:character, editor:address:shared:editor-data [
+<span class="muRecipe">def</span> delete-to-start-of-line editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>result:address:shared:duplex-list:character, editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># compute range to delete</span>
@@ -1788,11 +1780,11 @@ def]
     deleted-cells:address:shared:duplex-list:character<span class="Special"> &lt;- </span>delete-to-end-of-line editor
 <span class="Constant">    &lt;delete-to-end-of-line-end&gt;</span>
     go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> delete-to-end-of-line editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>result:address:shared:duplex-list:character, editor:address:shared:editor-data [
+<span class="muRecipe">def</span> delete-to-end-of-line editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>result:address:shared:duplex-list:character, editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># compute range to delete</span>
@@ -1971,13 +1963,13 @@ def]
   *top-of-screen<span class="Special"> &lt;- </span>before-start-of-next-line *top-of-screen, max
   no-movement?:boolean<span class="Special"> &lt;- </span>equal old-top, *top-of-screen
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-  <span class="muControl">reply-if</span> no-movement?
+  <span class="muControl">return-if</span> no-movement?
 ]
 
 <span class="Comment"># takes a pointer into the doubly-linked list, scans ahead at most 'max'</span>
 <span class="Comment"># positions until the next newline</span>
 <span class="Comment"># beware: never return null pointer.</span>
-<span class="muRecipe">recipe</span> before-start-of-next-line original:address:shared:duplex-list:character, max:number<span class="muRecipe"> -&gt; </span>curr:address:shared:duplex-list:character [
+<span class="muRecipe">def</span> before-start-of-next-line original:address:shared:duplex-list:character, max:number<span class="muRecipe"> -&gt; </span>curr:address:shared:duplex-list:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   count:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -1991,7 +1983,7 @@ def]
     count<span class="Special"> &lt;- </span>add count, <span class="Constant">1</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    <span class="muControl">reply-unless</span> curr, original
+    <span class="muControl">return-unless</span> curr, original
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal count, max
     <span class="muControl">break-if</span> done?
     c:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
@@ -2001,8 +1993,8 @@ def]
     count<span class="Special"> &lt;- </span>add count, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply-unless</span> curr, original
-  <span class="muControl">reply</span> curr
+  <span class="muControl">return-unless</span> curr, original
+  <span class="muControl">return</span> curr
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-down-past-wrapped-line-using-arrow-keys [
@@ -2338,13 +2330,13 @@ def]
   *top-of-screen<span class="Special"> &lt;- </span>before-previous-line *top-of-screen, editor
   no-movement?:boolean<span class="Special"> &lt;- </span>equal old-top, *top-of-screen
   go-render?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-  <span class="muControl">reply-if</span> no-movement?
+  <span class="muControl">return-if</span> no-movement?
 ]
 
 <span class="Comment"># takes a pointer into the doubly-linked list, scans back to before start of</span>
 <span class="Comment"># previous *wrapped* line</span>
 <span class="Comment"># beware: never return null pointer</span>
-<span class="muRecipe">recipe</span> before-previous-line in:address:shared:duplex-list:character, editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>out:address:shared:duplex-list:character [
+<span class="muRecipe">def</span> before-previous-line in:address:shared:duplex-list:character, editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>out:address:shared:duplex-list:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   curr:address:shared:duplex-list:character<span class="Special"> &lt;- </span>copy in
@@ -2361,8 +2353,8 @@ def]
     <span class="muControl">break-if</span> len
     <span class="Comment"># empty line; just skip this newline</span>
     prev:address:shared:duplex-list:character<span class="Special"> &lt;- </span>prev curr
-    <span class="muControl">reply-unless</span> prev, curr
-    <span class="muControl">reply</span> prev
+    <span class="muControl">return-unless</span> prev, curr
+    <span class="muControl">return</span> prev
   <span class="Delimiter">}</span>
   _, max:number<span class="Special"> &lt;- </span>divide-with-remainder len, max-line-length
   <span class="Comment"># remainder 0 =&gt; scan one width-worth</span>
@@ -2382,7 +2374,7 @@ def]
     count<span class="Special"> &lt;- </span>add count, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> curr
+  <span class="muControl">return</span> curr
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-up-past-wrapped-line-using-arrow-keys [
@@ -2732,7 +2724,7 @@ e]
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     no-movement?:boolean<span class="Special"> &lt;- </span>equal *top-of-screen, old-top
     go-render?<span class="Special"> &lt;- </span>not no-movement?
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -2748,18 +2740,18 @@ e]
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     no-movement?:boolean<span class="Special"> &lt;- </span>equal *top-of-screen, old-top
     go-render?<span class="Special"> &lt;- </span>not no-movement?
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="Comment"># page-down skips entire wrapped lines, so it can't scroll past lines</span>
 <span class="Comment"># taking up the entire screen</span>
-<span class="muRecipe">recipe</span> page-down editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
+<span class="muRecipe">def</span> page-down editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if editor contents don't overflow screen, do nothing</span>
   bottom-of-screen:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">bottom-of-screen:offset</span>
-  <span class="muControl">reply-unless</span> bottom-of-screen
+  <span class="muControl">return-unless</span> bottom-of-screen
   <span class="Comment"># if not, position cursor at final character</span>
   before-cursor:address:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get-address *editor, <span class="Constant">before-cursor:offset</span>
   *before-cursor<span class="Special"> &lt;- </span>prev bottom-of-screen
@@ -2924,7 +2916,7 @@ e]
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     no-movement?:boolean<span class="Special"> &lt;- </span>equal *top-of-screen, old-top
     go-render?<span class="Special"> &lt;- </span>not no-movement?
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -2941,11 +2933,11 @@ e]
     no-movement?:boolean<span class="Special"> &lt;- </span>equal *top-of-screen, old-top
     <span class="Comment"># don't bother re-rendering if nothing changed. todo: test this</span>
     go-render?<span class="Special"> &lt;- </span>not no-movement?
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> page-up editor:address:shared:editor-data, screen-height:number<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
+<span class="muRecipe">def</span> page-up editor:address:shared:editor-data, screen-height:number<span class="muRecipe"> -&gt; </span>editor:address:shared:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   max:number<span class="Special"> &lt;- </span>subtract screen-height, <span class="Constant">1/menu-bar</span>, <span class="Constant">1/overlapping-line</span>
@@ -3250,4 +3242,3 @@ gxy
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

@@ -3,34 +3,27 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 044space_surround.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
-.Special { color: #ff6060; }
 .Identifier { color: #804000; }
+.traceContains { color: #008000; }
+.Normal { color: #eeeeee; background-color: #080808; }
+.Special { color: #ff6060; }
 .Constant { color: #00a0a0; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment">//: So far you can have global variables by not setting default-space, and</span>
 <span class="Comment">//: local variables by setting default-space. You can isolate variables</span>
 <span class="Comment">//: between those extremes by creating 'surrounding' spaces.</span>
@@ -39,7 +32,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Delimiter">:(scenario surrounding_space)</span>
 <span class="Comment"># location 1 in space 1 refers to the space surrounding the default space, here 20.</span>
-recipe main [
+def main [
   <span class="Comment"># pretend shared:array:location; in practice we'll use new</span>
   <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
   <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
@@ -47,12 +40,12 @@ recipe main [
   <span class="Constant">20</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
   <span class="Constant">21</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
   <span class="Comment"># actual start of this recipe</span>
-  default-space:address:shared:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Normal">default</span>-space:address:shared:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
   <span class="Constant">0</span>:address:shared:array:location/names:dummy<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe  <span class="Comment"># later layers will explain the /names: property</span>
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">32</span>
   <span class="Constant">1</span>:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">33</span>
 ]
-recipe dummy [  <span class="Comment"># just for the /names: property above</span>
+def dummy [  <span class="Comment"># just for the /names: property above</span>
 ]
 <span class="Comment"># chain space: 10 + /*skip refcount*/1 + /*skip length*/1</span>
 <span class="traceContains">+mem: storing 20 in location 12</span>
@@ -66,23 +59,23 @@ recipe dummy [  <span class="Comment"># just for the /names: property above</spa
 <span class="Comment">//: one.</span>
 
 <span class="Delimiter">:(replace{} &quot;long long int space_base(const reagent&amp; x)&quot;)</span>
-long long int space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  long long int base = current_call<span class="Delimiter">().</span>default_space ? <span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>default_space+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">)</span> : <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> space_base<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> base = current_call<span class="Delimiter">().</span>default_space ? <span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>default_space+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">)</span> : <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index<span class="Delimiter">(</span>x<span class="Delimiter">),</span> base<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-long long int space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">,</span> long long int space_index<span class="Delimiter">,</span> long long int base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>space_index == <span class="Constant">0</span><span class="Delimiter">)</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> space_base<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> space_index<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>space_index == <span class="Constant">0</span><span class="Delimiter">)</span>
     <span class="Identifier">return</span> base<span class="Delimiter">;</span>
-  long long int result = space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index-<span class="Constant">1</span><span class="Delimiter">,</span> get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base+<span class="Comment">/*</span><span class="Comment">skip length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">))</span>+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index-<span class="Constant">1</span><span class="Delimiter">,</span> get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base+<span class="Comment">/*</span><span class="Comment">skip length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">))</span>+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-long long int space_index<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      if <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second || x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
-        raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;/space metadata should take exactly one value in &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> space_index<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second || x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+        raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;/space metadata should take exactly one value in &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> to_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -90,10 +83,9 @@ long long int space_index<span class="Delimiter">(</span>const reagent&amp; x<sp
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario permit_space_as_variable_name)</span>
-recipe main [
+def main [
   space:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

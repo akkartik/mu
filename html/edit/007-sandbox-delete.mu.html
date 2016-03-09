@@ -3,35 +3,27 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/007-sandbox-delete.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
 .muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .Special { color: #ff6060; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
+.muScenario { color: #00af00; }
 .SalientComment { color: #00ffff; }
-.Delimiter { color: #a04060; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="SalientComment">## deleting sandboxes</span>
 
 <span class="muScenario">scenario</span> deleting-sandboxes [
@@ -111,14 +103,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> delete-sandbox t:touch-event, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>was-delete?:boolean, env:address:shared:programming-environment-data [
+<span class="muRecipe">def</span> delete-sandbox t:touch-event, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>was-delete?:boolean, env:address:shared:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   click-column:number<span class="Special"> &lt;- </span>get t, <span class="Constant">column:offset</span>
   current-sandbox:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   right:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">right:offset</span>
   at-right?:boolean<span class="Special"> &lt;- </span>equal click-column, right
-  <span class="muControl">reply-unless</span> at-right?, <span class="Constant">0/false</span>
+  <span class="muControl">return-unless</span> at-right?, <span class="Constant">0/false</span>
   click-row:number<span class="Special"> &lt;- </span>get t, <span class="Constant">row:offset</span>
   prev:address:address:shared:sandbox-data<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">sandbox:offset</span>
   curr:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
@@ -142,13 +134,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
         <span class="muControl">break-unless</span> reset-scroll?
         *render-from<span class="Special"> &lt;- </span>copy <span class="Constant">-1</span>
       <span class="Delimiter">}</span>
-      <span class="muControl">reply</span> <span class="Constant">1/true</span>  <span class="Comment"># force rerender</span>
+      <span class="muControl">return</span> <span class="Constant">1/true</span>  <span class="Comment"># force rerender</span>
     <span class="Delimiter">}</span>
     prev<span class="Special"> &lt;- </span>get-address *curr, <span class="Constant">next-sandbox:offset</span>
     curr<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> <span class="Constant">0/false</span>
+  <span class="muControl">return</span> <span class="Constant">0/false</span>
 ]
 
 <span class="muScenario">scenario</span> deleting-sandbox-after-scroll [
@@ -343,4 +335,3 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

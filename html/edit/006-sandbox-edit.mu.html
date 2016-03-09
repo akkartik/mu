@@ -3,35 +3,27 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/006-sandbox-edit.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
 .muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .Special { color: #ff6060; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
+.muScenario { color: #00af00; }
 .SalientComment { color: #00ffff; }
-.Delimiter { color: #a04060; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="SalientComment">## editing sandboxes after they've been created</span>
 
 <span class="muScenario">scenario</span> clicking-on-a-sandbox-moves-it-to-editor [
@@ -126,7 +118,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> empty-editor? editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> empty-editor? editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   head:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
@@ -134,13 +126,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   result<span class="Special"> &lt;- </span>not first
 ]
 
-<span class="muRecipe">recipe</span> extract-sandbox env:address:shared:programming-environment-data, click-row:number<span class="muRecipe"> -&gt; </span>result:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+<span class="muRecipe">def</span> extract-sandbox env:address:shared:programming-environment-data, click-row:number<span class="muRecipe"> -&gt; </span>result:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   sandbox:address:address:shared:sandbox-data<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">sandbox:offset</span>
   start:number<span class="Special"> &lt;- </span>get **sandbox, <span class="Constant">starting-row-on-screen:offset</span>
   in-editor?:boolean<span class="Special"> &lt;- </span>lesser-than click-row, start
-  <span class="muControl">reply-if</span> in-editor?, <span class="Constant">0</span>
+  <span class="muControl">return-if</span> in-editor?, <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     next-sandbox:address:shared:sandbox-data<span class="Special"> &lt;- </span>get **sandbox, <span class="Constant">next-sandbox:offset</span>
     <span class="muControl">break-unless</span> next-sandbox
@@ -323,4 +315,3 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

@@ -3,34 +3,27 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 002test.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.cSpecial { color: #008000; }
 .CommentedCode { color: #6c6c6c; }
-.PreProc { color: #c000c0; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
 .Identifier { color: #804000; }
+.cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
+.PreProc { color: #c000c0; }
+.Normal { color: #eeeeee; background-color: #080808; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment">//: A simple test harness. To create new tests define functions starting with</span>
 <span class="Comment">//: 'test_'. To run all tests so defined, run:</span>
 <span class="Comment">//:   $ wart test</span>
@@ -42,19 +35,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment">//: subsets of the program.</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
-typedef void <span class="Delimiter">(</span>*test_fn<span class="Delimiter">)(</span>void<span class="Delimiter">);</span>
+<span class="Normal">typedef</span> <span class="Normal">void</span> <span class="Delimiter">(</span>*test_fn<span class="Delimiter">)(</span><span class="Normal">void</span><span class="Delimiter">);</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-const test_fn Tests[] = <span class="Delimiter">{</span>
+<span class="Normal">const</span> test_fn Tests[] = <span class="Delimiter">{</span>
 <span class="PreProc">  #include </span><span class="Constant">&quot;test_list&quot;</span>  <span class="Comment">// auto-generated; see makefile</span>
 <span class="Delimiter">};</span>
 
-bool Run_tests = <span class="Constant">false</span><span class="Delimiter">;</span>
-bool Passed = <span class="Constant">true</span><span class="Delimiter">;</span>  <span class="Comment">// set this to false inside any test to indicate failure</span>
-long Num_failures = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Normal">bool</span> Run_tests = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Normal">bool</span> Passed = <span class="Constant">true</span><span class="Delimiter">;</span>  <span class="Comment">// set this to false inside any test to indicate failure</span>
+<span class="Normal">long</span> Num_failures = <span class="Constant">0</span><span class="Delimiter">;</span>
 
 <span class="PreProc">#define CHECK(X) \</span>
-<span class="PreProc">  </span>if<span class="PreProc"> (!(X)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
+<span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (!(X)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
 <span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): &quot;</span><span class="PreProc"> &lt;&lt; #X &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
@@ -62,7 +55,7 @@ long Num_failures = <span class="Constant">0</span><span class="Delimiter">;</sp
 <span class="PreProc">  </span><span class="Delimiter">}</span>
 
 <span class="PreProc">#define CHECK_EQ(X</span><span class="Delimiter">,</span><span class="PreProc"> Y) \</span>
-<span class="PreProc">  </span>if<span class="PreProc"> ((X) != (Y)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
+<span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> ((X) != (Y)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
 <span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): &quot;</span><span class="PreProc"> &lt;&lt; #X &lt;&lt; </span><span class="Constant">&quot; == &quot;</span><span class="PreProc"> &lt;&lt; #Y &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;  got &quot;</span><span class="PreProc"> &lt;&lt; (X) &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> BEWARE: multiple eval </span><span class="Comment">*/</span><span class="PreProc"> \</span>
@@ -74,25 +67,25 @@ long Num_failures = <span class="Constant">0</span><span class="Delimiter">;</sp
 Passed = <span class="Constant">true</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Commandline Parsing&quot;)</span>
-if <span class="Delimiter">(</span>argc &gt; <span class="Constant">1</span> &amp;&amp; is_equal<span class="Delimiter">(</span>argv[<span class="Constant">1</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;test&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>argc &gt; <span class="Constant">1</span> &amp;&amp; is_equal<span class="Delimiter">(</span>argv[<span class="Constant">1</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;test&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
   Run_tests = <span class="Constant">true</span><span class="Delimiter">;</span>  --argc<span class="Delimiter">;</span>  ++argv<span class="Delimiter">;</span>  <span class="Comment">// shift 'test' out of commandline args</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Main&quot;)</span>
-if <span class="Delimiter">(</span>Run_tests<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Run_tests<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// Test Runs</span>
   <span class="Comment">// we run some tests and then exit; assume no state need be maintained afterward</span>
 
   <span class="Comment">// End Test Run Initialization</span>
-  time_t t<span class="Delimiter">;</span> time<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
+  <span class="Normal">time_t</span> t<span class="Delimiter">;</span> time<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
   cerr &lt;&lt; <span class="Constant">&quot;C tests: &quot;</span> &lt;&lt; ctime<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>size_t i=<span class="Constant">0</span><span class="Delimiter">;</span> i &lt; sizeof<span class="Delimiter">(</span>Tests<span class="Delimiter">)</span>/sizeof<span class="Delimiter">(</span>Tests[<span class="Constant">0</span>]<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">size_t</span> i=<span class="Constant">0</span><span class="Delimiter">;</span> i &lt; <span class="Normal">sizeof</span><span class="Delimiter">(</span>Tests<span class="Delimiter">)</span>/<span class="Normal">sizeof</span><span class="Delimiter">(</span>Tests[<span class="Constant">0</span>]<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; i &lt;&lt; '\n';</span>
     run_test<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// End Tests</span>
   cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>Num_failures &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Num_failures &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     cerr &lt;&lt; Num_failures &lt;&lt; <span class="Constant">&quot; failure&quot;</span>
          &lt;&lt; <span class="Delimiter">(</span>Num_failures &gt; <span class="Constant">1</span> ? <span class="Constant">&quot;s&quot;</span> : <span class="Constant">&quot;&quot;</span><span class="Delimiter">)</span>
          &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
@@ -102,8 +95,8 @@ if <span class="Delimiter">(</span>Run_tests<span class="Delimiter">)</span> <sp
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-void run_test<span class="Delimiter">(</span>size_t i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>i &gt;= sizeof<span class="Delimiter">(</span>Tests<span class="Delimiter">)</span>/sizeof<span class="Delimiter">(</span>Tests[<span class="Constant">0</span>]<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> run_test<span class="Delimiter">(</span><span class="Normal">size_t</span> i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>i &gt;= <span class="Normal">sizeof</span><span class="Delimiter">(</span>Tests<span class="Delimiter">)</span>/<span class="Normal">sizeof</span><span class="Delimiter">(</span>Tests[<span class="Constant">0</span>]<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     cerr &lt;&lt; <span class="Constant">&quot;no test &quot;</span> &lt;&lt; i &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -112,25 +105,25 @@ void run_test<span class="Delimiter">(</span>size_t i<span class="Delimiter">)</
   <span class="Delimiter">(</span>*Tests[i]<span class="Delimiter">)();</span>
   <span class="Comment">// End Test Teardown</span>
   teardown<span class="Delimiter">();</span>
-  if <span class="Delimiter">(</span>Passed<span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">'.'</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Passed<span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">'.'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-bool is_integer<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_integer<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> s<span class="Delimiter">.</span>find_first_not_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789-&quot;</span><span class="Delimiter">)</span> == string::npos  <span class="Comment">// no other characters</span>
       &amp;&amp; s<span class="Delimiter">.</span>find_first_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789&quot;</span><span class="Delimiter">)</span> != string::npos  <span class="Comment">// at least one digit</span>
       &amp;&amp; s<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">'-'</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">)</span> == string::npos<span class="Delimiter">;</span>  <span class="Comment">// '-' only at first position</span>
 <span class="Delimiter">}</span>
 
-long long int to_integer<span class="Delimiter">(</span>string n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  char* end = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> to_integer<span class="Delimiter">(</span>string n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">char</span>* end = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Comment">// safe because string.c_str() is guaranteed to be null-terminated</span>
-  long long int result = strtoll<span class="Delimiter">(</span>n<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> &amp;end<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">any base</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>*end != <span class="cSpecial">'\0'</span><span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;tried to convert &quot;</span> &lt;&lt; n &lt;&lt; <span class="Constant">&quot; to number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = strtoll<span class="Delimiter">(</span>n<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> &amp;end<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">any base</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>*end != <span class="cSpecial">'\0'</span><span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;tried to convert &quot;</span> &lt;&lt; n &lt;&lt; <span class="Constant">&quot; to number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>*end == <span class="cSpecial">'\0'</span><span class="Delimiter">);</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-void test_is_integer<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> test_is_integer<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   CHECK<span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span><span class="Constant">&quot;1234&quot;</span><span class="Delimiter">));</span>
   CHECK<span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span><span class="Constant">&quot;-1&quot;</span><span class="Delimiter">));</span>
   CHECK<span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span><span class="Constant">&quot;234.0&quot;</span><span class="Delimiter">));</span>
@@ -145,4 +138,3 @@ void test_is_integer<span class="Delimiter">()</span> <span class="Delimiter">{<
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

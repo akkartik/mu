@@ -3,36 +3,28 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 071channel.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
-.muData { color: #ffff00; }
 .SalientComment { color: #00ffff; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.Special { color: #ff6060; }
+.muControl { color: #c0a020; }
 .Delimiter { color: #a04060; }
+.muRecipe { color: #ff8700; }
+.muData { color: #ffff00; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
+.muScenario { color: #00af00; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment"># Mu synchronizes using channels rather than locks, like Erlang and Go.</span>
 <span class="Comment">#</span>
 <span class="Comment"># The two ends of a channel will usually belong to different routines, but</span>
@@ -66,7 +58,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   data:address:shared:array:character
 ]
 
-<span class="muRecipe">recipe</span> new-channel capacity:number<span class="muRecipe"> -&gt; </span>result:address:shared:channel [
+<span class="muRecipe">def</span> new-channel capacity:number<span class="muRecipe"> -&gt; </span>result:address:shared:channel [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>new <span class="Constant">channel:type</span>
@@ -82,7 +74,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   *dest<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, capacity
 ]
 
-<span class="muRecipe">recipe</span> write chan:address:shared:channel, val:character<span class="muRecipe"> -&gt; </span>chan:address:shared:channel [
+<span class="muRecipe">def</span> write chan:address:shared:channel, val:character<span class="muRecipe"> -&gt; </span>chan:address:shared:channel [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -108,7 +100,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> read chan:address:shared:channel<span class="muRecipe"> -&gt; </span>result:character, chan:address:shared:channel [
+<span class="muRecipe">def</span> read chan:address:shared:channel<span class="muRecipe"> -&gt; </span>result:character, chan:address:shared:channel [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -133,7 +125,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> clear-channel chan:address:shared:channel<span class="muRecipe"> -&gt; </span>chan:address:shared:channel [
+<span class="muRecipe">def</span> clear-channel chan:address:shared:channel<span class="muRecipe"> -&gt; </span>chan:address:shared:channel [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -210,7 +202,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="SalientComment">## helpers</span>
 
 <span class="Comment"># An empty channel has first-empty and first-full both at the same value.</span>
-<span class="muRecipe">recipe</span> channel-empty? chan:address:shared:channel<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> channel-empty? chan:address:shared:channel<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># return chan.first-full == chan.first-free</span>
@@ -221,7 +213,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># A full channel has first-empty just before first-full, wasting one slot.</span>
 <span class="Comment"># (Other alternatives: <a href="https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)">https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)</a></span>
-<span class="muRecipe">recipe</span> channel-full? chan:address:shared:channel<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> channel-full? chan:address:shared:channel<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># tmp = chan.first-free + 1</span>
@@ -239,7 +231,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   result<span class="Special"> &lt;- </span>equal full, tmp
 ]
 
-<span class="muRecipe">recipe</span> channel-capacity chan:address:shared:channel<span class="muRecipe"> -&gt; </span>result:number [
+<span class="muRecipe">def</span> channel-capacity chan:address:shared:channel<span class="muRecipe"> -&gt; </span>result:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   q:address:shared:array:character<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
@@ -299,7 +291,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># helper for channels of characters in particular</span>
-<span class="muRecipe">recipe</span> buffer-lines in:address:shared:channel, out:address:shared:channel<span class="muRecipe"> -&gt; </span>out:address:shared:channel, in:address:shared:channel [
+<span class="muRecipe">def</span> buffer-lines in:address:shared:channel, out:address:shared:channel<span class="muRecipe"> -&gt; </span>out:address:shared:channel, in:address:shared:channel [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># repeat forever</span>
@@ -393,4 +385,3 @@ F buffer-lines-blocks-until-newline: channel should contain data <span class="mu
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

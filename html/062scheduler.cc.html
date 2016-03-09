@@ -3,48 +3,41 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 062scheduler.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
 .traceAbsent { color: #c00000; }
-.traceContains { color: #008000; }
-.SalientComment { color: #00ffff; }
 .cSpecial { color: #008000; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
-.Special { color: #ff6060; }
+.SalientComment { color: #00ffff; }
 .Identifier { color: #804000; }
+.Normal { color: #eeeeee; background-color: #080808; }
+.traceContains { color: #008000; }
+.Special { color: #ff6060; }
 .Constant { color: #00a0a0; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment">//: Run a second routine concurrently using 'start-running', without any</span>
 <span class="Comment">//: guarantees on how the operations in each are interleaved with each other.</span>
 
 <span class="Delimiter">:(scenario scheduler)</span>
-recipe f1 [
+def f1 [
   start-running f2
   <span class="Comment"># wait for f2 to run</span>
   <span class="Delimiter">{</span>
     jump-unless <span class="Constant">1</span>:number<span class="Delimiter">,</span> -<span class="Constant">1</span>
   <span class="Delimiter">}</span>
 ]
-recipe f2 [
+def f2 [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="traceContains">+schedule: f1</span>
@@ -53,50 +46,50 @@ recipe f2 [
 <span class="Comment">//: first, add a deadline to run(routine)</span>
 <span class="Comment">//: these changes are ugly and brittle; just close your nose and get through the next few lines</span>
 <span class="Delimiter">:(replace &quot;void run_current_routine()&quot;)</span>
-void run_current_routine<span class="Delimiter">(</span>long long int time_slice<span class="Delimiter">)</span>
+<span class="Normal">void</span> run_current_routine<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> time_slice<span class="Delimiter">)</span>
 <span class="Delimiter">:(replace &quot;while (!Current_routine-&gt;completed())&quot; following &quot;void run_current_routine(long long int time_slice)&quot;)</span>
-long long int ninstrs = <span class="Constant">0</span><span class="Delimiter">;</span>
-while <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING &amp;&amp; ninstrs &lt; time_slice<span class="Delimiter">)</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> ninstrs = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Normal">while</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING &amp;&amp; ninstrs &lt; time_slice<span class="Delimiter">)</span>
 <span class="Delimiter">:(after &quot;Running One Instruction&quot;)</span>
 ninstrs++<span class="Delimiter">;</span>
 
 <span class="Comment">//: now the rest of the scheduler is clean</span>
 
 <span class="Delimiter">:(before &quot;struct routine&quot;)</span>
-enum routine_state <span class="Delimiter">{</span>
+<span class="Normal">enum</span> routine_state <span class="Delimiter">{</span>
   RUNNING<span class="Delimiter">,</span>
   COMPLETED<span class="Delimiter">,</span>
   <span class="Comment">// End routine States</span>
 <span class="Delimiter">};</span>
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-enum routine_state state<span class="Delimiter">;</span>
+<span class="Normal">enum</span> routine_state state<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 state = RUNNING<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 vector&lt;routine*&gt; Routines<span class="Delimiter">;</span>
-long long int Current_routine_index = <span class="Constant">0</span><span class="Delimiter">;</span>
-long long int Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Current_routine_index = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
 Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">:(replace{} &quot;void run(recipe_ordinal r)&quot;)</span>
-void run<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  run<span class="Delimiter">(</span>new routine<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
+<span class="Normal">void</span> run<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  run<span class="Delimiter">(</span><span class="Normal">new</span> routine<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-void run<span class="Delimiter">(</span>routine* rr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> run<span class="Delimiter">(</span>routine* rr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Routines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>rr<span class="Delimiter">);</span>
   Current_routine_index = <span class="Constant">0</span><span class="Delimiter">,</span> Current_routine = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  while <span class="Delimiter">(</span>!all_routines_done<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>!all_routines_done<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     skip_to_next_routine<span class="Delimiter">();</span>
     assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>
     assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING<span class="Delimiter">);</span>
     trace<span class="Delimiter">(</span><span class="Constant">9990</span><span class="Delimiter">,</span> <span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; current_routine_label<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
     run_current_routine<span class="Delimiter">(</span>Scheduling_interval<span class="Delimiter">);</span>
     <span class="Comment">// Scheduler State Transitions</span>
-    if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>
       Current_routine<span class="Delimiter">-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
     <span class="Comment">// End Scheduler State Transitions</span>
 
@@ -105,9 +98,9 @@ void run<span class="Delimiter">(</span>routine* rr<span class="Delimiter">)</sp
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-bool all_routines_done<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> all_routines_done<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -115,11 +108,11 @@ bool all_routines_done<span class="Delimiter">()</span> <span class="Delimiter">
 <span class="Delimiter">}</span>
 
 <span class="Comment">// skip Current_routine_index past non-RUNNING routines</span>
-void skip_to_next_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> skip_to_next_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Routines<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   assert<span class="Delimiter">(</span>Current_routine_index &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">));</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Delimiter">(</span>Current_routine_index+<span class="Constant">1</span><span class="Delimiter">)</span>%SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  i != Current_routine_index<span class="Delimiter">;</span>  i = <span class="Delimiter">(</span>i+<span class="Constant">1</span><span class="Delimiter">)</span>%SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Delimiter">(</span>Current_routine_index+<span class="Constant">1</span><span class="Delimiter">)</span>%SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  i != Current_routine_index<span class="Delimiter">;</span>  i = <span class="Delimiter">(</span>i+<span class="Constant">1</span><span class="Delimiter">)</span>%SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       Current_routine_index = i<span class="Delimiter">;</span>
       Current_routine = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
       <span class="Identifier">return</span><span class="Delimiter">;</span>
@@ -129,31 +122,31 @@ void skip_to_next_routine<span class="Delimiter">()</span> <span class="Delimite
 
 string current_routine_label<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   ostringstream result<span class="Delimiter">;</span>
-  const call_stack&amp; calls = Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>call_stack::const_iterator p = calls<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != calls<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>p != calls<span class="Delimiter">.</span>begin<span class="Delimiter">())</span> result &lt;&lt; <span class="Constant">'/'</span><span class="Delimiter">;</span>
+  <span class="Normal">const</span> call_stack&amp; calls = Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::const_iterator p = calls<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != calls<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>p != calls<span class="Delimiter">.</span>begin<span class="Delimiter">())</span> result &lt;&lt; <span class="Constant">'/'</span><span class="Delimiter">;</span>
     result &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Teardown&quot;)</span>
-for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
-  delete Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">delete</span> Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
 Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 
 <span class="Comment">//: special case for the very first routine</span>
 <span class="Delimiter">:(replace{} &quot;void run_main(int argc, char* argv[])&quot;)</span>
-void run_main<span class="Delimiter">(</span>int argc<span class="Delimiter">,</span> char* argv[]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> run_main<span class="Delimiter">(</span><span class="Normal">int</span> argc<span class="Delimiter">,</span> <span class="Normal">char</span>* argv[]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe_ordinal r = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
-  routine* main_routine = new routine<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  routine* main_routine = <span class="Normal">new</span> routine<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
   <span class="Comment">// pass in commandline args as ingredients to main</span>
   <span class="Comment">// todo: test this</span>
   Current_routine = main_routine<span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; argc<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    vector&lt;double&gt; arg<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; argc<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    vector&lt;<span class="Normal">double</span>&gt; arg<span class="Delimiter">;</span>
     arg<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_mu_string<span class="Delimiter">(</span>argv[i]<span class="Delimiter">));</span>
     current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -165,9 +158,9 @@ void run_main<span class="Delimiter">(</span>int argc<span class="Delimiter">,</
 <span class="Comment">//: 'start-running' will return a unique id for the routine that was created.</span>
 <span class="Comment">//: routine id is a number, but don't do any arithmetic on it</span>
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-long long int id<span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> id<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-long long int Next_routine_id = <span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Next_routine_id = <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Next_routine_id = <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
@@ -177,7 +170,7 @@ Next_routine_id++<span class="Delimiter">;</span>
 <span class="Comment">//: routines save the routine that spawned them</span>
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
 <span class="Comment">// todo: really should be routine_id, but that's less efficient.</span>
-long long int parent_index<span class="Delimiter">;</span>  <span class="Comment">// only &lt; 0 if there's no parent_index</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> parent_index<span class="Delimiter">;</span>  <span class="Comment">// only &lt; 0 if there's no parent_index</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 parent_index = -<span class="Constant">1</span><span class="Delimiter">;</span>
 
@@ -186,23 +179,23 @@ START_RUNNING<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;start-running&quot;</span><span class="Delimiter">,</span> START_RUNNING<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case START_RUNNING: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'start-running' requires at least one ingredient: the recipe to start running</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">case</span> START_RUNNING: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'start-running' requires at least one ingredient: the recipe to start running</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>!is_mu_recipe<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'start-running' should be a recipe, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_recipe<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'start-running' should be a recipe, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case START_RUNNING: <span class="Delimiter">{</span>
-  routine* new_routine = new routine<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+<span class="Normal">case</span> START_RUNNING: <span class="Delimiter">{</span>
+  routine* new_routine = <span class="Normal">new</span> routine<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   new_routine<span class="Delimiter">-&gt;</span>parent_index = Current_routine_index<span class="Delimiter">;</span>
   <span class="Comment">// populate ingredients</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     new_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
     reagent ingredient = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     canonize_type<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
@@ -216,7 +209,7 @@ case START_RUNNING: <span class="Delimiter">{</span>
 
 <span class="Delimiter">:(scenario scheduler_runs_single_routine)</span>
 <span class="Special">% Scheduling_interval = 1;</span>
-recipe f1 [
+def f1 [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
@@ -227,12 +220,12 @@ recipe f1 [
 
 <span class="Delimiter">:(scenario scheduler_interleaves_routines)</span>
 <span class="Special">% Scheduling_interval = 1;</span>
-recipe f1 [
+def f1 [
   start-running f2
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-recipe f2 [
+def f2 [
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
@@ -248,24 +241,24 @@ recipe f2 [
 <span class="traceContains">+run: 2:number &lt;- copy 0</span>
 
 <span class="Delimiter">:(scenario start_running_takes_ingredients)</span>
-recipe f1 [
+def f1 [
   start-running f2<span class="Delimiter">,</span> <span class="Constant">3</span>
   <span class="Comment"># wait for f2 to run</span>
   <span class="Delimiter">{</span>
     jump-unless <span class="Constant">1</span>:number<span class="Delimiter">,</span> -<span class="Constant">1</span>
   <span class="Delimiter">}</span>
 ]
-recipe f2 [
+def f2 [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>next-ingredient
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 4 in location 2</span>
 
 <span class="Delimiter">:(scenario start_running_returns_routine_id)</span>
-recipe f1 [
+def f1 [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>start-running f2
 ]
-recipe f2 [
+def f2 [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">44</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 1</span>
@@ -279,7 +272,7 @@ recipe f2 [
 <span class="Special">% Routines.push_back(new routine(f2));</span>
 <span class="Special">% Routines.back()-&gt;state = COMPLETED;  // f2 not meant to run</span>
 <span class="Comment"># must have at least one routine without escaping</span>
-recipe f3 [
+def f3 [
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="Comment"># by interleaving '+' lines with '-' lines, we allow f1 and f3 to run in any order</span>
@@ -293,7 +286,7 @@ recipe f3 [
 <span class="Delimiter">:(scenario scheduler_starts_at_middle_of_routines)</span>
 <span class="Special">% Routines.push_back(new routine(COPY));</span>
 <span class="Special">% Routines.back()-&gt;state = COMPLETED;</span>
-recipe f1 [
+def f1 [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
@@ -305,12 +298,12 @@ recipe f1 [
 <span class="Delimiter">:(scenario scheduler_terminates_routines_after_errors)</span>
 <span class="Special">% Hide_errors = true;</span>
 <span class="Special">% Scheduling_interval = 2;</span>
-recipe f1 [
+def f1 [
   start-running f2
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-recipe f2 [
+def f2 [
   <span class="Comment"># divide by 0 twice</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>divide-with-remainder <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">0</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>divide-with-remainder <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">0</span>
@@ -320,35 +313,35 @@ recipe f2 [
 <span class="traceAbsent">-error: f2: divide by zero in '4:number &lt;- divide-with-remainder 4, 0'</span>
 
 <span class="Delimiter">:(after &quot;operator&lt;&lt;(ostream&amp; os, unused end)&quot;)</span>
-  if <span class="Delimiter">(</span>Trace_stream &amp;&amp; Trace_stream<span class="Delimiter">-&gt;</span>curr_label == <span class="Constant">&quot;error&quot;</span> &amp;&amp; Current_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream &amp;&amp; Trace_stream<span class="Delimiter">-&gt;</span>curr_label == <span class="Constant">&quot;error&quot;</span> &amp;&amp; Current_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Current_routine<span class="Delimiter">-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: Routines are marked completed when their parent completes.</span>
 
 <span class="Delimiter">:(scenario scheduler_kills_orphans)</span>
-recipe main [
+def main [
   start-running f1
   <span class="Comment"># f1 never actually runs because its parent completes without waiting for it</span>
 ]
-recipe f1 [
+def f1 [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceAbsent">-schedule: f1</span>
 
 <span class="Delimiter">:(before &quot;End Scheduler Cleanup&quot;)</span>
-for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == COMPLETED<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>parent_index &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// root thread</span>
-  if <span class="Delimiter">(</span>has_completed_parent<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == COMPLETED<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>parent_index &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// root thread</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>has_completed_parent<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-bool has_completed_parent<span class="Delimiter">(</span>long long int routine_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>long long int j = routine_index<span class="Delimiter">;</span> j &gt;= <span class="Constant">0</span><span class="Delimiter">;</span> j = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>parent_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>state == COMPLETED<span class="Delimiter">)</span>
+<span class="Normal">bool</span> has_completed_parent<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> routine_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = routine_index<span class="Delimiter">;</span> j &gt;= <span class="Constant">0</span><span class="Delimiter">;</span> j = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>parent_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>state == COMPLETED<span class="Delimiter">)</span>
       <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -358,13 +351,13 @@ bool has_completed_parent<span class="Delimiter">(</span>long long int routine_i
 
 <span class="Delimiter">:(scenario routine_state_test)</span>
 <span class="Special">% Scheduling_interval = 2;</span>
-recipe f1 [
+def f1 [
   <span class="Constant">1</span>:number/child-id<span class="Special"> &lt;- </span>start-running f2
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># race condition since we don't care about location 12</span>
   <span class="Comment"># thanks to Scheduling_interval, f2's one instruction runs in between here and completes</span>
   <span class="Constant">2</span>:number/state<span class="Special"> &lt;- </span>routine-state <span class="Constant">1</span>:number/child-id
 ]
-recipe f2 [
+def f2 [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Comment"># trying to run a second instruction marks routine as completed</span>
 ]
@@ -376,23 +369,23 @@ ROUTINE_STATE<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;routine-state&quot;</span><span class="Delimiter">,</span> ROUTINE_STATE<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case ROUTINE_STATE: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'routine-state' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">case</span> ROUTINE_STATE: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'routine-state' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'routine-state' should be a routine id generated by 'start-running', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'routine-state' should be a routine id generated by 'start-running', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case ROUTINE_STATE: <span class="Delimiter">{</span>
-  long long int id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  long long int result = -<span class="Constant">1</span><span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">case</span> ROUTINE_STATE: <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = -<span class="Constant">1</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       result = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state<span class="Delimiter">;</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -409,22 +402,22 @@ RESTART<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;restart&quot;</span><span class="Delimiter">,</span> RESTART<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case RESTART: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'restart' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">case</span> RESTART: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'restart' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'restart' should be a routine id generated by 'start-running', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'restart' should be a routine id generated by 'start-running', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case RESTART: <span class="Delimiter">{</span>
-  long long int id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">case</span> RESTART: <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = RUNNING<span class="Delimiter">;</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -437,22 +430,22 @@ STOP<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;stop&quot;</span><span class="Delimiter">,</span> STOP<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case STOP: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'stop' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">case</span> STOP: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'stop' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'stop' should be a routine id generated by 'start-running', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'stop' should be a routine id generated by 'start-running', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case STOP: <span class="Delimiter">{</span>
-  long long int id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">case</span> STOP: <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -465,12 +458,12 @@ _DUMP_ROUTINES<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$dump-routines&quot;</span><span class="Delimiter">,</span> _DUMP_ROUTINES<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case _DUMP_ROUTINES: <span class="Delimiter">{</span>
+<span class="Normal">case</span> _DUMP_ROUTINES: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _DUMP_ROUTINES: <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">case</span> _DUMP_ROUTINES: <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     cerr &lt;&lt; i &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id &lt;&lt; <span class="Constant">' '</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state &lt;&lt; <span class="Constant">' '</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>parent_index &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -480,15 +473,15 @@ case _DUMP_ROUTINES: <span class="Delimiter">{</span>
 
 <span class="Delimiter">:(scenario routine_discontinues_past_limit)</span>
 <span class="Special">% Scheduling_interval = 2;</span>
-recipe f1 [
+def f1 [
   <span class="Constant">1</span>:number/child-id<span class="Special"> &lt;- </span>start-running f2
   limit-time <span class="Constant">1</span>:number/child-id<span class="Delimiter">,</span> <span class="Constant">10</span>
   <span class="Comment"># padding loop just to make sure f2 has time to completed</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>subtract <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
-  jump-if <span class="Constant">2</span>:number<span class="Delimiter">,</span> -<span class="Constant">2</span>:offset
+  jump-<span class="Normal">if</span> <span class="Constant">2</span>:number<span class="Delimiter">,</span> -<span class="Constant">2</span>:offset
 ]
-recipe f2 [
+def f2 [
   jump -<span class="Constant">1</span>:offset  <span class="Comment"># run forever</span>
   $print [should never get here]<span class="Delimiter">,</span> <span class="Constant">10</span>/newline
 ]
@@ -498,19 +491,19 @@ recipe f2 [
 <span class="Delimiter">:(before &quot;End routine States&quot;)</span>
 DISCONTINUED<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Scheduler State Transitions&quot;)</span>
-if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>limit &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>limit &lt;= Scheduling_interval<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>limit &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>limit &lt;= Scheduling_interval<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;discontinuing routine &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>id &lt;&lt; end<span class="Delimiter">();</span>
     Current_routine<span class="Delimiter">-&gt;</span>state = DISCONTINUED<span class="Delimiter">;</span>
     Current_routine<span class="Delimiter">-&gt;</span>limit = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  else <span class="Delimiter">{</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
     Current_routine<span class="Delimiter">-&gt;</span>limit -= Scheduling_interval<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-long long int limit<span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> limit<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 limit = -<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">/*</span><span class="Comment"> no limit </span><span class="Comment">*/</span>
 
@@ -519,26 +512,26 @@ LIMIT_TIME<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;limit-time&quot;</span><span class="Delimiter">,</span> LIMIT_TIME<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case LIMIT_TIME: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'limit-time' requires exactly two ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">case</span> LIMIT_TIME: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'limit-time' requires exactly two ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'limit-time' should be a routine id generated by 'start-running', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'limit-time' should be a routine id generated by 'start-running', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'limit-time' should be a number (of instructions to run for), but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'limit-time' should be a number (of instructions to run for), but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case LIMIT_TIME: <span class="Delimiter">{</span>
-  long long int id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">case</span> LIMIT_TIME: <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>limit = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -549,16 +542,16 @@ case LIMIT_TIME: <span class="Delimiter">{</span>
 <span class="SalientComment">//:: make sure that each routine gets a different alloc to start</span>
 
 <span class="Delimiter">:(scenario new_concurrent)</span>
-recipe f1 [
+def f1 [
   start-running f2
-  <span class="Constant">1</span>:address:shared:number/<span class="Special">raw &lt;- </span>new number:type
+  <span class="Constant">1</span>:address:shared:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
   <span class="Comment"># wait for f2 to complete</span>
   <span class="Delimiter">{</span>
     loop-unless <span class="Constant">4</span>:number/<span class="Special">raw</span>
   <span class="Delimiter">}</span>
 ]
-recipe f2 [
-  <span class="Constant">2</span>:address:shared:number/<span class="Special">raw &lt;- </span>new number:type
+def f2 [
+  <span class="Constant">2</span>:address:shared:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
   <span class="Comment"># hack: assumes scheduler implementation</span>
   <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:shared:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:shared:number/<span class="Special">raw</span>
   <span class="Comment"># signal f2 complete</span>
@@ -568,4 +561,3 @@ recipe f2 [
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

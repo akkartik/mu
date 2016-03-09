@@ -3,68 +3,61 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 015literal_noninteger.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
-.Special { color: #ff6060; }
 .Identifier { color: #804000; }
+.Normal { color: #eeeeee; background-color: #080808; }
+.traceContains { color: #008000; }
+.Special { color: #ff6060; }
 .Constant { color: #00a0a0; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment">//: Support literal non-integers.</span>
 
 <span class="Delimiter">:(scenarios load)</span>
 <span class="Delimiter">:(scenario noninteger_literal)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3.14159</span>
 ]
 <span class="traceContains">+parse:   ingredient: 3.14159: &quot;literal-fractional-number&quot;</span>
 
 <span class="Delimiter">:(after &quot;Parsing reagent(string s)&quot;)</span>
-if <span class="Delimiter">(</span>is_noninteger<span class="Delimiter">(</span>s<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_noninteger<span class="Delimiter">(</span>s<span class="Delimiter">))</span> <span class="Delimiter">{</span>
   name = s<span class="Delimiter">;</span>
-  type = new type_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal-fractional-number&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal-fractional-number&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
   set_value<span class="Delimiter">(</span>to_double<span class="Delimiter">(</span>s<span class="Delimiter">));</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-bool is_noninteger<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_noninteger<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> s<span class="Delimiter">.</span>find_first_not_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789-.&quot;</span><span class="Delimiter">)</span> == string::npos  <span class="Comment">// no other characters</span>
       &amp;&amp; s<span class="Delimiter">.</span>find_first_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789&quot;</span><span class="Delimiter">)</span> != string::npos  <span class="Comment">// at least one digit</span>
       &amp;&amp; s<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">'-'</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">)</span> == string::npos  <span class="Comment">// '-' only at first position</span>
       &amp;&amp; std::count<span class="Delimiter">(</span>s<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> s<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> <span class="Constant">'.'</span><span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// exactly one decimal point</span>
 <span class="Delimiter">}</span>
 
-double to_double<span class="Delimiter">(</span>string n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  char* end = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span class="Normal">double</span> to_double<span class="Delimiter">(</span>string n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">char</span>* end = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Comment">// safe because string.c_str() is guaranteed to be null-terminated</span>
-  double result = strtod<span class="Delimiter">(</span>n<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> &amp;end<span class="Delimiter">);</span>
+  <span class="Normal">double</span> result = strtod<span class="Delimiter">(</span>n<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> &amp;end<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>*end == <span class="cSpecial">'\0'</span><span class="Delimiter">);</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-void test_is_noninteger<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> test_is_noninteger<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   CHECK<span class="Delimiter">(</span>!is_noninteger<span class="Delimiter">(</span><span class="Constant">&quot;1234&quot;</span><span class="Delimiter">));</span>
   CHECK<span class="Delimiter">(</span>!is_noninteger<span class="Delimiter">(</span><span class="Constant">&quot;1a2&quot;</span><span class="Delimiter">));</span>
   CHECK<span class="Delimiter">(</span>is_noninteger<span class="Delimiter">(</span><span class="Constant">&quot;234.0&quot;</span><span class="Delimiter">));</span>
@@ -81,4 +74,3 @@ void test_is_noninteger<span class="Delimiter">()</span> <span class="Delimiter"
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

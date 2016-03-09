@@ -3,37 +3,30 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 050scenario.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
 .traceAbsent { color: #c00000; }
-.traceContains { color: #008000; }
-.SalientComment { color: #00ffff; }
-.cSpecial { color: #008000; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
-.Special { color: #ff6060; }
-.Identifier { color: #804000; }
-.Constant { color: #00a0a0; }
 .CommentedCode { color: #6c6c6c; }
+.traceContains { color: #008000; }
+.Identifier { color: #804000; }
+.cSpecial { color: #008000; }
+.SalientComment { color: #00ffff; }
+.Normal { color: #eeeeee; background-color: #080808; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment">//: Mu scenarios. This will get long, but these are the tests we want to</span>
 <span class="Comment">//: support in this layer.</span>
 
@@ -81,7 +74,7 @@ scenario foo [
   trace-should-contain [
     a: a b c
   ]
-  trace-should-not-contain [
+  trace-should-<span class="Normal">not</span>-contain [
     a: x y z
   ]
 ]
@@ -89,7 +82,7 @@ scenario foo [
 <span class="SalientComment">//:: Core data structure</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
-struct scenario <span class="Delimiter">{</span>
+<span class="Normal">struct</span> scenario <span class="Delimiter">{</span>
   string name<span class="Delimiter">;</span>
   string to_run<span class="Delimiter">;</span>
 <span class="Delimiter">};</span>
@@ -102,7 +95,7 @@ set&lt;string&gt; Scenario_names<span class="Delimiter">;</span>
 <span class="Comment">//: Simply store the text of the scenario.</span>
 
 <span class="Delimiter">:(before &quot;End Command Handlers&quot;)</span>
-else if <span class="Delimiter">(</span>command == <span class="Constant">&quot;scenario&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;scenario&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Scenarios<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>parse_scenario<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
@@ -110,8 +103,8 @@ else if <span class="Delimiter">(</span>command == <span class="Constant">&quot;
 scenario parse_scenario<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   scenario result<span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Scenario_names<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
-    raise_error &lt;&lt; <span class="Constant">&quot;duplicate scenario name: &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Scenario_names<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
+    raise &lt;&lt; <span class="Constant">&quot;duplicate scenario name: &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   Scenario_names<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>
@@ -135,7 +128,7 @@ scenario foo [
 
 <span class="Delimiter">:(scenario read_scenario_with_bracket_in_comment_in_nested_string)</span>
 scenario foo [
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new [<span class="Comment"># not a comment]</span>
+  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Comment"># not a comment]</span>
 ]
 <span class="traceContains">+run: 1:address:shared:array:character &lt;- new [# not a comment]</span>
 
@@ -143,59 +136,59 @@ scenario foo [
 <span class="Comment">//: Treat the text of the scenario as a regular series of instructions.</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-long long int Num_core_mu_tests = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Num_core_mu_tests = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(after &quot;Check For .mu Files&quot;)</span>
 Num_core_mu_tests = SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Tests&quot;)</span>
 Hide_missing_default_space_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
-time_t mu_time<span class="Delimiter">;</span> time<span class="Delimiter">(</span>&amp;mu_time<span class="Delimiter">);</span>
+<span class="Normal">time_t</span> mu_time<span class="Delimiter">;</span> time<span class="Delimiter">(</span>&amp;mu_time<span class="Delimiter">);</span>
 cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">Mu tests: &quot;</span> &lt;&lt; ctime<span class="Delimiter">(</span>&amp;mu_time<span class="Delimiter">);</span>
-for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; i &lt;&lt; &quot;: &quot; &lt;&lt; Scenarios.at(i).name &lt;&lt; '\n';</span>
-  if <span class="Delimiter">(</span>i == Num_core_mu_tests<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>i == Num_core_mu_tests<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     time<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
     cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">App tests: &quot;</span> &lt;&lt; ctime<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   run_mu_scenario<span class="Delimiter">(</span>Scenarios<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-  if <span class="Delimiter">(</span>Passed<span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;.&quot;</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Passed<span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;.&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: Convenience: run a single named scenario.</span>
 <span class="Delimiter">:(after &quot;Test Runs&quot;)</span>
-for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>Scenarios<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name == argv[argc-<span class="Constant">1</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Scenarios<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name == argv[argc-<span class="Constant">1</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     run_mu_scenario<span class="Delimiter">(</span>Scenarios<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-    if <span class="Delimiter">(</span>Passed<span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Passed<span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
     <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-const scenario* Current_scenario = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span class="Normal">const</span> scenario* Current_scenario = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(code)</span>
-void run_mu_scenario<span class="Delimiter">(</span>const scenario&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> run_mu_scenario<span class="Delimiter">(</span><span class="Normal">const</span> scenario&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Current_scenario = &amp;s<span class="Delimiter">;</span>
-  bool not_already_inside_test = !Trace_stream<span class="Delimiter">;</span>
+  <span class="Normal">bool</span> not_already_inside_test = !Trace_stream<span class="Delimiter">;</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; s.name &lt;&lt; '\n';</span>
-  if <span class="Delimiter">(</span>not_already_inside_test<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>not_already_inside_test<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Trace_file = s<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-    Trace_stream = new trace_stream<span class="Delimiter">;</span>
+    Trace_stream = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span>
     setup<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   vector&lt;recipe_ordinal&gt; tmp = load<span class="Delimiter">(</span><span class="Constant">&quot;recipe scenario_&quot;</span>+s<span class="Delimiter">.</span>name+<span class="Constant">&quot; [ &quot;</span>+s<span class="Delimiter">.</span>to_run+<span class="Constant">&quot; ]&quot;</span><span class="Delimiter">);</span>
   bind_special_scenario_names<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   transform_all<span class="Delimiter">();</span>
   run<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>front<span class="Delimiter">());</span>
-  if <span class="Delimiter">(</span>Passed &amp;&amp; !Hide_errors &amp;&amp; trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; !Hide_errors &amp;&amp; trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
     ++Num_failures<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>not_already_inside_test &amp;&amp; Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>not_already_inside_test &amp;&amp; Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     teardown<span class="Delimiter">();</span>
     ofstream fout<span class="Delimiter">((</span>Trace_dir+Trace_file<span class="Delimiter">).</span>c_str<span class="Delimiter">());</span>
     fout &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>readable_contents<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
     fout<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
-    delete Trace_stream<span class="Delimiter">;</span>
+    <span class="Normal">delete</span> Trace_stream<span class="Delimiter">;</span>
     Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
     Trace_file = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -208,17 +201,17 @@ void run_mu_scenario<span class="Delimiter">(</span>const scenario&amp; s<span c
 <span class="Delimiter">:(scenario forbid_redefining_scenario_even_if_forced)</span>
 <span class="Special">% Hide_errors = true;</span>
 <span class="Special">% Disable_redefine_checks = true;</span>
-recipe scenario-foo [
+def scenario-foo [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 
-recipe scenario-foo [
+def scenario-foo [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
 ]
 <span class="traceContains">+error: redefining recipe scenario-foo</span>
 
 <span class="Delimiter">:(after &quot;bool should_check_for_redefine(const string&amp; recipe_name)&quot;)</span>
-  if <span class="Delimiter">(</span>recipe_name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;scenario-&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>recipe_name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;scenario-&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 
 <span class="SalientComment">//:: The special instructions we want to support inside scenarios.</span>
 <span class="Comment">//: In a compiler for the mu VM these will require more work.</span>
@@ -226,7 +219,7 @@ recipe scenario-foo [
 <span class="Comment">//: 'run' interprets a string as a set of instructions</span>
 
 <span class="Delimiter">:(scenario run)</span>
-recipe main [
+def main [
   run [
     <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>
   ]
@@ -238,18 +231,18 @@ RUN<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">,</span> RUN<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case RUN: <span class="Delimiter">{</span>
+<span class="Normal">case</span> RUN: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case RUN: <span class="Delimiter">{</span>
+<span class="Normal">case</span> RUN: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>Name[Next_recipe_ordinal]<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   ostringstream tmp<span class="Delimiter">;</span>
   tmp &lt;&lt; <span class="Constant">&quot;recipe run_&quot;</span> &lt;&lt; Next_recipe_ordinal &lt;&lt; <span class="Constant">&quot; [ &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; ]&quot;</span><span class="Delimiter">;</span>
   vector&lt;recipe_ordinal&gt; tmp_recipe = load<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
   bind_special_scenario_names<span class="Delimiter">(</span>tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   transform_all<span class="Delimiter">();</span>
-  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
     trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;run: incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
     assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
@@ -261,13 +254,13 @@ case RUN: <span class="Delimiter">{</span>
 <span class="Comment">// Some variables for fake resources always get special addresses in</span>
 <span class="Comment">// scenarios.</span>
 <span class="Delimiter">:(code)</span>
-void bind_special_scenario_names<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> bind_special_scenario_names<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// Special Scenario Variable Names(r)</span>
   <span class="Comment">// End Special Scenario Variable Names(r)</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario run_multiple)</span>
-recipe main [
+def main [
   run [
     <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>
   ]
@@ -282,14 +275,14 @@ recipe main [
 <span class="Comment">//: Also includes some special support for checking strings.</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-bool Scenario_testing_scenario = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Normal">bool</span> Scenario_testing_scenario = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Scenario_testing_scenario = <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(scenario memory_check)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">13</span>
   ]
@@ -302,61 +295,61 @@ MEMORY_SHOULD_CONTAIN<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;memory-should-contain&quot;</span><span class="Delimiter">,</span> MEMORY_SHOULD_CONTAIN<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case MEMORY_SHOULD_CONTAIN: <span class="Delimiter">{</span>
+<span class="Normal">case</span> MEMORY_SHOULD_CONTAIN: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case MEMORY_SHOULD_CONTAIN: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Normal">case</span> MEMORY_SHOULD_CONTAIN: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   check_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-void check_memory<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> check_memory<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   istringstream in<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
-  set&lt;long long int&gt; locations_checked<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  set&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt; locations_checked<span class="Delimiter">;</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     string lhs = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span>lhs<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span>lhs<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       check_type<span class="Delimiter">(</span>lhs<span class="Delimiter">,</span> in<span class="Delimiter">);</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    long long int address = to_integer<span class="Delimiter">(</span>lhs<span class="Delimiter">);</span>
+    <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address = to_integer<span class="Delimiter">(</span>lhs<span class="Delimiter">);</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     string _assign<span class="Delimiter">;</span>  in &gt;&gt; _assign<span class="Delimiter">;</span>  assert<span class="Delimiter">(</span>_assign == <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">);</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     string rhs = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span>rhs<span class="Delimiter">)</span> &amp;&amp; !is_noninteger<span class="Delimiter">(</span>rhs<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      if <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span>rhs<span class="Delimiter">)</span> &amp;&amp; !is_noninteger<span class="Delimiter">(</span>rhs<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span>
         <span class="Comment">// genuine test in a mu file</span>
-        raise_error &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; can't contain non-number &quot;</span> &lt;&lt; rhs &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-      else
+        raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; can't contain non-number &quot;</span> &lt;&lt; rhs &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Normal">else</span>
         <span class="Comment">// just testing scenario support</span>
-        raise_error &lt;&lt; <span class="Constant">&quot;location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; can't contain non-number &quot;</span> &lt;&lt; rhs &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-      if <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        raise &lt;&lt; <span class="Constant">&quot;location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; can't contain non-number &quot;</span> &lt;&lt; rhs &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
         ++Num_failures<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
       <span class="Identifier">return</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    double value = to_double<span class="Delimiter">(</span>rhs<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>locations_checked<span class="Delimiter">,</span> address<span class="Delimiter">))</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;duplicate expectation for location &quot;</span> &lt;&lt; address &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">double</span> value = to_double<span class="Delimiter">(</span>rhs<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>locations_checked<span class="Delimiter">,</span> address<span class="Delimiter">))</span>
+      raise &lt;&lt; <span class="Constant">&quot;duplicate expectation for location &quot;</span> &lt;&lt; address &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking location &quot;</span> &lt;&lt; address &lt;&lt; end<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">)</span> != value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      if <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">)</span> != value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         <span class="Comment">// genuine test in a mu file</span>
-        raise_error &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; to contain &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; to contain &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
-      else <span class="Delimiter">{</span>
+      <span class="Normal">else</span> <span class="Delimiter">{</span>
         <span class="Comment">// just testing scenario support</span>
-        raise_error &lt;&lt; <span class="Constant">&quot;expected location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; to contain &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; <span class="Constant">&quot;expected location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; to contain &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
-      if <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
         ++Num_failures<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
@@ -366,9 +359,9 @@ void check_memory<span class="Delimiter">(</span>const string&amp; s<span class=
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-void check_type<span class="Delimiter">(</span>const string&amp; lhs<span class="Delimiter">,</span> istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> check_type<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; lhs<span class="Delimiter">,</span> istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   reagent x<span class="Delimiter">(</span>lhs<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span>
       &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;character&quot;</span>
       &amp;&amp; !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>to_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
@@ -377,7 +370,7 @@ void check_type<span class="Delimiter">(</span>const string&amp; lhs<span class=
     assert<span class="Delimiter">(</span>_assign == <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">);</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     string literal = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    long long int address = x<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+    <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address = x<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
     <span class="Comment">// exclude quoting brackets</span>
     assert<span class="Delimiter">(</span>*literal<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>  literal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>literal<span class="Delimiter">.</span>begin<span class="Delimiter">());</span>
     assert<span class="Delimiter">(</span>*--literal<span class="Delimiter">.</span>end<span class="Delimiter">()</span> == <span class="Constant">']'</span><span class="Delimiter">);</span>  literal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>--literal<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
@@ -385,35 +378,35 @@ void check_type<span class="Delimiter">(</span>const string&amp; lhs<span class=
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// End Scenario Type Cases</span>
-  raise_error &lt;&lt; <span class="Constant">&quot;don't know how to check memory for &quot;</span> &lt;&lt; lhs &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  raise &lt;&lt; <span class="Constant">&quot;don't know how to check memory for &quot;</span> &lt;&lt; lhs &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-void check_string<span class="Delimiter">(</span>long long int address<span class="Delimiter">,</span> const string&amp; literal<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> check_string<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; literal<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking string length at &quot;</span> &lt;&lt; address &lt;&lt; end<span class="Delimiter">();</span>
-  if <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>literal<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; to contain length &quot;</span> &lt;&lt; SIZE<span class="Delimiter">(</span>literal<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; of string [&quot;</span> &lt;&lt; literal &lt;&lt; <span class="Constant">&quot;] but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; (&quot;</span> &lt;&lt; read_mu_string<span class="Delimiter">(</span>address<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    else
-      raise_error &lt;&lt; <span class="Constant">&quot;expected location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; to contain length &quot;</span> &lt;&lt; SIZE<span class="Delimiter">(</span>literal<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; of string [&quot;</span> &lt;&lt; literal &lt;&lt; <span class="Constant">&quot;] but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>literal<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span>
+      raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; to contain length &quot;</span> &lt;&lt; SIZE<span class="Delimiter">(</span>literal<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; of string [&quot;</span> &lt;&lt; literal &lt;&lt; <span class="Constant">&quot;] but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; (&quot;</span> &lt;&lt; read_mu_string<span class="Delimiter">(</span>address<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">else</span>
+      raise &lt;&lt; <span class="Constant">&quot;expected location &quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot; to contain length &quot;</span> &lt;&lt; SIZE<span class="Delimiter">(</span>literal<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; of string [&quot;</span> &lt;&lt; literal &lt;&lt; <span class="Constant">&quot;] but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
       ++Num_failures<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   ++address<span class="Delimiter">;</span>  <span class="Comment">// now skip length</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>literal<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>literal<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking location &quot;</span> &lt;&lt; address+i &lt;&lt; end<span class="Delimiter">();</span>
-    if <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">)</span> != literal<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      if <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">)</span> != literal<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         <span class="Comment">// genuine test in a mu file</span>
-        raise_error &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected location &quot;</span> &lt;&lt; <span class="Delimiter">(</span>address+i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; to contain &quot;</span> &lt;&lt; literal<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; ('&quot;</span> &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;')</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected location &quot;</span> &lt;&lt; <span class="Delimiter">(</span>address+i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; to contain &quot;</span> &lt;&lt; literal<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; ('&quot;</span> &lt;&lt; <span class="Normal">static_cast</span>&lt;<span class="Normal">char</span>&gt;<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;')</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
-      else <span class="Delimiter">{</span>
+      <span class="Normal">else</span> <span class="Delimiter">{</span>
         <span class="Comment">// just testing scenario support</span>
-        raise_error &lt;&lt; <span class="Constant">&quot;expected location &quot;</span> &lt;&lt; <span class="Delimiter">(</span>address+i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; to contain &quot;</span> &lt;&lt; literal<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; <span class="Constant">&quot;expected location &quot;</span> &lt;&lt; <span class="Delimiter">(</span>address+i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; to contain &quot;</span> &lt;&lt; literal<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
-      if <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
         ++Num_failures<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
@@ -425,7 +418,7 @@ void check_string<span class="Delimiter">(</span>long long int address<span clas
 <span class="Delimiter">:(scenario memory_check_multiple)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
@@ -436,7 +429,7 @@ recipe main [
 <span class="Delimiter">:(scenario memory_check_string_length)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">98</span>  <span class="Comment"># 'b'</span>
@@ -448,7 +441,7 @@ recipe main [
 <span class="traceContains">+error: expected location 1 to contain length 2 of string [ab] but saw 3</span>
 
 <span class="Delimiter">:(scenario memory_check_string)</span>
-recipe main [
+def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">98</span>  <span class="Comment"># 'b'</span>
@@ -465,7 +458,7 @@ recipe main [
 <span class="Delimiter">:(scenario memory_invalid_string_check)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span>[abc]
   ]
@@ -475,7 +468,7 @@ recipe main [
 <span class="Delimiter">:(scenario memory_check_with_comment)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">34</span>  <span class="Comment"># comment</span>
   ]
@@ -492,7 +485,7 @@ recipe main [
 <span class="Delimiter">:(scenario trace_check_fails)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   trace-should-contain [
     a: b
     a: d
@@ -505,12 +498,12 @@ TRACE_SHOULD_CONTAIN<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;trace-should-contain&quot;</span><span class="Delimiter">,</span> TRACE_SHOULD_CONTAIN<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case TRACE_SHOULD_CONTAIN: <span class="Delimiter">{</span>
+<span class="Normal">case</span> TRACE_SHOULD_CONTAIN: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case TRACE_SHOULD_CONTAIN: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Normal">case</span> TRACE_SHOULD_CONTAIN: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   check_trace<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -518,31 +511,31 @@ case TRACE_SHOULD_CONTAIN: <span class="Delimiter">{</span>
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// simplified version of check_trace_contents() that emits errors rather</span>
 <span class="Comment">// than just printing to stderr</span>
-void check_trace<span class="Delimiter">(</span>const string&amp; expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> check_trace<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
   vector&lt;trace_line&gt; expected_lines = parse_trace<span class="Delimiter">(</span>expected<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  long long int curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>label != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>contents != trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>label != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>contents != trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Comment">// match</span>
     ++curr_expected_line<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>curr_expected_line == SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>curr_expected_line == SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
-  raise_error &lt;&lt; <span class="Constant">&quot;missing [&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>contents &lt;&lt; <span class="Constant">&quot;] &quot;</span>
+  raise &lt;&lt; <span class="Constant">&quot;missing [&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>contents &lt;&lt; <span class="Constant">&quot;] &quot;</span>
               &lt;&lt; <span class="Constant">&quot;in trace with label &quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-vector&lt;trace_line&gt; parse_trace<span class="Delimiter">(</span>const string&amp; expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+vector&lt;trace_line&gt; parse_trace<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   vector&lt;string&gt; buf = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   vector&lt;trace_line&gt; result<span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>buf<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>buf<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> = trim<span class="Delimiter">(</span>buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-    if <span class="Delimiter">(</span>buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    long long int delim = buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>find<span class="Delimiter">(</span><span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> delim = buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>find<span class="Delimiter">(</span><span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
     result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>trim<span class="Delimiter">(</span>buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> delim<span class="Delimiter">)),</span>  trim<span class="Delimiter">(</span>buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>substr<span class="Delimiter">(</span>delim+<span class="Constant">2</span><span class="Delimiter">))));</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
@@ -551,7 +544,7 @@ vector&lt;trace_line&gt; parse_trace<span class="Delimiter">(</span>const string
 <span class="Delimiter">:(scenario trace_check_fails_in_nonfirst_line)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [b]
   ]
@@ -564,7 +557,7 @@ recipe main [
 
 <span class="Delimiter">:(scenario trace_check_passes_silently)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
-recipe main [
+def main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [b]
   ]
@@ -582,11 +575,11 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">:(scenario trace_negative_check_fails)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [b]
   ]
-  trace-should-not-contain [
+  trace-should-<span class="Normal">not</span>-contain [
     a: b
   ]
 ]
@@ -597,12 +590,12 @@ TRACE_SHOULD_NOT_CONTAIN<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;trace-should-not-contain&quot;</span><span class="Delimiter">,</span> TRACE_SHOULD_NOT_CONTAIN<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case TRACE_SHOULD_NOT_CONTAIN: <span class="Delimiter">{</span>
+<span class="Normal">case</span> TRACE_SHOULD_NOT_CONTAIN: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case TRACE_SHOULD_NOT_CONTAIN: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Normal">case</span> TRACE_SHOULD_NOT_CONTAIN: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   check_trace_missing<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -610,12 +603,12 @@ case TRACE_SHOULD_NOT_CONTAIN: <span class="Delimiter">{</span>
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// simplified version of check_trace_contents() that emits errors rather</span>
 <span class="Comment">// than just printing to stderr</span>
-bool check_trace_missing<span class="Delimiter">(</span>const string&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> check_trace_missing<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
   vector&lt;trace_line&gt; lines = parse_trace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>lines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span>lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>label<span class="Delimiter">,</span> lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>contents<span class="Delimiter">)</span> != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;unexpected [&quot;</span> &lt;&lt; lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>contents &lt;&lt; <span class="Constant">&quot;] in trace with label &quot;</span> &lt;&lt; lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>lines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span>lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>label<span class="Delimiter">,</span> lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>contents<span class="Delimiter">)</span> != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; <span class="Constant">&quot;unexpected [&quot;</span> &lt;&lt; lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>contents &lt;&lt; <span class="Constant">&quot;] in trace with label &quot;</span> &lt;&lt; lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -625,8 +618,8 @@ bool check_trace_missing<span class="Delimiter">(</span>const string&amp; in<spa
 
 <span class="Delimiter">:(scenario trace_negative_check_passes_silently)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
-recipe main [
-  trace-should-not-contain [
+def main [
+  trace-should-<span class="Normal">not</span>-contain [
     a: b
   ]
 ]
@@ -636,11 +629,11 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">:(scenario trace_negative_check_fails_on_any_unexpected_line)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [d]
   ]
-  trace-should-not-contain [
+  trace-should-<span class="Normal">not</span>-contain [
     a: b
     a: d
   ]
@@ -648,11 +641,11 @@ recipe main [
 <span class="traceContains">+error: unexpected [d] in trace with label a</span>
 
 <span class="Delimiter">:(scenario trace_count_check)</span>
-recipe main [
+def main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [foo]
   ]
-  check-trace-count-for-label <span class="Constant">1</span><span class="Delimiter">,</span> [a]
+  check-trace-count-<span class="Normal">for</span>-label <span class="Constant">1</span><span class="Delimiter">,</span> [a]
 ]
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
@@ -660,38 +653,38 @@ CHECK_TRACE_COUNT_FOR_LABEL<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;check-trace-count-for-label&quot;</span><span class="Delimiter">,</span> CHECK_TRACE_COUNT_FOR_LABEL<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-case CHECK_TRACE_COUNT_FOR_LABEL: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'check-trace-for-label' requires exactly two ingredients, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">case</span> CHECK_TRACE_COUNT_FOR_LABEL: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'check-trace-for-label' requires exactly two ingredients, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'check-trace-for-label' should be a number (count), but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'check-trace-for-label' should be a number (count), but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>!is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise_error &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'check-trace-for-label' should be a literal string (label), but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'check-trace-for-label' should be a literal string (label), but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case CHECK_TRACE_COUNT_FOR_LABEL: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-  long long int expected_count = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="Normal">case</span> CHECK_TRACE_COUNT_FOR_LABEL: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> expected_count = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   string label = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
-  long long int count = trace_count<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>count != expected_count<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> count = trace_count<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>count != expected_count<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// genuine test in a mu file</span>
-      raise_error &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; in trace: &quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; in trace: &quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       DUMP<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
-    else <span class="Delimiter">{</span>
+    <span class="Normal">else</span> <span class="Delimiter">{</span>
       <span class="Comment">// just testing scenario support</span>
-      raise_error &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; in trace</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; in trace</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
       ++Num_failures<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -702,24 +695,24 @@ case CHECK_TRACE_COUNT_FOR_LABEL: <span class="Delimiter">{</span>
 <span class="Delimiter">:(scenario trace_count_check_2)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-recipe main [
+def main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [foo]
   ]
-  check-trace-count-for-label <span class="Constant">2</span><span class="Delimiter">,</span> [a]
+  check-trace-count-<span class="Normal">for</span>-label <span class="Constant">2</span><span class="Delimiter">,</span> [a]
 ]
 <span class="traceContains">+error: main: expected 2 lines in trace with label a in trace</span>
 
 <span class="Comment">//: Minor detail: ignore 'system' calls in scenarios, since anything we do</span>
 <span class="Comment">//: with them is by definition impossible to test through mu.</span>
 <span class="Delimiter">:(after &quot;case _SYSTEM:&quot;)</span>
-  if <span class="Delimiter">(</span>Current_scenario<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
 
 <span class="SalientComment">//:: Helpers</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// just for the scenarios running scenarios in C++ layers</span>
-void run_mu_scenario<span class="Delimiter">(</span>const string&amp; form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> run_mu_scenario<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Scenario_names<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   istringstream in<span class="Delimiter">(</span>form<span class="Delimiter">);</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
@@ -732,4 +725,3 @@ void run_mu_scenario<span class="Delimiter">(</span>const string&amp; form<span 
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

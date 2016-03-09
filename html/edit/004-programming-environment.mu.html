@@ -3,42 +3,34 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/004-programming-environment.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
-.Special { color: #ff6060; }
-.muData { color: #ffff00; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.SalientComment { color: #00ffff; }
-.Delimiter { color: #a04060; }
 .muScenario { color: #00af00; }
+.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
+.muData { color: #ffff00; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
+.muRecipe { color: #ff8700; }
+.Comment { color: #9090ff; }
+.SalientComment { color: #00ffff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="SalientComment">## putting the environment together out of editors</span>
 <span class="Comment">#</span>
 <span class="Comment"># Consists of one editor on the left for recipes and one on the right for the</span>
 <span class="Comment"># sandbox.</span>
 
-<span class="muRecipe">recipe!</span> main [
+<span class="muRecipe">def!</span> main [
   <span class="Constant">local-scope</span>
   open-console
   initial-recipe:address:shared:array:character<span class="Special"> &lt;- </span>restore <span class="Constant">[recipes.mu]</span>
@@ -56,7 +48,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   sandbox-in-focus?:boolean  <span class="Comment"># false =&gt; cursor in recipes; true =&gt; cursor in current-sandbox</span>
 ]
 
-<span class="muRecipe">recipe</span> new-programming-environment screen:address:shared:screen, initial-recipe-contents:address:shared:array:character, initial-sandbox-contents:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:programming-environment-data, screen:address:shared:screen [
+<span class="muRecipe">def</span> new-programming-environment screen:address:shared:screen, initial-recipe-contents:address:shared:array:character, initial-sandbox-contents:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:programming-environment-data, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   width:number<span class="Special"> &lt;- </span>screen-width screen
@@ -83,7 +75,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Constant">  &lt;programming-environment-initialization&gt;</span>
 ]
 
-<span class="muRecipe">recipe</span> event-loop screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data [
+<span class="muRecipe">def</span> event-loop screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   recipes:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
@@ -215,7 +207,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> resize screen:address:shared:screen, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>env:address:shared:programming-environment-data, screen:address:shared:screen [
+<span class="muRecipe">def</span> resize screen:address:shared:screen, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>env:address:shared:programming-environment-data, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   clear-screen screen  <span class="Comment"># update screen dimensions</span>
@@ -407,7 +399,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> render-all screen:address:shared:screen, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> render-all screen:address:shared:screen, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, env:address:shared:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   trace <span class="Constant">10</span>, <span class="Constant">[app]</span>, <span class="Constant">[render all]</span>
@@ -440,7 +432,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   show-screen screen
 ]
 
-<span class="muRecipe">recipe</span> render-recipes screen:address:shared:screen, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> render-recipes screen:address:shared:screen, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, env:address:shared:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   trace <span class="Constant">11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render recipes]</span>
@@ -459,7 +451,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># replaced in a later layer</span>
-<span class="muRecipe">recipe</span> render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, env:address:shared:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   current-sandbox:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
@@ -474,7 +466,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   clear-screen-from screen, row, left, left, right
 ]
 
-<span class="muRecipe">recipe</span> update-cursor screen:address:shared:screen, recipes:address:shared:editor-data, current-sandbox:address:shared:editor-data, sandbox-in-focus?:boolean, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> update-cursor screen:address:shared:screen, recipes:address:shared:editor-data, current-sandbox:address:shared:editor-data, sandbox-in-focus?:boolean, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
 <span class="Constant">  &lt;update-cursor-special-cases&gt;</span>
@@ -493,10 +485,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># print a text 's' to 'editor' in 'color' starting at 'row'</span>
 <span class="Comment"># clear rest of last line, move cursor to next line</span>
-<span class="muRecipe">recipe</span> render screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, color:number, row:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:shared:screen [
+<span class="muRecipe">def</span> render screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, color:number, row:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> s
+  <span class="muControl">return-unless</span> s
   column:number<span class="Special"> &lt;- </span>copy left
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
   screen-height:number<span class="Special"> &lt;- </span>screen-height screen
@@ -554,10 +546,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># like 'render' for texts, but with colorization for comments like in the editor</span>
-<span class="muRecipe">recipe</span> render-code screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, row:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:shared:screen [
+<span class="muRecipe">def</span> render-code screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, row:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> s
+  <span class="muControl">return-unless</span> s
   color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
   column:number<span class="Special"> &lt;- </span>copy left
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
@@ -643,7 +635,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="SalientComment">## helpers</span>
 
-<span class="muRecipe">recipe</span> draw-vertical screen:address:shared:screen, col:number, y:number, bottom:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> draw-vertical screen:address:shared:screen, col:number, y:number, bottom:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   style:character, style-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -669,4 +661,3 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

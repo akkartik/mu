@@ -3,33 +3,26 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 013update_operation.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.Identifier { color: #804000; }
 .cSpecial { color: #008000; }
-.Constant { color: #00a0a0; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
+.Identifier { color: #804000; }
 .CommentedCode { color: #6c6c6c; }
+.Constant { color: #00a0a0; }
+.Normal { color: #eeeeee; background-color: #080808; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment">//: Once all code is loaded, save operation ids of instructions and check that</span>
 <span class="Comment">//: nothing's undefined.</span>
 
@@ -37,15 +30,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>update_instruction_operations<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(code)</span>
-void update_instruction_operations<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> update_instruction_operations<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- compute instruction operations for recipe &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
   recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;--- compute instruction operations for recipe &quot; &lt;&lt; caller.name &lt;&lt; '\n';</span>
-  for <span class="Delimiter">(</span>long long int index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise_error &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has no recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has no recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     inst<span class="Delimiter">.</span>operation = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
@@ -57,13 +50,6 @@ void update_instruction_operations<span class="Delimiter">(</span>recipe_ordinal
 string maybe<span class="Delimiter">(</span>string s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> s + <span class="Constant">&quot;: &quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-
-<span class="Comment">// temporarily suppress run</span>
-void transform<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  load<span class="Delimiter">(</span>form<span class="Delimiter">);</span>
-  transform_all<span class="Delimiter">();</span>
-<span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

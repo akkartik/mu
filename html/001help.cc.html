@@ -3,39 +3,32 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 001help.cc</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
 .PreProc { color: #c000c0; }
-.cSpecial { color: #008000; }
-.Constant { color: #00a0a0; }
-.Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
 .SalientComment { color: #00ffff; }
 .Identifier { color: #804000; }
+.cSpecial { color: #008000; }
+.Constant { color: #00a0a0; }
+.Normal { color: #eeeeee; background-color: #080808; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment">//: Everything this project/binary supports.</span>
 <span class="Comment">//: This should give you a sense for what to look forward to in later layers.</span>
 
 <span class="Delimiter">:(before &quot;End Commandline Parsing&quot;)</span>
-if <span class="Delimiter">(</span>argc &lt;= <span class="Constant">1</span> || is_equal<span class="Delimiter">(</span>argv[<span class="Constant">1</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;--help&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>argc &lt;= <span class="Constant">1</span> || is_equal<span class="Delimiter">(</span>argv[<span class="Constant">1</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;--help&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
   <span class="Comment">// this is the functionality later layers will provide</span>
   <span class="Comment">// currently no automated tests for commandline arg parsing</span>
   cerr &lt;&lt; <span class="Constant">&quot;To load files and run 'main':</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
@@ -66,7 +59,7 @@ if <span class="Delimiter">(</span>argc &lt;= <span class="Constant">1</span> ||
 <span class="Comment">//: way, our makefile contains a little command to automatically generate</span>
 <span class="Comment">//: declarations for them.</span>
 <span class="Delimiter">:(code)</span>
-bool is_equal<span class="Delimiter">(</span>char* s<span class="Delimiter">,</span> const char* lit<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_equal<span class="Delimiter">(</span><span class="Normal">char</span>* s<span class="Delimiter">,</span> <span class="Normal">const</span> <span class="Normal">char</span>* lit<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> strncmp<span class="Delimiter">(</span>s<span class="Delimiter">,</span> lit<span class="Delimiter">,</span> strlen<span class="Delimiter">(</span>lit<span class="Delimiter">))</span> == <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -119,7 +112,7 @@ bool is_equal<span class="Delimiter">(</span>char* s<span class="Delimiter">,</s
 <span class="Comment">//: yadda-yadda. Instead use this macro below to perform an unsafe cast to</span>
 <span class="Comment">//: signed. We'll just give up immediately if a container's ever too large.</span>
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span class="PreProc">#define SIZE(X) (assert((X)</span><span class="Delimiter">.</span><span class="PreProc">size() &lt; (</span><span class="Constant">1LL</span><span class="PreProc">&lt;&lt;(</span>sizeof<span class="PreProc">(</span>long<span class="PreProc"> </span>long<span class="PreProc"> </span>int<span class="PreProc">)*</span><span class="Constant">8</span><span class="PreProc">-</span><span class="Constant">2</span><span class="PreProc">)))</span><span class="Delimiter">,</span><span class="PreProc"> </span>static_cast<span class="PreProc">&lt;</span>long<span class="PreProc"> </span>long<span class="PreProc"> </span>int<span class="PreProc">&gt;((X)</span><span class="Delimiter">.</span><span class="PreProc">size()))</span>
+<span class="PreProc">#define SIZE(X) (assert((X)</span><span class="Delimiter">.</span><span class="PreProc">size() &lt; (</span><span class="Constant">1LL</span><span class="PreProc">&lt;&lt;(</span><span class="Normal">sizeof</span><span class="PreProc">(</span><span class="Normal">long</span><span class="PreProc"> </span><span class="Normal">long</span><span class="PreProc"> </span><span class="Normal">int</span><span class="PreProc">)*</span><span class="Constant">8</span><span class="PreProc">-</span><span class="Constant">2</span><span class="PreProc">)))</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Normal">static_cast</span><span class="PreProc">&lt;</span><span class="Normal">long</span><span class="PreProc"> </span><span class="Normal">long</span><span class="PreProc"> </span><span class="Normal">int</span><span class="PreProc">&gt;((X)</span><span class="Delimiter">.</span><span class="PreProc">size()))</span>
 <span class="Comment">//:</span>
 <span class="Comment">//: 5. Integer overflow is still impossible to guard against. Maybe after</span>
 <span class="Comment">//: reading <a href="http://www.cs.utah.edu/~regehr/papers/overflow12.pdf">http://www.cs.utah.edu/~regehr/papers/overflow12.pdf</a></span>
@@ -127,24 +120,24 @@ bool is_equal<span class="Delimiter">(</span>char* s<span class="Delimiter">,</s
 <span class="Comment">//: 6. Map's operator[] being non-const is fucking evil.</span>
 <span class="Delimiter">:(before &quot;Globals&quot;)</span>  <span class="Comment">// can't generate prototypes for these</span>
 <span class="Comment">// from <a href="http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map">http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map</a></span>
-template&lt;typename T&gt; typename T::mapped_type&amp; get<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> typename T::key_type const&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  typename T::iterator iter<span class="Delimiter">(</span>map<span class="Delimiter">.</span>find<span class="Delimiter">(</span>key<span class="Delimiter">));</span>
+<span class="Normal">template</span>&lt;<span class="Normal">typename</span> T&gt; <span class="Normal">typename</span> T::mapped_type&amp; get<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> <span class="Normal">typename</span> T::key_type <span class="Normal">const</span>&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">typename</span> T::iterator iter<span class="Delimiter">(</span>map<span class="Delimiter">.</span>find<span class="Delimiter">(</span>key<span class="Delimiter">));</span>
   assert<span class="Delimiter">(</span>iter != map<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
   <span class="Identifier">return</span> iter<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-template&lt;typename T&gt; typename T::mapped_type const&amp; get<span class="Delimiter">(</span>const T&amp; map<span class="Delimiter">,</span> typename T::key_type const&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  typename T::const_iterator iter<span class="Delimiter">(</span>map<span class="Delimiter">.</span>find<span class="Delimiter">(</span>key<span class="Delimiter">));</span>
+<span class="Normal">template</span>&lt;<span class="Normal">typename</span> T&gt; <span class="Normal">typename</span> T::mapped_type <span class="Normal">const</span>&amp; get<span class="Delimiter">(</span><span class="Normal">const</span> T&amp; map<span class="Delimiter">,</span> <span class="Normal">typename</span> T::key_type <span class="Normal">const</span>&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">typename</span> T::const_iterator iter<span class="Delimiter">(</span>map<span class="Delimiter">.</span>find<span class="Delimiter">(</span>key<span class="Delimiter">));</span>
   assert<span class="Delimiter">(</span>iter != map<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
   <span class="Identifier">return</span> iter<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-template&lt;typename T&gt; typename T::mapped_type const&amp; put<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> typename T::key_type const&amp; key<span class="Delimiter">,</span> typename T::mapped_type const&amp; value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">template</span>&lt;<span class="Normal">typename</span> T&gt; <span class="Normal">typename</span> T::mapped_type <span class="Normal">const</span>&amp; put<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> <span class="Normal">typename</span> T::key_type <span class="Normal">const</span>&amp; key<span class="Delimiter">,</span> <span class="Normal">typename</span> T::mapped_type <span class="Normal">const</span>&amp; value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   map[key] = value<span class="Delimiter">;</span>
   <span class="Identifier">return</span> map[key]<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-template&lt;typename T&gt; bool contains_key<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> typename T::key_type const&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">template</span>&lt;<span class="Normal">typename</span> T&gt; <span class="Normal">bool</span> contains_key<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> <span class="Normal">typename</span> T::key_type <span class="Normal">const</span>&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> map<span class="Delimiter">.</span>find<span class="Delimiter">(</span>key<span class="Delimiter">)</span> != map<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
-template&lt;typename T&gt; typename T::mapped_type&amp; get_or_insert<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> typename T::key_type const&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">template</span>&lt;<span class="Normal">typename</span> T&gt; <span class="Normal">typename</span> T::mapped_type&amp; get_or_insert<span class="Delimiter">(</span>T&amp; map<span class="Delimiter">,</span> <span class="Normal">typename</span> T::key_type <span class="Normal">const</span>&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> map[key]<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Comment">//: The contract: any container that relies on get_or_insert should never call</span>
@@ -153,7 +146,7 @@ template&lt;typename T&gt; typename T::mapped_type&amp; get_or_insert<span class
 <span class="Comment">//: 7. istreams are a royal pain in the arse. You have to be careful about</span>
 <span class="Comment">//: what subclass you try to putback into. You have to watch out for the pesky</span>
 <span class="Comment">//: failbit and badbit. Just avoid eof() and use this helper instead.</span>
-bool has_data<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> has_data<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> in &amp;&amp; !in<span class="Delimiter">.</span>eof<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
@@ -161,18 +154,17 @@ bool has_data<span class="Delimiter">(</span>istream&amp; in<span class="Delimit
 <span class="PreProc">#include</span><span class="Constant">&lt;assert.h&gt;</span>
 
 <span class="PreProc">#include</span><span class="Constant">&lt;iostream&gt;</span>
-using std::istream<span class="Delimiter">;</span>
-using std::ostream<span class="Delimiter">;</span>
-using std::iostream<span class="Delimiter">;</span>
-using std::cin<span class="Delimiter">;</span>
-using std::cout<span class="Delimiter">;</span>
-using std::cerr<span class="Delimiter">;</span>
+<span class="Normal">using</span> std::istream<span class="Delimiter">;</span>
+<span class="Normal">using</span> std::ostream<span class="Delimiter">;</span>
+<span class="Normal">using</span> std::iostream<span class="Delimiter">;</span>
+<span class="Normal">using</span> std::cin<span class="Delimiter">;</span>
+<span class="Normal">using</span> std::cout<span class="Delimiter">;</span>
+<span class="Normal">using</span> std::cerr<span class="Delimiter">;</span>
 <span class="PreProc">#include</span><span class="Constant">&lt;iomanip&gt;</span>
 
 <span class="PreProc">#include</span><span class="Constant">&lt;cstring&gt;</span>
 <span class="PreProc">#include</span><span class="Constant">&lt;string&gt;</span>
-using std::string<span class="Delimiter">;</span>
+<span class="Normal">using</span> std::string<span class="Delimiter">;</span>
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

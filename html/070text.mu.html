@@ -3,53 +3,45 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 070text.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .muData { color: #ffff00; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.Special { color: #ff6060; }
+.muScenario { color: #00af00; }
 .Delimiter { color: #a04060; }
+.muControl { color: #c0a020; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
+.muRecipe { color: #ff8700; }
+.Comment { color: #9090ff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment"># Some useful helpers for dealing with text (arrays of characters)</span>
 
 <span class="Comment"># to-text-line gets called implicitly in various places</span>
 <span class="Comment"># define it to be identical to 'to-text' by default</span>
-<span class="muRecipe">recipe</span> to-text-line x:_elem<span class="muRecipe"> -&gt; </span>y:address:shared:array:character [
+<span class="muRecipe">def</span> to-text-line x:_elem<span class="muRecipe"> -&gt; </span>y:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   y<span class="Special"> &lt;- </span>to-text x
 ]
 
 <span class="Comment"># to-text on text is just the identity function</span>
-<span class="muRecipe">recipe</span> to-text x:address:shared:array:character<span class="muRecipe"> -&gt; </span>y:address:shared:array:character [
+<span class="muRecipe">def</span> to-text x:address:shared:array:character<span class="muRecipe"> -&gt; </span>y:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply</span> x
+  <span class="muControl">return</span> x
 ]
 
-<span class="muRecipe">recipe</span> equal a:address:shared:array:character, b:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> equal a:address:shared:array:character, b:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   a-len:number<span class="Special"> &lt;- </span>length *a
@@ -59,7 +51,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     trace <span class="Constant">99</span>, <span class="Constant">[text-equal]</span>, <span class="Constant">[comparing lengths]</span>
     length-equal?:boolean<span class="Special"> &lt;- </span>equal a-len, b-len
     <span class="muControl">break-if</span> length-equal?
-    <span class="muControl">reply</span> <span class="Constant">0</span>
+    <span class="muControl">return</span> <span class="Constant">0</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># compare each corresponding character</span>
   trace <span class="Constant">99</span>, <span class="Constant">[text-equal]</span>, <span class="Constant">[comparing characters]</span>
@@ -72,12 +64,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Delimiter">{</span>
       chars-match?:boolean<span class="Special"> &lt;- </span>equal a2, b2
       <span class="muControl">break-if</span> chars-match?
-      <span class="muControl">reply</span> <span class="Constant">0</span>
+      <span class="muControl">return</span> <span class="Constant">0</span>
     <span class="Delimiter">}</span>
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> <span class="Constant">1</span>
+  <span class="muControl">return</span> <span class="Constant">1</span>
 ]
 
 <span class="muScenario">scenario</span> text-equal-reflexive [
@@ -151,7 +143,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   data:address:shared:array:character
 ]
 
-<span class="muRecipe">recipe</span> new-buffer capacity:number<span class="muRecipe"> -&gt; </span>result:address:shared:buffer [
+<span class="muRecipe">def</span> new-buffer capacity:number<span class="muRecipe"> -&gt; </span>result:address:shared:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>new <span class="Constant">buffer:type</span>
@@ -159,10 +151,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   *len:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   s:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
   *s<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, capacity
-  <span class="muControl">reply</span> result
+  <span class="muControl">return</span> result
 ]
 
-<span class="muRecipe">recipe</span> grow-buffer in:address:shared:buffer<span class="muRecipe"> -&gt; </span>in:address:shared:buffer [
+<span class="muRecipe">def</span> grow-buffer in:address:shared:buffer<span class="muRecipe"> -&gt; </span>in:address:shared:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># double buffer size</span>
@@ -184,7 +176,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> buffer-full? in:address:shared:buffer<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> buffer-full? in:address:shared:buffer<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   len:number<span class="Special"> &lt;- </span>get *in, <span class="Constant">length:offset</span>
@@ -194,7 +186,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># most broadly applicable definition of append to a buffer: just call to-text</span>
-<span class="muRecipe">recipe</span> append buf:address:shared:buffer, x:_elem<span class="muRecipe"> -&gt; </span>buf:address:shared:buffer [
+<span class="muRecipe">def</span> append buf:address:shared:buffer, x:_elem<span class="muRecipe"> -&gt; </span>buf:address:shared:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   text:address:shared:array:character<span class="Special"> &lt;- </span>to-text x
@@ -210,7 +202,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> append in:address:shared:buffer, c:character<span class="muRecipe"> -&gt; </span>in:address:shared:buffer [
+<span class="muRecipe">def</span> append in:address:shared:buffer, c:character<span class="muRecipe"> -&gt; </span>in:address:shared:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   len:address:number<span class="Special"> &lt;- </span>get-address *in, <span class="Constant">length:offset</span>
@@ -219,9 +211,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     backspace?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">8/backspace</span>
     <span class="muControl">break-unless</span> backspace?
     empty?:boolean<span class="Special"> &lt;- </span>lesser-or-equal *len, <span class="Constant">0</span>
-    <span class="muControl">reply-if</span> empty?
+    <span class="muControl">return-if</span> empty?
     *len<span class="Special"> &lt;- </span>subtract *len, <span class="Constant">1</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># grow buffer if necessary</span>
@@ -297,14 +289,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> to-text n:number<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> to-text n:number<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># is n zero?</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> n
     result<span class="Special"> &lt;- </span>new <span class="Constant">[0]</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># save sign</span>
   negate-result:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -351,27 +343,27 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> to-text x:boolean<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> to-text x:boolean<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   n:number<span class="Special"> &lt;- </span>copy x:boolean
   result<span class="Special"> &lt;- </span>to-text n
 ]
 
-<span class="muRecipe">recipe</span> to-text x:address:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> to-text x:address:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   n:number<span class="Special"> &lt;- </span>copy x
   result<span class="Special"> &lt;- </span>to-text n
 ]
 
-<span class="muRecipe">recipe</span> buffer-to-array in:address:shared:buffer<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> buffer-to-array in:address:shared:buffer<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># propagate null buffer</span>
     <span class="muControl">break-if</span> in
-    <span class="muControl">reply</span> <span class="Constant">0</span>
+    <span class="muControl">return</span> <span class="Constant">0</span>
   <span class="Delimiter">}</span>
   len:number<span class="Special"> &lt;- </span>get *in, <span class="Constant">length:offset</span>
   s:address:shared:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
@@ -421,7 +413,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> append a:address:shared:array:character, b:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> append a:address:shared:array:character, b:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># result = new character[a.length + b.length]</span>
@@ -483,13 +475,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> replace s:address:shared:array:character, oldc:character, newc:character, from:number/optional<span class="muRecipe"> -&gt; </span>s:address:shared:array:character [
+<span class="muRecipe">def</span> replace s:address:shared:array:character, oldc:character, newc:character, from:number/optional<span class="muRecipe"> -&gt; </span>s:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   len:number<span class="Special"> &lt;- </span>length *s
   i:number<span class="Special"> &lt;- </span>find-next s, oldc, from
   done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
-  <span class="muControl">reply-if</span> done?, s/same-as-ingredient:<span class="Constant">0</span>
+  <span class="muControl">return-if</span> done?, s/same-as-ingredient:<span class="Constant">0</span>
   dest:address:character<span class="Special"> &lt;- </span>index-address *s, i
   *dest<span class="Special"> &lt;- </span>copy newc
   i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
@@ -541,7 +533,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># replace underscores in first with remaining args</span>
-<span class="muRecipe">recipe</span> interpolate template:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> interpolate template:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>  <span class="Comment"># consume just the template</span>
   <span class="Comment"># compute result-len, space to allocate for result</span>
@@ -655,68 +647,68 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># result:boolean &lt;- space? c:character</span>
-<span class="muRecipe">recipe</span> space? c:character<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> space? c:character<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># most common case first</span>
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">32/space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">9/tab</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">13/carriage-return</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   <span class="Comment"># remaining uncommon cases in sorted order</span>
   <span class="Comment"># <a href="http://unicode.org">http://unicode.org</a> code-points in unicode-set Z and Pattern_White_Space</span>
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">11/ctrl-k</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">12/ctrl-l</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">133/ctrl-0085</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">160/no-break-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">5760/ogham-space-mark</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8192/en-quad</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8193/em-quad</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8194/en-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8195/em-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8196/three-per-em-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8197/four-per-em-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8198/six-per-em-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8199/figure-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8200/punctuation-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8201/thin-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8202/hair-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8206/left-to-right</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8207/right-to-left</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8232/line-separator</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8233/paragraph-separator</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8239/narrow-no-break-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">8287/medium-mathematical-space</span>
-  <span class="muControl">reply-if</span> result
+  <span class="muControl">return-if</span> result
   result<span class="Special"> &lt;- </span>equal c, <span class="Constant">12288/ideographic-space</span>
 ]
 
-<span class="muRecipe">recipe</span> trim s:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> trim s:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   len:number<span class="Special"> &lt;- </span>length *s
@@ -727,7 +719,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal start, len
       <span class="muControl">break-unless</span> at-end?
       result<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, <span class="Constant">0</span>
-      <span class="muControl">reply</span>
+      <span class="muControl">return</span>
     <span class="Delimiter">}</span>
     curr:character<span class="Special"> &lt;- </span>index *s, start
     whitespace?:boolean<span class="Special"> &lt;- </span>space? curr
@@ -822,7 +814,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> find-next text:address:shared:array:character, pattern:character, idx:number<span class="muRecipe"> -&gt; </span>next-index:number [
+<span class="muRecipe">def</span> find-next text:address:shared:array:character, pattern:character, idx:number<span class="muRecipe"> -&gt; </span>next-index:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   len:number<span class="Special"> &lt;- </span>length *text
@@ -835,7 +827,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> idx
+  <span class="muControl">return</span> idx
 ]
 
 <span class="muScenario">scenario</span> text-find-next [
@@ -920,7 +912,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># search for a pattern of multiple characters</span>
 <span class="Comment"># fairly dumb algorithm</span>
-<span class="muRecipe">recipe</span> find-next text:address:shared:array:character, pattern:address:shared:array:character, idx:number<span class="muRecipe"> -&gt; </span>next-index:number [
+<span class="muRecipe">def</span> find-next text:address:shared:array:character, pattern:address:shared:array:character, idx:number<span class="muRecipe"> -&gt; </span>next-index:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   first:character<span class="Special"> &lt;- </span>index *pattern, <span class="Constant">0</span>
@@ -937,7 +929,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     idx<span class="Special"> &lt;- </span>find-next text, first, idx
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> idx
+  <span class="muControl">return</span> idx
 ]
 
 <span class="muScenario">scenario</span> find-next-text-1 [
@@ -996,7 +988,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># checks if pattern matches at index 'idx'</span>
-<span class="muRecipe">recipe</span> match-at text:address:shared:array:character, pattern:address:shared:array:character, idx:number<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> match-at text:address:shared:array:character, pattern:address:shared:array:character, idx:number<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   pattern-len:number<span class="Special"> &lt;- </span>length *pattern
@@ -1006,7 +998,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     x<span class="Special"> &lt;- </span>subtract x, pattern-len
     enough-room?:boolean<span class="Special"> &lt;- </span>lesser-or-equal idx, x
     <span class="muControl">break-if</span> enough-room?
-    <span class="muControl">reply</span> <span class="Constant">0/not-found</span>
+    <span class="muControl">return</span> <span class="Constant">0/not-found</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># check each character of pattern</span>
   pattern-idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -1018,13 +1010,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Delimiter">{</span>
       match?:boolean<span class="Special"> &lt;- </span>equal c, exp
       <span class="muControl">break-if</span> match?
-      <span class="muControl">reply</span> <span class="Constant">0/not-found</span>
+      <span class="muControl">return</span> <span class="Constant">0/not-found</span>
     <span class="Delimiter">}</span>
     idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
     pattern-idx<span class="Special"> &lt;- </span>add pattern-idx, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> <span class="Constant">1/found</span>
+  <span class="muControl">return</span> <span class="Constant">1/found</span>
 ]
 
 <span class="muScenario">scenario</span> match-at-checks-pattern-at-index [
@@ -1124,7 +1116,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> split s:address:shared:array:character, delim:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:address:shared:array:character [
+<span class="muRecipe">def</span> split s:address:shared:array:character, delim:character<span class="muRecipe"> -&gt; </span>result:address:shared:array:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># empty text? return empty array</span>
@@ -1133,7 +1125,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     empty?:boolean<span class="Special"> &lt;- </span>equal len, <span class="Constant">0</span>
     <span class="muControl">break-unless</span> empty?
     result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(address shared array character): type<span class="Delimiter">}</span>, <span class="Constant">0</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># count #pieces we need room for</span>
   count:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>  <span class="Comment"># n delimiters = n+1 pieces</span>
@@ -1251,7 +1243,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> split-first text:address:shared:array:character, delim:character<span class="muRecipe"> -&gt; </span>x:address:shared:array:character, y:address:shared:array:character [
+<span class="muRecipe">def</span> split-first text:address:shared:array:character, delim:character<span class="muRecipe"> -&gt; </span>x:address:shared:array:character, y:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># empty text? return empty texts</span>
@@ -1261,7 +1253,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> empty?
     x:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
     y:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   idx:number<span class="Special"> &lt;- </span>find-next text, delim, <span class="Constant">0</span>
   x:address:shared:array:character<span class="Special"> &lt;- </span>copy-range text, <span class="Constant">0</span>, idx
@@ -1282,7 +1274,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> copy-range buf:address:shared:array:character, start:number, end:number<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> copy-range buf:address:shared:array:character, start:number, end:number<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if end is out of bounds, trim it</span>
@@ -1339,28 +1331,27 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> min x:number, y:number<span class="muRecipe"> -&gt; </span>z:number [
+<span class="muRecipe">def</span> min x:number, y:number<span class="muRecipe"> -&gt; </span>z:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     return-x?:boolean<span class="Special"> &lt;- </span>lesser-than x, y
     <span class="muControl">break-if</span> return-x?
-    <span class="muControl">reply</span> y
+    <span class="muControl">return</span> y
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> x
+  <span class="muControl">return</span> x
 ]
 
-<span class="muRecipe">recipe</span> max x:number, y:number<span class="muRecipe"> -&gt; </span>z:number [
+<span class="muRecipe">def</span> max x:number, y:number<span class="muRecipe"> -&gt; </span>z:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     return-x?:boolean<span class="Special"> &lt;- </span>greater-than x, y
     <span class="muControl">break-if</span> return-x?
-    <span class="muControl">reply</span> y
+    <span class="muControl">return</span> y
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> x
+  <span class="muControl">return</span> x
 ]
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

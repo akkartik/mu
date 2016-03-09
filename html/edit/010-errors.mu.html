@@ -3,36 +3,28 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/010-errors.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
-.Special { color: #ff6060; }
-.muData { color: #ffff00; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.SalientComment { color: #00ffff; }
-.Delimiter { color: #a04060; }
 .muScenario { color: #00af00; }
+.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
+.muRecipe { color: #ff8700; }
+.Comment { color: #9090ff; }
+.muData { color: #ffff00; }
+.SalientComment { color: #00ffff; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="SalientComment">## handling malformed programs</span>
 
 <span class="muData">container</span> programming-environment-data [
@@ -40,7 +32,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># copy code from recipe editor, persist, load into mu, save any errors</span>
-<span class="muRecipe">recipe!</span> update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+<span class="muRecipe">def!</span> update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   recipes:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
@@ -54,7 +46,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     status:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[errors found     ]</span>
     update-status screen, status, <span class="Constant">1/red</span>
     errors-found?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   errors-found?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
 ]
@@ -116,7 +108,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   errors:address:shared:array:character
 ]
 
-<span class="muRecipe">recipe!</span> update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+<span class="muRecipe">def!</span> update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   data:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
@@ -732,4 +724,3 @@ _, c:number<span class="Special"> &lt;- </span>divide-with-remainder a, b
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

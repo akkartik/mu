@@ -3,34 +3,26 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 084console.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
 .muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
 .muRecipe { color: #ff8700; }
 .muData { color: #ffff00; }
 .Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.Special { color: #ff6060; }
-.Delimiter { color: #a04060; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment"># Wrappers around interaction primitives that take a potentially fake object</span>
 <span class="Comment"># and are thus easier to test.</span>
 
@@ -58,7 +50,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   events:address:shared:array:event
 ]
 
-<span class="muRecipe">recipe</span> new-fake-console events:address:shared:array:event<span class="muRecipe"> -&gt; </span>result:address:shared:console [
+<span class="muRecipe">def</span> new-fake-console events:address:shared:array:event<span class="muRecipe"> -&gt; </span>result:address:shared:console [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result:address:shared:console<span class="Special"> &lt;- </span>new <span class="Constant">console:type</span>
@@ -68,7 +60,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   *idx<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 
-<span class="muRecipe">recipe</span> read-event console:address:shared:console<span class="muRecipe"> -&gt; </span>result:event, console:address:shared:console, found?:boolean, quit?:boolean [
+<span class="muRecipe">def</span> read-event console:address:shared:console<span class="muRecipe"> -&gt; </span>result:event, console:address:shared:console, found?:boolean, quit?:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -80,32 +72,32 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal *current-event-index, max
       <span class="muControl">break-unless</span> done?
       dummy:address:shared:event<span class="Special"> &lt;- </span>new <span class="Constant">event:type</span>
-      <span class="muControl">reply</span> *dummy, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">1/quit</span>
+      <span class="muControl">return</span> *dummy, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">1/quit</span>
     <span class="Delimiter">}</span>
     result<span class="Special"> &lt;- </span>index *buf, *current-event-index
     *current-event-index<span class="Special"> &lt;- </span>add *current-event-index, <span class="Constant">1</span>
-    <span class="muControl">reply</span> result, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
+    <span class="muControl">return</span> result, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
   <span class="Delimiter">}</span>
   switch  <span class="Comment"># real event source is infrequent; avoid polling it too much</span>
   result:event, found?:boolean<span class="Special"> &lt;- </span>check-for-interaction
-  <span class="muControl">reply</span> result, console/same-as-ingredient:<span class="Constant">0</span>, found?, <span class="Constant">0/quit</span>
+  <span class="muControl">return</span> result, console/same-as-ingredient:<span class="Constant">0</span>, found?, <span class="Constant">0/quit</span>
 ]
 
 <span class="Comment"># variant of read-event for just keyboard events. Discards everything that</span>
 <span class="Comment"># isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get</span>
 <span class="Comment"># newlines, tabs, ctrl-d..</span>
-<span class="muRecipe">recipe</span> read-key console:address:shared:console<span class="muRecipe"> -&gt; </span>result:character, console:address:shared:console, found?:boolean, quit?:boolean [
+<span class="muRecipe">def</span> read-key console:address:shared:console<span class="muRecipe"> -&gt; </span>result:character, console:address:shared:console, found?:boolean, quit?:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   x:event, console, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-event console
-  <span class="muControl">reply-if</span> quit?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
-  <span class="muControl">reply-unless</span> found?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
+  <span class="muControl">return-if</span> quit?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
+  <span class="muControl">return-unless</span> found?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
   c:address:character<span class="Special"> &lt;- </span>maybe-convert x, <span class="Constant">text:variant</span>
-  <span class="muControl">reply-unless</span> c, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">0/found</span>, <span class="Constant">0/quit</span>
-  <span class="muControl">reply</span> *c, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
+  <span class="muControl">return-unless</span> c, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">0/found</span>, <span class="Constant">0/quit</span>
+  <span class="muControl">return</span> *c, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
 ]
 
-<span class="muRecipe">recipe</span> send-keys-to-channel console:address:shared:console, chan:address:shared:channel, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>console:address:shared:console, chan:address:shared:channel, screen:address:shared:screen [
+<span class="muRecipe">def</span> send-keys-to-channel console:address:shared:console, chan:address:shared:channel, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>console:address:shared:console, chan:address:shared:channel, screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -119,7 +111,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">recipe</span> wait-for-event console:address:shared:console<span class="muRecipe"> -&gt; </span>console:address:shared:console [
+<span class="muRecipe">def</span> wait-for-event console:address:shared:console<span class="muRecipe"> -&gt; </span>console:address:shared:console [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -129,17 +121,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># use this helper to skip rendering if there's lots of other events queued up</span>
-<span class="muRecipe">recipe</span> has-more-events? console:address:shared:console<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> has-more-events? console:address:shared:console<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> console
     <span class="Comment"># fake consoles should be plenty fast; never skip</span>
-    <span class="muControl">reply</span> <span class="Constant">0/false</span>
+    <span class="muControl">return</span> <span class="Constant">0/false</span>
   <span class="Delimiter">}</span>
   result<span class="Special"> &lt;- </span>interactions-left?
 ]
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

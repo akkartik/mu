@@ -3,35 +3,27 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 075duplex_list.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 .muScenario { color: #00af00; }
+.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
+.muRecipe { color: #ff8700; }
 .muData { color: #ffff00; }
 .Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.Special { color: #ff6060; }
-.Delimiter { color: #a04060; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment"># A doubly linked list permits bidirectional traversal.</span>
 
 <span class="muData">container</span> duplex-list:_elem [
@@ -41,7 +33,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># should I say in/contained-in:result, allow ingredients to refer to products?</span>
-<span class="muRecipe">recipe</span> push x:_elem, in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>in:address:shared:duplex-list:_elem [
+<span class="muRecipe">def</span> push x:_elem, in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>in:address:shared:duplex-list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(duplex-list _elem): type<span class="Delimiter">}</span>
@@ -54,29 +46,29 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     prev:address:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>get-address *in, <span class="Constant">prev:offset</span>
     *prev<span class="Special"> &lt;- </span>copy result
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> result  <span class="Comment"># needed explicitly because we need to replace 'in' with 'result'</span>
+  <span class="muControl">return</span> result  <span class="Comment"># needed explicitly because we need to replace 'in' with 'result'</span>
 ]
 
-<span class="muRecipe">recipe</span> first in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
+<span class="muRecipe">def</span> first in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> in, <span class="Constant">0</span>
+  <span class="muControl">return-unless</span> in, <span class="Constant">0</span>
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
 ]
 
-<span class="muRecipe">recipe</span> next in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:duplex-list:_elem/contained-in:in [
+<span class="muRecipe">def</span> next in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:duplex-list:_elem/contained-in:in [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> in, <span class="Constant">0</span>
+  <span class="muControl">return-unless</span> in, <span class="Constant">0</span>
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
 ]
 
-<span class="muRecipe">recipe</span> prev in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:duplex-list:_elem/contained-in:in [
+<span class="muRecipe">def</span> prev in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:duplex-list:_elem/contained-in:in [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> in, <span class="Constant">0</span>
+  <span class="muControl">return-unless</span> in, <span class="Constant">0</span>
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">prev:offset</span>
-  <span class="muControl">reply</span> result
+  <span class="muControl">return</span> result
 ]
 
 <span class="muScenario">scenario</span> duplex-list-handling [
@@ -121,7 +113,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># insert 'x' after 'in'</span>
-<span class="muRecipe">recipe</span> insert x:_elem, in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>in:address:shared:duplex-list:_elem [
+<span class="muRecipe">def</span> insert x:_elem, in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>in:address:shared:duplex-list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   new-node:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(duplex-list _elem): type<span class="Delimiter">}</span>
@@ -138,7 +130,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   y<span class="Special"> &lt;- </span>get-address *new-node, <span class="Constant">next:offset</span>
   *y<span class="Special"> &lt;- </span>copy next-node
   <span class="Comment"># if next-node is not null</span>
-  <span class="muControl">reply-unless</span> next-node
+  <span class="muControl">return-unless</span> next-node
   <span class="Comment"># next-node.prev = new-node</span>
   y<span class="Special"> &lt;- </span>get-address *next-node, <span class="Constant">prev:offset</span>
   *y<span class="Special"> &lt;- </span>copy new-node
@@ -256,11 +248,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment">#</span>
 <span class="Comment"># Returns null if and only if list is empty. Beware: in that case any other</span>
 <span class="Comment"># pointers to the head are now invalid.</span>
-<span class="muRecipe">recipe</span> remove x:address:shared:duplex-list:_elem/contained-in:in, in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>in:address:shared:duplex-list:_elem [
+<span class="muRecipe">def</span> remove x:address:shared:duplex-list:_elem/contained-in:in, in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>in:address:shared:duplex-list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if 'x' is null, return</span>
-  <span class="muControl">reply-unless</span> x
+  <span class="muControl">return-unless</span> x
   next-node:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>get *x, <span class="Constant">next:offset</span>
   prev-node:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>get *x, <span class="Constant">prev:offset</span>
   <span class="Comment"># null x's pointers</span>
@@ -279,11 +271,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> prev-node
     tmp<span class="Special"> &lt;- </span>get-address *prev-node, <span class="Constant">next:offset</span>
     *tmp<span class="Special"> &lt;- </span>copy next-node
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if prev-node is null, then we removed the node at 'in'</span>
   <span class="Comment"># return the new head rather than the old 'in'</span>
-  <span class="muControl">reply</span> next-node
+  <span class="muControl">return</span> next-node
 ]
 
 <span class="muScenario">scenario</span> removing-from-duplex-list [
@@ -381,19 +373,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># remove values between 'start' and 'end' (both exclusive)</span>
 <span class="Comment"># also clear pointers back out from start/end for hygiene</span>
-<span class="muRecipe">recipe</span> remove-between start:address:shared:duplex-list:_elem, end:address:shared:duplex-list:_elem/contained-in:start<span class="muRecipe"> -&gt; </span>start:address:shared:duplex-list:_elem [
+<span class="muRecipe">def</span> remove-between start:address:shared:duplex-list:_elem, end:address:shared:duplex-list:_elem/contained-in:start<span class="muRecipe"> -&gt; </span>start:address:shared:duplex-list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> start
+  <span class="muControl">return-unless</span> start
   <span class="Comment"># start-&gt;next-&gt;prev = 0</span>
   <span class="Comment"># start-&gt;next = end</span>
   next:address:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>get-address *start, <span class="Constant">next:offset</span>
   nothing-to-delete?:boolean<span class="Special"> &lt;- </span>equal *next, end
-  <span class="muControl">reply-if</span> nothing-to-delete?
+  <span class="muControl">return-if</span> nothing-to-delete?
   prev:address:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>get-address **next, <span class="Constant">prev:offset</span>
   *prev<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   *next<span class="Special"> &lt;- </span>copy end
-  <span class="muControl">reply-unless</span> end
+  <span class="muControl">return-unless</span> end
   <span class="Comment"># end-&gt;prev-&gt;next = 0</span>
   <span class="Comment"># end-&gt;prev = start</span>
   prev<span class="Special"> &lt;- </span>get-address *end, <span class="Constant">prev:offset</span>
@@ -489,11 +481,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># insert list beginning at 'new' after 'in'</span>
-<span class="muRecipe">recipe</span> insert-range in:address:shared:duplex-list:_elem, start:address:shared:duplex-list:_elem/contained-in:in<span class="muRecipe"> -&gt; </span>in:address:shared:duplex-list:_elem [
+<span class="muRecipe">def</span> insert-range in:address:shared:duplex-list:_elem, start:address:shared:duplex-list:_elem/contained-in:in<span class="muRecipe"> -&gt; </span>in:address:shared:duplex-list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> in
-  <span class="muControl">reply-unless</span> start
+  <span class="muControl">return-unless</span> in
+  <span class="muControl">return-unless</span> start
   end:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>copy start
   <span class="Delimiter">{</span>
     next:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>next end/insert-range
@@ -515,18 +507,18 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   *dest<span class="Special"> &lt;- </span>copy in
 ]
 
-<span class="muRecipe">recipe</span> append in:address:shared:duplex-list:_elem, new:address:shared:duplex-list:_elem/contained-in:in<span class="muRecipe"> -&gt; </span>in:address:shared:duplex-list:_elem [
+<span class="muRecipe">def</span> append in:address:shared:duplex-list:_elem, new:address:shared:duplex-list:_elem/contained-in:in<span class="muRecipe"> -&gt; </span>in:address:shared:duplex-list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   last:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>last in
   dest:address:address:shared:duplex-list:_elem<span class="Special"> &lt;- </span>get-address *last, <span class="Constant">next:offset</span>
   *dest<span class="Special"> &lt;- </span>copy new
-  <span class="muControl">reply-unless</span> new
+  <span class="muControl">return-unless</span> new
   dest<span class="Special"> &lt;- </span>get-address *new, <span class="Constant">prev:offset</span>
   *dest<span class="Special"> &lt;- </span>copy last
 ]
 
-<span class="muRecipe">recipe</span> last in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:duplex-list:_elem [
+<span class="muRecipe">def</span> last in:address:shared:duplex-list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:duplex-list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>copy in
@@ -539,7 +531,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># helper for debugging</span>
-<span class="muRecipe">recipe</span> dump-from x:address:shared:duplex-list:_elem [
+<span class="muRecipe">def</span> dump-from x:address:shared:duplex-list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   $print x, <span class="Constant">[: ]</span>
@@ -561,4 +553,3 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->

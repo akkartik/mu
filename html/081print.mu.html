@@ -3,36 +3,28 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 081print.mu</title>
-<meta name="Generator" content="Vim/7.4">
-<meta name="plugin-version" content="vim7.4_v1">
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
-<meta name="colorscheme" content="minimal">
+<meta name="settings" content="use_css">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1.05em; }
-.muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 .muScenario { color: #00af00; }
+.CommentedCode { color: #6c6c6c; }
+.muControl { color: #c0a020; }
+.Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
+.Constant { color: #00a0a0; }
+.muRecipe { color: #ff8700; }
 .muData { color: #ffff00; }
 .Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
-.Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
-.Delimiter { color: #a04060; }
 -->
 </style>
-
-<script type='text/javascript'>
-<!--
-
--->
-</script>
 </head>
 <body>
-<pre id='vimCodeElement'>
+<pre>
 <span class="Comment"># Wrappers around print primitives that take a 'screen' object and are thus</span>
 <span class="Comment"># easier to test.</span>
 
@@ -49,7 +41,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   color:number
 ]
 
-<span class="muRecipe">recipe</span> new-fake-screen w:number, h:number<span class="muRecipe"> -&gt; </span>result:address:shared:screen [
+<span class="muRecipe">def</span> new-fake-screen w:number, h:number<span class="muRecipe"> -&gt; </span>result:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>new <span class="Constant">screen:type</span>
@@ -67,7 +59,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   result<span class="Special"> &lt;- </span>clear-screen result
 ]
 
-<span class="muRecipe">recipe</span> clear-screen screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> clear-screen screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists</span>
@@ -93,13 +85,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     *x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     x<span class="Special"> &lt;- </span>get-address *screen, <span class="Constant">cursor-column:offset</span>
     *x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   clear-display
 ]
 
-<span class="muRecipe">recipe</span> sync-screen screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> sync-screen screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -109,10 +101,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># do nothing for fake screens</span>
 ]
 
-<span class="muRecipe">recipe</span> fake-screen-is-empty? screen:address:shared:screen<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> fake-screen-is-empty? screen:address:shared:screen<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> screen, <span class="Constant">1/true</span>
+  <span class="muControl">return-unless</span> screen, <span class="Constant">1/true</span>
   buf:address:shared:array:screen-cell<span class="Special"> &lt;- </span>get *screen, <span class="Constant">data:offset</span>
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   len:number<span class="Special"> &lt;- </span>length *buf
@@ -124,12 +116,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
     <span class="muControl">loop-unless</span> curr-contents
     <span class="Comment"># not 0</span>
-    <span class="muControl">reply</span> <span class="Constant">0/false</span>
+    <span class="muControl">return</span> <span class="Constant">0/false</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> <span class="Constant">1/true</span>
+  <span class="muControl">return</span> <span class="Constant">1/true</span>
 ]
 
-<span class="muRecipe">recipe</span> print screen:address:shared:screen, c:character<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> print screen:address:shared:screen, c:character<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -154,14 +146,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Comment"># if cursor is out of bounds, silently exit</span>
     row:address:number<span class="Special"> &lt;- </span>get-address *screen, <span class="Constant">cursor-row:offset</span>
     legal?:boolean<span class="Special"> &lt;- </span>greater-or-equal *row, <span class="Constant">0</span>
-    <span class="muControl">reply-unless</span> legal?
+    <span class="muControl">return-unless</span> legal?
     legal?<span class="Special"> &lt;- </span>lesser-than *row, height
-    <span class="muControl">reply-unless</span> legal?
+    <span class="muControl">return-unless</span> legal?
     column:address:number<span class="Special"> &lt;- </span>get-address *screen, <span class="Constant">cursor-column:offset</span>
     legal?<span class="Special"> &lt;- </span>greater-or-equal *column, <span class="Constant">0</span>
-    <span class="muControl">reply-unless</span> legal?
+    <span class="muControl">return-unless</span> legal?
     legal?<span class="Special"> &lt;- </span>lesser-than *column, width
-    <span class="muControl">reply-unless</span> legal?
+    <span class="muControl">return-unless</span> legal?
 <span class="CommentedCode">#?     $print [print-character (], *row, [, ], *column, [): ], c, 10/newline</span>
     <span class="Comment"># special-case: newline</span>
     <span class="Delimiter">{</span>
@@ -176,7 +168,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
         *column<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
         *row<span class="Special"> &lt;- </span>add *row, <span class="Constant">1</span>
       <span class="Delimiter">}</span>
-      <span class="muControl">reply</span>
+      <span class="muControl">return</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># save character in fake screen</span>
     index:number<span class="Special"> &lt;- </span>multiply *row, width
@@ -200,7 +192,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
         cursor-color:address:number<span class="Special"> &lt;- </span>get-address *cursor, <span class="Constant">color:offset</span>
         *cursor-color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
       <span class="Delimiter">}</span>
-      <span class="muControl">reply</span>
+      <span class="muControl">return</span>
     <span class="Delimiter">}</span>
     cursor:address:screen-cell<span class="Special"> &lt;- </span>index-address *buf, index
     cursor-contents:address:character<span class="Special"> &lt;- </span>get-address *cursor, <span class="Constant">contents:offset</span>
@@ -214,7 +206,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       <span class="muControl">break-if</span> at-right?
       *column<span class="Special"> &lt;- </span>add *column, <span class="Constant">1</span>
     <span class="Delimiter">}</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   print-character-to-display c, color, bg-color
@@ -391,7 +383,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> clear-line screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> clear-line screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   space:character<span class="Special"> &lt;- </span>copy <span class="Constant">0/nul</span>
@@ -411,13 +403,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Delimiter">}</span>
     <span class="Comment"># now back to where the cursor was</span>
     *column<span class="Special"> &lt;- </span>copy original-column
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   clear-line-on-display
 ]
 
-<span class="muRecipe">recipe</span> cursor-position screen:address:shared:screen<span class="muRecipe"> -&gt; </span>row:number, column:number [
+<span class="muRecipe">def</span> cursor-position screen:address:shared:screen<span class="muRecipe"> -&gt; </span>row:number, column:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, lookup cursor in fake screen</span>
@@ -425,12 +417,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">break-unless</span> screen
     row:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-row:offset</span>
     column:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   row, column<span class="Special"> &lt;- </span>cursor-position-on-display
 ]
 
-<span class="muRecipe">recipe</span> move-cursor screen:address:shared:screen, new-row:number, new-column:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> move-cursor screen:address:shared:screen, new-row:number, new-column:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -440,7 +432,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     *row<span class="Special"> &lt;- </span>copy new-row
     column:address:number<span class="Special"> &lt;- </span>get-address *screen, <span class="Constant">cursor-column:offset</span>
     *column<span class="Special"> &lt;- </span>copy new-column
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   move-cursor-on-display new-row, new-column
@@ -477,7 +469,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> cursor-down screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> cursor-down screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -492,13 +484,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       <span class="muControl">break-if</span> at-bottom?
       *row<span class="Special"> &lt;- </span>add *row, <span class="Constant">1</span>
     <span class="Delimiter">}</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   move-cursor-down-on-display
 ]
 
-<span class="muRecipe">recipe</span> cursor-up screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> cursor-up screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -511,13 +503,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       <span class="muControl">break-if</span> at-top?
       *row<span class="Special"> &lt;- </span>subtract *row, <span class="Constant">1</span>
     <span class="Delimiter">}</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   move-cursor-up-on-display
 ]
 
-<span class="muRecipe">recipe</span> cursor-right screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> cursor-right screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -532,13 +524,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       <span class="muControl">break-if</span> at-bottom?
       *column<span class="Special"> &lt;- </span>add *column, <span class="Constant">1</span>
     <span class="Delimiter">}</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   move-cursor-right-on-display
 ]
 
-<span class="muRecipe">recipe</span> cursor-left screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> cursor-left screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -551,13 +543,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       <span class="muControl">break-if</span> at-top?
       *column<span class="Special"> &lt;- </span>subtract *column, <span class="Constant">1</span>
     <span class="Delimiter">}</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   move-cursor-left-on-display
 ]
 
-<span class="muRecipe">recipe</span> cursor-to-start-of-line screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> cursor-to-start-of-line screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   row:number<span class="Special"> &lt;- </span>cursor-position screen
@@ -565,90 +557,90 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
 ]
 
-<span class="muRecipe">recipe</span> cursor-to-next-line screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> cursor-to-next-line screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   screen<span class="Special"> &lt;- </span>cursor-down screen
   screen<span class="Special"> &lt;- </span>cursor-to-start-of-line screen
 ]
 
-<span class="muRecipe">recipe</span> screen-width screen:address:shared:screen<span class="muRecipe"> -&gt; </span>width:number [
+<span class="muRecipe">def</span> screen-width screen:address:shared:screen<span class="muRecipe"> -&gt; </span>width:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
     width<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-columns:offset</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   width<span class="Special"> &lt;- </span>display-width
 ]
 
-<span class="muRecipe">recipe</span> screen-height screen:address:shared:screen<span class="muRecipe"> -&gt; </span>height:number [
+<span class="muRecipe">def</span> screen-height screen:address:shared:screen<span class="muRecipe"> -&gt; </span>height:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
     height<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-rows:offset</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   height<span class="Special"> &lt;- </span>display-height
 ]
 
-<span class="muRecipe">recipe</span> hide-cursor screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> hide-cursor screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   hide-cursor-on-display
 ]
 
-<span class="muRecipe">recipe</span> show-cursor screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> show-cursor screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   show-cursor-on-display
 ]
 
-<span class="muRecipe">recipe</span> hide-screen screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> hide-screen screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Comment"># todo: help test this</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   hide-display
 ]
 
-<span class="muRecipe">recipe</span> show-screen screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> show-screen screen:address:shared:screen<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Comment"># todo: help test this</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   show-display
 ]
 
-<span class="muRecipe">recipe</span> print screen:address:shared:screen, s:address:shared:array:character<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> print screen:address:shared:screen, s:address:shared:array:character<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -695,7 +687,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="muRecipe">recipe</span> print-integer screen:address:shared:screen, n:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> print-integer screen:address:shared:screen, n:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -716,7 +708,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># for now, we can only print integers</span>
-<span class="muRecipe">recipe</span> print screen:address:shared:screen, n:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> print screen:address:shared:screen, n:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -735,7 +727,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># addresses</span>
-<span class="muRecipe">recipe</span> print screen:address:shared:screen, n:address:_elem<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> print screen:address:shared:screen, n:address:_elem<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -756,4 +748,3 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </pre>
 </body>
 </html>
-<!-- vim: set foldmethod=manual : -->
