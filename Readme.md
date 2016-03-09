@@ -443,31 +443,7 @@ something like this:
 An alternative way to define factorial is by inserting *labels* and later
 inserting code at them.
 
-  ```nim
-  def factorial [
-    local-scope
-    n:number <- next-ingredient
-    {
-      <base-case>
-    }
-    <recursive-case>
-  ]
-
-  after <base-case> [
-    # if n=0 return 1
-    zero?:boolean <- equal n, 0
-    break-unless zero?
-    return 1
-  ]
-
-  after <recursive-case> [
-    # return n * factorial(n-1)
-    x:number <- subtract n, 1
-    subresult:number <- factorial x
-    result:number <- multiply subresult, n
-    return result
-  ]
-  ```
+<img alt='literate programming' src='html/tangle.png'>
 
 (You'll find this version in `tangle.mu`.)
 
@@ -480,22 +456,7 @@ names for inserting code at.
 
 Another example, this time with concurrency.
 
-  ```
-  def main [
-    start-running thread2
-    {
-      $print 34
-      loop
-    }
-  ]
-
-  def thread2 [
-    {
-      $print 35
-      loop
-    }
-  ]
-  ```
+<img alt='forking concurrent routines' src='html/fork.png'>
 
   ```shell
   $ ./mu fork.mu
