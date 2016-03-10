@@ -245,28 +245,28 @@ def read-move stdin:address:shared:channel, screen:address:shared:screen -> resu
   local-scope
   load-ingredients
   from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
-  return-if quit?, 0/dummy, quit?, error?
-  return-if error?, 0/dummy, quit?, error?
+  return-if quit?, 0/dummy
+  return-if error?, 0/dummy
   # construct the move object
   result:address:shared:move <- new move:type
   x:address:number <- get-address *result, from-file:offset
   *x <- copy from-file
   x <- get-address *result, from-rank:offset
   *x, quit?, error? <- read-rank stdin, screen
-  return-if quit?, 0/dummy, quit?, error?
-  return-if error?, 0/dummy, quit?, error?
+  return-if quit?, 0/dummy
+  return-if error?, 0/dummy
   error? <- expect-from-channel stdin, 45/dash, screen
-  return-if error?, 0/dummy, 0/quit, error?
+  return-if error?, 0/dummy, 0/quit
   x <- get-address *result, to-file:offset
   *x, quit?, error? <- read-file stdin, screen
-  return-if quit?:boolean, 0/dummy, quit?:boolean, error?:boolean
-  return-if error?:boolean, 0/dummy, quit?:boolean, error?:boolean
+  return-if quit?:boolean, 0/dummy
+  return-if error?:boolean, 0/dummy
   x:address:number <- get-address *result, to-rank:offset
   *x, quit?, error? <- read-rank stdin, screen
-  return-if quit?, 0/dummy, quit?, error?
-  return-if error?, 0/dummy, quit?, error?
+  return-if quit?, 0/dummy
+  return-if error?, 0/dummy
   error? <- expect-from-channel stdin, 10/newline, screen
-  return-if error?, 0/dummy, 0/quit, error?
+  return-if error?, 0/dummy, 0/quit
   return result, quit?, error?
 ]
 
