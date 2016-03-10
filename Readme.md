@@ -52,6 +52,10 @@ strange program is the first step for someone on the long road to becoming a
 regular contributor to your project. Make things dead simple for them. If they
 make a change, make it dead simple for them to see if it breaks something.
 
+(All this takes extra effort, and it isn't worth doing for throwaway
+prototypes, but the effort pays dividends in situations where unit tests and
+other best practices pay dividends.)
+
 But this is a hard property for a codebase to start out with, even harder to
 preserve, and impossible to regain once lost. It is a truth universally
 acknowledged that the lucid clarity of initial versions of a program is
