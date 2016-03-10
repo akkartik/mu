@@ -82,16 +82,7 @@ Running Mu will always recompile it if necessary:
   $ ./mu
   ```
 
-As a sneak peek, here's how you perform some simple arithmetic:
-
-  ```nim
-  def example1 [
-    a:number <- add 2, 2
-    a <- multiply a, 3
-  ]
-  ```
-
-But it's easier to read in color:
+As a simple example, here's a program with some arithmetic:
 
 <img alt='code example' src='html/example1.png'>
 
