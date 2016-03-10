@@ -130,11 +130,11 @@ Here's a second example, of a function that can take ingredients:
 <img alt='fahrenheit to celsius' src='html/f2c-1.png'>
 
 Functions can specify headers showing their expected ingredients and products,
-separated by `->` (unlike the `<-` in *calls*).
+separated by `->` (unlike the `<-` in calls).
 
 Since Mu is a low-level VM language, it provides extra control at the cost of
 verbosity. Using `local-scope`, you have explicit control over stack frames to
-isolate your functions in a type-safe manner. You can also have more
+isolate your functions in a type-safe manner. You can also create more
 sophisticated setups like closures. One consequence of this extra control: you
 have to explicitly `load-ingredients` after you set up the stack.
 
@@ -150,7 +150,7 @@ this translation functions are once again just lists of instructions.
 This alternative syntax isn't just an implementation detail. I've actually
 found it easier to teach functions to non-programmers by starting with this
 syntax, so that they can visualize a pipe from caller to callee, and see the
-names of variables gradually get translated through the pipe.
+names of variables get translated one by one through the pipe.
 
 ---
 
@@ -158,9 +158,9 @@ A third example, this time illustrating conditionals:
 
 <img alt='factorial example' src='html/factorial.png'>
 
-In spite of how it looks, this is still just a list of instructions.
-Internally, the instructions `break` and `loop` get converted to `jump`
-instructions to after the enclosing `}` or `{`, respectively.
+In spite of how it looks, this is still just a list of instructions and
+labels. Internally, the instructions `break` and `loop` get converted to
+`jump` instructions to after the enclosing `}` or `{`, respectively.
 
 Try out the factorial program now:
 
