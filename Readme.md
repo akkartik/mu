@@ -64,8 +64,8 @@ continuations and lisp-like macros.
 
 High level languages today seem to provide three kinds of benefits:
 expressiveness (e.g. nested expressions, classes), safety (e.g. type checking)
-and automation (e.g. garbage collection). An idealized assembly gives up some
-expressiveness benefits, but doesn't seem to affect the other categories.
+and automation (e.g. garbage collection). An idealized assembly language gives
+up some expressiveness, but doesn't seem to affect the other benefits.
 
 *Taking Mu for a spin*
 
