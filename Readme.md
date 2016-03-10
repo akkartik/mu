@@ -58,9 +58,9 @@ comprehend than programs as trees of expressions. Second, I've found that
 Literate Programming using layers makes assembly much more ergonomic. Third,
 labels for gotos turn out to be great waypoints to insert code at from future
 layers; when I tried to divide C programs into layers, I sometimes had to
-split statements in two so I could insert code between them. They also seem a
-promising representation for providing advanced mechanisms like continuations
-and lisp-like macros.
+split statements in two so I could insert code between them. Labels also seem
+a promising representation for providing advanced mechanisms like
+continuations and lisp-like macros.
 
 High level languages today seem to provide three kinds of benefits:
 expressiveness (e.g. nested expressions, classes), safety (e.g. type checking)
