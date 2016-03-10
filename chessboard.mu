@@ -386,7 +386,7 @@ scenario read-move-blocking [
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
-    assert 4:boolean/waiting?, [
+    assert 4:boolean/waiting?, [ 
 F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
     # press 'a'
     1:address:shared:channel <- write 1:address:shared:channel, 97/a
@@ -395,7 +395,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
-    assert 4:boolean/waiting?, [
+    assert 4:boolean/waiting?, [ 
 F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
     1:address:shared:channel <- write 1:address:shared:channel, 50/'2'
@@ -404,7 +404,7 @@ F read-move-blocking: routine failed to pause after rank 'a']
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
-    assert 4:boolean/waiting?, [
+    assert 4:boolean/waiting?, [ 
 F read-move-blocking: routine failed to pause after file 'a2']
     # press '-'
     1:address:shared:channel <- write 1:address:shared:channel, 45/'-'
@@ -413,7 +413,7 @@ F read-move-blocking: routine failed to pause after file 'a2']
     wait-for-routine 2:number
     3:number <- routine-state 2:number
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
-    assert 4:boolean/waiting?/routine-state, [
+    assert 4:boolean/waiting?/routine-state, [ 
 F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # press 'a'
     1:address:shared:channel <- write 1:address:shared:channel, 97/a
@@ -422,7 +422,7 @@ F read-move-blocking: routine failed to pause after hyphen 'a2-']
     wait-for-routine 2:number
     3:number <- routine-state 2:number
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
-    assert 4:boolean/waiting?/routine-state, [
+    assert 4:boolean/waiting?/routine-state, [ 
 F read-move-blocking: routine failed to pause after rank 'a2-a']
     # press '4'
     1:address:shared:channel <- write 1:address:shared:channel, 52/'4'
@@ -431,7 +431,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     wait-for-routine 2:number
     3:number <- routine-state 2:number
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
-    assert 4:boolean/waiting?, [
+    assert 4:boolean/waiting?, [ 
 F read-move-blocking: routine failed to pause after file 'a2-a4']
     # press 'newline'
     1:address:shared:channel <- write 1:address:shared:channel, 10  # newline
@@ -440,7 +440,7 @@ F read-move-blocking: routine failed to pause after file 'a2-a4']
     wait-for-routine 2:number
     3:number <- routine-state 2:number
     4:boolean/completed? <- equal 3:number/routine-state, 1/completed
-    assert 4:boolean/completed?, [
+    assert 4:boolean/completed?, [ 
 F read-move-blocking: routine failed to terminate on newline]
     trace 1, [test], [reached end]
   ]
@@ -458,7 +458,7 @@ scenario read-move-quit [
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
-    assert 4:boolean/waiting?, [
+    assert 4:boolean/waiting?, [ 
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
     # press 'q'
     1:address:shared:channel <- write 1:address:shared:channel, 113/q
@@ -467,7 +467,7 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/completed? <- equal 3:number/routine-state, 1/completed
-    assert 4:boolean/completed?, [
+    assert 4:boolean/completed?, [ 
 F read-move-quit: routine failed to terminate on 'q']
     trace 1, [test], [reached end]
   ]
@@ -485,7 +485,7 @@ scenario read-move-illegal-file [
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
-    assert 4:boolean/waiting?, [
+    assert 4:boolean/waiting?, [ 
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
     1:address:shared:channel <- write 1:address:shared:channel, 50/'2'
     restart 2:number/routine
@@ -506,7 +506,7 @@ scenario read-move-illegal-rank [
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
-    assert 4:boolean/waiting?, [
+    assert 4:boolean/waiting?, [ 
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
     1:address:shared:channel <- write 1:address:shared:channel, 97/a
     1:address:shared:channel <- write 1:address:shared:channel, 97/a
@@ -528,7 +528,7 @@ scenario read-move-empty [
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
-    assert 4:boolean/waiting?, [
+    assert 4:boolean/waiting?, [ 
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
     1:address:shared:channel <- write 1:address:shared:channel, 10/newline
     1:address:shared:channel <- write 1:address:shared:channel, 97/a
