@@ -16,23 +16,29 @@ In this quest, Mu is currently experimenting with the following mechanisms:
 1. New, testable interfaces for the operating system. For example, printing to
    screen explicitly takes a screen object, so it can be called on the real
    screen, or on a fake inside tests, so that we can then check the expected
-   state of the screen at the end of a test. We're building up similarly
-   *dependency-injected* interfaces to the keyboard, mouse, touch screen,
-   disk, network, &hellip;
+   state of the screen at the end of a test. For example, here's a test for a
+   little text-mode chessboard program in Mu:
+   <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='a screen test' src='html/chessboard-test.png'>
+   <br>We're building up similarly *dependency-injected* interfaces to the
+   keyboard, mouse, touch screen, disk, network, &hellip;
 
 1. Support for testing side-effects like performance, deadlock-freedom,
    race-freeness, memory usage, etc. Mu's *white-box tests* can check not just
    the results of a function call, but also the presence or absence of
-   specific events in the log of its progress. For example, if a sort function
-   logs each swap, a performance test can ensure that the number of swaps
-   doesn't double when the size of the input doubles. Besides expanding the
-   scope of tests, this ability also allows more radical refactoring without
-   needing to modify tests. All Mu's tests call a top-level function rather
-   than individual sub-systems directly. As a result the way the subsystems
-   are invoked can be radically changed (interface changes, making synchronous
-   functions asynchronous, &hellip;). As long as the new versions emit the
-   same implementation-independent events in the logs, the tests will continue
-   to pass.
+   specific events in the log of its progress. For example, here's a test that
+   our string-comparison function doesn't scan individual characters unless it
+   has to:
+   <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='white-box test' src='html/tracing-test.png'>
+   <br>Another example: if a sort function logs each swap, a performance test can
+   ensure that the number of swaps doesn't double when the size of the input
+   doubles.
+   <p>Besides expanding the scope of tests, this ability also allows more
+   radical refactoring without needing to modify tests. All Mu's tests call a
+   top-level function rather than individual sub-systems directly. As a result
+   the way the subsystems are invoked can be radically changed (interface
+   changes, making synchronous functions asynchronous, etc.). As long as the
+   new versions emit the same implementation-independent events in the logs,
+   the tests will continue to pass. ([More information.](http://akkartik.name/post/tracing-tests))
 
 1. Organizing code and tests in layers of functionality, so that outsiders can
    build simple and successively more complex versions of a project, gradually
@@ -88,8 +94,8 @@ But it's easier to read in color:
 
 <img alt='code example' src='html/example1.png'>
 
-Mu functions are lists of instructions, one to a line. Each instruction
-operates on some *ingredients* and returns some *products*.
+As I said before, Mu functions are lists of instructions, one to a line. Each
+instruction operates on some *ingredients* and returns some *products*.
 
   ```
   [products] <- instruction [ingredients]
@@ -103,15 +109,15 @@ you can perform integer division as follows:
   quotient:number, remainder:number <- divide-with-remainder 11, 3
   ```
 
-Each reagent can provide a name as well as its type separated by a colon. You
-only have to specify the type the first time you mention a name, but you can
-be more explicit if you choose. Types can be multiple words and even arbitrary
+Each reagent consists of a name and its type, separated by a colon. You only
+have to specify the type the first time you mention a name, but you can be
+more explicit if you choose. Types can be multiple words and even arbitrary
 trees, like:
 
   ```nim
   x:array:number:3  # x is an array of 3 numbers
   y:list:number  # y is a list of numbers
-  # without syntactic sugar
+  # ':' is just syntactic sugar
   {z: (map (address array character) (list number))}   # map from string to list of numbers
   ```
 
@@ -136,9 +142,9 @@ separated by `->` (unlike the `<-` in *calls*).
 
 Since Mu is a low-level VM language, it provides extra control at the cost of
 verbosity. Using `local-scope`, you have explicit control over stack frames to
-isolate your functions (in a type-safe manner; more on that below). One
-consequence: you have to explicitly `load-ingredients` after you set up the
-stack.
+isolate your functions in a type-safe manner. You can also have more
+sophisticated setups like closures. One consequence of this extra control: you
+have to explicitly `load-ingredients` after you set up the stack.
 
 An alternative syntax is what the above example is converted to internally:
 
@@ -184,8 +190,9 @@ Here's what one of the tests inside `factorial.mu` looks like:
 Every test conceptually spins up a really lightweight virtual machine, so you
 can do things like check the value of specific locations in memory. You can
 also print to screen and check that the screen contains what you expect at the
-end of a test. For example, `chessboard.mu` checks the initial position of a
-game of chess (delimiting the edges of the screen with periods):
+end of a test. For example, you've seen earlier how `chessboard.mu` checks the
+initial position of a game of chess (delimiting the edges of the screen with
+periods):
 
 <img alt='screen test' src='html/chessboard-test.png'>
 
@@ -197,85 +204,6 @@ Similarly you can fake the keyboard to pretend someone typed something:
 
 As we add a file system, graphics, audio, network support and so on, we'll
 augment scenarios with corresponding abilities to use them inside tests.
-
----
-
-The name of a reagent is for humans, but what the computer needs to access it is
-its address. Mu maps names to addresses for you like in other languages, but
-in a more transparent, lightweight, hackable manner. This instruction:
-
-  ```nim
-  z:number <- add x:number, y:number
-  ```
-
-might turn into this:
-
-  ```nim
-  3:number <- add 1:number, 2:number
-  ```
-
-You shouldn't rely on the specific address Mu chooses for a variable, but it
-will be unique (other variables won't clobber it) and consistent (all mentions
-of the name will map to the same address inside a function).
-
-Things get more complicated when your functions call other functions. Mu
-doesn't preserve uniqueness of addresses across functions, so you need to
-organize your names into spaces. At the start of each function (like
-`factorial` above), set its *default space*:
-
-  ```nim
-  local-scope
-  ```
-
-or
-
-  ```nim
-  new-default-space
-  ```
-
-or
-
-  ```nim
-  default-space:address:array:location <- new location:type, 30/capacity
-  ```
-
-Without one of these lines, all variables in the function will be *global*,
-something you rarely want. (Luckily, this is also the sort of mistake that
-will be easily caught by tests.) *With* this line, all addresses in your
-function will by default refer to one of the (30, in the final case) slots
-inside this local space. (If you choose the last, most explicit option and
-need more than 30 slots, Mu will complain asking you to increase capacity.)
-
-Spaces can do more than just implement local variables. You can string them
-together, pass them around, return them from functions, share them between
-parallel routines, and much else. However, any function receiving a space has
-to know the names and types of variables in it, so any instruction should
-always receive spaces created by the same function, no matter how many times
-it's run. (If you're familiar with lexical scope, this constraint is
-identical to it.)
-
-To string two spaces together, write one into slot 0 of the other. This
-instruction chains a space received from its caller:
-
-  ```nim
-  0:address:array:location <- next-ingredient
-  ```
-
-Once you've chained spaces together, you can access variables in them by
-adding a 'space' property:
-
-  ```nim
-  3:number/space:1
-  ```
-
-This reagent is the number in slot 3 of the space chained in slot 0 of the
-default space. We usually call it slot 3 in the 'next space'. `/space:2` would
-be the next space of the next space, and so on.
-
-See `counters.mu` for an example of managing multiple accumulators at once
-without allowing them to clobber each other. This is a classic example of the
-sorts of things closures and objects are useful for in other languages. Spaces
-in Mu provide the same functionality.
 
 ---
 
