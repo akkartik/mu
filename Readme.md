@@ -16,9 +16,9 @@ In this quest, Mu is currently experimenting with the following mechanisms:
 1. New, testable interfaces for the operating system. For example, printing to
    screen explicitly takes a screen object, so it can be called on the real
    screen, or on a fake inside tests, so that we can then check the expected
-   state of the screen at the end of a test. For example, here's a test for a
-   little text-mode chessboard program in Mu (delimiting the edge of the
-   'screen' with periods):
+   state of the screen at the end of a test. Here's a test for a little
+   text-mode chessboard program in Mu (delimiting the edge of the 'screen'
+   with periods):
    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='a screen test' src='html/chessboard-test.png'>
    <br>We're building up similarly *dependency-injected* interfaces to the
    keyboard, mouse, touch screen, disk, network, &hellip;
