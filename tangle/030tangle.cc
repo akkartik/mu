@@ -56,7 +56,7 @@ string Toplevel = "run";
 int tangle(int argc, const char* argv[]) {
   list<Line> result;
   for (int i = 1; i < argc; ++i) {
-//?     cerr << "new file " << argv[i] << '\n'; //? 1
+//?     cerr << "new file " << argv[i] << '\n';
     Toplevel = "run";
     ifstream in(argv[i]);
     tangle(in, argv[i], result);
@@ -150,9 +150,9 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
     list<Line> result;
     string name = next_tangle_token(directive_stream);
     emit_test(name, hunk, result);
-//?     cerr << out.size() << " " << result.size() << '\n'; //? 1
+//?     cerr << out.size() << " " << result.size() << '\n';
     out.insert(out.end(), result.begin(), result.end());
-//?     cerr << out.size() << " " << result.size() << '\n'; //? 1
+//?     cerr << out.size() << " " << result.size() << '\n';
     return;
   }
 

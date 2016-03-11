@@ -50,7 +50,6 @@ void test_tangle_with_multiple_filenames_after() {
   istringstream in2(":(after b)\nd\n");
   tangle(in2, "bar", dummy);
   CHECK_TRACE_CONTENTS("tangle", "ab#line 2 \"bar\"d#line 3 \"foo\"c");
-//?   exit(0); //? 1
 }
 
 void test_tangle_skip_tanglecomments() {
@@ -213,19 +212,6 @@ void test_tangle_supports_configurable_toplevel() {
 }
 
 void test_tangle_can_hide_warnings_in_scenarios() {
-  istringstream in(":(scenario does_bar)\n% Hide_warnings = true;\nabc def\n+layer1: pqr\n+layer2: xyz");
-  list<Line> lines;
-  tangle(in, lines);
-  CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Hide_warnings = true;");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  run(\"abc def\\n\");");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: xyz\");");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
-  CHECK(lines.empty());
-}
-
-void test_tangle_can_handle_in_scenarios() {
   istringstream in(":(scenario does_bar)\n% Hide_warnings = true;\nabc def\n+layer1: pqr\n+layer2: xyz");
   list<Line> lines;
   tangle(in, lines);

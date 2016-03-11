@@ -42,87 +42,11 @@ void test_trace_orders_across_layers() {
   CHECK_TRACE_CONTENTS("", "foobarqux");
 }
 
-void test_trace_orders_across_layers2() {
-  trace("test layer 1") << "foo";
-  trace("test layer 2") << "bar";
-  trace("test layer 1") << "qux";
-  CHECK_TRACE_CONTENTS("foobarqux");
-}
-
-void test_trace_checks_ordering_spanning_multiple_layers() {
-  trace("layer1") << "foo";
-  trace("layer2") << "bar";
-  trace("layer1") << "qux";
-  CHECK_TRACE_CONTENTS("layer1: foolayer2: barlayer1: qux");
-}
-
-void test_trace_segments_within_layers() {
-  trace("test layer 1") << "foo";
-  trace("test layer 2") << "bar";
-  new_trace_frame("test layer 1");
-  trace("test layer 1") << "qux";
-  CHECK_TRACE_CONTENTS("test layer 1", "fooqux");
-  CHECK_TRACE_CONTENTS("test layer 1", 0, "foo");
-  CHECK_TRACE_DOESNT_CONTAIN("test layer 1", 1, "foo");
-}
-
-void test_trace_checks_ordering_across_layers_and_frames() {
-  trace("test layer 1") << "foo";
-  trace("test layer 2") << "bar";
-  new_trace_frame("test layer 1");
-  trace("test layer 1") << "qux";
-  CHECK_TRACE_CONTENTS("test layer 1/0: footest layer 2: bartest layer 1: qux");
-  CHECK_TRACE_CONTENTS("test layer 1: footest layer 2: bartest layer 1/1: qux");
-}
-
-void trace_test_fn(int n) {
-  if (n == 0) return;
-  new_trace_frame("foo");
-  trace("foo") << "before: " << n;
-  trace_test_fn(n-1);
-  trace("foo") << "after: " << n;
-}
-
-void test_trace_keeps_level_together() {
-  CHECK_TRACE_CONTENTS("foo", "");
-  trace_test_fn(4);
-  CHECK_TRACE_CONTENTS("foo", 2, "before: 3after: 3");
-}
-
-void test_trace_supports_multiple_layers() {
-  trace("test layer 1") << "foo";
-  trace("test layer 2") << "bar";
-  trace("test layer 1") << "qux";
-  CHECK_TRACE_CONTENTS("test layer 1,test layer 2", "foobarqux");
-}
-
-void test_trace_supports_hierarchical_layers() {
-  trace("test layer/a") << "foo";
-  trace("different layer/c") << "foo 2";
-  trace("test layer/b") << "bar";
-  CHECK_TRACE_CONTENTS("test layer/", "foobar");
-}
-
 void test_trace_supports_count() {
   trace("test layer 1") << "foo";
   trace("test layer 1") << "foo";
   CHECK_EQ(trace_count("test layer 1", "foo"), 2);
 }
-
-void test_trace_supports_count2() {
-  trace("test layer 1") << "foo";
-  trace("test layer 1") << "bar";
-  CHECK_EQ(trace_count("test layer 1"), 2);
-}
-
-// pending: DUMP tests
-// pending: readable_contents() adds newline if necessary.
-// pending: RAISE also prints to stderr.
-// pending: RAISE doesn't print to stderr if Hide_warnings is set.
-// pending: RAISE doesn't have to be saved if Hide_warnings is set, just printed.
-// pending: RAISE prints to stderr if Trace_stream is NULL.
-// pending: RAISE prints to stderr if Trace_stream is NULL even if Hide_warnings is set.
-// pending: RAISE << ... die() doesn't die if Hide_warnings is set.
 
 
 
