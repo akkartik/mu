@@ -15,10 +15,10 @@ In this quest, Mu is currently experimenting with the following mechanisms:
 
 1. New, testable interfaces for the operating system. For example, printing to
    screen explicitly takes a screen object, so it can be called on the real
-   screen, or on a fake inside tests, so that we can then check the expected
-   state of the screen at the end of a test. Here's a test for a little
-   text-mode chessboard program in Mu (delimiting the edge of the 'screen'
-   with periods):
+   screen, or on a fake screen inside tests, so that we can then check the
+   expected state of the screen at the end of a test. Here's a test for a
+   little text-mode chessboard program in Mu (delimiting the edge of the
+   'screen' with dots):
    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='a screen test' src='html/chessboard-test.png'>
    <br>We're building up similarly *dependency-injected* interfaces to the
    keyboard, mouse, touch screen, disk, network, &hellip;
@@ -184,7 +184,7 @@ can do things like check the value of specific locations in memory. You can
 also print to screen and check that the screen contains what you expect at the
 end of a test. For example, you've seen earlier how `chessboard.mu` checks the
 initial position of a game of chess (delimiting the edges of the screen with
-periods):
+dots):
 
 <img alt='screen test' src='html/chessboard-test.png'>
 
@@ -228,17 +228,15 @@ something like this:
 
 ---
 
-An alternative way to define factorial is by inserting *labels* and later
+An alternative way to define factorial is by inserting labels and later
 inserting code at them.
 
 <img alt='literate programming' src='html/tangle.png'>
 
 (You'll find this version in `tangle.mu`.)
 
-Any instruction without ingredients or products that starts with a
-non-alphanumeric character is a label. By convention we use '+' to indicate
-function-local label names you can jump to, and surround in '<>' global label
-names for inserting code at.
+By convention we use the prefix '+' to indicate function-local label names you
+can jump to, and surround in '<>' global label names for inserting code at.
 
 ---
 
