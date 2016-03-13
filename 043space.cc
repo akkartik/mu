@@ -227,8 +227,9 @@ if (curr.name == "local-scope") {
 void try_reclaim_locals() {
   // only reclaim routines starting with 'local-scope'
   const recipe_ordinal r = get(Recipe_ordinal, current_recipe_name());
-  if (get(Recipe, r).steps.empty()) return;
-  const instruction& inst = get(Recipe, r).steps.at(0);
+  const recipe& exiting_recipe = get(Recipe, r);
+  if (exiting_recipe.steps.empty()) return;
+  const instruction& inst = exiting_recipe.steps.at(0);
   if (inst.old_name != "local-scope") return;
   abandon(current_call().default_space,
           /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[r][""]);
