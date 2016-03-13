@@ -443,17 +443,18 @@ if (x.type->value == get(Type_ordinal, "address")
   }
   // abandon old address if necessary
   // do this after all refcount updates are done just in case old and new are identical
+  assert(old_address >= 0);
+  if (old_address == 0) return;
   assert(get_or_insert(Memory, old_address) >= 0);
-  if (old_address && get_or_insert(Memory, old_address) == 0) {
-    // lookup_memory without drop_one_lookup {
-    trace(9999, "mem") << "automatically abandoning " << old_address << end();
-    trace(9999, "mem") << "computing size to abandon at " << x.value << end();
-    x.set_value(get_or_insert(Memory, x.value)+/*skip refcount*/1);
-    drop_from_type(x, "address");
-    drop_from_type(x, "shared");
-    // }
-    abandon(old_address, size_of(x)+/*refcount*/1);
-  }
+  if (get_or_insert(Memory, old_address) > 0) return;
+  // lookup_memory without drop_one_lookup {
+  trace(9999, "mem") << "automatically abandoning " << old_address << end();
+  trace(9999, "mem") << "computing size to abandon at " << x.value << end();
+  x.set_value(get_or_insert(Memory, x.value)+/*skip refcount*/1);
+  drop_from_type(x, "address");
+  drop_from_type(x, "shared");
+  // }
+  abandon(old_address, size_of(x)+/*refcount*/1);
   return;
 }
 
