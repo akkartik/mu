@@ -10,7 +10,7 @@ def main [
 ]
 +mem: storing 34 in location 3
 
-:(before "long long int base = x.value" following "vector<double> read_memory(reagent x)")
+:(before "End Preprocess read_memory(x)")
 canonize(x);
 
 //: similarly, write to addresses pointing at other locations using the
@@ -22,7 +22,7 @@ def main [
 ]
 +mem: storing 34 in location 2
 
-:(before "long long int base = x.value" following "void write_memory(reagent x, const vector<double>& data)")
+:(before "End Preprocess write_memory(x)")
 canonize(x);
 if (x.value == 0) {
   raise << "can't write to location 0 in '" << to_string(current_instruction()) << "'\n" << end();

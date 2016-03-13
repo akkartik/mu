@@ -417,7 +417,7 @@ def main [
 # the /unsafe corrupts memory but fortunately we won't be running any more 'new' in this scenario
 +mem: automatically abandoning 1000
 
-:(before "End write_memory(reagent x, long long int base) Special-cases")
+:(before "End write_memory(reagent x) Special-cases")
 if (x.type->value == get(Type_ordinal, "address")
     && x.type->right
     && x.type->right->value == get(Type_ordinal, "shared")) {
@@ -432,8 +432,8 @@ if (x.type->value == get(Type_ordinal, "address")
     put(Memory, old_address, old_refcount-1);
   }
   // perform the write
-  trace(9999, "mem") << "storing " << no_scientific(data.at(0)) << " in location " << base << end();
-  put(Memory, base, new_address);
+  trace(9999, "mem") << "storing " << no_scientific(data.at(0)) << " in location " << x.value << end();
+  put(Memory, x.value, new_address);
   // increment refcount of new address
   if (new_address) {
     long long int new_refcount = get_or_insert(Memory, new_address);

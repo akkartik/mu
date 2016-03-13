@@ -252,11 +252,11 @@ vector<double> read_memory(reagent x) {
     result.push_back(x.value);
     return result;
   }
-  long long int base = x.value;
+  // End Preprocess read_memory(x)
   long long int size = size_of(x);
   for (long long int offset = 0; offset < size; ++offset) {
-    double val = get_or_insert(Memory, base+offset);
-    trace(9999, "mem") << "location " << base+offset << " is " << no_scientific(val) << end();
+    double val = get_or_insert(Memory, x.value+offset);
+    trace(9999, "mem") << "location " << x.value+offset << " is " << no_scientific(val) << end();
     result.push_back(val);
   }
   return result;
@@ -269,17 +269,17 @@ void write_memory(reagent x, const vector<double>& data) {
   }
   if (is_dummy(x)) return;
   if (is_literal(x)) return;
-  long long int base = x.value;
-  if (base == 0) return;
+  // End Preprocess write_memory(x)
+  if (x.value == 0) return;
   if (size_mismatch(x, data)) {
     raise << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << to_string(current_instruction()) << "'\n" << end();
     return;
   }
-  // End write_memory(reagent x, long long int base) Special-cases
+  // End write_memory(reagent x) Special-cases
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
-    assert(base+offset > 0);
-    trace(9999, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << base+offset << end();
-    put(Memory, base+offset, data.at(offset));
+    assert(x.value+offset > 0);
+    trace(9999, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << end();
+    put(Memory, x.value+offset, data.at(offset));
   }
 }
 
