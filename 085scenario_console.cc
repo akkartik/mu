@@ -119,6 +119,8 @@ case ASSUME_CONSOLE: {
   long long int console_address = get_or_insert(Memory, CONSOLE);
   trace(9999, "mem") << "storing console data in " << console_address+2 << end();
   put(Memory, console_address+/*skip refcount*/1+/*offset of 'data' in container 'events'*/1, event_data_address);
+  // increment refcount for event data
+  put(Memory, event_data_address, 1);
   break;
 }
 
