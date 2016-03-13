@@ -82,7 +82,7 @@ long long int address(long long int offset, long long int base) {
 
 //:: reads and writes to the 'default-space' variable have special behavior
 
-:(after "void write_memory(reagent x, vector<double> data)")
+:(after "void write_memory(reagent x, const vector<double>& data)")
   if (x.name == "default-space") {
     if (!scalar(data)
         || !x.type
@@ -188,7 +188,7 @@ if (curr.name == "new-default-space") {
       raise << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names?\n" << end();
     return result;
   }
-:(after "void write_memory(reagent x, vector<double> data)")
+:(after "void write_memory(reagent x, const vector<double>& data)")
   if (x.name == "number-of-locals") {
     raise << maybe(current_recipe_name()) << "can't write to special name 'number-of-locals'\n" << end();
     return;

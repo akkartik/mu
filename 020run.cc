@@ -262,7 +262,7 @@ vector<double> read_memory(reagent x) {
   return result;
 }
 
-void write_memory(reagent x, vector<double> data) {
+void write_memory(reagent x, const vector<double>& data) {
   if (!x.type) {
     raise << "can't write to " << to_string(x) << "; no type\n" << end();
     return;

@@ -40,7 +40,7 @@ if (s == "global-space") return true;
 long long int global_space;
 :(before "End routine Constructor")
 global_space = 0;
-:(after "void write_memory(reagent x, vector<double> data)")
+:(after "void write_memory(reagent x, const vector<double>& data)")
   if (x.name == "global-space") {
     if (!scalar(data)
         || !x.type

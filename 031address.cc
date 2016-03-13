@@ -22,7 +22,7 @@ def main [
 ]
 +mem: storing 34 in location 2
 
-:(before "long long int base = x.value" following "void write_memory(reagent x, vector<double> data)")
+:(before "long long int base = x.value" following "void write_memory(reagent x, const vector<double>& data)")
 canonize(x);
 if (x.value == 0) {
   raise << "can't write to location 0 in '" << to_string(current_instruction()) << "'\n" << end();
