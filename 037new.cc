@@ -450,7 +450,7 @@ if (x.type->value == get(Type_ordinal, "address")
   // lookup_memory without drop_one_lookup {
   trace(9999, "mem") << "automatically abandoning " << old_address << end();
   trace(9999, "mem") << "computing size to abandon at " << x.value << end();
-  x.set_value(get_or_insert(Memory, x.value)+/*skip refcount*/1);
+  x.set_value(old_address+/*skip refcount*/1);
   drop_from_type(x, "address");
   drop_from_type(x, "shared");
   // }
@@ -521,6 +521,19 @@ def foo [
 +mem: incrementing refcount of 1000: 1 -> 2
 +run: 1:address:shared:number <- new number:type
 +mem: decrementing refcount of 1000: 2 -> 1
+
+:(scenario refcounts_array)
+def main [
+  1:number <- copy 30
+  # allocate an array
+  10:address:shared:array:number <- new number:type, 20
+  11:number <- copy 10:address:shared:array:number
+  # allocate another array in its place, implicitly freeing the previous allocation
+  10:address:shared:array:number <- new number:type, 25
+]
++run: 10:address:shared:array:number <- new number:type, 20
+# abandoned array is of old size (20, not 25)
++abandon: saving in free-list of size 22
 
 //:: Extend 'new' to handle a unicode string literal argument.
 
