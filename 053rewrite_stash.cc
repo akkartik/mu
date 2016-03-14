@@ -1,6 +1,16 @@
 //: when encountering other types, try to convert them to strings using
 //: 'to-text'
 
+:(scenarios transform)
+:(scenario rewrite_stashes_to_text)
+recipe main [
+  local-scope
+  n:number <- copy 34
+  stash n
+]
++transform: stash_0_0:address:shared:array:character <- to-text-line n
++transform: stash stash_0_0:address:shared:array:character
+
 :(before "End Instruction Inserting/Deleting Transforms")
 Transform.push_back(rewrite_stashes_to_text);
 
@@ -41,11 +51,13 @@ void rewrite_stashes_to_text_named(recipe& caller) {
         ostringstream ingredient_name;
         ingredient_name << "stash_" << stash_instruction_idx << '_' << j << ":address:shared:array:character";
         def.products.push_back(reagent(ingredient_name.str()));
+        trace(9993, "transform") << to_string(def) << end();
         new_instructions.push_back(def);
         inst.ingredients.at(j).clear();  // reclaim old memory
         inst.ingredients.at(j) = reagent(ingredient_name.str());
       }
     }
+    trace(9993, "transform") << to_string(inst) << end();
     new_instructions.push_back(inst);
   }
   new_instructions.swap(caller.steps);

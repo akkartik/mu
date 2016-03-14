@@ -39,15 +39,20 @@ vector<transform_fn> Transform;
 :(code)
 void transform_all() {
   trace(9990, "transform") << "=== transform_all()" << end();
+//?   cerr << "=== transform_all\n";
   for (int t = 0; t < SIZE(Transform); ++t) {
 //?     cerr << "transform " << t << '\n';
     for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
       recipe& r = p->second;
+//?       cerr << "000 " << r.name << ' ' << SIZE(r.steps) << '\n';
       if (r.steps.empty()) continue;
+//?       cerr << "001 " << r.name << '\n';
       if (r.transformed_until != t-1) continue;
+//?       cerr << "002 " << r.name << '\n';
       // End Transform Checks
       (*Transform.at(t))(/*recipe_ordinal*/p->first);
       r.transformed_until = t;
+//?       cerr << "009 after transform " << t << ": " << to_string(r) << '\n';
     }
   }
 //?   cerr << "wrapping up transform\n";

@@ -1,4 +1,5 @@
-//: For convenience, some instructions will take literal arrays of characters (strings).
+//: For convenience, some instructions will take literal arrays of characters
+//: (text or strings).
 //:
 //: Instead of quotes, we'll use [] to delimit strings. That'll reduce the
 //: need for escaping since we can support nested brackets. And we can also
