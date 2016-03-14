@@ -1,5 +1,16 @@
 //: allow using literal strings anywhere that will accept immutable strings
 
+:(scenario passing_literals_to_recipes)
+def main [
+  1:number/raw <- foo [abc]
+]
+def foo x:address:shared:array:character -> n:number [
+  local-scope
+  load-ingredients
+  n <- length *x
+]
++mem: storing 3 in location 1
+
 :(before "End Instruction Inserting/Deleting Transforms")
 initialize_transform_rewrite_literal_string_to_text();
 Transform.push_back(rewrite_literal_string_to_text);
