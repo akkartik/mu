@@ -24,7 +24,7 @@ case EQUAL: {
 case EQUAL: {
   vector<double>& exemplar = ingredients.at(0);
   bool result = true;
-  for (long long int i = 1; i < SIZE(ingredients); ++i) {
+  for (int i = 1; i < SIZE(ingredients); ++i) {
     if (!equal(ingredients.at(i).begin(), ingredients.at(i).end(), exemplar.begin())) {
       result = false;
       break;
@@ -77,7 +77,7 @@ case GREATER_THAN: {
     raise << maybe(get(Recipe, r).name) << "'greater-than' needs at least two ingredients to compare in '" << to_string(inst) << "'\n" << end();
     break;
   }
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'greater-than' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
@@ -96,7 +96,7 @@ case GREATER_THAN: {
 :(before "End Primitive Recipe Implementations")
 case GREATER_THAN: {
   bool result = true;
-  for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
+  for (int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) <= ingredients.at(i).at(0)) {
       result = false;
     }
@@ -144,7 +144,7 @@ case LESSER_THAN: {
     raise << maybe(get(Recipe, r).name) << "'lesser-than' needs at least two ingredients to compare in '" << to_string(inst) << "'\n" << end();
     break;
   }
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'lesser-than' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
@@ -163,7 +163,7 @@ case LESSER_THAN: {
 :(before "End Primitive Recipe Implementations")
 case LESSER_THAN: {
   bool result = true;
-  for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
+  for (int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) >= ingredients.at(i).at(0)) {
       result = false;
     }
@@ -211,7 +211,7 @@ case GREATER_OR_EQUAL: {
     raise << maybe(get(Recipe, r).name) << "'greater-or-equal' needs at least two ingredients to compare in '" << to_string(inst) << "'\n" << end();
     break;
   }
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'greater-or-equal' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
@@ -230,7 +230,7 @@ case GREATER_OR_EQUAL: {
 :(before "End Primitive Recipe Implementations")
 case GREATER_OR_EQUAL: {
   bool result = true;
-  for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
+  for (int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) < ingredients.at(i).at(0)) {
       result = false;
     }
@@ -286,7 +286,7 @@ case LESSER_OR_EQUAL: {
     raise << maybe(get(Recipe, r).name) << "'lesser-or-equal' needs at least two ingredients to compare in '" << to_string(inst) << "'\n" << end();
     break;
   }
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'lesser-or-equal' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
@@ -305,7 +305,7 @@ case LESSER_OR_EQUAL: {
 :(before "End Primitive Recipe Implementations")
 case LESSER_OR_EQUAL: {
   bool result = true;
-  for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
+  for (int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) > ingredients.at(i).at(0)) {
       result = false;
     }

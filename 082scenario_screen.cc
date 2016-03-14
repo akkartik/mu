@@ -126,8 +126,8 @@ $error: 0
 // Scenarios may not define default-space, so they should fit within the
 // initial area of memory reserved for tests. We'll put the predefined
 // variables available to them at the end of that region.
-const long long int Max_variables_in_scenarios = Reserved_for_tests-100;
-long long int Next_predefined_global_for_scenarios = Max_variables_in_scenarios;
+const int Max_variables_in_scenarios = Reserved_for_tests-100;
+int Next_predefined_global_for_scenarios = Max_variables_in_scenarios;
 :(before "End Setup")
 assert(Next_predefined_global_for_scenarios < Reserved_for_tests);
 :(after "transform_all()" following "case RUN:")
@@ -138,7 +138,7 @@ assert(Name[tmp_recipe.at(0)][""] < Max_variables_in_scenarios);
 
 :(before "End Globals")
 // Scenario Globals.
-const long long int SCREEN = Next_predefined_global_for_scenarios++;
+const int SCREEN = Next_predefined_global_for_scenarios++;
 // End Scenario Globals.
 :(before "End Special Scenario Variable Names(r)")
 Name[r]["screen"] = SCREEN;
@@ -190,8 +190,8 @@ case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
 :(before "End Types")
 // scan an array of characters in a unicode-aware, bounds-checked manner
 struct raw_string_stream {
-  long long int index;
-  const long long int max;
+  int index;
+  const int max;
   const char* buf;
 
   raw_string_stream(const string&);
@@ -204,23 +204,23 @@ struct raw_string_stream {
 :(code)
 void check_screen(const string& expected_contents, const int color) {
   assert(!current_call().default_space);  // not supported
-  long long int screen_location = get_or_insert(Memory, SCREEN)+/*skip refcount*/1;
+  int screen_location = get_or_insert(Memory, SCREEN)+/*skip refcount*/1;
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
-  long long int screen_data_location = screen_location+data_offset;  // type: address:shared:array:character
-  long long int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
+  int screen_data_location = screen_location+data_offset;  // type: address:shared:array:character
+  int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
   int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
-  long long int screen_width = get_or_insert(Memory, screen_location+width_offset);
+  int screen_width = get_or_insert(Memory, screen_location+width_offset);
   int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
-  long long int screen_height = get_or_insert(Memory, screen_location+height_offset);
+  int screen_height = get_or_insert(Memory, screen_location+height_offset);
   raw_string_stream cursor(expected_contents);
   // todo: too-long expected_contents should fail
-  long long int addr = screen_data_start+/*skip length*/1;
-  for (long long int row = 0; row < screen_height; ++row) {
+  int addr = screen_data_start+/*skip length*/1;
+  for (int row = 0; row < screen_height; ++row) {
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
     assert(cursor.get() == '.');
-    for (long long int column = 0;  column < screen_width;  ++column, addr+= /*size of screen-cell*/2) {
+    for (int column = 0;  column < screen_width;  ++column, addr+= /*size of screen-cell*/2) {
       const int cell_color_offset = 1;
       uint32_t curr = cursor.get();
       if (get_or_insert(Memory, addr) == 0 && isspace(curr)) continue;
@@ -339,20 +339,20 @@ case _DUMP_SCREEN: {
 :(code)
 void dump_screen() {
   assert(!current_call().default_space);  // not supported
-  long long int screen_location = get_or_insert(Memory, SCREEN) + /*skip refcount*/1;
+  int screen_location = get_or_insert(Memory, SCREEN) + /*skip refcount*/1;
   int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
   int screen_width = get_or_insert(Memory, screen_location+width_offset);
   int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
   int screen_height = get_or_insert(Memory, screen_location+height_offset);
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
-  long long int screen_data_location = screen_location+data_offset;  // type: address:shared:array:character
-  long long int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
+  int screen_data_location = screen_location+data_offset;  // type: address:shared:array:character
+  int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
   assert(get_or_insert(Memory, screen_data_start) == screen_width*screen_height);
-  long long int curr = screen_data_start+1;  // skip length
-  for (long long int row = 0; row < screen_height; ++row) {
+  int curr = screen_data_start+1;  // skip length
+  for (int row = 0; row < screen_height; ++row) {
     cerr << '.';
-    for (long long int col = 0; col < screen_width; ++col) {
+    for (int col = 0; col < screen_width; ++col) {
       if (get_or_insert(Memory, curr))
         cerr << to_unicode(static_cast<uint32_t>(get_or_insert(Memory, curr)));
       else

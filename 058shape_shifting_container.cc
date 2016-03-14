@@ -81,7 +81,7 @@ void read_type_ingredients(string& name) {
   if (!contains_key(Type_ordinal, name) || get(Type_ordinal, name) == 0)
     put(Type_ordinal, name, Next_type_ordinal++);
   type_info& info = get_or_insert(Type, get(Type_ordinal, name));
-  long long int next_type_ordinal = START_TYPE_INGREDIENTS;
+  int next_type_ordinal = START_TYPE_INGREDIENTS;
   while (has_data(in)) {
     string curr = slurp_until(in, ':');
     if (info.type_ingredient_names.find(curr) != info.type_ingredient_names.end()) {
@@ -128,16 +128,16 @@ $mem: 7
 
 :(code)
 // shape-shifting version of size_of
-long long int size_of_type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {
+int size_of_type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {
   type_tree* element_type = type_ingredient(element_template, rest_of_use);
   if (!element_type) return 0;
-  long long int result = size_of(element_type);
+  int result = size_of(element_type);
   delete element_type;
   return result;
 }
 
 type_tree* type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {
-  long long int type_ingredient_index = element_template->value - START_TYPE_INGREDIENTS;
+  int type_ingredient_index = element_template->value - START_TYPE_INGREDIENTS;
   const type_tree* curr = rest_of_use;
   if (!curr) return NULL;
   while (type_ingredient_index > 0) {
@@ -166,7 +166,7 @@ def main [
 :(before "End GET field Cases")
 const type_tree* type = get(Type, base_type).elements.at(i).type;
 if (type->value >= START_TYPE_INGREDIENTS) {
-  long long int size = size_of_type_ingredient(type, base.type->right);
+  int size = size_of_type_ingredient(type, base.type->right);
   if (!size)
     raise << "illegal field type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
   src += size;
@@ -253,7 +253,7 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
   replace_type_ingredients(element_type->right, callsite_type, container_info);
   if (element_type->value < START_TYPE_INGREDIENTS) return;
 
-  const long long int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
+  const int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
   if (!has_nth_type(callsite_type, type_ingredient_index)) {
     raise << "illegal type " << names_to_string(callsite_type) << " seems to be missing a type ingredient or three\n" << end();
     return;
@@ -265,7 +265,7 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
   bool zig_left = false;
   {
     const type_tree* curr = callsite_type;
-    for (long long int i = 0; i < type_ingredient_index; ++i)
+    for (int i = 0; i < type_ingredient_index; ++i)
       curr = curr->right;
     if (curr && curr->left) {
       replacement = curr->left;
@@ -299,7 +299,7 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
   }
 }
 
-bool final_type_ingredient(long long int type_ingredient_index, const type_info& container_info) {
+bool final_type_ingredient(int type_ingredient_index, const type_info& container_info) {
   for (map<string, type_ordinal>::const_iterator p = container_info.type_ingredient_names.begin();
        p != container_info.type_ingredient_names.end();
        ++p) {
@@ -475,7 +475,7 @@ void test_replace_middle_type_ingredient_with_multiple3() {
   CHECK(!element.type->right->right->right->right->right->right);
 }
 
-bool has_nth_type(const type_tree* base, long long int n) {
+bool has_nth_type(const type_tree* base, int n) {
   assert(n >= 0);
   if (base == NULL) return false;
   if (n == 0) return true;
@@ -510,7 +510,7 @@ def main [
 :(before "End GET_ADDRESS field Cases")
 const type_tree* type = get(Type, base_type).elements.at(i).type;
 if (type->value >= START_TYPE_INGREDIENTS) {
-  long long int size = size_of_type_ingredient(type, base.type->right);
+  int size = size_of_type_ingredient(type, base.type->right);
   if (!size)
     raise << "illegal type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
   result += size;

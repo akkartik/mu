@@ -34,11 +34,11 @@ def main [
 if (t.kind == EXCLUSIVE_CONTAINER) {
   // size of an exclusive container is the size of its largest variant
   // (So like containers, it can't contain arrays.)
-  long long int result = 0;
-  for (long long int i = 0; i < t.size; ++i) {
+  int result = 0;
+  for (int i = 0; i < t.size; ++i) {
     reagent tmp;
     tmp.type = new type_tree(*type);
-    long long int size = size_of(variant_type(tmp, i));
+    int size = size_of(variant_type(tmp, i));
     if (size > result) result = size;
   }
   // ...+1 for its tag.
@@ -115,14 +115,14 @@ case MAYBE_CONVERT: {
 case MAYBE_CONVERT: {
   reagent base = current_instruction().ingredients.at(0);
   canonize(base);
-  long long int base_address = base.value;
+  int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
     break;
   }
-  long long int tag = current_instruction().ingredients.at(1).value;
-  long long int result;
-  if (tag == static_cast<long long int>(get_or_insert(Memory, base_address))) {
+  int tag = current_instruction().ingredients.at(1).value;
+  int result;
+  if (tag == static_cast<int>(get_or_insert(Memory, base_address))) {
     result = base_address+1;
   }
   else {
@@ -134,7 +134,7 @@ case MAYBE_CONVERT: {
 }
 
 :(code)
-const reagent variant_type(const reagent& canonized_base, long long int tag) {
+const reagent variant_type(const reagent& canonized_base, int tag) {
   assert(tag >= 0);
   assert(contains_key(Type, canonized_base.type->value));
   assert(!get(Type, canonized_base.type->value).name.empty());

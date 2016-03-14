@@ -48,14 +48,14 @@ case CREATE_ARRAY: {
 case CREATE_ARRAY: {
   reagent product = current_instruction().products.at(0);
   canonize(product);
-  long long int base_address = product.value;
-  long long int array_size = to_integer(product.type->right->right->name);
+  int base_address = product.value;
+  int array_size = to_integer(product.type->right->right->name);
   // initialize array size, so that size_of will work
   put(Memory, base_address, array_size);  // in array elements
-  long long int size = size_of(product);  // in locations
+  int size = size_of(product);  // in locations
   trace(9998, "run") << "creating array of size " << size << '\n' << end();
   // initialize array
-  for (long long int i = 1; i <= size_of(product); ++i) {
+  for (int i = 1; i <= size_of(product); ++i) {
     put(Memory, base_address+i, 0);
   }
   // dummy product; doesn't actually do anything
@@ -200,7 +200,7 @@ case INDEX: {
 case INDEX: {
   reagent base = current_instruction().ingredients.at(0);
   canonize(base);
-  long long int base_address = base.value;
+  int base_address = base.value;
   trace(9998, "run") << "base address is " << base_address << end();
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
@@ -214,7 +214,7 @@ case INDEX: {
     raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
   }
-  long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
+  int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
   trace(9998, "run") << "address to copy is " << src << end();
   trace(9998, "run") << "its type is " << get(Type, element_type->value).name << end();
   reagent tmp;
@@ -345,7 +345,7 @@ case INDEX_ADDRESS: {
 case INDEX_ADDRESS: {
   reagent base = current_instruction().ingredients.at(0);
   canonize(base);
-  long long int base_address = base.value;
+  int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
     break;
@@ -358,7 +358,7 @@ case INDEX_ADDRESS: {
     raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
   }
-  long long int result = base_address + 1 + offset_val.at(0)*size_of(element_type);
+  int result = base_address + 1 + offset_val.at(0)*size_of(element_type);
   products.resize(1);
   products.at(0).push_back(result);
   break;

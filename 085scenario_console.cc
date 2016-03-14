@@ -30,7 +30,7 @@ scenario keyboard-in-scenario [
 ]
 
 :(before "End Scenario Globals")
-const long long int CONSOLE = Next_predefined_global_for_scenarios++;
+const int CONSOLE = Next_predefined_global_for_scenarios++;
 :(before "End Special Scenario Variable Names(r)")
 Name[r]["console"] = CONSOLE;
 
@@ -54,13 +54,13 @@ case ASSUME_CONSOLE: {
   slurp_body(in, r);
   int num_events = count_events(r);
   // initialize the events like in new-fake-console
-  long long int size = /*space for refcount*/1 + /*space for length*/1 + num_events*size_of_event();
+  int size = /*space for refcount*/1 + /*space for length*/1 + num_events*size_of_event();
   ensure_space(size);
-  long long int event_data_address = Current_routine->alloc;
+  int event_data_address = Current_routine->alloc;
   // store length
   put(Memory, Current_routine->alloc+/*skip refcount*/1, num_events);
   Current_routine->alloc += /*skip refcount and length*/2;
-  for (long long int i = 0; i < SIZE(r.steps); ++i) {
+  for (int i = 0; i < SIZE(r.steps); ++i) {
     const instruction& curr = r.steps.at(i);
     if (curr.name == "left-click") {
       trace(9999, "mem") << "storing 'left-click' event starting at " << Current_routine->alloc << end();
@@ -95,9 +95,9 @@ case ASSUME_CONSOLE: {
       trace(9999, "mem") << "storing 'type' event starting at " << Current_routine->alloc << end();
       const string& contents = curr.ingredients.at(0).name;
       const char* raw_contents = contents.c_str();
-      long long int num_keyboard_events = unicode_length(contents);
-      long long int curr = 0;
-      for (long long int i = 0; i < num_keyboard_events; ++i) {
+      int num_keyboard_events = unicode_length(contents);
+      int curr = 0;
+      for (int i = 0; i < num_keyboard_events; ++i) {
         trace(9999, "mem") << "storing 'text' tag at " << Current_routine->alloc << end();
         put(Memory, Current_routine->alloc, /*tag for 'text' variant of 'event' exclusive-container*/0);
         uint32_t curr_character;
@@ -116,7 +116,7 @@ case ASSUME_CONSOLE: {
   put(Memory, CONSOLE, Current_routine->alloc);
   trace(9999, "mem") << "storing console in " << Current_routine->alloc << end();
   Current_routine->alloc += size_of_console();
-  long long int console_address = get_or_insert(Memory, CONSOLE);
+  int console_address = get_or_insert(Memory, CONSOLE);
   trace(9999, "mem") << "storing console data in " << console_address+2 << end();
   put(Memory, console_address+/*skip refcount*/1+/*offset of 'data' in container 'events'*/1, event_data_address);
   // increment refcount for event data
@@ -125,7 +125,7 @@ case ASSUME_CONSOLE: {
 }
 
 :(before "End Globals")
-map<string, long long int> Key;
+map<string, int> Key;
 :(before "End One-time Setup")
 initialize_key_names();
 :(code)
@@ -250,22 +250,22 @@ case REPLACE_IN_CONSOLE: {
     raise << "console not initialized\n" << end();
     break;
   }
-  long long int console_address = get_or_insert(Memory, CONSOLE);
-  long long int console_data = get_or_insert(Memory, console_address+1);
-  long long int size = get_or_insert(Memory, console_data);  // array size
-  for (long long int i = 0, curr = console_data+1; i < size; ++i, curr+=size_of_event()) {
+  int console_address = get_or_insert(Memory, CONSOLE);
+  int console_data = get_or_insert(Memory, console_address+1);
+  int size = get_or_insert(Memory, console_data);  // array size
+  for (int i = 0, curr = console_data+1; i < size; ++i, curr+=size_of_event()) {
     if (get_or_insert(Memory, curr) != /*text*/0) continue;
     if (get_or_insert(Memory, curr+1) != ingredients.at(0).at(0)) continue;
-    for (long long int n = 0; n < size_of_event(); ++n)
+    for (int n = 0; n < size_of_event(); ++n)
       put(Memory, curr+n, ingredients.at(1).at(n));
   }
   break;
 }
 
 :(code)
-long long int count_events(const recipe& r) {
-  long long int result = 0;
-  for (long long int i = 0; i < SIZE(r.steps); ++i) {
+int count_events(const recipe& r) {
+  int result = 0;
+  for (int i = 0; i < SIZE(r.steps); ++i) {
     const instruction& curr = r.steps.at(i);
     if (curr.name == "type")
       result += unicode_length(curr.ingredients.at(0).name);
@@ -275,9 +275,9 @@ long long int count_events(const recipe& r) {
   return result;
 }
 
-long long int size_of_event() {
+int size_of_event() {
   // memoize result if already computed
-  static long long int result = 0;
+  static int result = 0;
   if (result) return result;
   type_tree* type = new type_tree("event", get(Type_ordinal, "event"));
   result = size_of(type);
@@ -285,9 +285,9 @@ long long int size_of_event() {
   return result;
 }
 
-long long int size_of_console() {
+int size_of_console() {
   // memoize result if already computed
-  static long long int result = 0;
+  static int result = 0;
   if (result) return result;
   assert(get(Type_ordinal, "console"));
   type_tree* type = new type_tree("console", get(Type_ordinal, "console"));

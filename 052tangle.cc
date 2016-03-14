@@ -68,12 +68,12 @@ tangle_done = false;
 :(code)
 void insert_fragments(const recipe_ordinal r) {
   bool made_progress = true;
-  long long int pass = 0;
+  int pass = 0;
   while (made_progress) {
     made_progress = false;
     // create a new vector because insertions invalidate iterators
     vector<instruction> result;
-    for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+    for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
       const instruction& inst = get(Recipe, r).steps.at(i);
       if (!inst.is_label || !is_waypoint(inst.label) || inst.tangle_done) {
         result.push_back(inst);
@@ -105,12 +105,12 @@ void append_fragment(vector<instruction>& base, const vector<instruction>& patch
   // so we'll keep jump targets local to the specific before/after fragment
   // that introduces them.
   set<string> jump_targets;
-  for (long long int i = 0; i < SIZE(patch); ++i) {
+  for (int i = 0; i < SIZE(patch); ++i) {
     const instruction& inst = patch.at(i);
     if (inst.is_label && is_jump_target(inst.label))
       jump_targets.insert(inst.label);
   }
-  for (long long int i = 0; i < SIZE(patch); ++i) {
+  for (int i = 0; i < SIZE(patch); ++i) {
     instruction inst = patch.at(i);
     if (inst.is_label) {
       if (contains_key(jump_targets, inst.label))
@@ -118,7 +118,7 @@ void append_fragment(vector<instruction>& base, const vector<instruction>& patch
       base.push_back(inst);
       continue;
     }
-    for (long long int j = 0; j < SIZE(inst.ingredients); ++j) {
+    for (int j = 0; j < SIZE(inst.ingredients); ++j) {
       reagent& x = inst.ingredients.at(j);
       if (!is_literal(x)) continue;
       if (x.type->name == "label" && contains_key(jump_targets, x.name))

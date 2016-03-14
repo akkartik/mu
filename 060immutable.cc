@@ -267,14 +267,14 @@ void check_immutable_ingredients(recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- check mutability of ingredients in recipe " << caller.name << end();
   if (!caller.has_header) return;  // skip check for old-style recipes calling next-ingredient directly
-  for (long long int i = 0; i < SIZE(caller.ingredients); ++i) {
+  for (int i = 0; i < SIZE(caller.ingredients); ++i) {
     const reagent& current_ingredient = caller.ingredients.at(i);
     if (!is_mu_address(current_ingredient)) continue;  // will be copied
     if (is_present_in_products(caller, current_ingredient.name)) continue;  // not expected to be immutable
     // End Immutable Ingredients Special-cases
     set<reagent> immutable_vars;
     immutable_vars.insert(current_ingredient);
-    for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+    for (int i = 0; i < SIZE(caller.steps); ++i) {
       const instruction& inst = caller.steps.at(i);
       check_immutable_ingredient_in_instruction(inst, immutable_vars, current_ingredient.name, caller);
       update_aliases(inst, immutable_vars);
@@ -283,12 +283,12 @@ void check_immutable_ingredients(recipe_ordinal r) {
 }
 
 void update_aliases(const instruction& inst, set<reagent>& current_ingredient_and_aliases) {
-  set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
+  set<int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
   if (!contains_key(Recipe, inst.operation)) {
     // primitive recipe
     switch (inst.operation) {
       case COPY:
-        for (set<long long int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p)
+        for (set<int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p)
           current_ingredient_and_aliases.insert(inst.products.at(*p).name);
         break;
       case GET:
@@ -304,23 +304,23 @@ void update_aliases(const instruction& inst, set<reagent>& current_ingredient_an
   }
   else {
     // defined recipe
-    set<long long int> contained_in_product_indices = scan_contained_in_product_indices(inst, current_ingredient_indices);
-    for (set<long long int>::iterator p = contained_in_product_indices.begin(); p != contained_in_product_indices.end(); ++p) {
+    set<int> contained_in_product_indices = scan_contained_in_product_indices(inst, current_ingredient_indices);
+    for (set<int>::iterator p = contained_in_product_indices.begin(); p != contained_in_product_indices.end(); ++p) {
       if (*p < SIZE(inst.products))
         current_ingredient_and_aliases.insert(inst.products.at(*p));
     }
   }
 }
 
-set<long long int> scan_contained_in_product_indices(const instruction& inst, set<long long int>& ingredient_indices) {
+set<int> scan_contained_in_product_indices(const instruction& inst, set<int>& ingredient_indices) {
   set<reagent> selected_ingredients;
   const recipe& callee = get(Recipe, inst.operation);
-  for (set<long long int>::iterator p = ingredient_indices.begin(); p != ingredient_indices.end(); ++p) {
+  for (set<int>::iterator p = ingredient_indices.begin(); p != ingredient_indices.end(); ++p) {
     if (*p >= SIZE(callee.ingredients)) continue;  // optional immutable ingredient
     selected_ingredients.insert(callee.ingredients.at(*p));
   }
-  set<long long int> result;
-  for (long long int i = 0; i < SIZE(callee.products); ++i) {
+  set<int> result;
+  for (int i = 0; i < SIZE(callee.products); ++i) {
     const reagent& current_product = callee.products.at(i);
     // TODO
     const string_tree* contained_in_name = property(current_product, "contained-in");
@@ -357,7 +357,7 @@ def test-next x:address:shared:test-list -> y:address:shared:test-list/contained
 :(code)
 void check_immutable_ingredient_in_instruction(const instruction& inst, const set<reagent>& current_ingredient_and_aliases, const string& original_ingredient_name, const recipe& caller) {
   // first check if the instruction is directly modifying something it shouldn't
-  for (long long int i = 0; i < SIZE(inst.products); ++i) {
+  for (int i = 0; i < SIZE(inst.products); ++i) {
     if (has_property(inst.products.at(i), "lookup")
         && current_ingredient_and_aliases.find(inst.products.at(i)) != current_ingredient_and_aliases.end()) {
       raise << maybe(caller.name) << "cannot modify " << inst.products.at(i).name << " in instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
@@ -365,10 +365,10 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
     }
   }
   // check if there's any indirect modification going on
-  set<long long int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
+  set<int> current_ingredient_indices = ingredient_indices(inst, current_ingredient_and_aliases);
   if (current_ingredient_indices.empty()) return;  // ingredient not found in call
-  for (set<long long int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p) {
-    const long long int current_ingredient_index = *p;
+  for (set<int>::iterator p = current_ingredient_indices.begin(); p != current_ingredient_indices.end(); ++p) {
+    const int current_ingredient_index = *p;
     reagent current_ingredient = inst.ingredients.at(current_ingredient_index);
     canonize_type(current_ingredient);
     const string& current_ingredient_name = current_ingredient.name;
@@ -395,7 +395,7 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
   }
 }
 
-bool is_modified_in_recipe(recipe_ordinal r, long long int ingredient_index, const recipe& caller) {
+bool is_modified_in_recipe(recipe_ordinal r, int ingredient_index, const recipe& caller) {
   const recipe& callee = get(Recipe, r);
   if (!callee.has_header) {
     raise << maybe(caller.name) << "can't check mutability of ingredients in " << callee.name << " because it uses 'next-ingredient' directly, rather than a recipe header.\n" << end();
@@ -406,7 +406,7 @@ bool is_modified_in_recipe(recipe_ordinal r, long long int ingredient_index, con
 }
 
 bool is_present_in_products(const recipe& callee, const string& ingredient_name) {
-  for (long long int i = 0; i < SIZE(callee.products); ++i) {
+  for (int i = 0; i < SIZE(callee.products); ++i) {
     if (callee.products.at(i).name == ingredient_name)
       return true;
   }
@@ -414,16 +414,16 @@ bool is_present_in_products(const recipe& callee, const string& ingredient_name)
 }
 
 bool is_present_in_ingredients(const recipe& callee, const string& ingredient_name) {
-  for (long long int i = 0; i < SIZE(callee.ingredients); ++i) {
+  for (int i = 0; i < SIZE(callee.ingredients); ++i) {
     if (callee.ingredients.at(i).name == ingredient_name)
       return true;
   }
   return false;
 }
 
-set<long long int> ingredient_indices(const instruction& inst, const set<reagent>& ingredient_names) {
-  set<long long int> result;
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+set<int> ingredient_indices(const instruction& inst, const set<reagent>& ingredient_names) {
+  set<int> result;
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (is_literal(inst.ingredients.at(i))) continue;
     if (ingredient_names.find(inst.ingredients.at(i)) != ingredient_names.end())
       result.insert(i);

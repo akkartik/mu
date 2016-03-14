@@ -16,7 +16,7 @@ void check_instruction(const recipe_ordinal r) {
   trace(9991, "transform") << "--- perform checks for recipe " << get(Recipe, r).name << end();
 //?   cerr << "--- perform checks for recipe " << get(Recipe, r).name << '\n';
   map<string, vector<type_ordinal> > metadata;
-  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+  for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.is_label) continue;
     switch (inst.operation) {
@@ -26,7 +26,7 @@ void check_instruction(const recipe_ordinal r) {
           raise << "ingredients and products should match in '" << to_string(inst) << "'\n" << end();
           break;
         }
-        for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+        for (int i = 0; i < SIZE(inst.ingredients); ++i) {
           if (!types_coercible(inst.products.at(i), inst.ingredients.at(i))) {
             raise << maybe(get(Recipe, r).name) << "can't copy " << inst.ingredients.at(i).original_string << " to " << inst.products.at(i).original_string << "; types don't match\n" << end();
             goto finish_checking_instruction;

@@ -40,7 +40,7 @@ vector<recipe_ordinal> load(istream& in) {
   return result;
 }
 
-long long int slurp_recipe(istream& in) {
+int slurp_recipe(istream& in) {
   recipe result;
   result.name = next_word(in);
   // End Load Recipe Name
@@ -231,12 +231,12 @@ void show_rest_of_stream(istream& in) {
 //: Have tests clean up any recipes they added.
 :(before "End Globals")
 vector<recipe_ordinal> Recently_added_recipes;
-long long int Reserved_for_tests = 1000;
+int Reserved_for_tests = 1000;
 :(before "End Setup")
 clear_recently_added_recipes();
 :(code)
 void clear_recently_added_recipes() {
-  for (long long int i = 0; i < SIZE(Recently_added_recipes); ++i) {
+  for (int i = 0; i < SIZE(Recently_added_recipes); ++i) {
     if (Recently_added_recipes.at(i) >= Reserved_for_tests  // don't renumber existing recipes, like 'interactive'
         && contains_key(Recipe, Recently_added_recipes.at(i)))  // in case previous test had duplicate definitions
       Recipe_ordinal.erase(get(Recipe, Recently_added_recipes.at(i)).name);

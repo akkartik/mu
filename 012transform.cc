@@ -14,7 +14,7 @@
 //:   relative to those in previous layers to find a better arrangement.
 
 :(before "End recipe Fields")
-long long int transformed_until;
+int transformed_until;
 :(before "End recipe Constructor")
 transformed_until = -1;
 
@@ -39,7 +39,7 @@ vector<transform_fn> Transform;
 :(code)
 void transform_all() {
   trace(9990, "transform") << "=== transform_all()" << end();
-  for (long long int t = 0; t < SIZE(Transform); ++t) {
+  for (int t = 0; t < SIZE(Transform); ++t) {
 //?     cerr << "transform " << t << '\n';
     for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
       recipe& r = p->second;
@@ -61,12 +61,12 @@ void parse_int_reagents() {
   for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
     recipe& r = p->second;
     if (r.steps.empty()) continue;
-    for (long long int index = 0; index < SIZE(r.steps); ++index) {
+    for (int index = 0; index < SIZE(r.steps); ++index) {
       instruction& inst = r.steps.at(index);
-      for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+      for (int i = 0; i < SIZE(inst.ingredients); ++i) {
         populate_value(inst.ingredients.at(i));
       }
-      for (long long int i = 0; i < SIZE(inst.products); ++i) {
+      for (int i = 0; i < SIZE(inst.products); ++i) {
         populate_value(inst.products.at(i));
       }
     }

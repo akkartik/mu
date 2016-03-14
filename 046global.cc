@@ -37,7 +37,7 @@ if (s == "global-space") return true;
 
 //: writes to this variable go to a field in the current routine
 :(before "End routine Fields")
-long long int global_space;
+int global_space;
 :(before "End routine Constructor")
 global_space = 0;
 :(after "void write_memory(reagent x, const vector<double>& data)")
@@ -61,7 +61,7 @@ global_space = 0;
   }
 
 //: now marking variables as /space:global looks them up inside this field
-:(after "long long int space_base(const reagent& x)")
+:(after "int space_base(const reagent& x)")
   if (is_global(x)) {
     if (!Current_routine->global_space)
       raise << "routine has no global space\n" << end();
@@ -87,7 +87,7 @@ $error: 0
 
 :(code)
 bool is_global(const reagent& x) {
-  for (long long int i = 0; i < SIZE(x.properties); ++i) {
+  for (int i = 0; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == "space")
       return x.properties.at(i).second && x.properties.at(i).second->value == "global";
   }

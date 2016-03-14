@@ -37,7 +37,7 @@ def main [
 //: Later layers will change this.
 struct routine {
   recipe_ordinal running_recipe;
-  long long int running_step_index;
+  int running_step_index;
   routine(recipe_ordinal r) :running_recipe(r), running_step_index(0) {}
   bool completed() const;
   const vector<instruction>& steps() const;
@@ -45,9 +45,9 @@ struct routine {
 
 :(before "End Globals")
 routine* Current_routine = NULL;
-map<string, long long int> Instructions_running;
-map<string, long long int> Locations_read;
-map<string, long long int> Locations_read_by_instruction;
+map<string, int> Instructions_running;
+map<string, int> Locations_read;
+map<string, int> Locations_read_by_instruction;
 
 :(code)
 void run(recipe_ordinal r) {
@@ -70,7 +70,7 @@ void run_current_routine()
     // read all ingredients from memory, each potentially spanning multiple locations
     vector<vector<double> > ingredients;
     if (should_copy_ingredients()) {
-      for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i)
+      for (int i = 0; i < SIZE(current_instruction().ingredients); ++i)
         ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
     }
     // instructions below will write to 'products'
@@ -90,7 +90,7 @@ void run_current_routine()
       raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << to_string(current_instruction()) << '\n' << end();
     }
     else {
-      for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
+      for (int i = 0; i < SIZE(current_instruction().products); ++i) {
         write_memory(current_instruction().products.at(i), products.at(i));
       }
     }
@@ -109,7 +109,7 @@ bool should_copy_ingredients() {
 //: We'll need to override these later as we change the definition of routine.
 //: Important that they return referrences into the routine.
 
-inline long long int& current_step_index() {
+inline int& current_step_index() {
   return Current_routine->running_step_index;
 }
 
@@ -181,15 +181,15 @@ void run_main(int argc, char* argv[]) {
 
 :(code)
 void dump_profile() {
-  for (map<string, long long int>::iterator p = Instructions_running.begin(); p != Instructions_running.end(); ++p) {
+  for (map<string, int>::iterator p = Instructions_running.begin(); p != Instructions_running.end(); ++p) {
     cerr << p->first << ": " << p->second << '\n';
   }
   cerr << "== locations read\n";
-  for (map<string, long long int>::iterator p = Locations_read.begin(); p != Locations_read.end(); ++p) {
+  for (map<string, int>::iterator p = Locations_read.begin(); p != Locations_read.end(); ++p) {
     cerr << p->first << ": " << p->second << '\n';
   }
   cerr << "== locations read by instruction\n";
-  for (map<string, long long int>::iterator p = Locations_read_by_instruction.begin(); p != Locations_read_by_instruction.end(); ++p) {
+  for (map<string, int>::iterator p = Locations_read_by_instruction.begin(); p != Locations_read_by_instruction.end(); ++p) {
     cerr << p->first << ": " << p->second << '\n';
   }
 }
@@ -258,8 +258,8 @@ vector<double> read_memory(reagent x) {
     return result;
   }
   // End Preprocess read_memory(x)
-  long long int size = size_of(x);
-  for (long long int offset = 0; offset < size; ++offset) {
+  int size = size_of(x);
+  for (int offset = 0; offset < size; ++offset) {
     double val = get_or_insert(Memory, x.value+offset);
     trace(9999, "mem") << "location " << x.value+offset << " is " << no_scientific(val) << end();
     result.push_back(val);
@@ -281,7 +281,7 @@ void write_memory(reagent x, const vector<double>& data) {
     return;
   }
   // End write_memory(reagent x) Special-cases
-  for (long long int offset = 0; offset < SIZE(data); ++offset) {
+  for (int offset = 0; offset < SIZE(data); ++offset) {
     assert(x.value+offset > 0);
     trace(9999, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << end();
     put(Memory, x.value+offset, data.at(offset));
@@ -289,12 +289,12 @@ void write_memory(reagent x, const vector<double>& data) {
 }
 
 :(code)
-long long int size_of(const reagent& r) {
+int size_of(const reagent& r) {
   if (r.type == NULL) return 0;
   // End size_of(reagent) Cases
   return size_of(r.type);
 }
-long long int size_of(const type_tree* type) {
+int size_of(const type_tree* type) {
   if (type == NULL) return 0;
   // End size_of(type) Cases
   return 1;
@@ -318,7 +318,7 @@ inline bool is_literal(const reagent& r) {
   return r.type->value == 0;
 }
 
-inline bool scalar(const vector<long long int>& x) {
+inline bool scalar(const vector<int>& x) {
   return SIZE(x) == 1;
 }
 inline bool scalar(const vector<double>& x) {

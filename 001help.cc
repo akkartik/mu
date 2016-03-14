@@ -85,8 +85,13 @@ bool is_equal(char* s, const char* lit) {
 //: unsigned and that'll cause warnings about mixing signed and unsigned,
 //: yadda-yadda. Instead use this macro below to perform an unsafe cast to
 //: signed. We'll just give up immediately if a container's ever too large.
+//:
+//: Addendum to corollary: We're going to uniformly avoid long long int
+//: everywhere, since Clang on 32-bit platforms doesn't yet support
+//: multiplication over 64-bit integers, and since that seems like a more
+//: common situation to end up in than integer overflow.
 :(before "End Includes")
-#define SIZE(X) (assert((X).size() < (1LL<<(sizeof(long long int)*8-2))), static_cast<long long int>((X).size()))
+#define SIZE(X) (assert((X).size() < (1LL<<(sizeof(int)*8-2))), static_cast<int>((X).size()))
 //:
 //: 5. Integer overflow is still impossible to guard against. Maybe after
 //: reading http://www.cs.utah.edu/~regehr/papers/overflow12.pdf

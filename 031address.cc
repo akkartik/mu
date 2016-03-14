@@ -219,7 +219,7 @@ case _DUMP: {
 //: grab an address, and then dump its value at intervals
 //: useful for tracking down memory corruption (writing to an out-of-bounds address)
 :(before "End Globals")
-long long int foo = -1;
+int foo = -1;
 :(before "End Primitive Recipe Declarations")
 _FOO,
 :(before "End Primitive Recipe Numbers")

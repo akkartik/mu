@@ -55,13 +55,13 @@ def main [
 +mem: storing 0 in location 3
 
 :(before "End Globals")
-long long int Memory_allocated_until = Reserved_for_tests;
-long long int Initial_memory_per_routine = 100000;
+int Memory_allocated_until = Reserved_for_tests;
+int Initial_memory_per_routine = 100000;
 :(before "End Setup")
 Memory_allocated_until = Reserved_for_tests;
 Initial_memory_per_routine = 100000;
 :(before "End routine Fields")
-long long int alloc, alloc_max;
+int alloc, alloc_max;
 :(before "End routine Constructor")
 alloc = Memory_allocated_until;
 Memory_allocated_until += Initial_memory_per_routine;
@@ -125,7 +125,7 @@ Transform.push_back(transform_new_to_allocate);  // idempotent
 :(code)
 void transform_new_to_allocate(const recipe_ordinal r) {
   trace(9991, "transform") << "--- convert 'new' to 'allocate' for recipe " << get(Recipe, r).name << end();
-  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+  for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);
     // Convert 'new' To 'allocate'
     if (inst.name == "new") {
@@ -150,7 +150,7 @@ put(Recipe_ordinal, "allocate", ALLOCATE);
 :(before "End Primitive Recipe Implementations")
 case ALLOCATE: {
   // compute the space we need
-  long long int size = ingredients.at(0).at(0);
+  int size = ingredients.at(0).at(0);
   if (SIZE(ingredients) > 1) {
     // array
     trace(9999, "mem") << "array size is " << ingredients.at(1).at(0) << end();
@@ -164,13 +164,13 @@ case ALLOCATE: {
   // compute the region of memory to return
   // really crappy at the moment
   ensure_space(size);
-  const long long int result = Current_routine->alloc;
+  const int result = Current_routine->alloc;
   trace(9999, "mem") << "new alloc: " << result << end();
   // save result
   products.resize(1);
   products.at(0).push_back(result);
   // initialize allocated space
-  for (long long int address = result; address < result+size; ++address)
+  for (int address = result; address < result+size; ++address)
     put(Memory, address, 0);
   // initialize array length
   if (SIZE(current_instruction().ingredients) > 1) {
@@ -199,10 +199,10 @@ case NEW: {
 }
 
 //? :(before "End Globals")
-//? long long int Total_alloc = 0;
-//? long long int Num_alloc = 0;
-//? long long int Total_free = 0;
-//? long long int Num_free = 0;
+//? int Total_alloc = 0;
+//? int Num_alloc = 0;
+//? int Total_free = 0;
+//? int Num_free = 0;
 //? :(before "End Setup")
 //? Total_alloc = Num_alloc = Total_free = Num_free = 0;
 //? :(before "End Teardown")
@@ -211,7 +211,7 @@ case NEW: {
 //? cerr << SIZE(Memory) << '\n';
 
 :(code)
-void ensure_space(long long int size) {
+void ensure_space(int size) {
   if (size > Initial_memory_per_routine) {
     tb_shutdown();
     cerr << "can't allocate " << size << " locations, that's too much compared to " << Initial_memory_per_routine << ".\n";
@@ -289,7 +289,7 @@ def main [
 +mem: storing 1 in location 4
 
 :(before "End Globals")
-map<long long int, long long int> Free_list;
+map<int, int> Free_list;
 :(before "End Setup")
 Free_list.clear();
 
@@ -313,14 +313,14 @@ case ABANDON: {
 }
 :(before "End Primitive Recipe Implementations")
 case ABANDON: {
-  long long int address = ingredients.at(0).at(0);
+  int address = ingredients.at(0).at(0);
   trace(9999, "abandon") << "address to abandon is " << address << end();
   reagent types = current_instruction().ingredients.at(0);
   trace(9999, "abandon") << "value of ingredient is " << types.value << end();
   canonize(types);
   // lookup_memory without drop_one_lookup {
   trace(9999, "abandon") << "value of ingredient after canonization is " << types.value << end();
-  long long int address_location = types.value;
+  int address_location = types.value;
   types.set_value(get_or_insert(Memory, types.value)+/*skip refcount*/1);
   drop_from_type(types, "address");
   drop_from_type(types, "shared");
@@ -333,13 +333,13 @@ case ABANDON: {
 }
 
 :(code)
-void abandon(long long int address, long long int size) {
+void abandon(int address, int size) {
   trace(9999, "abandon") << "saving in free-list of size " << size << end();
 //?   Total_free += size;
 //?   Num_free++;
 //?   cerr << "abandon: " << size << '\n';
   // clear memory
-  for (long long int curr = address; curr < address+size; ++curr)
+  for (int curr = address; curr < address+size; ++curr)
     put(Memory, curr, 0);
   // append existing free list to address
   put(Memory, address, get_or_insert(Free_list, size));
@@ -349,9 +349,9 @@ void abandon(long long int address, long long int size) {
 :(before "ensure_space(size)" following "case ALLOCATE")
 if (get_or_insert(Free_list, size)) {
   trace(9999, "abandon") << "picking up space from free-list of size " << size << end();
-  long long int result = get_or_insert(Free_list, size);
+  int result = get_or_insert(Free_list, size);
   put(Free_list, size, get_or_insert(Memory, result));
-  for (long long int curr = result+1; curr < result+size; ++curr) {
+  for (int curr = result+1; curr < result+size; ++curr) {
     if (get_or_insert(Memory, curr) != 0) {
       raise << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
       break;  // always fatal
@@ -422,12 +422,12 @@ if (x.type->value == get(Type_ordinal, "address")
     && x.type->right
     && x.type->right->value == get(Type_ordinal, "shared")) {
   // compute old address of x, as well as new address we want to write in
-  long long int old_address = get_or_insert(Memory, x.value);
+  int old_address = get_or_insert(Memory, x.value);
   assert(scalar(data));
-  long long int new_address = data.at(0);
+  int new_address = data.at(0);
   // decrement refcount of old address
   if (old_address) {
-    long long int old_refcount = get_or_insert(Memory, old_address);
+    int old_refcount = get_or_insert(Memory, old_address);
     trace(9999, "mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << (old_refcount-1) << end();
     put(Memory, old_address, old_refcount-1);
   }
@@ -436,7 +436,7 @@ if (x.type->value == get(Type_ordinal, "address")
   put(Memory, x.value, new_address);
   // increment refcount of new address
   if (new_address) {
-    long long int new_refcount = get_or_insert(Memory, new_address);
+    int new_refcount = get_or_insert(Memory, new_address);
     assert(new_refcount >= 0);  // == 0 only when new_address == old_address
     trace(9999, "mem") << "incrementing refcount of " << new_address << ": " << new_refcount << " -> " << (new_refcount+1) << end();
     put(Memory, new_address, new_refcount+1);
@@ -567,21 +567,21 @@ if (inst.name == "new" && is_literal_string(inst.ingredients.at(0))) continue;
   }
 
 :(code)
-long long int new_mu_string(const string& contents) {
+int new_mu_string(const string& contents) {
   // allocate an array just large enough for it
-  long long int string_length = unicode_length(contents);
+  int string_length = unicode_length(contents);
 //?   Total_alloc += string_length+1;
 //?   Num_alloc++;
   ensure_space(string_length+1);  // don't forget the extra location for array size
   // initialize string
-  long long int result = Current_routine->alloc;
+  int result = Current_routine->alloc;
   // initialize refcount
   put(Memory, Current_routine->alloc++, 0);
   // store length
   put(Memory, Current_routine->alloc++, string_length);
-  long long int curr = 0;
+  int curr = 0;
   const char* raw_contents = contents.c_str();
-  for (long long int i = 0; i < string_length; ++i) {
+  for (int i = 0; i < string_length; ++i) {
     uint32_t curr_character;
     assert(curr < SIZE(contents));
     tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
@@ -634,10 +634,10 @@ def main [
 
 //: helpers
 :(code)
-long long int unicode_length(const string& s) {
+int unicode_length(const string& s) {
   const char* in = s.c_str();
-  long long int result = 0;
-  long long int curr = 0;
+  int result = 0;
+  int curr = 0;
   while (curr < SIZE(s)) {  // carefully bounds-check on the string
     // before accessing its raw pointer
     ++result;
@@ -646,13 +646,13 @@ long long int unicode_length(const string& s) {
   return result;
 }
 
-string read_mu_string(long long int address) {
+string read_mu_string(int address) {
   if (address == 0) return "";
   address++;  // skip refcount
-  long long int size = get_or_insert(Memory, address);
+  int size = get_or_insert(Memory, address);
   if (size == 0) return "";
   ostringstream tmp;
-  for (long long int curr = address+1; curr <= address+size; ++curr) {
+  for (int curr = address+1; curr <= address+size; ++curr) {
     tmp << to_unicode(static_cast<uint32_t>(get_or_insert(Memory, curr)));
   }
   return tmp.str();

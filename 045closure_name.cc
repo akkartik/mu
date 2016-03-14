@@ -42,10 +42,10 @@ Transform.push_back(collect_surrounding_spaces);  // idempotent
 void collect_surrounding_spaces(const recipe_ordinal r) {
   trace(9991, "transform") << "--- collect surrounding spaces for recipe " << get(Recipe, r).name << end();
 //?   cerr << "--- collect surrounding spaces for recipe " << get(Recipe, r).name << '\n';
-  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+  for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     const instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.is_label) continue;
-    for (long long int j = 0; j < SIZE(inst.products); ++j) {
+    for (int j = 0; j < SIZE(inst.products); ++j) {
       if (is_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
       type_tree* type = inst.products.at(j).type;
@@ -90,15 +90,15 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
 //: Once surrounding spaces are available, transform_names uses them to handle
 //: /space properties.
 
-:(replace{} "long long int lookup_name(const reagent& r, const recipe_ordinal default_recipe)")
-long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe) {
+:(replace{} "int lookup_name(const reagent& r, const recipe_ordinal default_recipe)")
+int lookup_name(const reagent& x, const recipe_ordinal default_recipe) {
   if (!has_property(x, "space")) {
     if (Name[default_recipe].empty()) raise << "name not found: " << x.name << '\n' << end();
     return Name[default_recipe][x.name];
   }
   string_tree* p = property(x, "space");
   if (!p || p->right) raise << "/space property should have exactly one (non-negative integer) value\n" << end();
-  long long int n = to_integer(p->value);
+  int n = to_integer(p->value);
   assert(n >= 0);
   recipe_ordinal surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
   if (surrounding_recipe == -1) return -1;
@@ -109,11 +109,11 @@ long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe)
 
 // If the recipe we need to lookup this name in doesn't have names done yet,
 // recursively call transform_names on it.
-long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_ordinal>& done, vector<recipe_ordinal>& path) {
+int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_ordinal>& done, vector<recipe_ordinal>& path) {
   if (!Name[r].empty()) return Name[r][x.name];
   if (contains_key(done, r)) {
     raise << "can't compute address of " << to_string(x) << " because " << end();
-    for (long long int i = 1; i < SIZE(path); ++i) {
+    for (int i = 1; i < SIZE(path); ++i) {
       raise << path.at(i-1) << " requires computing names of " << path.at(i) << '\n' << end();
     }
     raise << path.at(SIZE(path)-1) << " requires computing names of " << r << "..ad infinitum\n" << end();
@@ -126,7 +126,7 @@ long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_o
   return Name[r][x.name];
 }
 
-recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n) {
+recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, int n) {
   if (n == 0) return r;
   if (!contains_key(Surrounding_space, r)) {
     raise << "don't know surrounding recipe of " << get(Recipe, r).name << '\n' << end();
@@ -137,8 +137,8 @@ recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n
 }
 
 //: weaken use-before-set detection just a tad
-:(replace{} "bool already_transformed(const reagent& r, const map<string, long long int>& names)")
-bool already_transformed(const reagent& r, const map<string, long long int>& names) {
+:(replace{} "bool already_transformed(const reagent& r, const map<string, int>& names)")
+bool already_transformed(const reagent& r, const map<string, int>& names) {
   if (has_property(r, "space")) {
     string_tree* p = property(r, "space");
     if (!p || p->right) {

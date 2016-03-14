@@ -3,7 +3,7 @@
 //:: Display management
 
 :(before "End Globals")
-long long int Display_row = 0, Display_column = 0;
+int Display_row = 0, Display_column = 0;
 bool Autodisplay = true;
 
 :(before "End Primitive Recipe Declarations")
@@ -18,8 +18,8 @@ case OPEN_CONSOLE: {
 case OPEN_CONSOLE: {
   tb_init();
   Display_row = Display_column = 0;
-  long long int width = tb_width();
-  long long int height = tb_height();
+  int width = tb_width();
+  int height = tb_height();
   if (width > 222 || height > 222) tb_shutdown();
   if (width > 222)
     raise << "sorry, mu doesn't support windows wider than 222 characters. Please resize your window.\n" << end();
@@ -84,8 +84,8 @@ case CLEAR_LINE_ON_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case CLEAR_LINE_ON_DISPLAY: {
-  long long int width = tb_width();
-  for (long long int x = Display_column; x < width; ++x) {
+  int width = tb_width();
+  for (int x = Display_column; x < width; ++x) {
     tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_BLACK);
   }
   tb_set_cursor(Display_column, Display_row);
@@ -124,9 +124,9 @@ case PRINT_CHARACTER_TO_DISPLAY: {
 :(before "End Primitive Recipe Implementations")
 case PRINT_CHARACTER_TO_DISPLAY: {
   int h=tb_height(), w=tb_width();
-  long long int height = (h >= 0) ? h : 0;
-  long long int width = (w >= 0) ? w : 0;
-  long long int c = ingredients.at(0).at(0);
+  int height = (h >= 0) ? h : 0;
+  int width = (w >= 0) ? w : 0;
+  int c = ingredients.at(0).at(0);
   int color = TB_BLACK;
   if (SIZE(ingredients) > 1) {
     color = ingredients.at(1).at(0);
@@ -219,7 +219,7 @@ case MOVE_CURSOR_DOWN_ON_DISPLAY: {
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_DOWN_ON_DISPLAY: {
   int h=tb_height();
-  long long int height = (h >= 0) ? h : 0;
+  int height = (h >= 0) ? h : 0;
   if (Display_row < height-1) {
     Display_row++;
     tb_set_cursor(Display_column, Display_row);
@@ -257,7 +257,7 @@ case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
   int w=tb_width();
-  long long int width = (w >= 0) ? w : 0;
+  int width = (w >= 0) ? w : 0;
   if (Display_column < width-1) {
     Display_column++;
     tb_set_cursor(Display_column, Display_row);

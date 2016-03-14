@@ -35,7 +35,7 @@ def f [
 // This requires maintaining a 'stack' of interrupted recipes or 'calls'.
 struct call {
   recipe_ordinal running_recipe;
-  long long int running_step_index;
+  int running_step_index;
   // End call Fields
   call(recipe_ordinal r) {
     running_recipe = r;
@@ -74,8 +74,8 @@ inline call& current_call() {
 
 //:: now update routine's helpers
 
-:(replace{} "inline long long int& current_step_index()")
-inline long long int& current_step_index() {
+:(replace{} "inline int& current_step_index()")
+inline int& current_step_index() {
   assert(!Current_routine->calls.empty());
   return current_call().running_step_index;
 }

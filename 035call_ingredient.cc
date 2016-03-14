@@ -23,12 +23,12 @@ def f [
 :(before "End call Fields")
 vector<vector<double> > ingredient_atoms;
 vector<reagent> ingredients;
-long long int next_ingredient_to_process;
+int next_ingredient_to_process;
 :(before "End call Constructor")
 next_ingredient_to_process = 0;
 
 :(before "End Call Housekeeping")
-for (long long int i = 0; i < SIZE(ingredients); ++i) {
+for (int i = 0; i < SIZE(ingredients); ++i) {
   current_call().ingredient_atoms.push_back(ingredients.at(i));
   reagent ingredient = call_instruction.ingredients.at(i);
   canonize_type(ingredient);
@@ -76,8 +76,8 @@ case NEXT_INGREDIENT: {
     if (current_instruction().products.empty()) break;
     products.resize(2);
     // pad the first product with sufficient zeros to match its type
-    long long int size = size_of(current_instruction().products.at(0));
-    for (long long int i = 0; i < size; ++i)
+    int size = size_of(current_instruction().products.at(0));
+    for (int i = 0; i < size; ++i)
       products.at(0).push_back(0);
     products.at(1).push_back(0);
   }
@@ -152,7 +152,7 @@ case INGREDIENT: {
 }
 :(before "End Primitive Recipe Implementations")
 case INGREDIENT: {
-  if (static_cast<long long int>(ingredients.at(0).at(0)) < SIZE(current_call().ingredient_atoms)) {
+  if (static_cast<int>(ingredients.at(0).at(0)) < SIZE(current_call().ingredient_atoms)) {
     current_call().next_ingredient_to_process = ingredients.at(0).at(0);
     products.push_back(
         current_call().ingredient_atoms.at(current_call().next_ingredient_to_process));

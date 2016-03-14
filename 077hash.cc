@@ -66,7 +66,7 @@ size_t hash_mu_address(size_t h, reagent& r) {
 
 size_t hash_mu_string(size_t h, const reagent& r) {
   string input = read_mu_string(get_or_insert(Memory, r.value));
-  for (long long int i = 0; i < SIZE(input); ++i) {
+  for (int i = 0; i < SIZE(input); ++i) {
     h = hash_iter(h, static_cast<size_t>(input.at(i)));
 //?     cerr << i << ": " << h << '\n';
   }
@@ -74,11 +74,11 @@ size_t hash_mu_string(size_t h, const reagent& r) {
 }
 
 size_t hash_mu_array(size_t h, const reagent& r) {
-  long long int size = get_or_insert(Memory, r.value);
+  int size = get_or_insert(Memory, r.value);
   reagent elem = r;
   delete elem.type;
   elem.type = new type_tree(*array_element(r.type));
-  for (long long int i=0, address = r.value+1; i < size; ++i, address += size_of(elem)) {
+  for (int i=0, address = r.value+1; i < size; ++i, address += size_of(elem)) {
     reagent tmp = elem;
     tmp.value = address;
     h = hash(h, tmp);
@@ -96,9 +96,9 @@ bool is_mu_container(const reagent& r) {
 size_t hash_mu_container(size_t h, const reagent& r) {
   assert(r.type->value);
   type_info& info = get(Type, r.type->value);
-  long long int address = r.value;
-  long long int offset = 0;
-  for (long long int i = 0; i < SIZE(info.elements); ++i) {
+  int address = r.value;
+  int offset = 0;
+  for (int i = 0; i < SIZE(info.elements); ++i) {
     reagent element = element_type(r, i);
     if (has_property(element, "ignore-for-hash")) continue;
     element.set_value(address+offset);
@@ -117,7 +117,7 @@ bool is_mu_exclusive_container(const reagent& r) {
 
 size_t hash_mu_exclusive_container(size_t h, const reagent& r) {
   assert(r.type->value);
-  long long int tag = get(Memory, r.value);
+  int tag = get(Memory, r.value);
   reagent variant = variant_type(r, tag);
   // todo: move this error to container definition time
   if (has_property(variant, "ignore-for-hash"))
@@ -376,7 +376,7 @@ case HASH_OLD: {
   string input = read_mu_string(ingredients.at(0).at(0));
   size_t h = 0 ;
 
-  for (long long int i = 0; i < SIZE(input); ++i) {
+  for (int i = 0; i < SIZE(input); ++i) {
     h += static_cast<size_t>(input.at(i));
     h += (h<<10);
     h ^= (h>>6);

@@ -32,21 +32,21 @@ def dummy [  # just for the /names: property above
 //: lifetime, surrounding allows managing shorter lifetimes inside a longer
 //: one.
 
-:(replace{} "long long int space_base(const reagent& x)")
-long long int space_base(const reagent& x) {
-  long long int base = current_call().default_space ? (current_call().default_space+/*skip refcount*/1) : 0;
+:(replace{} "int space_base(const reagent& x)")
+int space_base(const reagent& x) {
+  int base = current_call().default_space ? (current_call().default_space+/*skip refcount*/1) : 0;
   return space_base(x, space_index(x), base);
 }
 
-long long int space_base(const reagent& x, long long int space_index, long long int base) {
+int space_base(const reagent& x, int space_index, int base) {
   if (space_index == 0)
     return base;
-  long long int result = space_base(x, space_index-1, get_or_insert(Memory, base+/*skip length*/1))+/*skip refcount*/1;
+  int result = space_base(x, space_index-1, get_or_insert(Memory, base+/*skip length*/1))+/*skip refcount*/1;
   return result;
 }
 
-long long int space_index(const reagent& x) {
-  for (long long int i = 0; i < SIZE(x.properties); ++i) {
+int space_index(const reagent& x) {
+  for (int i = 0; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == "space") {
       if (!x.properties.at(i).second || x.properties.at(i).second->right)
         raise << maybe(current_recipe_name()) << "/space metadata should take exactly one value in " << x.original_string << '\n' << end();

@@ -7,7 +7,7 @@ put(Recipe_ordinal, "add", ADD);
 :(before "End Primitive Recipe Checks")
 case ADD: {
   // primary goal of these checks is to forbid address arithmetic
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'add' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
@@ -26,7 +26,7 @@ case ADD: {
 :(before "End Primitive Recipe Implementations")
 case ADD: {
   double result = 0;
-  for (long long int i = 0; i < SIZE(ingredients); ++i) {
+  for (int i = 0; i < SIZE(ingredients); ++i) {
     result += ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -78,7 +78,7 @@ case SUBTRACT: {
     raise << maybe(get(Recipe, r).name) << "'subtract' has no ingredients\n" << end();
     break;
   }
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (is_raw(inst.ingredients.at(i))) continue;  // permit address offset computations in tests
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'subtract' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
@@ -98,7 +98,7 @@ case SUBTRACT: {
 :(before "End Primitive Recipe Implementations")
 case SUBTRACT: {
   double result = ingredients.at(0).at(0);
-  for (long long int i = 1; i < SIZE(ingredients); ++i)
+  for (int i = 1; i < SIZE(ingredients); ++i)
     result -= ingredients.at(i).at(0);
   products.resize(1);
   products.at(0).push_back(result);
@@ -135,7 +135,7 @@ MULTIPLY,
 put(Recipe_ordinal, "multiply", MULTIPLY);
 :(before "End Primitive Recipe Checks")
 case MULTIPLY: {
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'multiply' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
@@ -154,7 +154,7 @@ case MULTIPLY: {
 :(before "End Primitive Recipe Implementations")
 case MULTIPLY: {
   double result = 1;
-  for (long long int i = 0; i < SIZE(ingredients); ++i) {
+  for (int i = 0; i < SIZE(ingredients); ++i) {
     result *= ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -192,7 +192,7 @@ case DIVIDE: {
     raise << maybe(get(Recipe, r).name) << "'divide' has no ingredients\n" << end();
     break;
   }
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'divide' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
@@ -211,7 +211,7 @@ case DIVIDE: {
 :(before "End Primitive Recipe Implementations")
 case DIVIDE: {
   double result = ingredients.at(0).at(0);
-  for (long long int i = 1; i < SIZE(ingredients); ++i)
+  for (int i = 1; i < SIZE(ingredients); ++i)
     result /= ingredients.at(i).at(0);
   products.resize(1);
   products.at(0).push_back(result);
@@ -258,7 +258,7 @@ case DIVIDE_WITH_REMAINDER: {
     raise << maybe(get(Recipe, r).name) << "'divide-with-remainder' yields two products in '" << to_string(inst) << "'\n" << end();
     break;
   }
-  for (long long int i = 0; i < SIZE(inst.products); ++i) {
+  for (int i = 0; i < SIZE(inst.products); ++i) {
     if (!is_dummy(inst.products.at(i)) && !is_mu_number(inst.products.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'divide-with-remainder' should yield a number, but got " << inst.products.at(i).original_string << '\n' << end();
       goto finish_checking_instruction;
@@ -269,8 +269,8 @@ case DIVIDE_WITH_REMAINDER: {
 :(before "End Primitive Recipe Implementations")
 case DIVIDE_WITH_REMAINDER: {
   products.resize(2);
-  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
-  long long int b = static_cast<long long int>(ingredients.at(1).at(0));
+  int a = static_cast<int>(ingredients.at(0).at(0));
+  int b = static_cast<int>(ingredients.at(1).at(0));
   if (b == 0) {
     raise << maybe(current_recipe_name()) << "divide by zero in '" << to_string(current_instruction()) << "'\n" << end();
     products.resize(2);
@@ -278,8 +278,8 @@ case DIVIDE_WITH_REMAINDER: {
     products.at(1).push_back(0);
     break;
   }
-  long long int quotient = a / b;
-  long long int remainder = a % b;
+  int quotient = a / b;
+  int remainder = a % b;
   // very large integers will lose precision
   products.at(0).push_back(quotient);
   products.at(1).push_back(remainder);
@@ -351,8 +351,8 @@ case SHIFT_LEFT: {
 :(before "End Primitive Recipe Implementations")
 case SHIFT_LEFT: {
   // ingredients must be integers
-  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
-  long long int b = static_cast<long long int>(ingredients.at(1).at(0));
+  int a = static_cast<int>(ingredients.at(0).at(0));
+  int b = static_cast<int>(ingredients.at(1).at(0));
   products.resize(1);
   if (b < 0) {
     raise << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << to_string(current_instruction()) << "'\n" << end();
@@ -422,8 +422,8 @@ case SHIFT_RIGHT: {
 :(before "End Primitive Recipe Implementations")
 case SHIFT_RIGHT: {
   // ingredients must be integers
-  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
-  long long int b = static_cast<long long int>(ingredients.at(1).at(0));
+  int a = static_cast<int>(ingredients.at(0).at(0));
+  int b = static_cast<int>(ingredients.at(1).at(0));
   products.resize(1);
   if (b < 0) {
     raise << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << to_string(current_instruction()) << "'\n" << end();
@@ -493,8 +493,8 @@ case AND_BITS: {
 :(before "End Primitive Recipe Implementations")
 case AND_BITS: {
   // ingredients must be integers
-  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
-  long long int b = static_cast<long long int>(ingredients.at(1).at(0));
+  int a = static_cast<int>(ingredients.at(0).at(0));
+  int b = static_cast<int>(ingredients.at(1).at(0));
   products.resize(1);
   products.at(0).push_back(a&b);
   break;
@@ -551,8 +551,8 @@ case OR_BITS: {
 :(before "End Primitive Recipe Implementations")
 case OR_BITS: {
   // ingredients must be integers
-  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
-  long long int b = static_cast<long long int>(ingredients.at(1).at(0));
+  int a = static_cast<int>(ingredients.at(0).at(0));
+  int b = static_cast<int>(ingredients.at(1).at(0));
   products.resize(1);
   products.at(0).push_back(a|b);
   break;
@@ -603,8 +603,8 @@ case XOR_BITS: {
 :(before "End Primitive Recipe Implementations")
 case XOR_BITS: {
   // ingredients must be integers
-  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
-  long long int b = static_cast<long long int>(ingredients.at(1).at(0));
+  int a = static_cast<int>(ingredients.at(0).at(0));
+  int b = static_cast<int>(ingredients.at(1).at(0));
   products.resize(1);
   products.at(0).push_back(a^b);
   break;
@@ -655,7 +655,7 @@ case FLIP_BITS: {
 :(before "End Primitive Recipe Implementations")
 case FLIP_BITS: {
   // ingredient must be integer
-  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
+  int a = static_cast<int>(ingredients.at(0).at(0));
   products.resize(1);
   products.at(0).push_back(~a);
   break;

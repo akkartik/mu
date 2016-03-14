@@ -208,7 +208,7 @@ START_TRACING_UNTIL_END_OF_SCOPE
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {
   if (!Trace_stream) return false;
   vector<string> expected_lines = split(expected, "");
-  long long int curr_expected_line = 0;
+  int curr_expected_line = 0;
   while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
     ++curr_expected_line;
   if (curr_expected_line == SIZE(expected_lines)) return true;

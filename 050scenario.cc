@@ -107,14 +107,14 @@ scenario foo [
 //: Treat the text of the scenario as a regular series of instructions.
 
 :(before "End Globals")
-long long int Num_core_mu_tests = 0;
+int Num_core_mu_tests = 0;
 :(after "Check For .mu Files")
 Num_core_mu_tests = SIZE(Scenarios);
 :(before "End Tests")
 Hide_missing_default_space_errors = false;
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
-for (long long int i = 0; i < SIZE(Scenarios); ++i) {
+for (int i = 0; i < SIZE(Scenarios); ++i) {
 //?   cerr << i << ": " << Scenarios.at(i).name << '\n';
   if (i == Num_core_mu_tests) {
     time(&t);
@@ -126,7 +126,7 @@ for (long long int i = 0; i < SIZE(Scenarios); ++i) {
 
 //: Convenience: run a single named scenario.
 :(after "Test Runs")
-for (long long int i = 0; i < SIZE(Scenarios); ++i) {
+for (int i = 0; i < SIZE(Scenarios); ++i) {
   if (Scenarios.at(i).name == argv[argc-1]) {
     run_mu_scenario(Scenarios.at(i));
     if (Passed) cerr << ".\n";
@@ -280,7 +280,7 @@ case MEMORY_SHOULD_CONTAIN: {
 void check_memory(const string& s) {
   istringstream in(s);
   in >> std::noskipws;
-  set<long long int> locations_checked;
+  set<int> locations_checked;
   while (true) {
     skip_whitespace_and_comments(in);
     if (!has_data(in)) break;
@@ -289,7 +289,7 @@ void check_memory(const string& s) {
       check_type(lhs, in);
       continue;
     }
-    long long int address = to_integer(lhs);
+    int address = to_integer(lhs);
     skip_whitespace_and_comments(in);
     string _assign;  in >> _assign;  assert(_assign == "<-");
     skip_whitespace_and_comments(in);
@@ -341,7 +341,7 @@ void check_type(const string& lhs, istream& in) {
     assert(_assign == "<-");
     skip_whitespace_and_comments(in);
     string literal = next_word(in);
-    long long int address = x.value;
+    int address = x.value;
     // exclude quoting brackets
     assert(*literal.begin() == '[');  literal.erase(literal.begin());
     assert(*--literal.end() == ']');  literal.erase(--literal.end());
@@ -352,7 +352,7 @@ void check_type(const string& lhs, istream& in) {
   raise << "don't know how to check memory for " << lhs << '\n' << end();
 }
 
-void check_string(long long int address, const string& literal) {
+void check_string(int address, const string& literal) {
   trace(9999, "run") << "checking string length at " << address << end();
   if (get_or_insert(Memory, address) != SIZE(literal)) {
     if (Current_scenario && !Scenario_testing_scenario)
@@ -366,7 +366,7 @@ void check_string(long long int address, const string& literal) {
     return;
   }
   ++address;  // now skip length
-  for (long long int i = 0; i < SIZE(literal); ++i) {
+  for (int i = 0; i < SIZE(literal); ++i) {
     trace(9999, "run") << "checking location " << address+i << end();
     if (get_or_insert(Memory, address+i) != literal.at(i)) {
       if (Current_scenario && !Scenario_testing_scenario) {
@@ -486,7 +486,7 @@ void check_trace(const string& expected) {
   Trace_stream->newline();
   vector<trace_line> expected_lines = parse_trace(expected);
   if (expected_lines.empty()) return;
-  long long int curr_expected_line = 0;
+  int curr_expected_line = 0;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (expected_lines.at(curr_expected_line).label != p->label) continue;
     if (expected_lines.at(curr_expected_line).contents != trim(p->contents)) continue;
@@ -503,10 +503,10 @@ void check_trace(const string& expected) {
 vector<trace_line> parse_trace(const string& expected) {
   vector<string> buf = split(expected, "\n");
   vector<trace_line> result;
-  for (long long int i = 0; i < SIZE(buf); ++i) {
+  for (int i = 0; i < SIZE(buf); ++i) {
     buf.at(i) = trim(buf.at(i));
     if (buf.at(i).empty()) continue;
-    long long int delim = buf.at(i).find(": ");
+    int delim = buf.at(i).find(": ");
     result.push_back(trace_line(trim(buf.at(i).substr(0, delim)),  trim(buf.at(i).substr(delim+2))));
   }
   return result;
@@ -577,7 +577,7 @@ case TRACE_SHOULD_NOT_CONTAIN: {
 bool check_trace_missing(const string& in) {
   Trace_stream->newline();
   vector<trace_line> lines = parse_trace(in);
-  for (long long int i = 0; i < SIZE(lines); ++i) {
+  for (int i = 0; i < SIZE(lines); ++i) {
     if (trace_count(lines.at(i).label, lines.at(i).contents) != 0) {
       raise << "unexpected [" << lines.at(i).contents << "] in trace with label " << lines.at(i).label << '\n' << end();
       Passed = false;
@@ -642,9 +642,9 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
 :(before "End Primitive Recipe Implementations")
 case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (!Passed) break;
-  long long int expected_count = ingredients.at(0).at(0);
+  int expected_count = ingredients.at(0).at(0);
   string label = current_instruction().ingredients.at(1).name;
-  long long int count = trace_count(label);
+  int count = trace_count(label);
   if (count != expected_count) {
     if (Current_scenario && !Scenario_testing_scenario) {
       // genuine test in a mu file

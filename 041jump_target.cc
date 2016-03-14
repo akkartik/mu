@@ -23,8 +23,8 @@ Transform.push_back(transform_labels);  // idempotent
 
 :(code)
 void transform_labels(const recipe_ordinal r) {
-  map<string, long long int> offset;
-  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+  map<string, int> offset;
+  for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     const instruction& inst = get(Recipe, r).steps.at(i);
     if (!inst.label.empty() && inst.label.at(0) == '+') {
       if (!contains_key(offset, inst.label)) {
@@ -37,7 +37,7 @@ void transform_labels(const recipe_ordinal r) {
       }
     }
   }
-  for (long long int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+  for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.name == "jump") {
       if (inst.ingredients.empty()) {
@@ -66,7 +66,7 @@ void transform_labels(const recipe_ordinal r) {
 }
 
 :(code)
-void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, const long long int current_offset, const recipe_ordinal r) {
+void replace_offset(reagent& x, /*const*/ map<string, int>& offset, const int current_offset, const recipe_ordinal r) {
   if (!is_literal(x)) {
     raise << maybe(get(Recipe, r).name) << "jump target must be offset or label but is " << x.original_string << '\n' << end();
     x.set_value(0);  // no jump by default

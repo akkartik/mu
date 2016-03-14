@@ -23,7 +23,7 @@ def f2 [
 WAITING,
 :(before "End routine Fields")
 // only if state == WAITING
-long long int waiting_on_location;
+int waiting_on_location;
 int old_value_of_waiting_location;
 :(before "End routine Constructor")
 waiting_on_location = old_value_of_waiting_location = 0;
@@ -52,7 +52,7 @@ case WAIT_FOR_LOCATION: {
 //: scheduler tweak to get routines out of that state
 
 :(before "End Scheduler State Transitions")
-for (long long int i = 0; i < SIZE(Routines); ++i) {
+for (int i = 0; i < SIZE(Routines); ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   if (Routines.at(i)->waiting_on_location &&
       get_or_insert(Memory, Routines.at(i)->waiting_on_location) != Routines.at(i)->old_value_of_waiting_location) {
@@ -85,7 +85,7 @@ def f2 [
 
 :(before "End routine Fields")
 // only if state == WAITING
-long long int waiting_on_routine;
+int waiting_on_routine;
 :(before "End routine Constructor")
 waiting_on_routine = 0;
 
@@ -121,12 +121,12 @@ case WAIT_FOR_ROUTINE: {
 // Wake up any routines waiting for other routines to go to sleep.
 // Important: this must come after the scheduler loop above giving routines
 // waiting for locations to change a chance to wake up.
-for (long long int i = 0; i < SIZE(Routines); ++i) {
+for (int i = 0; i < SIZE(Routines); ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   if (!Routines.at(i)->waiting_on_routine) continue;
-  long long int id = Routines.at(i)->waiting_on_routine;
+  int id = Routines.at(i)->waiting_on_routine;
   assert(id != Routines.at(i)->id);  // routine can't wait on itself
-  for (long long int j = 0; j < SIZE(Routines); ++j) {
+  for (int j = 0; j < SIZE(Routines); ++j) {
     if (Routines.at(j)->id == id && Routines.at(j)->state != RUNNING) {
       trace(9999, "schedule") << "waking up routine " << Routines.at(i)->id << end();
       Routines.at(i)->state = RUNNING;
@@ -145,7 +145,7 @@ case SWITCH: {
 }
 :(before "End Primitive Recipe Implementations")
 case SWITCH: {
-  long long int id = some_other_running_routine();
+  int id = some_other_running_routine();
   if (id) {
     assert(id != Current_routine->id);
     Current_routine->state = WAITING;
@@ -155,8 +155,8 @@ case SWITCH: {
 }
 
 :(code)
-long long int some_other_running_routine() {
-  for (long long int i = 0; i < SIZE(Routines); ++i) {
+int some_other_running_routine() {
+  for (int i = 0; i < SIZE(Routines); ++i) {
     if (i == Current_routine_index) continue;
     assert(Routines.at(i) != Current_routine);
     assert(Routines.at(i)->id != Current_routine->id);

@@ -70,12 +70,12 @@ Track_most_recent_products = false;
 // reads a string, tries to call it as code (treating it as a test), saving
 // all errors.
 // returns true if successfully called (no errors found during load and transform)
-bool run_interactive(long long int address) {
+bool run_interactive(int address) {
   assert(contains_key(Recipe_ordinal, "interactive") && get(Recipe_ordinal, "interactive") != 0);
   // try to sandbox the run as best you can
   // todo: test this
   if (!Current_scenario) {
-    for (long long int i = 1; i < Reserved_for_tests; ++i)
+    for (int i = 1; i < Reserved_for_tests; ++i)
       Memory.erase(i);
   }
   string command = trim(strip_comments(read_mu_string(address)));
@@ -335,7 +335,7 @@ void test_run_interactive_cleans_up_any_created_specializations() {
   CHECK_EQ(variant_count("foo"), 1);
 }
 
-long long int variant_count(string recipe_name) {
+int variant_count(string recipe_name) {
   if (!contains_key(Recipe_variants, recipe_name)) return 0;
   return non_ghost_size(get(Recipe_variants, recipe_name));
 }
@@ -351,7 +351,7 @@ if (Track_most_recent_products) {
 :(code)
 void track_most_recent_products(const instruction& instruction, const vector<vector<double> >& products) {
   ostringstream out;
-  for (long long int i = 0; i < SIZE(products); ++i) {
+  for (int i = 0; i < SIZE(products); ++i) {
     // string
     if (i < SIZE(instruction.products)) {
       if (is_mu_string(instruction.products.at(i))) {
@@ -359,7 +359,7 @@ void track_most_recent_products(const instruction& instruction, const vector<vec
           tb_shutdown();
           cerr << read_mu_string(trace_error_contents()) << '\n';
           cerr << SIZE(products.at(i)) << ": ";
-          for (long long int j = 0; j < SIZE(products.at(i)); ++j)
+          for (int j = 0; j < SIZE(products.at(i)); ++j)
             cerr << no_scientific(products.at(i).at(j)) << ' ';
           cerr << '\n';
         }
@@ -369,7 +369,7 @@ void track_most_recent_products(const instruction& instruction, const vector<vec
       }
       // End Record Product Special-cases
     }
-    for (long long int j = 0; j < SIZE(products.at(i)); ++j)
+    for (int j = 0; j < SIZE(products.at(i)); ++j)
       out << no_scientific(products.at(i).at(j)) << ' ';
     out << '\n';
   }
@@ -379,7 +379,7 @@ void track_most_recent_products(const instruction& instruction, const vector<vec
 :(code)
 string strip_comments(string in) {
   ostringstream result;
-  for (long long int i = 0; i < SIZE(in); ++i) {
+  for (int i = 0; i < SIZE(in); ++i) {
     if (in.at(i) != '#') {
       result << in.at(i);
     }
@@ -391,14 +391,14 @@ string strip_comments(string in) {
   return result.str();
 }
 
-long long int stringified_value_of_location(long long int address) {
+int stringified_value_of_location(int address) {
   // convert to string
   ostringstream out;
   out << no_scientific(get_or_insert(Memory, address));
   return new_mu_string(out.str());
 }
 
-long long int trace_error_contents() {
+int trace_error_contents() {
   if (!Trace_stream) return 0;
   ostringstream out;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
@@ -412,7 +412,7 @@ long long int trace_error_contents() {
   return new_mu_string(result);
 }
 
-long long int trace_app_contents() {
+int trace_app_contents() {
   if (!Trace_stream) return 0;
   ostringstream out;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
@@ -457,20 +457,20 @@ case RELOAD: {
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
   // clear any containers in advance
-  for (long long int i = 0; i < SIZE(Recently_added_types); ++i) {
+  for (int i = 0; i < SIZE(Recently_added_types); ++i) {
     if (!contains_key(Type, Recently_added_types.at(i))) continue;
     Type_ordinal.erase(get(Type, Recently_added_types.at(i)).name);
     Type.erase(Recently_added_types.at(i));
   }
   for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin(); p != Recipe_variants.end(); ++p) {
     vector<recipe_ordinal>& variants = p->second;
-    for (long long int i = 0; i < SIZE(p->second); ++i) {
+    for (int i = 0; i < SIZE(p->second); ++i) {
       if (variants.at(i) == -1) continue;
       if (find(Recently_added_shape_shifting_recipes.begin(), Recently_added_shape_shifting_recipes.end(), variants.at(i)) != Recently_added_shape_shifting_recipes.end())
         variants.at(i) = -1;  // ghost
     }
   }
-  for (long long int i = 0; i < SIZE(Recently_added_shape_shifting_recipes); ++i) {
+  for (int i = 0; i < SIZE(Recently_added_shape_shifting_recipes); ++i) {
     Recipe_ordinal.erase(get(Recipe, Recently_added_shape_shifting_recipes.at(i)).name);
     Recipe.erase(Recently_added_shape_shifting_recipes.at(i));
   }
@@ -482,7 +482,7 @@ case RELOAD: {
   vector<recipe_ordinal> recipes_reloaded = load(code);
   // clear a few things from previous runs
   // ad hoc list; we've probably missed a few
-  for (long long int i = 0; i < SIZE(recipes_reloaded); ++i)
+  for (int i = 0; i < SIZE(recipes_reloaded); ++i)
     Name.erase(recipes_reloaded.at(i));
   transform_all();
   Trace_stream->newline();  // flush trace

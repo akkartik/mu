@@ -18,9 +18,9 @@ def f2 [
 //: first, add a deadline to run(routine)
 //: these changes are ugly and brittle; just close your nose and get through the next few lines
 :(replace "void run_current_routine()")
-void run_current_routine(long long int time_slice)
-:(replace "while (!Current_routine->completed())" following "void run_current_routine(long long int time_slice)")
-long long int ninstrs = 0;
+void run_current_routine(int time_slice)
+:(replace "while (!Current_routine->completed())" following "void run_current_routine(int time_slice)")
+int ninstrs = 0;
 while (Current_routine->state == RUNNING && ninstrs < time_slice)
 :(after "Running One Instruction")
 ninstrs++;
@@ -40,8 +40,8 @@ state = RUNNING;
 
 :(before "End Globals")
 vector<routine*> Routines;
-long long int Current_routine_index = 0;
-long long int Scheduling_interval = 500;
+int Current_routine_index = 0;
+int Scheduling_interval = 500;
 :(before "End Setup")
 Scheduling_interval = 500;
 Routines.clear();
@@ -71,7 +71,7 @@ void run(routine* rr) {
 }
 
 bool all_routines_done() {
-  for (long long int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->state == RUNNING) {
       return false;
     }
@@ -83,7 +83,7 @@ bool all_routines_done() {
 void skip_to_next_routine() {
   assert(!Routines.empty());
   assert(Current_routine_index < SIZE(Routines));
-  for (long long int i = (Current_routine_index+1)%SIZE(Routines);  i != Current_routine_index;  i = (i+1)%SIZE(Routines)) {
+  for (int i = (Current_routine_index+1)%SIZE(Routines);  i != Current_routine_index;  i = (i+1)%SIZE(Routines)) {
     if (Routines.at(i)->state == RUNNING) {
       Current_routine_index = i;
       Current_routine = Routines.at(i);
@@ -103,7 +103,7 @@ string current_routine_label() {
 }
 
 :(before "End Teardown")
-for (long long int i = 0; i < SIZE(Routines); ++i)
+for (int i = 0; i < SIZE(Routines); ++i)
   delete Routines.at(i);
 Routines.clear();
 Current_routine = NULL;
@@ -117,7 +117,7 @@ void run_main(int argc, char* argv[]) {
   // pass in commandline args as ingredients to main
   // todo: test this
   Current_routine = main_routine;
-  for (long long int i = 1; i < argc; ++i) {
+  for (int i = 1; i < argc; ++i) {
     vector<double> arg;
     arg.push_back(new_mu_string(argv[i]));
     current_call().ingredient_atoms.push_back(arg);
@@ -130,9 +130,9 @@ void run_main(int argc, char* argv[]) {
 //: 'start-running' will return a unique id for the routine that was created.
 //: routine id is a number, but don't do any arithmetic on it
 :(before "End routine Fields")
-long long int id;
+int id;
 :(before "End Globals")
-long long int Next_routine_id = 1;
+int Next_routine_id = 1;
 :(before "End Setup")
 Next_routine_id = 1;
 :(before "End routine Constructor")
@@ -142,7 +142,7 @@ Next_routine_id++;
 //: routines save the routine that spawned them
 :(before "End routine Fields")
 // todo: really should be routine_id, but that's less efficient.
-long long int parent_index;  // only < 0 if there's no parent_index
+int parent_index;  // only < 0 if there's no parent_index
 :(before "End routine Constructor")
 parent_index = -1;
 
@@ -167,7 +167,7 @@ case START_RUNNING: {
   routine* new_routine = new routine(ingredients.at(0).at(0));
   new_routine->parent_index = Current_routine_index;
   // populate ingredients
-  for (long long int i = 1; i < SIZE(current_instruction().ingredients); ++i) {
+  for (int i = 1; i < SIZE(current_instruction().ingredients); ++i) {
     new_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
     reagent ingredient = current_instruction().ingredients.at(i);
     canonize_type(ingredient);
@@ -302,7 +302,7 @@ def f1 [
 -schedule: f1
 
 :(before "End Scheduler Cleanup")
-for (long long int i = 0; i < SIZE(Routines); ++i) {
+for (int i = 0; i < SIZE(Routines); ++i) {
   if (Routines.at(i)->state == COMPLETED) continue;
   if (Routines.at(i)->parent_index < 0) continue;  // root thread
   if (has_completed_parent(i)) {
@@ -311,8 +311,8 @@ for (long long int i = 0; i < SIZE(Routines); ++i) {
 }
 
 :(code)
-bool has_completed_parent(long long int routine_index) {
-  for (long long int j = routine_index; j >= 0; j = Routines.at(j)->parent_index) {
+bool has_completed_parent(int routine_index) {
+  for (int j = routine_index; j >= 0; j = Routines.at(j)->parent_index) {
     if (Routines.at(j)->state == COMPLETED)
       return true;
   }
@@ -354,9 +354,9 @@ case ROUTINE_STATE: {
 }
 :(before "End Primitive Recipe Implementations")
 case ROUTINE_STATE: {
-  long long int id = ingredients.at(0).at(0);
-  long long int result = -1;
-  for (long long int i = 0; i < SIZE(Routines); ++i) {
+  int id = ingredients.at(0).at(0);
+  int result = -1;
+  for (int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->id == id) {
       result = Routines.at(i)->state;
       break;
@@ -387,8 +387,8 @@ case RESTART: {
 }
 :(before "End Primitive Recipe Implementations")
 case RESTART: {
-  long long int id = ingredients.at(0).at(0);
-  for (long long int i = 0; i < SIZE(Routines); ++i) {
+  int id = ingredients.at(0).at(0);
+  for (int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->id == id) {
       Routines.at(i)->state = RUNNING;
       break;
@@ -415,8 +415,8 @@ case STOP: {
 }
 :(before "End Primitive Recipe Implementations")
 case STOP: {
-  long long int id = ingredients.at(0).at(0);
-  for (long long int i = 0; i < SIZE(Routines); ++i) {
+  int id = ingredients.at(0).at(0);
+  for (int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->id == id) {
       Routines.at(i)->state = COMPLETED;
       break;
@@ -435,7 +435,7 @@ case _DUMP_ROUTINES: {
 }
 :(before "End Primitive Recipe Implementations")
 case _DUMP_ROUTINES: {
-  for (long long int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0; i < SIZE(Routines); ++i) {
     cerr << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << '\n';
   }
   break;
@@ -475,7 +475,7 @@ if (Current_routine->limit >= 0) {
 }
 
 :(before "End routine Fields")
-long long int limit;
+int limit;
 :(before "End routine Constructor")
 limit = -1;  /* no limit */
 
@@ -501,8 +501,8 @@ case LIMIT_TIME: {
 }
 :(before "End Primitive Recipe Implementations")
 case LIMIT_TIME: {
-  long long int id = ingredients.at(0).at(0);
-  for (long long int i = 0; i < SIZE(Routines); ++i) {
+  int id = ingredients.at(0).at(0);
+  for (int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->id == id) {
       Routines.at(i)->limit = ingredients.at(1).at(0);
       break;

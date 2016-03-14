@@ -25,10 +25,10 @@ bool is_shared_address_of_array_of_numbers(reagent product) {
 }
 :(before "End Primitive Recipe Implementations")
 case TO_LOCATION_ARRAY: {
-  long long int array_size = SIZE(ingredients.at(0));
-  long long int allocation_size = array_size + /*refcount*/1 + /*length*/1;
+  int array_size = SIZE(ingredients.at(0));
+  int allocation_size = array_size + /*refcount*/1 + /*length*/1;
   ensure_space(allocation_size);
-  const long long int result = Current_routine->alloc;
+  const int result = Current_routine->alloc;
   products.resize(1);
   products.at(0).push_back(result);
   // initialize array refcount
@@ -36,7 +36,7 @@ case TO_LOCATION_ARRAY: {
   // initialize array length
   put(Memory, result+1, array_size);
   // now copy over data
-  for (long long int i = 0; i < array_size; ++i)
+  for (int i = 0; i < array_size; ++i)
     put(Memory, result+2+i, ingredients.at(0).at(i));
   break;
 }

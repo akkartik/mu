@@ -14,12 +14,12 @@ void rewrite_stashes_to_text(recipe_ordinal r) {
 }
 
 bool contains_named_locations(const recipe& caller) {
-  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0; i < SIZE(caller.steps); ++i) {
     const instruction& inst = caller.steps.at(i);
-    for (long long int in = 0; in < SIZE(inst.ingredients); ++in)
+    for (int in = 0; in < SIZE(inst.ingredients); ++in)
       if (is_named_location(inst.ingredients.at(in)))
         return true;
-    for (long long int out = 0; out < SIZE(inst.products); ++out)
+    for (int out = 0; out < SIZE(inst.products); ++out)
       if (is_named_location(inst.products.at(out)))
         return true;
   }
@@ -27,12 +27,12 @@ bool contains_named_locations(const recipe& caller) {
 }
 
 void rewrite_stashes_to_text_named(recipe& caller) {
-  static long long int stash_instruction_idx = 0;
+  static int stash_instruction_idx = 0;
   vector<instruction> new_instructions;
-  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
     if (inst.name == "stash") {
-      for (long long int j = 0; j < SIZE(inst.ingredients); ++j) {
+      for (int j = 0; j < SIZE(inst.ingredients); ++j) {
         if (is_literal(inst.ingredients.at(j))) continue;
         if (is_mu_string(inst.ingredients.at(j))) continue;
         instruction def;

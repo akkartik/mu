@@ -94,8 +94,8 @@ if (!contains_key(Type, type->value)) {
 type_info t = get(Type, type->value);
 if (t.kind == CONTAINER) {
   // size of a container is the sum of the sizes of its elements
-  long long int result = 0;
-  for (long long int i = 0; i < SIZE(t.elements); ++i) {
+  int result = 0;
+  for (int i = 0; i < SIZE(t.elements); ++i) {
     // todo: strengthen assertion to disallow mutual type recursion
     if (t.elements.at(i).type->value == type->value) {
       raise << "container " << t.name << " can't include itself as a member\n" << end();
@@ -148,7 +148,7 @@ case GET: {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
-  long long int offset_value = 0;
+  int offset_value = 0;
   if (is_integer(offset.name))  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
   else
@@ -171,16 +171,16 @@ case GET: {
 case GET: {
   reagent base = current_instruction().ingredients.at(0);
   // Update GET base in Run
-  long long int base_address = base.value;
+  int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.type->value;
-  long long int offset = ingredients.at(1).at(0);
+  int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
-  long long int src = base_address;
-  for (long long int i = 0; i < offset; ++i) {
+  int src = base_address;
+  for (int i = 0; i < offset; ++i) {
     // End GET field Cases
     src += size_of(element_type(base, i));
   }
@@ -193,7 +193,7 @@ case GET: {
 }
 
 :(code)
-const reagent element_type(const reagent& canonized_base, long long int offset_value) {
+const reagent element_type(const reagent& canonized_base, int offset_value) {
   assert(offset_value >= 0);
   assert(contains_key(Type, canonized_base.type->value));
   assert(!get(Type, canonized_base.type->value).name.empty());
@@ -285,7 +285,7 @@ case GET_ADDRESS: {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
-  long long int offset_value = 0;
+  int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
@@ -312,16 +312,16 @@ case GET_ADDRESS: {
 case GET_ADDRESS: {
   reagent base = current_instruction().ingredients.at(0);
   // Update GET_ADDRESS base in Run
-  long long int base_address = base.value;
+  int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.type->value;
-  long long int offset = ingredients.at(1).at(0);
+  int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
-  long long int result = base_address;
-  for (long long int i = 0; i < offset; ++i) {
+  int result = base_address;
+  for (int i = 0; i < offset; ++i) {
     // End GET_ADDRESS field Cases
     result += size_of(element_type(base, i));
   }
@@ -481,11 +481,11 @@ vector<type_ordinal> Recently_added_types;
 :(before "End load_permanently")  //: for non-tests
 Recently_added_types.clear();
 :(before "End Setup")  //: for tests
-for (long long int i = 0; i < SIZE(Recently_added_types); ++i) {
+for (int i = 0; i < SIZE(Recently_added_types); ++i) {
   if (!contains_key(Type, Recently_added_types.at(i))) continue;
   Type_ordinal.erase(get(Type, Recently_added_types.at(i)).name);
   // todo: why do I explicitly need to provide this?
-  for (long long int j = 0; j < SIZE(Type.at(Recently_added_types.at(i)).elements); ++j)
+  for (int j = 0; j < SIZE(Type.at(Recently_added_types.at(i)).elements); ++j)
     Type.at(Recently_added_types.at(i)).elements.at(j).clear();
   Type.erase(Recently_added_types.at(i));
 }
@@ -540,11 +540,11 @@ Transform.push_back(check_or_set_invalid_types);  // idempotent
 void check_or_set_invalid_types(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- check for invalid types in recipe " << caller.name << end();
-  for (long long int index = 0; index < SIZE(caller.steps); ++index) {
+  for (int index = 0; index < SIZE(caller.steps); ++index) {
     instruction& inst = caller.steps.at(index);
-    for (long long int i = 0; i < SIZE(inst.ingredients); ++i)
+    for (int i = 0; i < SIZE(inst.ingredients); ++i)
       check_or_set_invalid_types(inst.ingredients.at(i).type, maybe(caller.name), "'"+to_string(inst)+"'");
-    for (long long int i = 0; i < SIZE(inst.products); ++i)
+    for (int i = 0; i < SIZE(inst.products); ++i)
       check_or_set_invalid_types(inst.products.at(i).type, maybe(caller.name), "'"+to_string(inst)+"'");
   }
   // End check_or_set_invalid_types
@@ -591,7 +591,7 @@ void check_container_field_types() {
   for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
     const type_info& info = p->second;
     // Check Container Field Types(info)
-    for (long long int i = 0; i < SIZE(info.elements); ++i)
+    for (int i = 0; i < SIZE(info.elements); ++i)
       check_invalid_types(info.elements.at(i).type, maybe(info.name), info.elements.at(i).name);
   }
 }
@@ -634,8 +634,8 @@ case MERGE: {
 :(before "End Primitive Recipe Implementations")
 case MERGE: {
   products.resize(1);
-  for (long long int i = 0; i < SIZE(ingredients); ++i)
-    for (long long int j = 0; j < SIZE(ingredients.at(i)); ++j)
+  for (int i = 0; i < SIZE(ingredients); ++i)
+    for (int j = 0; j < SIZE(ingredients.at(i)); ++j)
       products.at(0).push_back(ingredients.at(i).at(j));
   break;
 }
@@ -704,8 +704,8 @@ def main [
 :(before "End Types")
 struct merge_check_point {
   reagent container;
-  long long int container_element_index;
-  merge_check_point(const reagent& c, long long int i) :container(c), container_element_index(i) {}
+  int container_element_index;
+  merge_check_point(const reagent& c, int i) :container(c), container_element_index(i) {}
 };
 
 struct merge_check_state {
@@ -718,7 +718,7 @@ Transform.push_back(check_merge_calls);
 void check_merge_calls(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- type-check merge instructions in recipe " << caller.name << end();
-  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0; i < SIZE(caller.steps); ++i) {
     const instruction& inst = caller.steps.at(i);
     if (inst.name != "merge") continue;
     if (SIZE(inst.products) != 1) {
@@ -742,7 +742,7 @@ void check_merge_calls(const recipe_ordinal r) {
 }
 
 void check_merge_call(const vector<reagent>& ingredients, const reagent& product, const recipe& caller, const instruction& inst) {
-  long long int ingredient_index = 0;
+  int ingredient_index = 0;
   merge_check_state state;
   state.data.push(merge_check_point(product, 0));
   while (true) {

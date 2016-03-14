@@ -11,7 +11,7 @@ recipe_ordinal Next_recipe_ordinal = 1;
 //: adding two phone numbers is meaningless. Here each recipe does something
 //: incommensurable with any other recipe.
 :(after "Types")
-typedef long long int recipe_ordinal;
+typedef int recipe_ordinal;
 
 :(before "End Types")
 // Recipes are lists of instructions. To perform or 'run' a recipe, the
@@ -99,7 +99,7 @@ struct string_tree {
 
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
-map<long long int, double> Memory;
+map<int, double> Memory;
 :(before "End Setup")
 Memory.clear();
 
@@ -112,7 +112,7 @@ Memory.clear();
 // Unlike most computers today, mu stores types in a single big table, shared
 // by all the mu programs on the computer. This is useful in providing a
 // seamless experience to help understand arbitrary mu programs.
-typedef long long int type_ordinal;
+typedef int type_ordinal;
 :(before "End Globals")
 map<string, type_ordinal> Type_ordinal;
 map<type_ordinal, type_info> Type;
@@ -140,7 +140,7 @@ void setup_types() {
 }
 void teardown_types() {
   for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
-    for (long long int i = 0; i < SIZE(p->second.elements); ++i)
+    for (int i = 0; i < SIZE(p->second.elements); ++i)
       p->second.elements.clear();
   }
   Type_ordinal.clear();
@@ -169,7 +169,7 @@ enum kind_of_type {
 struct type_info {
   string name;
   kind_of_type kind;
-  long long int size;  // only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)
+  int size;  // only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)
   vector<reagent> elements;
   // End type_info Fields
   type_info() :kind(PRIMITIVE), size(0) {}
@@ -283,7 +283,7 @@ reagent::reagent(const reagent& old) {
   name = old.name;
   value = old.value;
   initialized = old.initialized;
-  for (long long int i = 0; i < SIZE(old.properties); ++i) {
+  for (int i = 0; i < SIZE(old.properties); ++i) {
     properties.push_back(pair<string, string_tree*>(old.properties.at(i).first,
                                                     old.properties.at(i).second ? new string_tree(*old.properties.at(i).second) : NULL));
   }
@@ -305,10 +305,10 @@ string_tree::string_tree(const string_tree& old) {  // :value(old.value) {
 
 reagent& reagent::operator=(const reagent& old) {
   original_string = old.original_string;
-  for (long long int i = 0; i < SIZE(properties); ++i)
+  for (int i = 0; i < SIZE(properties); ++i)
     if (properties.at(i).second) delete properties.at(i).second;
   properties.clear();
-  for (long long int i = 0; i < SIZE(old.properties); ++i)
+  for (int i = 0; i < SIZE(old.properties); ++i)
     properties.push_back(pair<string, string_tree*>(old.properties.at(i).first, old.properties.at(i).second ? new string_tree(*old.properties.at(i).second) : NULL));
   name = old.name;
   value = old.value;
@@ -323,7 +323,7 @@ reagent::~reagent() {
 }
 
 void reagent::clear() {
-  for (long long int i = 0; i < SIZE(properties); ++i) {
+  for (int i = 0; i < SIZE(properties); ++i) {
     if (properties.at(i).second) {
       delete properties.at(i).second;
       properties.at(i).second = NULL;
@@ -355,14 +355,14 @@ string slurp_until(istream& in, char delim) {
 }
 
 bool has_property(reagent x, string name) {
-  for (long long int i = 0; i < SIZE(x.properties); ++i) {
+  for (int i = 0; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == name) return true;
   }
   return false;
 }
 
 string_tree* property(const reagent& r, const string& name) {
-  for (long long int p = 0; p != SIZE(r.properties); ++p) {
+  for (int p = 0; p != SIZE(r.properties); ++p) {
     if (r.properties.at(p).first == name)
       return r.properties.at(p).second;
   }
@@ -383,7 +383,7 @@ void skip_whitespace_but_not_newline(istream& in) {
 }
 
 void dump_memory() {
-  for (map<long long int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
+  for (map<int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
     cout << p->first << ": " << no_scientific(p->second) << '\n';
   }
 }
@@ -398,7 +398,7 @@ void dump_memory() {
 string to_string(const recipe& r) {
   ostringstream out;
   out << "recipe " << r.name << " [\n";
-  for (long long int i = 0; i < SIZE(r.steps); ++i)
+  for (int i = 0; i < SIZE(r.steps); ++i)
     out << "  " << to_string(r.steps.at(i)) << '\n';
   out << "]\n";
   return out.str();
@@ -408,14 +408,14 @@ string debug_string(const recipe& x) {
   ostringstream out;
   out << "- recipe " << x.name << '\n';
   // Begin debug_string(recipe x)
-  for (long long int index = 0; index < SIZE(x.steps); ++index) {
+  for (int index = 0; index < SIZE(x.steps); ++index) {
     const instruction& inst = x.steps.at(index);
     out << "inst: " << to_string(inst) << '\n';
     out << "  ingredients\n";
-    for (long long int i = 0; i < SIZE(inst.ingredients); ++i)
+    for (int i = 0; i < SIZE(inst.ingredients); ++i)
       out << "    " << debug_string(inst.ingredients.at(i)) << '\n';
     out << "  products\n";
-    for (long long int i = 0; i < SIZE(inst.products); ++i)
+    for (int i = 0; i < SIZE(inst.products); ++i)
       out << "    " << debug_string(inst.products.at(i)) << '\n';
   }
   return out.str();
@@ -424,13 +424,13 @@ string debug_string(const recipe& x) {
 string to_string(const instruction& inst) {
   if (inst.is_label) return inst.label;
   ostringstream out;
-  for (long long int i = 0; i < SIZE(inst.products); ++i) {
+  for (int i = 0; i < SIZE(inst.products); ++i) {
     if (i > 0) out << ", ";
     out << inst.products.at(i).original_string;
   }
   if (!inst.products.empty()) out << " <- ";
   out << inst.name << ' ';
-  for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (i > 0) out << ", ";
     out << inst.ingredients.at(i).original_string;
   }
@@ -442,7 +442,7 @@ string to_string(const reagent& r) {
   out << r.name << ": " << names_to_string(r.type);
   if (!r.properties.empty()) {
     out << ", {";
-    for (long long int i = 0; i < SIZE(r.properties); ++i) {
+    for (int i = 0; i < SIZE(r.properties); ++i) {
       if (i > 0) out << ", ";
       out << "\"" << r.properties.at(i).first << "\": " << to_string(r.properties.at(i).second);
     }
@@ -586,7 +586,7 @@ ostream& operator<<(ostream& os, no_scientific x) {
 
 string trim_floating_point(const string& in) {
   if (in.empty()) return "";
-  long long int len = SIZE(in);
+  int len = SIZE(in);
   while (len > 1) {
     if (in.at(len-1) != '0') break;
     --len;

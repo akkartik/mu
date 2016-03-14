@@ -23,7 +23,7 @@ map<string, vector<recipe_ordinal> > Recipe_variants;
 put(Recipe_variants, "main", vector<recipe_ordinal>());  // since we manually added main to Recipe_ordinal
 :(before "Clear Other State For Recently_added_recipes")
 for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin(); p != Recipe_variants.end(); ++p) {
-  for (long long int i = 0; i < SIZE(p->second); ++i) {
+  for (int i = 0; i < SIZE(p->second); ++i) {
     if (find(Recently_added_recipes.begin(), Recently_added_recipes.end(), p->second.at(i)) != Recently_added_recipes.end())
       p->second.at(i) = -1;  // just leave a ghost
   }
@@ -54,7 +54,7 @@ else {
 :(code)
 string matching_variant_name(const recipe& rr) {
   const vector<recipe_ordinal>& variants = get_or_insert(Recipe_variants, rr.name);
-  for (long long int i = 0; i < SIZE(variants); ++i) {
+  for (int i = 0; i < SIZE(variants); ++i) {
     if (!contains_key(Recipe, variants.at(i))) continue;
     const recipe& candidate = get(Recipe, variants.at(i));
     if (!all_reagents_match(rr, candidate)) continue;
@@ -66,12 +66,12 @@ string matching_variant_name(const recipe& rr) {
 bool all_reagents_match(const recipe& r1, const recipe& r2) {
   if (SIZE(r1.ingredients) != SIZE(r2.ingredients)) return false;
   if (SIZE(r1.products) != SIZE(r2.products)) return false;
-  for (long long int i = 0; i < SIZE(r1.ingredients); ++i) {
+  for (int i = 0; i < SIZE(r1.ingredients); ++i) {
     if (!deeply_equal_type_names(r1.ingredients.at(i), r2.ingredients.at(i))) {
       return false;
     }
   }
-  for (long long int i = 0; i < SIZE(r1.products); ++i) {
+  for (int i = 0; i < SIZE(r1.products); ++i) {
     if (!deeply_equal_type_names(r1.products.at(i), r2.products.at(i))) {
       return false;
     }
@@ -103,7 +103,7 @@ bool deeply_equal_type_names(const type_tree* a, const type_tree* b) {
 }
 
 string next_unused_recipe_name(const string& recipe_name) {
-  for (long long int i = 2; ; ++i) {
+  for (int i = 2; ; ++i) {
     ostringstream out;
     out << recipe_name << '_' << i;
     if (!contains_key(Recipe_ordinal, out.str()))
@@ -128,9 +128,9 @@ def test a:number, b:number -> z:number [
 
 //: support recipe headers in a previous transform to fill in missing types
 :(before "End check_or_set_invalid_types")
-for (long long int i = 0; i < SIZE(caller.ingredients); ++i)
+for (int i = 0; i < SIZE(caller.ingredients); ++i)
   check_or_set_invalid_types(caller.ingredients.at(i).type, maybe(caller.name), "recipe header ingredient");
-for (long long int i = 0; i < SIZE(caller.products); ++i)
+for (int i = 0; i < SIZE(caller.products); ++i)
   check_or_set_invalid_types(caller.products.at(i).type, maybe(caller.name), "recipe header product");
 
 //: after filling in all missing types (because we'll be introducing 'blank' types in this transform in a later layer, for shape-shifting recipes)
@@ -150,7 +150,7 @@ list<call> resolve_stack;
 void resolve_ambiguous_calls(recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   trace(9991, "transform") << "--- resolve ambiguous calls for recipe " << caller_recipe.name << end();
-  for (long long int index = 0; index < SIZE(caller_recipe.steps); ++index) {
+  for (int index = 0; index < SIZE(caller_recipe.steps); ++index) {
     instruction& inst = caller_recipe.steps.at(index);
     if (inst.is_label) continue;
     if (non_ghost_size(get_or_insert(Recipe_variants, inst.name)) == 0) continue;
@@ -213,7 +213,7 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
 // phase 1
 vector<recipe_ordinal> strictly_matching_variants(const instruction& inst, vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
-  for (long long int i = 0; i < SIZE(variants); ++i) {
+  for (int i = 0; i < SIZE(variants); ++i) {
     if (variants.at(i) == -1) continue;
     trace(9992, "transform") << "checking variant (strict) " << i << ": " << header_label(variants.at(i)) << end();
     if (all_header_reagents_strictly_match(inst, get(Recipe, variants.at(i))))
@@ -223,13 +223,13 @@ vector<recipe_ordinal> strictly_matching_variants(const instruction& inst, vecto
 }
 
 bool all_header_reagents_strictly_match(const instruction& inst, const recipe& variant) {
-  for (long long int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
+  for (int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
     if (!types_strictly_match(variant.ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "strict match failed: ingredient " << i << end();
       return false;
     }
   }
-  for (long long int i = 0; i < min(SIZE(inst.products), SIZE(variant.products)); ++i) {
+  for (int i = 0; i < min(SIZE(inst.products), SIZE(variant.products)); ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!types_strictly_match(variant.products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "strict match failed: product " << i << end();
@@ -242,7 +242,7 @@ bool all_header_reagents_strictly_match(const instruction& inst, const recipe& v
 // phase 3
 vector<recipe_ordinal> strictly_matching_variants_except_literal_against_boolean(const instruction& inst, vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
-  for (long long int i = 0; i < SIZE(variants); ++i) {
+  for (int i = 0; i < SIZE(variants); ++i) {
     if (variants.at(i) == -1) continue;
     trace(9992, "transform") << "checking variant (strict except literals-against-booleans) " << i << ": " << header_label(variants.at(i)) << end();
     if (all_header_reagents_strictly_match_except_literal_against_boolean(inst, get(Recipe, variants.at(i))))
@@ -252,13 +252,13 @@ vector<recipe_ordinal> strictly_matching_variants_except_literal_against_boolean
 }
 
 bool all_header_reagents_strictly_match_except_literal_against_boolean(const instruction& inst, const recipe& variant) {
-  for (long long int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
+  for (int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
     if (!types_strictly_match_except_literal_against_boolean(variant.ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "strict match failed: ingredient " << i << end();
       return false;
     }
   }
-  for (long long int i = 0; i < min(SIZE(variant.products), SIZE(inst.products)); ++i) {
+  for (int i = 0; i < min(SIZE(variant.products), SIZE(inst.products)); ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!types_strictly_match_except_literal_against_boolean(variant.products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "strict match failed: product " << i << end();
@@ -271,7 +271,7 @@ bool all_header_reagents_strictly_match_except_literal_against_boolean(const ins
 // phase 4
 vector<recipe_ordinal> matching_variants(const instruction& inst, vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
-  for (long long int i = 0; i < SIZE(variants); ++i) {
+  for (int i = 0; i < SIZE(variants); ++i) {
     if (variants.at(i) == -1) continue;
     trace(9992, "transform") << "checking variant " << i << ": " << header_label(variants.at(i)) << end();
     if (all_header_reagents_match(inst, get(Recipe, variants.at(i))))
@@ -281,13 +281,13 @@ vector<recipe_ordinal> matching_variants(const instruction& inst, vector<recipe_
 }
 
 bool all_header_reagents_match(const instruction& inst, const recipe& variant) {
-  for (long long int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
+  for (int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
     if (!types_match(variant.ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "strict match failed: ingredient " << i << end();
       return false;
     }
   }
-  for (long long int i = 0; i < min(SIZE(variant.products), SIZE(inst.products)); ++i) {
+  for (int i = 0; i < min(SIZE(variant.products), SIZE(inst.products)); ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!types_match(variant.products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "strict match failed: product " << i << end();
@@ -300,11 +300,11 @@ bool all_header_reagents_match(const instruction& inst, const recipe& variant) {
 // tie-breaker for each phase
 const recipe& best_variant(const instruction& inst, vector<recipe_ordinal>& candidates) {
   assert(!candidates.empty());
-  long long int min_score = 999;
-  long long int min_index = 0;
-  for (long long int i = 0; i < SIZE(candidates); ++i) {
+  int min_score = 999;
+  int min_index = 0;
+  for (int i = 0; i < SIZE(candidates); ++i) {
     const recipe& candidate = get(Recipe, candidates.at(i));
-    long long int score = abs(SIZE(candidate.products)-SIZE(inst.products))
+    int score = abs(SIZE(candidate.products)-SIZE(inst.products))
                           + abs(SIZE(candidate.ingredients)-SIZE(inst.ingredients));
     assert(score < 999);
     if (score < min_score) {
@@ -315,16 +315,16 @@ const recipe& best_variant(const instruction& inst, vector<recipe_ordinal>& cand
   return get(Recipe, candidates.at(min_index));
 }
 
-long long int non_ghost_size(vector<recipe_ordinal>& variants) {
-  long long int result = 0;
-  for (long long int i = 0; i < SIZE(variants); ++i)
+int non_ghost_size(vector<recipe_ordinal>& variants) {
+  int result = 0;
+  for (int i = 0; i < SIZE(variants); ++i)
     if (variants.at(i) != -1) ++result;
   return result;
 }
 
 bool next_stash(const call& c, instruction* stash_inst) {
   const recipe& specializer_recipe = get(Recipe, c.running_recipe);
-  long long int index = c.running_step_index;
+  int index = c.running_step_index;
   for (++index; index < SIZE(specializer_recipe.steps); ++index) {
     const instruction& inst = specializer_recipe.steps.at(index);
     if (inst.name == "stash") {
@@ -514,10 +514,10 @@ string header_label(recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   ostringstream out;
   out << "recipe " << caller.name;
-  for (long long int i = 0; i < SIZE(caller.ingredients); ++i)
+  for (int i = 0; i < SIZE(caller.ingredients); ++i)
     out << ' ' << to_string(caller.ingredients.at(i));
   if (!caller.products.empty()) out << " ->";
-  for (long long int i = 0; i < SIZE(caller.products); ++i)
+  for (int i = 0; i < SIZE(caller.products); ++i)
     out << ' ' << to_string(caller.products.at(i));
   return out.str();
 }

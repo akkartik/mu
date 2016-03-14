@@ -106,7 +106,7 @@ Transform.push_back(check_indirect_calls_against_header);  // idempotent
 void check_indirect_calls_against_header(const recipe_ordinal r) {
   trace(9991, "transform") << "--- type-check 'call' instructions inside recipe " << get(Recipe, r).name << end();
   const recipe& caller = get(Recipe, r);
-  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0; i < SIZE(caller.steps); ++i) {
     const instruction& inst = caller.steps.at(i);
     if (inst.operation != CALL) continue;
     if (inst.ingredients.empty()) continue;  // error raised above

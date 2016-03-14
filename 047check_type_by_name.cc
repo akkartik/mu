@@ -22,13 +22,13 @@ void check_or_set_types_by_name(const recipe_ordinal r) {
   trace(9991, "transform") << "--- deduce types for recipe " << get(Recipe, r).name << end();
   recipe& caller = get(Recipe, r);
   set<reagent> known;
-  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
-    for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
+    for (int in = 0; in < SIZE(inst.ingredients); ++in) {
       deduce_missing_type(known, inst.ingredients.at(in));
       check_type(known, inst.ingredients.at(in), r);
     }
-    for (long long int out = 0; out < SIZE(inst.products); ++out) {
+    for (int out = 0; out < SIZE(inst.products); ++out) {
       deduce_missing_type(known, inst.products.at(out));
       check_type(known, inst.products.at(out), r);
     }

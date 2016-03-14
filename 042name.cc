@@ -22,9 +22,9 @@ def main [
 Transform.push_back(transform_names);  // idempotent
 
 :(before "End Globals")
-map<recipe_ordinal, map<string, long long int> > Name;
+map<recipe_ordinal, map<string, int> > Name;
 :(after "Clear Other State For Recently_added_recipes")
-for (long long int i = 0; i < SIZE(Recently_added_recipes); ++i) {
+for (int i = 0; i < SIZE(Recently_added_recipes); ++i) {
   Name.erase(Recently_added_recipes.at(i));
 }
 
@@ -35,15 +35,15 @@ void transform_names(const recipe_ordinal r) {
 //?   cerr << "--- transform names for recipe " << caller.name << '\n';
   bool names_used = false;
   bool numeric_locations_used = false;
-  map<string, long long int>& names = Name[r];
+  map<string, int>& names = Name[r];
   // store the indices 'used' so far in the map
-  long long int& curr_idx = names[""];
+  int& curr_idx = names[""];
   ++curr_idx;  // avoid using index 0, benign skip in some other cases
-  for (long long int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
     // End transform_names(inst) Special-cases
     // map names to addresses
-    for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
+    for (int in = 0; in < SIZE(inst.ingredients); ++in) {
       if (is_disqualified(inst.ingredients.at(in), inst, caller.name)) continue;
       if (is_numeric_location(inst.ingredients.at(in))) numeric_locations_used = true;
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
@@ -51,7 +51,7 @@ void transform_names(const recipe_ordinal r) {
       if (!already_transformed(inst.ingredients.at(in), names)) {
         raise << maybe(caller.name) << "use before set: " << inst.ingredients.at(in).name << '\n' << end();
       }
-      long long int v = lookup_name(inst.ingredients.at(in), r);
+      int v = lookup_name(inst.ingredients.at(in), r);
       if (v >= 0) {
         inst.ingredients.at(in).set_value(v);
       }
@@ -60,7 +60,7 @@ void transform_names(const recipe_ordinal r) {
         return;
       }
     }
-    for (long long int out = 0; out < SIZE(inst.products); ++out) {
+    for (int out = 0; out < SIZE(inst.products); ++out) {
       if (is_disqualified(inst.products.at(out), inst, caller.name)) continue;
       if (is_numeric_location(inst.products.at(out))) numeric_locations_used = true;
       if (is_named_location(inst.products.at(out))) names_used = true;
@@ -70,7 +70,7 @@ void transform_names(const recipe_ordinal r) {
         names[inst.products.at(out).name] = curr_idx;
         curr_idx += size_of(inst.products.at(out));
       }
-      long long int v = lookup_name(inst.products.at(out), r);
+      int v = lookup_name(inst.products.at(out), r);
       if (v >= 0) {
         inst.products.at(out).set_value(v);
       }
@@ -97,11 +97,11 @@ bool is_disqualified(/*mutable*/ reagent& x, const instruction& inst, const stri
   return false;
 }
 
-bool already_transformed(const reagent& r, const map<string, long long int>& names) {
+bool already_transformed(const reagent& r, const map<string, int>& names) {
   return contains_key(names, r.name);
 }
 
-long long int lookup_name(const reagent& r, const recipe_ordinal default_recipe) {
+int lookup_name(const reagent& r, const recipe_ordinal default_recipe) {
   return Name[default_recipe][r.name];
 }
 
@@ -118,7 +118,7 @@ type_ordinal skip_addresses(type_tree* type, const string& recipe_name) {
 
 int find_element_name(const type_ordinal t, const string& name, const string& recipe_name) {
   const type_info& container = get(Type, t);
-  for (long long int i = 0; i < SIZE(container.elements); ++i)
+  for (int i = 0; i < SIZE(container.elements); ++i)
     if (container.elements.at(i).name == name) return i;
   raise << maybe(recipe_name) << "unknown element " << name << " in container " << get(Type, t).name << '\n' << end();
   return -1;
