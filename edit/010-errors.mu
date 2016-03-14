@@ -250,7 +250,8 @@ scenario run-updates-errors-for-shape-shifting-recipes [
   1:address:shared:array:character <- new [recipe foo x:_elem -> z:_elem [
 local-scope
 load-ingredients
-z <- add x, [a]
+y:address:number <- copy 0
+z <- add x, y
 ]]
   2:address:shared:array:character <- new [foo 2]
   3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
@@ -263,10 +264,10 @@ z <- add x, [a]
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .load-ingredients                                  ┊0                                               x.
-    .z <- add x, [a]                                   ┊foo 2                                            .
-    .]                                                 ┊foo_2: 'add' requires number ingredients, but go↩.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .y:address:number <- copy 0                        ┊foo 2                                            .
+    .z <- add x, y                                     ┊foo_2: 'add' requires number ingredients, but go↩.
+    .]                                                 ┊t y                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
   # now rerun everything
@@ -282,10 +283,10 @@ z <- add x, [a]
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .load-ingredients                                  ┊0                                               x.
-    .z <- add x, [a]                                   ┊foo 2                                            .
-    .]                                                 ┊foo_2: 'add' requires number ingredients, but go↩.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .y:address:number <- copy 0                        ┊foo 2                                            .
+    .z <- add x, y                                     ┊foo_2: 'add' requires number ingredients, but go↩.
+    .]                                                 ┊t y                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
 ]

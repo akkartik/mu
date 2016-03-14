@@ -19,18 +19,18 @@ void rewrite_stashes_to_text(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- rewrite 'stash' instructions in recipe " << caller.name << end();
   // in recipes without named locations, 'stash' is still not extensible
-  if (!contains_named_locations(caller)) return;
+  if (contains_numeric_locations(caller)) return;
   rewrite_stashes_to_text(caller);
 }
 
-bool contains_named_locations(const recipe& caller) {
+bool contains_numeric_locations(const recipe& caller) {
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     const instruction& inst = caller.steps.at(i);
     for (int in = 0; in < SIZE(inst.ingredients); ++in)
-      if (is_named_location(inst.ingredients.at(in)))
+      if (is_numeric_location(inst.ingredients.at(in)))
         return true;
     for (int out = 0; out < SIZE(inst.products); ++out)
-      if (is_named_location(inst.products.at(out)))
+      if (is_numeric_location(inst.products.at(out)))
         return true;
   }
   return false;
