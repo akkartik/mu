@@ -341,14 +341,14 @@ def main [
 //: Since the different variants of an exclusive-container might have
 //: different sizes, relax the size mismatch check for 'merge' instructions.
 :(before "End size_mismatch(x) Cases")
-if (current_instruction().operation == MERGE
+if (current_step_index() < SIZE(Current_routine->steps())
+    && current_instruction().operation == MERGE
     && !current_instruction().products.empty()
     && current_instruction().products.at(0).type) {
   reagent x = current_instruction().products.at(0);
   canonize(x);
-  if (get(Type, x.type->value).kind == EXCLUSIVE_CONTAINER) {
+  if (get(Type, x.type->value).kind == EXCLUSIVE_CONTAINER)
     return size_of(x) < SIZE(data);
-  }
 }
 
 :(scenario merge_exclusive_container_with_mismatched_sizes)
