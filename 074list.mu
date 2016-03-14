@@ -83,11 +83,7 @@ def to-buffer in:address:shared:list:_elem, buf:address:shared:buffer -> buf:add
   next:address:shared:list:_elem <- rest in
   nextn:number <- copy next
   return-unless next
-  space:character <- copy 32/space
-  buf <- append buf, space:character
-  s:address:shared:array:character <- new [-> ]
-  n:number <- length *s
-  buf <- append buf, s
+  buf <- append buf, [ -> ]
   # and recurse
   remaining:number, optional-ingredient-found?:boolean <- next-ingredient
   {
@@ -104,8 +100,7 @@ def to-buffer in:address:shared:list:_elem, buf:address:shared:buffer -> buf:add
     return
   }
   # past recursion depth; insert ellipses and stop
-  s:address:shared:array:character <- new [...]
-  append buf, s
+  append buf, [...]
 ]
 
 scenario stash-on-list-converts-to-text [

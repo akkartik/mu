@@ -92,7 +92,7 @@ before <end-save-sandbox> [
   {
     expected-response:address:shared:array:character <- get *curr, expected-response:offset
     break-unless expected-response
-    filename <- append filename, suffix
+    filename <- append filename, [.out]
     save filename, expected-response
   }
 ]

@@ -31,8 +31,7 @@ def new-programming-environment screen:address:shared:screen, initial-sandbox-co
   button-on-screen?:boolean <- greater-or-equal button-start, 0
   assert button-on-screen?, [screen too narrow for menu]
   screen <- move-cursor screen, 0/row, button-start
-  run-button:address:shared:array:character <- new [ run (F4) ]
-  print screen, run-button, 255/white, 161/reddish
+  print screen, [ run (F4) ], 255/white, 161/reddish
   # sandbox editor
   current-sandbox:address:address:shared:editor-data <- get-address *result, current-sandbox:offset
   *current-sandbox <- new-editor initial-sandbox-contents, screen, 0, width/right
@@ -165,8 +164,7 @@ def render-all screen:address:shared:screen, env:address:shared:programming-envi
   button-on-screen?:boolean <- greater-or-equal button-start, 0
   assert button-on-screen?, [screen too narrow for menu]
   screen <- move-cursor screen, 0/row, button-start
-  run-button:address:shared:array:character <- new [ run (F4) ]
-  print screen, run-button, 255/white, 161/reddish
+  print screen, [ run (F4) ], 255/white, 161/reddish
   #
   screen <- render-sandbox-side screen, env
   <render-components-end>

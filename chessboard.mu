@@ -76,23 +76,19 @@ def chessboard screen:address:shared:screen, console:address:shared:console -> s
   buffered-stdin:address:shared:channel <- new-channel 10/capacity
   start-running buffer-lines, stdin, buffered-stdin
   {
-    msg:address:shared:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
+    print screen, [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
 ]
-    print screen, msg
     cursor-to-next-line screen
     print-board screen, board
     cursor-to-next-line screen
-    msg <- new [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
+    print screen, [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
 ]
-    print screen, msg
     cursor-to-next-line screen
-    msg <- new [Hit 'q' to exit.
+    print screen [Hit 'q' to exit.
 ]
-    print screen, msg
     {
       cursor-to-next-line screen
-      msg <- new [move: ]
-      screen <- print screen, msg
+      screen <- print screen, [move: ]
       m:address:shared:move, quit:boolean, error:boolean <- read-move buffered-stdin, screen
       break-if quit, +quit:label
       buffered-stdin <- clear-channel buffered-stdin  # cleanup after error. todo: test this?
@@ -102,7 +98,6 @@ def chessboard screen:address:shared:screen, console:address:shared:console -> s
     screen <- clear-screen screen
     loop
   }
-  msg <- copy 0
   +quit
 ]
 
@@ -157,8 +152,7 @@ def print-board screen:address:shared:screen, board:address:shared:array:address
     # print rank number as a legend
     rank:number <- add row, 1
     print-integer screen, rank
-    s:address:shared:array:character <- new [ | ]
-    print screen, s
+    print screen, [ | ]
     # print each square in the row
     col:number <- copy 0
     {
@@ -176,12 +170,10 @@ def print-board screen:address:shared:screen, board:address:shared:array:address
     loop
   }
   # print file letters as legend
-  s <- new [  +----------------]
-  print screen, s
-  screen <- cursor-to-next-line screen
-  s <- new [    a b c d e f g h]
-  screen <- print screen, s
-  screen <- cursor-to-next-line screen
+  print screen, [  +----------------]
+  cursor-to-next-line screen
+  print screen, [    a b c d e f g h]
+  cursor-to-next-line screen
 ]
 
 def initial-position -> board:address:shared:array:address:shared:array:character [
@@ -293,8 +285,7 @@ def read-file stdin:address:shared:channel, screen:address:shared:screen -> file
   {
     newline?:boolean <- equal c, 10/newline
     break-unless newline?
-    error-message:address:shared:array:character <- new [that's not enough]
-    print screen, error-message
+    print screen, [that's not enough]
     return 0/dummy, 0/quit, 1/error
   }
   file:number <- subtract c, 97/a
@@ -302,8 +293,7 @@ def read-file stdin:address:shared:channel, screen:address:shared:screen -> file
   {
     above-min:boolean <- greater-or-equal file, 0
     break-if above-min
-    error-message:address:shared:array:character <- new [file too low: ]
-    print screen, error-message
+    print screen, [file too low: ]
     print screen, c
     cursor-to-next-line screen
     return 0/dummy, 0/quit, 1/error
@@ -311,8 +301,7 @@ def read-file stdin:address:shared:channel, screen:address:shared:screen -> file
   {
     below-max:boolean <- lesser-than file, 8
     break-if below-max
-    error-message <- new [file too high: ]
-    print screen, error-message
+    print screen, [file too high: ]
     print screen, c
     return 0/dummy, 0/quit, 1/error
   }
@@ -337,8 +326,7 @@ def read-rank stdin:address:shared:channel, screen:address:shared:screen -> rank
   {
     newline?:boolean <- equal c, 10  # newline
     break-unless newline?
-    error-message:address:shared:array:character <- new [that's not enough]
-    print screen, error-message
+    print screen, [that's not enough]
     return 0/dummy, 0/quit, 1/error
   }
   rank:number <- subtract c, 49/'1'
@@ -346,16 +334,14 @@ def read-rank stdin:address:shared:channel, screen:address:shared:screen -> rank
   {
     above-min:boolean <- greater-or-equal rank, 0
     break-if above-min
-    error-message <- new [rank too low: ]
-    print screen, error-message
+    print screen, [rank too low: ]
     print screen, c
     return 0/dummy, 0/quit, 1/error
   }
   {
     below-max:boolean <- lesser-or-equal rank, 7
     break-if below-max
-    error-message <- new [rank too high: ]
-    print screen, error-message
+    print screen, [rank too high: ]
     print screen, c
     return 0/dummy, 0/quit, 1/error
   }
@@ -371,8 +357,7 @@ def expect-from-channel stdin:address:shared:channel, expected:character, screen
   {
     match?:boolean <- equal c, expected
     break-if match?
-    s:address:shared:array:character <- new [expected character not found]
-    print screen, s
+    print screen, [expected character not found]
   }
   result <- not match?
 ]

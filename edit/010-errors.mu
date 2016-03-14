@@ -16,8 +16,7 @@ def! update-recipes env:address:shared:programming-environment-data, screen:addr
   # if recipe editor has errors, stop
   {
     break-unless *recipe-errors
-    status:address:shared:array:character <- new [errors found     ]
-    update-status screen, status, 1/red
+    update-status screen, [errors found     ], 1/red
     errors-found? <- copy 1/true
     return
   }
@@ -29,8 +28,7 @@ before <render-components-end> [
   recipe-errors:address:shared:array:character <- get *env, recipe-errors:offset
   {
     break-unless recipe-errors
-    status:address:shared:array:character <- new [errors found     ]
-    update-status screen, status, 1/red
+    update-status screen, [errors found     ], 1/red
   }
 ]
 
@@ -70,9 +68,8 @@ before <render-components-end> [
     error-index:number <- get *env, error-index:offset
     sandboxes-completed-successfully?:boolean <- equal error-index, -1
     break-if sandboxes-completed-successfully?
-    status-template:address:shared:array:character <- new [errors found (_)    ]
     error-index-text:address:shared:array:character <- to-text error-index
-    status:address:shared:array:character <- interpolate status-template, error-index-text
+    status:address:shared:array:character <- interpolate [errors found (_)    ], error-index-text
     update-status screen, status, 1/red
   }
 ]

@@ -33,8 +33,7 @@ def new-programming-environment screen:address:shared:screen, initial-recipe-con
   button-on-screen?:boolean <- greater-or-equal button-start, 0
   assert button-on-screen?, [screen too narrow for menu]
   screen <- move-cursor screen, 0/row, button-start
-  run-button:address:shared:array:character <- new [ run (F4) ]
-  print screen, run-button, 255/white, 161/reddish
+  print screen, [ run (F4) ], 255/white, 161/reddish
   # dotted line down the middle
   divider:number, _ <- divide-with-remainder width, 2
   draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
@@ -385,8 +384,7 @@ def render-all screen:address:shared:screen, env:address:shared:programming-envi
   button-on-screen?:boolean <- greater-or-equal button-start, 0
   assert button-on-screen?, [screen too narrow for menu]
   screen <- move-cursor screen, 0/row, button-start
-  run-button:address:shared:array:character <- new [ run (F4) ]
-  print screen, run-button, 255/white, 161/reddish
+  print screen, [ run (F4) ], 255/white, 161/reddish
   # dotted line down the middle
   trace 11, [app], [render divider]
   divider:number, _ <- divide-with-remainder width, 2

@@ -127,15 +127,13 @@ after <global-keypress> [
   {
     do-run?:boolean <- equal *k, 65532/F4
     break-unless do-run?
-    status:address:shared:array:character <- new [running...       ]
-    screen <- update-status screen, status, 245/grey
+    screen <- update-status screen, [running...       ], 245/grey
     error?:boolean, env, screen <- run-sandboxes env, screen
     # F4 might update warnings and results on both sides
     screen <- render-all screen, env
     {
       break-if error?
-      status:address:shared:array:character <- new [                 ]
-      screen <- update-status screen, status, 245/grey
+      screen <- update-status screen, [                 ], 245/grey
     }
     screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
     loop +next-event:label
@@ -223,7 +221,6 @@ def save-sandboxes env:address:shared:programming-environment-data [
   # first clear previous versions, in case we deleted some sandbox
   $system [rm lesson/[0-9]* >/dev/null 2>/dev/null]  # some shells can't handle '>&'
   curr:address:shared:sandbox-data <- get *env, sandbox:offset
-  suffix:address:shared:array:character <- new [.out]
   idx:number <- copy 0
   {
     break-unless curr
@@ -328,7 +325,6 @@ def restore-sandboxes env:address:shared:programming-environment-data -> env:add
   local-scope
   load-ingredients
   # read all scenarios, pushing them to end of a list of scenarios
-  suffix:address:shared:array:character <- new [.out]
   idx:number <- copy 0
   curr:address:address:shared:sandbox-data <- get-address *env, sandbox:offset
   {
@@ -341,7 +337,7 @@ def restore-sandboxes env:address:shared:programming-environment-data -> env:add
     *data <- copy contents
     # restore expected output for sandbox if it exists
     {
-      filename <- append filename, suffix
+      filename <- append filename, [.out]
       contents <- restore filename
       break-unless contents
       <end-restore-sandbox>
@@ -363,8 +359,7 @@ def render-screen screen:address:shared:screen, sandbox-screen:address:shared:sc
   load-ingredients
   return-unless sandbox-screen
   # print 'screen:'
-  header:address:shared:array:character <- new [screen:]
-  row <- render screen, header, left, right, 245/grey, row
+  row <- render screen, [screen:], left, right, 245/grey, row
   screen <- move-cursor screen, row, left
   # start printing sandbox-screen
   column:number <- copy left
