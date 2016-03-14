@@ -144,6 +144,7 @@ inline bool routine::completed() const {
   return calls.empty();
 }
 
+:(replace{} "inline const vector<instruction>& routine::steps() const")
 inline const vector<instruction>& routine::steps() const {
   assert(!calls.empty());
   return get(Recipe, calls.front().running_recipe).steps;

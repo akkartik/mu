@@ -40,6 +40,7 @@ struct routine {
   long long int running_step_index;
   routine(recipe_ordinal r) :running_recipe(r), running_step_index(0) {}
   bool completed() const;
+  const vector<instruction>& steps() const;
 };
 
 :(before "End Globals")
@@ -122,6 +123,10 @@ inline const instruction& current_instruction() {
 
 inline bool routine::completed() const {
   return running_step_index >= SIZE(get(Recipe, running_recipe).steps);
+}
+
+inline const vector<instruction>& routine::steps() const {
+  return get(Recipe, running_recipe).steps;
 }
 
 //:: Startup flow
