@@ -23,19 +23,6 @@ void rewrite_stashes_to_text(recipe_ordinal r) {
   rewrite_stashes_to_text(caller);
 }
 
-bool contains_numeric_locations(const recipe& caller) {
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
-    const instruction& inst = caller.steps.at(i);
-    for (int in = 0; in < SIZE(inst.ingredients); ++in)
-      if (is_numeric_location(inst.ingredients.at(in)))
-        return true;
-    for (int out = 0; out < SIZE(inst.products); ++out)
-      if (is_numeric_location(inst.products.at(out)))
-        return true;
-  }
-  return false;
-}
-
 void rewrite_stashes_to_text(recipe& caller) {
   vector<instruction> new_instructions;
   for (int i = 0; i < SIZE(caller.steps); ++i) {
