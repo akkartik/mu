@@ -341,9 +341,9 @@ void dump_screen() {
   assert(!current_call().default_space);  // not supported
   long long int screen_location = get_or_insert(Memory, SCREEN) + /*skip refcount*/1;
   int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
-  long long int screen_width = get_or_insert(Memory, screen_location+width_offset);
+  int screen_width = get_or_insert(Memory, screen_location+width_offset);
   int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
-  long long int screen_height = get_or_insert(Memory, screen_location+height_offset);
+  int screen_height = get_or_insert(Memory, screen_location+height_offset);
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
   long long int screen_data_location = screen_location+data_offset;  // type: address:shared:array:character

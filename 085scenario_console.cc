@@ -52,7 +52,7 @@ case ASSUME_CONSOLE: {
   istringstream in("[" + current_instruction().ingredients.at(0).name + "]");
   recipe r;
   slurp_body(in, r);
-  long long int num_events = count_events(r);
+  int num_events = count_events(r);
   // initialize the events like in new-fake-console
   long long int size = /*space for refcount*/1 + /*space for length*/1 + num_events*size_of_event();
   ensure_space(size);
