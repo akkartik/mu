@@ -26,9 +26,7 @@ void initialize_transform_rewrite_literal_string_to_text() {
 void rewrite_literal_string_to_text(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- rewrite literal strings in recipe " << caller.name << end();
-//?   cerr << "--- rewrite literal strings in recipe " << caller.name << '\n';
   if (contains_numeric_locations(caller)) return;
-//?   cerr << "00\n";
   vector<instruction> new_instructions;
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
@@ -49,7 +47,6 @@ void rewrite_literal_string_to_text(recipe_ordinal r) {
     new_instructions.push_back(inst);
   }
   caller.steps.swap(new_instructions);
-//?   cerr << "aa: " << to_string(caller) << '\n';
 }
 
 bool contains_numeric_locations(const recipe& caller) {
