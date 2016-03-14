@@ -8,8 +8,8 @@ recipe main [
   n:number <- copy 34
   stash n
 ]
-+transform: stash_0_0:address:shared:array:character <- to-text-line n
-+transform: stash stash_0_0:address:shared:array:character
++transform: stash_2_0:address:shared:array:character <- to-text-line n
++transform: stash stash_2_0:address:shared:array:character
 
 :(before "End Instruction Inserting/Deleting Transforms")
 Transform.push_back(rewrite_stashes_to_text);
@@ -18,9 +18,9 @@ Transform.push_back(rewrite_stashes_to_text);
 void rewrite_stashes_to_text(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- rewrite 'stash' instructions in recipe " << caller.name << end();
-  if (contains_named_locations(caller))
-    rewrite_stashes_to_text_named(caller);
   // in recipes without named locations, 'stash' is still not extensible
+  if (!contains_named_locations(caller)) return;
+  rewrite_stashes_to_text(caller);
 }
 
 bool contains_named_locations(const recipe& caller) {
@@ -36,8 +36,7 @@ bool contains_named_locations(const recipe& caller) {
   return false;
 }
 
-void rewrite_stashes_to_text_named(recipe& caller) {
-  static int stash_instruction_idx = 0;
+void rewrite_stashes_to_text(recipe& caller) {
   vector<instruction> new_instructions;
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
@@ -49,7 +48,7 @@ void rewrite_stashes_to_text_named(recipe& caller) {
         def.name = "to-text-line";
         def.ingredients.push_back(inst.ingredients.at(j));
         ostringstream ingredient_name;
-        ingredient_name << "stash_" << stash_instruction_idx << '_' << j << ":address:shared:array:character";
+        ingredient_name << "stash_" << i << '_' << j << ":address:shared:array:character";
         def.products.push_back(reagent(ingredient_name.str()));
         trace(9993, "transform") << to_string(def) << end();
         new_instructions.push_back(def);
@@ -60,5 +59,5 @@ void rewrite_stashes_to_text_named(recipe& caller) {
     trace(9993, "transform") << to_string(inst) << end();
     new_instructions.push_back(inst);
   }
-  new_instructions.swap(caller.steps);
+  caller.steps.swap(new_instructions);
 }
