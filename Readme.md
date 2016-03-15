@@ -31,8 +31,8 @@ In this quest, Mu is currently experimenting with the following mechanisms:
    has to:
    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='white-box test' src='html/tracing-test.png'>
    <br>Another example: if a sort function logs each swap, a performance test can
-   ensure that the number of swaps doesn't double when the size of the input
-   doubles.
+   ensure that the number of swaps doesn't quadruple when the size of the
+   input doubles.
    <p>Besides expanding the scope of tests, this ability also allows more
    radical refactoring without needing to modify tests. All Mu's tests call a
    top-level function rather than individual sub-systems directly. As a result
