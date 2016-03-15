@@ -13,15 +13,20 @@ tests. Hoped-for benefits:
 
 In this quest, Mu is currently experimenting with the following mechanisms:
 
-1. New, testable interfaces for the operating system. For example, printing to
-   screen explicitly takes a screen object, so it can be called on the real
-   screen, or on a fake screen inside tests, so that we can then check the
-   expected state of the screen at the end of a test. Here's a test for a
-   little text-mode chessboard program in Mu (delimiting the edge of the
-   'screen' with dots):
+1. New, testable interfaces for the operating system. Currently manual tests
+   are hard to automate because a file you assumed might vanish, the network
+   might go down, etc. To make manual tests reproducible it suffices to
+   improve the 15 or so OS syscalls through which a computer talks to the
+   outside world. We have to allow programs to transparently write to a fake
+   screen, read from a fake disk/network, etc. In Mu, printing to screen
+   explicitly takes a screen object, so it can be called on the real screen,
+   or on a fake screen inside tests, so that we can then check the expected
+   state of the screen at the end of a test. Here's a test for a little
+   text-mode chessboard program in Mu (delimiting the edge of the 'screen'
+   with dots):
    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='a screen test' src='html/chessboard-test.png'>
    <br>We're building up similarly *dependency-injected* interfaces to the
-   keyboard, mouse, touch screen, disk, network, &hellip;
+   keyboard, mouse, touch screen, disk, network, etc.
 
 1. Support for testing side-effects like performance, deadlock-freedom,
    race-freeness, memory usage, etc. Mu's *white-box tests* can check not just
