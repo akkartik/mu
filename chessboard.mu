@@ -70,10 +70,10 @@ def chessboard screen:address:shared:screen, console:address:shared:console -> s
   load-ingredients
   board:address:shared:array:address:shared:array:character <- initial-position
   # hook up stdin
-  stdin:address:shared:channel <- new-channel 10/capacity
+  stdin:address:shared:channel:character <- new-channel 10/capacity
   start-running send-keys-to-channel, console, stdin, screen
   # buffer lines in stdin
-  buffered-stdin:address:shared:channel <- new-channel 10/capacity
+  buffered-stdin:address:shared:channel:character <- new-channel 10/capacity
   start-running buffer-lines, stdin, buffered-stdin
   {
     print screen, [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
@@ -233,7 +233,7 @@ container move [
 ]
 
 # prints only error messages to screen
-def read-move stdin:address:shared:channel, screen:address:shared:screen -> result:address:shared:move, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+def read-move stdin:address:shared:channel:character, screen:address:shared:screen -> result:address:shared:move, quit?:boolean, error?:boolean, stdin:address:shared:channel:character, screen:address:shared:screen [
   local-scope
   load-ingredients
   from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
@@ -263,7 +263,7 @@ def read-move stdin:address:shared:channel, screen:address:shared:screen -> resu
 ]
 
 # valid values for file: 0-7
-def read-file stdin:address:shared:channel, screen:address:shared:screen -> file:number, quit:boolean, error:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+def read-file stdin:address:shared:channel:character, screen:address:shared:screen -> file:number, quit:boolean, error:boolean, stdin:address:shared:channel:character, screen:address:shared:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
@@ -309,7 +309,7 @@ def read-file stdin:address:shared:channel, screen:address:shared:screen -> file
 ]
 
 # valid values: 0-7, -1 (quit), -2 (error)
-def read-rank stdin:address:shared:channel, screen:address:shared:screen -> rank:number, quit?:boolean, error?:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+def read-rank stdin:address:shared:channel:character, screen:address:shared:screen -> rank:number, quit?:boolean, error?:boolean, stdin:address:shared:channel:character, screen:address:shared:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
@@ -350,7 +350,7 @@ def read-rank stdin:address:shared:channel, screen:address:shared:screen -> rank
 
 # read a character from the given channel and check that it's what we expect
 # return true on error
-def expect-from-channel stdin:address:shared:channel, expected:character, screen:address:shared:screen -> result:boolean, stdin:address:shared:channel, screen:address:shared:screen [
+def expect-from-channel stdin:address:shared:channel:character, expected:character, screen:address:shared:screen -> result:boolean, stdin:address:shared:channel:character, screen:address:shared:screen [
   local-scope
   load-ingredients
   c:character, stdin <- read stdin
@@ -365,8 +365,8 @@ def expect-from-channel stdin:address:shared:channel, expected:character, screen
 scenario read-move-blocking [
   assume-screen 20/width, 2/height
   run [
-    1:address:shared:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
+    1:address:shared:channel:character <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel:character, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -374,7 +374,7 @@ scenario read-move-blocking [
     assert 4:boolean/waiting?, [ 
 F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
     # press 'a'
-    1:address:shared:channel <- write 1:address:shared:channel, 97/a
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 97/a
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
@@ -383,7 +383,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     assert 4:boolean/waiting?, [ 
 F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
-    1:address:shared:channel <- write 1:address:shared:channel, 50/'2'
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 50/'2'
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
@@ -392,7 +392,7 @@ F read-move-blocking: routine failed to pause after rank 'a']
     assert 4:boolean/waiting?, [ 
 F read-move-blocking: routine failed to pause after file 'a2']
     # press '-'
-    1:address:shared:channel <- write 1:address:shared:channel, 45/'-'
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 45/'-'
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
@@ -401,7 +401,7 @@ F read-move-blocking: routine failed to pause after file 'a2']
     assert 4:boolean/waiting?/routine-state, [ 
 F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # press 'a'
-    1:address:shared:channel <- write 1:address:shared:channel, 97/a
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 97/a
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
@@ -410,7 +410,7 @@ F read-move-blocking: routine failed to pause after hyphen 'a2-']
     assert 4:boolean/waiting?/routine-state, [ 
 F read-move-blocking: routine failed to pause after rank 'a2-a']
     # press '4'
-    1:address:shared:channel <- write 1:address:shared:channel, 52/'4'
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 52/'4'
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
@@ -419,7 +419,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     assert 4:boolean/waiting?, [ 
 F read-move-blocking: routine failed to pause after file 'a2-a4']
     # press 'newline'
-    1:address:shared:channel <- write 1:address:shared:channel, 10  # newline
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 10  # newline
     restart 2:number/routine
     # 'read-move' now completes
     wait-for-routine 2:number
@@ -437,8 +437,8 @@ F read-move-blocking: routine failed to terminate on newline]
 scenario read-move-quit [
   assume-screen 20/width, 2/height
   run [
-    1:address:shared:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
+    1:address:shared:channel:character <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel:character, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
@@ -446,7 +446,7 @@ scenario read-move-quit [
     assert 4:boolean/waiting?, [ 
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
     # press 'q'
-    1:address:shared:channel <- write 1:address:shared:channel, 113/q
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 113/q
     restart 2:number/routine
     # 'read-move' completes
     wait-for-routine 2:number
@@ -464,15 +464,15 @@ F read-move-quit: routine failed to terminate on 'q']
 scenario read-move-illegal-file [
   assume-screen 20/width, 2/height
   run [
-    1:address:shared:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
+    1:address:shared:channel:character <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel:character, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [ 
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
-    1:address:shared:channel <- write 1:address:shared:channel, 50/'2'
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 50/'2'
     restart 2:number/routine
     wait-for-routine 2:number
   ]
@@ -485,16 +485,16 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 scenario read-move-illegal-rank [
   assume-screen 20/width, 2/height
   run [
-    1:address:shared:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
+    1:address:shared:channel:character <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel:character, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [ 
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
-    1:address:shared:channel <- write 1:address:shared:channel, 97/a
-    1:address:shared:channel <- write 1:address:shared:channel, 97/a
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 97/a
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 97/a
     restart 2:number/routine
     wait-for-routine 2:number
   ]
@@ -507,16 +507,16 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 scenario read-move-empty [
   assume-screen 20/width, 2/height
   run [
-    1:address:shared:channel <- new-channel 2
-    2:number/routine <- start-running read-move, 1:address:shared:channel, screen:address:shared:screen
+    1:address:shared:channel:character <- new-channel 2
+    2:number/routine <- start-running read-move, 1:address:shared:channel:character, screen:address:shared:screen
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
     4:boolean/waiting? <- equal 3:number/routine-state, 3/waiting
     assert 4:boolean/waiting?, [ 
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
-    1:address:shared:channel <- write 1:address:shared:channel, 10/newline
-    1:address:shared:channel <- write 1:address:shared:channel, 97/a
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 10/newline
+    1:address:shared:channel:character <- write 1:address:shared:channel:character, 97/a
     restart 2:number/routine
     wait-for-routine 2:number
   ]
