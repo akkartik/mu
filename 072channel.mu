@@ -319,27 +319,27 @@ scenario buffer-lines-blocks-until-newline [
     1:address:shared:channel:character/stdin <- new-channel 10/capacity
     2:address:shared:channel:character/buffered-stdin <- new-channel 10/capacity
     3:boolean <- channel-empty? 2:address:shared:channel:character/buffered-stdin
-    assert 3:boolean, [
+    assert 3:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after init]
     # buffer stdin into buffered-stdin, try to read from buffered-stdin
     4:number/buffer-routine <- start-running buffer-lines, 1:address:shared:channel:character/stdin, 2:address:shared:channel:character/buffered-stdin
     wait-for-routine 4:number/buffer-routine
     5:boolean <- channel-empty? 2:address:shared:channel:character/buffered-stdin
-    assert 5:boolean, [
+    assert 5:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
     # write 'a'
     1:address:shared:channel:character <- write 1:address:shared:channel:character, 97/a
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
     6:boolean <- channel-empty? 2:address:shared:channel:character/buffered-stdin
-    assert 6:boolean, [
+    assert 6:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     # write 'b'
     1:address:shared:channel:character <- write 1:address:shared:channel:character, 98/b
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
     7:boolean <- channel-empty? 2:address:shared:channel:character/buffered-stdin
-    assert 7:boolean, [
+    assert 7:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
     1:address:shared:channel:character <- write 1:address:shared:channel:character, 10/newline
@@ -347,7 +347,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     wait-for-routine 4:number/buffer-routine
     8:boolean <- channel-empty? 2:address:shared:channel:character/buffered-stdin
     9:boolean/completed? <- not 8:boolean
-    assert 9:boolean/completed?, [
+    assert 9:boolean/completed?, [ 
 F buffer-lines-blocks-until-newline: channel should contain data after writing newline]
     trace 1, [test], [reached end]
   ]
