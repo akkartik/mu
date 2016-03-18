@@ -19,7 +19,7 @@ scenario channel [
   ]
 ]
 
-container channel [
+container channel:_elem [
   # To avoid locking, writer and reader will never write to the same location.
   # So channels will include fields in pairs, one for the writer and one for the
   # reader.
@@ -28,7 +28,7 @@ container channel [
   # A circular buffer contains values from index first-full up to (but not
   # including) index first-empty. The reader always modifies it at first-full,
   # while the writer always modifies it at first-empty.
-  data:address:shared:array:character
+  data:address:shared:array:_elem
 ]
 
 def new-channel capacity:number -> result:address:shared:channel:_elem [
