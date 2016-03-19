@@ -463,13 +463,8 @@ type_tree* parse_type_tree(istream& in) {
     in.get();
     return NULL;
   }
-  if (in.peek() != '(') {
-    string type_name = next_word(in);
-    if (!contains_key(Type_ordinal, type_name))
-      put(Type_ordinal, type_name, Next_type_ordinal++);
-    type_tree* result = new type_tree(type_name, get(Type_ordinal, type_name));
-    return result;
-  }
+  if (in.peek() != '(')
+    return new type_tree(next_word(in), 0);
   in.get();  // skip '('
   type_tree* result = NULL;
   type_tree** curr = &result;
@@ -479,14 +474,8 @@ type_tree* parse_type_tree(istream& in) {
     skip_whitespace_but_not_newline(in);
     if (in.peek() == '(')
       (*curr)->left = parse_type_tree(in);
-    else {
+    else
       (*curr)->name = next_word(in);
-      if (!is_type_ingredient_name((*curr)->name)) {
-        if (!contains_key(Type_ordinal, (*curr)->name))
-          put(Type_ordinal, (*curr)->name, Next_type_ordinal++);
-        (*curr)->value = get(Type_ordinal, (*curr)->name);
-      }
-    }
     curr = &(*curr)->right;
   }
   in.get();  // skip ')'

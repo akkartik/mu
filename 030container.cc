@@ -433,7 +433,6 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
 
 void replace_unknown_types_with_unique_ordinals(type_tree* type, const type_info& info) {
   if (!type) return;
-  // End insert_container Special-cases
   if (!type->name.empty()) {
     if (contains_key(Type_ordinal, type->name)) {
       type->value = get(Type_ordinal, type->name);
@@ -441,12 +440,12 @@ void replace_unknown_types_with_unique_ordinals(type_tree* type, const type_info
     else if (is_integer(type->name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
       type->value = 0;
     }
+    // End insert_container Special-cases
     else if (type->name != "->") {  // used in recipe types
       put(Type_ordinal, type->name, Next_type_ordinal++);
       type->value = get(Type_ordinal, type->name);
     }
   }
-  recurse:
   replace_unknown_types_with_unique_ordinals(type->left, info);
   replace_unknown_types_with_unique_ordinals(type->right, info);
 }

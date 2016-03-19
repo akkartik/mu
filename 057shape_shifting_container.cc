@@ -94,9 +94,8 @@ void read_type_ingredients(string& name) {
 
 :(before "End insert_container Special-cases")
 // check for use of type ingredients
-else if (!type->name.empty() && is_type_ingredient_name(type->name)) {
+else if (is_type_ingredient_name(type->name)) {
   type->value = get(info.type_ingredient_names, type->name);
-  goto recurse;
 }
 :(code)
 bool is_type_ingredient_name(const string& type) {
