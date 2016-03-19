@@ -43,11 +43,11 @@ def new-channel capacity:number -> result:address:shared:channel:_elem [
   *free <- copy 0
   # result.data = new location[ingredient+1]
   capacity <- add capacity, 1  # unused slot for 'full?' below
-  dest:address:address:shared:array:character <- get-address *result, data:offset
-  *dest <- new character:type, capacity
+  dest:address:address:shared:array:_elem <- get-address *result, data:offset
+  *dest <- new _elem:type, capacity
 ]
 
-def write chan:address:shared:channel:_elem, val:character -> chan:address:shared:channel:_elem [
+def write chan:address:shared:channel:_elem, val:_elem -> chan:address:shared:channel:_elem [
   local-scope
   load-ingredients
   {
@@ -58,9 +58,9 @@ def write chan:address:shared:channel:_elem, val:character -> chan:address:share
     wait-for-location *full-address
   }
   # store val
-  circular-buffer:address:shared:array:character <- get *chan, data:offset
+  circular-buffer:address:shared:array:_elem <- get *chan, data:offset
   free:address:number <- get-address *chan, first-free:offset
-  dest:address:character <- index-address *circular-buffer, *free
+  dest:address:_elem <- index-address *circular-buffer, *free
   *dest <- copy val
   # mark its slot as filled
   *free <- add *free, 1
@@ -73,7 +73,7 @@ def write chan:address:shared:channel:_elem, val:character -> chan:address:share
   }
 ]
 
-def read chan:address:shared:channel:_elem -> result:character, chan:address:shared:channel:_elem [
+def read chan:address:shared:channel:_elem -> result:_elem, chan:address:shared:channel:_elem [
   local-scope
   load-ingredients
   {
@@ -85,7 +85,7 @@ def read chan:address:shared:channel:_elem -> result:character, chan:address:sha
   }
   # read result
   full:address:number <- get-address *chan, first-full:offset
-  circular-buffer:address:shared:array:character <- get *chan, data:offset
+  circular-buffer:address:shared:array:_elem <- get *chan, data:offset
   result <- index *circular-buffer, *full
   # mark its slot as empty
   *full <- add *full, 1
@@ -207,7 +207,7 @@ def channel-full? chan:address:shared:channel:_elem -> result:boolean [
 def channel-capacity chan:address:shared:channel:_elem -> result:number [
   local-scope
   load-ingredients
-  q:address:shared:array:character <- get *chan, data:offset
+  q:address:shared:array:_elem <- get *chan, data:offset
   result <- length *q
 ]
 
