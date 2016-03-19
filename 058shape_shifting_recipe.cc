@@ -660,6 +660,35 @@ container foo:_t [
 +mem: storing 0 in location 12
 +mem: storing 0 in location 13
 
+:(code)
+// this one needs a little more fine-grained control
+void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
+  Trace_file = "shape_shifting_new_ingredient_does_not_pollute_global_namespace";
+
+  // if you specialize a shape-shifting recipe that allocates a type-ingredient..
+  transform("def barz x:_elem [\n"
+            "  local-scope\n"
+            "  load-ingredients\n"
+            "  y:address:shared:number <- new _elem:type\n"
+            "]\n"
+            "def fooz [\n"
+            "  local-scope\n"
+            "  barz 34\n"
+            "]\n");
+  // ..and if you then try to load a new shape-shifting container with that
+  // type-ingredient
+  run("container foo:_elem [\n"
+      "  x:_elem\n"
+      "  y:number\n"
+      "]\n");
+  // then it should work as usual
+  reagent callsite("x:foo:point");
+  reagent element = element_type(callsite, 0);
+  CHECK_EQ(element.name, "x");
+  CHECK_EQ(element.type->name, "point");
+  CHECK(!element.type->right);
+}
+
 :(scenario shape_shifting_recipe_supports_compound_types)
 def main [
   1:address:shared:point <- new point:type
