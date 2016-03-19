@@ -137,7 +137,7 @@ inline const vector<instruction>& routine::steps() const {
 //? Trace_file = "interactive";
 //? START_TRACING_UNTIL_END_OF_SCOPE;
 load_permanently("core.mu");
-transform_all();
+transform_permanently();
 //? DUMP("");
 //? exit(0);
 
@@ -156,7 +156,7 @@ if (argc > 1) {
     argv++;
     argc--;
   }
-  transform_all();
+  transform_permanently();
   if (Run_tests) Recipe.erase(get(Recipe_ordinal, "main"));
   // End Loading .mu Files
 }
