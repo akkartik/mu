@@ -102,27 +102,3 @@ def to-buffer in:address:shared:list:_elem, buf:address:shared:buffer -> buf:add
   # past recursion depth; insert ellipses and stop
   append buf, [...]
 ]
-
-scenario stash-on-list-converts-to-text [
-  run [
-    x:address:shared:list:number <- push 4, 0
-    x <- push 5, x
-    x <- push 6, x
-    stash [foo foo], x
-  ]
-  trace-should-contain [
-    app: foo foo 6 -> 5 -> 4
-  ]
-]
-
-scenario stash-handles-list-with-cycle [
-  run [
-    x:address:shared:list:number <- push 4, 0
-    y:address:address:shared:list:number <- get-address *x, next:offset
-    *y <- copy x
-    stash [foo foo], x
-  ]
-  trace-should-contain [
-    app: foo foo 4 -> 4 -> 4 -> 4 -> 4 -> 4 -> 4 -> ...
-  ]
-]

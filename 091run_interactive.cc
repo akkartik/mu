@@ -427,8 +427,8 @@ int trace_app_contents() {
 }
 
 void truncate(string& x) {
-  if (SIZE(x) > 512) {
-    x.erase(512);
+  if (SIZE(x) > 1024) {
+    x.erase(1024);
     *x.rbegin() = '\n';
     *++x.rbegin() = '.';
     *++++x.rbegin() = '.';
