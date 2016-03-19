@@ -144,6 +144,7 @@ transform_all();
 //: Step 2: load any .mu files provided at the commandline
 :(before "End Commandline Parsing")
 // Check For .mu Files
+//? START_TRACING_UNTIL_END_OF_SCOPE
 if (argc > 1) {
   // skip argv[0]
   argv++;
