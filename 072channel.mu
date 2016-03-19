@@ -10,9 +10,9 @@
 
 scenario channel [
   run [
-    1:address:shared:channel:character <- new-channel 3/capacity
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 34
-    2:character, 1:address:shared:channel:character <- read 1:address:shared:channel:character
+    1:address:shared:channel:number <- new-channel 3/capacity
+    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
+    2:number, 1:address:shared:channel:number <- read 1:address:shared:channel:number
   ]
   memory-should-contain [
     2 <- 34
@@ -110,9 +110,9 @@ def clear-channel chan:address:shared:channel:_elem -> chan:address:shared:chann
 
 scenario channel-initialization [
   run [
-    1:address:shared:channel:character <- new-channel 3/capacity
-    2:number <- get *1:address:shared:channel:character, first-full:offset
-    3:number <- get *1:address:shared:channel:character, first-free:offset
+    1:address:shared:channel:number <- new-channel 3/capacity
+    2:number <- get *1:address:shared:channel:number, first-full:offset
+    3:number <- get *1:address:shared:channel:number, first-free:offset
   ]
   memory-should-contain [
     2 <- 0  # first-full
@@ -122,10 +122,10 @@ scenario channel-initialization [
 
 scenario channel-write-increments-free [
   run [
-    1:address:shared:channel:character <- new-channel 3/capacity
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 34
-    2:number <- get *1:address:shared:channel:character, first-full:offset
-    3:number <- get *1:address:shared:channel:character, first-free:offset
+    1:address:shared:channel:number <- new-channel 3/capacity
+    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
+    2:number <- get *1:address:shared:channel:number, first-full:offset
+    3:number <- get *1:address:shared:channel:number, first-free:offset
   ]
   memory-should-contain [
     2 <- 0  # first-full
@@ -135,11 +135,11 @@ scenario channel-write-increments-free [
 
 scenario channel-read-increments-full [
   run [
-    1:address:shared:channel:character <- new-channel 3/capacity
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 34
-    _, 1:address:shared:channel:character <- read 1:address:shared:channel:character
-    2:number <- get *1:address:shared:channel:character, first-full:offset
-    3:number <- get *1:address:shared:channel:character, first-free:offset
+    1:address:shared:channel:number <- new-channel 3/capacity
+    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
+    _, 1:address:shared:channel:number <- read 1:address:shared:channel:number
+    2:number <- get *1:address:shared:channel:number, first-full:offset
+    3:number <- get *1:address:shared:channel:number, first-free:offset
   ]
   memory-should-contain [
     2 <- 1  # first-full
@@ -150,19 +150,19 @@ scenario channel-read-increments-full [
 scenario channel-wrap [
   run [
     # channel with just 1 slot
-    1:address:shared:channel:character <- new-channel 1/capacity
+    1:address:shared:channel:number <- new-channel 1/capacity
     # write and read a value
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 34
-    _, 1:address:shared:channel:character <- read 1:address:shared:channel:character
+    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
+    _, 1:address:shared:channel:number <- read 1:address:shared:channel:number
     # first-free will now be 1
-    2:number <- get *1:address:shared:channel:character, first-free:offset
-    3:number <- get *1:address:shared:channel:character, first-free:offset
+    2:number <- get *1:address:shared:channel:number, first-free:offset
+    3:number <- get *1:address:shared:channel:number, first-free:offset
     # write second value, verify that first-free wraps
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 34
-    4:number <- get *1:address:shared:channel:character, first-free:offset
+    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
+    4:number <- get *1:address:shared:channel:number, first-free:offset
     # read second value, verify that first-full wraps
-    _, 1:address:shared:channel:character <- read 1:address:shared:channel:character
-    5:number <- get *1:address:shared:channel:character, first-full:offset
+    _, 1:address:shared:channel:number <- read 1:address:shared:channel:number
+    5:number <- get *1:address:shared:channel:number, first-full:offset
   ]
   memory-should-contain [
     2 <- 1  # first-free after first write
@@ -213,9 +213,9 @@ def channel-capacity chan:address:shared:channel:_elem -> result:number [
 
 scenario channel-new-empty-not-full [
   run [
-    1:address:shared:channel:character <- new-channel 3/capacity
-    2:boolean <- channel-empty? 1:address:shared:channel:character
-    3:boolean <- channel-full? 1:address:shared:channel:character
+    1:address:shared:channel:number <- new-channel 3/capacity
+    2:boolean <- channel-empty? 1:address:shared:channel:number
+    3:boolean <- channel-full? 1:address:shared:channel:number
   ]
   memory-should-contain [
     2 <- 1  # empty?
@@ -225,10 +225,10 @@ scenario channel-new-empty-not-full [
 
 scenario channel-write-not-empty [
   run [
-    1:address:shared:channel:character <- new-channel 3/capacity
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 34
-    2:boolean <- channel-empty? 1:address:shared:channel:character
-    3:boolean <- channel-full? 1:address:shared:channel:character
+    1:address:shared:channel:number <- new-channel 3/capacity
+    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
+    2:boolean <- channel-empty? 1:address:shared:channel:number
+    3:boolean <- channel-full? 1:address:shared:channel:number
   ]
   memory-should-contain [
     2 <- 0  # empty?
@@ -238,10 +238,10 @@ scenario channel-write-not-empty [
 
 scenario channel-write-full [
   run [
-    1:address:shared:channel:character <- new-channel 1/capacity
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 34
-    2:boolean <- channel-empty? 1:address:shared:channel:character
-    3:boolean <- channel-full? 1:address:shared:channel:character
+    1:address:shared:channel:number <- new-channel 1/capacity
+    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
+    2:boolean <- channel-empty? 1:address:shared:channel:number
+    3:boolean <- channel-full? 1:address:shared:channel:number
   ]
   memory-should-contain [
     2 <- 0  # empty?
@@ -251,11 +251,11 @@ scenario channel-write-full [
 
 scenario channel-read-not-full [
   run [
-    1:address:shared:channel:character <- new-channel 1/capacity
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 34
-    _, 1:address:shared:channel:character <- read 1:address:shared:channel:character
-    2:boolean <- channel-empty? 1:address:shared:channel:character
-    3:boolean <- channel-full? 1:address:shared:channel:character
+    1:address:shared:channel:number <- new-channel 1/capacity
+    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
+    _, 1:address:shared:channel:number <- read 1:address:shared:channel:number
+    2:boolean <- channel-empty? 1:address:shared:channel:number
+    3:boolean <- channel-full? 1:address:shared:channel:number
   ]
   memory-should-contain [
     2 <- 1  # empty?
