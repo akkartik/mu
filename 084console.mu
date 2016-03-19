@@ -72,7 +72,7 @@ def read-key console:address:shared:console -> result:character, console:address
   return *c, console/same-as-ingredient:0, 1/found, 0/quit
 ]
 
-def send-keys-to-channel console:address:shared:console, chan:address:shared:channel:character, screen:address:shared:screen -> console:address:shared:console, chan:address:shared:channel:character, screen:address:shared:screen [
+def send-keys-to-channel console:address:shared:console, chan:address:shared:sink:character, screen:address:shared:screen -> console:address:shared:console, chan:address:shared:sink:character, screen:address:shared:screen [
   local-scope
   load-ingredients
   {

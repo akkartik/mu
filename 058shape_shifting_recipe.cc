@@ -313,6 +313,7 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
   for (int i = 0; i < limit; ++i) {
     const reagent& exemplar_reagent = exemplar.products.at(i);
     reagent product = inst.products.at(i);
+    if (is_dummy(product)) continue;
     canonize_type(product);
     accumulate_type_ingredients(exemplar_reagent, product, mappings, exemplar, inst, caller_recipe, error);
   }
@@ -331,7 +332,8 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
   if (!exemplar_type) return;
   if (!refinement_type) {
     // todo: make this smarter; only flag an error if exemplar_type contains some *new* type ingredient
-    raise << maybe(exemplar.name) << "missing type ingredient in " << exemplar_reagent.original_string << '\n' << end();
+    raise << maybe(exemplar.name) << "missing type ingredient for " << exemplar_reagent.original_string << '\n' << end();
+    raise << "  (called from '" << to_string(call_instruction) << "')\n" << end();
     return;
   }
   if (is_type_ingredient_name(exemplar_type->name)) {
@@ -648,6 +650,17 @@ container foo:_t [
 +mem: storing 0 in location 11
 +mem: storing 0 in location 12
 +mem: storing 0 in location 13
+
+:(scenario shape_shifting_recipe_called_with_dummy)
+def main [
+  _ <- bar 34
+]
+def bar x:_t -> result:address:shared:_t [
+  local-scope
+  load-ingredients
+  result <- copy 0
+]
+$error: 0
 
 :(code)
 // this one needs a little more fine-grained control

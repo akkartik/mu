@@ -10,12 +10,12 @@
 
 scenario channel [
   run [
-    1:address:shared:channel:number <- new-channel 3/capacity
-    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
-    2:number, 1:address:shared:channel:number <- read 1:address:shared:channel:number
+    1:address:shared:source:number, 2:address:shared:sink:number <- new-channel 3/capacity
+    2:address:shared:sink:number <- write 2:address:shared:sink:number, 34
+    3:number, 1:address:shared:source:number <- read 1:address:shared:source:number
   ]
   memory-should-contain [
-    2 <- 34
+    3 <- 34
   ]
 ]
 
@@ -31,10 +31,21 @@ container channel:_elem [
   data:address:shared:array:_elem
 ]
 
-def new-channel capacity:number -> result:address:shared:channel:_elem [
+# Since channels have two ends, and since it's an error to use either end from
+# multiple routines, let's distinguish the ends.
+
+container source:_elem [
+  chan:address:shared:channel:_elem
+]
+
+container sink:_elem [
+  chan:address:shared:channel:_elem
+]
+
+def new-channel capacity:number -> in:address:shared:source:_elem, out:address:shared:sink:_elem [
   local-scope
   load-ingredients
-  result <- new {(channel _elem): type}
+  result:address:shared:channel:_elem <- new {(channel _elem): type}
   # result.first-full = 0
   full:address:number <- get-address *result, first-full:offset
   *full <- copy 0
@@ -45,11 +56,18 @@ def new-channel capacity:number -> result:address:shared:channel:_elem [
   capacity <- add capacity, 1  # unused slot for 'full?' below
   dest:address:address:shared:array:_elem <- get-address *result, data:offset
   *dest <- new _elem:type, capacity
+  in <- new {(source _elem): type}
+  chan:address:address:shared:channel:_elem <- get-address *in, chan:offset
+  *chan <- copy result
+  out <- new {(sink _elem): type}
+  chan:address:address:shared:channel:_elem <- get-address *out, chan:offset
+  *chan <- copy result
 ]
 
-def write chan:address:shared:channel:_elem, val:_elem -> chan:address:shared:channel:_elem [
+def write out:address:shared:sink:_elem, val:_elem -> out:address:shared:sink:_elem [
   local-scope
   load-ingredients
+  chan:address:shared:channel:_elem <- get *out, chan:offset
   {
     # block if chan is full
     full:boolean <- channel-full? chan
@@ -73,9 +91,10 @@ def write chan:address:shared:channel:_elem, val:_elem -> chan:address:shared:ch
   }
 ]
 
-def read chan:address:shared:channel:_elem -> result:_elem, chan:address:shared:channel:_elem [
+def read in:address:shared:source:_elem -> result:_elem, in:address:shared:source:_elem [
   local-scope
   load-ingredients
+  chan:address:shared:channel:_elem <- get *in, chan:offset
   {
     # block if chan is empty
     empty?:boolean <- channel-empty? chan
@@ -98,77 +117,82 @@ def read chan:address:shared:channel:_elem -> result:_elem, chan:address:shared:
   }
 ]
 
-def clear-channel chan:address:shared:channel:_elem -> chan:address:shared:channel:_elem [
+def clear in:address:shared:source:_elem -> in:address:shared:source:_elem [
   local-scope
   load-ingredients
+  chan:address:shared:channel:_elem <- get *in, chan:offset
   {
     empty?:boolean <- channel-empty? chan
     break-if empty?
-    _, chan <- read chan
+    _, in <- read in
   }
 ]
 
 scenario channel-initialization [
   run [
-    1:address:shared:channel:number <- new-channel 3/capacity
-    2:number <- get *1:address:shared:channel:number, first-full:offset
-    3:number <- get *1:address:shared:channel:number, first-free:offset
+    1:address:shared:source:number <- new-channel 3/capacity
+    2:address:shared:channel:number <- get *1:address:shared:source:number, chan:offset
+    3:number <- get *2:address:shared:channel:number, first-full:offset
+    4:number <- get *2:address:shared:channel:number, first-free:offset
   ]
   memory-should-contain [
-    2 <- 0  # first-full
-    3 <- 0  # first-free
+    3 <- 0  # first-full
+    4 <- 0  # first-free
   ]
 ]
 
 scenario channel-write-increments-free [
   run [
-    1:address:shared:channel:number <- new-channel 3/capacity
-    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
-    2:number <- get *1:address:shared:channel:number, first-full:offset
-    3:number <- get *1:address:shared:channel:number, first-free:offset
+    _, 1:address:shared:sink:number <- new-channel 3/capacity
+    1:address:shared:sink:number <- write 1:address:shared:sink:number, 34
+    2:address:shared:channel:number <- get *1:address:shared:sink:number, chan:offset
+    3:number <- get *2:address:shared:channel:character, first-full:offset
+    4:number <- get *2:address:shared:channel:character, first-free:offset
   ]
   memory-should-contain [
-    2 <- 0  # first-full
-    3 <- 1  # first-free
+    3 <- 0  # first-full
+    4 <- 1  # first-free
   ]
 ]
 
 scenario channel-read-increments-full [
   run [
-    1:address:shared:channel:number <- new-channel 3/capacity
-    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
-    _, 1:address:shared:channel:number <- read 1:address:shared:channel:number
-    2:number <- get *1:address:shared:channel:number, first-full:offset
-    3:number <- get *1:address:shared:channel:number, first-free:offset
+    1:address:shared:source:number, 2:address:shared:sink:number <- new-channel 3/capacity
+    2:address:shared:sink:number <- write 2:address:shared:sink:number, 34
+    _, 1:address:shared:source:number <- read 1:address:shared:source:number
+    3:address:shared:channel:number <- get *1:address:shared:source:number, chan:offset
+    4:number <- get *3:address:shared:channel:number, first-full:offset
+    5:number <- get *3:address:shared:channel:number, first-free:offset
   ]
   memory-should-contain [
-    2 <- 1  # first-full
-    3 <- 1  # first-free
+    4 <- 1  # first-full
+    5 <- 1  # first-free
   ]
 ]
 
 scenario channel-wrap [
   run [
     # channel with just 1 slot
-    1:address:shared:channel:number <- new-channel 1/capacity
+    1:address:shared:source:number, 2:address:shared:sink:number <- new-channel 1/capacity
+    3:address:shared:channel:number <- get *1:address:shared:source:number, chan:offset
     # write and read a value
-    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
-    _, 1:address:shared:channel:number <- read 1:address:shared:channel:number
+    2:address:shared:sink:number <- write 2:address:shared:sink:number, 34
+    _, 1:address:shared:source:number <- read 1:address:shared:source:number
     # first-free will now be 1
-    2:number <- get *1:address:shared:channel:number, first-free:offset
-    3:number <- get *1:address:shared:channel:number, first-free:offset
+    4:number <- get *3:address:shared:channel:number, first-free:offset
+    5:number <- get *3:address:shared:channel:number, first-free:offset
     # write second value, verify that first-free wraps
-    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
-    4:number <- get *1:address:shared:channel:number, first-free:offset
+    2:address:shared:sink:number <- write 2:address:shared:sink:number, 34
+    6:number <- get *3:address:shared:channel:number, first-free:offset
     # read second value, verify that first-full wraps
-    _, 1:address:shared:channel:number <- read 1:address:shared:channel:number
-    5:number <- get *1:address:shared:channel:number, first-full:offset
+    _, 1:address:shared:source:number <- read 1:address:shared:source:number
+    7:number <- get *3:address:shared:channel:number, first-full:offset
   ]
   memory-should-contain [
-    2 <- 1  # first-free after first write
-    3 <- 1  # first-full after first read
-    4 <- 0  # first-free after second write, wrapped
-    5 <- 0  # first-full after second read, wrapped
+    4 <- 1  # first-free after first write
+    5 <- 1  # first-full after first read
+    6 <- 0  # first-free after second write, wrapped
+    7 <- 0  # first-full after second read, wrapped
   ]
 ]
 
@@ -194,7 +218,7 @@ def channel-full? chan:address:shared:channel:_elem -> result:boolean [
   tmp <- add tmp, 1
   {
     # if tmp == chan.capacity, tmp = 0
-    len:number <- channel-capacity chan
+    len:number <- capacity chan
     at-end?:boolean <- greater-or-equal tmp, len
     break-unless at-end?
     tmp <- copy 0
@@ -204,7 +228,7 @@ def channel-full? chan:address:shared:channel:_elem -> result:boolean [
   result <- equal full, tmp
 ]
 
-def channel-capacity chan:address:shared:channel:_elem -> result:number [
+def capacity chan:address:shared:channel:_elem -> result:number [
   local-scope
   load-ingredients
   q:address:shared:array:_elem <- get *chan, data:offset
@@ -213,58 +237,62 @@ def channel-capacity chan:address:shared:channel:_elem -> result:number [
 
 scenario channel-new-empty-not-full [
   run [
-    1:address:shared:channel:number <- new-channel 3/capacity
-    2:boolean <- channel-empty? 1:address:shared:channel:number
-    3:boolean <- channel-full? 1:address:shared:channel:number
+    1:address:shared:source:number, 2:address:shared:sink:number <- new-channel 3/capacity
+    3:address:shared:channel:number <- get *1:address:shared:source:number, chan:offset
+    4:boolean <- channel-empty? 3:address:shared:channel:number
+    5:boolean <- channel-full? 3:address:shared:channel:number
   ]
   memory-should-contain [
-    2 <- 1  # empty?
-    3 <- 0  # full?
+    4 <- 1  # empty?
+    5 <- 0  # full?
   ]
 ]
 
 scenario channel-write-not-empty [
   run [
-    1:address:shared:channel:number <- new-channel 3/capacity
-    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
-    2:boolean <- channel-empty? 1:address:shared:channel:number
-    3:boolean <- channel-full? 1:address:shared:channel:number
+    1:address:shared:source:number, 2:address:shared:sink:number <- new-channel 3/capacity
+    3:address:shared:channel:number <- get *1:address:shared:source:number, chan:offset
+    2:address:shared:sink:number <- write 2:address:shared:sink:number, 34
+    4:boolean <- channel-empty? 3:address:shared:channel:number
+    5:boolean <- channel-full? 3:address:shared:channel:number
   ]
   memory-should-contain [
-    2 <- 0  # empty?
-    3 <- 0  # full?
+    4 <- 0  # empty?
+    5 <- 0  # full?
   ]
 ]
 
 scenario channel-write-full [
   run [
-    1:address:shared:channel:number <- new-channel 1/capacity
-    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
-    2:boolean <- channel-empty? 1:address:shared:channel:number
-    3:boolean <- channel-full? 1:address:shared:channel:number
+    1:address:shared:source:number, 2:address:shared:sink:number <- new-channel 1/capacity
+    3:address:shared:channel:number <- get *1:address:shared:source:number, chan:offset
+    2:address:shared:sink:number <- write 2:address:shared:sink:number, 34
+    4:boolean <- channel-empty? 3:address:shared:channel:number
+    5:boolean <- channel-full? 3:address:shared:channel:number
   ]
   memory-should-contain [
-    2 <- 0  # empty?
-    3 <- 1  # full?
+    4 <- 0  # empty?
+    5 <- 1  # full?
   ]
 ]
 
 scenario channel-read-not-full [
   run [
-    1:address:shared:channel:number <- new-channel 1/capacity
-    1:address:shared:channel:number <- write 1:address:shared:channel:number, 34
-    _, 1:address:shared:channel:number <- read 1:address:shared:channel:number
-    2:boolean <- channel-empty? 1:address:shared:channel:number
-    3:boolean <- channel-full? 1:address:shared:channel:number
+    1:address:shared:source:number, 2:address:shared:sink:number <- new-channel 1/capacity
+    3:address:shared:channel:number <- get *1:address:shared:source:number, chan:offset
+    2:address:shared:sink:number <- write 2:address:shared:sink:number, 34
+    _, 1:address:shared:source:number <- read 1:address:shared:source:number
+    4:boolean <- channel-empty? 3:address:shared:channel:number
+    5:boolean <- channel-full? 3:address:shared:channel:number
   ]
   memory-should-contain [
-    2 <- 1  # empty?
-    3 <- 0  # full?
+    4 <- 1  # empty?
+    5 <- 0  # full?
   ]
 ]
 
 # helper for channels of characters in particular
-def buffer-lines in:address:shared:channel:character, out:address:shared:channel:character -> out:address:shared:channel:character, in:address:shared:channel:character [
+def buffer-lines in:address:shared:source:character, buffered-out:address:shared:sink:character -> buffered-out:address:shared:sink:character, in:address:shared:source:character [
   local-scope
   load-ingredients
   # repeat forever
@@ -298,7 +326,7 @@ def buffer-lines in:address:shared:channel:character, out:address:shared:channel
       break-if eof?
       loop
     }
-    # copy line into 'out'
+    # copy line into 'buffered-out'
     i:number <- copy 0
     line-contents:address:shared:array:character <- get *line, data:offset
     max:number <- get *line, length:offset
@@ -306,7 +334,7 @@ def buffer-lines in:address:shared:channel:character, out:address:shared:channel
       done?:boolean <- greater-or-equal i, max
       break-if done?
       c:character <- index *line-contents, i
-      out <- write out, c
+      buffered-out <- write buffered-out, c
       i <- add i, 1
       loop
     }
@@ -316,38 +344,39 @@ def buffer-lines in:address:shared:channel:character, out:address:shared:channel
 
 scenario buffer-lines-blocks-until-newline [
   run [
-    1:address:shared:channel:character/stdin <- new-channel 10/capacity
-    2:address:shared:channel:character/buffered-stdin <- new-channel 10/capacity
-    3:boolean <- channel-empty? 2:address:shared:channel:character/buffered-stdin
-    assert 3:boolean, [ 
+    1:address:shared:source:number, 2:address:shared:sink:number <- new-channel 10/capacity
+    _, 3:address:shared:sink:number/buffered-stdin <- new-channel 10/capacity
+    4:address:shared:channel:number/buffered-stdin <- get *3:address:shared:source:number, chan:offset
+    5:boolean <- channel-empty? 4:address:shared:channel:character/buffered-stdin
+    assert 5:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after init]
     # buffer stdin into buffered-stdin, try to read from buffered-stdin
-    4:number/buffer-routine <- start-running buffer-lines, 1:address:shared:channel:character/stdin, 2:address:shared:channel:character/buffered-stdin
-    wait-for-routine 4:number/buffer-routine
-    5:boolean <- channel-empty? 2:address:shared:channel:character/buffered-stdin
-    assert 5:boolean, [ 
+    6:number/buffer-routine <- start-running buffer-lines, 1:address:shared:source:character/stdin, 3:address:shared:sink:character/buffered-stdin
+    wait-for-routine 6:number/buffer-routine
+    7:boolean <- channel-empty? 4:address:shared:channel:character/buffered-stdin
+    assert 7:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
     # write 'a'
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 97/a
-    restart 4:number/buffer-routine
-    wait-for-routine 4:number/buffer-routine
-    6:boolean <- channel-empty? 2:address:shared:channel:character/buffered-stdin
-    assert 6:boolean, [ 
+    2:address:shared:sink:character <- write 2:address:shared:sink:character, 97/a
+    restart 6:number/buffer-routine
+    wait-for-routine 6:number/buffer-routine
+    8:boolean <- channel-empty? 4:address:shared:channel:character/buffered-stdin
+    assert 8:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     # write 'b'
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 98/b
-    restart 4:number/buffer-routine
-    wait-for-routine 4:number/buffer-routine
-    7:boolean <- channel-empty? 2:address:shared:channel:character/buffered-stdin
-    assert 7:boolean, [ 
+    2:address:shared:sink:character <- write 2:address:shared:sink:character, 98/b
+    restart 6:number/buffer-routine
+    wait-for-routine 6:number/buffer-routine
+    9:boolean <- channel-empty? 4:address:shared:channel:character/buffered-stdin
+    assert 9:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
-    1:address:shared:channel:character <- write 1:address:shared:channel:character, 10/newline
-    restart 4:number/buffer-routine
-    wait-for-routine 4:number/buffer-routine
-    8:boolean <- channel-empty? 2:address:shared:channel:character/buffered-stdin
-    9:boolean/completed? <- not 8:boolean
-    assert 9:boolean/completed?, [ 
+    2:address:shared:sink:character <- write 2:address:shared:sink:character, 10/newline
+    restart 6:number/buffer-routine
+    wait-for-routine 6:number/buffer-routine
+    10:boolean <- channel-empty? 4:address:shared:channel:character/buffered-stdin
+    11:boolean/completed? <- not 10:boolean
+    assert 11:boolean/completed?, [ 
 F buffer-lines-blocks-until-newline: channel should contain data after writing newline]
     trace 1, [test], [reached end]
   ]
