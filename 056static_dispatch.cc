@@ -21,13 +21,13 @@ def test a:number, b:number -> z:number [
 map<string, vector<recipe_ordinal> > Recipe_variants;
 :(before "End One-time Setup")
 put(Recipe_variants, "main", vector<recipe_ordinal>());  // since we manually added main to Recipe_ordinal
-:(before "Clear Other State For Recently_added_recipes")
-for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin(); p != Recipe_variants.end(); ++p) {
-  for (int i = 0; i < SIZE(p->second); ++i) {
-    if (find(Recently_added_recipes.begin(), Recently_added_recipes.end(), p->second.at(i)) != Recently_added_recipes.end())
-      p->second.at(i) = -1;  // just leave a ghost
-  }
-}
+
+:(before "End Globals")
+map<string, vector<recipe_ordinal> > Recipe_variants_snapshot;
+:(before "End save_snapshots")
+Recipe_variants_snapshot = Recipe_variants;
+:(before "End restore_snapshots")
+Recipe_variants = Recipe_variants_snapshot;
 
 :(before "End Load Recipe Header(result)")
 // there can only ever be one variant for main

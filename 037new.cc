@@ -55,6 +55,7 @@ def main [
 +mem: storing 0 in location 3
 
 :(before "End Globals")
+const int Reserved_for_tests = 1000;
 int Memory_allocated_until = Reserved_for_tests;
 int Initial_memory_per_routine = 100000;
 :(before "End Setup")

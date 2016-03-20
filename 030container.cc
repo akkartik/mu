@@ -416,7 +416,6 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   trace(9999, "parse") << "type number: " << get(Type_ordinal, name) << end();
   skip_bracket(in, "'container' must begin with '['");
   type_info& info = get_or_insert(Type, get(Type_ordinal, name));
-  Recently_added_types.push_back(get(Type_ordinal, name));
   info.name = name;
   info.kind = kind;
   while (has_data(in)) {
@@ -475,40 +474,12 @@ def main [
 +mem: storing 34 in location 3
 +mem: storing 35 in location 4
 
-//: ensure types created in one scenario don't leak outside it.
-:(before "End Globals")
-vector<type_ordinal> Recently_added_types;
-:(before "End load_permanently")  //: for non-tests
-Recently_added_types.clear();
+//: ensure scenarios are consistent by always starting them at the same type
+//: number.
 :(before "End Setup")  //: for tests
-for (int i = 0; i < SIZE(Recently_added_types); ++i) {
-  if (!contains_key(Type, Recently_added_types.at(i))) continue;
-  Type_ordinal.erase(get(Type, Recently_added_types.at(i)).name);
-  // todo: why do I explicitly need to provide this?
-  for (int j = 0; j < SIZE(Type.at(Recently_added_types.at(i)).elements); ++j)
-    Type.at(Recently_added_types.at(i)).elements.at(j).clear();
-  Type.erase(Recently_added_types.at(i));
-}
-Recently_added_types.clear();
-// delete recent type references
-// can't rely on Recently_added_types to cleanup Type_ordinal, because of deliberately misbehaving tests with references to undefined types
-map<string, type_ordinal>::iterator p = Type_ordinal.begin();
-while(p != Type_ordinal.end()) {
-  // save current item
-  string name = p->first;
-  type_ordinal t = p->second;
-  // increment iterator
-  ++p;
-  // now delete current item if necessary
-  if (t >= 1000) Type_ordinal.erase(name);
-}
-//: lastly, ensure scenarios are consistent by always starting them at the
-//: same type number.
 Next_type_ordinal = 1000;
 :(before "End Test Run Initialization")
 assert(Next_type_ordinal < 1000);
-:(before "End Setup")
-Next_type_ordinal = 1000;
 
 //:: Allow container definitions anywhere in the codebase, but complain if you
 //:: can't find a definition at the end.

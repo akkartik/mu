@@ -41,23 +41,6 @@ if (Current_routine->calls.front().running_step_index == 0
 :(before "End Matching Types For Literal(to)")
 if (contains_type_ingredient_name(to)) return false;
 
-//: We'll be creating recipes without loading them from anywhere by
-//: *specializing* existing recipes.
-//:
-//: Keep track of these new recipes in a separate variable in addition to
-//: Recently_added_recipes, so that edit/ can clear them before reloading to
-//: regenerate errors.
-:(before "End Globals")
-vector<recipe_ordinal> Recently_added_shape_shifting_recipes;
-:(before "End Setup")
-Recently_added_shape_shifting_recipes.clear();
-
-//: make sure we don't clear any of these recipes when we start running tests
-:(before "End Loading .mu Files")
-Recently_added_recipes.clear();
-Recently_added_types.clear();
-Recently_added_shape_shifting_recipes.clear();
-
 //: save original name of specialized recipes
 :(before "End recipe Fields")
 string original_name;
@@ -243,8 +226,6 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
   // make a copy
   assert(contains_key(Recipe, exemplar));
   assert(!contains_key(Recipe, new_recipe_ordinal));
-  Recently_added_recipes.push_back(new_recipe_ordinal);
-  Recently_added_shape_shifting_recipes.push_back(new_recipe_ordinal);
   put(Recipe, new_recipe_ordinal, get(Recipe, exemplar));
   recipe& new_recipe = get(Recipe, new_recipe_ordinal);
   new_recipe.name = new_name;

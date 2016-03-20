@@ -60,8 +60,6 @@ int slurp_recipe(istream& in) {
   slurp_body(in, result);
   // End Recipe Body(result)
   put(Recipe, get(Recipe_ordinal, result.name), result);
-  // track added recipes because we may need to undo them in tests; see below
-  Recently_added_recipes.push_back(get(Recipe_ordinal, result.name));
   return get(Recipe_ordinal, result.name);
 }
 
@@ -226,24 +224,6 @@ void show_rest_of_stream(istream& in) {
     cerr << c;
   cerr << "$\n";
   exit(0);
-}
-
-//: Have tests clean up any recipes they added.
-:(before "End Globals")
-vector<recipe_ordinal> Recently_added_recipes;
-int Reserved_for_tests = 1000;
-:(before "End Setup")
-clear_recently_added_recipes();
-:(code)
-void clear_recently_added_recipes() {
-  for (int i = 0; i < SIZE(Recently_added_recipes); ++i) {
-    if (Recently_added_recipes.at(i) >= Reserved_for_tests  // don't renumber existing recipes, like 'interactive'
-        && contains_key(Recipe, Recently_added_recipes.at(i)))  // in case previous test had duplicate definitions
-      Recipe_ordinal.erase(get(Recipe, Recently_added_recipes.at(i)).name);
-    Recipe.erase(Recently_added_recipes.at(i));
-  }
-  // Clear Other State For Recently_added_recipes
-  Recently_added_recipes.clear();
 }
 
 :(scenario parse_comment_outside_recipe)

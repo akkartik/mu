@@ -56,13 +56,6 @@ void transform_all() {
   // End Transform All
 }
 
-// Later we'll have transforms create recipes out of other recipes. This
-// helper will help ensure we don't lose the new recipes.
-void transform_permanently() {
-  transform_all();
-  Recently_added_recipes.clear();
-}
-
 void parse_int_reagents() {
   trace(9991, "transform") << "--- parsing any uninitialized reagents as integers" << end();
   for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {

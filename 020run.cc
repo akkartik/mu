@@ -136,8 +136,7 @@ inline const vector<instruction>& routine::steps() const {
 // Load .mu Core
 //? Trace_file = "interactive";
 //? START_TRACING_UNTIL_END_OF_SCOPE;
-load_permanently("core.mu");
-transform_permanently();
+load_file_or_directory("core.mu");
 //? DUMP("");
 //? exit(0);
 
@@ -152,14 +151,15 @@ if (argc > 1) {
   // ignore argv past '--'; that's commandline args for 'main'
   while (argc > 0) {
     if (string(*argv) == "--") break;
-    load_permanently(*argv);
+    load_file_or_directory(*argv);
     argv++;
     argc--;
   }
-  transform_permanently();
   if (Run_tests) Recipe.erase(get(Recipe_ordinal, "main"));
   // End Loading .mu Files
 }
+transform_all();
+save_snapshots();
 
 //: Step 3: if we aren't running tests, locate a recipe called 'main' and
 //: start running it.
@@ -209,9 +209,9 @@ void cleanup_main() {
 atexit(cleanup_main);
 
 :(code)
-void load_permanently(string filename) {
+void load_file_or_directory(string filename) {
   if (is_directory(filename)) {
-    load_all_permanently(filename);
+    load_all(filename);
     return;
   }
   ifstream fin(filename.c_str());
@@ -222,9 +222,6 @@ void load_permanently(string filename) {
   trace(9990, "load") << "=== " << filename << end();
   load(fin);
   fin.close();
-  // freeze everything so it doesn't get cleared by tests
-  Recently_added_recipes.clear();
-  // End load_permanently.
 }
 
 bool is_directory(string path) {
@@ -233,13 +230,13 @@ bool is_directory(string path) {
   return info.st_mode & S_IFDIR;
 }
 
-void load_all_permanently(string dir) {
+void load_all(string dir) {
   dirent** files;
   int num_files = scandir(dir.c_str(), &files, NULL, alphasort);
   for (int i = 0; i < num_files; ++i) {
     string curr_file = files[i]->d_name;
     if (isdigit(curr_file.at(0)))
-      load_permanently(dir+'/'+curr_file);
+      load_file_or_directory(dir+'/'+curr_file);
     free(files[i]);
     files[i] = NULL;
   }

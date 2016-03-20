@@ -62,8 +62,6 @@ bool Track_most_recent_products = false;
 :(before "End Tracing")
 trace_stream* Save_trace_stream = NULL;
 string Save_trace_file;
-vector<recipe_ordinal> Save_recently_added_recipes;
-vector<recipe_ordinal> Save_recently_added_shape_shifting_recipes;
 :(before "End Setup")
 Track_most_recent_products = false;
 :(code)
@@ -79,9 +77,9 @@ bool run_interactive(int address) {
       Memory.erase(i);
   }
   string command = trim(strip_comments(read_mu_string(address)));
-  if (command.empty()) return false;
   Name[get(Recipe_ordinal, "interactive")].clear();
   run_code_begin(/*snapshot_recently_added_recipes*/true);
+  if (command.empty()) return false;
   // don't kill the current routine on parse errors
   routine* save_current_routine = Current_routine;
   Current_routine = NULL;
@@ -108,16 +106,22 @@ bool run_interactive(int address) {
   return true;
 }
 
+//: Carefully update all state to exactly how it was -- including snapshots.
+
+:(before "End Globals")
+map<string, recipe_ordinal> Recipe_ordinal_snapshot_stash;
+map<recipe_ordinal, recipe> Recipe_snapshot_stash;
+map<string, type_ordinal> Type_ordinal_snapshot_stash;
+map<type_ordinal, type_info> Type_snapshot_stash;
+map<recipe_ordinal, map<string, int> > Name_snapshot_stash;
+map<string, vector<recipe_ordinal> > Recipe_variants_snapshot_stash;
+:(code)
 void run_code_begin(bool snapshot_recently_added_recipes) {
   // stuff to undo later, in run_code_end()
   Hide_errors = true;
   Disable_redefine_checks = true;
-  if (snapshot_recently_added_recipes) {
-    Save_recently_added_recipes = Recently_added_recipes;
-    Recently_added_recipes.clear();
-    Save_recently_added_shape_shifting_recipes = Recently_added_shape_shifting_recipes;
-    Recently_added_shape_shifting_recipes.clear();
-  }
+  if (snapshot_recently_added_recipes)
+    stash_snapshots();
   Save_trace_stream = Trace_stream;
   Save_trace_file = Trace_file;
   Trace_file = "";
@@ -134,13 +138,28 @@ void run_code_end() {
   Trace_file = Save_trace_file;
   Save_trace_file.clear();
   Recipe.erase(get(Recipe_ordinal, "interactive"));  // keep past sandboxes from inserting errors
-  if (!Save_recently_added_recipes.empty()) {
-    clear_recently_added_recipes();
-    Recently_added_recipes = Save_recently_added_recipes;
-    Save_recently_added_recipes.clear();
-    Recently_added_shape_shifting_recipes = Save_recently_added_shape_shifting_recipes;
-    Save_recently_added_shape_shifting_recipes.clear();
-  }
+  if (!Recipe_snapshot_stash.empty())
+    unstash_snapshots();
+}
+
+// keep sync'd with save_snapshots and restore_snapshots
+void stash_snapshots() {
+  Recipe_ordinal_snapshot_stash = Recipe_ordinal_snapshot;
+  Recipe_snapshot_stash = Recipe_snapshot;
+  Type_ordinal_snapshot_stash = Type_ordinal_snapshot;
+  Type_snapshot_stash = Type_snapshot;
+  Name_snapshot_stash = Name_snapshot;
+  Recipe_variants_snapshot_stash = Recipe_variants_snapshot;
+  save_snapshots();
+}
+void unstash_snapshots() {
+  restore_snapshots();
+  Recipe_ordinal_snapshot = Recipe_ordinal_snapshot_stash;  Recipe_ordinal_snapshot_stash.clear();
+  Recipe_snapshot = Recipe_snapshot_stash;  Recipe_snapshot_stash.clear();
+  Type_ordinal_snapshot = Type_ordinal_snapshot_stash;  Type_ordinal_snapshot_stash.clear();
+  Type_snapshot = Type_snapshot_stash;  Type_snapshot_stash.clear();
+  Name_snapshot = Name_snapshot_stash;  Name_snapshot_stash.clear();
+  Recipe_variants_snapshot = Recipe_variants_snapshot_stash;  Recipe_variants_snapshot_stash.clear();
 }
 
 :(before "End Load Recipes")
@@ -161,8 +180,6 @@ load(string(
   "$cleanup-run-interactive\n" +
   "return output, errors, screen, stashes, completed?\n" +
 "]\n");
-transform_all();
-Recently_added_recipes.clear();
 
 //: adjust errors in the sandbox
 :(after "string maybe(string s)")
@@ -315,31 +332,6 @@ b:number <- copy 0
 # no errors
 +mem: storing 0 in location 3
 
-:(code)
-void test_run_interactive_cleans_up_any_created_specializations() {
-  // define a generic recipe
-  assert(!contains_key(Recipe_ordinal, "foo"));
-  load("recipe foo x:_elem -> n:number [\n"
-       "  return 34\n"
-       "]\n");
-  assert(SIZE(Recently_added_recipes) == 1);  // foo
-  assert(variant_count("foo") == 1);
-  // run-interactive a call that specializes this recipe
-  run("recipe main [\n"
-       "  1:number/raw <- copy 0\n"
-       "  2:address:shared:array:character <- new [foo 1:number/raw]\n"
-       "  run-interactive 2:address:shared:array:character\n"
-       "]\n");
-  assert(SIZE(Recently_added_recipes) == 2);  // foo, main
-  // check that number of variants doesn't change
-  CHECK_EQ(variant_count("foo"), 1);
-}
-
-int variant_count(string recipe_name) {
-  if (!contains_key(Recipe_variants, recipe_name)) return 0;
-  return non_ghost_size(get(Recipe_variants, recipe_name));
-}
-
 :(before "End Globals")
 string Most_recent_products;
 :(before "End Setup")
@@ -456,25 +448,6 @@ case RELOAD: {
 }
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
-  // clear any containers in advance
-  for (int i = 0; i < SIZE(Recently_added_types); ++i) {
-    if (!contains_key(Type, Recently_added_types.at(i))) continue;
-    Type_ordinal.erase(get(Type, Recently_added_types.at(i)).name);
-    Type.erase(Recently_added_types.at(i));
-  }
-  for (map<string, vector<recipe_ordinal> >::iterator p = Recipe_variants.begin(); p != Recipe_variants.end(); ++p) {
-    vector<recipe_ordinal>& variants = p->second;
-    for (int i = 0; i < SIZE(p->second); ++i) {
-      if (variants.at(i) == -1) continue;
-      if (find(Recently_added_shape_shifting_recipes.begin(), Recently_added_shape_shifting_recipes.end(), variants.at(i)) != Recently_added_shape_shifting_recipes.end())
-        variants.at(i) = -1;  // ghost
-    }
-  }
-  for (int i = 0; i < SIZE(Recently_added_shape_shifting_recipes); ++i) {
-    Recipe_ordinal.erase(get(Recipe, Recently_added_shape_shifting_recipes.at(i)).name);
-    Recipe.erase(Recently_added_shape_shifting_recipes.at(i));
-  }
-  Recently_added_shape_shifting_recipes.clear();
   string code = read_mu_string(ingredients.at(0).at(0));
   run_code_begin(/*snapshot_recently_added_recipes*/false);
   routine* save_current_routine = Current_routine;
@@ -503,29 +476,3 @@ def main [
   1:number/raw <- copy 34
 ]
 +mem: storing 34 in location 1
-
-:(code)
-void test_reload_cleans_up_any_created_specializations() {
-  // define a generic recipe and a call to it
-  assert(!contains_key(Recipe_ordinal, "foo"));
-  assert(variant_count("foo") == 0);
-  // a call that specializes this recipe
-  run("recipe main [\n"
-      "  local-scope\n"
-      "  x:address:shared:array:character <- new [recipe foo x:_elem -> n:number [\n"
-      "local-scope\n"
-      "load-ingredients\n"
-      "return 34\n"
-      "]\n"
-      "recipe main2 [\n"
-      "local-scope\n"
-      "load-ingredients\n"
-      "x:number <- copy 34\n"
-      "foo x:number\n"
-      "]]\n"
-      "  reload x\n"
-      "]\n");
-  // check that number of variants includes specialization
-  assert(SIZE(Recently_added_recipes) == 4);  // foo, main, main2, foo specialization
-  CHECK_EQ(variant_count("foo"), 2);
-}

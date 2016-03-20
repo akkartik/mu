@@ -23,10 +23,15 @@ Transform.push_back(transform_names);  // idempotent
 
 :(before "End Globals")
 map<recipe_ordinal, map<string, int> > Name;
-:(after "Clear Other State For Recently_added_recipes")
-for (int i = 0; i < SIZE(Recently_added_recipes); ++i) {
-  Name.erase(Recently_added_recipes.at(i));
-}
+
+//: the Name map is a global, so save it before tests and reset it for every
+//: test, just to be safe.
+:(before "End Globals")
+map<recipe_ordinal, map<string, int> > Name_snapshot;
+:(before "End save_snapshots")
+Name_snapshot = Name;
+:(before "End restore_snapshots")
+Name = Name_snapshot;
 
 :(code)
 void transform_names(const recipe_ordinal r) {

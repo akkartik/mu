@@ -208,6 +208,36 @@ assert(Next_recipe_ordinal < 1000);  // recipes being tested didn't overflow int
 :(before "End Setup")
 Next_recipe_ordinal = 1000;  // consistent new numbers for each test
 
+//: One final detail: tests can modify our global tables of recipes and types,
+//: so we need some way to clean up after each test is done so it doesn't
+//: influence later ones.
+:(before "End Globals")
+map<string, recipe_ordinal> Recipe_ordinal_snapshot;
+map<recipe_ordinal, recipe> Recipe_snapshot;
+map<string, type_ordinal> Type_ordinal_snapshot;
+map<type_ordinal, type_info> Type_snapshot;
+:(before "End One-time Setup")
+save_snapshots();
+:(before "End Setup")
+restore_snapshots();
+
+:(code)
+void save_snapshots() {
+  Recipe_ordinal_snapshot = Recipe_ordinal;
+  Recipe_snapshot = Recipe;
+  Type_ordinal_snapshot = Type_ordinal;
+  Type_snapshot = Type;
+  // End save_snapshots
+}
+
+void restore_snapshots() {
+  Recipe = Recipe_snapshot;
+  Recipe_ordinal = Recipe_ordinal_snapshot;
+  Type_ordinal = Type_ordinal_snapshot;
+  Type = Type_snapshot;
+  // End restore_snapshots
+}
+
 
 
 //:: Helpers
