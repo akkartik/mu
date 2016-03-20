@@ -329,7 +329,12 @@ void run(string form) {
   transform_all();
   if (tmp.empty()) return;
   if (trace_count("error") > 0) return;
-  run(tmp.front());
+  // if a test defines main, it probably wants to start there regardless of
+  // definition order
+  if (contains_key(Recipe, get(Recipe_ordinal, "main")))
+    run(get(Recipe_ordinal, "main"));
+  else
+    run(tmp.front());
 }
 
 :(scenario run_label)
