@@ -110,14 +110,13 @@ int lookup_name(const reagent& r, const recipe_ordinal default_recipe) {
   return Name[default_recipe][r.name];
 }
 
-type_ordinal skip_addresses(type_tree* type, const string& recipe_name) {
+type_ordinal skip_addresses(type_tree* type) {
   type_ordinal address = get(Type_ordinal, "address");
   type_ordinal shared = get(Type_ordinal, "shared");
   for (; type; type = type->right) {
     if (type->value != address && type->value != shared)
       return type->value;
   }
-  raise << maybe(recipe_name) << "expected a container" << '\n' << end();
   return -1;
 }
 
@@ -220,7 +219,9 @@ if (inst.name == "get" || inst.name == "get-address") {
     raise << maybe(get(Recipe, r).name) << "expected ingredient 1 of " << (inst.name == "get" ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be a container, we don't have to canonize
-    type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type, get(Recipe, r).name);
+    type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);
+    if (base_type == -1)
+      raise << maybe(get(Recipe, r).name) << "expected a container in '" << to_original_string(inst) << "'\n" << end();
     if (contains_key(Type, base_type)) {  // otherwise we'll raise an error elsewhere
       inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
       trace(9993, "name") << "element " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " is at offset " << no_scientific(inst.ingredients.at(1).value) << end();
@@ -261,7 +262,9 @@ if (inst.name == "maybe-convert") {
   assert(is_literal(inst.ingredients.at(1)));
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be an exclusive container, we don't have to canonize
-    type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type, get(Recipe, r).name);
+    type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);
+    if (base_type == -1)
+      raise << maybe(get(Recipe, r).name) << "expected an exclusive-container in '" << to_original_string(inst) << "'\n" << end();
     if (contains_key(Type, base_type)) {  // otherwise we'll raise an error elsewhere
       inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
       trace(9993, "name") << "variant " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " has tag " << no_scientific(inst.ingredients.at(1).value) << end();

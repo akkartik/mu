@@ -8,6 +8,13 @@ def to-text-line x:_elem -> y:address:shared:array:character [
   y <- to-text x
 ]
 
+# variant for arrays (since we can't pass them around otherwise)
+def array-to-text-line x:address:shared:array:_elem -> y:address:shared:array:character [
+  local-scope
+  load-ingredients
+  y <- to-text *x
+]
+
 # to-text on text is just the identity function
 def to-text x:address:shared:array:character -> y:address:shared:array:character [
   local-scope

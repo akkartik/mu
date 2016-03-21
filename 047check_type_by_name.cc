@@ -26,11 +26,11 @@ void check_or_set_types_by_name(const recipe_ordinal r) {
     instruction& inst = caller.steps.at(i);
     for (int in = 0; in < SIZE(inst.ingredients); ++in) {
       deduce_missing_type(known, inst.ingredients.at(in));
-      check_type(known, inst.ingredients.at(in), r);
+      check_type(known, inst.ingredients.at(in), caller);
     }
     for (int out = 0; out < SIZE(inst.products); ++out) {
       deduce_missing_type(known, inst.products.at(out));
-      check_type(known, inst.products.at(out), r);
+      check_type(known, inst.products.at(out), caller);
     }
   }
 }
@@ -42,7 +42,7 @@ void deduce_missing_type(set<reagent>& known, reagent& x) {
   trace(9992, "transform") << x.name << " <= " << names_to_string(x.type) << end();
 }
 
-void check_type(set<reagent>& known, const reagent& x, const recipe_ordinal r) {
+void check_type(set<reagent>& known, const reagent& x, const recipe& caller) {
   if (is_literal(x)) return;
   if (is_integer(x.name)) return;  // if you use raw locations you're probably doing something unsafe
   if (!x.type) return;  // might get filled in by other logic later
@@ -51,16 +51,16 @@ void check_type(set<reagent>& known, const reagent& x, const recipe_ordinal r) {
     known.insert(x);
   }
   if (!types_strictly_match(known.find(x)->type, x.type)) {
-    raise << maybe(get(Recipe, r).name) << x.name << " used with multiple types\n" << end();
+    raise << maybe(caller.name) << x.name << " used with multiple types\n" << end();
     return;
   }
   if (x.type->name == "array") {
     if (!x.type->right) {
-      raise << maybe(get(Recipe, r).name) << x.name << " can't be just an array. What is it an array of?\n" << end();
+      raise << maybe(caller.name) << x.name << " can't be just an array. What is it an array of?\n" << end();
       return;
     }
     if (!x.type->right->right) {
-      raise << get(Recipe, r).name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:shared:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
+      raise << caller.name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:shared:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
       return;
     }
   }
