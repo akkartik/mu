@@ -30,7 +30,7 @@ put(Recipe_ordinal, "run-interactive", RUN_INTERACTIVE);
 :(before "End Primitive Recipe Checks")
 case RUN_INTERACTIVE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'run-interactive' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'run-interactive' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_string(inst.ingredients.at(0))) {
@@ -437,7 +437,7 @@ put(Recipe_ordinal, "reload", RELOAD);
 :(before "End Primitive Recipe Checks")
 case RELOAD: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'reload' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'reload' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_string(inst.ingredients.at(0))) {

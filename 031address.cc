@@ -25,7 +25,7 @@ def main [
 :(before "End Preprocess write_memory(x)")
 canonize(x);
 if (x.value == 0) {
-  raise << "can't write to location 0 in '" << to_string(current_instruction()) << "'\n" << end();
+  raise << "can't write to location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
   return;
 }
 
@@ -189,7 +189,7 @@ def main [
   2:number <- copy 34
   3:number <- copy *1:address:number
 ]
-+parse: ingredient: 1: ("address" "number"), {"lookup": ()}
++parse: ingredient: {1: ("address" "number"), "lookup": ()}
 +mem: storing 34 in location 3
 
 :(before "End Parsing reagent")

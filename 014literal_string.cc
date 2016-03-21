@@ -11,13 +11,13 @@
 def main [
   1:address:array:character <- copy [abc def]  # copy can't really take a string
 ]
-+parse:   ingredient: "abc def": "literal-string"
++parse:   ingredient: {"abc def": "literal-string"}
 
 :(scenario string_literal_with_colons)
 def main [
   1:address:array:character <- copy [abc:def/ghi]
 ]
-+parse:   ingredient: "abc:def/ghi": "literal-string"
++parse:   ingredient: {"abc:def/ghi": "literal-string"}
 
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "literal-string", 0);
@@ -131,7 +131,7 @@ string emit_literal_string(string name) {
   size_t pos = 0;
   while (pos != string::npos)
     pos = replace(name, "\n", "\\n", pos);
-  return '"'+name+"\": \"literal-string\"";
+  return "{\""+name+"\": \"literal-string\"}";
 }
 
 size_t replace(string& str, const string& from, const string& to, size_t n) {
@@ -149,20 +149,20 @@ void strip_last(string& s) {
 def main [
   1:address:array:character <- copy [abc [def]]
 ]
-+parse:   ingredient: "abc [def]": "literal-string"
++parse:   ingredient: {"abc [def]": "literal-string"}
 
 :(scenario string_literal_escaped)
 def main [
   1:address:array:character <- copy [abc \[def]
 ]
-+parse:   ingredient: "abc [def": "literal-string"
++parse:   ingredient: {"abc [def": "literal-string"}
 
 :(scenario string_literal_escaped_comment_aware)
 def main [
   1:address:array:character <- copy [
 abc \\\[def]
 ]
-+parse:   ingredient: "\nabc \[def": "literal-string"
++parse:   ingredient: {"\nabc \[def": "literal-string"}
 
 :(scenario string_literal_and_comment)
 def main [
@@ -171,15 +171,15 @@ def main [
 +parse: --- defining main
 +parse: instruction: copy
 +parse:   number of ingredients: 1
-+parse:   ingredient: "abc": "literal-string"
-+parse:   product: 1: ("address" "array" "character")
++parse:   ingredient: {"abc": "literal-string"}
++parse:   product: {1: ("address" "array" "character")}
 
 :(scenario string_literal_escapes_newlines_in_trace)
 def main [
   copy [abc
 def]
 ]
-+parse:   ingredient: "abc\ndef": "literal-string"
++parse:   ingredient: {"abc\ndef": "literal-string"}
 
 :(scenario string_literal_can_skip_past_comments)
 def main [
@@ -188,10 +188,10 @@ def main [
     bar
   ]
 ]
-+parse:   ingredient: "\n    # ']' inside comment\n    bar\n  ": "literal-string"
++parse:   ingredient: {"\n    # ']' inside comment\n    bar\n  ": "literal-string"}
 
 :(scenario string_literal_empty)
 def main [
   copy []
 ]
-+parse:   ingredient: "": "literal-string"
++parse:   ingredient: {"": "literal-string"}

@@ -133,7 +133,7 @@ put(Recipe_ordinal, "get", GET);
 :(before "End Primitive Recipe Checks")
 case GET: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'get' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'get' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);  // new copy for every invocation
@@ -173,7 +173,7 @@ case GET: {
   // Update GET base in Run
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.type->value;
@@ -270,7 +270,7 @@ put(Recipe_ordinal, "get-address", GET_ADDRESS);
 :(before "End Primitive Recipe Checks")
 case GET_ADDRESS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'get-address' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'get-address' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
@@ -314,7 +314,7 @@ case GET_ADDRESS: {
   // Update GET_ADDRESS base in Run
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.type->value;
@@ -373,8 +373,8 @@ container foo [
   y:number
 ]
 +parse: --- defining container foo
-+parse: element: x: "number"
-+parse: element: y: "number"
++parse: element: {x: "number"}
++parse: element: {y: "number"}
 
 :(scenario container_use_before_definition)
 container foo [
@@ -388,15 +388,15 @@ container bar [
 ]
 +parse: --- defining container foo
 +parse: type number: 1000
-+parse:   element: x: "number"
++parse:   element: {x: "number"}
 # todo: brittle
 # type bar is unknown at this point, but we assign it a number
-+parse:   element: y: "bar"
++parse:   element: {y: "bar"}
 # later type bar geon
 +parse: --- defining container bar
 +parse: type number: 1001
-+parse:   element: x: "number"
-+parse:   element: y: "number"
++parse:   element: {x: "number"}
++parse:   element: {y: "number"}
 
 :(before "End Command Handlers")
 else if (command == "container") {
@@ -514,9 +514,9 @@ void check_or_set_invalid_types(const recipe_ordinal r) {
   for (int index = 0; index < SIZE(caller.steps); ++index) {
     instruction& inst = caller.steps.at(index);
     for (int i = 0; i < SIZE(inst.ingredients); ++i)
-      check_or_set_invalid_types(inst.ingredients.at(i).type, maybe(caller.name), "'"+to_string(inst)+"'");
+      check_or_set_invalid_types(inst.ingredients.at(i).type, maybe(caller.name), "'"+to_original_string(inst)+"'");
     for (int i = 0; i < SIZE(inst.products); ++i)
-      check_or_set_invalid_types(inst.products.at(i).type, maybe(caller.name), "'"+to_string(inst)+"'");
+      check_or_set_invalid_types(inst.products.at(i).type, maybe(caller.name), "'"+to_original_string(inst)+"'");
   }
   // End check_or_set_invalid_types
 }
@@ -551,8 +551,8 @@ container foo [
   y:number
 ]
 +parse: --- defining container foo
-+parse: element: x: "number"
-+parse: element: y: "number"
++parse: element: {x: "number"}
++parse: element: {y: "number"}
 
 :(before "End Transform All")
 check_container_field_types();
@@ -693,19 +693,19 @@ void check_merge_calls(const recipe_ordinal r) {
     const instruction& inst = caller.steps.at(i);
     if (inst.name != "merge") continue;
     if (SIZE(inst.products) != 1) {
-      raise << maybe(caller.name) << "'merge' should yield a single product in '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "'merge' should yield a single product in '" << to_original_string(inst) << "'\n" << end();
       continue;
     }
     reagent product = inst.products.at(0);
     // Update product While Type-checking Merge
     type_ordinal product_type = product.type->value;
     if (product_type == 0 || !contains_key(Type, product_type)) {
-      raise << maybe(caller.name) << "'merge' should yield a container in '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "'merge' should yield a container in '" << to_original_string(inst) << "'\n" << end();
       continue;
     }
     const type_info& info = get(Type, product_type);
     if (info.kind != CONTAINER && info.kind != EXCLUSIVE_CONTAINER) {
-      raise << maybe(caller.name) << "'merge' should yield a container in '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "'merge' should yield a container in '" << to_original_string(inst) << "'\n" << end();
       continue;
     }
     check_merge_call(inst.ingredients, product, caller, inst);
@@ -720,7 +720,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
     assert(!state.data.empty());
     trace(9999, "transform") << ingredient_index << " vs " << SIZE(ingredients) << end();
     if (ingredient_index >= SIZE(ingredients)) {
-      raise << maybe(caller.name) << "too few ingredients in '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "too few ingredients in '" << to_original_string(inst) << "'\n" << end();
       return;
     }
     reagent& container = state.data.top().container;
@@ -737,7 +737,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
             state.data.pop();
             if (state.data.empty()) {
               if (ingredient_index < SIZE(ingredients))
-                raise << maybe(caller.name) << "too many ingredients in '" << to_string(inst) << "'\n" << end();
+                raise << maybe(caller.name) << "too many ingredients in '" << to_original_string(inst) << "'\n" << end();
               return;
             }
             ++state.data.top().container_element_index;
@@ -753,7 +753,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
       // End valid_merge Cases
       default: {
         if (!types_coercible(container, ingredients.at(ingredient_index))) {
-          raise << maybe(caller.name) << "incorrect type of ingredient " << ingredient_index << " in '" << to_string(inst) << "'\n" << end();
+          raise << maybe(caller.name) << "incorrect type of ingredient " << ingredient_index << " in '" << to_original_string(inst) << "'\n" << end();
           cerr << "  expected " << debug_string(container) << '\n';
           cerr << "  got " << debug_string(ingredients.at(ingredient_index)) << '\n';
           return;
@@ -764,7 +764,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
           state.data.pop();
           if (state.data.empty()) {
             if (ingredient_index < SIZE(ingredients))
-              raise << maybe(caller.name) << "too many ingredients in '" << to_string(inst) << "'\n" << end();
+              raise << maybe(caller.name) << "too many ingredients in '" << to_original_string(inst) << "'\n" << end();
             return;
           }
           ++state.data.top().container_element_index;

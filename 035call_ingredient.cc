@@ -42,7 +42,7 @@ put(Recipe_ordinal, "next-ingredient", NEXT_INGREDIENT);
 :(before "End Primitive Recipe Checks")
 case NEXT_INGREDIENT: {
   if (!inst.ingredients.empty()) {
-    raise << maybe(get(Recipe, r).name) << "'next-ingredient' didn't expect any ingredients in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'next-ingredient' didn't expect any ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;
@@ -141,7 +141,7 @@ put(Recipe_ordinal, "ingredient", INGREDIENT);
 :(before "End Primitive Recipe Checks")
 case INGREDIENT: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'ingredient' expects exactly one ingredient, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'ingredient' expects exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(0)) && !is_mu_number(inst.ingredients.at(0))) {

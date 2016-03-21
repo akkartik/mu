@@ -187,14 +187,14 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
 
   // error messages
   if (get(Recipe_ordinal, inst.name) >= MAX_PRIMITIVE_RECIPES) {  // we currently don't check types for primitive variants
-    raise << maybe(caller_recipe.name) << "failed to find a matching call for '" << to_string(inst) << "'\n" << end();
+    raise << maybe(caller_recipe.name) << "failed to find a matching call for '" << to_original_string(inst) << "'\n" << end();
     for (list<call>::iterator p = /*skip*/++resolve_stack.begin(); p != resolve_stack.end(); ++p) {
       const recipe& specializer_recipe = get(Recipe, p->running_recipe);
       const instruction& specializer_inst = specializer_recipe.steps.at(p->running_step_index);
       if (specializer_recipe.name != "interactive")
-        raise << "  (from '" << to_string(specializer_inst) << "' in " << specializer_recipe.name << ")\n" << end();
+        raise << "  (from '" << to_original_string(specializer_inst) << "' in " << specializer_recipe.name << ")\n" << end();
       else
-        raise << "  (from '" << to_string(specializer_inst) << "')\n" << end();
+        raise << "  (from '" << to_original_string(specializer_inst) << "')\n" << end();
       // One special-case to help with the rewrite_stash transform. (cross-layer)
       if (specializer_inst.products.at(0).name.find("stash_") == 0) {
         instruction stash_inst;

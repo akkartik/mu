@@ -6,8 +6,8 @@ def main [
   1:number <- copy 23
 ]
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal"
-+parse:   product: 1: "number"
++parse:   ingredient: {23: "literal"}
++parse:   product: {1: "number"}
 
 :(code)
 vector<recipe_ordinal> load(string form) {
@@ -235,8 +235,8 @@ def main [
   1:number <- copy 23
 ]
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal"
-+parse:   product: 1: "number"
++parse:   ingredient: {23: "literal"}
++parse:   product: {1: "number"}
 
 :(scenario parse_comment_amongst_instruction)
 def main [
@@ -244,8 +244,8 @@ def main [
   1:number <- copy 23
 ]
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal"
-+parse:   product: 1: "number"
++parse:   ingredient: {23: "literal"}
++parse:   product: {1: "number"}
 
 :(scenario parse_comment_amongst_instruction_2)
 def main [
@@ -254,8 +254,8 @@ def main [
   # comment
 ]
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal"
-+parse:   product: 1: "number"
++parse:   ingredient: {23: "literal"}
++parse:   product: {1: "number"}
 
 :(scenario parse_comment_amongst_instruction_3)
 def main [
@@ -264,19 +264,19 @@ def main [
   2:number <- copy 23
 ]
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal"
-+parse:   product: 1: "number"
++parse:   ingredient: {23: "literal"}
++parse:   product: {1: "number"}
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal"
-+parse:   product: 2: "number"
++parse:   ingredient: {23: "literal"}
++parse:   product: {2: "number"}
 
 :(scenario parse_comment_after_instruction)
 def main [
   1:number <- copy 23  # comment
 ]
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal"
-+parse:   product: 1: "number"
++parse:   ingredient: {23: "literal"}
++parse:   product: {1: "number"}
 
 :(scenario parse_label)
 def main [
@@ -295,43 +295,43 @@ def main [
   1:number <- copy 23/foo:bar:baz
 ]
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal", {"foo": ("bar" "baz")}
-+parse:   product: 1: "number"
++parse:   ingredient: {23: "literal", "foo": ("bar" "baz")}
++parse:   product: {1: "number"}
 
 :(scenario parse_multiple_products)
 def main [
   1:number, 2:number <- copy 23
 ]
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal"
-+parse:   product: 1: "number"
-+parse:   product: 2: "number"
++parse:   ingredient: {23: "literal"}
++parse:   product: {1: "number"}
++parse:   product: {2: "number"}
 
 :(scenario parse_multiple_ingredients)
 def main [
   1:number, 2:number <- copy 23, 4:number
 ]
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal"
-+parse:   ingredient: 4: "number"
-+parse:   product: 1: "number"
-+parse:   product: 2: "number"
++parse:   ingredient: {23: "literal"}
++parse:   ingredient: {4: "number"}
++parse:   product: {1: "number"}
++parse:   product: {2: "number"}
 
 :(scenario parse_multiple_types)
 def main [
   1:number, 2:address:number <- copy 23, 4:number
 ]
 +parse: instruction: copy
-+parse:   ingredient: 23: "literal"
-+parse:   ingredient: 4: "number"
-+parse:   product: 1: "number"
-+parse:   product: 2: ("address" "number")
++parse:   ingredient: {23: "literal"}
++parse:   ingredient: {4: "number"}
++parse:   product: {1: "number"}
++parse:   product: {2: ("address" "number")}
 
 :(scenario parse_properties)
 def main [
   1:address:number/lookup <- copy 23
 ]
-+parse:   product: 1: ("address" "number"), {"lookup": ()}
++parse:   product: {1: ("address" "number"), "lookup": ()}
 
 //: this test we can't represent with a scenario
 :(code)

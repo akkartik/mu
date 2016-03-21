@@ -314,7 +314,7 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
   if (!refinement_type) {
     // todo: make this smarter; only flag an error if exemplar_type contains some *new* type ingredient
     raise << maybe(exemplar.name) << "missing type ingredient for " << exemplar_reagent.original_string << '\n' << end();
-    raise << "  (called from '" << to_string(call_instruction) << "')\n" << end();
+    raise << "  (called from '" << to_original_string(call_instruction) << "')\n" << end();
     return;
   }
   if (is_type_ingredient_name(exemplar_type->name)) {
@@ -333,7 +333,7 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
     }
     else {
       if (!deeply_equal_type_names(get(mappings, exemplar_type->name), curr_refinement_type)) {
-        raise << maybe(caller_recipe.name) << "no call found for '" << to_string(call_instruction) << "'\n" << end();
+        raise << maybe(caller_recipe.name) << "no call found for '" << to_original_string(call_instruction) << "'\n" << end();
         *error = true;
         delete curr_refinement_type;
         return;

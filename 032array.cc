@@ -20,7 +20,7 @@ put(Recipe_ordinal, "create-array", CREATE_ARRAY);
 :(before "End Primitive Recipe Checks")
 case CREATE_ARRAY: {
   if (inst.products.empty()) {
-    raise << maybe(get(Recipe, r).name) << "'create-array' needs one product and no ingredients but got '" << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'create-array' needs one product and no ingredients but got '" << to_original_string(inst) << '\n' << end();
     break;
   }
   reagent product = inst.products.at(0);
@@ -30,12 +30,12 @@ case CREATE_ARRAY: {
     break;
   }
   if (!product.type->right) {
-    raise << maybe(get(Recipe, r).name) << "create array of what? " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "create array of what? " << to_original_string(inst) << '\n' << end();
     break;
   }
   // 'create-array' will need to check properties rather than types
   if (!product.type->right->right) {
-    raise << maybe(get(Recipe, r).name) << "create array of what size? " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "create array of what size? " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_integer(product.type->right->right->name)) {
@@ -176,7 +176,7 @@ put(Recipe_ordinal, "index", INDEX);
 :(before "End Primitive Recipe Checks")
 case INDEX: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'index' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'index' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
@@ -203,7 +203,7 @@ case INDEX: {
   int base_address = base.value;
   trace(9998, "run") << "base address is " << base_address << end();
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   reagent offset = current_instruction().ingredients.at(1);
@@ -320,7 +320,7 @@ put(Recipe_ordinal, "index-address", INDEX_ADDRESS);
 :(before "End Primitive Recipe Checks")
 case INDEX_ADDRESS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'index-address' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'index-address' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
@@ -347,7 +347,7 @@ case INDEX_ADDRESS: {
   canonize(base);
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   reagent offset = current_instruction().ingredients.at(1);
@@ -428,7 +428,7 @@ put(Recipe_ordinal, "length", LENGTH);
 :(before "End Primitive Recipe Checks")
 case LENGTH: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'length' expects exactly 2 ingredients in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'length' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent x = inst.ingredients.at(0);
@@ -444,7 +444,7 @@ case LENGTH: {
   reagent x = current_instruction().ingredients.at(0);
   canonize(x);
   if (x.value == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   products.resize(1);

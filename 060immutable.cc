@@ -360,7 +360,7 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
   for (int i = 0; i < SIZE(inst.products); ++i) {
     if (has_property(inst.products.at(i), "lookup")
         && current_ingredient_and_aliases.find(inst.products.at(i)) != current_ingredient_and_aliases.end()) {
-      raise << maybe(caller.name) << "cannot modify " << inst.products.at(i).name << " in instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
+      raise << maybe(caller.name) << "cannot modify " << inst.products.at(i).name << " in instruction '" << to_original_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
       return;
     }
   }
@@ -377,9 +377,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       if (inst.operation == GET_ADDRESS || inst.operation == INDEX_ADDRESS) {
         // only reason to use get-address or index-address is to modify, so stop right there
         if (current_ingredient_name == original_ingredient_name)
-          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " after instruction '" << to_original_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
         else
-          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_original_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
       }
     }
     else {
@@ -387,9 +387,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       if (!is_mu_address(current_ingredient)) return;  // making a copy is ok
       if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller)) {
         if (current_ingredient_name == original_ingredient_name)
-          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << to_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify ingredient " << current_ingredient_name << " at instruction '" << to_original_string(inst) << "' because it's not also a product of " << caller.name << '\n' << end();
         else
-          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
+          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " after instruction '" << to_original_string(inst) << "' because that would modify ingredient " << original_ingredient_name << " which is not also a product of " << caller.name << '\n' << end();
       }
     }
   }

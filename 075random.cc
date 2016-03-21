@@ -36,7 +36,7 @@ put(Recipe_ordinal, "round", ROUND);
 :(before "End Primitive Recipe Checks")
 case ROUND: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'round' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'round' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {

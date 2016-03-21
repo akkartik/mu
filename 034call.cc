@@ -22,12 +22,12 @@ def f [
 ]
 +run: f
 # running f
-+run: 4:number <- copy 0
-+run: 5:number <- copy 0
++run: {4: "number"} <- copy {0: "literal"}
++run: {5: "number"} <- copy {0: "literal"}
 # back out to main
-+run: 1:number <- copy 0
-+run: 2:number <- copy 0
-+run: 3:number <- copy 0
++run: {1: "number"} <- copy {0: "literal"}
++run: {2: "number"} <- copy {0: "literal"}
++run: {3: "number"} <- copy {0: "literal"}
 
 :(before "struct routine {")
 // Everytime a recipe runs another, we interrupt it and start running the new
@@ -97,7 +97,7 @@ inline const instruction& to_instruction(const call& call) {
 :(after "Defined Recipe Checks")
 // not a primitive; check that it's present in the book of recipes
 if (!contains_key(Recipe, inst.operation)) {
-  raise << maybe(get(Recipe, r).name) << "undefined operation in '" << to_string(inst) << "'\n" << end();
+  raise << maybe(get(Recipe, r).name) << "undefined operation in '" << to_original_string(inst) << "'\n" << end();
   break;
 }
 :(replace{} "default:" following "End Primitive Recipe Implementations")

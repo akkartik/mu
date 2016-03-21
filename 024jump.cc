@@ -5,8 +5,8 @@ def main [
   jump 1:offset
   1:number <- copy 1
 ]
-+run: jump 1:offset
--run: 1:number <- copy 1
++run: jump {1: "offset"}
+-run: {1: "number"} <- copy {1: "literal"}
 -mem: storing 1 in location 1
 
 :(before "End Primitive Recipe Declarations")
@@ -16,7 +16,7 @@ put(Recipe_ordinal, "jump", JUMP);
 :(before "End Primitive Recipe Checks")
 case JUMP: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'jump' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'jump' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
@@ -44,9 +44,9 @@ def main [
                  #   \/  /\ |
   jump -2:offset #  2 +-->+ |
 ]                #         \/ 3
-+run: jump 1:offset
-+run: jump -2:offset
-+run: jump 3:offset
++run: jump {1: "offset"}
++run: jump {-2: "offset"}
++run: jump {3: "offset"}
 
 :(before "End Primitive Recipe Declarations")
 JUMP_IF,
@@ -55,7 +55,7 @@ put(Recipe_ordinal, "jump-if", JUMP_IF);
 :(before "End Primitive Recipe Checks")
 case JUMP_IF: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'jump-if' requires exactly two ingredients, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'jump-if' requires exactly two ingredients, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
@@ -85,9 +85,9 @@ def main [
   jump-if 999, 1:offset
   123:number <- copy 1
 ]
-+run: jump-if 999, 1:offset
++run: jump-if {999: "literal"}, {1: "offset"}
 +run: jumping to instruction 2
--run: 1:number <- copy 1
+-run: {1: "number"} <- copy {1: "literal"}
 -mem: storing 1 in location 123
 
 :(scenario jump_if_fallthrough)
@@ -95,9 +95,9 @@ def main [
   jump-if 0, 1:offset
   123:number <- copy 1
 ]
-+run: jump-if 0, 1:offset
++run: jump-if {0: "literal"}, {1: "offset"}
 +run: jump-if fell through
-+run: 123:number <- copy 1
++run: {123: "number"} <- copy {1: "literal"}
 +mem: storing 1 in location 123
 
 :(before "End Primitive Recipe Declarations")
@@ -107,7 +107,7 @@ put(Recipe_ordinal, "jump-unless", JUMP_UNLESS);
 :(before "End Primitive Recipe Checks")
 case JUMP_UNLESS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'jump-unless' requires exactly two ingredients, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'jump-unless' requires exactly two ingredients, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
@@ -137,9 +137,9 @@ def main [
   jump-unless 0, 1:offset
   123:number <- copy 1
 ]
-+run: jump-unless 0, 1:offset
++run: jump-unless {0: "literal"}, {1: "offset"}
 +run: jumping to instruction 2
--run: 123:number <- copy 1
+-run: {123: "number"} <- copy {1: "literal"}
 -mem: storing 1 in location 123
 
 :(scenario jump_unless_fallthrough)
@@ -147,7 +147,7 @@ def main [
   jump-unless 999, 1:offset
   123:number <- copy 1
 ]
-+run: jump-unless 999, 1:offset
++run: jump-unless {999: "literal"}, {1: "offset"}
 +run: jump-unless fell through
-+run: 123:number <- copy 1
++run: {123: "number"} <- copy {1: "literal"}
 +mem: storing 1 in location 123

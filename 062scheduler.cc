@@ -186,9 +186,9 @@ def f1 [
   2:number <- copy 0
 ]
 +schedule: f1
-+run: 1:number <- copy 0
++run: {1: "number"} <- copy {0: "literal"}
 +schedule: f1
-+run: 2:number <- copy 0
++run: {2: "number"} <- copy {0: "literal"}
 
 :(scenario scheduler_interleaves_routines)
 % Scheduling_interval = 1;
@@ -202,15 +202,15 @@ def f2 [
   4:number <- copy 0
 ]
 +schedule: f1
-+run: start-running f2
++run: start-running {f2: "recipe-literal"}
 +schedule: f2
-+run: 3:number <- copy 0
++run: {3: "number"} <- copy {0: "literal"}
 +schedule: f1
-+run: 1:number <- copy 0
++run: {1: "number"} <- copy {0: "literal"}
 +schedule: f2
-+run: 4:number <- copy 0
++run: {4: "number"} <- copy {0: "literal"}
 +schedule: f1
-+run: 2:number <- copy 0
++run: {2: "number"} <- copy {0: "literal"}
 
 :(scenario start_running_takes_ingredients)
 def f1 [
@@ -343,7 +343,7 @@ put(Recipe_ordinal, "routine-state", ROUTINE_STATE);
 :(before "End Primitive Recipe Checks")
 case ROUTINE_STATE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'routine-state' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'routine-state' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -376,7 +376,7 @@ put(Recipe_ordinal, "restart", RESTART);
 :(before "End Primitive Recipe Checks")
 case RESTART: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'restart' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'restart' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -404,7 +404,7 @@ put(Recipe_ordinal, "stop", STOP);
 :(before "End Primitive Recipe Checks")
 case STOP: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'stop' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'stop' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -486,7 +486,7 @@ put(Recipe_ordinal, "limit-time", LIMIT_TIME);
 :(before "End Primitive Recipe Checks")
 case LIMIT_TIME: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'limit-time' requires exactly two ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'limit-time' requires exactly two ingredient, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {

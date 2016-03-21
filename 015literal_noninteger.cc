@@ -5,7 +5,7 @@
 def main [
   1:number <- copy 3.14159
 ]
-+parse:   ingredient: 3.14159: "literal-fractional-number"
++parse:   ingredient: {3.14159: "literal-fractional-number"}
 
 :(after "Parsing reagent(string s)")
 if (is_noninteger(s)) {

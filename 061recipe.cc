@@ -116,12 +116,12 @@ void check_indirect_calls_against_header(const recipe_ordinal r) {
     if (!callee_header.has_header) continue;
     for (long int i = /*skip callee*/1; i < min(SIZE(inst.ingredients), SIZE(callee_header.ingredients)+/*skip callee*/1); ++i) {
       if (!types_coercible(callee_header.ingredients.at(i-/*skip callee*/1), inst.ingredients.at(i)))
-        raise << maybe(caller.name) << "ingredient " << i-/*skip callee*/1 << " has the wrong type at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "ingredient " << i-/*skip callee*/1 << " has the wrong type at '" << to_original_string(inst) << "'\n" << end();
     }
     for (long int i = 0; i < min(SIZE(inst.products), SIZE(callee_header.products)); ++i) {
       if (is_dummy(inst.products.at(i))) continue;
       if (!types_coercible(callee_header.products.at(i), inst.products.at(i)))
-        raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_original_string(inst) << "'\n" << end();
     }
   }
 }

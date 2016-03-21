@@ -13,7 +13,7 @@
 def main [
   1:number <- copy 23
 ]
-+run: 1:number <- copy 23
++run: {1: "number"} <- copy {23: "literal"}
 +mem: storing 23 in location 1
 
 :(scenario copy)
@@ -21,7 +21,7 @@ def main [
   1:number <- copy 23
   2:number <- copy 1:number
 ]
-+run: 2:number <- copy 1:number
++run: {2: "number"} <- copy {1: "number"}
 +mem: location 1 is 23
 +mem: storing 23 in location 2
 
@@ -87,7 +87,7 @@ void run_current_routine()
       }
     }
     if (SIZE(products) < SIZE(current_instruction().products)) {
-      raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << to_string(current_instruction()) << '\n' << end();
+      raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << to_original_string(current_instruction()) << '\n' << end();
     }
     else {
       for (int i = 0; i < SIZE(current_instruction().products); ++i) {
@@ -275,7 +275,7 @@ void write_memory(reagent x, const vector<double>& data) {
   // End Preprocess write_memory(x)
   if (x.value == 0) return;
   if (size_mismatch(x, data)) {
-    raise << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << to_original_string(current_instruction()) << "'\n" << end();
     return;
   }
   // End write_memory(reagent x) Special-cases
@@ -303,10 +303,6 @@ bool size_mismatch(const reagent& x, const vector<double>& data) {
   // End size_mismatch(x) Cases
 //?   if (size_of(x) != SIZE(data)) cerr << size_of(x) << " vs " << SIZE(data) << '\n';
   return size_of(x) != SIZE(data);
-}
-
-inline bool is_dummy(const reagent& x) {
-  return x.name == "_";
 }
 
 inline bool is_literal(const reagent& r) {
@@ -343,15 +339,15 @@ def main [
   1:number <- copy 23
   2:number <- copy 1:number
 ]
-+run: 1:number <- copy 23
-+run: 2:number <- copy 1:number
++run: {1: "number"} <- copy {23: "literal"}
++run: {2: "number"} <- copy {1: "number"}
 -run: +foo
 
 :(scenario run_dummy)
 def main [
   _ <- copy 0
 ]
-+run: _ <- copy 0
++run: _ <- copy {0: "literal"}
 
 :(scenario write_to_0_disallowed)
 % Hide_errors = true;

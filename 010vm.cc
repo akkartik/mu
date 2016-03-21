@@ -34,7 +34,7 @@ struct instruction {
   string label;  // only if is_label
   string name;  // only if !is_label
   string old_name;  // before our automatic rewrite rules
-  string original_string;
+  string original_string;  // for error messages
   recipe_ordinal operation;  // get(Recipe_ordinal, name)
   vector<reagent> ingredients;  // only if !is_label
   vector<reagent> products;  // only if !is_label
@@ -451,7 +451,7 @@ string debug_string(const recipe& x) {
   return out.str();
 }
 
-string to_string(const instruction& inst) {
+string to_original_string(const instruction& inst) {
   if (inst.is_label) return inst.label;
   ostringstream out;
   for (int i = 0; i < SIZE(inst.products); ++i) {
@@ -467,18 +467,38 @@ string to_string(const instruction& inst) {
   return out.str();
 }
 
-string to_string(const reagent& r) {
+string to_string(const instruction& inst) {
+  if (inst.is_label) return inst.label;
   ostringstream out;
-  out << r.name << ": " << names_to_string(r.type);
-  if (!r.properties.empty()) {
-    out << ", {";
-    for (int i = 0; i < SIZE(r.properties); ++i) {
-      if (i > 0) out << ", ";
-      out << "\"" << r.properties.at(i).first << "\": " << to_string(r.properties.at(i).second);
-    }
-    out << "}";
+  for (int i = 0; i < SIZE(inst.products); ++i) {
+    if (i > 0) out << ", ";
+    out << to_string(inst.products.at(i));
+  }
+  if (!inst.products.empty()) out << " <- ";
+  out << inst.name << ' ';
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+    if (i > 0) out << ", ";
+    out << to_string(inst.ingredients.at(i));
   }
   return out.str();
+}
+
+string to_string(const reagent& r) {
+  if (is_dummy(r)) return "_";
+  ostringstream out;
+  out << "{";
+  out << r.name << ": " << names_to_string(r.type);
+  if (!r.properties.empty()) {
+    for (int i = 0; i < SIZE(r.properties); ++i)
+      out << ", \"" << r.properties.at(i).first << "\": " << to_string(r.properties.at(i).second);
+  }
+  out << "}";
+  return out.str();
+}
+
+// special name for ignoring some products
+inline bool is_dummy(const reagent& x) {
+  return x.name == "_";
 }
 
 string debug_string(const reagent& x) {

@@ -7,7 +7,7 @@
 def main [
   {1: number, foo: bar} <- copy 34
 ]
-+parse:   product: 1: "number", {"foo": "bar"}
++parse:   product: {1: "number", "foo": "bar"}
 
 :(scenario load_trailing_space_after_curly_bracket)
 def main [
@@ -21,7 +21,7 @@ def main [
 def main [
   {1: number, foo: bar} <- copy 34  # test comment
 ]
-+parse:   product: 1: "number", {"foo": "bar"}
++parse:   product: {1: "number", "foo": "bar"}
 $error: 0
 
 :(scenario dilated_reagent_with_comment_immediately_following)

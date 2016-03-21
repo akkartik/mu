@@ -95,13 +95,13 @@ scenario foo [
   # ']' in comment
   1:number <- copy 0
 ]
-+run: 1:number <- copy 0
++run: {1: "number"} <- copy {0: "literal"}
 
 :(scenario read_scenario_with_bracket_in_comment_in_nested_string)
 scenario foo [
   1:address:shared:array:character <- new [# not a comment]
 ]
-+run: 1:address:shared:array:character <- new [# not a comment]
++run: {1: ("address" "shared" "array" "character")} <- new {"# not a comment": "literal-string"}
 
 //:: Run scenarios when we run 'mu test'.
 //: Treat the text of the scenario as a regular series of instructions.
@@ -626,7 +626,7 @@ put(Recipe_ordinal, "check-trace-count-for-label", CHECK_TRACE_COUNT_FOR_LABEL);
 :(before "End Primitive Recipe Checks")
 case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'check-trace-for-label' requires exactly two ingredients, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'check-trace-for-label' requires exactly two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {

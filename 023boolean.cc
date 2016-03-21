@@ -13,7 +13,7 @@ case AND: {
     }
   }
   if (SIZE(inst.products) > 1) {
-    raise << maybe(get(Recipe, r).name) << "'and' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'and' yields exactly one product in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
@@ -71,7 +71,7 @@ case OR: {
     }
   }
   if (SIZE(inst.products) > 1) {
-    raise << maybe(get(Recipe, r).name) << "'or' yields exactly one product in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'or' yields exactly one product in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
@@ -123,7 +123,7 @@ put(Recipe_ordinal, "not", NOT);
 :(before "End Primitive Recipe Checks")
 case NOT: {
   if (SIZE(inst.products) > SIZE(inst.ingredients)) {
-    raise << maybe(get(Recipe, r).name) << "'not' cannot have fewer ingredients than products in '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'not' cannot have fewer ingredients than products in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {

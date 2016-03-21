@@ -7,7 +7,7 @@
 def main [
   {1: number, foo: (bar (baz quux))} <- copy 34
 ]
-+parse:   product: 1: "number", {"foo": ("bar" ("baz" "quux"))}
++parse:   product: {1: "number", "foo": ("bar" ("baz" "quux"))}
 
 :(before "End Parsing Reagent Property(value)")
 value = parse_string_tree(value);
@@ -67,7 +67,7 @@ container foo [
 ]
 container bar [
 ]
-+parse:   product: 1: ("foo" ("address" "array" "character") ("bar" "number"))
++parse:   product: {1: ("foo" ("address" "array" "character") ("bar" "number"))}
 
 :(scenario dilated_reagent_in_static_array)
 def main [

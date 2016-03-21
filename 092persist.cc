@@ -9,7 +9,7 @@ put(Recipe_ordinal, "restore", RESTORE);
 :(before "End Primitive Recipe Checks")
 case RESTORE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'restore' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'restore' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   string filename;
@@ -73,7 +73,7 @@ put(Recipe_ordinal, "save", SAVE);
 :(before "End Primitive Recipe Checks")
 case SAVE: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'save' requires exactly two ingredients, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'save' requires exactly two ingredients, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   if (is_literal_string(inst.ingredients.at(0))) {

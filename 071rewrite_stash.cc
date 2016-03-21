@@ -8,8 +8,8 @@ recipe main [
   n:number <- copy 34
   stash n
 ]
-+transform: stash_2_0:address:shared:array:character <- to-text-line n
-+transform: stash stash_2_0:address:shared:array:character
++transform: {stash_2_0: ("address" "shared" "array" "character")} <- to-text-line {n: ()}
++transform: stash {stash_2_0: ("address" "shared" "array" "character")}
 
 :(before "End Instruction Inserting/Deleting Transforms")
 Transform.push_back(rewrite_stashes_to_text);
@@ -73,7 +73,7 @@ put(Recipe_ordinal, "to-text", TO_TEXT);
 :(before "End Primitive Recipe Checks")
 case TO_TEXT: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'to-text' requires a single ingredient, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'to-text' requires a single ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;

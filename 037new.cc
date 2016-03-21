@@ -82,7 +82,7 @@ put(Recipe_ordinal, "new", NEW);
 case NEW: {
   const recipe& caller = get(Recipe, r);
   if (inst.ingredients.empty() || SIZE(inst.ingredients) > 2) {
-    raise << maybe(caller.name) << "'new' requires one or two ingredients, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "'new' requires one or two ingredients, but got " << to_original_string(inst) << '\n' << end();
     break;
   }
   // End NEW Check Special-cases
@@ -96,7 +96,7 @@ case NEW: {
     break;
   }
   if (!product_of_new_is_valid(inst)) {
-    raise << maybe(caller.name) << "product of 'new' has incorrect type: " << to_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "product of 'new' has incorrect type: " << to_original_string(inst) << '\n' << end();
     break;
   }
   break;
@@ -249,7 +249,7 @@ def main [
   2:address:shared:number/raw <- new number:type
   3:number/raw <- subtract 2:address:shared:number/raw, 1:address:shared:array:number/raw
 ]
-+run: 1:address:shared:array:number/raw <- new number:type, 5
++run: {1: ("address" "shared" "array" "number"), "raw": ()} <- new {number: "type"}, {5: "literal"}
 +mem: array size is 5
 # don't forget the extra location for array size, and the second extra location for the refcount
 +mem: storing 7 in location 3
@@ -260,7 +260,7 @@ def main [
   2:address:shared:number/raw <- new number:type
   3:number/raw <- subtract 2:address:shared:number/raw, 1:address:shared:array:number/raw
 ]
-+run: 1:address:shared:array:number/raw <- new number:type, 0
++run: {1: ("address" "shared" "array" "number"), "raw": ()} <- new {number: "type"}, {0: "literal"}
 +mem: array size is 0
 # one location for array size, and one for the refcount
 +mem: storing 2 in location 3
@@ -301,7 +301,7 @@ put(Recipe_ordinal, "abandon", ABANDON);
 :(before "End Primitive Recipe Checks")
 case ABANDON: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'abandon' requires one ingredient, but got '" << to_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'abandon' requires one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent types = inst.ingredients.at(0);
@@ -395,7 +395,7 @@ def main [
   abandon 1:address:shared:number
 ]
 # reuse
-+run: abandon 1:address:shared:number
++run: abandon {1: ("address" "shared" "number")}
 +mem: resetting location 1
 
 //:: Manage refcounts when copying addresses.
@@ -407,13 +407,13 @@ def main [
   1:address:shared:number <- copy 0
   2:address:shared:number <- copy 0
 ]
-+run: 1:address:shared:number <- copy 1000/unsafe
++run: {1: ("address" "shared" "number")} <- copy {1000: "literal", "unsafe": ()}
 +mem: incrementing refcount of 1000: 0 -> 1
-+run: 2:address:shared:number <- copy 1:address:shared:number
++run: {2: ("address" "shared" "number")} <- copy {1: ("address" "shared" "number")}
 +mem: incrementing refcount of 1000: 1 -> 2
-+run: 1:address:shared:number <- copy 0
++run: {1: ("address" "shared" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 2 -> 1
-+run: 2:address:shared:number <- copy 0
++run: {2: ("address" "shared" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 1 -> 0
 # the /unsafe corrupts memory but fortunately we won't be running any more 'new' in this scenario
 +mem: automatically abandoning 1000
@@ -466,9 +466,9 @@ def main [
   1:address:shared:number <- new number:type
   1:address:shared:number <- copy 0
 ]
-+run: 1:address:shared:number <- new number:type
++run: {1: ("address" "shared" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
-+run: 1:address:shared:number <- new number:type
++run: {1: ("address" "shared" "number")} <- new {number: "type"}
 +mem: automatically abandoning 1000
 
 :(scenario refcounts_3)
@@ -483,13 +483,13 @@ def foo [
   # return does NOT yet decrement refcount; memory must be explicitly managed
   2:address:shared:number <- copy 0
 ]
-+run: 1:address:shared:number <- new number:type
++run: {1: ("address" "shared" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
-+run: 2:address:shared:number <- next-ingredient
++run: {2: ("address" "shared" "number")} <- next-ingredient
 +mem: incrementing refcount of 1000: 1 -> 2
-+run: 2:address:shared:number <- copy 0
++run: {2: ("address" "shared" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 2 -> 1
-+run: 1:address:shared:number <- copy 0
++run: {1: ("address" "shared" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 1 -> 0
 +mem: automatically abandoning 1000
 
@@ -499,9 +499,9 @@ def main [
   # idempotent copies leave refcount unchanged
   1:address:shared:number <- copy 1:address:shared:number
 ]
-+run: 1:address:shared:number <- new number:type
++run: {1: ("address" "shared" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
-+run: 1:address:shared:number <- copy 1:address:shared:number
++run: {1: ("address" "shared" "number")} <- copy {1: ("address" "shared" "number")}
 +mem: decrementing refcount of 1000: 1 -> 0
 +mem: incrementing refcount of 1000: 0 -> 1
 
@@ -516,11 +516,11 @@ def main [
 def foo [
   2:address:shared:number <- next-ingredient
 ]
-+run: 1:address:shared:number <- new number:type
++run: {1: ("address" "shared" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
-+run: 2:address:shared:number <- next-ingredient
++run: {2: ("address" "shared" "number")} <- next-ingredient
 +mem: incrementing refcount of 1000: 1 -> 2
-+run: 1:address:shared:number <- new number:type
++run: {1: ("address" "shared" "number")} <- new {number: "type"}
 +mem: decrementing refcount of 1000: 2 -> 1
 
 :(scenario refcounts_array)
@@ -532,7 +532,7 @@ def main [
   # allocate another array in its place, implicitly freeing the previous allocation
   10:address:shared:array:number <- new number:type, 25
 ]
-+run: 10:address:shared:array:number <- new number:type, 20
++run: {10: ("address" "shared" "array" "number")} <- new {number: "type"}, {20: "literal"}
 # abandoned array is of old size (20, not 25)
 +abandon: saving in free-list of size 22
 

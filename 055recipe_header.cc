@@ -219,17 +219,17 @@ void check_calls_against_header(const recipe_ordinal r) {
     for (long int i = 0; i < min(SIZE(inst.ingredients), SIZE(callee.ingredients)); ++i) {
       // ingredients coerced from call to callee
       if (!types_coercible(callee.ingredients.at(i), inst.ingredients.at(i)))
-        raise << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << to_original_string(inst) << "'\n" << end();
       if (is_unique_address(inst.ingredients.at(i)))
-        raise << maybe(caller.name) << "avoid passing non-shared addresses into calls, like ingredient " << i << " at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "avoid passing non-shared addresses into calls, like ingredient " << i << " at '" << to_original_string(inst) << "'\n" << end();
     }
     for (long int i = 0; i < min(SIZE(inst.products), SIZE(callee.products)); ++i) {
       if (is_dummy(inst.products.at(i))) continue;
       // products coerced from callee to call
       if (!types_coercible(inst.products.at(i), callee.products.at(i)))
-        raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_original_string(inst) << "'\n" << end();
       if (is_unique_address(inst.products.at(i)))
-        raise << maybe(caller.name) << "avoid getting non-shared addresses out of calls, like product " << i << " at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller.name) << "avoid getting non-shared addresses out of calls, like product " << i << " at '" << to_original_string(inst) << "'\n" << end();
     }
   }
 }
@@ -293,12 +293,12 @@ void check_reply_instructions_against_header(const recipe_ordinal r) {
     const instruction& inst = caller_recipe.steps.at(i);
     if (inst.name != "reply" && inst.name != "return") continue;
     if (SIZE(caller_recipe.products) != SIZE(inst.ingredients)) {
-      raise << maybe(caller_recipe.name) << "replied with the wrong number of products at '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller_recipe.name) << "replied with the wrong number of products at '" << to_original_string(inst) << "'\n" << end();
       continue;
     }
     for (int i = 0; i < SIZE(caller_recipe.products); ++i) {
       if (!types_match(caller_recipe.products.at(i), inst.ingredients.at(i)))
-        raise << maybe(caller_recipe.name) << "replied with the wrong type at '" << to_string(inst) << "'\n" << end();
+        raise << maybe(caller_recipe.name) << "replied with the wrong type at '" << to_original_string(inst) << "'\n" << end();
     }
   }
 }
@@ -473,7 +473,7 @@ def add2 x:number, y:number -> z:number [
   load-ingredients
   z <- add x, y
 ]
-+transform: instruction: reply z:number
++transform: instruction: reply {z: "number"}
 +mem: storing 8 in location 1
 
 :(scenario reply_on_fallthrough_already_exists)
@@ -486,7 +486,7 @@ def add2 x:number, y:number -> z:number [
   z <- add x, y  # no type for z
   return z
 ]
-+transform: instruction: return z
++transform: instruction: return {z: ()}
 -transform: instruction: reply z:number
 +mem: storing 8 in location 1
 
