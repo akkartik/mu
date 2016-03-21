@@ -48,3 +48,39 @@ void rewrite_stashes_to_text(recipe& caller) {
   }
   caller.steps.swap(new_instructions);
 }
+
+//: Make sure that the new system is strictly better than just the 'stash'
+//: primitive by itself.
+
+:(scenarios run)
+:(scenario rewrite_stash_continues_to_fall_back_to_default_implementation)
+# type without a to-text implementation
+container foo [
+  x:number
+  y:number
+]
+recipe main [
+  local-scope
+  x:foo <- merge 34, 35
+  stash x
+]
++app: 34 35
+
+:(before "End Primitive Recipe Declarations")
+TO_TEXT,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "to-text", TO_TEXT);
+:(before "End Primitive Recipe Checks")
+case TO_TEXT: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'to-text' requires a single ingredient, but got '" << to_string(inst) << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case TO_TEXT: {
+  products.resize(1);
+  products.at(0).push_back(new_mu_string(print_mu(current_instruction().ingredients.at(0), ingredients.at(0))));
+  break;
+}
