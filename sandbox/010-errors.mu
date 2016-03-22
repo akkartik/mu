@@ -184,14 +184,14 @@ scenario run-updates-status-with-first-erroneous-sandbox [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0                                                x.
     .get foo, x:offset                                 .
-    .expected a container                              .
+    .expected a container in 'get foo, x:offset'       .
     .missing type for foo in 'get foo, x:offset'       .
     .first ingredient of 'get' should be a container, ↩.
     .but got foo                                       .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .1                                                x.
     .get foo, x:offset                                 .
-    .expected a container                              .
+    .expected a container in 'get foo, x:offset'       .
     .missing type for foo in 'get foo, x:offset'       .
     .first ingredient of 'get' should be a container, ↩.
     .but got foo                                       .
@@ -231,14 +231,14 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .1                                                x.
     .get foo, x:offset                                 .
-    .expected a container                              .
+    .expected a container in 'get foo, x:offset'       .
     .missing type for foo in 'get foo, x:offset'       .
     .first ingredient of 'get' should be a container, ↩.
     .but got foo                                       .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .2                                                x.
     .get foo, x:offset                                 .
-    .expected a container                              .
+    .expected a container in 'get foo, x:offset'       .
     .missing type for foo in 'get foo, x:offset'       .
     .first ingredient of 'get' should be a container, ↩.
     .but got foo                                       .
