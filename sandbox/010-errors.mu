@@ -318,7 +318,7 @@ z <- add x, y
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0                                                x.
     .foo 2                                             .
-    .foo_2: 'add' requires number ingredients, but got↩.
+    .foo_3: 'add' requires number ingredients, but got↩.
     . y                                                .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .

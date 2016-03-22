@@ -281,7 +281,7 @@ z <- add x, y
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .load-ingredients                                  ┊0                                               x.
     .y:address:number <- copy 0                        ┊foo 2                                            .
-    .z <- add x, y                                     ┊foo_2: 'add' requires number ingredients, but go↩.
+    .z <- add x, y                                     ┊foo_3: 'add' requires number ingredients, but go↩.
     .]                                                 ┊t y                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .

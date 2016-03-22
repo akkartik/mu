@@ -78,7 +78,7 @@ bool run_interactive(int address) {
   }
   string command = trim(strip_comments(read_mu_string(address)));
   Name[get(Recipe_ordinal, "interactive")].clear();
-  run_code_begin(/*snapshot_recently_added_recipes*/true);
+  run_code_begin(/*should_stash_snapshots*/true);
   if (command.empty()) return false;
   // don't kill the current routine on parse errors
   routine* save_current_routine = Current_routine;
@@ -116,11 +116,11 @@ map<type_ordinal, type_info> Type_snapshot_stash;
 map<recipe_ordinal, map<string, int> > Name_snapshot_stash;
 map<string, vector<recipe_ordinal> > Recipe_variants_snapshot_stash;
 :(code)
-void run_code_begin(bool snapshot_recently_added_recipes) {
+void run_code_begin(bool should_stash_snapshots) {
   // stuff to undo later, in run_code_end()
   Hide_errors = true;
   Disable_redefine_checks = true;
-  if (snapshot_recently_added_recipes)
+  if (should_stash_snapshots)
     stash_snapshots();
   Save_trace_stream = Trace_stream;
   Save_trace_file = Trace_file;
@@ -448,15 +448,22 @@ case RELOAD: {
 }
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
+  // conundrum: need to support repeated reloads of the same code, but not
+  // wipe out state for the current test
+  // hacky solution: subset of restore_snapshots() without restoring recipes {
+  // can't yet define containers in a test that runs 'reload'
+  Type_ordinal = Type_ordinal_snapshot;
+  Type = Type_snapshot;
+  // can't yet create new specializations of shape-shifting recipes in a test
+  // that runs 'reload'
+  Recipe_variants = Recipe_variants_snapshot;
+  Name = Name_snapshot;
+  // }
   string code = read_mu_string(ingredients.at(0).at(0));
-  run_code_begin(/*snapshot_recently_added_recipes*/false);
+  run_code_begin(/*should_stash_snapshots*/false);
   routine* save_current_routine = Current_routine;
   Current_routine = NULL;
   vector<recipe_ordinal> recipes_reloaded = load(code);
-  // clear a few things from previous runs
-  // ad hoc list; we've probably missed a few
-  for (int i = 0; i < SIZE(recipes_reloaded); ++i)
-    Name.erase(recipes_reloaded.at(i));
   transform_all();
   Trace_stream->newline();  // flush trace
   Current_routine = save_current_routine;
@@ -476,3 +483,25 @@ def main [
   1:number/raw <- copy 34
 ]
 +mem: storing 34 in location 1
+
+:(scenario reload_can_repeatedly_load_container_definitions)
+# define a container and try to create it (merge requires knowing container size)
+def main [
+  local-scope
+  x:address:shared:array:character <- new [
+    container foo [
+      x:number
+      y:number
+    ]
+    recipe bar [
+      local-scope
+      x:foo <- merge 34, 35
+    ]
+  ]
+  # save warning addresses in locations of type 'number' to avoid spurious changes to them due to 'abandon'
+  1:number/raw <- reload x
+  2:number/raw <- reload x
+]
+# no errors on either load
++mem: storing 0 in location 1
++mem: storing 0 in location 2
