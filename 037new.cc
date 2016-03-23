@@ -289,10 +289,8 @@ def main [
 # both allocations should have returned the same address
 +mem: storing 1 in location 4
 
-:(before "End Globals")
-map<int, int> Free_list;
-:(before "End Setup")
-Free_list.clear();
+:(before "End routine Fields")
+map<int, int> free_list;
 
 :(before "End Primitive Recipe Declarations")
 ABANDON,
@@ -343,15 +341,15 @@ void abandon(int address, int size) {
   for (int curr = address; curr < address+size; ++curr)
     put(Memory, curr, 0);
   // append existing free list to address
-  put(Memory, address, get_or_insert(Free_list, size));
-  put(Free_list, size, address);
+  put(Memory, address, get_or_insert(Current_routine->free_list, size));
+  put(Current_routine->free_list, size, address);
 }
 
 :(before "ensure_space(size)" following "case ALLOCATE")
-if (get_or_insert(Free_list, size)) {
+if (get_or_insert(Current_routine->free_list, size)) {
   trace(9999, "abandon") << "picking up space from free-list of size " << size << end();
-  int result = get_or_insert(Free_list, size);
-  put(Free_list, size, get_or_insert(Memory, result));
+  int result = get_or_insert(Current_routine->free_list, size);
+  put(Current_routine->free_list, size, get_or_insert(Memory, result));
   for (int curr = result+1; curr < result+size; ++curr) {
     if (get_or_insert(Memory, curr) != 0) {
       raise << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
