@@ -349,6 +349,7 @@ void abandon(int address, int size) {
 if (get_or_insert(Current_routine->free_list, size)) {
   trace(9999, "abandon") << "picking up space from free-list of size " << size << end();
   int result = get_or_insert(Current_routine->free_list, size);
+  trace(9999, "mem") << "new alloc from free list: " << result << end();
   put(Current_routine->free_list, size, get_or_insert(Memory, result));
   for (int curr = result+1; curr < result+size; ++curr) {
     if (get_or_insert(Memory, curr) != 0) {
@@ -562,6 +563,7 @@ if (inst.name == "new" && is_literal_string(inst.ingredients.at(0))) continue;
   if (is_literal_string(current_instruction().ingredients.at(0))) {
     products.resize(1);
     products.at(0).push_back(new_mu_string(current_instruction().ingredients.at(0).name));
+    trace(9999, "mem") << "new string alloc: " << products.at(0).at(0) << end();
     break;
   }
 
