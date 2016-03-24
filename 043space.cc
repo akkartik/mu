@@ -211,12 +211,13 @@ def foo [
 # both calls to foo should have received the same default-space
 +mem: storing 1 in location 3
 
-:(scenario local_scope_frees_up_allocations)
-def main [
-  local-scope
-  x:address:shared:array:character <- new [abc]
-]
-+mem: clearing x:address:shared:array:character
+:(code)  // pending test
+//? :(scenario local_scope_frees_up_allocations)
+//? def main [
+//?   local-scope
+//?   x:address:shared:array:character <- new [abc]
+//? ]
+//? +mem: clearing x:address:shared:array:character
 
 //: todo: do this in a transform, rather than magically in the reply instruction
 :(after "Falling Through End Of Recipe")
@@ -240,20 +241,24 @@ void try_reclaim_locals() {
   const instruction& inst = exiting_recipe.steps.at(0);
   if (inst.old_name != "local-scope") return;
   // reclaim any local variables unless they're being returned
-  vector<double> zero;
-  zero.push_back(0);
-  for (int i = /*leave default space for last*/1; i < SIZE(exiting_recipe.steps); ++i) {
-    const instruction& inst = exiting_recipe.steps.at(i);
-    for (int i = 0; i < SIZE(inst.products); ++i) {
-      if (!is_mu_address(inst.products.at(i))) continue;
-      // local variables only
-      if (has_property(inst.products.at(i), "space")) continue;
-      if (has_property(inst.products.at(i), "lookup")) continue;
-      if (escaping(inst.products.at(i))) continue;
-      trace(9999, "mem") << "clearing " << inst.products.at(i).original_string << end();
-      write_memory(inst.products.at(i), zero);
-    }
-  }
+  // TODO: this isn't working yet. Doesn't handle address:shared stored in
+  // containers created by 'copy' or 'merge'. We'd end up deleting the address
+  // even if some container containing it was returned.
+  // This might doom our whole refcounting-based approach :/
+//?   vector<double> zero;
+//?   zero.push_back(0);
+//?   for (int i = /*leave default space for last*/1; i < SIZE(exiting_recipe.steps); ++i) {
+//?     const instruction& inst = exiting_recipe.steps.at(i);
+//?     for (int i = 0; i < SIZE(inst.products); ++i) {
+//?       if (!is_mu_address(inst.products.at(i))) continue;
+//?       // local variables only
+//?       if (has_property(inst.products.at(i), "space")) continue;
+//?       if (has_property(inst.products.at(i), "lookup")) continue;
+//?       if (escaping(inst.products.at(i))) continue;
+//?       trace(9999, "mem") << "clearing " << inst.products.at(i).original_string << end();
+//?       write_memory(inst.products.at(i), zero);
+//?     }
+//?   }
   abandon(current_call().default_space,
           /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[r][""]);
 }
