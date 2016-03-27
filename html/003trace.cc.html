@@ -3,26 +3,34 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 003trace.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.PreProc { color: #800080; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
 .cSpecial { color: #008000; }
 .Identifier { color: #fcb165; }
-.Constant { color: #00a0a0; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.Delimiter { color: #800080; }
-.Comment { color: #9090ff; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.PreProc { color: #800080; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: The goal of this skeleton is to make programs more easy to understand and</span>
 <span class="Comment">//: more malleable, easy to rewrite in radical ways without accidentally</span>
 <span class="Comment">//: breaking some corner case. Tests further both goals. They help</span>
@@ -182,7 +190,7 @@ trace_stream* Trace_stream = <span class="Constant">NULL</span><span class="Deli
 <span class="PreProc">#define trace(</span><span class="Delimiter">...</span><span class="PreProc">)  !Trace_stream ? cerr </span><span class="Comment">/*</span><span class="Comment">print nothing</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(__VA_ARGS__)</span>
 
 <span class="Comment">// Errors are a special layer.</span>
-<span class="PreProc">#define raise  (!Trace_stream ? </span><span class="Delimiter">(</span><span class="PreProc">tb_shutdown</span><span class="Delimiter">(),</span><span class="PreProc">cerr</span><span class="Delimiter">)</span><span class="PreProc"> </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(Error_depth</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;error&quot;</span><span class="PreProc">))</span>
+<span class="PreProc">#define raise  (!Trace_stream ? (tb_shutdown()</span><span class="Delimiter">,</span><span class="PreProc">cerr) </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(Error_depth</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;error&quot;</span><span class="PreProc">))</span>
 <span class="Comment">// Inside tests, fail any tests that displayed (unexpected) errors.</span>
 <span class="Comment">// Expected errors in tests should always be hidden and silently checked for.</span>
 <span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
@@ -233,7 +241,7 @@ START_TRACING_UNTIL_END_OF_SCOPE
 <span class="Normal">bool</span> check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string <span class="Normal">FILE</span><span class="Delimiter">,</span> <span class="Normal">int</span> LINE<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   vector&lt;string&gt; expected_lines = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>curr_expected_line &lt; SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">)</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
     ++curr_expected_line<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>curr_expected_line == SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -399,3 +407,4 @@ string trim<span class="Delimiter">(</span><span class="Normal">const</span> str
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

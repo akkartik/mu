@@ -3,32 +3,40 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 080display.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.cSpecial { color: #008000; }
-.Identifier { color: #fcb165; }
+* { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.Normal { color: #eeeeee; background-color: #080808; }
+.cSpecial { color: #008000; }
+.Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .SalientComment { color: #00ffff; }
-.Comment { color: #9090ff; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: Take charge of the text-mode display and console.</span>
 
 <span class="SalientComment">//:: Display management</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Display_row = <span class="Constant">0</span><span class="Delimiter">,</span> Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Normal">int</span> Display_row = <span class="Constant">0</span><span class="Delimiter">,</span> Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Normal">bool</span> Autodisplay = <span class="Constant">true</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
@@ -43,8 +51,8 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Normal">case</span> OPEN_CONSOLE: <span class="Delimiter">{</span>
   tb_init<span class="Delimiter">();</span>
   Display_row = Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> width = tb_width<span class="Delimiter">();</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> height = tb_height<span class="Delimiter">();</span>
+  <span class="Normal">int</span> width = tb_width<span class="Delimiter">();</span>
+  <span class="Normal">int</span> height = tb_height<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>width &gt; <span class="Constant">222</span> || height &gt; <span class="Constant">222</span><span class="Delimiter">)</span> tb_shutdown<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>width &gt; <span class="Constant">222</span><span class="Delimiter">)</span>
     raise &lt;&lt; <span class="Constant">&quot;sorry, mu doesn't support windows wider than 222 characters. Please resize your window.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -109,8 +117,8 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> CLEAR_LINE_ON_DISPLAY: <span class="Delimiter">{</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> width = tb_width<span class="Delimiter">();</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> x = Display_column<span class="Delimiter">;</span> x &lt; width<span class="Delimiter">;</span> ++x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> width = tb_width<span class="Delimiter">();</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> x = Display_column<span class="Delimiter">;</span> x &lt; width<span class="Delimiter">;</span> ++x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     tb_change_cell<span class="Delimiter">(</span>x<span class="Delimiter">,</span> Display_row<span class="Delimiter">,</span> <span class="Constant">' '</span><span class="Delimiter">,</span> TB_WHITE<span class="Delimiter">,</span> TB_BLACK<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   tb_set_cursor<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
@@ -125,7 +133,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span class="Normal">case</span> PRINT_CHARACTER_TO_DISPLAY: <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'print-character-to-display' requires at least one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'print-character-to-display' requires at least one ingredient, but got &quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
@@ -149,9 +157,9 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> PRINT_CHARACTER_TO_DISPLAY: <span class="Delimiter">{</span>
   <span class="Normal">int</span> h=tb_height<span class="Delimiter">(),</span> w=tb_width<span class="Delimiter">();</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> height = <span class="Delimiter">(</span>h &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? h : <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> width = <span class="Delimiter">(</span>w &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? w : <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> c = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">int</span> height = <span class="Delimiter">(</span>h &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? h : <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> width = <span class="Delimiter">(</span>w &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? w : <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> c = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Normal">int</span> color = TB_BLACK<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     color = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
@@ -211,7 +219,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span class="Normal">case</span> MOVE_CURSOR_ON_DISPLAY: <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'move-cursor-on-display' requires two ingredients, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'move-cursor-on-display' requires two ingredients, but got &quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
@@ -244,7 +252,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> MOVE_CURSOR_DOWN_ON_DISPLAY: <span class="Delimiter">{</span>
   <span class="Normal">int</span> h=tb_height<span class="Delimiter">();</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> height = <span class="Delimiter">(</span>h &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? h : <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> height = <span class="Delimiter">(</span>h &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? h : <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Display_row &lt; height-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Display_row++<span class="Delimiter">;</span>
     tb_set_cursor<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
@@ -282,7 +290,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> MOVE_CURSOR_RIGHT_ON_DISPLAY: <span class="Delimiter">{</span>
   <span class="Normal">int</span> w=tb_width<span class="Delimiter">();</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> width = <span class="Delimiter">(</span>w &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? w : <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> width = <span class="Delimiter">(</span>w &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? w : <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Display_column &lt; width-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Display_column++<span class="Delimiter">;</span>
     tb_set_cursor<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
@@ -527,3 +535,4 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

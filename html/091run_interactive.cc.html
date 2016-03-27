@@ -3,27 +3,35 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 091run_interactive.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.Identifier { color: #fcb165; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
 .traceContains { color: #008000; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.Special { color: #c00000; }
-.Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
 .Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: Helper for various programming environments: run arbitrary mu code and</span>
 <span class="Comment">//: return some result in string form.</span>
 
@@ -56,7 +64,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span class="Normal">case</span> RUN_INTERACTIVE: <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'run-interactive' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'run-interactive' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
@@ -88,26 +96,24 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
 trace_stream* Save_trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 string Save_trace_file<span class="Delimiter">;</span>
-vector&lt;recipe_ordinal&gt; Save_recently_added_recipes<span class="Delimiter">;</span>
-vector&lt;recipe_ordinal&gt; Save_recently_added_shape_shifting_recipes<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Track_most_recent_products = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// reads a string, tries to call it as code (treating it as a test), saving</span>
 <span class="Comment">// all errors.</span>
 <span class="Comment">// returns true if successfully called (no errors found during load and transform)</span>
-<span class="Normal">bool</span> run_interactive<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> run_interactive<span class="Delimiter">(</span><span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">)</span> &amp;&amp; get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">)</span> != <span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// try to sandbox the run as best you can</span>
   <span class="Comment">// todo: test this</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!Current_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; Reserved_for_tests<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; Reserved_for_tests<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span>
       Memory<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   string command = trim<span class="Delimiter">(</span>strip_comments<span class="Delimiter">(</span>read_mu_string<span class="Delimiter">(</span>address<span class="Delimiter">)));</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>command<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   Name[get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">)</span>]<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  run_code_begin<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">snapshot_recently_added_recipes</span><span class="Comment">*/</span><span class="Constant">true</span><span class="Delimiter">);</span>
+  run_code_begin<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">should_stash_snapshots</span><span class="Comment">*/</span><span class="Constant">true</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>command<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Comment">// don't kill the current routine on parse errors</span>
   routine* save_current_routine = Current_routine<span class="Delimiter">;</span>
   Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</span>
@@ -134,16 +140,22 @@ Track_most_recent_products = <span class="Constant">false</span><span class="Del
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">void</span> run_code_begin<span class="Delimiter">(</span><span class="Normal">bool</span> snapshot_recently_added_recipes<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Comment">//: Carefully update all state to exactly how it was -- including snapshots.</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+map&lt;string<span class="Delimiter">,</span> recipe_ordinal&gt; Recipe_ordinal_snapshot_stash<span class="Delimiter">;</span>
+map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt; Recipe_snapshot_stash<span class="Delimiter">;</span>
+map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; Type_ordinal_snapshot_stash<span class="Delimiter">;</span>
+map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt; Type_snapshot_stash<span class="Delimiter">;</span>
+map&lt;recipe_ordinal<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt; &gt; Name_snapshot_stash<span class="Delimiter">;</span>
+map&lt;string<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt; &gt; Recipe_variants_snapshot_stash<span class="Delimiter">;</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> run_code_begin<span class="Delimiter">(</span><span class="Normal">bool</span> should_stash_snapshots<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// stuff to undo later, in run_code_end()</span>
   Hide_errors = <span class="Constant">true</span><span class="Delimiter">;</span>
   Disable_redefine_checks = <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>snapshot_recently_added_recipes<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    Save_recently_added_recipes = Recently_added_recipes<span class="Delimiter">;</span>
-    Recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-    Save_recently_added_shape_shifting_recipes = Recently_added_shape_shifting_recipes<span class="Delimiter">;</span>
-    Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>should_stash_snapshots<span class="Delimiter">)</span>
+    stash_snapshots<span class="Delimiter">();</span>
   Save_trace_stream = Trace_stream<span class="Delimiter">;</span>
   Save_trace_file = Trace_file<span class="Delimiter">;</span>
   Trace_file = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
@@ -160,13 +172,28 @@ Track_most_recent_products = <span class="Constant">false</span><span class="Del
   Trace_file = Save_trace_file<span class="Delimiter">;</span>
   Save_trace_file<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">));</span>  <span class="Comment">// keep past sandboxes from inserting errors</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!Save_recently_added_recipes<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    clear_recently_added_recipes<span class="Delimiter">();</span>
-    Recently_added_recipes = Save_recently_added_recipes<span class="Delimiter">;</span>
-    Save_recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-    Recently_added_shape_shifting_recipes = Save_recently_added_shape_shifting_recipes<span class="Delimiter">;</span>
-    Save_recently_added_shape_shifting_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Recipe_snapshot_stash<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+    unstash_snapshots<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// keep sync'd with save_snapshots and restore_snapshots</span>
+<span class="Normal">void</span> stash_snapshots<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  Recipe_ordinal_snapshot_stash = Recipe_ordinal_snapshot<span class="Delimiter">;</span>
+  Recipe_snapshot_stash = Recipe_snapshot<span class="Delimiter">;</span>
+  Type_ordinal_snapshot_stash = Type_ordinal_snapshot<span class="Delimiter">;</span>
+  Type_snapshot_stash = Type_snapshot<span class="Delimiter">;</span>
+  Name_snapshot_stash = Name_snapshot<span class="Delimiter">;</span>
+  Recipe_variants_snapshot_stash = Recipe_variants_snapshot<span class="Delimiter">;</span>
+  save_snapshots<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+<span class="Normal">void</span> unstash_snapshots<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  restore_snapshots<span class="Delimiter">();</span>
+  Recipe_ordinal_snapshot = Recipe_ordinal_snapshot_stash<span class="Delimiter">;</span>  Recipe_ordinal_snapshot_stash<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  Recipe_snapshot = Recipe_snapshot_stash<span class="Delimiter">;</span>  Recipe_snapshot_stash<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  Type_ordinal_snapshot = Type_ordinal_snapshot_stash<span class="Delimiter">;</span>  Type_ordinal_snapshot_stash<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  Type_snapshot = Type_snapshot_stash<span class="Delimiter">;</span>  Type_snapshot_stash<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  Name_snapshot = Name_snapshot_stash<span class="Delimiter">;</span>  Name_snapshot_stash<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  Recipe_variants_snapshot = Recipe_variants_snapshot_stash<span class="Delimiter">;</span>  Recipe_variants_snapshot_stash<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Load Recipes&quot;)</span>
@@ -187,8 +214,6 @@ load<span class="Delimiter">(</span>string<span class="Delimiter">(</span>
   <span class="Constant">&quot;$cleanup-run-interactive</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;return output, errors, screen, stashes, completed?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
 <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
-transform_all<span class="Delimiter">();</span>
-Recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 
 <span class="Comment">//: adjust errors in the sandbox</span>
 <span class="Delimiter">:(after &quot;string maybe(string s)&quot;)</span>
@@ -304,9 +329,9 @@ def main [
 def main [
   <span class="Comment"># try to interactively add 2 and 2</span>
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [
-    x:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [a]
-    y:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [b]
-    z:address:shared:array:character<span class="Special"> &lt;- </span>append x:address:shared:array:character<span class="Delimiter">,</span> y:address:shared:array:character
+    <span class="Normal">x</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [a]
+    <span class="Normal">y</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [b]
+    <span class="Normal">z</span>:address:shared:array:character<span class="Special"> &lt;- </span>append x:address:shared:array:character<span class="Delimiter">,</span> y:address:shared:array:character
   ]
   <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
   <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:shared:array:character/lookup
@@ -334,37 +359,12 @@ get x:number<span class="Delimiter">,</span> foo:offset]
 def main [
   <span class="Comment"># 2 instructions, with a comment after the first</span>
   <span class="Constant">1</span>:address:shared:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> [a:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abc</span>
-b:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<span class="Normal">b</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
   <span class="Constant">2</span>:address:shared:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
 ]
 <span class="Comment"># no errors</span>
 <span class="traceContains">+mem: storing 0 in location 3</span>
-
-<span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> test_run_interactive_cleans_up_any_created_specializations<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Comment">// define a generic recipe</span>
-  assert<span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">));</span>
-  load<span class="Delimiter">(</span><span class="Constant">&quot;recipe foo x:_elem -&gt; n:number [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-       <span class="Constant">&quot;  return 34</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// foo</span>
-  assert<span class="Delimiter">(</span>variant_count<span class="Delimiter">(</span><span class="Constant">&quot;foo&quot;</span><span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-  <span class="Comment">// run-interactive a call that specializes this recipe</span>
-  run<span class="Delimiter">(</span><span class="Constant">&quot;recipe main [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-       <span class="Constant">&quot;  1:number/raw &lt;- copy 0</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-       <span class="Constant">&quot;  2:address:shared:array:character &lt;- new [foo 1:number/raw]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-       <span class="Constant">&quot;  run-interactive 2:address:shared:array:character</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">)</span> == <span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">// foo, main</span>
-  <span class="Comment">// check that number of variants doesn't change</span>
-  CHECK_EQ<span class="Delimiter">(</span>variant_count<span class="Delimiter">(</span><span class="Constant">&quot;foo&quot;</span><span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> variant_count<span class="Delimiter">(</span>string recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe_variants<span class="Delimiter">,</span> recipe_name<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Identifier">return</span> non_ghost_size<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_variants<span class="Delimiter">,</span> recipe_name<span class="Delimiter">));</span>
-<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 string Most_recent_products<span class="Delimiter">;</span>
@@ -377,7 +377,7 @@ Most_recent_products = <span class="Constant">&quot;&quot;</span><span class="De
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> track_most_recent_products<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; instruction<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;vector&lt;<span class="Normal">double</span>&gt; &gt;&amp; products<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream out<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// string</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
@@ -385,7 +385,7 @@ Most_recent_products = <span class="Constant">&quot;&quot;</span><span class="De
           tb_shutdown<span class="Delimiter">();</span>
           cerr &lt;&lt; read_mu_string<span class="Delimiter">(</span>trace_error_contents<span class="Delimiter">())</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
           cerr &lt;&lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span><span class="Delimiter">;</span>
-          <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
+          <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
             cerr &lt;&lt; no_scientific<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
           cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
         <span class="Delimiter">}</span>
@@ -395,7 +395,7 @@ Most_recent_products = <span class="Constant">&quot;&quot;</span><span class="De
       <span class="Delimiter">}</span>
       <span class="Comment">// End Record Product Special-cases</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
       out &lt;&lt; no_scientific<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
     out &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -405,7 +405,7 @@ Most_recent_products = <span class="Constant">&quot;&quot;</span><span class="De
 <span class="Delimiter">:(code)</span>
 string strip_comments<span class="Delimiter">(</span>string in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream result<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>in<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>in<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> != <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       result &lt;&lt; in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
@@ -417,14 +417,14 @@ string strip_comments<span class="Delimiter">(</span>string in<span class="Delim
   <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> stringified_value_of_location<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> stringified_value_of_location<span class="Delimiter">(</span><span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// convert to string</span>
   ostringstream out<span class="Delimiter">;</span>
   out &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">));</span>
   <span class="Identifier">return</span> new_mu_string<span class="Delimiter">(</span>out<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> trace_error_contents<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> trace_error_contents<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
   ostringstream out<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -438,7 +438,7 @@ string strip_comments<span class="Delimiter">(</span>string in<span class="Delim
   <span class="Identifier">return</span> new_mu_string<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> trace_app_contents<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> trace_app_contents<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
   ostringstream out<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -453,8 +453,8 @@ string strip_comments<span class="Delimiter">(</span>string in<span class="Delim
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> truncate<span class="Delimiter">(</span>string&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>x<span class="Delimiter">)</span> &gt; <span class="Constant">512</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    x<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">512</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>x<span class="Delimiter">)</span> &gt; <span class="Constant">1024</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    x<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">1024</span><span class="Delimiter">);</span>
     *x<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> = <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     *++x<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> = <span class="Constant">'.'</span><span class="Delimiter">;</span>
     *++++x<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> = <span class="Constant">'.'</span><span class="Delimiter">;</span>
@@ -471,7 +471,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span class="Normal">case</span> RELOAD: <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'reload' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'reload' requires exactly one ingredient, but got &quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
@@ -482,34 +482,22 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> RELOAD: <span class="Delimiter">{</span>
-  <span class="Comment">// clear any containers in advance</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recently_added_types<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    Type_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
-    Type<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt; &gt;::iterator p = Recipe_variants<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Recipe_variants<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    vector&lt;recipe_ordinal&gt;&amp; variants = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>find<span class="Delimiter">(</span>Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> != Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
-        variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> = -<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// ghost</span>
-    <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recently_added_shape_shifting_recipes<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    Recipe_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
-    Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-  <span class="Delimiter">}</span>
-  Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  <span class="Comment">// conundrum: need to support repeated reloads of the same code, but not</span>
+  <span class="Comment">// wipe out state for the current test</span>
+  <span class="Comment">// hacky solution: subset of restore_snapshots() without restoring recipes {</span>
+  <span class="Comment">// can't yet define containers in a test that runs 'reload'</span>
+  Type_ordinal = Type_ordinal_snapshot<span class="Delimiter">;</span>
+  Type = Type_snapshot<span class="Delimiter">;</span>
+  <span class="Comment">// can't yet create new specializations of shape-shifting recipes in a test</span>
+  <span class="Comment">// that runs 'reload'</span>
+  Recipe_variants = Recipe_variants_snapshot<span class="Delimiter">;</span>
+  Name = Name_snapshot<span class="Delimiter">;</span>
+  <span class="Comment">// }</span>
   string code = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  run_code_begin<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">snapshot_recently_added_recipes</span><span class="Comment">*/</span><span class="Constant">false</span><span class="Delimiter">);</span>
+  run_code_begin<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">should_stash_snapshots</span><span class="Comment">*/</span><span class="Constant">false</span><span class="Delimiter">);</span>
   routine* save_current_routine = Current_routine<span class="Delimiter">;</span>
   Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   vector&lt;recipe_ordinal&gt; recipes_reloaded = load<span class="Delimiter">(</span>code<span class="Delimiter">);</span>
-  <span class="Comment">// clear a few things from previous runs</span>
-  <span class="Comment">// ad hoc list; we've probably missed a few</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recipes_reloaded<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
-    Name<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recipes_reloaded<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   transform_all<span class="Delimiter">();</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>  <span class="Comment">// flush trace</span>
   Current_routine = save_current_routine<span class="Delimiter">;</span>
@@ -522,7 +510,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(scenario reload_continues_past_error)</span>
 def main [
   local-scope
-  x:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [recipe foo [
+  <span class="Normal">x</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [recipe foo [
   get <span class="Constant">1234</span>:number<span class="Delimiter">,</span> foo:offset
 ]]
   reload x
@@ -530,31 +518,28 @@ def main [
 ]
 <span class="traceContains">+mem: storing 34 in location 1</span>
 
-<span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> test_reload_cleans_up_any_created_specializations<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Comment">// define a generic recipe and a call to it</span>
-  assert<span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">));</span>
-  assert<span class="Delimiter">(</span>variant_count<span class="Delimiter">(</span><span class="Constant">&quot;foo&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Comment">// a call that specializes this recipe</span>
-  run<span class="Delimiter">(</span><span class="Constant">&quot;recipe main [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:address:shared:array:character &lt;- new [recipe foo x:_elem -&gt; n:number [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;load-ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;return 34</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;recipe main2 [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;load-ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;x:number &lt;- copy 34</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;foo x:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;]]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  reload x</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
-  <span class="Comment">// check that number of variants includes specialization</span>
-  assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">)</span> == <span class="Constant">4</span><span class="Delimiter">);</span>  <span class="Comment">// foo, main, main2, foo specialization</span>
-  CHECK_EQ<span class="Delimiter">(</span>variant_count<span class="Delimiter">(</span><span class="Constant">&quot;foo&quot;</span><span class="Delimiter">),</span> <span class="Constant">2</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
+<span class="Delimiter">:(scenario reload_can_repeatedly_load_container_definitions)</span>
+<span class="Comment"># define a container and try to create it (merge requires knowing container size)</span>
+def main [
+  local-scope
+  <span class="Normal">x</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [
+    container foo [
+      <span class="Normal">x</span>:number
+      <span class="Normal">y</span>:number
+    ]
+    recipe bar [
+      local-scope
+      <span class="Normal">x</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+    ]
+  ]
+  <span class="Comment"># save warning addresses in locations of type 'number' to avoid spurious changes to them due to 'abandon'</span>
+  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>reload x
+  <span class="Constant">2</span>:number/<span class="Special">raw &lt;- </span>reload x
+]
+<span class="Comment"># no errors on either load</span>
+<span class="traceContains">+mem: storing 0 in location 1</span>
+<span class="traceContains">+mem: storing 0 in location 2</span>
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

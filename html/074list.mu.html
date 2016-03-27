@@ -2,28 +2,36 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 073list.mu</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<title>Mu - 074list.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.muScenario { color: #00af00; }
-.muControl { color: #c0a020; }
-.Delimiter { color: #800080; }
-.Special { color: #c00000; }
-.Constant { color: #00a0a0; }
+* { font-size: 12pt; font-size: 1em; }
 .muRecipe { color: #ff8700; }
 .muData { color: #ffff00; }
+.muScenario { color: #00af00; }
+.Delimiter { color: #800080; }
 .Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.muControl { color: #c0a020; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment"># A list links up multiple objects together to make them easier to manage.</span>
 <span class="Comment">#</span>
 <span class="Comment"># The objects must be of the same type. If you want to store multiple types in</span>
@@ -109,11 +117,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   next:address:shared:list:_elem<span class="Special"> &lt;- </span>rest in
   nextn:number<span class="Special"> &lt;- </span>copy next
   <span class="muControl">return-unless</span> next
-  space:character<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
-  buf<span class="Special"> &lt;- </span>append buf, space:character
-  s:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[-&gt; ]</span>
-  n:number<span class="Special"> &lt;- </span>length *s
-  buf<span class="Special"> &lt;- </span>append buf, s
+  buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">[ -&gt; ]</span>
   <span class="Comment"># and recurse</span>
   remaining:number, optional-ingredient-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
@@ -130,33 +134,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># past recursion depth; insert ellipses and stop</span>
-  s:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[...]</span>
-  append buf, s
-]
-
-<span class="muScenario">scenario</span> stash-on-list-converts-to-text [
-  run [
-    x:address:shared:list:number<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, <span class="Constant">0</span>
-    x<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, x
-    x<span class="Special"> &lt;- </span>push <span class="Constant">6</span>, x
-    stash <span class="Constant">[foo foo]</span>, x
-  ]
-  trace-should-contain [
-    app: foo foo <span class="Constant">6</span><span class="muRecipe"> -&gt; </span><span class="Constant">5</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span>
-  ]
-]
-
-<span class="muScenario">scenario</span> stash-handles-list-with-cycle [
-  run [
-    x:address:shared:list:number<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, <span class="Constant">0</span>
-    y:address:address:shared:list:number<span class="Special"> &lt;- </span>get-address *x, <span class="Constant">next:offset</span>
-    *y<span class="Special"> &lt;- </span>copy x
-    stash <span class="Constant">[foo foo]</span>, x
-  ]
-  trace-should-contain [
-    app: foo foo <span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span><span class="Constant">4</span><span class="muRecipe"> -&gt; </span>...
-  ]
+  append buf, <span class="Constant">[...]</span>
 ]
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

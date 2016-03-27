@@ -3,29 +3,39 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 043space.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.cSpecial { color: #008000; }
-.Identifier { color: #fcb165; }
-.traceAbsent { color: #c00000; }
-.SalientComment { color: #00ffff; }
-.traceContains { color: #008000; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.Special { color: #c00000; }
+* { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
+.traceAbsent { color: #c00000; }
+.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: Spaces help isolate recipes from each other. You can create them at will,</span>
 <span class="Comment">//: and all addresses in arguments are implicitly based on the 'default-space'</span>
 <span class="Comment">//: (unless they have the /raw property)</span>
@@ -73,7 +83,7 @@ def main [
 
 <span class="SalientComment">//:: now implement space support</span>
 <span class="Delimiter">:(before &quot;End call Fields&quot;)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> default_space<span class="Delimiter">;</span>
+<span class="Normal">int</span> default_space<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End call Constructor&quot;)</span>
 default_space = <span class="Constant">0</span><span class="Delimiter">;</span>
 
@@ -84,22 +94,22 @@ default_space = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">)</span> || is_dummy<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;default-space&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>initialized<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;: reagent not initialized: &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;: reagent not initialized: &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>address<span class="Delimiter">(</span>x<span class="Delimiter">.</span>value<span class="Delimiter">,</span> space_base<span class="Delimiter">(</span>x<span class="Delimiter">)));</span>
   x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;raw&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
   assert<span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> space_base<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> space_base<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// temporary stub; will be replaced in a later layer</span>
   <span class="Identifier">return</span> current_call<span class="Delimiter">().</span>default_space ? <span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>default_space+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">)</span> : <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> offset<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> address<span class="Delimiter">(</span><span class="Normal">int</span> offset<span class="Delimiter">,</span> <span class="Normal">int</span> base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>base == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> offset<span class="Delimiter">;</span>  <span class="Comment">// raw</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base<span class="Delimiter">);</span>
+  <span class="Normal">int</span> size = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>offset &gt;= size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// todo: test</span>
     raise &lt;&lt; <span class="Constant">&quot;location &quot;</span> &lt;&lt; offset &lt;&lt; <span class="Constant">&quot; is out of bounds &quot;</span> &lt;&lt; size &lt;&lt; <span class="Constant">&quot; at &quot;</span> &lt;&lt; base &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -110,7 +120,7 @@ default_space = <span class="Constant">0</span><span class="Delimiter">;</span>
 
 <span class="SalientComment">//:: reads and writes to the 'default-space' variable have special behavior</span>
 
-<span class="Delimiter">:(after &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
+<span class="Delimiter">:(after &quot;void write_memory(reagent x, const vector&lt;double&gt;&amp; data)&quot;)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;default-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>data<span class="Delimiter">)</span>
         || !x<span class="Delimiter">.</span>type
@@ -189,8 +199,8 @@ tmp<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>pus
 <span class="Delimiter">:(scenario new_default_space)</span>
 def main [
   <span class="Normal">new</span>-<span class="Normal">default</span>-space
-  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  y:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
+  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
 ]
 <span class="Comment"># allocate space for x and y, as well as the chaining slot at 0</span>
 <span class="traceContains">+mem: array size is 3</span>
@@ -216,7 +226,7 @@ def main [
       raise &lt;&lt; <span class="Constant">&quot;no space allocated for default-space in recipe &quot;</span> &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;; are you using names?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-<span class="Delimiter">:(after &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
+<span class="Delimiter">:(after &quot;void write_memory(reagent x, const vector&lt;double&gt;&amp; data)&quot;)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;number-of-locals&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;can't write to special name 'number-of-locals'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
@@ -233,12 +243,21 @@ def main [
 ]
 def foo [
   local-scope
-  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Identifier">return</span> <span class="Normal">default</span>-space:address:shared:array:location
 ]
 <span class="Comment"># both calls to foo should have received the same default-space</span>
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
+<span class="Delimiter">:(code)</span>  <span class="Comment">// pending test</span>
+<span class="CommentedCode">//? :(scenario local_scope_frees_up_allocations)</span>
+<span class="CommentedCode">//? def main [</span>
+<span class="CommentedCode">//?   local-scope</span>
+<span class="CommentedCode">//?   x:address:shared:array:character &lt;- new [abc]</span>
+<span class="CommentedCode">//? ]</span>
+<span class="CommentedCode">//? +mem: clearing x:address:shared:array:character</span>
+
+<span class="Comment">//: todo: do this in a transform, rather than magically in the reply instruction</span>
 <span class="Delimiter">:(after &quot;Falling Through End Of Recipe&quot;)</span>
 try_reclaim_locals<span class="Delimiter">();</span>
 <span class="Delimiter">:(after &quot;Starting Reply&quot;)</span>
@@ -255,16 +274,47 @@ try_reclaim_locals<span class="Delimiter">();</span>
 <span class="Normal">void</span> try_reclaim_locals<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Comment">// only reclaim routines starting with 'local-scope'</span>
   <span class="Normal">const</span> recipe_ordinal r = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> current_recipe_name<span class="Delimiter">());</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  <span class="Normal">const</span> instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">const</span> recipe&amp; exiting_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>exiting_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Normal">const</span> instruction&amp; inst = exiting_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>old_name != <span class="Constant">&quot;local-scope&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Comment">// reclaim any local variables unless they're being returned</span>
+  <span class="Comment">// </span><span class="Todo">TODO</span><span class="Comment">: this isn't working yet. Doesn't handle address:shared stored in</span>
+  <span class="Comment">// containers created by 'copy' or 'merge'. We'd end up deleting the address</span>
+  <span class="Comment">// even if some container containing it was returned.</span>
+  <span class="Comment">// This might doom our whole refcounting-based approach :/</span>
+<span class="CommentedCode">//?   vector&lt;double&gt; zero;</span>
+<span class="CommentedCode">//?   zero.push_back(0);</span>
+<span class="CommentedCode">//?   for (int i = /*leave default space for last*/1; i &lt; SIZE(exiting_recipe.steps); ++i) {</span>
+<span class="CommentedCode">//?     const instruction&amp; inst = exiting_recipe.steps.at(i);</span>
+<span class="CommentedCode">//?     for (int i = 0; i &lt; SIZE(inst.products); ++i) {</span>
+<span class="CommentedCode">//?       if (!is_mu_address(inst.products.at(i))) continue;</span>
+<span class="CommentedCode">//?       // local variables only</span>
+<span class="CommentedCode">//?       if (has_property(inst.products.at(i), &quot;space&quot;)) continue;</span>
+<span class="CommentedCode">//?       if (has_property(inst.products.at(i), &quot;lookup&quot;)) continue;</span>
+<span class="CommentedCode">//?       if (escaping(inst.products.at(i))) continue;</span>
+<span class="CommentedCode">//?       trace(9999, &quot;mem&quot;) &lt;&lt; &quot;clearing &quot; &lt;&lt; inst.products.at(i).original_string &lt;&lt; end();</span>
+<span class="CommentedCode">//?       write_memory(inst.products.at(i), zero);</span>
+<span class="CommentedCode">//?     }</span>
+<span class="CommentedCode">//?   }</span>
   abandon<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>default_space<span class="Delimiter">,</span>
           <span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span> + <span class="Comment">/*</span><span class="Comment">array length</span><span class="Comment">*/</span><span class="Constant">1</span> + <span class="Comment">/*</span><span class="Comment">number-of-locals</span><span class="Comment">*/</span>Name[r][<span class="Constant">&quot;&quot;</span>]<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">// is this reagent one of the values returned by the current (reply) instruction?</span>
+<span class="Normal">bool</span> escaping<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// nothing escapes when you fall through past end of recipe</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &gt;= SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>r == current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span>
+      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
 <span class="Normal">void</span> rewrite_default_space_instruction<span class="Delimiter">(</span>instruction&amp; curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
-    raise &lt;&lt; to_string<span class="Delimiter">(</span>curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; can't take any ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; to_original_string<span class="Delimiter">(</span>curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; can't take any ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   curr<span class="Delimiter">.</span>name = <span class="Constant">&quot;new&quot;</span><span class="Delimiter">;</span>
   curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;location:type&quot;</span><span class="Delimiter">));</span>
   curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;number-of-locals:literal&quot;</span><span class="Delimiter">));</span>
@@ -305,7 +355,7 @@ Hide_missing_default_space_errors = <span class="Constant">false</span><span cla
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">bool</span> contains_non_special_name<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;::iterator p = Name[r]<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Name[r]<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt;::iterator p = Name[r]<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Name[r]<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;stash_&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// generated by rewrite_stashes_to_text (cross-layer)</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!is_special_name<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
@@ -322,7 +372,7 @@ Hide_missing_default_space_errors = <span class="Constant">false</span><span cla
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> <span class="Normal">operator</span>&lt;<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; a<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; b<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> aspace = <span class="Constant">0</span><span class="Delimiter">,</span> bspace = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> aspace = <span class="Constant">0</span><span class="Delimiter">,</span> bspace = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>a<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">))</span> aspace = to_integer<span class="Delimiter">(</span>property<span class="Delimiter">(</span>a<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)-&gt;</span>value<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>b<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">))</span> bspace = to_integer<span class="Delimiter">(</span>property<span class="Delimiter">(</span>b<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)-&gt;</span>value<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>aspace != bspace<span class="Delimiter">)</span> <span class="Identifier">return</span> aspace &lt; bspace<span class="Delimiter">;</span>
@@ -331,3 +381,4 @@ Hide_missing_default_space_errors = <span class="Constant">false</span><span cla
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

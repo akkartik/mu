@@ -3,29 +3,37 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 031address.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.SalientComment { color: #00ffff; }
-.traceAbsent { color: #c00000; }
-.Identifier { color: #fcb165; }
-.cSpecial { color: #008000; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.traceContains { color: #008000; }
-.Special { color: #c00000; }
+* { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
+.traceAbsent { color: #c00000; }
+.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: Instructions can read from addresses pointing at other locations using the</span>
 <span class="Comment">//: 'lookup' property.</span>
 
@@ -38,7 +46,7 @@ def main [
 ]
 <span class="traceContains">+mem: storing 34 in location 3</span>
 
-<span class="Delimiter">:(before &quot;long long int base = x.value&quot; following &quot;vector&lt;double&gt; read_memory(reagent x)&quot;)</span>
+<span class="Delimiter">:(before &quot;End Preprocess read_memory(x)&quot;)</span>
 canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
 
 <span class="Comment">//: similarly, write to addresses pointing at other locations using the</span>
@@ -50,10 +58,10 @@ def main [
 ]
 <span class="traceContains">+mem: storing 34 in location 2</span>
 
-<span class="Delimiter">:(before &quot;long long int base = x.value&quot; following &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
+<span class="Delimiter">:(before &quot;End Preprocess write_memory(x)&quot;)</span>
 canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  raise &lt;&lt; <span class="Constant">&quot;can't write to location 0 in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  raise &lt;&lt; <span class="Constant">&quot;can't write to location 0 in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -217,7 +225,7 @@ def main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:number
 ]
-<span class="traceContains">+parse: ingredient: 1: (&quot;address&quot; &quot;number&quot;), {&quot;lookup&quot;: ()}</span>
+<span class="traceContains">+parse: ingredient: {1: (&quot;address&quot; &quot;number&quot;), &quot;lookup&quot;: ()}</span>
 <span class="traceContains">+mem: storing 34 in location 3</span>
 
 <span class="Delimiter">:(before &quot;End Parsing reagent&quot;)</span>
@@ -247,7 +255,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Comment">//: grab an address, and then dump its value at intervals</span>
 <span class="Comment">//: useful for tracking down memory corruption (writing to an out-of-bounds address)</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> foo = -<span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Normal">int</span> foo = -<span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 _FOO<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
@@ -268,3 +276,4 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

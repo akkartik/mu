@@ -3,26 +3,34 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 085scenario_console.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.cSpecial { color: #008000; }
-.Identifier { color: #fcb165; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.Special { color: #c00000; }
+* { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: Clean syntax to manipulate and check the console in scenarios.</span>
 <span class="Comment">//: Instruction 'assume-console' implicitly creates a variable called</span>
 <span class="Comment">//: 'console' that is accessible inside other 'run' instructions in the</span>
@@ -55,7 +63,7 @@ scenario keyboard-in-scenario [
 ]
 
 <span class="Delimiter">:(before &quot;End Scenario Globals&quot;)</span>
-<span class="Normal">const</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> CONSOLE = Next_predefined_global_for_scenarios++<span class="Delimiter">;</span>
+<span class="Normal">const</span> <span class="Normal">int</span> CONSOLE = Next_predefined_global_for_scenarios++<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Special Scenario Variable Names(r)&quot;)</span>
 Name[r][<span class="Constant">&quot;console&quot;</span>] = CONSOLE<span class="Delimiter">;</span>
 
@@ -77,15 +85,15 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   istringstream in<span class="Delimiter">(</span><span class="Constant">&quot;[&quot;</span> + current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name + <span class="Constant">&quot;]&quot;</span><span class="Delimiter">);</span>
   recipe r<span class="Delimiter">;</span>
   slurp_body<span class="Delimiter">(</span>in<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> num_events = count_events<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Normal">int</span> num_events = count_events<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
   <span class="Comment">// initialize the events like in new-fake-console</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size = <span class="Comment">/*</span><span class="Comment">space for refcount</span><span class="Comment">*/</span><span class="Constant">1</span> + <span class="Comment">/*</span><span class="Comment">space for length</span><span class="Comment">*/</span><span class="Constant">1</span> + num_events*size_of_event<span class="Delimiter">();</span>
+  <span class="Normal">int</span> size = <span class="Comment">/*</span><span class="Comment">space for refcount</span><span class="Comment">*/</span><span class="Constant">1</span> + <span class="Comment">/*</span><span class="Comment">space for length</span><span class="Comment">*/</span><span class="Constant">1</span> + num_events*size_of_event<span class="Delimiter">();</span>
   ensure_space<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> event_data_address = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
+  <span class="Normal">int</span> event_data_address = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
   <span class="Comment">// store length</span>
   put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> num_events<span class="Delimiter">);</span>
   Current_routine<span class="Delimiter">-&gt;</span>alloc += <span class="Comment">/*</span><span class="Comment">skip refcount and length</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> instruction&amp; curr = r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;left-click&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 'left-click' event starting at &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;&lt; end<span class="Delimiter">();</span>
@@ -120,9 +128,9 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
       trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 'type' event starting at &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Normal">const</span> string&amp; contents = curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
       <span class="Normal">const</span> <span class="Normal">char</span>* raw_contents = contents<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
-      <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> num_keyboard_events = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
-      <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
-      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; num_keyboard_events<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">int</span> num_keyboard_events = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
+      <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
+      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; num_keyboard_events<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 'text' tag at &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;&lt; end<span class="Delimiter">();</span>
         put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag for 'text' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
         <span class="Normal">uint32_t</span> curr_character<span class="Delimiter">;</span>
@@ -141,14 +149,16 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> CONSOLE<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing console in &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;&lt; end<span class="Delimiter">();</span>
   Current_routine<span class="Delimiter">-&gt;</span>alloc += size_of_console<span class="Delimiter">();</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> console_address = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> CONSOLE<span class="Delimiter">);</span>
+  <span class="Normal">int</span> console_address = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> CONSOLE<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing console data in &quot;</span> &lt;&lt; console_address+<span class="Constant">2</span> &lt;&lt; end<span class="Delimiter">();</span>
   put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> console_address+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'data' in container 'events'</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> event_data_address<span class="Delimiter">);</span>
+  <span class="Comment">// increment refcount for event data</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> event_data_address<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-map&lt;string<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt; Key<span class="Delimiter">;</span>
+map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt; Key<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
 initialize_key_names<span class="Delimiter">();</span>
 <span class="Delimiter">:(code)</span>
@@ -273,22 +283,22 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; <span class="Constant">&quot;console not initialized</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> console_address = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> CONSOLE<span class="Delimiter">);</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> console_data = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> console_address+<span class="Constant">1</span><span class="Delimiter">);</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> console_data<span class="Delimiter">);</span>  <span class="Comment">// array size</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">,</span> curr = console_data+<span class="Constant">1</span><span class="Delimiter">;</span> i &lt; size<span class="Delimiter">;</span> ++i<span class="Delimiter">,</span> curr+=size_of_event<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> console_address = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> CONSOLE<span class="Delimiter">);</span>
+  <span class="Normal">int</span> console_data = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> console_address+<span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Normal">int</span> size = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> console_data<span class="Delimiter">);</span>  <span class="Comment">// array size</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">,</span> curr = console_data+<span class="Constant">1</span><span class="Delimiter">;</span> i &lt; size<span class="Delimiter">;</span> ++i<span class="Delimiter">,</span> curr+=size_of_event<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> != <span class="Comment">/*</span><span class="Comment">text</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr+<span class="Constant">1</span><span class="Delimiter">)</span> != ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> n = <span class="Constant">0</span><span class="Delimiter">;</span> n &lt; size_of_event<span class="Delimiter">();</span> ++n<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> n = <span class="Constant">0</span><span class="Delimiter">;</span> n &lt; size_of_event<span class="Delimiter">();</span> ++n<span class="Delimiter">)</span>
       put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr+n<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span>n<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> count_events<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> count_events<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> instruction&amp; curr = r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;type&quot;</span><span class="Delimiter">)</span>
       result += unicode_length<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
@@ -298,9 +308,9 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size_of_event<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> size_of_event<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Comment">// memoize result if already computed</span>
-  <span class="Normal">static</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">static</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   type_tree* type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;event&quot;</span><span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;event&quot;</span><span class="Delimiter">));</span>
   result = size_of<span class="Delimiter">(</span>type<span class="Delimiter">);</span>
@@ -308,9 +318,9 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size_of_console<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> size_of_console<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Comment">// memoize result if already computed</span>
-  <span class="Normal">static</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">static</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;console&quot;</span><span class="Delimiter">));</span>
   type_tree* type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;console&quot;</span><span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;console&quot;</span><span class="Delimiter">));</span>
@@ -321,3 +331,4 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

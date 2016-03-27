@@ -3,28 +3,36 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/010-errors.mu</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.muScenario { color: #00af00; }
-.muControl { color: #c0a020; }
-.Delimiter { color: #800080; }
-.Special { color: #c00000; }
-.Constant { color: #00a0a0; }
+* { font-size: 12pt; font-size: 1em; }
 .muRecipe { color: #ff8700; }
-.Comment { color: #9090ff; }
 .muData { color: #ffff00; }
+.Special { color: #c00000; }
+.muScenario { color: #00af00; }
+.Delimiter { color: #800080; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
+.muControl { color: #c0a020; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="SalientComment">## handling malformed programs</span>
 
 <span class="muData">container</span> programming-environment-data [
@@ -43,8 +51,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># if recipe editor has errors, stop</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> *recipe-errors
-    status:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[errors found     ]</span>
-    update-status screen, status, <span class="Constant">1/red</span>
+    update-status screen, <span class="Constant">[errors found     ]</span>, <span class="Constant">1/red</span>
     errors-found?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
@@ -56,8 +63,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   recipe-errors:address:shared:array:character<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-errors:offset</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> recipe-errors
-    status:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[errors found     ]</span>
-    update-status screen, status, <span class="Constant">1/red</span>
+    update-status screen, <span class="Constant">[errors found     ]</span>, <span class="Constant">1/red</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -97,9 +103,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     error-index:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
     sandboxes-completed-successfully?:boolean<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
     <span class="muControl">break-if</span> sandboxes-completed-successfully?
-    status-template:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[errors found (_)    ]</span>
     error-index-text:address:shared:array:character<span class="Special"> &lt;- </span>to-text error-index
-    status:address:shared:array:character<span class="Special"> &lt;- </span>interpolate status-template, error-index-text
+    status:address:shared:array:character<span class="Special"> &lt;- </span>interpolate <span class="Constant">[errors found (_)    ]</span>, error-index-text
     update-status screen, status, <span class="Constant">1/red</span>
   <span class="Delimiter">}</span>
 ]
@@ -277,8 +282,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo x:_elem -&gt; z:_elem [</span>
 <span class="Constant">local-scope</span>
 <span class="Constant">load-ingredients</span>
-<span class="Constant">z &lt;- add x, [a]</span>
-]]
+<span class="Constant">y:address:number &lt;- copy 0</span>
+<span class="Constant">z &lt;- add x, y</span>
+<span class="Constant">]</span>]
   <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo 2]</span>
   <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
   assume-console [
@@ -290,10 +296,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .recipe foo x:_elem -&gt; z:_elem [                   ┊                                                 .</span>
    <span class="Constant"> .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .load-ingredients                                  ┊0                                               x.</span>
-   <span class="Constant"> .z &lt;- add x, [a]                                   ┊foo 2                                            .</span>
-   <span class="Constant"> .]                                                 ┊foo_2: 'add' requires number ingredients, but go↩.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .</span>
-   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .y:address:number &lt;- copy 0                        ┊foo 2                                            .</span>
+   <span class="Constant"> .z &lt;- add x, y                                     ┊foo_2: 'add' requires number ingredients, but go↩.</span>
+   <span class="Constant"> .]                                                 ┊t y                                              .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
   <span class="Comment"># now rerun everything</span>
@@ -309,10 +315,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .recipe foo x:_elem -&gt; z:_elem [                   ┊                                                 .</span>
    <span class="Constant"> .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .load-ingredients                                  ┊0                                               x.</span>
-   <span class="Constant"> .z &lt;- add x, [a]                                   ┊foo 2                                            .</span>
-   <span class="Constant"> .]                                                 ┊foo_2: 'add' requires number ingredients, but go↩.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊t [a]                                            .</span>
-   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .y:address:number &lt;- copy 0                        ┊foo 2                                            .</span>
+   <span class="Constant"> .z &lt;- add x, y                                     ┊foo_3: 'add' requires number ingredients, but go↩.</span>
+   <span class="Constant"> .]                                                 ┊t y                                              .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
@@ -724,3 +730,4 @@ _, c:number<span class="Special"> &lt;- </span>divide-with-remainder a, b
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

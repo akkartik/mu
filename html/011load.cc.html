@@ -3,28 +3,36 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 011load.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
 .traceAbsent { color: #c00000; }
 .cSpecial { color: #008000; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.Identifier { color: #fcb165; }
 .traceContains { color: #008000; }
-.Special { color: #c00000; }
-.Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
 .Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: Phase 1 of running mu code: load it from a textual representation.</span>
 
 <span class="Delimiter">:(scenarios load)</span>  <span class="Comment">// use 'load' instead of 'run' in all scenarios in this layer</span>
@@ -33,8 +41,8 @@ def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
-<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;}</span>
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(code)</span>
 vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -67,7 +75,7 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> slurp_recipe<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> slurp_recipe<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe result<span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Comment">// End Load Recipe Name</span>
@@ -87,8 +95,6 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
   slurp_body<span class="Delimiter">(</span>in<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
   <span class="Comment">// End Recipe Body(result)</span>
   put<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">),</span> result<span class="Delimiter">);</span>
-  <span class="Comment">// track added recipes because we may need to undo them in tests; see below</span>
-  Recently_added_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -255,24 +261,6 @@ Disable_redefine_checks = <span class="Constant">false</span><span class="Delimi
   exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Comment">//: Have tests clean up any recipes they added.</span>
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-vector&lt;recipe_ordinal&gt; Recently_added_recipes<span class="Delimiter">;</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-clear_recently_added_recipes<span class="Delimiter">();</span>
-<span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> clear_recently_added_recipes<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &gt;= Reserved_for_tests  <span class="Comment">// don't renumber existing recipes, like 'interactive'</span>
-        &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>  <span class="Comment">// in case previous test had duplicate definitions</span>
-      Recipe_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)).</span>name<span class="Delimiter">);</span>
-    Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-  <span class="Delimiter">}</span>
-  <span class="Comment">// Clear Other State For Recently_added_recipes</span>
-  Recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-<span class="Delimiter">}</span>
-
 <span class="Delimiter">:(scenario parse_comment_outside_recipe)</span>
 <span class="Comment"># this comment will be dropped by the tangler, so we need a dummy recipe to stop that</span>
 def f1 [
@@ -282,8 +270,8 @@ def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
-<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;}</span>
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction)</span>
 def main [
@@ -291,8 +279,8 @@ def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
-<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;}</span>
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction_2)</span>
 def main [
@@ -301,8 +289,8 @@ def main [
   <span class="Comment"># comment</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
-<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;}</span>
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction_3)</span>
 def main [
@@ -311,19 +299,19 @@ def main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
-<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;}</span>
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
-<span class="traceContains">+parse:   product: 2: &quot;number&quot;</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;}</span>
+<span class="traceContains">+parse:   product: {2: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_comment_after_instruction)</span>
 def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>  <span class="Comment"># comment</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
-<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;}</span>
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_label)</span>
 def main [
@@ -342,43 +330,43 @@ def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>/foo:bar:baz
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;, {&quot;foo&quot;: (&quot;bar&quot; &quot;baz&quot;)}</span>
-<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;, &quot;foo&quot;: (&quot;bar&quot; &quot;baz&quot;)}</span>
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_multiple_products)</span>
 def main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
-<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
-<span class="traceContains">+parse:   product: 2: &quot;number&quot;</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;}</span>
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   product: {2: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_multiple_ingredients)</span>
 def main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
-<span class="traceContains">+parse:   ingredient: 4: &quot;number&quot;</span>
-<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
-<span class="traceContains">+parse:   product: 2: &quot;number&quot;</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;}</span>
+<span class="traceContains">+parse:   ingredient: {4: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   product: {2: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_multiple_types)</span>
 def main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: 23: &quot;literal&quot;</span>
-<span class="traceContains">+parse:   ingredient: 4: &quot;number&quot;</span>
-<span class="traceContains">+parse:   product: 1: &quot;number&quot;</span>
-<span class="traceContains">+parse:   product: 2: (&quot;address&quot; &quot;number&quot;)</span>
+<span class="traceContains">+parse:   ingredient: {23: &quot;literal&quot;}</span>
+<span class="traceContains">+parse:   ingredient: {4: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
+<span class="traceContains">+parse:   product: {2: (&quot;address&quot; &quot;number&quot;)}</span>
 
 <span class="Delimiter">:(scenario parse_properties)</span>
 def main [
   <span class="Constant">1</span>:address:number/lookup<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
-<span class="traceContains">+parse:   product: 1: (&quot;address&quot; &quot;number&quot;), {&quot;lookup&quot;: ()}</span>
+<span class="traceContains">+parse:   product: {1: (&quot;address&quot; &quot;number&quot;), &quot;lookup&quot;: ()}</span>
 
 <span class="Comment">//: this test we can't represent with a scenario</span>
 <span class="Delimiter">:(code)</span>
@@ -413,3 +401,4 @@ $error: <span class="Constant">0</span>
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

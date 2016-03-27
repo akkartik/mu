@@ -3,28 +3,36 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - edit/005-sandbox.mu</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.muControl { color: #c0a020; }
-.Delimiter { color: #800080; }
-.muScenario { color: #00af00; }
+* { font-size: 12pt; font-size: 1em; }
+.muRecipe { color: #ff8700; }
 .muData { color: #ffff00; }
 .Special { color: #c00000; }
-.Constant { color: #00a0a0; }
-.muRecipe { color: #ff8700; }
+.muScenario { color: #00af00; }
+.Delimiter { color: #800080; }
 .Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
+.muControl { color: #c0a020; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="SalientComment">## running code from the editor and creating sandboxes</span>
 <span class="Comment">#</span>
 <span class="Comment"># Running code in the sandbox editor prepends its contents to a list of</span>
@@ -154,15 +162,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     do-run?:boolean<span class="Special"> &lt;- </span>equal *k, <span class="Constant">65532/F4</span>
     <span class="muControl">break-unless</span> do-run?
-    status:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[running...       ]</span>
-    screen<span class="Special"> &lt;- </span>update-status screen, status, <span class="Constant">245/grey</span>
+    screen<span class="Special"> &lt;- </span>update-status screen, <span class="Constant">[running...       ]</span>, <span class="Constant">245/grey</span>
     error?:boolean, env, screen<span class="Special"> &lt;- </span>run-sandboxes env, screen
     <span class="Comment"># F4 might update warnings and results on both sides</span>
     screen<span class="Special"> &lt;- </span>render-all screen, env
     <span class="Delimiter">{</span>
       <span class="muControl">break-if</span> error?
-      status:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[                 ]</span>
-      screen<span class="Special"> &lt;- </span>update-status screen, status, <span class="Constant">245/grey</span>
+      screen<span class="Special"> &lt;- </span>update-status screen, <span class="Constant">[                 ]</span>, <span class="Constant">245/grey</span>
     <span class="Delimiter">}</span>
     screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
     <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
@@ -250,7 +256,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># first clear previous versions, in case we deleted some sandbox</span>
   $system <span class="Constant">[rm lesson/[0-9]</span>* &gt;/dev/null <span class="Constant">2</span>&gt;/dev/null]  <span class="Comment"># some shells can't handle '&gt;&amp;'</span>
   curr:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
-  suffix:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[.out]</span>
   idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr
@@ -355,7 +360,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># read all scenarios, pushing them to end of a list of scenarios</span>
-  suffix:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[.out]</span>
   idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   curr:address:address:shared:sandbox-data<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">sandbox:offset</span>
   <span class="Delimiter">{</span>
@@ -368,7 +372,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     *data<span class="Special"> &lt;- </span>copy contents
     <span class="Comment"># restore expected output for sandbox if it exists</span>
     <span class="Delimiter">{</span>
-      filename<span class="Special"> &lt;- </span>append filename, suffix
+      filename<span class="Special"> &lt;- </span>append filename, <span class="Constant">[.out]</span>
       contents<span class="Special"> &lt;- </span>restore filename
       <span class="muControl">break-unless</span> contents
 <span class="Constant">      &lt;end-restore-sandbox&gt;</span>
@@ -390,8 +394,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   <span class="muControl">return-unless</span> sandbox-screen
   <span class="Comment"># print 'screen:'</span>
-  header:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[screen:]</span>
-  row<span class="Special"> &lt;- </span>render screen, header, left, right, <span class="Constant">245/grey</span>, row
+  row<span class="Special"> &lt;- </span>render screen, <span class="Constant">[screen:]</span>, left, right, <span class="Constant">245/grey</span>, row
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, left
   <span class="Comment"># start printing sandbox-screen</span>
   column:number<span class="Special"> &lt;- </span>copy left
@@ -995,3 +998,4 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

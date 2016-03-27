@@ -2,31 +2,39 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 059shape_shifting_recipe.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<title>Mu - 058shape_shifting_recipe.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.Todo { color: #000000; background-color: #ffff00; }
-.cSpecial { color: #008000; }
-.CommentedCode { color: #6c6c6c; }
-.Identifier { color: #fcb165; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.traceContains { color: #008000; }
-.Comment { color: #9090ff; }
-.Special { color: #c00000; }
+* { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.traceContains { color: #008000; }
+.cSpecial { color: #008000; }
+.Special { color: #c00000; }
 .Delimiter { color: #800080; }
 .SalientComment { color: #00ffff; }
+.Identifier { color: #fcb165; }
+.Comment { color: #9090ff; }
+.Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="SalientComment">//:: Like container definitions, recipes too can contain type parameters.</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe)</span>
@@ -70,23 +78,6 @@ def foo a:_t <span class="Delimiter">-&gt;</span> result:_t [
 <span class="Delimiter">:(before &quot;End Matching Types For Literal(to)&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>contains_type_ingredient_name<span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 
-<span class="Comment">//: We'll be creating recipes without loading them from anywhere by</span>
-<span class="Comment">//: *specializing* existing recipes.</span>
-<span class="Comment">//:</span>
-<span class="Comment">//: Keep track of these new recipes in a separate variable in addition to</span>
-<span class="Comment">//: Recently_added_recipes, so that edit/ can clear them before reloading to</span>
-<span class="Comment">//: regenerate errors.</span>
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-vector&lt;recipe_ordinal&gt; Recently_added_shape_shifting_recipes<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-
-<span class="Comment">//: make sure we don't clear any of these recipes when we start running tests</span>
-<span class="Delimiter">:(before &quot;End Loading .mu Files&quot;)</span>
-Recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-Recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-
 <span class="Comment">//: save original name of specialized recipes</span>
 <span class="Delimiter">:(before &quot;End recipe Fields&quot;)</span>
 string original_name<span class="Delimiter">;</span>
@@ -106,7 +97,7 @@ candidates = strictly_matching_shape_shifting_variants<span class="Delimiter">(<
   <span class="Comment">// perform all transforms on the new specialization</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!variant<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;transforming new specialization: &quot;</span> &lt;&lt; variant<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> t = <span class="Constant">0</span><span class="Delimiter">;</span> t &lt; SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">);</span> ++t<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> t = <span class="Constant">0</span><span class="Delimiter">;</span> t &lt; SIZE<span class="Delimiter">(</span>Transform<span class="Delimiter">);</span> ++t<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Delimiter">(</span>*Transform<span class="Delimiter">.</span>at<span class="Delimiter">(</span>t<span class="Delimiter">))(</span>new_recipe_ordinal<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -130,7 +121,7 @@ candidates = strictly_matching_shape_shifting_variants<span class="Delimiter">(<
 <span class="Comment">// phase 2 of static dispatch</span>
 vector&lt;recipe_ordinal&gt; strictly_matching_shape_shifting_variants<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt;&amp; variants<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   vector&lt;recipe_ordinal&gt; result<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variants<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variants<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!any_type_ingredient_in_header<span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>all_concrete_header_reagents_strictly_match<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))))</span>
@@ -148,13 +139,13 @@ vector&lt;recipe_ordinal&gt; strictly_matching_shape_shifting_variants<span clas
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;too few products&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!concrete_type_names_strictly_match<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
       trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;concrete-type match failed: ingredient &quot;</span> &lt;&lt; i &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>is_dummy<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!concrete_type_names_strictly_match<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
       trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;strict match failed: product &quot;</span> &lt;&lt; i &lt;&lt; end<span class="Delimiter">();</span>
@@ -168,21 +159,21 @@ vector&lt;recipe_ordinal&gt; strictly_matching_shape_shifting_variants<span clas
 recipe_ordinal best_shape_shifting_variant<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt;&amp; candidates<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!candidates<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Comment">// primary score</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> max_score = -<span class="Constant">1</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>candidates<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> score = number_of_concrete_type_names<span class="Delimiter">(</span>candidates<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Normal">int</span> max_score = -<span class="Constant">1</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>candidates<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">int</span> score = number_of_concrete_type_names<span class="Delimiter">(</span>candidates<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
     assert<span class="Delimiter">(</span>score &gt; -<span class="Constant">1</span><span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>score &gt; max_score<span class="Delimiter">)</span> max_score = score<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// break any ties at max_score by a secondary score</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> min_score2 = <span class="Constant">999</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> best_index = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>candidates<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> score1 = number_of_concrete_type_names<span class="Delimiter">(</span>candidates<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Normal">int</span> min_score2 = <span class="Constant">999</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> best_index = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>candidates<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">int</span> score1 = number_of_concrete_type_names<span class="Delimiter">(</span>candidates<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
     assert<span class="Delimiter">(</span>score1 &lt;= max_score<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>score1 != max_score<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Normal">const</span> recipe&amp; candidate = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> candidates<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-    <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> score2 = <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>candidate<span class="Delimiter">.</span>products<span class="Delimiter">)</span>-SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">))</span>
+    <span class="Normal">int</span> score2 = <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>candidate<span class="Delimiter">.</span>products<span class="Delimiter">)</span>-SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">))</span>
                            + <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span>-SIZE<span class="Delimiter">(</span>candidate<span class="Delimiter">.</span>ingredients<span class="Delimiter">));</span>
     assert<span class="Delimiter">(</span>score2 &lt; <span class="Constant">999</span><span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>score2 &lt; min_score2<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -195,11 +186,11 @@ recipe_ordinal best_shape_shifting_variant<span class="Delimiter">(</span><span 
 
 <span class="Normal">bool</span> any_type_ingredient_in_header<span class="Delimiter">(</span>recipe_ordinal variant<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variant<span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>contains_type_ingredient_name<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
       <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>contains_type_ingredient_name<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
       <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -212,23 +203,23 @@ recipe_ordinal best_shape_shifting_variant<span class="Delimiter">(</span><span 
   <span class="Identifier">return</span> concrete_type_names_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">.</span>type<span class="Delimiter">,</span> from<span class="Delimiter">.</span>type<span class="Delimiter">,</span> from<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> number_of_concrete_type_names<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> number_of_concrete_type_names<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     result += number_of_concrete_type_names<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     result += number_of_concrete_type_names<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> number_of_concrete_type_names<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> number_of_concrete_type_names<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> number_of_concrete_type_names<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> number_of_concrete_type_names<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> number_of_concrete_type_names<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; !is_type_ingredient_name<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span>
     result++<span class="Delimiter">;</span>
   result += number_of_concrete_type_names<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
@@ -272,8 +263,6 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
   <span class="Comment">// make a copy</span>
   assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> exemplar<span class="Delimiter">));</span>
   assert<span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> new_recipe_ordinal<span class="Delimiter">));</span>
-  Recently_added_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_recipe_ordinal<span class="Delimiter">);</span>
-  Recently_added_shape_shifting_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_recipe_ordinal<span class="Delimiter">);</span>
   put<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> new_recipe_ordinal<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> exemplar<span class="Delimiter">));</span>
   recipe&amp; new_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> new_recipe_ordinal<span class="Delimiter">);</span>
   new_recipe<span class="Delimiter">.</span>name = new_name<span class="Delimiter">;</span>
@@ -298,16 +287,16 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
 <span class="Normal">void</span> compute_type_names<span class="Delimiter">(</span>recipe&amp; variant<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compute type names: &quot;</span> &lt;&lt; variant<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
   map&lt;string<span class="Delimiter">,</span> type_tree*&gt; type_names<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     save_or_deduce_type_name<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> type_names<span class="Delimiter">,</span> variant<span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     save_or_deduce_type_name<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> type_names<span class="Delimiter">,</span> variant<span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = variant<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  instruction: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> in = <span class="Constant">0</span><span class="Delimiter">;</span> in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++in<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> in = <span class="Constant">0</span><span class="Delimiter">;</span> in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++in<span class="Delimiter">)</span>
       save_or_deduce_type_name<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> type_names<span class="Delimiter">,</span> variant<span class="Delimiter">);</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> out = <span class="Constant">0</span><span class="Delimiter">;</span> out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++out<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> out = <span class="Constant">0</span><span class="Delimiter">;</span> out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++out<span class="Delimiter">)</span>
       save_or_deduce_type_name<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">),</span> type_names<span class="Delimiter">,</span> variant<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
@@ -330,8 +319,8 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> compute_type_ingredient_mappings<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; exemplar<span class="Delimiter">,</span> <span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree*&gt;&amp; mappings<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller_recipe<span class="Delimiter">,</span> <span class="Normal">bool</span>* error<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> limit = min<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">),</span> SIZE<span class="Delimiter">(</span>exemplar<span class="Delimiter">.</span>ingredients<span class="Delimiter">));</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; limit<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> limit = min<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">),</span> SIZE<span class="Delimiter">(</span>exemplar<span class="Delimiter">.</span>ingredients<span class="Delimiter">));</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; limit<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> reagent&amp; exemplar_reagent = exemplar<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     reagent ingredient = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     canonize_type<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
@@ -339,15 +328,16 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
     accumulate_type_ingredients<span class="Delimiter">(</span>exemplar_reagent<span class="Delimiter">,</span> ingredient<span class="Delimiter">,</span> mappings<span class="Delimiter">,</span> exemplar<span class="Delimiter">,</span> inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">,</span> error<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   limit = min<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">),</span> SIZE<span class="Delimiter">(</span>exemplar<span class="Delimiter">.</span>products<span class="Delimiter">));</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; limit<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; limit<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> reagent&amp; exemplar_reagent = exemplar<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     reagent product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>is_dummy<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
     accumulate_type_ingredients<span class="Delimiter">(</span>exemplar_reagent<span class="Delimiter">,</span> product<span class="Delimiter">,</span> mappings<span class="Delimiter">,</span> exemplar<span class="Delimiter">,</span> inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">,</span> error<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">inline</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> min<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> a<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> b<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">inline</span> <span class="Normal">int</span> min<span class="Delimiter">(</span><span class="Normal">int</span> a<span class="Delimiter">,</span> <span class="Normal">int</span> b<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> <span class="Delimiter">(</span>a &lt; b<span class="Delimiter">)</span> ? a : b<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -360,7 +350,8 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
   <span class="Normal">if</span> <span class="Delimiter">(</span>!exemplar_type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!refinement_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// todo: make this smarter; only flag an error if exemplar_type contains some *new* type ingredient</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>exemplar<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type ingredient in &quot;</span> &lt;&lt; exemplar_reagent<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>exemplar<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type ingredient for &quot;</span> &lt;&lt; exemplar_reagent<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; <span class="Constant">&quot;  (called from '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>call_instruction<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;')</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_type_ingredient_name<span class="Delimiter">(</span>exemplar_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
@@ -379,7 +370,7 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
     <span class="Delimiter">}</span>
     <span class="Normal">else</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>!deeply_equal_type_names<span class="Delimiter">(</span>get<span class="Delimiter">(</span>mappings<span class="Delimiter">,</span> exemplar_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">),</span> curr_refinement_type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;no call found for '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>call_instruction<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;no call found for '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>call_instruction<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
         *error = <span class="Constant">true</span><span class="Delimiter">;</span>
         <span class="Normal">delete</span> curr_refinement_type<span class="Delimiter">;</span>
         <span class="Identifier">return</span><span class="Delimiter">;</span>
@@ -401,18 +392,18 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
   <span class="Comment">// update its header</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>mappings<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;replacing in recipe header ingredients&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     replace_type_ingredients<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> mappings<span class="Delimiter">,</span> new_recipe<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;replacing in recipe header products&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     replace_type_ingredients<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> mappings<span class="Delimiter">,</span> new_recipe<span class="Delimiter">);</span>
   <span class="Comment">// update its body</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = new_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;replacing in instruction '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span>
       replace_type_ingredients<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> mappings<span class="Delimiter">,</span> new_recipe<span class="Delimiter">);</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span>
       replace_type_ingredients<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> mappings<span class="Delimiter">,</span> new_recipe<span class="Delimiter">);</span>
     <span class="Comment">// special-case for new: replace type ingredient in first ingredient *value*</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;new&quot;</span> &amp;&amp; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>type<span class="Delimiter">-&gt;</span>name != <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -492,13 +483,8 @@ type_tree* parse_type_tree<span class="Delimiter">(</span>istream&amp; in<span c
     in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'('</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    string type_name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">))</span>
-      put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
-    type_tree* result = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>type_name<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">));</span>
-    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'('</span><span class="Delimiter">)</span>
+    <span class="Identifier">return</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">),</span> <span class="Constant">0</span><span class="Delimiter">);</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip '('</span>
   type_tree* result = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   type_tree** curr = &amp;result<span class="Delimiter">;</span>
@@ -508,14 +494,8 @@ type_tree* parse_type_tree<span class="Delimiter">(</span>istream&amp; in<span c
     skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">)</span>
       <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>left = parse_type_tree<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    <span class="Normal">else</span> <span class="Delimiter">{</span>
+    <span class="Normal">else</span>
       <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>!is_type_ingredient_name<span class="Delimiter">((</span>*curr<span class="Delimiter">)-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>name<span class="Delimiter">))</span>
-          put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>name<span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
-        <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>name<span class="Delimiter">);</span>
-      <span class="Delimiter">}</span>
-    <span class="Delimiter">}</span>
     curr = &amp;<span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>right<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip ')'</span>
@@ -545,15 +525,15 @@ string inspect<span class="Delimiter">(</span><span class="Normal">const</span> 
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> ensure_all_concrete_types<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">const</span><span class="Comment">*/</span> recipe&amp; new_recipe<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; exemplar<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     ensure_all_concrete_types<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> exemplar<span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     ensure_all_concrete_types<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> exemplar<span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>new_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = new_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span>
       ensure_all_concrete_types<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> exemplar<span class="Delimiter">);</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span>
       ensure_all_concrete_types<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> exemplar<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
@@ -602,19 +582,19 @@ def bar a:foo:_t <span class="Delimiter">-&gt;</span> result:_t [
   result<span class="Special"> &lt;- </span>get a<span class="Delimiter">,</span> x:offset
 ]
 container foo:_t [
-  x:_t
-  y:number
+  <span class="Normal">x</span>:_t
+  <span class="Normal">y</span>:number
 ]
 <span class="traceContains">+mem: storing 14 in location 20</span>
 <span class="traceContains">+mem: storing 15 in location 21</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_nested)</span>
 container c:_a:_b [
-  a:_a
-  b:_b
+  <span class="Normal">a</span>:_a
+  <span class="Normal">b</span>:_b
 ]
 def main [
-  s:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  <span class="Normal">s</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
   <span class="Delimiter">{</span>x: <span class="Delimiter">(</span>c <span class="Delimiter">(</span>address shared array character<span class="Delimiter">)</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>merge s<span class="Delimiter">,</span> <span class="Constant">34</span>
   foo x
 ]
@@ -631,12 +611,12 @@ def main [
 def bar a:foo:_t <span class="Delimiter">-&gt;</span> result:_t [
   local-scope
   load-ingredients
-  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   result<span class="Special"> &lt;- </span>get a<span class="Delimiter">,</span> x:offset  <span class="Comment"># shouldn't collide with other variable</span>
 ]
 container foo:_t [
-  x:_t
-  y:number
+  <span class="Normal">x</span>:_t
+  <span class="Normal">y</span>:number
 ]
 <span class="traceContains">+mem: storing 14 in location 20</span>
 <span class="traceContains">+mem: storing 15 in location 21</span>
@@ -656,8 +636,8 @@ def main [
   <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:shared:foo:point
 ]
 container foo:_t [
-  x:_t
-  y:number
+  <span class="Normal">x</span>:_t
+  <span class="Normal">y</span>:number
 ]
 def bar x:number <span class="Delimiter">-&gt;</span> result:address:shared:foo:_t [
   local-scope
@@ -682,12 +662,52 @@ def bar x:number <span class="Delimiter">-&gt;</span> result:address:shared:foo:
 ]
 <span class="Comment"># container defined after use</span>
 container foo:_t [
-  x:_t
-  y:number
+  <span class="Normal">x</span>:_t
+  <span class="Normal">y</span>:number
 ]
 <span class="traceContains">+mem: storing 0 in location 11</span>
 <span class="traceContains">+mem: storing 0 in location 12</span>
 <span class="traceContains">+mem: storing 0 in location 13</span>
+
+<span class="Delimiter">:(scenario shape_shifting_recipe_called_with_dummy)</span>
+def main [
+  _<span class="Special"> &lt;- </span>bar <span class="Constant">34</span>
+]
+def bar x:_t <span class="Delimiter">-&gt;</span> result:address:shared:_t [
+  local-scope
+  load-ingredients
+  result<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Comment">// this one needs a little more fine-grained control</span>
+<span class="Normal">void</span> test_shape_shifting_new_ingredient_does_not_pollute_global_namespace<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  Trace_file = <span class="Constant">&quot;shape_shifting_new_ingredient_does_not_pollute_global_namespace&quot;</span><span class="Delimiter">;</span>
+
+  <span class="Comment">// if you specialize a shape-shifting recipe that allocates a type-ingredient..</span>
+  transform<span class="Delimiter">(</span><span class="Constant">&quot;def barz x:_elem [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+            <span class="Constant">&quot;  local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+            <span class="Constant">&quot;  load-ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+            <span class="Constant">&quot;  y:address:shared:number &lt;- new _elem:type</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+            <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+            <span class="Constant">&quot;def fooz [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+            <span class="Constant">&quot;  local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+            <span class="Constant">&quot;  barz 34</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+            <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// ..and if you then try to load a new shape-shifting container with that</span>
+  <span class="Comment">// type-ingredient</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo:_elem [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:_elem</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  y:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// then it should work as usual</span>
+  reagent callsite<span class="Delimiter">(</span><span class="Constant">&quot;x:foo:point&quot;</span><span class="Delimiter">);</span>
+  reagent element = element_type<span class="Delimiter">(</span>callsite<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;x&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;point&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_supports_compound_types)</span>
 def main [
@@ -707,8 +727,8 @@ def bar a:_t <span class="Delimiter">-&gt;</span> result:_t [
 <span class="Delimiter">:(scenario shape_shifting_recipe_error)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  a:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
-  b:address:shared:number<span class="Special"> &lt;- </span>foo a
+  <span class="Normal">a</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
+  <span class="Normal">b</span>:address:shared:number<span class="Special"> &lt;- </span>foo a
 ]
 def foo a:_t <span class="Delimiter">-&gt;</span> b:_t [
   load-ingredients
@@ -722,7 +742,7 @@ def main [
 ]
 def foo [
   local-scope
-  x:number<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># ensure no header</span>
+  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># ensure no header</span>
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>bar x  <span class="Comment"># call a shape-shifting recipe</span>
 ]
 def bar x:_elem <span class="Delimiter">-&gt;</span> y:_elem [
@@ -801,8 +821,8 @@ def foo x:_elem<span class="Delimiter">,</span> y:_elem [
 <span class="Delimiter">:(scenario multiple_shape_shifting_variants)</span>
 <span class="Comment"># try to call two different shape-shifting recipes with the same name</span>
 def main [
-  e1:d1:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
-  e2:d2:number<span class="Special"> &lt;- </span>merge <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+  <span class="Normal">e1</span>:d1:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
+  <span class="Normal">e2</span>:d2:number<span class="Special"> &lt;- </span>merge <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>foo e1
   <span class="Constant">2</span>:number/<span class="Special">raw &lt;- </span>foo e2
 ]
@@ -819,11 +839,11 @@ def foo a:d2:_elem <span class="Delimiter">-&gt;</span> b:number [
 ]
 <span class="Comment"># the shape-shifting containers they use</span>
 container d1:_elem [
-  x:_elem
+  <span class="Normal">x</span>:_elem
 ]
 container d2:_elem [
-  x:number
-  y:_elem
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:_elem
 ]
 <span class="traceContains">+mem: storing 34 in location 1</span>
 <span class="traceContains">+mem: storing 35 in location 2</span>
@@ -831,8 +851,8 @@ container d2:_elem [
 <span class="Delimiter">:(scenario multiple_shape_shifting_variants_2)</span>
 <span class="Comment"># static dispatch between shape-shifting variants, _including pointer lookups_</span>
 def main [
-  e1:d1:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
-  e2:address:shared:d2:number<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>d2 number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
+  <span class="Normal">e1</span>:d1:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
+  <span class="Normal">e2</span>:address:shared:d2:number<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>d2 number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>foo e1
   <span class="Constant">2</span>:number/<span class="Special">raw &lt;- </span>foo *e2  <span class="Comment"># different from previous scenario</span>
 ]
@@ -847,11 +867,11 @@ def foo a:d2:_elem <span class="Delimiter">-&gt;</span> b:number [
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]
 container d1:_elem [
-  x:_elem
+  <span class="Normal">x</span>:_elem
 ]
 container d2:_elem [
-  x:number
-  y:_elem
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:_elem
 ]
 <span class="traceContains">+mem: storing 34 in location 1</span>
 <span class="traceContains">+mem: storing 35 in location 2</span>
@@ -859,7 +879,7 @@ container d2:_elem [
 <span class="Delimiter">:(scenario missing_type_in_shape_shifting_recipe)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  a:d1:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
+  <span class="Normal">a</span>:d1:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
   foo a
 ]
 def foo a:d1:_elem <span class="Delimiter">-&gt;</span> b:number [
@@ -869,7 +889,7 @@ def foo a:d1:_elem <span class="Delimiter">-&gt;</span> b:number [
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
 container d1:_elem [
-  x:_elem
+  <span class="Normal">x</span>:_elem
 ]
 <span class="traceContains">+error: foo: unknown type for e (check the name for typos)</span>
 <span class="traceContains">+error: specializing foo: missing type for e</span>
@@ -878,7 +898,7 @@ container d1:_elem [
 <span class="Delimiter">:(scenario missing_type_in_shape_shifting_recipe_2)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  a:d1:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
+  <span class="Normal">a</span>:d1:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
   foo a
 ]
 def foo a:d1:_elem <span class="Delimiter">-&gt;</span> b:number [
@@ -888,7 +908,7 @@ def foo a:d1:_elem <span class="Delimiter">-&gt;</span> b:number [
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
 container d1:_elem [
-  x:_elem
+  <span class="Normal">x</span>:_elem
 ]
 <span class="traceContains">+error: foo: unknown type for e (check the name for typos)</span>
 <span class="traceContains">+error: specializing foo: missing type for e</span>
@@ -905,7 +925,7 @@ def foo x:_elem <span class="Delimiter">-&gt;</span> y:number [
   load-ingredients
   <span class="Delimiter">{</span>
     <span class="Identifier">break</span>
-    y:number<span class="Special"> &lt;- </span>foo x
+    <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>foo x
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> y
 ]
@@ -1004,3 +1024,4 @@ def foo x:address:shared:_elem <span class="Delimiter">-&gt;</span> y:number [
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

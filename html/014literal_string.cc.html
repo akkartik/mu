@@ -3,28 +3,37 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 014literal_string.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.cSpecial { color: #008000; }
-.Identifier { color: #fcb165; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.traceContains { color: #008000; }
-.Special { color: #c00000; }
+* { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
+.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
 .Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
-<span class="Comment">//: For convenience, some instructions will take literal arrays of characters (strings).</span>
+<pre id='vimCodeElement'>
+<span class="Comment">//: For convenience, some instructions will take literal arrays of characters</span>
+<span class="Comment">//: (text or strings).</span>
 <span class="Comment">//:</span>
 <span class="Comment">//: Instead of quotes, we'll use [] to delimit strings. That'll reduce the</span>
 <span class="Comment">//: need for escaping since we can support nested brackets. And we can also</span>
@@ -36,13 +45,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 def main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc def]  <span class="Comment"># copy can't really take a string</span>
 ]
-<span class="traceContains">+parse:   ingredient: &quot;abc def&quot;: &quot;literal-string&quot;</span>
+<span class="traceContains">+parse:   ingredient: {&quot;abc def&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_with_colons)</span>
 def main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc:def/ghi]
 ]
-<span class="traceContains">+parse:   ingredient: &quot;abc:def/ghi&quot;: &quot;literal-string&quot;</span>
+<span class="traceContains">+parse:   ingredient: {&quot;abc:def/ghi&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
 put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
@@ -156,7 +165,7 @@ string emit_literal_string<span class="Delimiter">(</span>string name<span class
   <span class="Normal">size_t</span> pos = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>pos != string::npos<span class="Delimiter">)</span>
     pos = replace<span class="Delimiter">(</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;</span><span class="cSpecial">\\</span><span class="Constant">n&quot;</span><span class="Delimiter">,</span> pos<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> <span class="Constant">'&quot;'</span>+name+<span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: </span><span class="cSpecial">\&quot;</span><span class="Constant">literal-string</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> <span class="Constant">&quot;{</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span>+name+<span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: </span><span class="cSpecial">\&quot;</span><span class="Constant">literal-string</span><span class="cSpecial">\&quot;</span><span class="Constant">}&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">size_t</span> replace<span class="Delimiter">(</span>string&amp; str<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; from<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; to<span class="Delimiter">,</span> <span class="Normal">size_t</span> n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -174,20 +183,20 @@ string emit_literal_string<span class="Delimiter">(</span>string name<span class
 def main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc [def]]
 ]
-<span class="traceContains">+parse:   ingredient: &quot;abc [def]&quot;: &quot;literal-string&quot;</span>
+<span class="traceContains">+parse:   ingredient: {&quot;abc [def]&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_escaped)</span>
 def main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc \[def]
 ]
-<span class="traceContains">+parse:   ingredient: &quot;abc [def&quot;: &quot;literal-string&quot;</span>
+<span class="traceContains">+parse:   ingredient: {&quot;abc [def&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_escaped_comment_aware)</span>
 def main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [
 abc \\\[def]
 ]
-<span class="traceContains">+parse:   ingredient: &quot;\nabc \[def&quot;: &quot;literal-string&quot;</span>
+<span class="traceContains">+parse:   ingredient: {&quot;\nabc \[def&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_and_comment)</span>
 def main [
@@ -196,15 +205,15 @@ def main [
 <span class="traceContains">+parse: --- defining main</span>
 <span class="traceContains">+parse: instruction: copy</span>
 <span class="traceContains">+parse:   number of ingredients: 1</span>
-<span class="traceContains">+parse:   ingredient: &quot;abc&quot;: &quot;literal-string&quot;</span>
-<span class="traceContains">+parse:   product: 1: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)</span>
+<span class="traceContains">+parse:   ingredient: {&quot;abc&quot;: &quot;literal-string&quot;}</span>
+<span class="traceContains">+parse:   product: {1: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)}</span>
 
 <span class="Delimiter">:(scenario string_literal_escapes_newlines_in_trace)</span>
 def main [
   copy [abc
 def]
 ]
-<span class="traceContains">+parse:   ingredient: &quot;abc\ndef&quot;: &quot;literal-string&quot;</span>
+<span class="traceContains">+parse:   ingredient: {&quot;abc\ndef&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_can_skip_past_comments)</span>
 def main [
@@ -213,13 +222,14 @@ def main [
     bar
   ]
 ]
-<span class="traceContains">+parse:   ingredient: &quot;\n    # ']' inside comment\n    bar\n  &quot;: &quot;literal-string&quot;</span>
+<span class="traceContains">+parse:   ingredient: {&quot;\n    # ']' inside comment\n    bar\n  &quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_empty)</span>
 def main [
   copy []
 ]
-<span class="traceContains">+parse:   ingredient: &quot;&quot;: &quot;literal-string&quot;</span>
+<span class="traceContains">+parse:   ingredient: {&quot;&quot;: &quot;literal-string&quot;}</span>
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

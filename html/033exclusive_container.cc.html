@@ -3,28 +3,36 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 033exclusive_container.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.cSpecial { color: #008000; }
-.SalientComment { color: #00ffff; }
-.Identifier { color: #fcb165; }
-.traceContains { color: #008000; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.Special { color: #c00000; }
+* { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
+.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: Exclusive containers contain exactly one of a fixed number of 'variants'</span>
 <span class="Comment">//: of different types.</span>
 <span class="Comment">//:</span>
@@ -61,11 +69,11 @@ def main [
 <span class="Normal">if</span> <span class="Delimiter">(</span>t<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// size of an exclusive container is the size of its largest variant</span>
   <span class="Comment">// (So like containers, it can't contain arrays.)</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; t<span class="Delimiter">.</span>size<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; t<span class="Delimiter">.</span>size<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     reagent tmp<span class="Delimiter">;</span>
     tmp<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*type<span class="Delimiter">);</span>
-    <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size = size_of<span class="Delimiter">(</span>variant_type<span class="Delimiter">(</span>tmp<span class="Delimiter">,</span> i<span class="Delimiter">));</span>
+    <span class="Normal">int</span> size = size_of<span class="Delimiter">(</span>variant_type<span class="Delimiter">(</span>tmp<span class="Delimiter">,</span> i<span class="Delimiter">));</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>size &gt; result<span class="Delimiter">)</span> result = size<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// ...+1 for its tag.</span>
@@ -108,7 +116,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Normal">case</span> MAYBE_CONVERT: <span class="Delimiter">{</span>
   <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'maybe-convert' expects exactly 2 ingredients in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'maybe-convert' expects exactly 2 ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
@@ -127,7 +135,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   reagent&amp; offset = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   populate_value<span class="Delimiter">(</span>offset<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>offset<span class="Delimiter">.</span>value &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;invalid tag &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;invalid tag &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent variant = variant_type<span class="Delimiter">(</span>base<span class="Delimiter">,</span> offset<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
@@ -142,14 +150,14 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Normal">case</span> MAYBE_CONVERT: <span class="Delimiter">{</span>
   reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  <span class="Normal">int</span> base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>base_address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to access location 0 in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to access location 0 in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> tag = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>value<span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>tag == <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> tag = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>value<span class="Delimiter">;</span>
+  <span class="Normal">int</span> result<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>tag == <span class="Normal">static_cast</span>&lt;<span class="Normal">int</span>&gt;<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     result = base_address+<span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">else</span> <span class="Delimiter">{</span>
@@ -161,7 +169,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">const</span> reagent variant_type<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; canonized_base<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">const</span> reagent variant_type<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; canonized_base<span class="Delimiter">,</span> <span class="Normal">int</span> tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>tag &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">));</span>
   assert<span class="Delimiter">(</span>!get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
@@ -186,12 +194,12 @@ def main [
 
 <span class="Delimiter">:(scenario exclusive_container)</span>
 exclusive-container foo [
-  x:number
-  y:number
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
 ]
 <span class="traceContains">+parse: --- defining exclusive-container foo</span>
-<span class="traceContains">+parse: element: x: &quot;number&quot;</span>
-<span class="traceContains">+parse: element: y: &quot;number&quot;</span>
+<span class="traceContains">+parse: element: {x: &quot;number&quot;}</span>
+<span class="traceContains">+parse: element: {y: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(before &quot;End Command Handlers&quot;)</span>
 <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;exclusive-container&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -203,22 +211,22 @@ exclusive-container foo [
 
 <span class="Delimiter">:(scenario exclusive_container_contains_array)</span>
 exclusive-container foo [
-  x:array:number:<span class="Constant">3</span>
+  <span class="Normal">x</span>:array:number:<span class="Constant">3</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario exclusive_container_disallows_dynamic_array_element)</span>
 <span class="Special">% Hide_errors = true;</span>
 exclusive-container foo [
-  x:array:number
+  <span class="Normal">x</span>:array:number
 ]
 <span class="traceContains">+error: container 'foo' cannot determine size of element x</span>
 
 <span class="SalientComment">//:: To construct exclusive containers out of variant types, use 'merge'.</span>
 <span class="Delimiter">:(scenario lift_to_exclusive_container)</span>
 exclusive-container foo [
-  x:number
-  y:number
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
 ]
 
 def main [
@@ -235,11 +243,11 @@ def main [
 
 <span class="Delimiter">:(scenario merge_handles_exclusive_container)</span>
 exclusive-container foo [
-  x:number
-  y:bar
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:bar
 ]
 container bar [
-  z:number
+  <span class="Normal">z</span>:number
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span>
@@ -251,11 +259,11 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">:(scenario merge_requires_literal_tag_for_exclusive_container)</span>
 <span class="Special">% Hide_errors = true;</span>
 exclusive-container foo [
-  x:number
-  y:bar
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:bar
 ]
 container bar [
-  z:number
+  <span class="Normal">z</span>:number
 ]
 def main [
   local-scope
@@ -275,7 +283,7 @@ def main [
   reagent ingredient = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">);</span>  <span class="Comment">// unnecessary copy just to keep this function from modifying caller</span>
   populate_value<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>ingredient<span class="Delimiter">.</span>value &gt;= SIZE<span class="Delimiter">(</span>container_info<span class="Delimiter">.</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;invalid tag at &quot;</span> &lt;&lt; ingredient_index &lt;&lt; <span class="Constant">&quot; for &quot;</span> &lt;&lt; container_info<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;invalid tag at &quot;</span> &lt;&lt; ingredient_index &lt;&lt; <span class="Constant">&quot; for &quot;</span> &lt;&lt; container_info<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent variant = variant_type<span class="Delimiter">(</span>container<span class="Delimiter">,</span> ingredient<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
@@ -289,12 +297,12 @@ def main [
 
 <span class="Delimiter">:(scenario merge_check_container_containing_exclusive_container)</span>
 container foo [
-  x:number
-  y:bar
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:bar
 ]
 exclusive-container bar [
-  x:number
-  y:number
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">34</span>
@@ -307,12 +315,12 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">:(scenario merge_check_container_containing_exclusive_container_2)</span>
 <span class="Special">% Hide_errors = true;</span>
 container foo [
-  x:number
-  y:bar
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:bar
 ]
 exclusive-container bar [
-  x:number
-  y:number
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
@@ -321,12 +329,12 @@ def main [
 
 <span class="Delimiter">:(scenario merge_check_exclusive_container_containing_container)</span>
 exclusive-container foo [
-  x:number
-  y:bar
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:bar
 ]
 container bar [
-  x:number
-  y:number
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">34</span>
@@ -338,12 +346,12 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario merge_check_exclusive_container_containing_container_2)</span>
 exclusive-container foo [
-  x:number
-  y:bar
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:bar
 ]
 container bar [
-  x:number
-  y:number
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">23</span>
@@ -353,12 +361,12 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">:(scenario merge_check_exclusive_container_containing_container_3)</span>
 <span class="Special">% Hide_errors = true;</span>
 exclusive-container foo [
-  x:number
-  y:bar
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:bar
 ]
 container bar [
-  x:number
-  y:number
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">23</span>
@@ -368,25 +376,25 @@ def main [
 <span class="Comment">//: Since the different variants of an exclusive-container might have</span>
 <span class="Comment">//: different sizes, relax the size mismatch check for 'merge' instructions.</span>
 <span class="Delimiter">:(before &quot;End size_mismatch(x) Cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation == MERGE
+<span class="Normal">if</span> <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &lt; SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">())</span>
+    &amp;&amp; current_instruction<span class="Delimiter">().</span>operation == MERGE
     &amp;&amp; !current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
     &amp;&amp; current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   reagent x = current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span>
     <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> &lt; SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario merge_exclusive_container_with_mismatched_sizes)</span>
 container foo [
-  x:number
-  y:number
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
 ]
 
 exclusive-container bar [
-  x:number
-  y:foo
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:foo
 ]
 
 def main [
@@ -404,3 +412,4 @@ def main [
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

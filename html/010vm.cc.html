@@ -3,27 +3,35 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 010vm.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.PreProc { color: #800080; }
-.cSpecial { color: #008000; }
-.Identifier { color: #fcb165; }
-.SalientComment { color: #00ffff; }
-.Normal { color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.SalientComment { color: #00ffff; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.PreProc { color: #800080; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: A program is a book of 'recipes' (functions)</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">//: Each recipe is stored at a specific page number, or ordinal.</span>
@@ -37,7 +45,7 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
 <span class="Comment">//: adding two phone numbers is meaningless. Here each recipe does something</span>
 <span class="Comment">//: incommensurable with any other recipe.</span>
 <span class="Delimiter">:(after &quot;Types&quot;)</span>
-<span class="Normal">typedef</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> recipe_ordinal<span class="Delimiter">;</span>
+<span class="Normal">typedef</span> <span class="Normal">int</span> recipe_ordinal<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 <span class="Comment">// Recipes are lists of instructions. To perform or 'run' a recipe, the</span>
@@ -60,7 +68,7 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
   string label<span class="Delimiter">;</span>  <span class="Comment">// only if is_label</span>
   string name<span class="Delimiter">;</span>  <span class="Comment">// only if !is_label</span>
   string old_name<span class="Delimiter">;</span>  <span class="Comment">// before our automatic rewrite rules</span>
-  string original_string<span class="Delimiter">;</span>
+  string original_string<span class="Delimiter">;</span>  <span class="Comment">// for error messages</span>
   recipe_ordinal operation<span class="Delimiter">;</span>  <span class="Comment">// get(Recipe_ordinal, name)</span>
   vector&lt;reagent&gt; ingredients<span class="Delimiter">;</span>  <span class="Comment">// only if !is_label</span>
   vector&lt;reagent&gt; products<span class="Delimiter">;</span>  <span class="Comment">// only if !is_label</span>
@@ -125,7 +133,7 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">// Locations refer to a common 'memory'. Each location can store a number.</span>
-map&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">double</span>&gt; Memory<span class="Delimiter">;</span>
+map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">double</span>&gt; Memory<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Memory<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 
@@ -138,7 +146,7 @@ Memory<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Comment">// Unlike most computers today, mu stores types in a single big table, shared</span>
 <span class="Comment">// by all the mu programs on the computer. This is useful in providing a</span>
 <span class="Comment">// seamless experience to help understand arbitrary mu programs.</span>
-<span class="Normal">typedef</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> type_ordinal<span class="Delimiter">;</span>
+<span class="Normal">typedef</span> <span class="Normal">int</span> type_ordinal<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; Type_ordinal<span class="Delimiter">;</span>
 map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt; Type<span class="Delimiter">;</span>
@@ -166,7 +174,7 @@ type_ordinal Next_type_ordinal = <span class="Constant">1</span><span class="Del
 <span class="Delimiter">}</span>
 <span class="Normal">void</span> teardown_types<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt;::iterator p = Type<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Type<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
       p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   Type_ordinal<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
@@ -195,7 +203,7 @@ atexit<span class="Delimiter">(</span>teardown_types<span class="Delimiter">);</
 <span class="Normal">struct</span> type_info <span class="Delimiter">{</span>
   string name<span class="Delimiter">;</span>
   kind_of_type kind<span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size<span class="Delimiter">;</span>  <span class="Comment">// only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)</span>
+  <span class="Normal">int</span> size<span class="Delimiter">;</span>  <span class="Comment">// only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)</span>
   vector&lt;reagent&gt; elements<span class="Delimiter">;</span>
   <span class="Comment">// End type_info Fields</span>
   type_info<span class="Delimiter">()</span> :kind<span class="Delimiter">(</span>PRIMITIVE<span class="Delimiter">),</span> size<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
@@ -233,6 +241,36 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 assert<span class="Delimiter">(</span>Next_recipe_ordinal &lt; <span class="Constant">1000</span><span class="Delimiter">);</span>  <span class="Comment">// recipes being tested didn't overflow into test space</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Next_recipe_ordinal = <span class="Constant">1000</span><span class="Delimiter">;</span>  <span class="Comment">// consistent new numbers for each test</span>
+
+<span class="Comment">//: One final detail: tests can modify our global tables of recipes and types,</span>
+<span class="Comment">//: so we need some way to clean up after each test is done so it doesn't</span>
+<span class="Comment">//: influence later ones.</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+map&lt;string<span class="Delimiter">,</span> recipe_ordinal&gt; Recipe_ordinal_snapshot<span class="Delimiter">;</span>
+map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt; Recipe_snapshot<span class="Delimiter">;</span>
+map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; Type_ordinal_snapshot<span class="Delimiter">;</span>
+map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt; Type_snapshot<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
+save_snapshots<span class="Delimiter">();</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+restore_snapshots<span class="Delimiter">();</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> save_snapshots<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  Recipe_ordinal_snapshot = Recipe_ordinal<span class="Delimiter">;</span>
+  Recipe_snapshot = Recipe<span class="Delimiter">;</span>
+  Type_ordinal_snapshot = Type_ordinal<span class="Delimiter">;</span>
+  Type_snapshot = Type<span class="Delimiter">;</span>
+  <span class="Comment">// End save_snapshots</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> restore_snapshots<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  Recipe = Recipe_snapshot<span class="Delimiter">;</span>
+  Recipe_ordinal = Recipe_ordinal_snapshot<span class="Delimiter">;</span>
+  Type_ordinal = Type_ordinal_snapshot<span class="Delimiter">;</span>
+  Type = Type_snapshot<span class="Delimiter">;</span>
+  <span class="Comment">// End restore_snapshots</span>
+<span class="Delimiter">}</span>
 
 ^L
 
@@ -309,7 +347,7 @@ reagent::reagent<span class="Delimiter">(</span><span class="Normal">const</span
   name = old<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
   value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   initialized = old<span class="Delimiter">.</span>initialized<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span>
                                                     old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
@@ -331,10 +369,10 @@ string_tree::string_tree<span class="Delimiter">(</span><span class="Normal">con
 
 reagent&amp; reagent::<span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   original_string = old<span class="Delimiter">.</span>original_string<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> <span class="Normal">delete</span> properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">;</span>
   properties<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span> old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">));</span>
   name = old<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
   value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
@@ -349,7 +387,7 @@ reagent::~reagent<span class="Delimiter">()</span> <span class="Delimiter">{</sp
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> reagent::clear<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">delete</span> properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">;</span>
       properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second = <span class="Constant">NULL</span><span class="Delimiter">;</span>
@@ -381,14 +419,14 @@ string slurp_until<span class="Delimiter">(</span>istream&amp; in<span class="De
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> has_property<span class="Delimiter">(</span>reagent x<span class="Delimiter">,</span> string name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == name<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 string_tree* property<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> p = <span class="Constant">0</span><span class="Delimiter">;</span> p != SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> p = <span class="Constant">0</span><span class="Delimiter">;</span> p != SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>p<span class="Delimiter">).</span>first == name<span class="Delimiter">)</span>
       <span class="Identifier">return</span> r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>p<span class="Delimiter">).</span>second<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -409,7 +447,7 @@ string_tree* property<span class="Delimiter">(</span><span class="Normal">const<
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> dump_memory<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">double</span>&gt;::iterator p = Memory<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Memory<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">double</span>&gt;::iterator p = Memory<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Memory<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     cout &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
@@ -424,7 +462,7 @@ string_tree* property<span class="Delimiter">(</span><span class="Normal">const<
 string to_string<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream out<span class="Delimiter">;</span>
   out &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     out &lt;&lt; <span class="Constant">&quot;  &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   out &lt;&lt; <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
@@ -434,15 +472,31 @@ string debug_string<span class="Delimiter">(</span><span class="Normal">const</s
   ostringstream out<span class="Delimiter">;</span>
   out &lt;&lt; <span class="Constant">&quot;- recipe &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Comment">// Begin debug_string(recipe x)</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> instruction&amp; inst = x<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
     out &lt;&lt; <span class="Constant">&quot;inst: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     out &lt;&lt; <span class="Constant">&quot;  ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
       out &lt;&lt; <span class="Constant">&quot;    &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     out &lt;&lt; <span class="Constant">&quot;  products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
       out &lt;&lt; <span class="Constant">&quot;    &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+string to_original_string<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Identifier">return</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">;</span>
+  ostringstream out<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
+    out &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> out &lt;&lt; <span class="Constant">&quot; &lt;- &quot;</span><span class="Delimiter">;</span>
+  out &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
+    out &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
@@ -450,31 +504,35 @@ string debug_string<span class="Delimiter">(</span><span class="Normal">const</s
 string to_string<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Identifier">return</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">;</span>
   ostringstream out<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
-    out &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string<span class="Delimiter">;</span>
+    out &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> out &lt;&lt; <span class="Constant">&quot; &lt;- &quot;</span><span class="Delimiter">;</span>
   out &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
-    out &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string<span class="Delimiter">;</span>
+    out &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 string to_string<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_dummy<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">&quot;_&quot;</span><span class="Delimiter">;</span>
   ostringstream out<span class="Delimiter">;</span>
+  out &lt;&lt; <span class="Constant">&quot;{&quot;</span><span class="Delimiter">;</span>
   out &lt;&lt; r<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    out &lt;&lt; <span class="Constant">&quot;, {&quot;</span><span class="Delimiter">;</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
-      out &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">);</span>
-    <span class="Delimiter">}</span>
-    out &lt;&lt; <span class="Constant">&quot;}&quot;</span><span class="Delimiter">;</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+      out &lt;&lt; <span class="Constant">&quot;, </span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
+  out &lt;&lt; <span class="Constant">&quot;}&quot;</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// special name for ignoring some products</span>
+<span class="Normal">inline</span> <span class="Normal">bool</span> is_dummy<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> x<span class="Delimiter">.</span>name == <span class="Constant">&quot;_&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 string debug_string<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -612,7 +670,7 @@ ostream&amp; <span class="Normal">operator</span>&lt;&lt;<span class="Delimiter"
 
 string trim_floating_point<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> len = SIZE<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Normal">int</span> len = SIZE<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>len &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>len-<span class="Constant">1</span><span class="Delimiter">)</span> != <span class="Constant">'0'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     --len<span class="Delimiter">;</span>
@@ -643,3 +701,4 @@ string trim_floating_point<span class="Delimiter">(</span><span class="Normal">c
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

@@ -3,27 +3,35 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 001help.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.PreProc { color: #800080; }
-.SalientComment { color: #00ffff; }
-.Identifier { color: #fcb165; }
-.cSpecial { color: #008000; }
+* { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.Delimiter { color: #800080; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.cSpecial { color: #008000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.PreProc { color: #800080; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: Everything this project/binary supports.</span>
 <span class="Comment">//: This should give you a sense for what to look forward to in later layers.</span>
 
@@ -111,8 +119,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: unsigned and that'll cause warnings about mixing signed and unsigned,</span>
 <span class="Comment">//: yadda-yadda. Instead use this macro below to perform an unsafe cast to</span>
 <span class="Comment">//: signed. We'll just give up immediately if a container's ever too large.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Addendum to corollary: We're going to uniformly avoid long long int</span>
+<span class="Comment">//: everywhere, since Clang on 32-bit platforms doesn't yet support</span>
+<span class="Comment">//: multiplication over 64-bit integers, and since that seems like a more</span>
+<span class="Comment">//: common situation to end up in than integer overflow.</span>
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span class="PreProc">#define SIZE(X) (assert((X)</span><span class="Delimiter">.</span><span class="PreProc">size() &lt; (</span><span class="Constant">1LL</span><span class="PreProc">&lt;&lt;(</span><span class="Normal">sizeof</span><span class="PreProc">(</span><span class="Normal">long</span><span class="PreProc"> </span><span class="Normal">long</span><span class="PreProc"> </span><span class="Normal">int</span><span class="PreProc">)*</span><span class="Constant">8</span><span class="PreProc">-</span><span class="Constant">2</span><span class="PreProc">)))</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Normal">static_cast</span><span class="PreProc">&lt;</span><span class="Normal">long</span><span class="PreProc"> </span><span class="Normal">long</span><span class="PreProc"> </span><span class="Normal">int</span><span class="PreProc">&gt;((X)</span><span class="Delimiter">.</span><span class="PreProc">size()))</span>
+<span class="PreProc">#define SIZE(X) (assert((X)</span><span class="Delimiter">.</span><span class="PreProc">size() &lt; (</span><span class="Constant">1LL</span><span class="PreProc">&lt;&lt;(</span><span class="Normal">sizeof</span><span class="PreProc">(</span><span class="Normal">int</span><span class="PreProc">)*</span><span class="Constant">8</span><span class="PreProc">-</span><span class="Constant">2</span><span class="PreProc">)))</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Normal">static_cast</span><span class="PreProc">&lt;</span><span class="Normal">int</span><span class="PreProc">&gt;((X)</span><span class="Delimiter">.</span><span class="PreProc">size()))</span>
 <span class="Comment">//:</span>
 <span class="Comment">//: 5. Integer overflow is still impossible to guard against. Maybe after</span>
 <span class="Comment">//: reading <a href="http://www.cs.utah.edu/~regehr/papers/overflow12.pdf">http://www.cs.utah.edu/~regehr/papers/overflow12.pdf</a></span>
@@ -168,3 +181,4 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

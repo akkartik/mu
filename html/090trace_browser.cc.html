@@ -3,25 +3,33 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 090trace_browser.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
 .cSpecial { color: #008000; }
 .Identifier { color: #fcb165; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.Constant { color: #00a0a0; }
-.Delimiter { color: #800080; }
-.Comment { color: #9090ff; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: A debugging helper that lets you zoom in/out on a trace.</span>
 
 <span class="Comment">//: browse the trace we just created</span>
@@ -48,23 +56,23 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-set&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt; Visible<span class="Delimiter">;</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Top_of_screen = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Last_printed_row = <span class="Constant">0</span><span class="Delimiter">;</span>
-map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt; Trace_index<span class="Delimiter">;</span>  <span class="Comment">// screen row -&gt; trace index</span>
+set&lt;<span class="Normal">int</span>&gt; Visible<span class="Delimiter">;</span>
+<span class="Normal">int</span> Top_of_screen = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Normal">int</span> Last_printed_row = <span class="Constant">0</span><span class="Delimiter">;</span>
+map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt; Trace_index<span class="Delimiter">;</span>  <span class="Comment">// screen row -&gt; trace index</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   cerr &lt;&lt; <span class="Constant">&quot;computing min depth to display</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> min_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> min_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     trace_line&amp; curr_line = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth &lt; min_depth<span class="Delimiter">)</span> min_depth = curr_line<span class="Delimiter">.</span>depth<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   cerr &lt;&lt; <span class="Constant">&quot;min depth is &quot;</span> &lt;&lt; min_depth &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   cerr &lt;&lt; <span class="Constant">&quot;computing lines to display</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>depth == min_depth<span class="Delimiter">)</span>
       Visible<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -78,7 +86,7 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
     <span class="Normal">do</span> <span class="Delimiter">{</span>
       tb_poll_event<span class="Delimiter">(</span>&amp;event<span class="Delimiter">);</span>
     <span class="Delimiter">}</span> <span class="Normal">while</span> <span class="Delimiter">(</span>event<span class="Delimiter">.</span>type != TB_EVENT_KEY<span class="Delimiter">);</span>
-    <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> key = event<span class="Delimiter">.</span>key ? event<span class="Delimiter">.</span>key : event<span class="Delimiter">.</span>ch<span class="Delimiter">;</span>
+    <span class="Normal">int</span> key = event<span class="Delimiter">.</span>key ? event<span class="Delimiter">.</span>key : event<span class="Delimiter">.</span>ch<span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>key == <span class="Constant">'q'</span> || key == <span class="Constant">'Q'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>key == <span class="Constant">'j'</span> || key == TB_KEY_ARROW_DOWN<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// move cursor one line down</span>
@@ -135,8 +143,8 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
     <span class="Normal">if</span> <span class="Delimiter">(</span>key == TB_KEY_CARRIAGE_RETURN<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// expand lines under current by one level</span>
       assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> Display_row<span class="Delimiter">));</span>
-      <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> start_index = get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
-      <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> index = <span class="Constant">0</span><span class="Delimiter">;</span>
+      <span class="Normal">int</span> start_index = get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
+      <span class="Normal">int</span> index = <span class="Constant">0</span><span class="Delimiter">;</span>
       <span class="Comment">// simultaneously compute end_index and min_depth</span>
       <span class="Normal">int</span> min_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
       <span class="Normal">for</span> <span class="Delimiter">(</span>index = start_index+<span class="Constant">1</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -145,7 +153,7 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
         assert<span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth &gt; Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>start_index<span class="Delimiter">).</span>depth<span class="Delimiter">);</span>
         <span class="Normal">if</span> <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth &lt; min_depth<span class="Delimiter">)</span> min_depth = curr_line<span class="Delimiter">.</span>depth<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
-      <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> end_index = index<span class="Delimiter">;</span>
+      <span class="Normal">int</span> end_index = index<span class="Delimiter">;</span>
       <span class="Comment">// mark as visible all intervening indices at min_depth</span>
       <span class="Normal">for</span> <span class="Delimiter">(</span>index = start_index<span class="Delimiter">;</span> index &lt; end_index<span class="Delimiter">;</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         trace_line&amp; curr_line = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
@@ -158,8 +166,8 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
     <span class="Normal">if</span> <span class="Delimiter">(</span>key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// collapse all lines under current</span>
       assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> Display_row<span class="Delimiter">));</span>
-      <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> start_index = get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
-      <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> index = <span class="Constant">0</span><span class="Delimiter">;</span>
+      <span class="Normal">int</span> start_index = get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
+      <span class="Normal">int</span> index = <span class="Constant">0</span><span class="Delimiter">;</span>
       <span class="Comment">// end_index is the next line at a depth same as or lower than start_index</span>
       <span class="Normal">int</span> initial_depth = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>start_index<span class="Delimiter">).</span>depth<span class="Delimiter">;</span>
       <span class="Normal">for</span> <span class="Delimiter">(</span>index = start_index+<span class="Constant">1</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -167,7 +175,7 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
         trace_line&amp; curr_line = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
         <span class="Normal">if</span> <span class="Delimiter">(</span>curr_line<span class="Delimiter">.</span>depth &lt;= initial_depth<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
-      <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> end_index = index<span class="Delimiter">;</span>
+      <span class="Normal">int</span> end_index = index<span class="Delimiter">;</span>
       <span class="Comment">// mark as visible all intervening indices at min_depth</span>
       <span class="Normal">for</span> <span class="Delimiter">(</span>index = start_index+<span class="Constant">1</span><span class="Delimiter">;</span> index &lt; end_index<span class="Delimiter">;</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         Visible<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
@@ -180,7 +188,7 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
 
 <span class="Comment">// update Trace_indices for each screen_row on the basis of Top_of_screen and Visible</span>
 <span class="Normal">void</span> refresh_screen_rows<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_row = <span class="Constant">0</span><span class="Delimiter">,</span> index = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> screen_row = <span class="Constant">0</span><span class="Delimiter">,</span> index = <span class="Constant">0</span><span class="Delimiter">;</span>
   Trace_index<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>screen_row = <span class="Constant">0</span><span class="Delimiter">,</span> index = Top_of_screen<span class="Delimiter">;</span> screen_row &lt; tb_height<span class="Delimiter">()</span> &amp;&amp; index &lt; SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">);</span> ++screen_row<span class="Delimiter">,</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// skip lines without depth for now</span>
@@ -195,14 +203,14 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> render<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_row = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> screen_row = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>screen_row = <span class="Constant">0</span><span class="Delimiter">;</span> screen_row &lt; tb_height<span class="Delimiter">();</span> ++screen_row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     trace_line&amp; curr_line = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">));</span>
     ostringstream out<span class="Delimiter">;</span>
     out &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">)</span> &lt;&lt; curr_line<span class="Delimiter">.</span>depth &lt;&lt; <span class="Constant">' '</span> &lt;&lt; curr_line<span class="Delimiter">.</span>label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_line<span class="Delimiter">.</span>contents<span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>screen_row &lt; tb_height<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> delta = lines_hidden<span class="Delimiter">(</span>screen_row<span class="Delimiter">);</span>
+      <span class="Normal">int</span> delta = lines_hidden<span class="Delimiter">(</span>screen_row<span class="Delimiter">);</span>
       <span class="Comment">// home-brew escape sequence for red</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>delta &gt; <span class="Constant">999</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;{&quot;</span><span class="Delimiter">;</span>
       out &lt;&lt; <span class="Constant">&quot; (&quot;</span> &lt;&lt; delta &lt;&lt; <span class="Constant">&quot;)&quot;</span><span class="Delimiter">;</span>
@@ -220,7 +228,7 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
   tb_present<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> lines_hidden<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> screen_row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> lines_hidden<span class="Delimiter">(</span><span class="Normal">int</span> screen_row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">));</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row+<span class="Constant">1</span><span class="Delimiter">))</span>
     <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">)</span> - get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">);</span>
@@ -229,7 +237,7 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> render_line<span class="Delimiter">(</span><span class="Normal">int</span> screen_row<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> col = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> col = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">int</span> color = TB_WHITE<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>col = <span class="Constant">0</span><span class="Delimiter">;</span> col &lt; tb_width<span class="Delimiter">()</span> &amp;&amp; col &lt; SIZE<span class="Delimiter">(</span>s<span class="Delimiter">);</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">char</span> c = s<span class="Delimiter">.</span>at<span class="Delimiter">(</span>col<span class="Delimiter">);</span>  <span class="Comment">// todo: unicode</span>
@@ -274,3 +282,4 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

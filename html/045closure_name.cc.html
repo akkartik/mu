@@ -3,28 +3,36 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - 045closure_name.cc</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.cSpecial { color: #008000; }
-.CommentedCode { color: #6c6c6c; }
-.traceContains { color: #008000; }
-.Identifier { color: #fcb165; }
+* { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.Special { color: #c00000; }
-.Normal { color: #eeeeee; background-color: #080808; }
-.Delimiter { color: #800080; }
+.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
 .Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment">//: Writing to a literal (not computed) address of 0 in a recipe chains two</span>
 <span class="Comment">//: spaces together. When a variable has a property of /space:1, it looks up</span>
 <span class="Comment">//: the variable in the chained/surrounding space. /space:2 looks up the</span>
@@ -40,16 +48,16 @@ def main [
 
 def <span class="Normal">new</span>-counter [
   <span class="Normal">default</span>-space:address:shared:array:location<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
-  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
-  y:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># variable that will be incremented</span>
+  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
+  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># variable that will be incremented</span>
   <span class="Identifier">return</span> <span class="Normal">default</span>-space:address:shared:array:location
 ]
 
 def increment-counter [
   <span class="Normal">default</span>-space:address:shared:array:location<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
   <span class="Constant">0</span>:address:shared:array:location/names:<span class="Normal">new</span>-counter<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># outer space must be created by 'new-counter' above</span>
-  y:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>add y:number/space:<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>  <span class="Comment"># increment</span>
-  y:number<span class="Special"> &lt;- </span>copy <span class="Constant">234</span>  <span class="Comment"># dummy</span>
+  <span class="Normal">y</span>:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>add y:number/space:<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>  <span class="Comment"># increment</span>
+  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">234</span>  <span class="Comment"># dummy</span>
   <span class="Identifier">return</span> y:number/space:<span class="Constant">1</span>
 ]
 
@@ -69,10 +77,10 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Normal">void</span> collect_surrounding_spaces<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- collect surrounding spaces for recipe &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;--- collect surrounding spaces for recipe &quot; &lt;&lt; get(Recipe, r).name &lt;&lt; '\n';</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>name != <span class="Constant">&quot;0&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       type_tree* type = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>type<span class="Delimiter">;</span>
@@ -117,15 +125,15 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Comment">//: Once surrounding spaces are available, transform_names uses them to handle</span>
 <span class="Comment">//: /space properties.</span>
 
-<span class="Delimiter">:(replace{} &quot;long long int lookup_name(const reagent&amp; r, const recipe_ordinal default_recipe)&quot;)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> lookup_name<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> recipe_ordinal default_recipe<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Delimiter">:(replace{} &quot;int lookup_name(const reagent&amp; r, const recipe_ordinal default_recipe)&quot;)</span>
+<span class="Normal">int</span> lookup_name<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> recipe_ordinal default_recipe<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!has_property<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>Name[default_recipe]<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> raise &lt;&lt; <span class="Constant">&quot;name not found: &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> Name[default_recipe][x<span class="Delimiter">.</span>name]<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   string_tree* p = property<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!p || p<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> raise &lt;&lt; <span class="Constant">&quot;/space property should have exactly one (non-negative integer) value</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> n = to_integer<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Normal">int</span> n = to_integer<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>n &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
   recipe_ordinal surrounding_recipe = lookup_surrounding_recipe<span class="Delimiter">(</span>default_recipe<span class="Delimiter">,</span> n<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>surrounding_recipe == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
@@ -136,11 +144,11 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Comment">// If the recipe we need to lookup this name in doesn't have names done yet,</span>
 <span class="Comment">// recursively call transform_names on it.</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> lookup_name<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">,</span> set&lt;recipe_ordinal&gt;&amp; done<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt;&amp; path<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> lookup_name<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">,</span> set&lt;recipe_ordinal&gt;&amp; done<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt;&amp; path<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!Name[r]<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> Name[r][x<span class="Delimiter">.</span>name]<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>done<span class="Delimiter">,</span> r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;can't compute address of &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>x<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; because &quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>path<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>path<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; path<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i-<span class="Constant">1</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; requires computing names of &quot;</span> &lt;&lt; path<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     raise &lt;&lt; path<span class="Delimiter">.</span>at<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>path<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; requires computing names of &quot;</span> &lt;&lt; r &lt;&lt; <span class="Constant">&quot;..ad infinitum</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -153,7 +161,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Identifier">return</span> Name[r][x<span class="Delimiter">.</span>name]<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-recipe_ordinal lookup_surrounding_recipe<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+recipe_ordinal lookup_surrounding_recipe<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">,</span> <span class="Normal">int</span> n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>n == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> r<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Surrounding_space<span class="Delimiter">,</span> r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;don't know surrounding recipe of &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -164,8 +172,8 @@ recipe_ordinal lookup_surrounding_recipe<span class="Delimiter">(</span><span cl
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: weaken use-before-set detection just a tad</span>
-<span class="Delimiter">:(replace{} &quot;bool already_transformed(const reagent&amp; r, const map&lt;string, long long int&gt;&amp; names)&quot;)</span>
-<span class="Normal">bool</span> already_transformed<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">,</span> <span class="Normal">const</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;&amp; names<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Delimiter">:(replace{} &quot;bool already_transformed(const reagent&amp; r, const map&lt;string, int&gt;&amp; names)&quot;)</span>
+<span class="Normal">bool</span> already_transformed<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">,</span> <span class="Normal">const</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt;&amp; names<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
     string_tree* p = property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!p || p<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -181,10 +189,11 @@ recipe_ordinal lookup_surrounding_recipe<span class="Delimiter">(</span><span cl
 <span class="Special">% Hide_errors = true;</span>
 def f [
   local-scope
-  x:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Normal">x</span>:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 <span class="traceContains">+error: don't know surrounding recipe of f</span>
 <span class="traceContains">+error: f: can't find a place to store x</span>
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->

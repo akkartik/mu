@@ -3,28 +3,36 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - channel.mu</title>
-<meta name="Generator" content="Vim/7.3">
-<meta name="plugin-version" content="vim7.3_v6">
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { font-family: monospace; color: #eeeeee; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
-.muControl { color: #c0a020; }
-.Delimiter { color: #800080; }
-.Special { color: #c00000; }
-.Constant { color: #00a0a0; }
+* { font-size: 12pt; font-size: 1em; }
 .muRecipe { color: #ff8700; }
+.Delimiter { color: #800080; }
 .Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.muControl { color: #c0a020; }
 -->
 </style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
 </head>
 <body>
-<pre>
+<pre id='vimCodeElement'>
 <span class="Comment"># example program: communicating between routines using channels</span>
 
-<span class="muRecipe">def</span> producer chan:address:shared:channel<span class="muRecipe"> -&gt; </span>chan:address:shared:channel [
+<span class="muRecipe">def</span> producer chan:address:shared:channel:character<span class="muRecipe"> -&gt; </span>chan:address:shared:channel:character [
   <span class="Comment"># produce characters 1 to 5 on a channel</span>
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
@@ -36,19 +44,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># other threads might get between these prints</span>
     $print <span class="Constant">[produce: ]</span>, n, <span class="Constant">[ </span>
 <span class="Constant">]</span>
-    chan:address:shared:channel<span class="Special"> &lt;- </span>write chan, n
+    chan<span class="Special"> &lt;- </span>write chan, n
     n<span class="Special"> &lt;- </span>add n, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> consumer chan:address:shared:channel<span class="muRecipe"> -&gt; </span>chan:address:shared:channel [
+<span class="muRecipe">def</span> consumer chan:address:shared:channel:character<span class="muRecipe"> -&gt; </span>chan:address:shared:channel:character [
   <span class="Comment"># consume and print integers from a channel</span>
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># read an integer from the channel</span>
-    n:character, chan:address:shared:channel<span class="Special"> &lt;- </span>read chan
+    n:character, chan<span class="Special"> &lt;- </span>read chan
     <span class="Comment"># other threads might get between these prints</span>
     $print <span class="Constant">[consume: ]</span>, n:character, <span class="Constant">[ </span>
 <span class="Constant">]</span>
@@ -58,7 +66,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muRecipe">def</span> main [
   <span class="Constant">local-scope</span>
-  chan:address:shared:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3</span>
+  chan:address:shared:channel:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">3</span>
   <span class="Comment"># create two background 'routines' that communicate by a channel</span>
   routine1:number<span class="Special"> &lt;- </span>start-running producer, chan
   routine2:number<span class="Special"> &lt;- </span>start-running consumer, chan
@@ -68,3 +76,4 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </pre>
 </body>
 </html>
+<!-- vim: set foldmethod=manual : -->
