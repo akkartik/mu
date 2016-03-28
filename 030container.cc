@@ -554,7 +554,7 @@ container foo [
 +parse: element: {x: "number"}
 +parse: element: {y: "number"}
 
-:(before "End Transform All")
+:(before "End transform_all")
 check_container_field_types();
 
 :(code)

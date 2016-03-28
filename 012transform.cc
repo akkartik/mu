@@ -53,7 +53,7 @@ void transform_all() {
   }
 //?   cerr << "wrapping up transform\n";
   parse_int_reagents();  // do this after all other transforms have run
-  // End Transform All
+  // End transform_all
 }
 
 void parse_int_reagents() {
