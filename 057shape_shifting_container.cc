@@ -126,32 +126,6 @@ def main [
 +mem: storing 23 in location 7
 $mem: 7
 
-:(code)
-// shape-shifting version of size_of
-int size_of_type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {
-  type_tree* element_type = type_ingredient(element_template, rest_of_use);
-  if (!element_type) return 0;
-  int result = size_of(element_type);
-  delete element_type;
-  return result;
-}
-
-type_tree* type_ingredient(const type_tree* element_template, const type_tree* rest_of_use) {
-  int type_ingredient_index = element_template->value - START_TYPE_INGREDIENTS;
-  const type_tree* curr = rest_of_use;
-  if (!curr) return NULL;
-  while (type_ingredient_index > 0) {
-    --type_ingredient_index;
-    curr = curr->right;
-    if (!curr) return NULL;
-  }
-  assert(curr);
-  if (curr->left) curr = curr->left;
-  assert(curr->value > 0);
-  trace(9999, "type") << "type deduced to be " << get(Type, curr->value).name << "$" << end();
-  return new type_tree(*curr);
-}
-
 :(scenario get_on_shape_shifting_container)
 container foo:_t [
   x:_t
@@ -162,16 +136,6 @@ def main [
   2:number <- get 1:foo:point, y:offset
 ]
 +mem: storing 16 in location 2
-
-:(before "End GET field Cases")
-const type_tree* type = get(Type, base_type).elements.at(i).type;
-if (type->value >= START_TYPE_INGREDIENTS) {
-  int size = size_of_type_ingredient(type, base.type->right);
-  if (!size)
-    raise << "illegal field type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
-  src += size;
-  continue;
-}
 
 :(scenario get_on_shape_shifting_container_2)
 container foo:_t [
@@ -507,16 +471,6 @@ def main [
   1:address:number <- get-address 10:foo:point, 1:offset
 ]
 +mem: storing 12 in location 1
-
-:(before "End GET_ADDRESS field Cases")
-const type_tree* type = get(Type, base_type).elements.at(i).type;
-if (type->value >= START_TYPE_INGREDIENTS) {
-  int size = size_of_type_ingredient(type, base.type->right);
-  if (!size)
-    raise << "illegal type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
-  result += size;
-  continue;
-}
 
 //: 'merge' on shape-shifting containers
 

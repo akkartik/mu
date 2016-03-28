@@ -180,10 +180,8 @@ case GET: {
   int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
   int src = base_address;
-  for (int i = 0; i < offset; ++i) {
-    // End GET field Cases
+  for (int i = 0; i < offset; ++i)
     src += size_of(element_type(base, i));
-  }
   trace(9998, "run") << "address to copy is " << src << end();
   reagent tmp = element_type(base, offset);
   tmp.set_value(src);
@@ -321,10 +319,8 @@ case GET_ADDRESS: {
   int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
   int result = base_address;
-  for (int i = 0; i < offset; ++i) {
-    // End GET_ADDRESS field Cases
+  for (int i = 0; i < offset; ++i)
     result += size_of(element_type(base, i));
-  }
   trace(9998, "run") << "address to copy is " << result << end();
   products.resize(1);
   products.at(0).push_back(result);
