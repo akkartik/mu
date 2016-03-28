@@ -56,7 +56,7 @@ $error: 0
 :(before "End Globals")
 // We'll use large type ordinals to mean "the following type of the variable".
 const int START_TYPE_INGREDIENTS = 2000;
-:(before "End Test Run Initialization")
+:(before "End Commandline Parsing")  // after loading .mu files
 assert(Next_type_ordinal < START_TYPE_INGREDIENTS);
 
 :(before "End type_info Fields")

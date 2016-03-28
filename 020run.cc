@@ -156,7 +156,6 @@ if (argc > 1) {
     argc--;
   }
   if (Run_tests) Recipe.erase(get(Recipe_ordinal, "main"));
-  // End Loading .mu Files
 }
 transform_all();
 save_snapshots();

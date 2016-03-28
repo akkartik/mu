@@ -203,7 +203,7 @@ assert(MAX_PRIMITIVE_RECIPES < 200);  // level 0 is primitives; until 199
 Next_recipe_ordinal = 200;
 put(Recipe_ordinal, "main", Next_recipe_ordinal++);
 // End Load Recipes
-:(before "End Test Run Initialization")
+:(before "End Commandline Parsing")
 assert(Next_recipe_ordinal < 1000);  // recipes being tested didn't overflow into test space
 :(before "End Setup")
 Next_recipe_ordinal = 1000;  // consistent new numbers for each test
