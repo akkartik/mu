@@ -169,10 +169,9 @@ enum kind_of_type {
 struct type_info {
   string name;
   kind_of_type kind;
-  int size;  // only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)
   vector<reagent> elements;
   // End type_info Fields
-  type_info() :kind(PRIMITIVE), size(0) {}
+  type_info() :kind(PRIMITIVE) {}
 };
 
 enum primitive_recipes {

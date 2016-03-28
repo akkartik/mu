@@ -3,7 +3,7 @@
 :(before "End Mu Types Initialization")
 //: We'll use this container as a running example, with two number elements.
 type_ordinal point = put(Type_ordinal, "point", Next_type_ordinal++);
-get_or_insert(Type, point).size = 2;
+get_or_insert(Type, point);  // initialize
 get(Type, point).kind = CONTAINER;
 get(Type, point).name = "point";
 get(Type, point).elements.push_back(reagent("x:number"));
@@ -36,7 +36,7 @@ def main [
 // A more complex container, containing another container as one of its
 // elements.
 type_ordinal point_number = put(Type_ordinal, "point-number", Next_type_ordinal++);
-get_or_insert(Type, point_number).size = 2;
+get_or_insert(Type, point_number);  // initialize
 get(Type, point_number).kind = CONTAINER;
 get(Type, point_number).name = "point-number";
 get(Type, point_number).elements.push_back(reagent("xy:point"));
@@ -423,7 +423,6 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     trace(9993, "parse") << "  element: " << to_string(info.elements.back()) << end();
     // End Load Container Element Definition
   }
-  info.size = SIZE(info.elements);
 }
 
 void replace_unknown_types_with_unique_ordinals(type_tree* type, const type_info& info) {

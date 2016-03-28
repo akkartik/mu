@@ -8,7 +8,7 @@
 //: We'll use this container as a running example, with two number elements.
 {
 type_ordinal tmp = put(Type_ordinal, "number-or-point", Next_type_ordinal++);
-get_or_insert(Type, tmp).size = 2;
+get_or_insert(Type, tmp);  // initialize
 get(Type, tmp).kind = EXCLUSIVE_CONTAINER;
 get(Type, tmp).name = "number-or-point";
 get(Type, tmp).elements.push_back(reagent("i:number"));
@@ -35,7 +35,7 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
   // size of an exclusive container is the size of its largest variant
   // (So like containers, it can't contain arrays.)
   int result = 0;
-  for (int i = 0; i < t.size; ++i) {
+  for (int i = 0; i < SIZE(t.elements); ++i) {
     reagent tmp;
     tmp.type = new type_tree(*type);
     int size = size_of(variant_type(tmp, i));
