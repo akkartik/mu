@@ -38,8 +38,8 @@ single function or 'recipe'.
 print primitives that inject a screen <em>dependency</em> which can be faked
 for testing.
 <li><a href='html/static_dispatch.mu.html'>static_dispatch.mu</a>: example
-program showing mu's ability to define recipes with headers, and allow recipes
-with the same name but different headers to coexist.
+program showing mu's ability to define functions with headers, and allow
+functions with the same name but different headers to coexist.
 <li><a href='html/chessboard.mu.html'>chessboard.mu</a>: a little program for
 2 people to play chess, with thorough tests of its behavior including both
 screen and keyboard handling.
@@ -67,21 +67,21 @@ facts about our program, and for <a href='http://akkartik.name/post/tracing-test
 
 <p><b>Part II</b>: the Mu virtual machine, designed to compile easily to
 machine language.
-<p/><a href='html/010vm.cc.html'>010vm.cc</a>: core data structures: recipes
-(functions), instructions and reagents (operands).
+<p/><a href='html/010vm.cc.html'>010vm.cc</a>: core data structures:
+functions, instructions and reagents (operands).
 <br/><a href='html/011load.cc.html'>011load.cc</a>: the textual representation
-of recipes and how it's turned into the data structures.
+of functions and how it's turned into the data structures.
 <br/><a href='html/012transform.cc.html'>012transform.cc</a>: after Mu
 programs are loaded but before they are run they can be transformed in an
 extensible manner akin to lisp macros. Think of this as the core of Mu's
 &lsquo;compiler&rsquo; for providing high-level features atop the core.
 <br/><a href='html/013update_operation.cc.html'>013update_operation.cc</a>:
-our first transform: check for unknown recipes before the program runs.
+our first transform: check for unknown functions before the program runs.
 <br/><a href='html/014literal_string.cc.html'>014literal_string.cc</a>: extend
 the loader to support literal strings in various instructions.
 <br/><a href='html/015literal_noninteger.cc.html'>015literal_noninteger.cc</a>:
 extend the loader to support non-integer numbers.
-<br/><a href='html/020run.cc.html'>020run.cc</a>: executing Mu recipes by
+<br/><a href='html/020run.cc.html'>020run.cc</a>: executing Mu functions by
 executing the list of instructions they contain. Future layers will define
 more primitive operations that can be used in instructions.
 <br/><a href='html/021check_instruction.cc.html'>021check_instruction.cc</a>:
@@ -100,20 +100,20 @@ layers of indirection to Mu data.
 are bounds-checked.
 <br/><a href='html/033exclusive_container.cc.html'>033exclusive_container.cc</a>:
 tagged unions or sum types.
-<br/><a href='html/034call.cc.html'>034call.cc</a>: calls to recipes look
+<br/><a href='html/034call.cc.html'>034call.cc</a>: calls to functions look
 just like primitive operations.
 <br/><a href='html/035call_ingredient.cc.html'>035call_ingredient.cc</a>: how
-recipes pass arguments or 'ingredients' without introducing any syntax and
-breaking the metaphor of recipes as lists of instructions.
-<br/><a href='html/036call_reply.cc.html'>036call_reply.cc</a>: recipes can
+functions pass arguments or 'ingredients' without introducing any syntax and
+breaking the metaphor of functions as lists of instructions.
+<br/><a href='html/036call_reply.cc.html'>036call_reply.cc</a>: functions can
 return arbitrary numbers of values to their callers.
 <br/><a href='html/037new.cc.html'>037new.cc</a>: rudimentary memory
 allocator that is aware of all global types in any Mu program.
-<br/><a href='html/061recipe.cc.html'>061recipe.cc</a>: passing recipes around
-as first-class values in higher-order functions.
+<br/><a href='html/061recipe.cc.html'>061recipe.cc</a>: passing functions
+around as first-class values in higher-order functions.
 <br/><a href='html/062scheduler.cc.html'>062scheduler.cc</a>: running multiple
-recipes concurrently using <em>routines</em> that might execute in interleaved
-fashion.
+functions concurrently using <em>routines</em> that might execute in
+interleaved fashion.
 <br/><a href='html/063wait.cc.html'>063wait.cc</a>: primitives for
 synchronization between routines.
 
@@ -140,7 +140,7 @@ might go away as well. Global variables are currently not checked as
 rigorously as the rest of the type system.
 <br/><a href='html/047check_type_by_name.cc.html'>047check_type_by_name.cc</a>:
 a simple transform to deduce missing types in instructions on the basis of
-previous instructions in the same recipe.
+previous instructions in the same function.
 <br/><a href='html/050scenario.cc.html'>050scenario.cc</a>: Mu's first syntax
 &mdash; not for code but for tests. (<a href='html/051scenario_test.mu.html'>example</a>)
 <br/><a href='html/052tangle.cc.html'>052tangle.cc</a>: support for layers in
@@ -152,15 +152,15 @@ a new syntax for representing complex types as trees using whitespace and
 parentheses (s-expressions); <a href='html/055recipe_header.cc.html'>055recipe_header.cc</a>,
 a new syntax for introducing ingredients and products with the name of a reagent;
 <a href='html/056static_dispatch.cc.html'>056static_dispatch.cc</a>, allowing
-multiple variants of a recipe to coexist with support for different headers;
+multiple variants of a function to coexist with support for different headers;
 <a href='html/057shape_shifting_container.cc.html'>057shape_shifting_container.cc</a>, 
 a new syntax for wildcard <em>type ingredients</em> in containers; and finally
 <a href='html/058shape_shifting_recipe.cc.html'>058shape_shifting_recipe.cc</a>, 
-support for type ingredients in recipes. Everytime you call a shape-shifting
-recipe with a new set of types for its type ingredients, it creates a
-new variant of the recipe for you matching those types.
+support for type ingredients in functions. Everytime you call a shape-shifting
+function with a new set of types for its type ingredients, it creates a new
+variant of the function for you matching those types.
 <br/><a href='html/060immutable.cc.html'>060immutable.cc</a>, a static analysis to
-ensure that recipes never modify anything but their products.
+ensure that functions never modify anything but their products.
 <p/><a href='html/998check_type_pointers.cc.html'>998check_type_pointers.cc.html</a>:
 After all our messing about with types, a final pass to make sure we didn't
 introduce any invalid types.
@@ -256,7 +256,7 @@ golden/expected. Any future changes to the output will then be flagged in red.
 click on code in a sandbox to open up a drawer containing its trace. The trace
 can be added to using the <span style='font-family:courier,fixed'>stash</span>
 command, which renders arbitrary data structures using <span style='font-family:courier,fixed'>to-text</span>
-with the appropriate recipe header.
+with the appropriate function header.
 <br/><a href='html/edit/010-errors.mu.html'>edit/010-errors.mu</a>:
 support for rendering errors on both the left and in each sandbox.
 <br/><a href='html/edit/011-editor-undo.mu.html'>edit/011-editor-undo.mu</a>:
