@@ -42,7 +42,10 @@ void rewrite_stashes_to_text(recipe& caller) {
     instruction& inst = caller.steps.at(i);
     if (inst.name == "stash") {
       for (int j = 0; j < SIZE(inst.ingredients); ++j) {
-        assert(inst.ingredients.at(j).type);
+        if (!inst.ingredients.at(j).type) {
+          // error; will be handled elsewhere
+          continue;
+        }
         if (is_literal(inst.ingredients.at(j))) continue;
         if (is_mu_string(inst.ingredients.at(j))) continue;
         instruction def;
