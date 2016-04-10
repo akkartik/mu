@@ -286,7 +286,7 @@ def main [
 def main [
   12:number <- copy 34
   13:number <- copy 35
-  15:address:number <- get-address 12:point/raw, 1:offset  # unsafe
+  15:address:number <- get-address 12:point, 1:offset
 ]
 +mem: storing 13 in location 15
 
