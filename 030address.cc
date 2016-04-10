@@ -86,9 +86,6 @@ def foo [
 :(after "bool is_mu_boolean(reagent r)")
   if (!canonize_type(r)) return false;
 
-:(after "Update product While Type-checking Merge")
-if (!canonize_type(product)) continue;
-
 :(code)
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
@@ -127,59 +124,6 @@ void drop_one_lookup(reagent& r) {
   }
   assert(false);
 }
-
-//:: 'get' can read from container address
-:(scenario get_indirect)
-def main [
-  1:number <- copy 2
-  2:number <- copy 34
-  3:number <- copy 35
-  4:number <- get 1:address:point/lookup, 0:offset
-]
-+mem: storing 34 in location 4
-
-:(scenario get_indirect2)
-def main [
-  1:number <- copy 2
-  2:number <- copy 34
-  3:number <- copy 35
-  4:address:number <- copy 5/unsafe
-  *4:address:number <- get 1:address:point/lookup, 0:offset
-]
-+mem: storing 34 in location 5
-
-:(scenario include_nonlookup_properties)
-def main [
-  1:number <- copy 2
-  2:number <- copy 34
-  3:number <- copy 35
-  4:number <- get 1:address:point/lookup/foo, 0:offset
-]
-+mem: storing 34 in location 4
-
-:(after "Update GET base in Check")
-if (!canonize_type(base)) break;
-:(after "Update GET product in Check")
-if (!canonize_type(product)) break;
-:(after "Update GET base in Run")
-canonize(base);
-
-:(scenario get_address_indirect)
-# 'get' can read from container address
-def main [
-  1:number <- copy 2
-  2:number <- copy 34
-  3:number <- copy 35
-  4:address:number <- get-address 1:address:point/lookup, 0:offset
-]
-+mem: storing 2 in location 4
-
-:(after "Update GET_ADDRESS base in Check")
-if (!canonize_type(base)) break;
-:(after "Update GET_ADDRESS product in Check")
-if (!canonize_type(base)) break;
-:(after "Update GET_ADDRESS base in Run")
-canonize(base);
 
 //:: abbreviation for '/lookup': a prefix '*'
 

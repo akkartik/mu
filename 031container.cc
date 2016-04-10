@@ -137,7 +137,7 @@ case GET: {
     break;
   }
   reagent base = inst.ingredients.at(0);  // new copy for every invocation
-  // Update GET base in Check
+  if (!canonize_type(base)) break;
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
@@ -159,7 +159,7 @@ case GET: {
   }
   if (inst.products.empty()) break;
   reagent product = inst.products.at(0);
-  // Update GET product in Check
+  if (!canonize_type(product)) break;
   const reagent element = element_type(base, offset_value);
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
@@ -170,7 +170,7 @@ case GET: {
 :(before "End Primitive Recipe Implementations")
 case GET: {
   reagent base = current_instruction().ingredients.at(0);
-  // Update GET base in Run
+  canonize(base);
   int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
@@ -241,6 +241,35 @@ def main [
 ]
 +error: main: 'get 12:point-number/raw, 1:offset' should write to number but 15 has type (address number)
 
+//: 'get' can read from container address
+:(scenario get_indirect)
+def main [
+  1:number <- copy 2
+  2:number <- copy 34
+  3:number <- copy 35
+  4:number <- get 1:address:point/lookup, 0:offset
+]
++mem: storing 34 in location 4
+
+:(scenario get_indirect2)
+def main [
+  1:number <- copy 2
+  2:number <- copy 34
+  3:number <- copy 35
+  4:address:number <- copy 5/unsafe
+  *4:address:number <- get 1:address:point/lookup, 0:offset
+]
++mem: storing 34 in location 5
+
+:(scenario include_nonlookup_properties)
+def main [
+  1:number <- copy 2
+  2:number <- copy 34
+  3:number <- copy 35
+  4:number <- get 1:address:point/lookup/foo, 0:offset
+]
++mem: storing 34 in location 4
+
 //: we might want to call 'get' without saving the results, say in a sandbox
 
 :(scenario get_without_product)
@@ -272,7 +301,7 @@ case GET_ADDRESS: {
     break;
   }
   reagent base = inst.ingredients.at(0);
-  // Update GET_ADDRESS base in Check
+  if (!canonize_type(base)) break;
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'get-address' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
@@ -295,7 +324,7 @@ case GET_ADDRESS: {
     offset_value = offset.value;
   }
   reagent product = inst.products.at(0);
-  // Update GET_ADDRESS product in Check
+  if (!canonize_type(base)) break;
   // same type as for GET..
   reagent element = element_type(base, offset_value);
   // ..except for an address at the start
@@ -309,7 +338,7 @@ case GET_ADDRESS: {
 :(before "End Primitive Recipe Implementations")
 case GET_ADDRESS: {
   reagent base = current_instruction().ingredients.at(0);
-  // Update GET_ADDRESS base in Run
+  canonize(base);
   int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
@@ -359,6 +388,16 @@ def main [
   15:boolean <- get-address 12:boolbool, 1:offset
 ]
 +error: main: 'get-address 12:boolbool, 1:offset' should write to (address boolean) but 15 has type boolean
+
+:(scenario get_address_indirect)
+# 'get' can read from container address
+def main [
+  1:number <- copy 2
+  2:number <- copy 34
+  3:number <- copy 35
+  4:address:number <- get-address 1:address:point/lookup, 0:offset
+]
++mem: storing 2 in location 4
 
 //:: Allow containers to be defined in mu code.
 
@@ -692,7 +731,7 @@ void check_merge_calls(const recipe_ordinal r) {
       continue;
     }
     reagent product = inst.products.at(0);
-    // Update product While Type-checking Merge
+    if (!canonize_type(product)) continue;
     type_ordinal product_type = product.type->value;
     if (product_type == 0 || !contains_key(Type, product_type)) {
       raise << maybe(caller.name) << "'merge' should yield a container in '" << to_original_string(inst) << "'\n" << end();
