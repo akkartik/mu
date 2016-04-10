@@ -64,13 +64,6 @@ void lookup_memory(reagent& x) {
   drop_one_lookup(x);
 }
 
-:(scenario canonize_non_pointer_fails_without_crashing)
-% Hide_errors = true;
-def foo [
-  1:address:number <- get-address *p, x:offset
-]
-# don't crash
-
 :(after "bool types_strictly_match(reagent to, reagent from)")
   if (!canonize_type(to)) return false;
   if (!canonize_type(from)) return false;
