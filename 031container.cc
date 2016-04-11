@@ -323,14 +323,12 @@ case GET_ADDRESS: {
   else {
     offset_value = offset.value;
   }
-  reagent product = inst.products.at(0);
-  if (!canonize_type(base)) break;
   // same type as for GET..
   reagent element = element_type(base, offset_value);
   // ..except for an address at the start
   element.type = new type_tree("address", get(Type_ordinal, "address"), element.type);
-  if (!types_coercible(product, element)) {
-    raise << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
+  if (!types_coercible(inst.products.at(0), element)) {
+    raise << maybe(get(Recipe, r).name) << "'get-address " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << inst.products.at(0).name << " has type " << names_to_string_without_quotes(inst.products.at(0).type) << '\n' << end();
     break;
   }
   break;
@@ -398,6 +396,16 @@ def main [
   4:address:number <- get-address 1:address:point/lookup, 0:offset
 ]
 +mem: storing 2 in location 4
+
+:(scenario get_address_indirect2)
+def main [
+  1:number <- copy 2
+  2:number <- copy 34
+  3:number <- copy 35
+  4:address:number <- copy 5/unsafe
+  4:address:number/lookup <- get-address 1:address:point/lookup, 0:offset
+]
++mem: storing 2 in location 5
 
 //:: Allow containers to be defined in mu code.
 
