@@ -211,17 +211,18 @@ def main [
 :(before "End transform_names(inst) Special-cases")
 // replace element names of containers with offsets
 if (inst.name == "get" || inst.name == "get-address" || inst.name == "put") {
-  if (SIZE(inst.ingredients) < 2) {
-    raise << maybe(get(Recipe, r).name) << "2 or more ingredients expected in '" << to_original_string(inst) << "'\n" << end();
-    break;
-  }
+  //: avoid raising any errors here; later layers will support overloading new
+  //: instructions with the same names (static dispatch), which could lead to
+  //: spurious errors
+  if (SIZE(inst.ingredients) < 2)
+    break;  // error raised elsewhere
   if (!is_literal(inst.ingredients.at(1)))
-    raise << maybe(get(Recipe, r).name) << "expected ingredient 1 of '" << inst.name << "' to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;  // error raised elsewhere
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be a container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);
     if (base_type == -1)
-      raise << maybe(get(Recipe, r).name) << "expected a container in '" << to_original_string(inst) << "'\n" << end();
+      break;  // error raised elsewhere
     if (contains_key(Type, base_type)) {  // otherwise we'll raise an error elsewhere
       inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
       trace(9993, "name") << "element " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " is at offset " << no_scientific(inst.ingredients.at(1).value) << end();

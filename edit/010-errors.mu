@@ -461,8 +461,6 @@ recipe foo [
     .  y:address:shared:point <- new point:type        ┊                                                 .
     .  get *y:address:shared:point, x:number           ┊                                                 .
     .]                                                 ┊                                                 .
-    .foo: expected ingredient 1 of 'get' to have type ↩┊                                                 .
-    .'offset'; got x:number                            ┊                                                 .
     .foo: second ingredient of 'get' should have type ↩┊                                                 .
     .'offset', but got x:number                        ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
