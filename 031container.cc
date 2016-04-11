@@ -309,7 +309,7 @@ case GET_ADDRESS: {
   type_ordinal base_type = base.type->value;
   reagent offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'get-address' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   int offset_value = 0;
@@ -390,7 +390,7 @@ def main [
 +error: main: 'get-address 12:boolbool, 1:offset' should write to (address boolean) but 15 has type boolean
 
 :(scenario get_address_indirect)
-# 'get' can read from container address
+# 'get-address' can read from container address
 def main [
   1:number <- copy 2
   2:number <- copy 34
