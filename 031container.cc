@@ -407,6 +407,84 @@ def main [
 ]
 +mem: storing 2 in location 5
 
+//:: To write to elements of containers, use 'put'.
+
+:(scenario put)
+def main [
+  12:number <- copy 34
+  13:number <- copy 35
+  $clear-trace
+  12:point <- put 12:point, 1:offset, 36
+]
++mem: storing 36 in location 13
+-mem: storing 34 in location 12
+
+:(before "End Primitive Recipe Declarations")
+PUT,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "put", PUT);
+:(before "End Primitive Recipe Checks")
+case PUT: {
+  if (SIZE(inst.ingredients) != 3) {
+    raise << maybe(get(Recipe, r).name) << "'put' expects exactly 3 ingredients in '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  reagent base = inst.ingredients.at(0);
+  if (!canonize_type(base)) break;
+  if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'put' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  type_ordinal base_type = base.type->value;
+  reagent offset = inst.ingredients.at(1);
+  if (!is_literal(offset) || !is_mu_scalar(offset)) {
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'put' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  int offset_value = 0;
+  if (is_integer(offset.name)) {  // later layers permit non-integer offsets
+    offset_value = to_integer(offset.name);
+    if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
+      raise << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
+      break;
+    }
+  }
+  else {
+    offset_value = offset.value;
+  }
+  reagent& value = inst.ingredients.at(2);
+  reagent element = element_type(base, offset_value);
+  if (!types_coercible(element, value)) {
+    raise << maybe(get(Recipe, r).name) << "'put " << base.original_string << ", " << offset.original_string << "' should store " << names_to_string_without_quotes(element.type) << " but " << value.name << " has type " << names_to_string_without_quotes(value.type) << '\n' << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case PUT: {
+  reagent base = current_instruction().ingredients.at(0);
+  canonize(base);
+  int base_address = base.value;
+  if (base_address == 0) {
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+    break;
+  }
+  type_ordinal base_type = base.type->value;
+  int offset = ingredients.at(1).at(0);
+  if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
+  int address = base_address;
+  for (int i = 0; i < offset; ++i)
+    address += size_of(element_type(base, i));
+  trace(9998, "run") << "address to copy to is " << address << end();
+  // optimization: directly write the element rather than updating 'product'
+  // and writing the entire container
+  for (int i = 0; i < SIZE(ingredients.at(2)); ++i) {
+    trace(9999, "mem") << "storing " << no_scientific(ingredients.at(2).at(i)) << " in location " << address+i << end();
+    put(Memory, address+i, ingredients.at(2).at(i));
+  }
+  goto finish_instruction;
+}
+
 //:: Allow containers to be defined in mu code.
 
 :(scenarios load)

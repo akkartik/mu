@@ -95,6 +95,7 @@ void run_current_routine()
       }
     }
     // End of Instruction
+    finish_instruction:;
     ++current_step_index();
   }
   stop_running_current_routine:;
