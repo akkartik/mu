@@ -399,13 +399,6 @@ def main [
 ]
 +mem: storing 2 in location 4
 
-:(scenario canonize_non_pointer_fails_without_crashing)
-% Hide_errors = true;
-def foo [
-  1:address:number <- get-address *p, x:offset
-]
-# don't crash
-
 //:: Allow containers to be defined in mu code.
 
 :(scenarios load)

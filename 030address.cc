@@ -94,10 +94,6 @@ bool canonize_type(reagent& r) {
 }
 
 void drop_from_type(reagent& r, string expected_type) {
-  if (!r.type) {
-    raise << "can't drop " << expected_type << " from " << to_string(r) << '\n' << end();
-    return;
-  }
   if (r.type->name != expected_type) {
     raise << "can't drop2 " << expected_type << " from " << to_string(r) << '\n' << end();
     return;
