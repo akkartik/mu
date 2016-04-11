@@ -197,7 +197,7 @@ def main [
 -error: main: mixing variable names and numeric addresses
 $error: 0
 
-//:: Support element names for containers in 'get' and 'get-address'.
+//:: Support element names for containers in 'get' and 'get-address' and 'put'.
 
 :(scenario transform_names_transforms_container_elements)
 def main [
@@ -210,13 +210,13 @@ def main [
 
 :(before "End transform_names(inst) Special-cases")
 // replace element names of containers with offsets
-if (inst.name == "get" || inst.name == "get-address") {
-  if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << to_original_string(inst) << "'\n" << end();
+if (inst.name == "get" || inst.name == "get-address" || inst.name == "put") {
+  if (SIZE(inst.ingredients) < 2) {
+    raise << maybe(get(Recipe, r).name) << "2 or more ingredients expected in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1)))
-    raise << maybe(get(Recipe, r).name) << "expected ingredient 1 of " << (inst.name == "get" ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "expected ingredient 1 of '" << inst.name << "' to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be a container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);

@@ -46,22 +46,15 @@ def new-channel capacity:number -> in:address:shared:source:_elem, out:address:s
   local-scope
   load-ingredients
   result:address:shared:channel:_elem <- new {(channel _elem): type}
-  # result.first-full = 0
-  full:address:number <- get-address *result, first-full:offset
-  *full <- copy 0
-  # result.first-free = 0
-  free:address:number <- get-address *result, first-free:offset
-  *free <- copy 0
-  # result.data = new location[ingredient+1]
+  *result <- put *result, first-full:offset, 0
+  *result <- put *result, first-free:offset, 0
   capacity <- add capacity, 1  # unused slot for 'full?' below
-  dest:address:address:shared:array:_elem <- get-address *result, data:offset
-  *dest <- new _elem:type, capacity
+  data:address:shared:array:_elem <- new _elem:type, capacity
+  *result <- put *result, data:offset, data
   in <- new {(source _elem): type}
-  chan:address:address:shared:channel:_elem <- get-address *in, chan:offset
-  *chan <- copy result
+  *in <- put *in, chan:offset, result
   out <- new {(sink _elem): type}
-  chan:address:address:shared:channel:_elem <- get-address *out, chan:offset
-  *chan <- copy result
+  *out <- put *out, chan:offset, result
 ]
 
 def write out:address:shared:sink:_elem, val:_elem -> out:address:shared:sink:_elem [

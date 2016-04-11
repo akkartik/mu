@@ -128,10 +128,9 @@ def new-buffer capacity:number -> result:address:shared:buffer [
   local-scope
   load-ingredients
   result <- new buffer:type
-  len:address:number <- get-address *result, length:offset
-  *len:address:number <- copy 0
-  s:address:address:shared:array:character <- get-address *result, data:offset
-  *s <- new character:type, capacity
+  *result <- put *result, length:offset, 0
+  data:address:shared:array:character <- new character:type, capacity
+  *result <- put *result, data:offset, data
   return result
 ]
 
@@ -139,18 +138,18 @@ def grow-buffer in:address:shared:buffer -> in:address:shared:buffer [
   local-scope
   load-ingredients
   # double buffer size
-  x:address:address:shared:array:character <- get-address *in, data:offset
-  oldlen:number <- length **x
+  olddata:address:shared:array:character <- get *in, data:offset
+  oldlen:number <- length *olddata
   newlen:number <- multiply oldlen, 2
-  olddata:address:shared:array:character <- copy *x
-  *x <- new character:type, newlen
+  newdata:address:shared:array:character <- new character:type, newlen
+  *in <- put *in, data:offset, newdata
   # copy old contents
   i:number <- copy 0
   {
     done?:boolean <- greater-or-equal i, oldlen
     break-if done?
     src:character <- index *olddata, i
-    dest:address:character <- index-address **x, i
+    dest:address:character <- index-address *newdata, i
     *dest <- copy src
     i <- add i, 1
     loop
@@ -186,14 +185,15 @@ def append buf:address:shared:buffer, x:_elem -> buf:address:shared:buffer [
 def append in:address:shared:buffer, c:character -> in:address:shared:buffer [
   local-scope
   load-ingredients
-  len:address:number <- get-address *in, length:offset
+  len:number <- get *in, length:offset
   {
     # backspace? just drop last character if it exists and return
     backspace?:boolean <- equal c, 8/backspace
     break-unless backspace?
-    empty?:boolean <- lesser-or-equal *len, 0
+    empty?:boolean <- lesser-or-equal len, 0
     return-if empty?
-    *len <- subtract *len, 1
+    len <- subtract len, 1
+    put *in, length:offset, len
     return
   }
   {
@@ -203,9 +203,10 @@ def append in:address:shared:buffer, c:character -> in:address:shared:buffer [
     in <- grow-buffer in
   }
   s:address:shared:array:character <- get *in, data:offset
-  dest:address:character <- index-address *s, *len
+  dest:address:character <- index-address *s, len
   *dest <- copy c
-  *len <- add *len, 1
+  len <- add len, 1
+  put *in, length:offset, len
 ]
 
 scenario buffer-append-works [
