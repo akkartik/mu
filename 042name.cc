@@ -149,6 +149,24 @@ bool is_special_name(const string& s) {
   return false;
 }
 
+:(scenario transform_names_supports_containers)
+def main [
+  x:point <- merge 34, 35
+  y:number <- copy 3
+]
++name: assign x 1
+# skip location 2 because x occupies two locations
++name: assign y 3
+
+:(scenario transform_names_supports_static_arrays)
+def main [
+  x:array:number:3 <- create-array
+  y:number <- copy 3
+]
++name: assign x 1
+# skip locations 2, 3, 4 because x occupies four locations
++name: assign y 5
+
 :(scenario transform_names_passes_dummy)
 # _ is just a dummy result that never gets consumed
 def main [

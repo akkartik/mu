@@ -49,24 +49,26 @@ case CREATE_ARRAY: {
   reagent product = current_instruction().products.at(0);
   canonize(product);
   int base_address = product.value;
-  int array_size = to_integer(product.type->right->right->name);
+  int array_length = to_integer(product.type->right->right->name);
   // initialize array size, so that size_of will work
-  put(Memory, base_address, array_size);  // in array elements
+  put(Memory, base_address, array_length);  // in array elements
   int size = size_of(product);  // in locations
   trace(9998, "run") << "creating array of size " << size << '\n' << end();
   // initialize array
   for (int i = 1; i <= size_of(product); ++i) {
     put(Memory, base_address+i, 0);
   }
-  // dummy product; doesn't actually do anything
-  products.resize(1);
-  products.at(0).push_back(array_size);
-  break;
+  // no need to update product
+  goto finish_instruction;
 }
 
 :(scenario copy_array)
 # Arrays can be copied around with a single instruction just like numbers,
 # no matter how large they are.
+# You don't need to pass the size around, since each array variable stores its
+# size in memory at run-time. We'll call a variable with an explicit size a
+# 'static' array, and one without a 'dynamic' array since it can contain
+# arrays of many different sizes.
 def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
@@ -103,17 +105,19 @@ def main [
 ]
 +app: foo: 3 14 15 16
 
-//: disable the size mismatch check since the destination array need not be initialized
-:(before "End size_mismatch(x) Cases")
-if (x.type && x.type->value == get(Type_ordinal, "array")) return false;
 :(before "End size_of(reagent) Cases")
 if (r.type && r.type->value == get(Type_ordinal, "array")) {
   if (!r.type->right) {
     raise << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
     return 1;
   }
-  return 1 + get_or_insert(Memory, r.value)*size_of(array_element(r.type));
+  return 1 + array_length(r)*size_of(array_element(r.type));
 }
+
+//: disable the size mismatch check for arrays since the destination array
+//: need not be initialized
+:(before "End size_mismatch(x) Cases")
+if (x.type && x.type->value == get(Type_ordinal, "array")) return false;
 
 //: arrays are disallowed inside containers unless their length is fixed in
 //: advance
@@ -231,6 +235,15 @@ type_tree* array_element(const type_tree* type) {
     return type->right->left;
   }
   return type->right;
+}
+
+int array_length(const reagent& x) {
+  if (x.type->right->right) {
+    return to_integer(x.type->right->right->name);
+  }
+  // this should never happen at transform time
+  // x should already be canonized.
+  return get_or_insert(Memory, x.value);
 }
 
 :(scenario index_indirect)
