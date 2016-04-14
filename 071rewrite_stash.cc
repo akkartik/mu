@@ -23,6 +23,14 @@ recipe main [
 +transform: {stash_2_0: ("address" "shared" "array" "character")} <- array-to-text-line {n: ("address" "shared" "array" "number")}
 +transform: stash {stash_2_0: ("address" "shared" "array" "character")}
 
+:(scenario ignore_stashes_of_static_arrays)
+recipe main [
+  local-scope
+  n:array:number:3 <- create-array
+  stash n
+]
++transform: stash {n: ("array" "number" "3")}
+
 :(before "End Instruction Inserting/Deleting Transforms")
 Transform.push_back(rewrite_stashes_to_text);
 
@@ -48,8 +56,10 @@ void rewrite_stashes_to_text(recipe& caller) {
         }
         if (is_literal(inst.ingredients.at(j))) continue;
         if (is_mu_string(inst.ingredients.at(j))) continue;
+        // don't try to extend static arrays
+        if (is_static_array(inst.ingredients.at(j))) continue;
         instruction def;
-        if (is_address_of_array(inst.ingredients.at(j))) {
+        if (is_lookup_of_address_of_array(inst.ingredients.at(j))) {
           def.name = "array-to-text-line";
           reagent tmp = inst.ingredients.at(j);
           drop_one_lookup(tmp);
@@ -74,8 +84,14 @@ void rewrite_stashes_to_text(recipe& caller) {
   caller.steps.swap(new_instructions);
 }
 
-bool is_address_of_array(reagent x) {
+bool is_lookup_of_address_of_array(reagent x) {
+  if (x.type->name != "address") return false;
   if (!canonize_type(x)) return false;
+  return x.type->name == "array";
+}
+
+bool is_static_array(reagent x) {
+  // no canonize_type()
   return x.type->name == "array";
 }
 
