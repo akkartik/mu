@@ -70,18 +70,21 @@ def write out:address:shared:sink:_elem, val:_elem -> out:address:shared:sink:_e
   }
   # store val
   circular-buffer:address:shared:array:_elem <- get *chan, data:offset
-  free:address:number <- get-address *chan, first-free:offset
-  dest:address:_elem <- index-address *circular-buffer, *free
+  free:number <- get *chan, first-free:offset
+  dest:address:_elem <- index-address *circular-buffer, free
   *dest <- copy val
   # mark its slot as filled
-  *free <- add *free, 1
+  # todo: clear the slot itself
+  free <- add free, 1
   {
     # wrap free around to 0 if necessary
     len:number <- length *circular-buffer
-    at-end?:boolean <- greater-or-equal *free, len
+    at-end?:boolean <- greater-or-equal free, len
     break-unless at-end?
-    *free <- copy 0
+    free <- copy 0
   }
+  # write back
+  put *chan, first-free:offset, free
 ]
 
 def read in:address:shared:source:_elem -> result:_elem, in:address:shared:source:_elem [
@@ -95,19 +98,22 @@ def read in:address:shared:source:_elem -> result:_elem, in:address:shared:sourc
     free-address:address:number <- get-address *chan, first-free:offset
     wait-for-location free-address
   }
-  # read result
-  full:address:number <- get-address *chan, first-full:offset
+  # pull result off
+  full:number <- get *chan, first-full:offset
   circular-buffer:address:shared:array:_elem <- get *chan, data:offset
-  result <- index *circular-buffer, *full
+  result <- index *circular-buffer, full
   # mark its slot as empty
-  *full <- add *full, 1
+  # todo: clear the slot itself
+  full <- add full, 1
   {
     # wrap full around to 0 if necessary
     len:number <- length *circular-buffer
-    at-end?:boolean <- greater-or-equal *full, len
+    at-end?:boolean <- greater-or-equal full, len
     break-unless at-end?
-    *full <- copy 0
+    full <- copy 0
   }
+  # write back
+  put *chan, first-full:offset, full
 ]
 
 def clear in:address:shared:source:_elem -> in:address:shared:source:_elem [
@@ -302,10 +308,11 @@ def buffer-lines in:address:shared:source:character, buffered-out:address:shared
         break-unless backspace?
         # drop previous character
         {
-          buffer-length:address:number <- get-address *line, length:offset
-          buffer-empty?:boolean <- equal *buffer-length, 0
+          buffer-length:number <- get *line, length:offset
+          buffer-empty?:boolean <- equal buffer-length, 0
           break-if buffer-empty?
-          *buffer-length <- subtract *buffer-length, 1
+          buffer-length <- subtract buffer-length, 1
+          put *line, length:offset, buffer-length
         }
         # and don't append this one
         loop +next-character:label
