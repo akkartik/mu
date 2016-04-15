@@ -7,15 +7,16 @@
 def f1 [
   1:number <- copy 0
   start-running f2
-  wait-for-location 1:number
+  2:address:number <- copy 1/unsafe
+  wait-for-location 2:address:number
   # now wait for f2 to run and modify location 1 before using its value
-  2:number <- copy 1:number
+  3:number <- copy 1:number
 ]
 def f2 [
   1:number <- copy 34
 ]
-# if we got the synchronization wrong we'd be storing 0 in location 2
-+mem: storing 34 in location 2
+# if we got the synchronization wrong we'd be storing 0 in location 3
++mem: storing 34 in location 3
 
 //: define the new state that all routines can be in
 
@@ -36,16 +37,22 @@ WAIT_FOR_LOCATION,
 put(Recipe_ordinal, "wait-for-location", WAIT_FOR_LOCATION);
 :(before "End Primitive Recipe Checks")
 case WAIT_FOR_LOCATION: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'wait-for-location' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
+    break;
+  }
+  if (!is_mu_address(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'wait-for-location' requires an address ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_LOCATION: {
-  reagent loc = current_instruction().ingredients.at(0);
-  canonize(loc);
+  int loc = ingredients.at(0).at(0);
   Current_routine->state = WAITING;
-  Current_routine->waiting_on_location = loc.value;
-  Current_routine->old_value_of_waiting_location = get_or_insert(Memory, loc.value);
-  trace(9998, "run") << "waiting for location " << loc.value << " to change from " << no_scientific(get_or_insert(Memory, loc.value)) << end();
+  Current_routine->waiting_on_location = loc;
+  Current_routine->old_value_of_waiting_location = get_or_insert(Memory, loc);
+  trace(9998, "run") << "waiting for location " << loc << " to change from " << no_scientific(get_or_insert(Memory, loc)) << end();
   break;
 }
 

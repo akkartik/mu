@@ -66,7 +66,7 @@ def write out:address:shared:sink:_elem, val:_elem -> out:address:shared:sink:_e
     full:boolean <- channel-full? chan
     break-unless full
     full-address:address:number <- get-address *chan, first-full:offset
-    wait-for-location *full-address
+    wait-for-location full-address
   }
   # store val
   circular-buffer:address:shared:array:_elem <- get *chan, data:offset
@@ -93,7 +93,7 @@ def read in:address:shared:source:_elem -> result:_elem, in:address:shared:sourc
     empty?:boolean <- channel-empty? chan
     break-unless empty?
     free-address:address:number <- get-address *chan, first-free:offset
-    wait-for-location *free-address
+    wait-for-location free-address
   }
   # read result
   full:address:number <- get-address *chan, first-full:offset
