@@ -6,7 +6,10 @@ tests. Hoped-for benefits:
 
 1. Open source projects become easier for outsiders to comprehend, since they
    can more confidently try out changes with the knowledge that they'll get
-   rapid feedback if they break something.
+   rapid feedback if they break something. As a consequence, they become more
+   *rewrite-friendly*: it's easier to leave your project's historical
+   accidents and other baggage behind if you can be confident of not causing
+   regressions.
 
 1. It becomes easier to teach programming by emphasizing tests far earlier
    than we do today.
