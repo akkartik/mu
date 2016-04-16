@@ -193,7 +193,7 @@ def append in:address:shared:buffer, c:character -> in:address:shared:buffer [
     empty?:boolean <- lesser-or-equal len, 0
     return-if empty?
     len <- subtract len, 1
-    put *in, length:offset, len
+    *in <- put *in, length:offset, len
     return
   }
   {
@@ -206,7 +206,7 @@ def append in:address:shared:buffer, c:character -> in:address:shared:buffer [
   dest:address:character <- index-address *s, len
   *dest <- copy c
   len <- add len, 1
-  put *in, length:offset, len
+  *in <- put *in, length:offset, len
 ]
 
 scenario buffer-append-works [

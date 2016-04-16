@@ -84,7 +84,7 @@ def write out:address:shared:sink:_elem, val:_elem -> out:address:shared:sink:_e
     free <- copy 0
   }
   # write back
-  put *chan, first-free:offset, free
+  *chan <- put *chan, first-free:offset, free
 ]
 
 def read in:address:shared:source:_elem -> result:_elem, in:address:shared:source:_elem [
@@ -113,7 +113,7 @@ def read in:address:shared:source:_elem -> result:_elem, in:address:shared:sourc
     full <- copy 0
   }
   # write back
-  put *chan, first-full:offset, full
+  *chan <- put *chan, first-full:offset, full
 ]
 
 def clear in:address:shared:source:_elem -> in:address:shared:source:_elem [
@@ -312,7 +312,7 @@ def buffer-lines in:address:shared:source:character, buffered-out:address:shared
           buffer-empty?:boolean <- equal buffer-length, 0
           break-if buffer-empty?
           buffer-length <- subtract buffer-length, 1
-          put *line, length:offset, buffer-length
+          *line <- put *line, length:offset, buffer-length
         }
         # and don't append this one
         loop +next-character:label
