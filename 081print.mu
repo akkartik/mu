@@ -18,17 +18,9 @@ def new-fake-screen w:number, h:number -> result:address:shared:screen [
   local-scope
   load-ingredients
   result <- new screen:type
-  width:address:number <- get-address *result, num-columns:offset
-  *width <- copy w
-  height:address:number <- get-address *result, num-rows:offset
-  *height <- copy h
-  row:address:number <- get-address *result, cursor-row:offset
-  *row <- copy 0
-  column:address:number <- get-address *result, cursor-column:offset
-  *column <- copy 0
-  bufsize:number <- multiply *width, *height
-  buf:address:address:shared:array:screen-cell <- get-address *result, data:offset
-  *buf <- new screen-cell:type, bufsize
+  bufsize:number <- multiply w, h
+  data:address:shared:array:screen-cell <- new screen-cell:type, bufsize
+  *result <- merge h/num-rows, w/num-columns, 0/cursor-row, 0/cursor-column, data
   result <- clear-screen result
 ]
 
@@ -46,18 +38,13 @@ def clear-screen screen:address:shared:screen -> screen:address:shared:screen [
       done?:boolean <- greater-or-equal i, max
       break-if done?
       curr:address:screen-cell <- index-address *buf, i
-      curr-content:address:character <- get-address *curr, contents:offset
-      *curr-content <- copy 0/empty
-      curr-color:address:number <- get-address *curr, color:offset
-      *curr-color <- copy 7/white
+      *curr <- merge 0/empty, 7/white
       i <- add i, 1
       loop
     }
     # reset cursor
-    x:address:number <- get-address *screen, cursor-row:offset
-    *x <- copy 0
-    x <- get-address *screen, cursor-column:offset
-    *x <- copy 0
+    *screen <- put *screen, cursor-row:offset, 0
+    *screen <- put *screen, cursor-column:offset, 0
     return
   }
   # otherwise, real screen
@@ -117,17 +104,17 @@ def print screen:address:shared:screen, c:character -> screen:address:shared:scr
     width:number <- get *screen, num-columns:offset
     height:number <- get *screen, num-rows:offset
     # if cursor is out of bounds, silently exit
-    row:address:number <- get-address *screen, cursor-row:offset
-    legal?:boolean <- greater-or-equal *row, 0
+    row:number <- get *screen, cursor-row:offset
+    legal?:boolean <- greater-or-equal row, 0
     return-unless legal?
-    legal? <- lesser-than *row, height
+    legal? <- lesser-than row, height
     return-unless legal?
     column:address:number <- get-address *screen, cursor-column:offset
     legal? <- greater-or-equal *column, 0
     return-unless legal?
     legal? <- lesser-than *column, width
     return-unless legal?
-#?     $print [print-character (], *row, [, ], *column, [): ], c, 10/newline
+#?     $print [print-character (], row, [, ], *column, [): ], c, 10/newline
     # special-case: newline
     {
       newline?:boolean <- equal c, 10/newline
@@ -135,16 +122,17 @@ def print screen:address:shared:screen, c:character -> screen:address:shared:scr
       {
         # unless cursor is already at bottom
         bottom:number <- subtract height, 1
-        at-bottom?:boolean <- greater-or-equal *row, bottom
+        at-bottom?:boolean <- greater-or-equal row, bottom
         break-if at-bottom?
         # move it to the next row
         *column <- copy 0
-        *row <- add *row, 1
+        row <- add row, 1
+        *screen <- put *screen, cursor-row:offset, row
       }
       return
     }
     # save character in fake screen
-    index:number <- multiply *row, width
+    index:number <- multiply row, width
     index <- add index, *column
     buf:address:shared:array:screen-cell <- get *screen, data:offset
     len:number <- length *buf
