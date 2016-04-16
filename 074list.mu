@@ -12,10 +12,7 @@ def push x:_elem, in:address:shared:list:_elem -> in:address:shared:list:_elem [
   local-scope
   load-ingredients
   result:address:shared:list:_elem <- new {(list _elem): type}
-  val:address:_elem <- get-address *result, value:offset
-  *val <- copy x
-  next:address:address:shared:list:_elem <- get-address *result, next:offset
-  *next <- copy in
+  *result <- merge x, in
   return result  # needed explicitly because we need to replace 'in' with 'result'
 ]
 
