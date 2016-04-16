@@ -109,12 +109,12 @@ def print screen:address:shared:screen, c:character -> screen:address:shared:scr
     return-unless legal?
     legal? <- lesser-than row, height
     return-unless legal?
-    column:address:number <- get-address *screen, cursor-column:offset
-    legal? <- greater-or-equal *column, 0
+    column:number <- get *screen, cursor-column:offset
+    legal? <- greater-or-equal column, 0
     return-unless legal?
-    legal? <- lesser-than *column, width
+    legal? <- lesser-than column, width
     return-unless legal?
-#?     $print [print-character (], row, [, ], *column, [): ], c, 10/newline
+#?     $print [print-character (], row, [, ], column, [): ], c, 10/newline
     # special-case: newline
     {
       newline?:boolean <- equal c, 10/newline
@@ -125,7 +125,8 @@ def print screen:address:shared:screen, c:character -> screen:address:shared:scr
         at-bottom?:boolean <- greater-or-equal row, bottom
         break-if at-bottom?
         # move it to the next row
-        *column <- copy 0
+        column <- copy 0
+        *screen <- put *screen, cursor-column:offset, column
         row <- add row, 1
         *screen <- put *screen, cursor-row:offset, row
       }
@@ -133,7 +134,7 @@ def print screen:address:shared:screen, c:character -> screen:address:shared:scr
     }
     # save character in fake screen
     index:number <- multiply row, width
-    index <- add index, *column
+    index <- add index, column
     buf:address:shared:array:screen-cell <- get *screen, data:offset
     len:number <- length *buf
     # special-case: backspace
@@ -142,30 +143,26 @@ def print screen:address:shared:screen, c:character -> screen:address:shared:scr
       break-unless backspace?
       {
         # unless cursor is already at left margin
-        at-left?:boolean <- lesser-or-equal *column, 0
+        at-left?:boolean <- lesser-or-equal column, 0
         break-if at-left?
         # clear previous location
-        *column <- subtract *column, 1
+        column <- subtract column, 1
+        *screen <- put *screen, cursor-column:offset, column
         index <- subtract index, 1
         cursor:address:screen-cell <- index-address *buf, index
-        cursor-contents:address:character <- get-address *cursor, contents:offset
-        *cursor-contents <- copy 32/space
-        cursor-color:address:number <- get-address *cursor, color:offset
-        *cursor-color <- copy 7/white
+        *cursor <- merge 32/space, 7/white
       }
       return
     }
     cursor:address:screen-cell <- index-address *buf, index
-    cursor-contents:address:character <- get-address *cursor, contents:offset
-    *cursor-contents <- copy c
-    cursor-color:address:number <- get-address *cursor, color:offset
-    *cursor-color <- copy color
+    *cursor <- merge c, color
     # increment column unless it's already all the way to the right
     {
       right:number <- subtract width, 1
-      at-right?:boolean <- greater-or-equal *column, right
+      at-right?:boolean <- greater-or-equal column, right
       break-if at-right?
-      *column <- add *column, 1
+      column <- add column, 1
+      *screen <- put *screen, cursor-column:offset, column
     }
     return
   }
@@ -352,18 +349,19 @@ def clear-line screen:address:shared:screen -> screen:address:shared:screen [
   {
     break-unless screen
     width:number <- get *screen, num-columns:offset
-    column:address:number <- get-address *screen, cursor-column:offset
-    original-column:number <- copy *column
+    column:number <- get *screen, cursor-column:offset
+    original-column:number <- copy column
     # space over the entire line
     {
       right:number <- subtract width, 1
-      done?:boolean <- greater-or-equal *column, right
+      done?:boolean <- greater-or-equal column, right
       break-if done?
-      print screen, space  # implicitly updates 'column'
+      print screen, space
+      column <- add column, 1
       loop
     }
     # now back to where the cursor was
-    *column <- copy original-column
+    *screen <- put *screen, cursor-column:offset, original-column
     return
   }
   # otherwise, real screen
@@ -389,10 +387,8 @@ def move-cursor screen:address:shared:screen, new-row:number, new-column:number 
   # if x exists, move cursor in fake screen
   {
     break-unless screen
-    row:address:number <- get-address *screen, cursor-row:offset
-    *row <- copy new-row
-    column:address:number <- get-address *screen, cursor-column:offset
-    *column <- copy new-column
+    *screen <- put *screen, cursor-row:offset, new-row
+    *screen <- put *screen, cursor-column:offset, new-column
     return
   }
   # otherwise, real screen
@@ -439,11 +435,12 @@ def cursor-down screen:address:shared:screen -> screen:address:shared:screen [
     {
       # increment row unless it's already all the way down
       height:number <- get *screen, num-rows:offset
-      row:address:number <- get-address *screen, cursor-row:offset
+      row:number <- get *screen, cursor-row:offset
       max:number <- subtract height, 1
-      at-bottom?:boolean <- greater-or-equal *row, max
+      at-bottom?:boolean <- greater-or-equal row, max
       break-if at-bottom?
-      *row <- add *row, 1
+      row <- add row, 1
+      *screen <- put *screen, cursor-row:offset, row
     }
     return
   }
@@ -459,10 +456,11 @@ def cursor-up screen:address:shared:screen -> screen:address:shared:screen [
     break-unless screen
     {
       # decrement row unless it's already all the way up
-      row:address:number <- get-address *screen, cursor-row:offset
-      at-top?:boolean <- lesser-or-equal *row, 0
+      row:number <- get *screen, cursor-row:offset
+      at-top?:boolean <- lesser-or-equal row, 0
       break-if at-top?
-      *row <- subtract *row, 1
+      row <- subtract row, 1
+      *screen <- put *screen, cursor-row:offset, row
     }
     return
   }
@@ -479,11 +477,12 @@ def cursor-right screen:address:shared:screen -> screen:address:shared:screen [
     {
       # increment column unless it's already all the way to the right
       width:number <- get *screen, num-columns:offset
-      column:address:number <- get-address *screen, cursor-column:offset
+      column:number <- get *screen, cursor-column:offset
       max:number <- subtract width, 1
-      at-bottom?:boolean <- greater-or-equal *column, max
+      at-bottom?:boolean <- greater-or-equal column, max
       break-if at-bottom?
-      *column <- add *column, 1
+      column <- add column, 1
+      *screen <- put *screen, cursor-column:offset, column
     }
     return
   }
@@ -499,10 +498,11 @@ def cursor-left screen:address:shared:screen -> screen:address:shared:screen [
     break-unless screen
     {
       # decrement column unless it's already all the way to the left
-      column:address:number <- get-address *screen, cursor-column:offset
-      at-top?:boolean <- lesser-or-equal *column, 0
+      column:number <- get *screen, cursor-column:offset
+      at-top?:boolean <- lesser-or-equal column, 0
       break-if at-top?
-      *column <- subtract *column, 1
+      column <- subtract column, 1
+      *screen <- put *screen, cursor-column:offset, column
     }
     return
   }

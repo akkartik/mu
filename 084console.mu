@@ -29,10 +29,7 @@ def new-fake-console events:address:shared:array:event -> result:address:shared:
   local-scope
   load-ingredients
   result:address:shared:console <- new console:type
-  buf:address:address:shared:array:event <- get-address *result, events:offset
-  *buf <- copy events
-  idx:address:number <- get-address *result, current-event-index:offset
-  *idx <- copy 0
+  *result <- put *result, events:offset, events
 ]
 
 def read-event console:address:shared:console -> result:event, console:address:shared:console, found?:boolean, quit?:boolean [
@@ -40,17 +37,18 @@ def read-event console:address:shared:console -> result:event, console:address:s
   load-ingredients
   {
     break-unless console
-    current-event-index:address:number <- get-address *console, current-event-index:offset
+    current-event-index:number <- get *console, current-event-index:offset
     buf:address:shared:array:event <- get *console, events:offset
     {
       max:number <- length *buf
-      done?:boolean <- greater-or-equal *current-event-index, max
+      done?:boolean <- greater-or-equal current-event-index, max
       break-unless done?
       dummy:address:shared:event <- new event:type
       return *dummy, console/same-as-ingredient:0, 1/found, 1/quit
     }
-    result <- index *buf, *current-event-index
-    *current-event-index <- add *current-event-index, 1
+    result <- index *buf, current-event-index
+    current-event-index <- add current-event-index, 1
+    *console <- put *console, current-event-index:offset, current-event-index
     return result, console/same-as-ingredient:0, 1/found, 0/quit
   }
   switch  # real event source is infrequent; avoid polling it too much
