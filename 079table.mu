@@ -40,10 +40,8 @@ def new-table capacity:number -> result:address:shared:table:_key:_value [
   local-scope
   load-ingredients
   result <- new {(table _key _value): type}
-  tmp:address:number <- get-address *result, capacity:offset
-  *tmp <- copy capacity
-  data:address:address:shared:array:table_row:_key:_value <- get-address *result, data:offset
-  *data <- new {(table_row _key _value): type}, capacity
+  data:address:shared:array:table_row:_key:_value <- new {(table_row _key _value): type}, capacity
+  *result <- merge 0/length, capacity, data
 ]
 
 def put table:address:shared:table:_key:_value, key:_key, value:_value -> table:address:shared:table:_key:_value [
