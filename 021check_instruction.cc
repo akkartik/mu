@@ -157,8 +157,21 @@ bool types_strictly_match(reagent to, reagent from) {
 bool types_strictly_match(type_tree* to, type_tree* from) {
   if (!to) return true;
   if (!from) return to->value == 0;
+  if (from->value == -1) return from->name == to->name;
   if (to->value != from->value) return false;
   return types_strictly_match(to->left, from->left) && types_strictly_match(to->right, from->right);
+}
+
+void test_unknown_type_does_not_match_unknown_type() {
+  reagent a("a:foo");
+  reagent b("b:bar");
+  CHECK(!types_strictly_match(a, b));
+}
+
+void test_unknown_type_matches_itself() {
+  reagent a("a:foo");
+  reagent b("b:foo");
+  CHECK(types_strictly_match(a, b));
 }
 
 bool is_unsafe(const reagent& r) {

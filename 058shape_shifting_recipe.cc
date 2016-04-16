@@ -401,6 +401,10 @@ void replace_type_ingredients(type_tree* type, const map<string, const type_tree
 
   const type_tree* replacement = get(mappings, type->name);
   trace(9993, "transform") << type->name << " => " << names_to_string(replacement) << end();
+  if (!contains_key(Type_ordinal, replacement->name)) {
+    // error in program; should be reported elsewhere
+    return;
+  }
 
   // type is a single type ingredient
   assert(!type->left);
@@ -984,3 +988,23 @@ def foo x:address:shared:_elem -> y:number [
 ]
 # prefer the concrete variant, ignore concrete types in scoring the shape-shifting variant
 +mem: storing 34 in location 1
+
+:(scenario missing_type_during_specialization)
+% Hide_errors = true;
+# define a shape-shifting recipe
+def foo4 a:_elem [
+]
+# define a container with field 'z'
+container foo2 [
+  z:number
+]
+def main [
+  local-scope
+  x:foo2 <- merge 34
+  y:number <- get x, z:offse  # typo in 'offset'
+  # define a variable with the same name 'z'
+  z:number <- copy 34
+  # trigger specialization of the shape-shifting recipe
+  foo4 z
+]
+# shouldn't crash
