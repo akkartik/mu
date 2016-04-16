@@ -992,7 +992,7 @@ def foo x:address:shared:_elem -> y:number [
 :(scenario missing_type_during_specialization)
 % Hide_errors = true;
 # define a shape-shifting recipe
-def foo4 a:_elem [
+def foo a:_elem [
 ]
 # define a container with field 'z'
 container foo2 [
@@ -1005,6 +1005,26 @@ def main [
   # define a variable with the same name 'z'
   z:number <- copy 34
   # trigger specialization of the shape-shifting recipe
-  foo4 z
+  foo z
+]
+# shouldn't crash
+
+:(scenario missing_type_during_specialization2)
+% Hide_errors = true;
+# define a shape-shifting recipe
+def foo a:_elem [
+]
+# define a container with field 'z'
+container foo2 [
+  z:number
+]
+def main [
+  local-scope
+  x:foo2 <- merge 34
+  y:number <- get x, z:offse  # typo in 'offset'
+  # define a variable with the same name 'z'
+  z:address:number <- copy 34
+  # trigger specialization of the shape-shifting recipe
+  foo *z
 ]
 # shouldn't crash
