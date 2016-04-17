@@ -241,25 +241,23 @@ def read-move stdin:address:shared:source:character, screen:address:shared:scree
   return-if error?, 0/dummy
   # construct the move object
   result:address:shared:move <- new move:type
-  x:address:number <- get-address *result, from-file:offset
-  *x <- copy from-file
-  x <- get-address *result, from-rank:offset
-  *x, quit?, error? <- read-rank stdin, screen
+  *result <- put *result, from-file:offset, from-file
+  from-rank:number, quit?, error? <- read-rank stdin, screen
   return-if quit?, 0/dummy
   return-if error?, 0/dummy
+  *result <- put *result, from-rank:offset, from-rank
   error? <- expect-from-channel stdin, 45/dash, screen
   return-if error?, 0/dummy, 0/quit
-  x <- get-address *result, to-file:offset
-  *x, quit?, error? <- read-file stdin, screen
+  to-file:number, quit?, error? <- read-file stdin, screen
   return-if quit?:boolean, 0/dummy
   return-if error?:boolean, 0/dummy
-  x:address:number <- get-address *result, to-rank:offset
-  *x, quit?, error? <- read-rank stdin, screen
+  *result <- put *result, to-file:offset, to-file
+  to-rank:number, quit?, error? <- read-rank stdin, screen
   return-if quit?, 0/dummy
   return-if error?, 0/dummy
+  *result <- put *result, to-rank:offset, to-file
   error? <- expect-from-channel stdin, 10/newline, screen
   return-if error?, 0/dummy, 0/quit
-  return result, quit?, error?
 ]
 
 # valid values for file: 0-7
@@ -546,14 +544,7 @@ scenario making-a-move [
   run [
     2:address:shared:array:address:shared:array:character/board <- initial-position
     3:address:shared:move <- new move:type
-    4:address:number <- get-address *3:address:shared:move, from-file:offset
-    *4:address:number <- copy 6/g
-    5:address:number <- get-address *3:address:shared:move, from-rank:offset
-    *5:address:number <- copy 1/'2'
-    6:address:number <- get-address *3:address:shared:move, to-file:offset
-    *6:address:number <- copy 6/g
-    7:address:number <- get-address *3:address:shared:move, to-rank:offset
-    *7:address:number <- copy 3/'4'
+    *3:address:shared:move <- merge 6/g, 1/'2', 6/g, 3/'4'
     2:address:shared:array:address:shared:array:character/board <- make-move 2:address:shared:array:address:shared:array:character/board, 3:address:shared:move
     screen:address:shared:screen <- print-board screen:address:shared:screen, 2:address:shared:array:address:shared:array:character/board
   ]
