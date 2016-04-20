@@ -131,8 +131,8 @@ def main [
 ]
 +mem: storing 35 in location 9
 
-:(after "reagent elem" following "case GET:")
-elem.properties.push_back(pair<string, string_tree*>("raw", NULL));
+:(before "Read element" following "case GET:")
+element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
 //:: fix 'index'
 
@@ -152,8 +152,8 @@ def main [
 ]
 +mem: storing 35 in location 9
 
-:(after "reagent elem" following "case INDEX:")
-elem.properties.push_back(pair<string, string_tree*>("raw", NULL));
+:(before "Read element" following "case INDEX:")
+element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
 //:: convenience operation to automatically deduce the amount of space to
 //:: allocate in a default space with names
