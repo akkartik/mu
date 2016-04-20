@@ -221,10 +221,10 @@ case INDEX: {
   int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
   trace(9998, "run") << "address to copy is " << src << end();
   trace(9998, "run") << "its type is " << get(Type, element_type->value).name << end();
-  reagent tmp;
-  tmp.set_value(src);
-  tmp.type = new type_tree(*element_type);
-  products.push_back(read_memory(tmp));
+  reagent elem;
+  elem.set_value(src);
+  elem.type = new type_tree(*element_type);
+  products.push_back(read_memory(elem));
   break;
 }
 

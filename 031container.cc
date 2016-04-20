@@ -183,10 +183,10 @@ case GET: {
   for (int i = 0; i < offset; ++i)
     src += size_of(element_type(base, i));
   trace(9998, "run") << "address to copy is " << src << end();
-  reagent tmp = element_type(base, offset);
-  tmp.set_value(src);
-  trace(9998, "run") << "its type is " << names_to_string(tmp.type) << end();
-  products.push_back(read_memory(tmp));
+  reagent elem = element_type(base, offset);
+  elem.set_value(src);
+  trace(9998, "run") << "its type is " << names_to_string(elem.type) << end();
+  products.push_back(read_memory(elem));
   break;
 }
 

@@ -50,7 +50,7 @@ int default_space;
 default_space = 0;
 
 :(before "End canonize(x) Special-cases")
-  absolutize(x);
+absolutize(x);
 :(code)
 void absolutize(reagent& x) {
   if (is_raw(x) || is_dummy(x)) return;
@@ -131,8 +131,8 @@ def main [
 ]
 +mem: storing 35 in location 9
 
-:(after "reagent tmp" following "case GET:")
-tmp.properties.push_back(pair<string, string_tree*>("raw", NULL));
+:(after "reagent elem" following "case GET:")
+elem.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
 //:: fix 'index'
 
@@ -152,8 +152,8 @@ def main [
 ]
 +mem: storing 35 in location 9
 
-:(after "reagent tmp" following "case INDEX:")
-tmp.properties.push_back(pair<string, string_tree*>("raw", NULL));
+:(after "reagent elem" following "case INDEX:")
+elem.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
 //:: convenience operation to automatically deduce the amount of space to
 //:: allocate in a default space with names
