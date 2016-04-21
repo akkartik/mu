@@ -154,6 +154,7 @@ void run_mu_scenario(const scenario& s) {
     Passed = false;
     ++Num_failures;
   }
+  // End Mu Test Teardown
   if (not_already_inside_test && Trace_stream) {
     teardown();
     ofstream fout((Trace_dir+Trace_file).c_str());
