@@ -460,8 +460,6 @@ scenario remove-range-to-end [
     5:address:shared:duplex-list:character <- next 1:address:shared:duplex-list:character
     6:character <- get *5:address:shared:duplex-list:character, value:offset
     7:address:shared:duplex-list:character <- next 5:address:shared:duplex-list:character
-    8:character <- get *7:address:shared:duplex-list:character, value:offset
-    9:address:shared:duplex-list:character <- next 7:address:shared:duplex-list:character
   ]
   memory-should-contain [
     4 <- 13

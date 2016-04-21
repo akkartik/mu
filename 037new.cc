@@ -25,6 +25,7 @@
 //: minimize memory use, be sure to reset allocated addresses to 0 when you're
 //: done with them.
 
+//: interlude {
 //: To help you distinguish addresses that point at allocations, 'new' returns
 //: type address:shared:___. Think of 'shared' as a generic container that
 //: contains one extra field: the refcount. However, lookup operations will
@@ -34,7 +35,7 @@
 type_ordinal shared = put(Type_ordinal, "shared", Next_type_ordinal++);
 get_or_insert(Type, shared).name = "shared";
 :(before "End Drop Address In lookup_memory(x)")
-if (x.type->name == "shared") {
+if (x.type->name == "shared" && x.value != 0) {
   trace(9999, "mem") << "skipping refcount at " << x.value << end();
   x.set_value(x.value+1);  // skip refcount
   drop_from_type(x, "shared");
@@ -43,6 +44,27 @@ if (x.type->name == "shared") {
 if (r.type->name == "shared") {
   drop_from_type(r, "shared");
 }
+
+:(code)
+void test_lookup_shared_address() {
+  reagent x("*x:address:shared:number");
+  x.set_value(34);  // unsafe
+  put(Memory, 34, 1000);
+  lookup_memory(x);
+  CHECK_TRACE_CONTENTS("mem: skipping refcount at 1000");
+  CHECK_EQ(x.value, 1001);
+}
+
+void test_lookup_shared_address_skip_zero() {
+  reagent x("*x:address:shared:number");
+  x.set_value(34);  // unsafe
+  put(Memory, 34, 0);
+  lookup_memory(x);
+  CHECK_TRACE_DOESNT_CONTAIN("mem: skipping refcount at 0");
+  CHECK_EQ(x.value, 0);
+}
+
+//: } end interlude
 
 :(scenarios run)
 :(scenario new)
