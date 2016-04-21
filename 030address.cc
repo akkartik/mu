@@ -152,21 +152,21 @@ case _DUMP: {
 //: grab an address, and then dump its value at intervals
 //: useful for tracking down memory corruption (writing to an out-of-bounds address)
 :(before "End Globals")
-int foo = -1;
+int Bar = -1;
 :(before "End Primitive Recipe Declarations")
-_FOO,
+_BAR,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "$foo", _FOO);
+put(Recipe_ordinal, "$bar", _BAR);
 :(before "End Primitive Recipe Implementations")
-case _FOO: {
+case _BAR: {
   if (current_instruction().ingredients.empty()) {
-    if (foo != -1) cerr << foo << ": " << no_scientific(get_or_insert(Memory, foo)) << '\n';
+    if (Bar != -1) cerr << Bar << ": " << no_scientific(get_or_insert(Memory, Bar)) << '\n';
     else cerr << '\n';
   }
   else {
     reagent tmp = current_instruction().ingredients.at(0);
     canonize(tmp);
-    foo = tmp.value;
+    Bar = tmp.value;
   }
   break;
 }

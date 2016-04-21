@@ -325,3 +325,21 @@ case _LOG: {
   LOG << out.str() << '\n';
   break;
 }
+
+//: set a variable from within mu code
+//: useful for selectively tracing or printing after some point
+:(before "End Globals")
+bool Foo = false;
+:(before "End Primitive Recipe Declarations")
+_FOO,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "$foo", _FOO);
+:(before "End Primitive Recipe Checks")
+case _FOO: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case _FOO: {
+  Foo = true;
+  break;
+}
