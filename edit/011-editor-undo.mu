@@ -739,9 +739,9 @@ after <handle-undo> [
     move:address:move-operation <- maybe-convert *op, move:variant
     break-unless move
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
     *cursor-row <- get *move, before-row:offset
     *cursor-column <- get *move, before-column:offset
+    top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
     *top <- get *move, before-top-of-screen:offset
   }
 ]
@@ -1494,6 +1494,7 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  # cursor moves
   memory-should-contain [
     3 <- 1
     4 <- 1
