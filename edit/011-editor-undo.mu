@@ -1265,6 +1265,115 @@ ghi]
   ]
 ]
 
+scenario editor-can-undo-multiple-arrows-in-the-same-direction [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:shared:array:character <- new [abc
+def
+ghi]
+  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 10/right
+  editor-render screen, 2:address:shared:editor-data
+  # move the cursor
+  assume-console [
+    left-click 2, 1
+    press right-arrow
+    press right-arrow
+    press up-arrow
+  ]
+  editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+  3:number <- get *2:address:shared:editor-data, cursor-row:offset
+  4:number <- get *2:address:shared:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 3
+  ]
+  # undo
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+    3:number <- get *2:address:shared:editor-data, cursor-row:offset
+    4:number <- get *2:address:shared:editor-data, cursor-column:offset
+  ]
+  # up-arrow is undone
+  memory-should-contain [
+    3 <- 2
+    4 <- 3
+  ]
+  # undo again
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+    3:number <- get *2:address:shared:editor-data, cursor-row:offset
+    4:number <- get *2:address:shared:editor-data, cursor-column:offset
+  ]
+  # both right-arrows are undone
+  memory-should-contain [
+    3 <- 2
+    4 <- 1
+  ]
+]
+
+# redo cursor movement and scroll
+
+scenario editor-redo-touch [
+  # create an editor with some text, click on a character, undo
+  assume-screen 10/width, 5/height
+  1:address:shared:array:character <- new [abc
+def
+ghi]
+  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 10/right
+  editor-render screen, 2:address:shared:editor-data
+  assume-console [
+    left-click 3, 1
+    press ctrl-z
+  ]
+  editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+  # redo
+  assume-console [
+    press ctrl-y
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+    3:number <- get *2:address:shared:editor-data, cursor-row:offset
+    4:number <- get *2:address:shared:editor-data, cursor-column:offset
+  ]
+  # cursor moves to left-click
+  memory-should-contain [
+    3 <- 3
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .def       .
+    .g1hi      .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+after <handle-redo> [
+  {
+    move:address:move-operation <- maybe-convert *op, move:variant
+    break-unless move
+    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
+    *cursor-row <- get *move, after-row:offset
+    *cursor-column <- get *move, after-column:offset
+    top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
+    *top <- get *move, after-top-of-screen:offset
+  }
+]
+
 scenario editor-separates-undo-insert-from-undo-cursor-move [
   # create an editor, type some text, move the cursor, type some more text
   assume-screen 10/width, 5/height
@@ -1409,115 +1518,6 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
     3 <- 1
     4 <- 2
   ]
-]
-
-scenario editor-can-undo-multiple-arrows-in-the-same-direction [
-  # create an editor with some text
-  assume-screen 10/width, 5/height
-  1:address:shared:array:character <- new [abc
-def
-ghi]
-  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 10/right
-  editor-render screen, 2:address:shared:editor-data
-  # move the cursor
-  assume-console [
-    left-click 2, 1
-    press right-arrow
-    press right-arrow
-    press up-arrow
-  ]
-  editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-  3:number <- get *2:address:shared:editor-data, cursor-row:offset
-  4:number <- get *2:address:shared:editor-data, cursor-column:offset
-  memory-should-contain [
-    3 <- 1
-    4 <- 3
-  ]
-  # undo
-  assume-console [
-    press ctrl-z
-  ]
-  run [
-    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-    3:number <- get *2:address:shared:editor-data, cursor-row:offset
-    4:number <- get *2:address:shared:editor-data, cursor-column:offset
-  ]
-  # up-arrow is undone
-  memory-should-contain [
-    3 <- 2
-    4 <- 3
-  ]
-  # undo again
-  assume-console [
-    press ctrl-z
-  ]
-  run [
-    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-    3:number <- get *2:address:shared:editor-data, cursor-row:offset
-    4:number <- get *2:address:shared:editor-data, cursor-column:offset
-  ]
-  # both right-arrows are undone
-  memory-should-contain [
-    3 <- 2
-    4 <- 1
-  ]
-]
-
-# redo cursor movement and scroll
-
-scenario editor-redo-touch [
-  # create an editor with some text, click on a character, undo
-  assume-screen 10/width, 5/height
-  1:address:shared:array:character <- new [abc
-def
-ghi]
-  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 10/right
-  editor-render screen, 2:address:shared:editor-data
-  assume-console [
-    left-click 3, 1
-    press ctrl-z
-  ]
-  editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-  # redo
-  assume-console [
-    press ctrl-y
-  ]
-  run [
-    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-    3:number <- get *2:address:shared:editor-data, cursor-row:offset
-    4:number <- get *2:address:shared:editor-data, cursor-column:offset
-  ]
-  # cursor moves to left-click
-  memory-should-contain [
-    3 <- 3
-    4 <- 1
-  ]
-  # cursor should be in the right place
-  assume-console [
-    type [1]
-  ]
-  run [
-    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .abc       .
-    .def       .
-    .g1hi      .
-    .┈┈┈┈┈┈┈┈┈┈.
-  ]
-]
-
-after <handle-redo> [
-  {
-    move:address:move-operation <- maybe-convert *op, move:variant
-    break-unless move
-    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    *cursor-row <- get *move, after-row:offset
-    *cursor-column <- get *move, after-column:offset
-    top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
-    *top <- get *move, after-top-of-screen:offset
-  }
 ]
 
 # undo backspace
