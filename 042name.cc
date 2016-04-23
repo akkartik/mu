@@ -215,7 +215,8 @@ def main [
 -error: main: mixing variable names and numeric addresses
 $error: 0
 
-//:: Support element names for containers in 'get' and 'get-address' and 'put'.
+//:: Support element names for containers in 'get' and 'get-location' and 'put'.
+//: (get-location is implemented later)
 
 :(scenario transform_names_transforms_container_elements)
 def main [
@@ -228,7 +229,7 @@ def main [
 
 :(before "End transform_names(inst) Special-cases")
 // replace element names of containers with offsets
-if (inst.name == "get" || inst.name == "get-address" || inst.name == "put") {
+if (inst.name == "get" || inst.name == "get-location" || inst.name == "put") {
   //: avoid raising any errors here; later layers will support overloading new
   //: instructions with the same names (static dispatch), which could lead to
   //: spurious errors

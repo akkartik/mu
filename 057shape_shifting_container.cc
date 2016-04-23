@@ -459,19 +459,6 @@ def main [
 ]
 +error: illegal type "foo" seems to be missing a type ingredient or three
 
-//: get-address similarly
-
-:(scenario get_address_on_shape_shifting_container)
-container foo:_t [
-  x:_t
-  y:number
-]
-def main [
-  10:foo:point <- merge 14, 15, 16
-  1:address:number <- get-address 10:foo:point, 1:offset
-]
-+mem: storing 12 in location 1
-
 //: 'merge' on shape-shifting containers
 
 :(scenario merge_check_shape_shifting_container_containing_exclusive_container)
