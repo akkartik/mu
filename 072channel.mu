@@ -71,8 +71,7 @@ def write out:address:shared:sink:_elem, val:_elem -> out:address:shared:sink:_e
   # store val
   circular-buffer:address:shared:array:_elem <- get *chan, data:offset
   free:number <- get *chan, first-free:offset
-  dest:address:_elem <- index-address *circular-buffer, free
-  *dest <- copy val
+  *circular-buffer <- put-index *circular-buffer, free, val
   # mark its slot as filled
   # todo: clear the slot itself
   free <- add free, 1

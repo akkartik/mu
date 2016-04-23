@@ -116,8 +116,8 @@ def new-board initial-position:address:shared:array:character -> board:address:s
   {
     done?:boolean <- equal col, 8
     break-if done?
-    file:address:address:shared:array:character <- index-address *board, col
-    *file <- new-file initial-position, col
+    file:address:shared:array:character <- new-file initial-position, col
+    *board <- put-index *board, col, file
     col <- add col, 1
     loop
   }
@@ -132,8 +132,8 @@ def new-file position:address:shared:array:character, index:number -> result:add
   {
     done?:boolean <- equal row, 8
     break-if done?
-    dest:address:character <- index-address *result, row
-    *dest <- index *position, index
+    square:character <- index *position, index
+    *result <- put-index *result, row, square
     row <- add row, 1
     index <- add index, 1
     loop
@@ -531,12 +531,11 @@ def make-move board:address:shared:array:address:shared:array:character, m:addre
   from-rank:number <- get *m, from-rank:offset
   to-file:number <- get *m, to-file:offset
   to-rank:number <- get *m, to-rank:offset
-  f:address:shared:array:character <- index *board, from-file
-  src:address:character/square <- index-address *f, from-rank
-  f <- index *board, to-file
-  dest:address:character/square <- index-address *f, to-rank
-  *dest <- copy *src
-  *src <- copy 32/space
+  from-f:address:shared:array:character <- index *board, from-file
+  to-f:address:shared:array:character <- index *board, to-file
+  src:character/square <- index *from-f, from-rank
+  *to-f <- put-index *to-f, to-rank, src
+  *from-f <- put-index *from-f, from-rank, 32/space
 ]
 
 scenario making-a-move [

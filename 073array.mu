@@ -31,8 +31,7 @@ def new-array -> result:address:shared:array:character [
     break-if done?
     curr-value:character, exists?:boolean <- next-ingredient
     assert exists?, [error in rewinding ingredients to new-array]
-    tmp:address:character <- index-address *result, i
-    *tmp <- copy curr-value
+    *result <- put-index *result, i, curr-value
     i <- add i, 1
     loop
   }

@@ -149,8 +149,7 @@ def grow-buffer in:address:shared:buffer -> in:address:shared:buffer [
     done?:boolean <- greater-or-equal i, oldlen
     break-if done?
     src:character <- index *olddata, i
-    dest:address:character <- index-address *newdata, i
-    *dest <- copy src
+    *newdata <- put-index *newdata, i, src
     i <- add i, 1
     loop
   }
@@ -203,8 +202,7 @@ def append in:address:shared:buffer, c:character -> in:address:shared:buffer [
     in <- grow-buffer in
   }
   s:address:shared:array:character <- get *in, data:offset
-  dest:address:character <- index-address *s, len
-  *dest <- copy c
+  *s <- put-index *s, len, c
   len <- add len, 1
   *in <- put *in, length:offset, len
 ]
@@ -317,8 +315,7 @@ def to-text n:number -> result:address:shared:array:character [
     break-if done?
     # result[j] = tmp[i]
     src:character <- index *buf, i
-    dest:address:character <- index-address *result, j
-    *dest <- copy src
+    *result <- put-index *result, j, src
     i <- subtract i, 1
     j <- add j, 1
     loop
@@ -356,8 +353,7 @@ def buffer-to-array in:address:shared:buffer -> result:address:shared:array:char
     done?:boolean <- greater-or-equal i, len
     break-if done?
     src:character <- index *s, i
-    dest:address:character <- index-address *result, i
-    *dest <- copy src
+    *result <- put-index *result, i, src
     i <- add i, 1
     loop
   }
@@ -411,9 +407,8 @@ def append a:address:shared:array:character, b:address:shared:array:character ->
     a-done?:boolean <- greater-or-equal i, a-len
     break-if a-done?
     # result[result-idx] = a[i]
-    out:address:character <- index-address *result, result-idx
     in:character <- index *a, i
-    *out <- copy in
+    *result <- put-index *result, result-idx, in
     i <- add i, 1
     result-idx <- add result-idx, 1
     loop
@@ -425,9 +420,8 @@ def append a:address:shared:array:character, b:address:shared:array:character ->
     b-done?:boolean <- greater-or-equal i, b-len
     break-if b-done?
     # result[result-idx] = a[i]
-    out:address:character <- index-address *result, result-idx
     in:character <- index *b, i
-    *out <- copy in
+    *result <- put-index *result, result-idx, in
     i <- add i, 1
     result-idx <- add result-idx, 1
     loop
@@ -464,8 +458,7 @@ def replace s:address:shared:array:character, oldc:character, newc:character, fr
   i:number <- find-next s, oldc, from
   done?:boolean <- greater-or-equal i, len
   return-if done?, s/same-as-ingredient:0
-  dest:address:character <- index-address *s, i
-  *dest <- copy newc
+  *s <- put-index *s, i, newc
   i <- add i, 1
   s <- replace s, oldc, newc, i
 ]
@@ -551,8 +544,7 @@ def interpolate template:address:shared:array:character -> result:address:shared
       underscore?:boolean <- equal in, 95/_
       break-if underscore?
       # result[result-idx] = template[i]
-      out:address:character <- index-address *result, result-idx
-      *out <- copy in
+      *result <- put-index *result, result-idx, in
       i <- add i, 1
       result-idx <- add result-idx, 1
       loop
@@ -565,8 +557,7 @@ def interpolate template:address:shared:array:character -> result:address:shared
       break-if arg-done?
       # result[result-idx] = a[j]
       in:character <- index *a, j
-      out:address:character <- index-address *result, result-idx
-      *out <- copy in
+      *result <- put-index *result, result-idx, in
       j <- add j, 1
       result-idx <- add result-idx, 1
       loop
@@ -583,8 +574,7 @@ def interpolate template:address:shared:array:character -> result:address:shared
     break-if tem-done?
     # result[result-idx] = template[i]
     in:character <- index *template, i
-    out:address:character <- index-address *result, result-idx:number
-    *out <- copy in
+    *result <- put-index *result, result-idx, in
     i <- add i, 1
     result-idx <- add result-idx, 1
     loop
@@ -732,8 +722,7 @@ def trim s:address:shared:array:character -> result:address:shared:array:charact
     break-if done?
     # result[j] = s[i]
     src:character <- index *s, i
-    dest:address:character <- index-address *result, j
-    *dest <- copy src
+    *result <- put-index *result, j, src
     i <- add i, 1
     j <- add j, 1
     loop
@@ -1131,8 +1120,8 @@ def split s:address:shared:array:character, delim:character -> result:address:sh
     break-if done?
     end:number <- find-next s, delim, start
     # copy start..end into result[curr-result]
-    dest:address:address:shared:array:character <- index-address *result, curr-result
-    *dest <- copy-range s, start, end
+    dest:address:shared:array:character <- copy-range s, start, end
+    *result <- put-index *result, curr-result, dest
     # slide over to next slice
     start <- add end, 1
     curr-result <- add curr-result, 1
@@ -1272,8 +1261,7 @@ def copy-range buf:address:shared:array:character, start:number, end:number -> r
     done?:boolean <- greater-or-equal src-idx, end
     break-if done?
     src:character <- index *buf, src-idx
-    dest:address:character <- index-address *result, dest-idx
-    *dest <- copy src
+    *result <- put-index *result, dest-idx, src
     src-idx <- add src-idx, 1
     dest-idx <- add dest-idx, 1
     loop

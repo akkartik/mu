@@ -53,11 +53,12 @@ def put table:address:shared:table:_key:_value, key:_key, value:_value -> table:
   _, hash <- divide-with-remainder hash, capacity
   hash <- abs hash  # in case hash overflows into a negative integer
   table-data:address:shared:array:table_row:_key:_value <- get *table, data:offset
-  x:address:table_row:_key:_value <- index-address *table-data, hash
-  occupied?:boolean <- get *x, occupied?:offset
+  x:table_row:_key:_value <- index *table-data, hash
+  occupied?:boolean <- get x, occupied?:offset
   not-occupied?:boolean <- not occupied?:boolean
   assert not-occupied?, [can't handle collisions yet]
-  *x <- merge 1/true, key, value
+  new-row:table_row:_key:_value <- merge 1/true, key, value
+  *table-data <- put-index *table-data, hash, new-row
 ]
 
 def abs n:number -> result:number [

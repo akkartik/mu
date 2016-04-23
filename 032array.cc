@@ -315,48 +315,50 @@ def main [
 ]
 # just don't die
 
-//:: To write to elements of containers, you need their address.
+//:: To write to elements of arrays, use 'put'.
 
-:(scenario index_address)
+:(scenario put_index)
 def main [
   1:array:number:3 <- create-array
   2:number <- copy 14
   3:number <- copy 15
   4:number <- copy 16
-  5:address:number <- index-address 1:array:number, 0
+  1:array:number <- put-index 1:array:number, 1, 34
 ]
-+mem: storing 2 in location 5
++mem: storing 34 in location 3
 
 :(before "End Primitive Recipe Declarations")
-INDEX_ADDRESS,
+PUT_INDEX,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "index-address", INDEX_ADDRESS);
+put(Recipe_ordinal, "put-index", PUT_INDEX);
 :(before "End Primitive Recipe Checks")
-case INDEX_ADDRESS: {
-  if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'index-address' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
+case PUT_INDEX: {
+  if (SIZE(inst.ingredients) != 3) {
+    raise << maybe(get(Recipe, r).name) << "'put-index' expects exactly 3 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent base = inst.ingredients.at(0);
-  canonize_type(base);
+  if (!canonize_type(base)) break;
   if (!is_mu_array(base)) {
-    raise << maybe(get(Recipe, r).name) << "'index-address' on a non-array " << base.original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'put-index' on a non-array " << base.original_string << '\n' << end();
     break;
   }
-  if (inst.products.empty()) break;
-  reagent product = inst.products.at(0);
-  canonize_type(product);
+  if (!is_mu_number(inst.ingredients.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'put-index' should have type 'number', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
+  reagent value = inst.ingredients.at(2);
+  canonize_type(value);
   reagent element;
-  element.type = new type_tree("address", get(Type_ordinal, "address"),
-                               new type_tree(*array_element(base.type)));
-  if (!types_coercible(product, element)) {
-    raise << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << names_to_string_without_quotes(element.type) << '\n' << end();
+  element.type = new type_tree(*array_element(base.type));
+  if (!types_coercible(element, value)) {
+    raise << maybe(get(Recipe, r).name) << "'put-index " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should store " << names_to_string_without_quotes(element.type) << " but " << value.name << " has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case INDEX_ADDRESS: {
+case PUT_INDEX: {
   reagent base = current_instruction().ingredients.at(0);
   canonize(base);
   int base_address = base.value;
@@ -372,13 +374,19 @@ case INDEX_ADDRESS: {
     raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
     break;
   }
-  int result = base_address + 1 + offset_val.at(0)*size_of(element_type);
-  products.resize(1);
-  products.at(0).push_back(result);
-  break;
+  int address = base_address + 1 + offset_val.at(0)*size_of(element_type);
+  trace(9998, "run") << "address to copy to is " << address << end();
+  // optimization: directly write the element rather than updating 'product'
+  // and writing the entire array
+  vector<double> value = read_memory(current_instruction().ingredients.at(2));
+  for (int i = 0; i < SIZE(value); ++i) {
+    trace(9999, "mem") << "storing " << no_scientific(value.at(i)) << " in location " << address+i << end();
+    put(Memory, address+i, value.at(i));
+  }
+  goto finish_instruction;
 }
 
-:(scenario index_address_out_of_bounds)
+:(scenario put_index_out_of_bounds)
 % Hide_errors = true;
 def main [
   1:array:point:3 <- create-array
@@ -388,12 +396,12 @@ def main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1/unsafe
-  index-address *8:address:array:point, 4  # less than size of array in locations, but larger than its length in elements
+  8:point <- merge 34, 35
+  1:array:point <- put-index 1:array:point, 4, 8:point  # '4' is less than size of array in locations, but larger than its length in elements
 ]
 +error: main: invalid index 4
 
-:(scenario index_address_out_of_bounds_2)
+:(scenario put_index_out_of_bounds_2)
 % Hide_errors = true;
 def main [
   1:array:point:3 <- create-array
@@ -403,25 +411,10 @@ def main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1/unsafe
-  index-address *8:address:array:point, -1
+  8:point <- merge 34, 35
+  1:array:point <- put-index 1:array:point, -1, 8:point
 ]
 +error: main: invalid index -1
-
-:(scenario index_address_product_type_mismatch)
-% Hide_errors = true;
-def main [
-  1:array:point:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:number <- copy 14
-  6:number <- copy 15
-  7:number <- copy 16
-  8:address:array:point <- copy 1/unsafe
-  9:address:number <- index-address *8:address:array:point, 0
-]
-+error: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be (address point)
 
 //:: compute the length of an array
 
@@ -470,7 +463,7 @@ case LENGTH: {
 //: stop copying potentially huge arrays into it.
 :(before "End should_copy_ingredients Special-cases")
 recipe_ordinal r = current_instruction().operation;
-if (r == CREATE_ARRAY || r == INDEX || r == INDEX_ADDRESS || r == LENGTH)
+if (r == CREATE_ARRAY || r == INDEX || r == PUT_INDEX || r == LENGTH)
   return false;
 
 //: a particularly common array type is the string, or address:array:character

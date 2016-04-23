@@ -37,8 +37,8 @@ def clear-screen screen:address:shared:screen -> screen:address:shared:screen [
     {
       done?:boolean <- greater-or-equal i, max
       break-if done?
-      curr:address:screen-cell <- index-address *buf, i
-      *curr <- merge 0/empty, 7/white
+      curr:screen-cell <- merge 0/empty, 7/white
+      *buf <- put-index *buf, i, curr
       i <- add i, 1
       loop
     }
@@ -149,13 +149,13 @@ def print screen:address:shared:screen, c:character -> screen:address:shared:scr
         column <- subtract column, 1
         *screen <- put *screen, cursor-column:offset, column
         index <- subtract index, 1
-        cursor:address:screen-cell <- index-address *buf, index
-        *cursor <- merge 32/space, 7/white
+        cursor:screen-cell <- merge 32/space, 7/white
+        *buf <- put-index *buf, index, cursor
       }
       return
     }
-    cursor:address:screen-cell <- index-address *buf, index
-    *cursor <- merge c, color
+    cursor:screen-cell <- merge c, color
+    *buf <- put-index *buf, index, cursor
     # increment column unless it's already all the way to the right
     {
       right:number <- subtract width, 1
