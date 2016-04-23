@@ -11,8 +11,7 @@ container programming-environment-data [
 ]
 
 after <programming-environment-initialization> [
-  render-from:address:number <- get-address *result, render-from:offset
-  *render-from <- copy -1
+  *result <- put *result, render-from:offset, -1
 ]
 
 container sandbox-data [
@@ -140,21 +139,19 @@ def run-sandboxes env:address:shared:programming-environment-data, screen:addres
     # if contents exist, first save them
     # run them and turn them into a new sandbox-data
     new-sandbox:address:shared:sandbox-data <- new sandbox-data:type
-    data:address:address:shared:array:character <- get-address *new-sandbox, data:offset
-    *data <- copy sandbox-contents
+    *new-sandbox <- put *new-sandbox, data:offset, sandbox-contents
     # push to head of sandbox list
-    dest:address:address:shared:sandbox-data <- get-address *env, sandbox:offset
-    next:address:address:shared:sandbox-data <- get-address *new-sandbox, next-sandbox:offset
-    *next <- copy *dest
-    *dest <- copy new-sandbox
+    dest:address:shared:sandbox-data <- get *env, sandbox:offset
+    *new-sandbox <- put *new-sandbox, next-sandbox:offset, dest
+    *env <- put *env, sandbox:offset, new-sandbox
     # update sandbox count
-    sandbox-count:address:number <- get-address *env, number-of-sandboxes:offset
-    *sandbox-count <- add *sandbox-count, 1
+    sandbox-count:number <- get *env, number-of-sandboxes:offset
+    sandbox-count <- add sandbox-count, 1
+    *env <- put *env, number-of-sandboxes:offset, sandbox-count
     # clear sandbox editor
-    init:address:address:shared:duplex-list:character <- get-address *current-sandbox, data:offset
-    *init <- push 167/§, 0/tail
-    top-of-screen:address:address:shared:duplex-list:character <- get-address *current-sandbox, top-of-screen:offset
-    *top-of-screen <- copy *init
+    init:address:shared:duplex-list:character <- push 167/§, 0/tail
+    *current-sandbox <- put *current-sandbox, data:offset, init
+    *current-sandbox <- put *current-sandbox, top-of-screen:offset, init
   }
   # save all sandboxes before running, just in case we die when running
   save-sandboxes env
@@ -193,9 +190,9 @@ def! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:prog
   local-scope
   load-ingredients
   data:address:shared:array:character <- get *sandbox, data:offset
-  response:address:address:shared:array:character <- get-address *sandbox, response:offset
-  fake-screen:address:address:shared:screen <- get-address *sandbox, screen:offset
-  *response, _, *fake-screen <- run-interactive data
+  response:address:shared:array:character, _, fake-screen:address:shared:screen <- run-interactive data
+  *sandbox <- put *sandbox, response:offset, response
+  *sandbox <- put *sandbox, screen:offset, fake-screen
 ]
 
 def update-status screen:address:shared:screen, msg:address:shared:array:character, color:number -> screen:address:shared:screen [
@@ -268,15 +265,13 @@ def render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbo
     delete-icon:character <- copy 120/x
     print screen, delete-icon, 245/grey
     # save menu row so we can detect clicks to it later
-    starting-row:address:number <- get-address *sandbox, starting-row-on-screen:offset
-    *starting-row <- copy row
+    *sandbox <- put *sandbox, starting-row-on-screen:offset, row
     # render sandbox contents
     row <- add row, 1
     screen <- move-cursor screen, row, left
     sandbox-data:address:shared:array:character <- get *sandbox, data:offset
     row, screen <- render-code screen, sandbox-data, left, right, row
-    code-ending-row:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
-    *code-ending-row <- copy row
+    *sandbox <- put *sandbox, code-ending-row-on-screen:offset, row
     # render sandbox warnings, screen or response, in that order
     sandbox-response:address:shared:array:character <- get *sandbox, response:offset
     <render-sandbox-results>
@@ -300,10 +295,8 @@ def render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbo
   # if hidden, reset row attributes
   {
     break-unless hidden?
-    tmp:address:number <- get-address *sandbox, starting-row-on-screen:offset
-    *tmp <- copy 0
-    tmp:address:number <- get-address *sandbox, code-ending-row-on-screen:offset
-    *tmp <- copy 0
+    *sandbox <- put *sandbox, starting-row-on-screen:offset, 0
+    *sandbox <- put *sandbox, code-ending-row-on-screen:offset, 0
     <end-render-sandbox-reset-hidden>
   }
   # draw next sandbox
@@ -318,15 +311,15 @@ def! restore-sandboxes env:address:shared:programming-environment-data -> env:ad
   load-ingredients
   # read all scenarios, pushing them to end of a list of scenarios
   idx:number <- copy 0
-  curr:address:address:shared:sandbox-data <- get-address *env, sandbox:offset
+  curr:address:shared:sandbox-data <- copy 0
+  prev:address:shared:sandbox-data <- copy 0
   {
     filename:address:shared:array:character <- to-text idx
     contents:address:shared:array:character <- restore filename
     break-unless contents  # stop at first error; assuming file didn't exist
     # create new sandbox for file
-    *curr <- new sandbox-data:type
-    data:address:address:shared:array:character <- get-address **curr, data:offset
-    *data <- copy contents
+    curr <- new sandbox-data:type
+    *curr <- put *curr, data:offset, contents
     # restore expected output for sandbox if it exists
     {
       filename <- append filename, [.out]
@@ -336,12 +329,16 @@ def! restore-sandboxes env:address:shared:programming-environment-data -> env:ad
     }
     +continue
     idx <- add idx, 1
-    curr <- get-address **curr, next-sandbox:offset
+    {
+      break-unless prev
+      *prev <- put *prev, next-sandbox:offset, curr
+    }
+    prev <- copy curr
     loop
   }
+  *env <- put *env, sandbox:offset, curr
   # update sandbox count
-  number-of-sandboxes:address:number <- get-address *env, number-of-sandboxes:offset
-  *number-of-sandboxes <- copy idx
+  *env <- put *env, number-of-sandboxes:offset, idx
 ]
 
 # print the fake sandbox screen to 'screen' with appropriate delimiters
@@ -619,12 +616,13 @@ after <global-keypress> [
     break-unless sandbox
     # slide down if possible
     {
-      render-from:address:number <- get-address *env, render-from:offset
+      render-from:number <- get *env, render-from:offset
       number-of-sandboxes:number <- get *env, number-of-sandboxes:offset
       max:number <- subtract number-of-sandboxes, 1
-      at-end?:boolean <- greater-or-equal *render-from, max
+      at-end?:boolean <- greater-or-equal render-from, max
       break-if at-end?
-      *render-from <- add *render-from, 1
+      render-from <- add render-from, 1
+      *env <- put *env, render-from:offset, render-from
     }
     hide-screen screen
     screen <- render-sandbox-side screen, env
@@ -650,10 +648,11 @@ after <global-keypress> [
   {
     up?:boolean <- equal *k, 65517/up-arrow
     break-unless up?
-    render-from:address:number <- get-address *env, render-from:offset
-    at-beginning?:boolean <- equal *render-from, -1
+    render-from:number <- get *env, render-from:offset
+    at-beginning?:boolean <- equal render-from, -1
     break-if at-beginning?
-    *render-from <- subtract *render-from, 1
+    render-from <- subtract render-from, 1
+    *env <- put *env, render-from:offset, render-from
     hide-screen screen
     screen <- render-sandbox-side screen, env
     show-screen screen

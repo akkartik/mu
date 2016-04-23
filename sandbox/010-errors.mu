@@ -9,19 +9,18 @@ container programming-environment-data [
 def! update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen, test-recipes:address:shared:array:character -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
   local-scope
   load-ingredients
-  recipe-errors:address:address:shared:array:character <- get-address *env, recipe-errors:offset
   {
     break-if test-recipes
-    in:address:shared:array:character <- restore [recipes.mu]
-    *recipe-errors <- reload in
+    recipe-errors:address:shared:array:character <- restore [recipes.mu]
   }
   {
     break-unless test-recipes
-    *recipe-errors <- reload test-recipes
+    recipe-errors <- reload test-recipes
   }
+  *env <- put *env, recipe-errors:offset, recipe-errors
   # if recipe editor has errors, stop
   {
-    break-unless *recipe-errors
+    break-unless recipe-errors
     update-status screen, [errors found     ], 1/red
     errors-found? <- copy 1/true
     return
@@ -43,18 +42,17 @@ container programming-environment-data [
 ]
 
 after <programming-environment-initialization> [
-  error-index:address:number <- get-address *result, error-index:offset
-  *error-index <- copy -1
+  *result <- put *result, error-index:offset, -1
 ]
 
 after <run-sandboxes-begin> [
-  error-index:address:number <- get-address *env, error-index:offset
-  *error-index <- copy -1
+  *env <- put *env, error-index:offset, -1
 ]
 
 before <run-sandboxes-end> [
   {
-    sandboxes-completed-successfully?:boolean <- equal *error-index, -1
+    error-index:number <- get *env, error-index:offset
+    sandboxes-completed-successfully?:boolean <- equal error-index, -1
     break-if sandboxes-completed-successfully?
     errors-found? <- copy 1/true
   }
@@ -79,30 +77,31 @@ container sandbox-data [
 def! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
-  data:address:shared:array:character <- get *sandbox, data:offset
-  response:address:address:shared:array:character <- get-address *sandbox, response:offset
-  errors:address:address:shared:array:character <- get-address *sandbox, errors:offset
-  trace:address:address:shared:array:character <- get-address *sandbox, trace:offset
-  fake-screen:address:address:shared:screen <- get-address *sandbox, screen:offset
-  recipe-errors:address:shared:array:character <- get *env, recipe-errors:offset
   {
+    recipe-errors:address:shared:array:character <- get *env, recipe-errors:offset
     break-unless recipe-errors
-    *errors <- copy recipe-errors
+    *sandbox <- put *sandbox, errors:offset, recipe-errors
     return
   }
-  *response, *errors, *fake-screen, *trace, completed?:boolean <- run-interactive data
+  data:address:shared:array:character <- get *sandbox, data:offset
+  response:address:shared:array:character, errors:address:shared:array:character, fake-screen:address:shared:screen, trace:address:shared:array:character, completed?:boolean <- run-interactive data
+  *sandbox <- put *sandbox, response:offset, response
+  *sandbox <- put *sandbox, errors:offset, errors
+  *sandbox <- put *sandbox, screen:offset, fake-screen
+  *sandbox <- put *sandbox, trace:offset, trace
   {
-    break-if *errors
+    break-if errors
     break-if completed?:boolean
-    *errors <- new [took too long!
+    errors <- new [took too long!
 ]
+    *sandbox <- put *sandbox, errors:offset, errors
   }
   {
-    break-unless *errors
-    error-index:address:number <- get-address *env, error-index:offset
-    error-not-set?:boolean <- equal *error-index, -1
+    break-unless errors
+    error-index:number <- get *env, error-index:offset
+    error-not-set?:boolean <- equal error-index, -1
     break-unless error-not-set?
-    *error-index <- copy idx
+    *env <- put *env, error-index:offset, idx
   }
 ]
 
@@ -111,8 +110,7 @@ after <render-sandbox-trace-done> [
   {
     sandbox-errors:address:shared:array:character <- get *sandbox, errors:offset
     break-unless sandbox-errors
-    response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
-    *response-starting-row <- copy 0  # no response
+    *sandbox <- put *sandbox, response-starting-row-on-screen:offset, 0  # no response
     {
       break-unless env
       recipe-errors:address:shared:array:character <- get *env, recipe-errors:offset
@@ -180,23 +178,6 @@ scenario run-updates-status-with-first-erroneous-sandbox [
   # status line shows that error is in first sandbox
   screen-should-contain [
     .  errors found (0)             run (F4)           .
-    .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
-    .get foo, x:offset                                 .
-    .expected a container in 'get foo, x:offset'       .
-    .missing type for foo in 'get foo, x:offset'       .
-    .first ingredient of 'get' should be a container, ↩.
-    .but got foo                                       .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
-    .get foo, x:offset                                 .
-    .expected a container in 'get foo, x:offset'       .
-    .missing type for foo in 'get foo, x:offset'       .
-    .first ingredient of 'get' should be a container, ↩.
-    .but got foo                                       .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
   ]
 ]
 
@@ -223,25 +204,6 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
   # status line shows that error is in second sandbox
   screen-should-contain [
     .  errors found (1)             run (F4)           .
-    .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
-    .add 2, 2                                          .
-    .4                                                 .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
-    .get foo, x:offset                                 .
-    .expected a container in 'get foo, x:offset'       .
-    .missing type for foo in 'get foo, x:offset'       .
-    .first ingredient of 'get' should be a container, ↩.
-    .but got foo                                       .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .2                                                x.
-    .get foo, x:offset                                 .
-    .expected a container in 'get foo, x:offset'       .
-    .missing type for foo in 'get foo, x:offset'       .
-    .first ingredient of 'get' should be a container, ↩.
-    .but got foo                                       .
   ]
 ]
 
@@ -485,8 +447,8 @@ def foo [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0                                                x.
     .foo                                               .
-    .foo: expected ingredient 1 of 'get' to have type ↩.
-    .'offset'; got x:number                            .
+    .foo: second ingredient of 'get' should have type ↩.
+    .'offset', but got x:number                        .
   ]
 ]
 

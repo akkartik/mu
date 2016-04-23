@@ -98,8 +98,7 @@ before <end-save-sandbox> [
 ]
 
 before <end-restore-sandbox> [
-  expected-response:address:address:shared:array:character <- get-address **curr, expected-response:offset
-  *expected-response <- copy contents
+  *curr <- put *curr, expected-response:offset, contents
 ]
 
 # clicks on sandbox responses save it as 'expected'
@@ -160,24 +159,25 @@ def find-click-in-sandbox-output env:address:shared:programming-environment-data
 def toggle-expected-response sandbox:address:shared:sandbox-data -> sandbox:address:shared:sandbox-data [
   local-scope
   load-ingredients
-  expected-response:address:address:shared:array:character <- get-address *sandbox, expected-response:offset
+  expected-response:address:shared:array:character <- get *sandbox, expected-response:offset
   {
     # if expected-response is set, reset
-    break-unless *expected-response
-    *expected-response <- copy 0
-    return sandbox/same-as-ingredient:0
+    break-unless expected-response
+    *sandbox <- put *sandbox, expected-response:offset, 0
   }
-  # if not, current response is the expected response
-  response:address:shared:array:character <- get *sandbox, response:offset
-  *expected-response <- copy response
+  {
+    # if not, set expected response to the current response
+    break-if expected-response
+    response:address:shared:array:character <- get *sandbox, response:offset
+    *sandbox <- put *sandbox, expected-response:offset, response
+  }
 ]
 
 # when rendering a sandbox, color it in red/green if expected response exists
 after <render-sandbox-response> [
   {
     break-unless sandbox-response
-    response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
-    *response-starting-row <- copy row
+    *sandbox <- put *sandbox, response-starting-row-on-screen:offset, row
     expected-response:address:shared:array:character <- get *sandbox, expected-response:offset
     break-unless expected-response  # fall-through to print in grey
     response-is-expected?:boolean <- equal expected-response, sandbox-response
@@ -194,6 +194,5 @@ after <render-sandbox-response> [
 ]
 
 before <end-render-sandbox-reset-hidden> [
-  tmp:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
-  *tmp <- copy 0
+  *sandbox <- put *sandbox, response-starting-row-on-screen:offset, 0
 ]

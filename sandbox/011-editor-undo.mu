@@ -65,12 +65,14 @@ after <handle-special-character> [
   {
     undo?:boolean <- equal *c, 26/ctrl-z
     break-unless undo?
-    undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
-    break-unless *undo
-    op:address:shared:operation <- first *undo
-    *undo <- rest *undo
-    redo:address:address:shared:list:address:shared:operation <- get-address *editor, redo:offset
-    *redo <- push op, *redo
+    undo:address:shared:list:address:shared:operation <- get *editor, undo:offset
+    break-unless undo
+    op:address:shared:operation <- first undo
+    undo <- rest undo
+    *editor <- put *editor, undo:offset, undo
+    redo:address:shared:list:address:shared:operation <- get *editor, redo:offset
+    redo <- push op, redo
+    *editor <- put *editor, redo:offset, redo
     <handle-undo>
     return screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
@@ -81,12 +83,14 @@ after <handle-special-character> [
   {
     redo?:boolean <- equal *c, 25/ctrl-y
     break-unless redo?
-    redo:address:address:shared:list:address:shared:operation <- get-address *editor, redo:offset
-    break-unless *redo
-    op:address:shared:operation <- first *redo
-    *redo <- rest *redo
-    undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
-    *undo <- push op, *undo
+    redo:address:shared:list:address:shared:operation <- get *editor, redo:offset
+    break-unless redo
+    op:address:shared:operation <- first redo
+    redo <- rest redo
+    *editor <- put *editor, redo:offset, redo
+    undo:address:shared:list:address:shared:operation <- get *editor, undo:offset
+    undo <- push op, undo
+    *editor <- put *editor, undo:offset, undo
     <handle-redo>
     return screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
   }
@@ -136,52 +140,55 @@ scenario editor-can-undo-typing [
 # save operation to undo
 after <insert-character-begin> [
   top-before:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
-  cursor-before:address:shared:duplex-list:character <- copy *before-cursor
+  cursor-before:address:shared:duplex-list:character <- get *editor, before-cursor:offset
 ]
 before <insert-character-end> [
   top-after:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
-  undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
+  cursor-row:number <- get *editor, cursor-row:offset
+  cursor-column:number <- get *editor, cursor-column:offset
+  undo:address:shared:list:address:shared:operation <- get *editor, undo:offset
   {
     # if previous operation was an insert, coalesce this operation with it
-    break-unless *undo
-    op:address:shared:operation <- first *undo
+    break-unless undo
+    op:address:shared:operation <- first undo
     typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
     previous-coalesce-tag:number <- get *typing, tag:offset
     break-unless previous-coalesce-tag
-    insert-until:address:address:shared:duplex-list:character <- get-address *typing, insert-until:offset
-    *insert-until <- next *before-cursor
-    after-row:address:number <- get-address *typing, after-row:offset
-    *after-row <- copy *cursor-row
-    after-column:address:number <- get-address *typing, after-column:offset
-    *after-column <- copy *cursor-column
-    after-top:address:address:shared:duplex-list:character <- get-address *typing, after-top-of-screen:offset
-    *after-top <- get *editor, top-of-screen:offset
+    before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
+    insert-until:address:shared:duplex-list:character <- next before-cursor
+    *typing <- put *typing, insert-until:offset, insert-until
+    *typing <- put *typing, after-row:offset, cursor-row
+    *typing <- put *typing, after-column:offset, cursor-column
+    *typing <- put *typing, after-top-of-screen:offset, top-after
     break +done-adding-insert-operation:label
   }
   # if not, create a new operation
   insert-from:address:shared:duplex-list:character <- next cursor-before
   insert-to:address:shared:duplex-list:character <- next insert-from
   op:address:shared:operation <- new operation:type
-  *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to, 1/coalesce
+  *op <- merge 0/insert-operation, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, insert-from, insert-to, 1/coalesce
   editor <- add-operation editor, op
   +done-adding-insert-operation
 ]
 
 # enter operations never coalesce with typing before or after
 after <insert-enter-begin> [
-  cursor-row-before:number <- copy *cursor-row
-  cursor-column-before:number <- copy *cursor-column
+  cursor-row-before:number <- copy cursor-row
+  cursor-column-before:number <- copy cursor-column
   top-before:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
-  cursor-before:address:shared:duplex-list:character <- copy *before-cursor
+  cursor-before:address:shared:duplex-list:character <- get *editor, before-cursor:offset
 ]
 before <insert-enter-end> [
   top-after:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
+  cursor-row:number <- get *editor, cursor-row:offset
+  cursor-column:number <- get *editor, cursor-row:offset
   # never coalesce
   insert-from:address:shared:duplex-list:character <- next cursor-before
-  insert-to:address:shared:duplex-list:character <- next *before-cursor
+  before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
+  insert-to:address:shared:duplex-list:character <- next before-cursor
   op:address:shared:operation <- new operation:type
-  *op <- merge 0/insert-operation, cursor-row-before, cursor-column-before, top-before, *cursor-row/after, *cursor-column/after, top-after, insert-from, insert-to, 0/never-coalesce
+  *op <- merge 0/insert-operation, cursor-row-before, cursor-column-before, top-before, cursor-row/after, cursor-column/after, top-after, insert-from, insert-to, 0/never-coalesce
   editor <- add-operation editor, op
 ]
 
@@ -192,10 +199,12 @@ before <insert-enter-end> [
 def add-operation editor:address:shared:editor-data, op:address:shared:operation -> editor:address:shared:editor-data [
   local-scope
   load-ingredients
-  undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
-  *undo <- push op *undo
-  redo:address:address:shared:list:address:shared:operation <- get-address *editor, redo:offset
-  *redo <- copy 0
+  undo:address:shared:list:address:shared:operation <- get *editor, undo:offset
+  undo <- push op undo
+  *editor <- put *editor, undo:offset, undo
+  redo:address:shared:list:address:shared:operation <- get *editor, redo:offset
+  redo <- copy 0
+  *editor <- put *editor, redo:offset, redo
   return editor/same-as-ingredient:0
 ]
 
@@ -206,12 +215,15 @@ after <handle-undo> [
     start:address:shared:duplex-list:character <- get *typing, insert-from:offset
     end:address:shared:duplex-list:character <- get *typing, insert-until:offset
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    *before-cursor <- prev start
-    remove-between *before-cursor, end
-    *cursor-row <- get *typing, before-row:offset
-    *cursor-column <- get *typing, before-column:offset
-    top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
-    *top <- get *typing, before-top-of-screen:offset
+    before-cursor:address:shared:duplex-list:character <- prev start
+    *editor <- put *editor, before-cursor:offset, before-cursor
+    remove-between before-cursor, end
+    cursor-row <- get *typing, before-row:offset
+    *editor <- put *editor, cursor-row:offset, cursor-row
+    cursor-column <- get *typing, before-column:offset
+    *editor <- put *editor, cursor-column:offset, cursor-column
+    top:address:shared:duplex-list:character <- get *typing, before-top-of-screen:offset
+    *editor <- put *editor, top-of-screen:offset, top
   }
 ]
 
@@ -400,14 +412,17 @@ after <handle-redo> [
   {
     typing:address:insert-operation <- maybe-convert *op, typing:variant
     break-unless typing
+    before-cursor <- get *editor, before-cursor:offset
     insert-from:address:shared:duplex-list:character <- get *typing, insert-from:offset  # ignore insert-to because it's already been spliced away
-    # assert insert-to matches next(*before-cursor)
-    insert-range *before-cursor, insert-from
+    # assert insert-to matches next(before-cursor)
+    insert-range before-cursor, insert-from
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    *cursor-row <- get *typing, after-row:offset
-    *cursor-column <- get *typing, after-column:offset
-    top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
-    *top <- get *typing, after-top-of-screen:offset
+    cursor-row <- get *typing, after-row:offset
+    *editor <- put *editor, cursor-row:offset, cursor-row
+    cursor-column <- get *typing, after-column:offset
+    *editor <- put *editor, cursor-column:offset, cursor-column
+    top:address:shared:duplex-list:character <- get *typing, after-top-of-screen:offset
+    *editor <- put *editor, top-of-screen:offset, top
   }
 ]
 
@@ -700,36 +715,33 @@ ghi]
 ]
 
 after <move-cursor-begin> [
-  before-cursor-row:number <- get *editor, cursor-row:offset
-  before-cursor-column:number <- get *editor, cursor-column:offset
-  before-top-of-screen:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
+  cursor-row-before:number <- get *editor, cursor-row:offset
+  cursor-column-before:number <- get *editor, cursor-column:offset
+  top-before:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
 ]
 before <move-cursor-end> [
-  after-cursor-row:number <- get *editor, cursor-row:offset
-  after-cursor-column:number <- get *editor, cursor-column:offset
-  after-top-of-screen:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
+  top-after:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
+  cursor-row:number <- get *editor, cursor-row:offset
+  cursor-column:number <- get *editor, cursor-column:offset
   {
     break-unless undo-coalesce-tag
     # if previous operation was also a move, and also had the same coalesce
     # tag, coalesce with it
-    undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
-    break-unless *undo
-    op:address:shared:operation <- first *undo
+    undo:address:shared:list:address:shared:operation <- get *editor, undo:offset
+    break-unless undo
+    op:address:shared:operation <- first undo
     move:address:move-operation <- maybe-convert *op, move:variant
     break-unless move
     previous-coalesce-tag:number <- get *move, tag:offset
     coalesce?:boolean <- equal undo-coalesce-tag, previous-coalesce-tag
     break-unless coalesce?
-    after-row:address:number <- get-address *move, after-row:offset
-    *after-row <- copy after-cursor-row
-    after-column:address:number <- get-address *move, after-column:offset
-    *after-column <- copy after-cursor-column
-    after-top:address:address:shared:duplex-list:character <- get-address *move, after-top-of-screen:offset
-    *after-top <- get *editor, top-of-screen:offset
+    *move <- put *move, after-row:offset, cursor-row
+    *move <- put *move, after-column:offset, cursor-column
+    *move <- put *move, after-top-of-screen:offset, top-after
     break +done-adding-move-operation:label
   }
   op:address:shared:operation <- new operation:type
-  *op <- merge 1/move-operation, before-cursor-row, before-cursor-column, before-top-of-screen, after-cursor-row, after-cursor-column, after-top-of-screen, undo-coalesce-tag
+  *op <- merge 1/move-operation, cursor-row-before, cursor-column-before, top-before, cursor-row/after, cursor-column/after, top-after, undo-coalesce-tag
   editor <- add-operation editor, op
   +done-adding-move-operation
 ]
@@ -739,10 +751,12 @@ after <handle-undo> [
     move:address:move-operation <- maybe-convert *op, move:variant
     break-unless move
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
-    *cursor-row <- get *move, before-row:offset
-    *cursor-column <- get *move, before-column:offset
-    *top <- get *move, before-top-of-screen:offset
+    cursor-row <- get *move, before-row:offset
+    *editor <- put *editor, cursor-row:offset, cursor-row
+    cursor-column <- get *move, before-column:offset
+    *editor <- put *editor, cursor-column:offset, cursor-column
+    top:address:shared:duplex-list:character <- get *move, before-top-of-screen:offset
+    *editor <- put *editor, top-of-screen:offset, top
   }
 ]
 
@@ -1265,6 +1279,117 @@ ghi]
   ]
 ]
 
+scenario editor-can-undo-multiple-arrows-in-the-same-direction [
+  # create an editor with some text
+  assume-screen 10/width, 5/height
+  1:address:shared:array:character <- new [abc
+def
+ghi]
+  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 10/right
+  editor-render screen, 2:address:shared:editor-data
+  # move the cursor
+  assume-console [
+    left-click 2, 1
+    press right-arrow
+    press right-arrow
+    press up-arrow
+  ]
+  editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+  3:number <- get *2:address:shared:editor-data, cursor-row:offset
+  4:number <- get *2:address:shared:editor-data, cursor-column:offset
+  memory-should-contain [
+    3 <- 1
+    4 <- 3
+  ]
+  # undo
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+    3:number <- get *2:address:shared:editor-data, cursor-row:offset
+    4:number <- get *2:address:shared:editor-data, cursor-column:offset
+  ]
+  # up-arrow is undone
+  memory-should-contain [
+    3 <- 2
+    4 <- 3
+  ]
+  # undo again
+  assume-console [
+    press ctrl-z
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+    3:number <- get *2:address:shared:editor-data, cursor-row:offset
+    4:number <- get *2:address:shared:editor-data, cursor-column:offset
+  ]
+  # both right-arrows are undone
+  memory-should-contain [
+    3 <- 2
+    4 <- 1
+  ]
+]
+
+# redo cursor movement and scroll
+
+scenario editor-redo-touch [
+  # create an editor with some text, click on a character, undo
+  assume-screen 10/width, 5/height
+  1:address:shared:array:character <- new [abc
+def
+ghi]
+  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 10/right
+  editor-render screen, 2:address:shared:editor-data
+  assume-console [
+    left-click 3, 1
+    press ctrl-z
+  ]
+  editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+  # redo
+  assume-console [
+    press ctrl-y
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+    3:number <- get *2:address:shared:editor-data, cursor-row:offset
+    4:number <- get *2:address:shared:editor-data, cursor-column:offset
+  ]
+  # cursor moves to left-click
+  memory-should-contain [
+    3 <- 3
+    4 <- 1
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [1]
+  ]
+  run [
+    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .abc       .
+    .def       .
+    .g1hi      .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+after <handle-redo> [
+  {
+    move:address:move-operation <- maybe-convert *op, move:variant
+    break-unless move
+    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
+    cursor-row <- get *move, after-row:offset
+    *editor <- put *editor, cursor-row:offset, cursor-row
+    cursor-column <- get *move, after-column:offset
+    *editor <- put *editor, cursor-column:offset, cursor-column
+    top:address:shared:duplex-list:character <- get *move, after-top-of-screen:offset
+    *editor <- put *editor, top-of-screen:offset, top
+  }
+]
+
 scenario editor-separates-undo-insert-from-undo-cursor-move [
   # create an editor, type some text, move the cursor, type some more text
   assume-screen 10/width, 5/height
@@ -1385,6 +1510,7 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  # cursor moves
   memory-should-contain [
     3 <- 1
     4 <- 1
@@ -1409,115 +1535,6 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
     3 <- 1
     4 <- 2
   ]
-]
-
-scenario editor-can-undo-multiple-arrows-in-the-same-direction [
-  # create an editor with some text
-  assume-screen 10/width, 5/height
-  1:address:shared:array:character <- new [abc
-def
-ghi]
-  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 10/right
-  editor-render screen, 2:address:shared:editor-data
-  # move the cursor
-  assume-console [
-    left-click 2, 1
-    press right-arrow
-    press right-arrow
-    press up-arrow
-  ]
-  editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-  3:number <- get *2:address:shared:editor-data, cursor-row:offset
-  4:number <- get *2:address:shared:editor-data, cursor-column:offset
-  memory-should-contain [
-    3 <- 1
-    4 <- 3
-  ]
-  # undo
-  assume-console [
-    press ctrl-z
-  ]
-  run [
-    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-    3:number <- get *2:address:shared:editor-data, cursor-row:offset
-    4:number <- get *2:address:shared:editor-data, cursor-column:offset
-  ]
-  # up-arrow is undone
-  memory-should-contain [
-    3 <- 2
-    4 <- 3
-  ]
-  # undo again
-  assume-console [
-    press ctrl-z
-  ]
-  run [
-    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-    3:number <- get *2:address:shared:editor-data, cursor-row:offset
-    4:number <- get *2:address:shared:editor-data, cursor-column:offset
-  ]
-  # both right-arrows are undone
-  memory-should-contain [
-    3 <- 2
-    4 <- 1
-  ]
-]
-
-# redo cursor movement and scroll
-
-scenario editor-redo-touch [
-  # create an editor with some text, click on a character, undo
-  assume-screen 10/width, 5/height
-  1:address:shared:array:character <- new [abc
-def
-ghi]
-  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 10/right
-  editor-render screen, 2:address:shared:editor-data
-  assume-console [
-    left-click 3, 1
-    press ctrl-z
-  ]
-  editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-  # redo
-  assume-console [
-    press ctrl-y
-  ]
-  run [
-    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-    3:number <- get *2:address:shared:editor-data, cursor-row:offset
-    4:number <- get *2:address:shared:editor-data, cursor-column:offset
-  ]
-  # cursor moves to left-click
-  memory-should-contain [
-    3 <- 3
-    4 <- 1
-  ]
-  # cursor should be in the right place
-  assume-console [
-    type [1]
-  ]
-  run [
-    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-  ]
-  screen-should-contain [
-    .          .
-    .abc       .
-    .def       .
-    .g1hi      .
-    .┈┈┈┈┈┈┈┈┈┈.
-  ]
-]
-
-after <handle-redo> [
-  {
-    move:address:move-operation <- maybe-convert *op, move:variant
-    break-unless move
-    # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    *cursor-row <- get *move, after-row:offset
-    *cursor-column <- get *move, after-column:offset
-    top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
-    *top <- get *move, after-top-of-screen:offset
-  }
 ]
 
 # undo backspace
@@ -1595,33 +1612,32 @@ before <backspace-character-end> [
   {
     break-unless backspaced-cell  # backspace failed; don't add an undo operation
     top-after:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
-    undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
+    cursor-row:number <- get *editor, cursor-row:offset
+    cursor-column:number <- get *editor, cursor-row:offset
+    before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
+    undo:address:shared:list:address:shared:operation <- get *editor, undo:offset
     {
       # if previous operation was an insert, coalesce this operation with it
       break-unless *undo
-      op:address:shared:operation <- first *undo
+      op:address:shared:operation <- first undo
       deletion:address:delete-operation <- maybe-convert *op, delete:variant
       break-unless deletion
       previous-coalesce-tag:number <- get *deletion, tag:offset
       coalesce?:boolean <- equal previous-coalesce-tag, 1/coalesce-backspace
       break-unless coalesce?
-      delete-from:address:address:shared:duplex-list:character <- get-address *deletion, delete-from:offset
-      *delete-from <- copy *before-cursor
-      backspaced-so-far:address:address:shared:duplex-list:character <- get-address *deletion, deleted-text:offset
-      insert-range backspaced-cell, *backspaced-so-far
-      *backspaced-so-far <- copy backspaced-cell
-      after-row:address:number <- get-address *deletion, after-row:offset
-      *after-row <- copy *cursor-row
-      after-column:address:number <- get-address *deletion, after-column:offset
-      *after-column <- copy *cursor-column
-      after-top:address:address:shared:duplex-list:character <- get-address *deletion, after-top-of-screen:offset
-      *after-top <- get *editor, top-of-screen:offset
+      *deletion <- put *deletion, delete-from:offset, before-cursor
+      backspaced-so-far:address:shared:duplex-list:character <- get *deletion, deleted-text:offset
+      insert-range backspaced-cell, backspaced-so-far
+      *deletion <- put *deletion, deleted-text:offset, backspaced-cell
+      *deletion <- put *deletion, after-row:offset, cursor-row
+      *deletion <- put *deletion, after-column:offset, cursor-column
+      *deletion <- put *deletion, after-top-of-screen:offset, top-after
       break +done-adding-backspace-operation:label
     }
     # if not, create a new operation
     op:address:shared:operation <- new operation:type
-    deleted-until:address:shared:duplex-list:character <- next *before-cursor
-    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, backspaced-cell/deleted, *before-cursor/delete-from, deleted-until, 1/coalesce-backspace
+    deleted-until:address:shared:duplex-list:character <- next before-cursor
+    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, backspaced-cell/deleted, before-cursor/delete-from, deleted-until, 1/coalesce-backspace
     editor <- add-operation editor, op
     +done-adding-backspace-operation
   }
@@ -1631,18 +1647,19 @@ after <handle-undo> [
   {
     deletion:address:delete-operation <- maybe-convert *op, delete:variant
     break-unless deletion
-    start2:address:address:shared:duplex-list:character <- get-address *editor, data:offset
     anchor:address:shared:duplex-list:character <- get *deletion, delete-from:offset
     break-unless anchor
     deleted:address:shared:duplex-list:character <- get *deletion, deleted-text:offset
     old-cursor:address:shared:duplex-list:character <- last deleted
     insert-range anchor, deleted
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    *before-cursor <- copy old-cursor
-    *cursor-row <- get *deletion, before-row:offset
-    *cursor-column <- get *deletion, before-column:offset
-    top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
-    *top <- get *deletion, before-top-of-screen:offset
+    before-cursor <- copy old-cursor
+    cursor-row <- get *deletion, before-row:offset
+    *editor <- put *editor, cursor-row:offset, cursor-row
+    cursor-column <- get *deletion, before-column:offset
+    *editor <- put *editor, cursor-column:offset, cursor-column
+    top:address:shared:duplex-list:character <- get *deletion, before-top-of-screen:offset
+    *editor <- put *editor, top-of-screen:offset, top
   }
 ]
 
@@ -1652,12 +1669,15 @@ after <handle-redo> [
     break-unless deletion
     start:address:shared:duplex-list:character <- get *deletion, delete-from:offset
     end:address:shared:duplex-list:character <- get *deletion, delete-until:offset
+    data:address:shared:duplex-list:character <- get *editor, data:offset
     remove-between start, end
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    *cursor-row <- get *deletion, after-row:offset
-    *cursor-column <- get *deletion, after-column:offset
-    top:address:address:shared:duplex-list:character <- get-address *editor, top-of-screen:offset
-    *top <- get *deletion, after-top-of-screen:offset
+    cursor-row <- get *deletion, after-row:offset
+    *editor <- put *editor, cursor-row:offset, cursor-row
+    cursor-column <- get *deletion, after-column:offset
+    *editor <- put *editor, cursor-column:offset, cursor-column
+    top:address:shared:duplex-list:character <- get *deletion, before-top-of-screen:offset
+    *editor <- put *editor, top-of-screen:offset, top
   }
 ]
 
@@ -1817,32 +1837,33 @@ before <delete-character-end> [
   {
     break-unless deleted-cell  # delete failed; don't add an undo operation
     top-after:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
-    undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
+    cursor-row:number <- get *editor, cursor-row:offset
+    cursor-column:number <- get *editor, cursor-column:offset
+    before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
+    undo:address:shared:list:address:shared:operation <- get *editor, undo:offset
     {
       # if previous operation was an insert, coalesce this operation with it
-      break-unless *undo
-      op:address:shared:operation <- first *undo
+      break-unless undo
+      op:address:shared:operation <- first undo
       deletion:address:delete-operation <- maybe-convert *op, delete:variant
       break-unless deletion
       previous-coalesce-tag:number <- get *deletion, tag:offset
       coalesce?:boolean <- equal previous-coalesce-tag, 2/coalesce-delete
       break-unless coalesce?
-      delete-until:address:address:shared:duplex-list:character <- get-address *deletion, delete-until:offset
-      *delete-until <- next *before-cursor
-      deleted-so-far:address:address:shared:duplex-list:character <- get-address *deletion, deleted-text:offset
-      *deleted-so-far <- append *deleted-so-far, deleted-cell
-      after-row:address:number <- get-address *deletion, after-row:offset
-      *after-row <- copy *cursor-row
-      after-column:address:number <- get-address *deletion, after-column:offset
-      *after-column <- copy *cursor-column
-      after-top:address:address:shared:duplex-list:character <- get-address *deletion, after-top-of-screen:offset
-      *after-top <- get *editor, top-of-screen:offset
+      delete-until:address:shared:duplex-list:character <- next before-cursor
+      *deletion <- put *deletion, delete-until:offset, delete-until
+      deleted-so-far:address:shared:duplex-list:character <- get *deletion, deleted-text:offset
+      deleted-so-far <- append deleted-so-far, deleted-cell
+      *deletion <- put *deletion, deleted-text:offset, deleted-so-far
+      *deletion <- put *deletion, after-row:offset, cursor-row
+      *deletion <- put *deletion, after-column:offset, cursor-column
+      *deletion <- put *deletion, after-top-of-screen:offset, top-after
       break +done-adding-delete-operation:label
     }
     # if not, create a new operation
     op:address:shared:operation <- new operation:type
-    deleted-until:address:shared:duplex-list:character <- next *before-cursor
-    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, deleted-cell/deleted, *before-cursor/delete-from, deleted-until, 2/coalesce-delete
+    deleted-until:address:shared:duplex-list:character <- next before-cursor
+    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, deleted-cell/deleted, before-cursor/delete-from, deleted-until, 2/coalesce-delete
     editor <- add-operation editor, op
     +done-adding-delete-operation
   }
@@ -1940,10 +1961,11 @@ before <delete-to-end-of-line-end> [
   {
     break-unless deleted-cells  # delete failed; don't add an undo operation
     top-after:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
-    undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
+    cursor-row:number <- get *editor, cursor-row:offset
+    cursor-column:number <- get *editor, cursor-column:offset
+    deleted-until:address:shared:duplex-list:character <- next before-cursor
     op:address:shared:operation <- new operation:type
-    deleted-until:address:shared:duplex-list:character <- next *before-cursor
-    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, deleted-cells/deleted, *before-cursor/delete-from, deleted-until, 0/never-coalesce
+    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, deleted-cells/deleted, before-cursor/delete-from, deleted-until, 0/never-coalesce
     editor <- add-operation editor, op
     +done-adding-delete-operation
   }
@@ -2041,10 +2063,12 @@ before <delete-to-start-of-line-end> [
   {
     break-unless deleted-cells  # delete failed; don't add an undo operation
     top-after:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
-    undo:address:address:shared:list:address:shared:operation <- get-address *editor, undo:offset
     op:address:shared:operation <- new operation:type
-    deleted-until:address:shared:duplex-list:character <- next *before-cursor
-    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, *cursor-row/after, *cursor-column/after, top-after, deleted-cells/deleted, *before-cursor/delete-from, deleted-until, 0/never-coalesce
+    before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
+    deleted-until:address:shared:duplex-list:character <- next before-cursor
+    cursor-row:number <- get *editor, cursor-row:offset
+    cursor-column:number <- get *editor, cursor-column:offset
+    *op <- merge 2/delete-operation, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, deleted-cells/deleted, before-cursor/delete-from, deleted-until, 0/never-coalesce
     editor <- add-operation editor, op
     +done-adding-delete-operation
   }

@@ -83,11 +83,11 @@ def snap-cursor screen:address:shared:screen, editor:address:shared:editor-data,
   curr <- next curr
   row:number <- copy 1/top
   column:number <- copy left
-  cursor-row:address:number <- get-address *editor, cursor-row:offset
-  *cursor-row <- copy target-row
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
-  *cursor-column <- copy target-column
-  before-cursor:address:address:shared:duplex-list:character <- get-address *editor, before-cursor:offset
+  *editor <- put *editor, cursor-row:offset, target-row
+  cursor-row:number <- copy target-row
+  *editor <- put *editor, cursor-column:offset, target-column
+  cursor-column:number <- copy target-column
+  before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
   {
     +next-character
     break-unless curr
@@ -97,11 +97,12 @@ def snap-cursor screen:address:shared:screen, editor:address:shared:editor-data,
     # Doing so at the start of each iteration ensures it stays one step behind
     # the current character.
     {
-      at-cursor-row?:boolean <- equal row, *cursor-row
+      at-cursor-row?:boolean <- equal row, cursor-row
       break-unless at-cursor-row?
-      at-cursor?:boolean <- equal column, *cursor-column
+      at-cursor?:boolean <- equal column, cursor-column
       break-unless at-cursor?
-      *before-cursor <- copy prev
+      before-cursor <- copy prev
+      *editor <- put *editor, before-cursor:offset, before-cursor
     }
     c:character <- get *curr, value:offset
     {
@@ -110,12 +111,14 @@ def snap-cursor screen:address:shared:screen, editor:address:shared:editor-data,
       break-unless newline?
       # adjust cursor if necessary
       {
-        at-cursor-row?:boolean <- equal row, *cursor-row
+        at-cursor-row?:boolean <- equal row, cursor-row
         break-unless at-cursor-row?
-        left-of-cursor?:boolean <- lesser-than column, *cursor-column
+        left-of-cursor?:boolean <- lesser-than column, cursor-column
         break-unless left-of-cursor?
-        *cursor-column <- copy column
-        *before-cursor <- copy prev
+        cursor-column <- copy column
+        *editor <- put *editor, cursor-column:offset, cursor-column
+        before-cursor <- copy prev
+        *editor <- put *editor, before-cursor:offset, before-cursor
       }
       # skip to next line
       row <- add row, 1
@@ -141,15 +144,18 @@ def snap-cursor screen:address:shared:screen, editor:address:shared:editor-data,
   }
   # is cursor to the right of the last line? move to end
   {
-    at-cursor-row?:boolean <- equal row, *cursor-row
-    cursor-outside-line?:boolean <- lesser-or-equal column, *cursor-column
+    at-cursor-row?:boolean <- equal row, cursor-row
+    cursor-outside-line?:boolean <- lesser-or-equal column, cursor-column
     before-cursor-on-same-line?:boolean <- and at-cursor-row?, cursor-outside-line?
-    above-cursor-row?:boolean <- lesser-than row, *cursor-row
+    above-cursor-row?:boolean <- lesser-than row, cursor-row
     before-cursor?:boolean <- or before-cursor-on-same-line?, above-cursor-row?
     break-unless before-cursor?
-    *cursor-row <- copy row
-    *cursor-column <- copy column
-    *before-cursor <- copy prev
+    cursor-row <- copy row
+    *editor <- put *editor, cursor-row:offset, cursor-row
+    cursor-column <- copy column
+    *editor <- put *editor, cursor-column:offset, cursor-column
+    before-cursor <- copy prev
+    *editor <- put *editor, before-cursor:offset, before-cursor
   }
 ]
 
@@ -164,11 +170,11 @@ def handle-keyboard-event screen:address:shared:screen, editor:address:shared:ed
   screen-height:number <- screen-height screen
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
-  before-cursor:address:address:shared:duplex-list:character <- get-address *editor, before-cursor:offset
-  cursor-row:address:number <- get-address *editor, cursor-row:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
-  save-row:number <- copy *cursor-row
-  save-column:number <- copy *cursor-column
+  before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
+  cursor-row:number <- get *editor, cursor-row:offset
+  cursor-column:number <- get *editor, cursor-column:offset
+  save-row:number <- copy cursor-row
+  save-column:number <- copy cursor-column
   # character
   {
     c:address:character <- maybe-convert e, text:variant
@@ -198,22 +204,24 @@ def handle-keyboard-event screen:address:shared:screen, editor:address:shared:ed
 def insert-at-cursor editor:address:shared:editor-data, c:character, screen:address:shared:screen -> editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean [
   local-scope
   load-ingredients
-  before-cursor:address:address:shared:duplex-list:character <- get-address *editor, before-cursor:offset
-  insert c, *before-cursor
-  *before-cursor <- next *before-cursor
-  cursor-row:address:number <- get-address *editor, cursor-row:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
+  insert c, before-cursor
+  before-cursor <- next before-cursor
+  *editor <- put *editor, before-cursor:offset, before-cursor
+  cursor-row:number <- get *editor, cursor-row:offset
+  cursor-column:number <- get *editor, cursor-column:offset
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
-  save-row:number <- copy *cursor-row
-  save-column:number <- copy *cursor-column
+  save-row:number <- copy cursor-row
+  save-column:number <- copy cursor-column
   screen-width:number <- screen-width screen
   screen-height:number <- screen-height screen
   # occasionally we'll need to mess with the cursor
   <insert-character-special-case>
   # but mostly we'll just move the cursor right
-  *cursor-column <- add *cursor-column, 1
-  next:address:shared:duplex-list:character <- next *before-cursor
+  cursor-column <- add cursor-column, 1
+  *editor <- put *editor, cursor-column:offset, cursor-column
+  next:address:shared:duplex-list:character <- next before-cursor
   {
     # at end of all text? no need to scroll? just print the character and leave
     at-end?:boolean <- equal next, 0/null
@@ -231,9 +239,9 @@ def insert-at-cursor editor:address:shared:editor-data, c:character, screen:addr
   {
     # not at right margin? print the character and rest of line
     break-unless next
-    at-right?:boolean <- greater-or-equal *cursor-column, screen-width
+    at-right?:boolean <- greater-or-equal cursor-column, screen-width
     break-if at-right?
-    curr:address:shared:duplex-list:character <- copy *before-cursor
+    curr:address:shared:duplex-list:character <- copy before-cursor
     move-cursor screen, save-row, save-column
     curr-column:number <- copy save-column
     {
@@ -685,14 +693,16 @@ after <insert-character-special-case> [
   {
     # if we're at the column just before the wrap indicator
     wrap-column:number <- subtract right, 1
-    at-wrap?:boolean <- greater-or-equal *cursor-column, wrap-column
+    at-wrap?:boolean <- greater-or-equal cursor-column, wrap-column
     break-unless at-wrap?
-    *cursor-column <- subtract *cursor-column, wrap-column
-    *cursor-column <- add *cursor-column, left
-    *cursor-row <- add *cursor-row, 1
+    cursor-column <- subtract cursor-column, wrap-column
+    cursor-column <- add cursor-column, left
+    *editor <- put *editor, cursor-column:offset, cursor-column
+    cursor-row <- add cursor-row, 1
+    *editor <- put *editor, cursor-row:offset, cursor-row
     # if we're out of the screen, scroll down
     {
-      below-screen?:boolean <- greater-or-equal *cursor-row, screen-height
+      below-screen?:boolean <- greater-or-equal cursor-row, screen-height
       break-unless below-screen?
       <scroll-down>
     }
@@ -786,8 +796,7 @@ container editor-data [
 ]
 
 after <editor-initialization> [
-  indent?:address:boolean <- get-address *result, indent?:offset
-  *indent? <- copy 1/true
+  *result <- put *result, indent?:offset, 1/true
 ]
 
 scenario editor-moves-cursor-down-after-inserting-newline [
@@ -825,30 +834,34 @@ after <handle-special-character> [
 def insert-new-line-and-indent editor:address:shared:editor-data, screen:address:shared:screen -> editor:address:shared:editor-data, screen:address:shared:screen, go-render?:boolean [
   local-scope
   load-ingredients
-  cursor-row:address:number <- get-address *editor, cursor-row:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
-  before-cursor:address:address:shared:duplex-list:character <- get-address *editor, before-cursor:offset
+  cursor-row:number <- get *editor, cursor-row:offset
+  cursor-column:number <- get *editor, cursor-column:offset
+  before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   screen-height:number <- screen-height screen
   # insert newline
-  insert 10/newline, *before-cursor
-  *before-cursor <- next *before-cursor
-  *cursor-row <- add *cursor-row, 1
-  *cursor-column <- copy left
+  insert 10/newline, before-cursor
+  before-cursor <- next before-cursor
+  *editor <- put *editor, before-cursor:offset, before-cursor
+  cursor-row <- add cursor-row, 1
+  *editor <- put *editor, cursor-row:offset, cursor-row
+  cursor-column <- copy left
+  *editor <- put *editor, cursor-column:offset, cursor-column
   # maybe scroll
   {
-    below-screen?:boolean <- greater-or-equal *cursor-row, screen-height  # must be equal, never greater
+    below-screen?:boolean <- greater-or-equal cursor-row, screen-height  # must be equal, never greater
     break-unless below-screen?
     <scroll-down>
     go-render? <- copy 1/true
-    *cursor-row <- subtract *cursor-row, 1  # bring back into screen range
+    cursor-row <- subtract cursor-row, 1  # bring back into screen range
+    *editor <- put *editor, cursor-row:offset, cursor-row
   }
   # indent if necessary
   indent?:boolean <- get *editor, indent?:offset
   return-unless indent?
   d:address:shared:duplex-list:character <- get *editor, data:offset
-  end-of-previous-line:address:shared:duplex-list:character <- prev *before-cursor
+  end-of-previous-line:address:shared:duplex-list:character <- prev before-cursor
   indent:number <- line-indent end-of-previous-line, d
   i:number <- copy 0
   {
@@ -992,8 +1005,7 @@ after <handle-special-key> [
   {
     paste-start?:boolean <- equal *k, 65507/paste-start
     break-unless paste-start?
-    indent?:address:boolean <- get-address *editor, indent?:offset
-    *indent? <- copy 0/false
+    *editor <- put *editor, indent?:offset, 0/false
     go-render? <- copy 1/true
     return
   }
@@ -1003,8 +1015,7 @@ after <handle-special-key> [
   {
     paste-end?:boolean <- equal *k, 65506/paste-end
     break-unless paste-end?
-    indent?:address:boolean <- get-address *editor, indent?:offset
-    *indent? <- copy 1/true
+    *editor <- put *editor, indent?:offset, 1/true
     go-render? <- copy 1/true
     return
   }

@@ -83,8 +83,7 @@ after <global-touch> [
     break-unless sandbox
     text:address:shared:array:character <- get *sandbox, data:offset
     current-sandbox <- insert-text current-sandbox, text
-    render-from:address:number <- get-address *env, render-from:offset
-    *render-from <- copy -1
+    *env <- put *env, render-from:offset, -1
     hide-screen screen
     screen <- render-sandbox-side screen, env
     screen <- update-cursor screen, current-sandbox, env
@@ -104,26 +103,41 @@ def empty-editor? editor:address:shared:editor-data -> result:boolean [
 def extract-sandbox env:address:shared:programming-environment-data, click-row:number -> result:address:shared:sandbox-data, env:address:shared:programming-environment-data [
   local-scope
   load-ingredients
-  sandbox:address:address:shared:sandbox-data <- get-address *env, sandbox:offset
-  start:number <- get **sandbox, starting-row-on-screen:offset
+  curr-sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
+  start:number <- get *curr-sandbox, starting-row-on-screen:offset
   in-editor?:boolean <- lesser-than click-row, start
   return-if in-editor?, 0
+  first-sandbox?:boolean <- equal click-row, start
   {
-    next-sandbox:address:shared:sandbox-data <- get **sandbox, next-sandbox:offset
-    break-unless next-sandbox
-    # if click-row < sandbox.next-sandbox.starting-row-on-screen, break
-    next-start:number <- get *next-sandbox, starting-row-on-screen:offset
-    found?:boolean <- lesser-than click-row, next-start
-    break-if found?
-    sandbox <- get-address **sandbox, next-sandbox:offset
-    loop
+    # first sandbox? pop
+    break-unless first-sandbox?
+    next-sandbox:address:shared:sandbox-data <- get *curr-sandbox, next-sandbox:offset
+    *env <- put *env, sandbox:offset, next-sandbox
   }
-  # snip sandbox out of its list
-  result <- copy *sandbox
-  *sandbox <- copy next-sandbox
+  {
+    # not first sandbox?
+    break-if first-sandbox?
+    prev-sandbox:address:shared:sandbox-data <- copy curr-sandbox
+    curr-sandbox <- get *curr-sandbox, next-sandbox:offset
+    {
+      next-sandbox:address:shared:sandbox-data <- get *curr-sandbox, next-sandbox:offset
+      break-unless next-sandbox
+      # if click-row < sandbox.next-sandbox.starting-row-on-screen, break
+      next-start:number <- get *next-sandbox, starting-row-on-screen:offset
+      found?:boolean <- lesser-than click-row, next-start
+      break-if found?
+      prev-sandbox <- copy curr-sandbox
+      curr-sandbox <- copy next-sandbox
+      loop
+    }
+    # snip sandbox out of its list
+    *prev-sandbox <- put *prev-sandbox, next-sandbox:offset, next-sandbox
+  }
+  result <- copy curr-sandbox
   # update sandbox count
-  sandbox-count:address:number <- get-address *env, number-of-sandboxes:offset
-  *sandbox-count <- subtract *sandbox-count, 1
+  sandbox-count:number <- get *env, number-of-sandboxes:offset
+  sandbox-count <- subtract sandbox-count, 1
+  *env <- put *env, number-of-sandboxes:offset, sandbox-count
 ]
 
 scenario sandbox-with-print-can-be-edited [

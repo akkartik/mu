@@ -123,10 +123,10 @@ def! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:prog
   local-scope
   load-ingredients
   data:address:shared:array:character <- get *sandbox, data:offset
-  response:address:address:shared:array:character <- get-address *sandbox, response:offset
-  trace:address:address:shared:array:character <- get-address *sandbox, trace:offset
-  fake-screen:address:address:shared:screen <- get-address *sandbox, screen:offset
-  *response, _, *fake-screen, *trace <- run-interactive data
+  response:address:shared:array:character, _, fake-screen:address:shared:screen, trace:address:shared:array:character <- run-interactive data
+  *sandbox <- put *sandbox, response:offset, response
+  *sandbox <- put *sandbox, screen:offset, fake-screen
+  *sandbox <- put *sandbox, trace:offset, trace
 ]
 
 # clicks on sandbox code toggle its display-trace? flag
@@ -147,8 +147,9 @@ after <global-touch> [
     sandbox:address:shared:sandbox-data <- find-click-in-sandbox-code env, click-row
     break-unless sandbox
     # toggle its display-trace? property
-    x:address:boolean <- get-address *sandbox, display-trace?:offset
-    *x <- not *x
+    x:boolean <- get *sandbox, display-trace?:offset
+    x <- not x
+    *sandbox <- put *sandbox, display-trace?:offset, x
     hide-screen screen
     screen <- render-sandbox-side screen, env, 1/clear
     screen <- update-cursor screen, current-sandbox, env

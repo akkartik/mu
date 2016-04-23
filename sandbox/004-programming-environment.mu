@@ -33,8 +33,8 @@ def new-programming-environment screen:address:shared:screen, initial-sandbox-co
   screen <- move-cursor screen, 0/row, button-start
   print screen, [ run (F4) ], 255/white, 161/reddish
   # sandbox editor
-  current-sandbox:address:address:shared:editor-data <- get-address *result, current-sandbox:offset
-  *current-sandbox <- new-editor initial-sandbox-contents, screen, 0, width/right
+  current-sandbox:address:shared:editor-data <- new-editor initial-sandbox-contents, screen, 0, width/right
+  *result <- put *result, current-sandbox:offset, current-sandbox
   <programming-environment-initialization>
 ]
 
@@ -142,13 +142,11 @@ def resize screen:address:shared:screen, env:address:shared:programming-environm
   width:number <- screen-width screen
   # update sandbox editor
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
-  right:address:number <- get-address *current-sandbox, right:offset
-  *right <- subtract width, 1
+  right:number <- subtract width, 1
+  *current-sandbox <- put *current-sandbox right:offset, right
   # reset cursor
-  cursor-row:address:number <- get-address *current-sandbox, cursor-row:offset
-  *cursor-row <- copy 1
-  cursor-column:address:number <- get-address *current-sandbox, cursor-column:offset
-  *cursor-column <- copy 0
+  *current-sandbox <- put *current-sandbox, cursor-row:offset, 1
+  *current-sandbox <- put *current-sandbox, cursor-column:offset, 0
 ]
 
 def render-all screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
