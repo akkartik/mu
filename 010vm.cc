@@ -124,8 +124,8 @@ void setup_types() {
   Next_type_ordinal = 1;
   // Mu Types Initialization
   type_ordinal number = put(Type_ordinal, "number", Next_type_ordinal++);
-  put(Type_ordinal, "location", get(Type_ordinal, "number"));  // wildcard type: either a pointer or a scalar
   get_or_insert(Type, number).name = "number";
+  put(Type_ordinal, "location", number);  // synonym of number to indicate we only care about its size
   type_ordinal address = put(Type_ordinal, "address", Next_type_ordinal++);
   get_or_insert(Type, address).name = "address";
   type_ordinal boolean = put(Type_ordinal, "boolean", Next_type_ordinal++);
