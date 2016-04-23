@@ -679,8 +679,7 @@ void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
 :(scenario shape_shifting_recipe_supports_compound_types)
 def main [
   1:address:shared:point <- new point:type
-  2:address:number <- get-address *1:address:shared:point, y:offset
-  *2:address:number <- copy 34
+  *1:address:shared:point <- put *1:address:shared:point, y:offset, 34
   3:address:shared:point <- bar 1:address:shared:point  # specialize _t to address:shared:point
   4:point <- copy *3:address:shared:point
 ]
