@@ -38,12 +38,13 @@ def new-programming-environment screen:address:shared:screen, initial-recipe-con
   divider:number, _ <- divide-with-remainder width, 2
   draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
   # recipe editor on the left
-  recipes:address:address:shared:editor-data <- get-address *result, recipes:offset
-  *recipes <- new-editor initial-recipe-contents, screen, 0/left, divider/right
+  recipes:address:shared:editor-data <- new-editor initial-recipe-contents, screen, 0/left, divider/right
   # sandbox editor on the right
-  new-left:number <- add divider, 1
-  current-sandbox:address:address:shared:editor-data <- get-address *result, current-sandbox:offset
-  *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
+  sandbox-left:number <- add divider, 1
+  current-sandbox:address:shared:editor-data <- new-editor initial-sandbox-contents, screen, sandbox-left, width/right
+  *result <- put *result, recipes:offset, recipes
+  *result <- put *result, current-sandbox:offset, current-sandbox
+  *result <- put *result, sandbox-in-focus?:offset, 0/false
   <programming-environment-initialization>
 ]
 
@@ -52,7 +53,7 @@ def event-loop screen:address:shared:screen, console:address:shared:console, env
   load-ingredients
   recipes:address:shared:editor-data <- get *env, recipes:offset
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
-  sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
+  sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
   # if we fall behind we'll stop updating the screen, but then we have to
   # render the entire screen when we catch up.
   # todo: test this
@@ -89,8 +90,9 @@ def event-loop screen:address:shared:screen, console:address:shared:console, env
       <global-touch>
       # send to both editors
       _ <- move-cursor-in-editor screen, recipes, *t
-      *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
-      screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
+      sandbox-in-focus?:boolean <- move-cursor-in-editor screen, current-sandbox, *t
+      *env <- put *env, sandbox-in-focus?:offset, sandbox-in-focus?
+      screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
       loop +next-event:label
     }
     # 'resize' event - redraw editor
@@ -115,8 +117,9 @@ def event-loop screen:address:shared:screen, console:address:shared:console, env
     # if it's not global and not a touch event, send to appropriate editor
     {
       hide-screen screen
+      sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
       {
-        break-if *sandbox-in-focus?
+        break-if sandbox-in-focus?
         screen, recipes, render?:boolean <- handle-keyboard-event screen, recipes, e:event
         # refresh screen only if no more events
         # if there are more events to process, wait for them to clear up, then make sure you render-all afterward.
@@ -144,7 +147,7 @@ def event-loop screen:address:shared:screen, console:address:shared:console, env
         }
       }
       {
-        break-unless *sandbox-in-focus?
+        break-unless sandbox-in-focus?
         screen, current-sandbox, render?:boolean <- handle-keyboard-event screen, current-sandbox, e:event
         # refresh screen only if no more events
         # if there are more events to process, wait for them to clear up, then make sure you render-all afterward.
@@ -172,7 +175,7 @@ def event-loop screen:address:shared:screen, console:address:shared:console, env
         }
       }
       +finish-event
-      screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
+      screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
       show-screen screen
     }
     loop
@@ -187,24 +190,20 @@ def resize screen:address:shared:screen, env:address:shared:programming-environm
   divider:number, _ <- divide-with-remainder width, 2
   # update recipe editor
   recipes:address:shared:editor-data <- get *env, recipes:offset
-  right:address:number <- get-address *recipes, right:offset
-  *right <- subtract divider, 1
+  right:number <- subtract divider, 1
+  *recipes <- put *recipes, right:offset, right
   # reset cursor (later we'll try to preserve its position)
-  cursor-row:address:number <- get-address *recipes, cursor-row:offset
-  *cursor-row <- copy 1
-  cursor-column:address:number <- get-address *recipes, cursor-column:offset
-  *cursor-column <- copy 0
+  *recipes <- put *recipes, cursor-row:offset, 1
+  *recipes <- put *recipes, cursor-column:offset, 0
   # update sandbox editor
   current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
-  left:address:number <- get-address *current-sandbox, left:offset
-  right:address:number <- get-address *current-sandbox, right:offset
-  *left <- add divider, 1
-  *right <- subtract width, 1
+  left:number <- add divider, 1
+  *current-sandbox <- put *current-sandbox, left:offset, left
+  right:number <- subtract width, 1
+  *current-sandbox <- put *current-sandbox, right:offset, right
   # reset cursor (later we'll try to preserve its position)
-  cursor-row:address:number <- get-address *current-sandbox, cursor-row:offset
-  *cursor-row <- copy 1
-  cursor-column:address:number <- get-address *current-sandbox, cursor-column:offset
-  *cursor-column <- copy *left
+  *current-sandbox <- put *current-sandbox, cursor-row:offset, 1
+  *current-sandbox <- put *current-sandbox, cursor-column:offset, left
 ]
 
 scenario point-at-multiple-editors [
@@ -598,8 +597,10 @@ after <global-type> [
   {
     switch-side?:boolean <- equal *c, 14/ctrl-n
     break-unless switch-side?
-    *sandbox-in-focus? <- not *sandbox-in-focus?
-    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
+    sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
+    sandbox-in-focus? <- not sandbox-in-focus?
+    *env <- put *env, sandbox-in-focus?:offset, sandbox-in-focus?
+    screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     loop +next-event:label
   }
 ]

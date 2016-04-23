@@ -11,11 +11,11 @@ def! update-recipes env:address:shared:programming-environment-data, screen:addr
   recipes:address:shared:editor-data <- get *env, recipes:offset
   in:address:shared:array:character <- editor-contents recipes
   save [recipes.mu], in
-  recipe-errors:address:address:shared:array:character <- get-address *env, recipe-errors:offset
-  *recipe-errors <- reload in
+  recipe-errors:address:shared:array:character <- reload in
+  *env <- put *env, recipe-errors:offset, recipe-errors
   # if recipe editor has errors, stop
   {
-    break-unless *recipe-errors
+    break-unless recipe-errors
     update-status screen, [errors found     ], 1/red
     errors-found? <- copy 1/true
     return
@@ -45,18 +45,17 @@ container programming-environment-data [
 ]
 
 after <programming-environment-initialization> [
-  error-index:address:number <- get-address *result, error-index:offset
-  *error-index <- copy -1
+  *result <- put *result, error-index:offset, -1
 ]
 
 after <run-sandboxes-begin> [
-  error-index:address:number <- get-address *env, error-index:offset
-  *error-index <- copy -1
+  *env <- put *env, error-index:offset, -1
 ]
 
 before <run-sandboxes-end> [
   {
-    sandboxes-completed-successfully?:boolean <- equal *error-index, -1
+    error-index:number <- get *env, error-index:offset
+    sandboxes-completed-successfully?:boolean <- equal error-index, -1
     break-if sandboxes-completed-successfully?
     errors-found? <- copy 1/true
   }
@@ -82,23 +81,24 @@ def! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:prog
   local-scope
   load-ingredients
   data:address:shared:array:character <- get *sandbox, data:offset
-  response:address:address:shared:array:character <- get-address *sandbox, response:offset
-  errors:address:address:shared:array:character <- get-address *sandbox, errors:offset
-  trace:address:address:shared:array:character <- get-address *sandbox, trace:offset
-  fake-screen:address:address:shared:screen <- get-address *sandbox, screen:offset
-  *response, *errors, *fake-screen, *trace, completed?:boolean <- run-interactive data
+  response:address:shared:array:character, errors:address:shared:array:character, fake-screen:address:shared:screen, trace:address:shared:array:character, completed?:boolean <- run-interactive data
+  *sandbox <- put *sandbox, response:offset, response
+  *sandbox <- put *sandbox, errors:offset, errors
+  *sandbox <- put *sandbox, screen:offset, fake-screen
+  *sandbox <- put *sandbox, trace:offset, trace
   {
-    break-if *errors
+    break-if errors
     break-if completed?:boolean
-    *errors <- new [took too long!
+    errors <- new [took too long!
 ]
+    *sandbox <- put *sandbox, errors:offset, errors
   }
   {
-    break-unless *errors
-    error-index:address:number <- get-address *env, error-index:offset
-    error-not-set?:boolean <- equal *error-index, -1
+    break-unless errors
+    error-index:number <- get *env, error-index:offset
+    error-not-set?:boolean <- equal error-index, -1
     break-unless error-not-set?
-    *error-index <- copy idx
+    *env <- put *env, error-index:offset, idx
   }
 ]
 
@@ -107,8 +107,7 @@ after <render-sandbox-trace-done> [
   {
     sandbox-errors:address:shared:array:character <- get *sandbox, errors:offset
     break-unless sandbox-errors
-    response-starting-row:address:number <- get-address *sandbox, response-starting-row-on-screen:offset
-    *response-starting-row <- copy 0  # no response
+    *sandbox <- put *sandbox, response-starting-row-on-screen:offset, 0  # no response
     row, screen <- render screen, sandbox-errors, left, right, 1/red, row
     # don't try to print anything more for this sandbox
     jump +render-sandbox-end:label

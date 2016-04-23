@@ -71,7 +71,7 @@ after <global-touch> [
     break-unless was-delete?
     hide-screen screen
     screen <- render-sandbox-side screen, env
-    screen <- update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
+    screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     show-screen screen
     loop +next-event:label
   }
@@ -86,8 +86,20 @@ def delete-sandbox t:touch-event, env:address:shared:programming-environment-dat
   at-right?:boolean <- equal click-column, right
   return-unless at-right?, 0/false
   click-row:number <- get t, row:offset
-  prev:address:address:shared:sandbox-data <- get-address *env, sandbox:offset
-  curr:address:shared:sandbox-data <- get *env, sandbox:offset
+  {
+    first:address:shared:sandbox-data <- get *env, sandbox:offset
+    reply-unless first, 0/false
+    target-row:number <- get *first, starting-row-on-screen:offset
+    delete-first?:boolean <- equal target-row, click-row
+    break-unless delete-first?
+    new-first:address:shared:sandbox-data <- get *first, next-sandbox:offset
+    *env <- put *env, sandbox:offset, new-first
+    env <- fixup-delete env, new-first
+    return 1/true  # force rerender
+  }
+  prev:address:shared:sandbox-data <- get *env, sandbox:offset
+  assert prev, [failed to find any sandboxes!]
+  curr:address:shared:sandbox-data <- get *prev, next-sandbox:offset
   {
     break-unless curr
     # more sandboxes to check
@@ -96,25 +108,34 @@ def delete-sandbox t:touch-event, env:address:shared:programming-environment-dat
       delete-curr?:boolean <- equal target-row, click-row
       break-unless delete-curr?
       # delete this sandbox
-      *prev <- get *curr, next-sandbox:offset
-      # update sandbox count
-      sandbox-count:address:number <- get-address *env, number-of-sandboxes:offset
-      *sandbox-count <- subtract *sandbox-count, 1
-      # if it's the last sandbox and if it was the only sandbox rendered, reset scroll
-      {
-        break-if *prev
-        render-from:address:number <- get-address *env, render-from:offset
-        reset-scroll?:boolean <- equal *render-from, *sandbox-count
-        break-unless reset-scroll?
-        *render-from <- copy -1
-      }
+      next:address:shared:sandbox-data <- get *curr, next-sandbox:offset
+      *prev <- put *prev, next-sandbox:offset, next
+      env <- fixup-delete env, next
       return 1/true  # force rerender
     }
-    prev <- get-address *curr, next-sandbox:offset
+    prev <- copy curr
     curr <- get *curr, next-sandbox:offset
     loop
   }
   return 0/false
+]
+
+def fixup-delete env:address:shared:programming-environment-data, next:address:shared:sandbox-data -> env:address:shared:programming-environment-data [
+  local-scope
+  load-ingredients
+  # update sandbox count
+  sandbox-count:number <- get *env, number-of-sandboxes:offset
+  sandbox-count <- subtract sandbox-count, 1
+  *env <- put *env, number-of-sandboxes:offset, sandbox-count
+  {
+    break-if next
+    # deleted sandbox was last
+    render-from:number <- get *env, render-from:offset
+    reset-scroll?:boolean <- equal render-from, sandbox-count
+    break-unless reset-scroll?
+    # deleted sandbox was only sandbox rendered, so reset scroll
+    *env <- put *env, render-from:offset, -1
+  }
 ]
 
 scenario deleting-sandbox-after-scroll [

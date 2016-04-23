@@ -55,25 +55,17 @@ def new-editor s:address:shared:array:character, screen:address:shared:screen, l
   right <- subtract right, 1
   result <- new editor-data:type
   # initialize screen-related fields
-  x:address:number <- get-address *result, left:offset
-  *x <- copy left
-  x <- get-address *result, right:offset
-  *x <- copy right
-  # initialize cursor
-  x <- get-address *result, cursor-row:offset
-  *x <- copy 1/top
-  x <- get-address *result, cursor-column:offset
-  *x <- copy left
-  init:address:address:shared:duplex-list:character <- get-address *result, data:offset
-  *init <- push 167/§, 0/tail
-  top-of-screen:address:address:shared:duplex-list:character <- get-address *result, top-of-screen:offset
-  *top-of-screen <- copy *init
-  y:address:address:shared:duplex-list:character <- get-address *result, before-cursor:offset
-  *y <- copy *init
+  *result <- put *result, left:offset, left
+  *result <- put *result, right:offset, right
+  # initialize cursor coordinates
+  *result <- put *result, cursor-row:offset, 1/top
+  *result <- put *result, cursor-column:offset, left
+  # initialize empty contents
+  init:address:shared:duplex-list:character <- push 167/§, 0/tail
+  *result <- put *result, data:offset, init
+  *result <- put *result, top-of-screen:offset, init
+  *result <- put *result, before-cursor:offset, init
   result <- insert-text result, s
-  # initialize cursor to top of screen
-  y <- get-address *result, before-cursor:offset
-  *y <- copy *init
   # initial render to screen, just for some old tests
   _, _, screen, result <- render screen, result
   <editor-initialization>
@@ -145,9 +137,9 @@ def render screen:address:shared:screen, editor:address:shared:editor-data -> la
   color:number <- copy 7/white
   row:number <- copy 1/top
   column:number <- copy left
-  cursor-row:address:number <- get-address *editor, cursor-row:offset
-  cursor-column:address:number <- get-address *editor, cursor-column:offset
-  before-cursor:address:address:shared:duplex-list:character <- get-address *editor, before-cursor:offset
+  cursor-row:number <- get *editor, cursor-row:offset
+  cursor-column:number <- get *editor, cursor-column:offset
+  before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
   screen <- move-cursor screen, row, column
   {
     +next-character
@@ -158,11 +150,11 @@ def render screen:address:shared:screen, editor:address:shared:editor-data -> la
     # Doing so at the start of each iteration ensures it stays one step behind
     # the current character.
     {
-      at-cursor-row?:boolean <- equal row, *cursor-row
+      at-cursor-row?:boolean <- equal row, cursor-row
       break-unless at-cursor-row?
-      at-cursor?:boolean <- equal column, *cursor-column
+      at-cursor?:boolean <- equal column, cursor-column
       break-unless at-cursor?
-      *before-cursor <- copy prev
+      before-cursor <- copy prev
     }
     c:character <- get *curr, value:offset
     <character-c-received>
@@ -172,12 +164,12 @@ def render screen:address:shared:screen, editor:address:shared:editor-data -> la
       break-unless newline?
       # adjust cursor if necessary
       {
-        at-cursor-row?:boolean <- equal row, *cursor-row
+        at-cursor-row?:boolean <- equal row, cursor-row
         break-unless at-cursor-row?
-        left-of-cursor?:boolean <- lesser-than column, *cursor-column
+        left-of-cursor?:boolean <- lesser-than column, cursor-column
         break-unless left-of-cursor?
-        *cursor-column <- copy column
-        *before-cursor <- prev curr
+        cursor-column <- copy column
+        before-cursor <- prev curr
       }
       # clear rest of line in this window
       clear-line-delimited screen, column, right
@@ -210,22 +202,23 @@ def render screen:address:shared:screen, editor:address:shared:editor-data -> la
     loop
   }
   # save first character off-screen
-  bottom-of-screen:address:address:shared:duplex-list:character <- get-address *editor, bottom-of-screen:offset
-  *bottom-of-screen <- copy curr
+  *editor <- put *editor, bottom-of-screen:offset, curr
   # is cursor to the right of the last line? move to end
   {
-    at-cursor-row?:boolean <- equal row, *cursor-row
-    cursor-outside-line?:boolean <- lesser-or-equal column, *cursor-column
+    at-cursor-row?:boolean <- equal row, cursor-row
+    cursor-outside-line?:boolean <- lesser-or-equal column, cursor-column
     before-cursor-on-same-line?:boolean <- and at-cursor-row?, cursor-outside-line?
-    above-cursor-row?:boolean <- lesser-than row, *cursor-row
+    above-cursor-row?:boolean <- lesser-than row, cursor-row
     before-cursor?:boolean <- or before-cursor-on-same-line?, above-cursor-row?
     break-unless before-cursor?
-    *cursor-row <- copy row
-    *cursor-column <- copy column
-    *before-cursor <- copy prev
+    cursor-row <- copy row
+    cursor-column <- copy column
+    before-cursor <- copy prev
   }
-  bottom:address:number <- get-address *editor, bottom:offset
-  *bottom <- copy row
+  *editor <- put *editor, bottom:offset, row
+  *editor <- put *editor, cursor-row:offset, cursor-row
+  *editor <- put *editor, cursor-column:offset, cursor-column
+  *editor <- put *editor, before-cursor:offset, before-cursor
   return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
