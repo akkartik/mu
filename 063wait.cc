@@ -29,6 +29,27 @@ int old_value_of_waiting_location;
 :(before "End routine Constructor")
 waiting_on_location = old_value_of_waiting_location = 0;
 
+:(before "End Mu Test Teardown")
+if (Passed && any_routines_waiting()) {
+  Passed = false;
+  raise << Current_scenario->name << ": deadlock!\n" << end();
+  ++Num_failures;
+}
+:(before "End Test Teardown")
+if (Passed && any_routines_with_error()) {
+  Passed = false;
+  raise << "some routines died with errors\n" << end();
+  ++Num_failures;
+}
+:(code)
+bool any_routines_waiting() {
+  for (int i = 0; i < SIZE(Routines); ++i) {
+    if (Routines.at(i)->state == WAITING)
+      return true;
+  }
+  return false;
+}
+
 //: primitive recipe to put routines in that state
 
 :(before "End Primitive Recipe Declarations")

@@ -479,20 +479,10 @@ if (Passed && any_routines_with_error()) {
   raise << "some routines died with errors\n" << end();
   ++Num_failures;
 }
-if (Passed && any_routines_waiting()) {
-  Passed = false;
-  raise << "deadlock!\n" << end();
-  ++Num_failures;
-}
 :(before "End Mu Test Teardown")
 if (Passed && any_routines_with_error()) {
   Passed = false;
   raise << Current_scenario->name << ": some routines died with errors\n" << end();
-  ++Num_failures;
-}
-if (Passed && any_routines_waiting()) {
-  Passed = false;
-  raise << Current_scenario->name << ": deadlock!\n" << end();
   ++Num_failures;
 }
 
@@ -500,14 +490,6 @@ if (Passed && any_routines_waiting()) {
 bool any_routines_with_error() {
   for (int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->state == DISCONTINUED)
-      return true;
-  }
-  return false;
-}
-
-bool any_routines_waiting() {
-  for (int i = 0; i < SIZE(Routines); ++i) {
-    if (Routines.at(i)->state == WAITING)
       return true;
   }
   return false;
