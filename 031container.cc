@@ -51,6 +51,20 @@ def main [
 ]
 +mem: storing 36 in location 17
 
+//: Products of recipes can include containers and exclusive containers, addresses and arrays.
+:(scenario reply_container)
+def main [
+  3:point <- f 2
+]
+def f [
+  12:number <- next-ingredient
+  13:number <- copy 35
+  return 12:point/raw
+]
++run: result 0 is [2, 35]
++mem: storing 2 in location 3
++mem: storing 35 in location 4
+
 //: Containers can be checked for equality with a single instruction just like
 //: numbers, no matter how large they are.
 

@@ -79,6 +79,14 @@ void lookup_memory(reagent& x) {
 :(after "bool is_mu_boolean(reagent r)")
   if (!canonize_type(r)) return false;
 
+:(before "End Compute Call Ingredient")
+canonize_type(ingredient);
+:(before "End Preprocess NEXT_INGREDIENT product")
+canonize_type(product);
+:(before "End Check REPLY Copy(lhs, rhs)
+canonize_type(lhs);
+canonize_type(rhs);
+
 :(code)
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {

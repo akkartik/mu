@@ -31,7 +31,7 @@ next_ingredient_to_process = 0;
 for (int i = 0; i < SIZE(ingredients); ++i) {
   current_call().ingredient_atoms.push_back(ingredients.at(i));
   reagent ingredient = call_instruction.ingredients.at(i);
-  canonize_type(ingredient);
+  // End Compute Call Ingredient
   current_call().ingredients.push_back(ingredient);
 }
 
@@ -52,7 +52,7 @@ case NEXT_INGREDIENT: {
   assert(!Current_routine->calls.empty());
   if (current_call().next_ingredient_to_process < SIZE(current_call().ingredient_atoms)) {
     reagent product = current_instruction().products.at(0);
-    canonize_type(product);
+    // End Preprocess NEXT_INGREDIENT product
     if (current_recipe_name() == "main") {
       // no ingredient types since the call might be implicit; assume ingredients are always strings
       // todo: how to test this?
@@ -168,4 +168,18 @@ case INGREDIENT: {
     }
   }
   break;
+}
+
+//: a particularly common array type is the string, or address:array:character
+:(code)
+bool is_mu_string(const reagent& x) {
+  return x.type
+    && x.type->value == get(Type_ordinal, "address")
+    && x.type->right
+    && x.type->right->value == get(Type_ordinal, "shared")
+    && x.type->right->right
+    && x.type->right->right->value == get(Type_ordinal, "array")
+    && x.type->right->right->right
+    && x.type->right->right->right->value == get(Type_ordinal, "character")
+    && x.type->right->right->right->right == NULL;
 }

@@ -45,20 +45,6 @@ case REPLY: {
   break;  // continue to process rest of *caller* instruction
 }
 
-//: Products can include containers and exclusive containers, addresses and arrays.
-:(scenario reply_container)
-def main [
-  3:point <- f 2
-]
-def f [
-  12:number <- next-ingredient
-  13:number <- copy 35
-  return 12:point/raw
-]
-+run: result 0 is [2, 35]
-+mem: storing 2 in location 3
-+mem: storing 35 in location 4
-
 //: Types in reply instructions are checked ahead of time.
 
 :(before "End Checks")
@@ -83,9 +69,8 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
       }
       for (int i = 0; i < SIZE(caller_instruction.products); ++i) {
         reagent lhs = reply_inst.ingredients.at(i);
-        canonize_type(lhs);
         reagent rhs = caller_instruction.products.at(i);
-        canonize_type(rhs);
+        // End Check REPLY Copy(lhs, rhs)
         if (!types_coercible(rhs, lhs)) {
           raise << maybe(callee.name) << reply_inst.name << " ingredient " << lhs.original_string << " can't be saved in " << rhs.original_string << '\n' << end();
           raise << to_string(lhs.type) << " vs " << to_string(rhs.type) << '\n' << end();
