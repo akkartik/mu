@@ -56,35 +56,35 @@ def event-loop screen:address:shared:screen, console:address:shared:console, env
     <handle-event>
     # check for global events that will trigger regardless of which editor has focus
     {
-      k:address:number <- maybe-convert e:event, keycode:variant
-      break-unless k
+      k:number, is-keycode?:boolean <- maybe-convert e:event, keycode:variant
+      break-unless is-keycode?
       <global-keypress>
     }
     {
-      c:address:character <- maybe-convert e:event, text:variant
-      break-unless c
+      c:character, is-unicode?:boolean <- maybe-convert e:event, text:variant
+      break-unless is-unicode?
       <global-type>
     }
     # 'touch' event
     {
-      t:address:touch-event <- maybe-convert e:event, touch:variant
-      break-unless t
+      t:touch-event, is-touch?:boolean <- maybe-convert e:event, touch:variant
+      break-unless is-touch?
       # ignore all but 'left-click' events for now
       # todo: test this
-      touch-type:number <- get *t, type:offset
+      touch-type:number <- get t, type:offset
       is-left-click?:boolean <- equal touch-type, 65513/mouse-left
       loop-unless is-left-click?, +next-event:label
       # later exceptions for non-editor touches will go here
       <global-touch>
-      move-cursor-in-editor screen, current-sandbox, *t
+      move-cursor-in-editor screen, current-sandbox, t
       screen <- update-cursor screen, current-sandbox, env
       loop +next-event:label
     }
     # 'resize' event - redraw editor
     # todo: test this after supporting resize in assume-console
     {
-      r:address:resize-event <- maybe-convert e:event, resize:variant
-      break-unless r
+      r:resize-event, is-resize?:boolean <- maybe-convert e:event, resize:variant
+      break-unless is-resize?
       # if more events, we're still resizing; wait until we stop
       more-events?:boolean <- has-more-events? console
       {
@@ -327,7 +327,7 @@ def render-code screen:address:shared:screen, s:address:shared:array:character, 
 
 after <global-type> [
   {
-    redraw-screen?:boolean <- equal *c, 12/ctrl-l
+    redraw-screen?:boolean <- equal c, 12/ctrl-l
     break-unless redraw-screen?
     screen <- render-all screen, env:address:shared:programming-environment-data
     sync-screen screen

@@ -267,10 +267,12 @@ def main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
-  20:address:point <- maybe-convert 12:number-or-point/unsafe, p:variant
+  20:point, 22:boolean <- maybe-convert 12:number-or-point/unsafe, p:variant
 ]
 +name: variant p of type number-or-point has tag 1
-+mem: storing 13 in location 20
++mem: storing 35 in location 20
++mem: storing 36 in location 21
++mem: storing 1 in location 22
 
 :(before "End transform_names(inst) Special-cases")
 // convert variant names of exclusive containers

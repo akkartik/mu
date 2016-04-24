@@ -124,7 +124,7 @@ scenario run-and-show-results [
 after <global-keypress> [
   # F4? load all code and run all sandboxes.
   {
-    do-run?:boolean <- equal *k, 65532/F4
+    do-run?:boolean <- equal k, 65532/F4
     break-unless do-run?
     screen <- update-status screen, [running...       ], 245/grey
     error?:boolean, env, screen <- run-sandboxes env, screen
@@ -614,7 +614,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
 after <global-keypress> [
   {
     break-unless sandbox-in-focus?
-    down?:boolean <- equal *k, 65516/down-arrow
+    down?:boolean <- equal k, 65516/down-arrow
     break-unless down?
     sandbox-bottom:number <- get *current-sandbox, bottom:offset
     sandbox-cursor:number <- get *current-sandbox, cursor-row:offset
@@ -656,7 +656,7 @@ after <update-cursor-special-cases> [
 after <global-keypress> [
   {
     break-unless sandbox-in-focus?
-    up?:boolean <- equal *k, 65517/up-arrow
+    up?:boolean <- equal k, 65517/up-arrow
     break-unless up?
     render-from:number <- get *env, render-from:offset
     at-beginning?:boolean <- equal render-from, -1

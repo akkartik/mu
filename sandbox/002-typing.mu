@@ -25,15 +25,15 @@ def editor-event-loop screen:address:shared:screen, console:address:shared:conso
     break-if quit?  # only in tests
     trace 10, [app], [next-event]
     # 'touch' event
-    t:address:touch-event <- maybe-convert e, touch:variant
+    t:touch-event, is-touch?:boolean <- maybe-convert e, touch:variant
     {
-      break-unless t
-      move-cursor-in-editor screen, editor, *t
+      break-unless is-touch?
+      move-cursor-in-editor screen, editor, t
       loop +next-event:label
     }
     # keyboard events
     {
-      break-if t
+      break-if is-touch?
       screen, editor, go-render?:boolean <- handle-keyboard-event screen, editor, e
       {
         break-unless go-render?
@@ -177,24 +177,24 @@ def handle-keyboard-event screen:address:shared:screen, editor:address:shared:ed
   save-column:number <- copy cursor-column
   # character
   {
-    c:address:character <- maybe-convert e, text:variant
-    break-unless c
+    c:character, is-unicode?:boolean <- maybe-convert e, text:variant
+    break-unless is-unicode?
     trace 10, [app], [handle-keyboard-event: special character]
     # exceptions for special characters go here
     <handle-special-character>
     # ignore any other special characters
-    regular-character?:boolean <- greater-or-equal *c, 32/space
+    regular-character?:boolean <- greater-or-equal c, 32/space
     go-render? <- copy 0/false
     return-unless regular-character?
     # otherwise type it in
     <insert-character-begin>
-    editor, screen, go-render?:boolean <- insert-at-cursor editor, *c, screen
+    editor, screen, go-render?:boolean <- insert-at-cursor editor, c, screen
     <insert-character-end>
     return
   }
   # special key to modify the text or move the cursor
-  k:address:number <- maybe-convert e:event, keycode:variant
-  assert k, [event was of unknown type; neither keyboard nor mouse]
+  k:number, is-keycode?:boolean <- maybe-convert e:event, keycode:variant
+  assert is-keycode?, [event was of unknown type; neither keyboard nor mouse]
   # handlers for each special key will go here
   <handle-special-key>
   go-render? <- copy 1/true
@@ -821,7 +821,7 @@ scenario editor-moves-cursor-down-after-inserting-newline [
 
 after <handle-special-character> [
   {
-    newline?:boolean <- equal *c, 10/newline
+    newline?:boolean <- equal c, 10/newline
     break-unless newline?
     <insert-enter-begin>
     editor <- insert-new-line-and-indent editor, screen
@@ -1003,7 +1003,7 @@ ef]
 
 after <handle-special-key> [
   {
-    paste-start?:boolean <- equal *k, 65507/paste-start
+    paste-start?:boolean <- equal k, 65507/paste-start
     break-unless paste-start?
     *editor <- put *editor, indent?:offset, 0/false
     go-render? <- copy 1/true
@@ -1013,7 +1013,7 @@ after <handle-special-key> [
 
 after <handle-special-key> [
   {
-    paste-end?:boolean <- equal *k, 65506/paste-end
+    paste-end?:boolean <- equal k, 65506/paste-end
     break-unless paste-end?
     *editor <- put *editor, indent?:offset, 1/true
     go-render? <- copy 1/true

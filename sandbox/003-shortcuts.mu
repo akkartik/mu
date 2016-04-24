@@ -25,7 +25,7 @@ cd]
 
 after <handle-special-character> [
   {
-    tab?:boolean <- equal *c, 9/tab
+    tab?:boolean <- equal c, 9/tab
     break-unless tab?
     <insert-character-begin>
     editor, screen, go-render?:boolean <- insert-at-cursor editor, 32/space, screen
@@ -68,7 +68,7 @@ scenario editor-handles-backspace-key [
 
 after <handle-special-character> [
   {
-    delete-previous-character?:boolean <- equal *c, 8/backspace
+    delete-previous-character?:boolean <- equal c, 8/backspace
     break-unless delete-previous-character?
     <backspace-character-begin>
     editor, screen, go-render?:boolean, backspaced-cell:address:shared:duplex-list:character <- delete-before-cursor editor, screen
@@ -339,7 +339,7 @@ scenario editor-handles-delete-key [
 
 after <handle-special-key> [
   {
-    delete-next-character?:boolean <- equal *k, 65522/delete
+    delete-next-character?:boolean <- equal k, 65522/delete
     break-unless delete-next-character?
     <delete-character-begin>
     editor, screen, go-render?:boolean, deleted-cell:address:shared:duplex-list:character <- delete-at-cursor editor, screen
@@ -415,7 +415,7 @@ scenario editor-moves-cursor-right-with-key [
 
 after <handle-special-key> [
   {
-    move-to-next-character?:boolean <- equal *k, 65514/right-arrow
+    move-to-next-character?:boolean <- equal k, 65514/right-arrow
     break-unless move-to-next-character?
     # if not at end of text
     next-cursor:address:shared:duplex-list:character <- next before-cursor
@@ -699,7 +699,7 @@ scenario editor-moves-cursor-left-with-key [
 
 after <handle-special-key> [
   {
-    move-to-previous-character?:boolean <- equal *k, 65515/left-arrow
+    move-to-previous-character?:boolean <- equal k, 65515/left-arrow
     break-unless move-to-previous-character?
     trace 10, [app], [left arrow]
     # if not at start of text (before-cursor at § sentinel)
@@ -963,7 +963,7 @@ def]
 
 after <handle-special-key> [
   {
-    move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
+    move-to-previous-line?:boolean <- equal k, 65517/up-arrow
     break-unless move-to-previous-line?
     <move-cursor-begin>
     editor, go-render? <- move-to-previous-line editor
@@ -1193,7 +1193,7 @@ def]
 
 after <handle-special-key> [
   {
-    move-to-next-line?:boolean <- equal *k, 65516/down-arrow
+    move-to-next-line?:boolean <- equal k, 65516/down-arrow
     break-unless move-to-next-line?
     <move-cursor-begin>
     editor, go-render? <- move-to-next-line editor, screen-height
@@ -1324,7 +1324,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
 
 after <handle-special-character> [
   {
-    move-to-start-of-line?:boolean <- equal *c, 1/ctrl-a
+    move-to-start-of-line?:boolean <- equal c, 1/ctrl-a
     break-unless move-to-start-of-line?
     <move-cursor-begin>
     move-to-start-of-line editor
@@ -1337,7 +1337,7 @@ after <handle-special-character> [
 
 after <handle-special-key> [
   {
-    move-to-start-of-line?:boolean <- equal *k, 65521/home
+    move-to-start-of-line?:boolean <- equal k, 65521/home
     break-unless move-to-start-of-line?
     <move-cursor-begin>
     move-to-start-of-line editor
@@ -1496,7 +1496,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e [
 
 after <handle-special-character> [
   {
-    move-to-end-of-line?:boolean <- equal *c, 5/ctrl-e
+    move-to-end-of-line?:boolean <- equal c, 5/ctrl-e
     break-unless move-to-end-of-line?
     <move-cursor-begin>
     move-to-end-of-line editor
@@ -1509,7 +1509,7 @@ after <handle-special-character> [
 
 after <handle-special-key> [
   {
-    move-to-end-of-line?:boolean <- equal *k, 65520/end
+    move-to-end-of-line?:boolean <- equal k, 65520/end
     break-unless move-to-end-of-line?
     <move-cursor-begin>
     move-to-end-of-line editor
@@ -1642,7 +1642,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
 
 after <handle-special-character> [
   {
-    delete-to-start-of-line?:boolean <- equal *c, 21/ctrl-u
+    delete-to-start-of-line?:boolean <- equal c, 21/ctrl-u
     break-unless delete-to-start-of-line?
     <delete-to-start-of-line-begin>
     deleted-cells:address:shared:duplex-list:character <- delete-to-start-of-line editor
@@ -1776,7 +1776,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
 
 after <handle-special-character> [
   {
-    delete-to-end-of-line?:boolean <- equal *c, 11/ctrl-k
+    delete-to-end-of-line?:boolean <- equal c, 11/ctrl-k
     break-unless delete-to-end-of-line?
     <delete-to-end-of-line-begin>
     deleted-cells:address:shared:duplex-list:character <- delete-to-end-of-line editor
@@ -2718,7 +2718,7 @@ d]
 
 after <handle-special-character> [
   {
-    page-down?:boolean <- equal *c, 6/ctrl-f
+    page-down?:boolean <- equal c, 6/ctrl-f
     break-unless page-down?
     old-top:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
     <move-cursor-begin>
@@ -2734,7 +2734,7 @@ after <handle-special-character> [
 
 after <handle-special-key> [
   {
-    page-down?:boolean <- equal *k, 65518/page-down
+    page-down?:boolean <- equal k, 65518/page-down
     break-unless page-down?
     old-top:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
     <move-cursor-begin>
@@ -2912,7 +2912,7 @@ d]
 
 after <handle-special-character> [
   {
-    page-up?:boolean <- equal *c, 2/ctrl-b
+    page-up?:boolean <- equal c, 2/ctrl-b
     break-unless page-up?
     old-top:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
     <move-cursor-begin>
@@ -2928,7 +2928,7 @@ after <handle-special-character> [
 
 after <handle-special-key> [
   {
-    page-up?:boolean <- equal *k, 65519/page-up
+    page-up?:boolean <- equal k, 65519/page-up
     break-unless page-up?
     old-top:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
     <move-cursor-begin>

@@ -63,7 +63,7 @@ container editor-data [
 # ctrl-z - undo operation
 after <handle-special-character> [
   {
-    undo?:boolean <- equal *c, 26/ctrl-z
+    undo?:boolean <- equal c, 26/ctrl-z
     break-unless undo?
     undo:address:shared:list:address:shared:operation <- get *editor, undo:offset
     break-unless undo
@@ -81,7 +81,7 @@ after <handle-special-character> [
 # ctrl-y - redo operation
 after <handle-special-character> [
   {
-    redo?:boolean <- equal *c, 25/ctrl-y
+    redo?:boolean <- equal c, 25/ctrl-y
     break-unless redo?
     redo:address:shared:list:address:shared:operation <- get *editor, redo:offset
     break-unless redo
@@ -151,16 +151,17 @@ before <insert-character-end> [
     # if previous operation was an insert, coalesce this operation with it
     break-unless undo
     op:address:shared:operation <- first undo
-    typing:address:insert-operation <- maybe-convert *op, typing:variant
-    break-unless typing
-    previous-coalesce-tag:number <- get *typing, tag:offset
+    typing:insert-operation, is-insert?:boolean <- maybe-convert *op, typing:variant
+    break-unless is-insert?
+    previous-coalesce-tag:number <- get typing, tag:offset
     break-unless previous-coalesce-tag
     before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
     insert-until:address:shared:duplex-list:character <- next before-cursor
-    *typing <- put *typing, insert-until:offset, insert-until
-    *typing <- put *typing, after-row:offset, cursor-row
-    *typing <- put *typing, after-column:offset, cursor-column
-    *typing <- put *typing, after-top-of-screen:offset, top-after
+    typing <- put typing, insert-until:offset, insert-until
+    typing <- put typing, after-row:offset, cursor-row
+    typing <- put typing, after-column:offset, cursor-column
+    typing <- put typing, after-top-of-screen:offset, top-after
+    *op <- merge 0/insert-operation, typing
     break +done-adding-insert-operation:label
   }
   # if not, create a new operation
@@ -210,19 +211,19 @@ def add-operation editor:address:shared:editor-data, op:address:shared:operation
 
 after <handle-undo> [
   {
-    typing:address:insert-operation <- maybe-convert *op, typing:variant
-    break-unless typing
-    start:address:shared:duplex-list:character <- get *typing, insert-from:offset
-    end:address:shared:duplex-list:character <- get *typing, insert-until:offset
+    typing:insert-operation, is-insert?:boolean <- maybe-convert *op, typing:variant
+    break-unless is-insert?
+    start:address:shared:duplex-list:character <- get typing, insert-from:offset
+    end:address:shared:duplex-list:character <- get typing, insert-until:offset
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     before-cursor:address:shared:duplex-list:character <- prev start
     *editor <- put *editor, before-cursor:offset, before-cursor
     remove-between before-cursor, end
-    cursor-row <- get *typing, before-row:offset
+    cursor-row <- get typing, before-row:offset
     *editor <- put *editor, cursor-row:offset, cursor-row
-    cursor-column <- get *typing, before-column:offset
+    cursor-column <- get typing, before-column:offset
     *editor <- put *editor, cursor-column:offset, cursor-column
-    top:address:shared:duplex-list:character <- get *typing, before-top-of-screen:offset
+    top:address:shared:duplex-list:character <- get typing, before-top-of-screen:offset
     *editor <- put *editor, top-of-screen:offset, top
   }
 ]
@@ -410,18 +411,18 @@ scenario editor-redo-typing [
 
 after <handle-redo> [
   {
-    typing:address:insert-operation <- maybe-convert *op, typing:variant
-    break-unless typing
+    typing:insert-operation, is-insert?:boolean <- maybe-convert *op, typing:variant
+    break-unless is-insert?
     before-cursor <- get *editor, before-cursor:offset
-    insert-from:address:shared:duplex-list:character <- get *typing, insert-from:offset  # ignore insert-to because it's already been spliced away
+    insert-from:address:shared:duplex-list:character <- get typing, insert-from:offset  # ignore insert-to because it's already been spliced away
     # assert insert-to matches next(before-cursor)
     insert-range before-cursor, insert-from
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    cursor-row <- get *typing, after-row:offset
+    cursor-row <- get typing, after-row:offset
     *editor <- put *editor, cursor-row:offset, cursor-row
-    cursor-column <- get *typing, after-column:offset
+    cursor-column <- get typing, after-column:offset
     *editor <- put *editor, cursor-column:offset, cursor-column
-    top:address:shared:duplex-list:character <- get *typing, after-top-of-screen:offset
+    top:address:shared:duplex-list:character <- get typing, after-top-of-screen:offset
     *editor <- put *editor, top-of-screen:offset, top
   }
 ]
@@ -730,14 +731,15 @@ before <move-cursor-end> [
     undo:address:shared:list:address:shared:operation <- get *editor, undo:offset
     break-unless undo
     op:address:shared:operation <- first undo
-    move:address:move-operation <- maybe-convert *op, move:variant
-    break-unless move
-    previous-coalesce-tag:number <- get *move, tag:offset
+    move:move-operation, is-move?:boolean <- maybe-convert *op, move:variant
+    break-unless is-move?
+    previous-coalesce-tag:number <- get move, tag:offset
     coalesce?:boolean <- equal undo-coalesce-tag, previous-coalesce-tag
     break-unless coalesce?
-    *move <- put *move, after-row:offset, cursor-row
-    *move <- put *move, after-column:offset, cursor-column
-    *move <- put *move, after-top-of-screen:offset, top-after
+    move <- put move, after-row:offset, cursor-row
+    move <- put move, after-column:offset, cursor-column
+    move <- put move, after-top-of-screen:offset, top-after
+    *op <- merge 1/move-operation, move
     break +done-adding-move-operation:label
   }
   op:address:shared:operation <- new operation:type
@@ -748,14 +750,14 @@ before <move-cursor-end> [
 
 after <handle-undo> [
   {
-    move:address:move-operation <- maybe-convert *op, move:variant
-    break-unless move
+    move:move-operation, is-move?:boolean <- maybe-convert *op, move:variant
+    break-unless is-move?
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    cursor-row <- get *move, before-row:offset
+    cursor-row <- get move, before-row:offset
     *editor <- put *editor, cursor-row:offset, cursor-row
-    cursor-column <- get *move, before-column:offset
+    cursor-column <- get move, before-column:offset
     *editor <- put *editor, cursor-column:offset, cursor-column
-    top:address:shared:duplex-list:character <- get *move, before-top-of-screen:offset
+    top:address:shared:duplex-list:character <- get move, before-top-of-screen:offset
     *editor <- put *editor, top-of-screen:offset, top
   }
 ]
@@ -1378,14 +1380,14 @@ ghi]
 
 after <handle-redo> [
   {
-    move:address:move-operation <- maybe-convert *op, move:variant
-    break-unless move
+    move:move-operation, is-move?:boolean <- maybe-convert *op, move:variant
+    break-unless is-move?
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    cursor-row <- get *move, after-row:offset
+    cursor-row <- get move, after-row:offset
     *editor <- put *editor, cursor-row:offset, cursor-row
-    cursor-column <- get *move, after-column:offset
+    cursor-column <- get move, after-column:offset
     *editor <- put *editor, cursor-column:offset, cursor-column
-    top:address:shared:duplex-list:character <- get *move, after-top-of-screen:offset
+    top:address:shared:duplex-list:character <- get move, after-top-of-screen:offset
     *editor <- put *editor, top-of-screen:offset, top
   }
 ]
@@ -1620,18 +1622,19 @@ before <backspace-character-end> [
       # if previous operation was an insert, coalesce this operation with it
       break-unless *undo
       op:address:shared:operation <- first undo
-      deletion:address:delete-operation <- maybe-convert *op, delete:variant
-      break-unless deletion
-      previous-coalesce-tag:number <- get *deletion, tag:offset
+      deletion:delete-operation, is-delete?:boolean <- maybe-convert *op, delete:variant
+      break-unless is-delete?
+      previous-coalesce-tag:number <- get deletion, tag:offset
       coalesce?:boolean <- equal previous-coalesce-tag, 1/coalesce-backspace
       break-unless coalesce?
-      *deletion <- put *deletion, delete-from:offset, before-cursor
-      backspaced-so-far:address:shared:duplex-list:character <- get *deletion, deleted-text:offset
+      deletion <- put deletion, delete-from:offset, before-cursor
+      backspaced-so-far:address:shared:duplex-list:character <- get deletion, deleted-text:offset
       insert-range backspaced-cell, backspaced-so-far
-      *deletion <- put *deletion, deleted-text:offset, backspaced-cell
-      *deletion <- put *deletion, after-row:offset, cursor-row
-      *deletion <- put *deletion, after-column:offset, cursor-column
-      *deletion <- put *deletion, after-top-of-screen:offset, top-after
+      deletion <- put deletion, deleted-text:offset, backspaced-cell
+      deletion <- put deletion, after-row:offset, cursor-row
+      deletion <- put deletion, after-column:offset, cursor-column
+      deletion <- put deletion, after-top-of-screen:offset, top-after
+      *op <- merge 2/delete-operation, deletion
       break +done-adding-backspace-operation:label
     }
     # if not, create a new operation
@@ -1645,38 +1648,38 @@ before <backspace-character-end> [
 
 after <handle-undo> [
   {
-    deletion:address:delete-operation <- maybe-convert *op, delete:variant
-    break-unless deletion
-    anchor:address:shared:duplex-list:character <- get *deletion, delete-from:offset
+    deletion:delete-operation, is-delete?:boolean <- maybe-convert *op, delete:variant
+    break-unless is-delete?
+    anchor:address:shared:duplex-list:character <- get deletion, delete-from:offset
     break-unless anchor
-    deleted:address:shared:duplex-list:character <- get *deletion, deleted-text:offset
+    deleted:address:shared:duplex-list:character <- get deletion, deleted-text:offset
     old-cursor:address:shared:duplex-list:character <- last deleted
     insert-range anchor, deleted
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     before-cursor <- copy old-cursor
-    cursor-row <- get *deletion, before-row:offset
+    cursor-row <- get deletion, before-row:offset
     *editor <- put *editor, cursor-row:offset, cursor-row
-    cursor-column <- get *deletion, before-column:offset
+    cursor-column <- get deletion, before-column:offset
     *editor <- put *editor, cursor-column:offset, cursor-column
-    top:address:shared:duplex-list:character <- get *deletion, before-top-of-screen:offset
+    top:address:shared:duplex-list:character <- get deletion, before-top-of-screen:offset
     *editor <- put *editor, top-of-screen:offset, top
   }
 ]
 
 after <handle-redo> [
   {
-    deletion:address:delete-operation <- maybe-convert *op, delete:variant
-    break-unless deletion
-    start:address:shared:duplex-list:character <- get *deletion, delete-from:offset
-    end:address:shared:duplex-list:character <- get *deletion, delete-until:offset
+    deletion:delete-operation, is-delete?:boolean <- maybe-convert *op, delete:variant
+    break-unless is-delete?
+    start:address:shared:duplex-list:character <- get deletion, delete-from:offset
+    end:address:shared:duplex-list:character <- get deletion, delete-until:offset
     data:address:shared:duplex-list:character <- get *editor, data:offset
     remove-between start, end
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
-    cursor-row <- get *deletion, after-row:offset
+    cursor-row <- get deletion, after-row:offset
     *editor <- put *editor, cursor-row:offset, cursor-row
-    cursor-column <- get *deletion, after-column:offset
+    cursor-column <- get deletion, after-column:offset
     *editor <- put *editor, cursor-column:offset, cursor-column
-    top:address:shared:duplex-list:character <- get *deletion, before-top-of-screen:offset
+    top:address:shared:duplex-list:character <- get deletion, before-top-of-screen:offset
     *editor <- put *editor, top-of-screen:offset, top
   }
 ]
@@ -1845,19 +1848,20 @@ before <delete-character-end> [
       # if previous operation was an insert, coalesce this operation with it
       break-unless undo
       op:address:shared:operation <- first undo
-      deletion:address:delete-operation <- maybe-convert *op, delete:variant
-      break-unless deletion
-      previous-coalesce-tag:number <- get *deletion, tag:offset
+      deletion:delete-operation, is-delete?:boolean <- maybe-convert *op, delete:variant
+      break-unless is-delete?
+      previous-coalesce-tag:number <- get deletion, tag:offset
       coalesce?:boolean <- equal previous-coalesce-tag, 2/coalesce-delete
       break-unless coalesce?
       delete-until:address:shared:duplex-list:character <- next before-cursor
-      *deletion <- put *deletion, delete-until:offset, delete-until
-      deleted-so-far:address:shared:duplex-list:character <- get *deletion, deleted-text:offset
+      deletion <- put deletion, delete-until:offset, delete-until
+      deleted-so-far:address:shared:duplex-list:character <- get deletion, deleted-text:offset
       deleted-so-far <- append deleted-so-far, deleted-cell
-      *deletion <- put *deletion, deleted-text:offset, deleted-so-far
-      *deletion <- put *deletion, after-row:offset, cursor-row
-      *deletion <- put *deletion, after-column:offset, cursor-column
-      *deletion <- put *deletion, after-top-of-screen:offset, top-after
+      deletion <- put deletion, deleted-text:offset, deleted-so-far
+      deletion <- put deletion, after-row:offset, cursor-row
+      deletion <- put deletion, after-column:offset, cursor-column
+      deletion <- put deletion, after-top-of-screen:offset, top-after
+      *op <- merge 2/delete-operation, deletion
       break +done-adding-delete-operation:label
     }
     # if not, create a new operation

@@ -67,7 +67,7 @@ scenario deleting-sandboxes [
 after <global-touch> [
   # on a sandbox delete icon? process delete
   {
-    was-delete?:boolean <- delete-sandbox *t, env
+    was-delete?:boolean <- delete-sandbox t, env
     break-unless was-delete?
     hide-screen screen
     screen <- render-sandbox-side screen, env

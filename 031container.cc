@@ -660,6 +660,14 @@ def main [
 ]
 +error: main: too few ingredients in '1:point-number <- merge 3, 4'
 
+:(scenario merge_check_reflexive)
+% Hide_errors = true;
+def main [
+  1:point <- merge 3, 4
+  2:point <- merge 1:point
+]
+$error: 0
+
 //: Since a container can be merged in several ways, we need to be able to
 //: backtrack through different possibilities. Later we'll allow creating
 //: exclusive containers which contain just one of rather than all of their
@@ -721,6 +729,9 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
     type_info& container_info = get(Type, container.type->value);
     switch (container_info.kind) {
       case CONTAINER: {
+        // degenerate case: merge with the same type always succeeds
+        if (state.data.top().container_element_index == 0 && types_coercible(container, inst.ingredients.at(ingredient_index)))
+          return;
         reagent expected_ingredient = element_type(container, state.data.top().container_element_index);
         trace(9999, "transform") << "checking container " << to_string(container) << " || " << to_string(expected_ingredient) << " vs ingredient " << ingredient_index << end();
         // if the current element is the ingredient we expect, move on to the next element/ingredient

@@ -107,13 +107,13 @@ after <global-touch> [
   # check if it's inside the output of any sandbox
   {
     sandbox-left-margin:number <- get *current-sandbox, left:offset
-    click-column:number <- get *t, column:offset
+    click-column:number <- get t, column:offset
     on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
     break-unless on-sandbox-side?
     first-sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
     break-unless first-sandbox
     first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
-    click-row:number <- get *t, row:offset
+    click-row:number <- get t, row:offset
     below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
     break-unless below-sandbox-editor?
     # identify the sandbox whose output is being clicked on

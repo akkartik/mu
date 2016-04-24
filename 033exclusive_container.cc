@@ -60,18 +60,24 @@ def main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
-  20:address:point <- maybe-convert 12:number-or-point/unsafe, 1:variant
+  20:point, 22:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
-+mem: storing 13 in location 20
+# point
++mem: storing 35 in location 20
++mem: storing 36 in location 21
+# boolean
++mem: storing 1 in location 22
 
 :(scenario maybe_convert_fail)
 def main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
-  20:address:number <- maybe-convert 12:number-or-point/unsafe, 0:variant
+  20:number, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 0:variant
 ]
-+mem: storing 0 in location 20
+# number: no write
+# boolean
++mem: storing 0 in location 21
 
 :(before "End Primitive Recipe Declarations")
 MAYBE_CONVERT,
@@ -95,6 +101,10 @@ case MAYBE_CONVERT: {
     break;
   }
   if (inst.products.empty()) break;
+  if (SIZE(inst.products) != 2) {
+    raise << maybe(caller.name) << "'maybe-convert' expects exactly 2 products in '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
   reagent product = inst.products.at(0);
   if (!canonize_type(product)) break;
   reagent& offset = inst.ingredients.at(1);
@@ -104,9 +114,12 @@ case MAYBE_CONVERT: {
     break;
   }
   reagent variant = variant_type(base, offset.value);
-  variant.type = new type_tree("address", get(Type_ordinal, "address"), variant.type);
   if (!types_coercible(product, variant)) {
     raise << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << to_string(variant.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
+    break;
+  }
+  if (!is_mu_boolean(inst.products.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "second product yielded by 'maybe-convert' should be a boolean, but tried to write to " << inst.products.at(1).original_string << '\n' << end();
     break;
   }
   break;
@@ -121,16 +134,26 @@ case MAYBE_CONVERT: {
     break;
   }
   int tag = current_instruction().ingredients.at(1).value;
-  int result;
+  reagent product = current_instruction().products.at(0);
+  canonize(product);
+  reagent did_conversion_happen = current_instruction().products.at(1);
+  canonize(did_conversion_happen);
+  // optimization: directly write results to only update first product when necessary
   if (tag == static_cast<int>(get_or_insert(Memory, base_address))) {
-    result = base_address+1;
+    const reagent variant = variant_type(base, tag);
+    for (int i = 0; i < size_of(variant); ++i) {
+      double val = get_or_insert(Memory, base_address+1+i);
+      trace(9999, "mem") << "storing " << no_scientific(val) << " in location " << product.value+i << end();
+      put(Memory, product.value+i, val);
+    }
+    trace(9999, "mem") << "storing 1 in location " << did_conversion_happen.value << end();
+    put(Memory, did_conversion_happen.value, 1);
   }
   else {
-    result = 0;
+    trace(9999, "mem") << "storing 0 in location " << did_conversion_happen.value << end();
+    put(Memory, did_conversion_happen.value, 0);
   }
-  products.resize(1);
-  products.at(0).push_back(result);
-  break;
+  goto finish_instruction;
 }
 
 :(code)
@@ -151,9 +174,9 @@ def main [
   12:number <- copy 1
   13:number <- copy 35
   14:number <- copy 36
-  20:address:number <- maybe-convert 12:number-or-point/unsafe, 1:variant
+  20:number, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
-+error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to (address point) but 20 has type (address number)
++error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to point but 20 has type number
 
 //:: Allow exclusive containers to be defined in mu code.
 
@@ -337,6 +360,21 @@ def main [
   1:foo <- merge 1/y, 23
 ]
 +error: main: too few ingredients in '1:foo <- merge 1/y, 23'
+
+:(scenario merge_check_exclusive_container_containing_container_4)
+exclusive-container foo [
+  x:number
+  y:bar
+]
+container bar [
+  a:number
+  b:number
+]
+def main [
+  1:bar <- merge 23, 24
+  3:foo <- merge 1/y, 1:bar
+]
+$error: 0
 
 //: Since the different variants of an exclusive-container might have
 //: different sizes, relax the size mismatch check for 'merge' instructions.

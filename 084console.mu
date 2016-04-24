@@ -65,9 +65,9 @@ def read-key console:address:shared:console -> result:character, console:address
   x:event, console, found?:boolean, quit?:boolean <- read-event console
   return-if quit?, 0, console/same-as-ingredient:0, found?, quit?
   return-unless found?, 0, console/same-as-ingredient:0, found?, quit?
-  c:address:character <- maybe-convert x, text:variant
-  return-unless c, 0, console/same-as-ingredient:0, 0/found, 0/quit
-  return *c, console/same-as-ingredient:0, 1/found, 0/quit
+  c:character, converted?:boolean <- maybe-convert x, text:variant
+  return-unless converted?, 0, console/same-as-ingredient:0, 0/found, 0/quit
+  return c, console/same-as-ingredient:0, 1/found, 0/quit
 ]
 
 def send-keys-to-channel console:address:shared:console, chan:address:shared:sink:character, screen:address:shared:screen -> console:address:shared:console, chan:address:shared:sink:character, screen:address:shared:screen [
