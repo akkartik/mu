@@ -71,11 +71,11 @@ container bar [
 
 :(scenario dilated_reagent_in_static_array)
 def main [
-  {1: (array (address shared number) 3)} <- create-array
-  5:address:shared:number <- new number:type
-  {1: (array (address shared number) 3)} <- put-index {1: (array (address shared number) 3)}, 0, 5:address:shared:number
-  *5:address:shared:number <- copy 34
-  6:number <- copy *5:address:shared:number
+  {1: (array (address number) 3)} <- create-array
+  5:address:number <- new number:type
+  {1: (array (address number) 3)} <- put-index {1: (array (address number) 3)}, 0, 5:address:number
+  *5:address:number <- copy 34
+  6:number <- copy *5:address:number
 ]
 +run: creating array of size 4
 +mem: storing 34 in location 6
@@ -84,7 +84,7 @@ def main [
 
 :(scenario dilated_reagent_with_new)
 def main [
-  x:address:shared:address:number <- new {(address number): type}
+  x:address:address:number <- new {(address number): type}
 ]
 +new: size of ("address" "number") is 1
 

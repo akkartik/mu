@@ -34,7 +34,7 @@ def main [
 
 :(before "End Types")
 // Book-keeping while running a recipe.
-//: Later layers will replace this.
+//: Later layers will replace this to support running multiple routines at once.
 struct routine {
   recipe_ordinal running_recipe;
   int running_step_index;

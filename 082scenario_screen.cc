@@ -10,7 +10,7 @@ scenario screen-in-scenario [
   assume-screen 5/width, 3/height
   run [
     1:character <- copy 97/a
-    screen:address:shared:screen <- print screen:address:shared:screen, 1:character/a
+    screen:address:screen <- print screen:address:screen, 1:character/a
   ]
   screen-should-contain [
   #  01234
@@ -25,9 +25,9 @@ scenario screen-in-scenario-unicode-color [
   assume-screen 5/width, 3/height
   run [
     1:character <- copy 955/greek-small-lambda
-    screen:address:shared:screen <- print screen:address:shared:screen, 1:character/lambda, 1/red
+    screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red
     2:character <- copy 97/a
-    screen:address:shared:screen <- print screen:address:shared:screen, 2:character/a
+    screen:address:screen <- print screen:address:screen, 2:character/a
   ]
   screen-should-contain [
   #  01234
@@ -43,9 +43,9 @@ scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
   run [
     1:character <- copy 955/greek-small-lambda
-    screen:address:shared:screen <- print screen:address:shared:screen, 1:character/lambda, 1/red
+    screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red
     2:character <- copy 97/a
-    screen:address:shared:screen <- print screen:address:shared:screen, 2:character/a, 7/white
+    screen:address:screen <- print screen:address:screen, 2:character/a, 7/white
   ]
   # screen-should-contain shows everything
   screen-should-contain [
@@ -78,7 +78,7 @@ scenario screen-in-scenario-error [
   assume-screen 5/width, 3/height
   run [
     1:character <- copy 97/a
-    screen:address:shared:screen <- print screen:address:shared:screen, 1:character/a
+    screen:address:screen <- print screen:address:screen, 1:character/a
   ]
   screen-should-contain [
   #  01234
@@ -97,7 +97,7 @@ scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
   run [
     1:character <- copy 97/a
-    screen:address:shared:screen <- print screen:address:shared:screen, 1:character/a, 1/red
+    screen:address:screen <- print screen:address:screen, 1:character/a, 1/red
   ]
   screen-should-contain-in-color 2/green, [
   #  01234
@@ -145,11 +145,11 @@ Name[r]["screen"] = SCREEN;
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite `assume-screen width, height` to
-// `screen:address:shared:screen <- new-fake-screen width, height`
+// `screen:address:screen <- new-fake-screen width, height`
 if (curr.name == "assume-screen") {
   curr.name = "new-fake-screen";
   assert(curr.products.empty());
-  curr.products.push_back(reagent("screen:address:shared:screen"));
+  curr.products.push_back(reagent("screen:address:screen"));
   curr.products.at(0).set_value(SCREEN);
 }
 
@@ -207,7 +207,7 @@ void check_screen(const string& expected_contents, const int color) {
   int screen_location = get_or_insert(Memory, SCREEN)+/*skip refcount*/1;
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
-  int screen_data_location = screen_location+data_offset;  // type: address:shared:array:character
+  int screen_data_location = screen_location+data_offset;  // type: address:array:character
   int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
   int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
   int screen_width = get_or_insert(Memory, screen_location+width_offset);
@@ -346,7 +346,7 @@ void dump_screen() {
   int screen_height = get_or_insert(Memory, screen_location+height_offset);
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
-  int screen_data_location = screen_location+data_offset;  // type: address:shared:array:character
+  int screen_data_location = screen_location+data_offset;  // type: address:array:character
   int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
   assert(get_or_insert(Memory, screen_data_start) == screen_width*screen_height);
   int curr = screen_data_start+1;  // skip length

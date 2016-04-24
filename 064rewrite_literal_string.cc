@@ -4,7 +4,7 @@
 def main [
   1:number/raw <- foo [abc]
 ]
-def foo x:address:shared:array:character -> n:number [
+def foo x:address:array:character -> n:number [
   local-scope
   load-ingredients
   n <- length *x
@@ -46,7 +46,7 @@ void rewrite_literal_string_to_text(recipe_ordinal r) {
         if (!is_literal_string(inst.ingredients.at(j))) continue;
         instruction def;
         ostringstream ingredient_name;
-        ingredient_name << inst.name << '_' << i << '_' << j << ":address:shared:array:character";
+        ingredient_name << inst.name << '_' << i << '_' << j << ":address:array:character";
         def.name = "new";
         def.ingredients.push_back(inst.ingredients.at(j));
         def.products.push_back(reagent(ingredient_name.str()));

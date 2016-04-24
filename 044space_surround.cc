@@ -7,15 +7,15 @@
 :(scenario surrounding_space)
 # location 1 in space 1 refers to the space surrounding the default space, here 20.
 def main [
-  # pretend shared:array:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use new
   10:number <- copy 0  # refcount
   11:number <- copy 5  # length
-  # pretend shared:array:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use new
   20:number <- copy 0  # refcount
   21:number <- copy 5  # length
   # actual start of this recipe
-  default-space:address:shared:array:location <- copy 10/unsafe
-  0:address:shared:array:location/names:dummy <- copy 20/unsafe  # later layers will explain the /names: property
+  default-space:address:array:location <- copy 10/unsafe
+  0:address:array:location/names:dummy <- copy 20/unsafe  # later layers will explain the /names: property
   1:number <- copy 32
   1:number/space:1 <- copy 33
 ]

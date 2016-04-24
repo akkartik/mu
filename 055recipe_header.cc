@@ -220,53 +220,15 @@ void check_calls_against_header(const recipe_ordinal r) {
       // ingredients coerced from call to callee
       if (!types_coercible(callee.ingredients.at(i), inst.ingredients.at(i)))
         raise << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << to_original_string(inst) << "'\n" << end();
-      if (is_unique_address(inst.ingredients.at(i)))
-        raise << maybe(caller.name) << "avoid passing non-shared addresses into calls, like ingredient " << i << " at '" << to_original_string(inst) << "'\n" << end();
     }
     for (long int i = 0; i < min(SIZE(inst.products), SIZE(callee.products)); ++i) {
       if (is_dummy(inst.products.at(i))) continue;
       // products coerced from callee to call
       if (!types_coercible(inst.products.at(i), callee.products.at(i)))
         raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_original_string(inst) << "'\n" << end();
-      if (is_unique_address(inst.products.at(i)))
-        raise << maybe(caller.name) << "avoid getting non-shared addresses out of calls, like product " << i << " at '" << to_original_string(inst) << "'\n" << end();
     }
   }
 }
-
-bool is_unique_address(reagent x) {
-  if (!canonize_type(x)) return false;
-  if (!x.type) return false;
-  if (x.type->value != get(Type_ordinal, "address")) return false;
-  if (!x.type->right) return true;
-  return x.type->right->value != get(Type_ordinal, "shared");
-}
-
-//: additionally, flag an error on calls receiving non-shared addresses
-
-:(scenario forbid_calls_with_nonshared_addresses)
-% Hide_errors = true;
-def main [
-  1:address:number <- copy 0
-  foo 1:address:number
-]
-def foo x:address:number [
-  local-scope
-  load-ingredients
-]
-+error: main: avoid passing non-shared addresses into calls, like ingredient 0 at 'foo 1:address:number'
-
-:(scenario forbid_calls_with_nonshared_addresses_2)
-% Hide_errors = true;
-def main [
-  1:address:number <- foo
-]
-def foo -> x:address:number [
-  local-scope
-  load-ingredients
-  x <- copy 0
-]
-+error: main: avoid getting non-shared addresses out of calls, like product 0 at '1:address:number <- foo '
 
 //:: Check types going in and out of all recipes with headers.
 

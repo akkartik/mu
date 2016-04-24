@@ -561,8 +561,8 @@ container c:_a:_b [
   b:_b
 ]
 def main [
-  s:address:shared:array:character <- new [abc]
-  {x: (c (address shared array character) number)} <- merge s, 34
+  s:address:array:character <- new [abc]
+  {x: (c (address array character) number)} <- merge s, 34
   foo x
 ]
 def foo x:c:_bar:_baz [
@@ -599,14 +599,14 @@ def foo a:_t [
 
 :(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient)
 def main [
-  1:address:shared:foo:point <- bar 3
-  11:foo:point <- copy *1:address:shared:foo:point
+  1:address:foo:point <- bar 3
+  11:foo:point <- copy *1:address:foo:point
 ]
 container foo:_t [
   x:_t
   y:number
 ]
-def bar x:number -> result:address:shared:foo:_t [
+def bar x:number -> result:address:foo:_t [
   local-scope
   load-ingredients
   # new refers to _t in its ingredient *value*
@@ -618,10 +618,10 @@ def bar x:number -> result:address:shared:foo:_t [
 
 :(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient_2)
 def main [
-  1:address:shared:foo:point <- bar 3
-  11:foo:point <- copy *1:address:shared:foo:point
+  1:address:foo:point <- bar 3
+  11:foo:point <- copy *1:address:foo:point
 ]
-def bar x:number -> result:address:shared:foo:_t [
+def bar x:number -> result:address:foo:_t [
   local-scope
   load-ingredients
   # new refers to _t in its ingredient *value*
@@ -640,7 +640,7 @@ container foo:_t [
 def main [
   _ <- bar 34
 ]
-def bar x:_t -> result:address:shared:_t [
+def bar x:_t -> result:address:_t [
   local-scope
   load-ingredients
   result <- copy 0
@@ -656,7 +656,7 @@ void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
   transform("def barz x:_elem [\n"
             "  local-scope\n"
             "  load-ingredients\n"
-            "  y:address:shared:number <- new _elem:type\n"
+            "  y:address:number <- new _elem:type\n"
             "]\n"
             "def fooz [\n"
             "  local-scope\n"
@@ -678,10 +678,10 @@ void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
 
 :(scenario shape_shifting_recipe_supports_compound_types)
 def main [
-  1:address:shared:point <- new point:type
-  *1:address:shared:point <- put *1:address:shared:point, y:offset, 34
-  3:address:shared:point <- bar 1:address:shared:point  # specialize _t to address:shared:point
-  4:point <- copy *3:address:shared:point
+  1:address:point <- new point:type
+  *1:address:point <- put *1:address:point, y:offset, 34
+  3:address:point <- bar 1:address:point  # specialize _t to address:point
+  4:point <- copy *3:address:point
 ]
 def bar a:_t -> result:_t [
   local-scope
@@ -694,13 +694,13 @@ def bar a:_t -> result:_t [
 % Hide_errors = true;
 def main [
   a:number <- copy 3
-  b:address:shared:number <- foo a
+  b:address:number <- foo a
 ]
 def foo a:_t -> b:_t [
   load-ingredients
   b <- copy a
 ]
-+error: main: no call found for 'b:address:shared:number <- foo a'
++error: main: no call found for 'b:address:number <- foo a'
 
 :(scenario specialize_inside_recipe_without_header)
 def main [
@@ -748,7 +748,7 @@ def foo x:_elem -> y:_elem [
 def main [
   local-scope
   # permit '0' to map to address to shape-shifting type-ingredient
-  1:address:shared:character/raw <- foo 0
+  1:address:character/raw <- foo 0
 ]
 def foo x:address:_elem -> y:address:_elem [
   local-scope
@@ -818,7 +818,7 @@ container d2:_elem [
 # static dispatch between shape-shifting variants, _including pointer lookups_
 def main [
   e1:d1:number <- merge 3
-  e2:address:shared:d2:number <- new {(d2 number): type}
+  e2:address:d2:number <- new {(d2 number): type}
   1:number/raw <- foo e1
   2:number/raw <- foo *e2  # different from previous scenario
 ]
@@ -901,15 +901,15 @@ def foo x:_elem -> y:number [
 :(scenarios run)
 :(scenario specialize_most_similar_variant)
 def main [
-  1:address:shared:number <- new number:type
-  2:number <- foo 1:address:shared:number
+  1:address:number <- new number:type
+  2:number <- foo 1:address:number
 ]
 def foo x:_elem -> y:number [
   local-scope
   load-ingredients
   return 34
 ]
-def foo x:address:shared:_elem -> y:number [
+def foo x:address:_elem -> y:number [
   local-scope
   load-ingredients
   return 35
@@ -920,17 +920,17 @@ def foo x:address:shared:_elem -> y:number [
 # version with headers padded with lots of unrelated concrete types
 def main [
   1:number <- copy 23
-  2:address:shared:array:number <- copy 0
-  3:number <- foo 2:address:shared:array:number, 1:number
+  2:address:array:number <- copy 0
+  3:number <- foo 2:address:array:number, 1:number
 ]
 # variant with concrete type
-def foo dummy:address:shared:array:number, x:number -> y:number, dummy:address:shared:array:number [
+def foo dummy:address:array:number, x:number -> y:number, dummy:address:array:number [
   local-scope
   load-ingredients
   return 34
 ]
 # shape-shifting variant
-def foo dummy:address:shared:array:number, x:_elem -> y:number, dummy:address:shared:array:number [
+def foo dummy:address:array:number, x:_elem -> y:number, dummy:address:array:number [
   local-scope
   load-ingredients
   return 35
@@ -940,10 +940,10 @@ def foo dummy:address:shared:array:number, x:_elem -> y:number, dummy:address:sh
 
 :(scenario specialize_most_similar_variant_3)
 def main [
-  1:address:shared:array:character <- new [abc]
-  foo 1:address:shared:array:character
+  1:address:array:character <- new [abc]
+  foo 1:address:array:character
 ]
-def foo x:address:shared:array:character [
+def foo x:address:array:character [
   2:number <- copy 34
 ]
 def foo x:address:_elem [
@@ -980,7 +980,7 @@ def foo x:number -> y:number [
   return 34
 ]
 # shape-shifting variant
-def foo x:address:shared:_elem -> y:number [
+def foo x:address:_elem -> y:number [
   local-scope
   load-ingredients
   return 35

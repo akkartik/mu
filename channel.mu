@@ -1,6 +1,6 @@
 # example program: communicating between routines using channels
 
-def producer chan:address:shared:channel:character -> chan:address:shared:channel:character [
+def producer sink:address:sink:character -> sink:address:sink:character [
   # produce characters 1 to 5 on a channel
   local-scope
   load-ingredients
@@ -12,19 +12,19 @@ def producer chan:address:shared:channel:character -> chan:address:shared:channe
     # other threads might get between these prints
     $print [produce: ], n, [ 
 ]
-    chan <- write chan, n
+    sink <- write sink, n
     n <- add n, 1
     loop
   }
 ]
 
-def consumer chan:address:shared:channel:character -> chan:address:shared:channel:character [
+def consumer source:address:source:character -> source:address:source:character [
   # consume and print integers from a channel
   local-scope
   load-ingredients
   {
     # read an integer from the channel
-    n:character, chan <- read chan
+    n:character, source <- read source
     # other threads might get between these prints
     $print [consume: ], n:character, [ 
 ]
@@ -34,10 +34,10 @@ def consumer chan:address:shared:channel:character -> chan:address:shared:channe
 
 def main [
   local-scope
-  chan:address:shared:channel:character <- new-channel 3
+  source:address:source:character, sink:address:sink:character <- new-channel 3/capacity
   # create two background 'routines' that communicate by a channel
-  routine1:number <- start-running producer, chan
-  routine2:number <- start-running consumer, chan
+  routine1:number <- start-running producer, sink
+  routine2:number <- start-running consumer, source
   wait-for-routine routine1
   wait-for-routine routine2
 ]

@@ -32,9 +32,9 @@ container foo:_a:_b [
   y:_b
 ]
 def main [
-  1:address:shared:array:character <- new [abc]
+  1:address:array:character <- new [abc]
   # compound types for type ingredients
-  {2: (foo number (address shared array character))} <- merge 34/x, 1:address:shared:array:character/y
+  {2: (foo number (address array character))} <- merge 34/x, 1:address:array:character/y
 ]
 $error: 0
 
@@ -45,11 +45,11 @@ container foo:_a:_b [
 ]
 container bar:_a:_b [
   # dilated element
-  {data: (foo _a (address shared _b))}
+  {data: (foo _a (address _b))}
 ]
 def main [
-  1:address:shared:array:character <- new [abc]
-  2:bar:number:array:character <- merge 34/x, 1:address:shared:array:character/y
+  1:address:array:character <- new [abc]
+  2:bar:number:array:character <- merge 34/x, 1:address:array:character/y
 ]
 $error: 0
 
@@ -156,9 +156,9 @@ container foo:_t [
 ]
 def main [
   1:foo:address:point <- merge 34/unsafe, 48
-  2:address:point <- get 1:foo:address:point, x:offset
+  3:address:point <- get 1:foo:address:point, x:offset
 ]
-+mem: storing 34 in location 2
++mem: storing 34 in location 3
 
 :(scenario get_on_shape_shifting_container_inside_container)
 container foo:_t [
@@ -181,10 +181,10 @@ container foo:_a:_b [
   y:_b
 ]
 def main [
-  1:address:shared:array:character <- new [abc]
-  {2: (foo number (address shared array character))} <- merge 34/x, 1:address:shared:array:character/y
-  3:address:shared:array:character <- get {2: (foo number (address shared array character))}, y:offset
-  4:boolean <- equal 1:address:shared:array:character, 3:address:shared:array:character
+  1:address:array:character <- new [abc]
+  {2: (foo number (address array character))} <- merge 34/x, 1:address:array:character/y
+  3:address:array:character <- get {2: (foo number (address array character))}, y:offset
+  4:boolean <- equal 1:address:array:character, 3:address:array:character
 ]
 +mem: storing 1 in location 4
 
@@ -327,15 +327,14 @@ void test_replace_type_ingredients_head_tail_multiple() {
       "container bar:_elem [\n"
       "  x:foo:_elem\n"
       "]\n");
-  reagent callsite("x:bar:address:shared:array:character");
+  reagent callsite("x:bar:address:array:character");
   reagent element = element_type(callsite, 0);
   CHECK_EQ(element.name, "x");
   CHECK_EQ(element.type->name, "foo");
   CHECK_EQ(element.type->right->name, "address");
-  CHECK_EQ(element.type->right->right->name, "shared");
-  CHECK_EQ(element.type->right->right->right->name, "array");
-  CHECK_EQ(element.type->right->right->right->right->name, "character");
-  CHECK(!element.type->right->right->right->right->right);
+  CHECK_EQ(element.type->right->right->name, "array");
+  CHECK_EQ(element.type->right->right->right->name, "character");
+  CHECK(!element.type->right->right->right->right);
 }
 
 void test_replace_type_ingredients_head_middle() {
@@ -362,7 +361,7 @@ void test_replace_last_type_ingredient_with_multiple() {
       "  x:_a\n"
       "  y:_b\n"
       "]\n");
-  reagent callsite("{f: (foo number (address shared array character))}");
+  reagent callsite("{f: (foo number (address array character))}");
   reagent element1 = element_type(callsite, 0);
   CHECK_EQ(element1.name, "x");
   CHECK_EQ(element1.type->name, "number");
@@ -370,10 +369,9 @@ void test_replace_last_type_ingredient_with_multiple() {
   reagent element2 = element_type(callsite, 1);
   CHECK_EQ(element2.name, "y");
   CHECK_EQ(element2.type->name, "address");
-  CHECK_EQ(element2.type->right->name, "shared");
-  CHECK_EQ(element2.type->right->right->name, "array");
-  CHECK_EQ(element2.type->right->right->right->name, "character");
-  CHECK(!element2.type->right->right->right->right);
+  CHECK_EQ(element2.type->right->name, "array");
+  CHECK_EQ(element2.type->right->right->name, "character");
+  CHECK(!element2.type->right->right->right);
 }
 
 void test_replace_middle_type_ingredient_with_multiple() {
@@ -382,7 +380,7 @@ void test_replace_middle_type_ingredient_with_multiple() {
       "  y:_b\n"
       "  z:_c\n"
       "]\n");
-  reagent callsite("{f: (foo number (address shared array character) boolean)}");
+  reagent callsite("{f: (foo number (address array character) boolean)}");
   reagent element1 = element_type(callsite, 0);
   CHECK_EQ(element1.name, "x");
   CHECK_EQ(element1.type->name, "number");
@@ -390,10 +388,9 @@ void test_replace_middle_type_ingredient_with_multiple() {
   reagent element2 = element_type(callsite, 1);
   CHECK_EQ(element2.name, "y");
   CHECK_EQ(element2.type->name, "address");
-  CHECK_EQ(element2.type->right->name, "shared");
-  CHECK_EQ(element2.type->right->right->name, "array");
-  CHECK_EQ(element2.type->right->right->right->name, "character");
-  CHECK(!element2.type->right->right->right->right);
+  CHECK_EQ(element2.type->right->name, "array");
+  CHECK_EQ(element2.type->right->right->name, "character");
+  CHECK(!element2.type->right->right->right);
   reagent element3 = element_type(callsite, 2);
   CHECK_EQ(element3.name, "z");
   CHECK_EQ(element3.type->name, "boolean");
@@ -405,39 +402,36 @@ void test_replace_middle_type_ingredient_with_multiple2() {
       "  key:_key\n"
       "  value:_value\n"
       "]\n");
-  reagent callsite("{f: (foo (address shared array character) number)}");
+  reagent callsite("{f: (foo (address array character) number)}");
   reagent element = element_type(callsite, 0);
   CHECK_EQ(element.name, "key");
   CHECK_EQ(element.type->name, "address");
-  CHECK_EQ(element.type->right->name, "shared");
-  CHECK_EQ(element.type->right->right->name, "array");
-  CHECK_EQ(element.type->right->right->right->name, "character");
-  CHECK(!element.type->right->right->right->right);
+  CHECK_EQ(element.type->right->name, "array");
+  CHECK_EQ(element.type->right->right->name, "character");
+  CHECK(!element.type->right->right->right);
 }
 
 void test_replace_middle_type_ingredient_with_multiple3() {
   run("container foo_table:_key:_value [\n"
-      "  data:address:shared:array:foo_table_row:_key:_value\n"
+      "  data:address:array:foo_table_row:_key:_value\n"
       "]\n"
       "\n"
       "container foo_table_row:_key:_value [\n"
       "  key:_key\n"
       "  value:_value\n"
       "]\n");
-  reagent callsite("{f: (foo_table (address shared array character) number)}");
+  reagent callsite("{f: (foo_table (address array character) number)}");
   reagent element = element_type(callsite, 0);
   CHECK_EQ(element.name, "data");
   CHECK_EQ(element.type->name, "address");
-  CHECK_EQ(element.type->right->name, "shared");
-  CHECK_EQ(element.type->right->right->name, "array");
-  CHECK_EQ(element.type->right->right->right->name, "foo_table_row");
-    CHECK(element.type->right->right->right->right->left);
-    CHECK_EQ(element.type->right->right->right->right->left->name, "address");
-    CHECK_EQ(element.type->right->right->right->right->left->right->name, "shared");
-    CHECK_EQ(element.type->right->right->right->right->left->right->right->name, "array");
-    CHECK_EQ(element.type->right->right->right->right->left->right->right->right->name, "character");
-  CHECK_EQ(element.type->right->right->right->right->right->name, "number");
-  CHECK(!element.type->right->right->right->right->right->right);
+  CHECK_EQ(element.type->right->name, "array");
+  CHECK_EQ(element.type->right->right->name, "foo_table_row");
+    CHECK(element.type->right->right->right->left);
+    CHECK_EQ(element.type->right->right->right->left->name, "address");
+    CHECK_EQ(element.type->right->right->right->left->right->name, "array");
+    CHECK_EQ(element.type->right->right->right->left->right->right->name, "character");
+  CHECK_EQ(element.type->right->right->right->right->name, "number");
+  CHECK(!element.type->right->right->right->right->right);
 }
 
 bool has_nth_type(const type_tree* base, int n) {

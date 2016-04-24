@@ -1,7 +1,7 @@
 scenario array-from-args [
   run [
-    1:address:shared:array:character <- new-array 0, 1, 2
-    2:array:character <- copy *1:address:shared:array:character
+    1:address:array:character <- new-array 0, 1, 2
+    2:array:character <- copy *1:address:array:character
   ]
   memory-should-contain [
     2 <- 3  # array length
@@ -12,7 +12,7 @@ scenario array-from-args [
 ]
 
 # create an array out of a list of scalar args
-def new-array -> result:address:shared:array:character [
+def new-array -> result:address:array:character [
   local-scope
   capacity:number <- copy 0
   {

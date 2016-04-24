@@ -537,16 +537,16 @@ case LIMIT_TIME: {
 :(scenario new_concurrent)
 def f1 [
   start-running f2
-  1:address:shared:number/raw <- new number:type
+  1:address:number/raw <- new number:type
   # wait for f2 to complete
   {
     loop-unless 4:number/raw
   }
 ]
 def f2 [
-  2:address:shared:number/raw <- new number:type
+  2:address:number/raw <- new number:type
   # hack: assumes scheduler implementation
-  3:boolean/raw <- equal 1:address:shared:number/raw, 2:address:shared:number/raw
+  3:boolean/raw <- equal 1:address:number/raw, 2:address:number/raw
   # signal f2 complete
   4:number/raw <- copy 1
 ]

@@ -22,28 +22,28 @@ container resize-event [
 
 container console [
   current-event-index:number
-  events:address:shared:array:event
+  events:address:array:event
 ]
 
-def new-fake-console events:address:shared:array:event -> result:address:shared:console [
+def new-fake-console events:address:array:event -> result:address:console [
   local-scope
   load-ingredients
-  result:address:shared:console <- new console:type
+  result:address:console <- new console:type
   *result <- put *result, events:offset, events
 ]
 
-def read-event console:address:shared:console -> result:event, console:address:shared:console, found?:boolean, quit?:boolean [
+def read-event console:address:console -> result:event, console:address:console, found?:boolean, quit?:boolean [
   local-scope
   load-ingredients
   {
     break-unless console
     current-event-index:number <- get *console, current-event-index:offset
-    buf:address:shared:array:event <- get *console, events:offset
+    buf:address:array:event <- get *console, events:offset
     {
       max:number <- length *buf
       done?:boolean <- greater-or-equal current-event-index, max
       break-unless done?
-      dummy:address:shared:event <- new event:type
+      dummy:address:event <- new event:type
       return *dummy, console/same-as-ingredient:0, 1/found, 1/quit
     }
     result <- index *buf, current-event-index
@@ -59,7 +59,7 @@ def read-event console:address:shared:console -> result:event, console:address:s
 # variant of read-event for just keyboard events. Discards everything that
 # isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get
 # newlines, tabs, ctrl-d..
-def read-key console:address:shared:console -> result:character, console:address:shared:console, found?:boolean, quit?:boolean [
+def read-key console:address:console -> result:character, console:address:console, found?:boolean, quit?:boolean [
   local-scope
   load-ingredients
   x:event, console, found?:boolean, quit?:boolean <- read-event console
@@ -70,7 +70,7 @@ def read-key console:address:shared:console -> result:character, console:address
   return c, console/same-as-ingredient:0, 1/found, 0/quit
 ]
 
-def send-keys-to-channel console:address:shared:console, chan:address:shared:sink:character, screen:address:shared:screen -> console:address:shared:console, chan:address:shared:sink:character, screen:address:shared:screen [
+def send-keys-to-channel console:address:console, chan:address:sink:character, screen:address:screen -> console:address:console, chan:address:sink:character, screen:address:screen [
   local-scope
   load-ingredients
   {
@@ -84,7 +84,7 @@ def send-keys-to-channel console:address:shared:console, chan:address:shared:sin
   }
 ]
 
-def wait-for-event console:address:shared:console -> console:address:shared:console [
+def wait-for-event console:address:console -> console:address:console [
   local-scope
   load-ingredients
   {
@@ -94,7 +94,7 @@ def wait-for-event console:address:shared:console -> console:address:shared:cons
 ]
 
 # use this helper to skip rendering if there's lots of other events queued up
-def has-more-events? console:address:shared:console -> result:boolean [
+def has-more-events? console:address:console -> result:boolean [
   local-scope
   load-ingredients
   {

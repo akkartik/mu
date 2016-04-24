@@ -6,24 +6,24 @@
 # if default-space is 10, and if an array of 5 locals lies from location 12 to 16 (inclusive),
 # then local 0 is really location 12, local 1 is really location 13, and so on.
 def main [
-  # pretend shared:array:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use new
   10:number <- copy 0  # refcount
   11:number <- copy 5  # length
-  default-space:address:shared:array:location <- copy 10/unsafe
+  default-space:address:array:location <- copy 10/unsafe
   1:number <- copy 23
 ]
 +mem: storing 23 in location 13
 
 :(scenario lookup_sidesteps_default_space)
 def main [
-  # pretend pointer from outside
-  3:number <- copy 34
-  # pretend shared:array:location; in practice we'll use new
+  # pretend pointer from outside (2000 reserved for refcount)
+  2001:number <- copy 34
+  # pretend address:array:location; in practice we'll use new
   1000:number <- copy 0  # refcount
   1001:number <- copy 5  # length
   # actual start of this recipe
-  default-space:address:shared:array:location <- copy 1000/unsafe
-  1:address:number <- copy 3/unsafe
+  default-space:address:array:location <- copy 1000/unsafe
+  1:address:number <- copy 2000/unsafe  # even local variables always contain raw addresses
   8:number/raw <- copy *1:address:number
 ]
 +mem: storing 34 in location 8
@@ -88,13 +88,11 @@ int address(int offset, int base) {
         || !x.type
         || x.type->value != get(Type_ordinal, "address")
         || !x.type->right
-        || x.type->right->value != get(Type_ordinal, "shared")
+        || x.type->right->value != get(Type_ordinal, "array")
         || !x.type->right->right
-        || x.type->right->right->value != get(Type_ordinal, "array")
-        || !x.type->right->right->right
-        || x.type->right->right->right->value != get(Type_ordinal, "location")
-        || x.type->right->right->right->right) {
-      raise << maybe(current_recipe_name()) << "'default-space' should be of type address:shared:array:location, but tried to write " << to_string(data) << '\n' << end();
+        || x.type->right->right->value != get(Type_ordinal, "location")
+        || x.type->right->right->right) {
+      raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
     }
     current_call().default_space = data.at(0);
     return;
@@ -102,8 +100,8 @@ int address(int offset, int base) {
 
 :(scenario get_default_space)
 def main [
-  default-space:address:shared:array:location <- copy 10/unsafe
-  1:address:shared:array:location/raw <- copy default-space:address:shared:array:location
+  default-space:address:array:location <- copy 10/unsafe
+  1:address:array:location/raw <- copy default-space:address:array:location
 ]
 +mem: storing 10 in location 1
 
@@ -118,15 +116,15 @@ def main [
 
 :(scenario lookup_sidesteps_default_space_in_get)
 def main [
-  # pretend pointer to container from outside
-  12:number <- copy 34
-  13:number <- copy 35
-  # pretend shared:array:location; in practice we'll use new
+  # pretend pointer to container from outside (2000 reserved for refcount)
+  2001:number <- copy 34
+  2002:number <- copy 35
+  # pretend address:array:location; in practice we'll use new
   1000:number <- copy 0  # refcount
   1001:number <- copy 5  # length
   # actual start of this recipe
-  default-space:address:shared:array:location <- copy 1000/unsafe
-  1:address:point <- copy 12/unsafe
+  default-space:address:array:location <- copy 1000/unsafe
+  1:address:point <- copy 2000/unsafe
   9:number/raw <- get *1:address:point, 1:offset
 ]
 +mem: storing 35 in location 9
@@ -138,16 +136,16 @@ element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
 :(scenario lookup_sidesteps_default_space_in_index)
 def main [
-  # pretend pointer to array from outside
-  12:number <- copy 2
-  13:number <- copy 34
-  14:number <- copy 35
-  # pretend shared:array:location; in practice we'll use new
+  # pretend pointer to array from outside (2000 reserved for refcount)
+  2001:number <- copy 2  # length
+  2002:number <- copy 34
+  2003:number <- copy 35
+  # pretend address:array:location; in practice we'll use new
   1000:number <- copy 0  # refcount
   1001:number <- copy 5  # length
   # actual start of this recipe
-  default-space:address:shared:array:location <- copy 1000/unsafe
-  1:address:array:number <- copy 12/unsafe
+  default-space:address:array:location <- copy 1000/unsafe
+  1:address:array:number <- copy 2000/unsafe
   9:number/raw <- index *1:address:array:number, 1
 ]
 +mem: storing 35 in location 9
@@ -175,7 +173,7 @@ if (s == "number-of-locals") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite `new-default-space` to
-//   `default-space:address:shared:array:location <- new location:type, number-of-locals:literal`
+//   `default-space:address:array:location <- new location:type, number-of-locals:literal`
 // where N is Name[recipe][""]
 if (curr.name == "new-default-space") {
   rewrite_default_space_instruction(curr);
@@ -206,7 +204,7 @@ def main [
 def foo [
   local-scope
   x:number <- copy 34
-  return default-space:address:shared:array:location
+  return default-space:address:array:location
 ]
 # both calls to foo should have received the same default-space
 +mem: storing 1 in location 3
@@ -215,9 +213,9 @@ def foo [
 //? :(scenario local_scope_frees_up_allocations)
 //? def main [
 //?   local-scope
-//?   x:address:shared:array:character <- new [abc]
+//?   x:address:array:character <- new [abc]
 //? ]
-//? +mem: clearing x:address:shared:array:character
+//? +mem: clearing x:address:array:character
 
 //: todo: do this in a transform, rather than magically in the reply instruction
 :(after "Falling Through End Of Recipe")
@@ -241,7 +239,7 @@ void try_reclaim_locals() {
   const instruction& inst = exiting_recipe.steps.at(0);
   if (inst.old_name != "local-scope") return;
   // reclaim any local variables unless they're being returned
-  // TODO: this isn't working yet. Doesn't handle address:shared stored in
+  // TODO: this isn't working yet. Doesn't handle address stored in
   // containers created by 'copy' or 'merge'. We'd end up deleting the address
   // even if some container containing it was returned.
   // This might doom our whole refcounting-based approach :/
@@ -282,7 +280,7 @@ void rewrite_default_space_instruction(instruction& curr) {
   curr.ingredients.push_back(reagent("number-of-locals:literal"));
   if (!curr.products.empty())
     raise << "new-default-space can't take any results\n" << end();
-  curr.products.push_back(reagent("default-space:address:shared:array:location"));
+  curr.products.push_back(reagent("default-space:address:array:location"));
 }
 
 //:: all recipes must set default-space one way or another

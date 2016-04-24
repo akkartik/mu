@@ -60,7 +60,7 @@ void check_type(set<reagent>& known, const reagent& x, const recipe& caller) {
       return;
     }
     if (!x.type->right->right) {
-      raise << caller.name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:shared:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
+      raise << caller.name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
       return;
     }
   }
@@ -96,17 +96,17 @@ def main [
 :(scenario typo_in_address_type_fails)
 % Hide_errors = true;
 def main [
-  y:address:shared:charcter <- new character:type
+  y:address:charcter <- new character:type
   *y <- copy 67
 ]
-+error: main: unknown type charcter in 'y:address:shared:charcter <- new character:type'
++error: main: unknown type charcter in 'y:address:charcter <- new character:type'
 
 :(scenario array_type_without_size_fails)
 % Hide_errors = true;
 def main [
   x:array:number <- merge 2, 12, 13
 ]
-+error: main can't determine the size of array variable x. Either allocate it separately and make the type of x address:shared:..., or specify the length of the array in the type of x.
++error: main can't determine the size of array variable x. Either allocate it separately and make the type of x address:..., or specify the length of the array in the type of x.
 
 :(scenarios transform)
 :(scenario transform_checks_types_of_identical_reagents_in_multiple_spaces)
@@ -114,7 +114,7 @@ def foo [  # dummy
 ]
 def main [
   local-scope
-  0:address:shared:array:location/names:foo <- copy 0  # specify surrounding space
+  0:address:array:location/names:foo <- copy 0  # specify surrounding space
   x:boolean <- copy 1/true
   x:number/space:1 <- copy 34
   x/space:1 <- copy 35

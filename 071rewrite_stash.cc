@@ -8,8 +8,8 @@ recipe main [
   n:number <- copy 34
   stash n
 ]
-+transform: {stash_2_0: ("address" "shared" "array" "character")} <- to-text-line {n: "number"}
-+transform: stash {stash_2_0: ("address" "shared" "array" "character")}
++transform: {stash_2_0: ("address" "array" "character")} <- to-text-line {n: "number"}
++transform: stash {stash_2_0: ("address" "array" "character")}
 
 //: special case: rewrite attempts to stash contents of most arrays to avoid
 //: passing addresses around
@@ -17,11 +17,11 @@ recipe main [
 :(scenario rewrite_stashes_of_arrays)
 recipe main [
   local-scope
-  n:address:shared:array:number <- new number:type, 3
+  n:address:array:number <- new number:type, 3
   stash *n
 ]
-+transform: {stash_2_0: ("address" "shared" "array" "character")} <- array-to-text-line {n: ("address" "shared" "array" "number")}
-+transform: stash {stash_2_0: ("address" "shared" "array" "character")}
++transform: {stash_2_0: ("address" "array" "character")} <- array-to-text-line {n: ("address" "array" "number")}
++transform: stash {stash_2_0: ("address" "array" "character")}
 
 :(scenario ignore_stashes_of_static_arrays)
 recipe main [
@@ -70,7 +70,7 @@ void rewrite_stashes_to_text(recipe& caller) {
           def.ingredients.push_back(inst.ingredients.at(j));
         }
         ostringstream ingredient_name;
-        ingredient_name << "stash_" << i << '_' << j << ":address:shared:array:character";
+        ingredient_name << "stash_" << i << '_' << j << ":address:array:character";
         def.products.push_back(reagent(ingredient_name.str()));
         trace(9993, "transform") << to_string(def) << end();
         new_instructions.push_back(def);

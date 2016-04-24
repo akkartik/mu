@@ -55,12 +55,13 @@ size_t hash_mu_scalar(size_t h, const reagent& r) {
 
 size_t hash_mu_address(size_t h, reagent& r) {
   if (r.value == 0) return 0;
+  trace(9999, "mem") << "location " << r.value << " is " << no_scientific(get_or_insert(Memory, r.value)) << end();
   r.value = get_or_insert(Memory, r.value);
-  drop_from_type(r, "address");
-  if (r.type->name == "shared") {
-    ++r.value;
-    drop_from_type(r, "shared");
+  if (r.value != 0) {
+    trace(9999, "mem") << "skipping refcount at " << r.value << end();
+    r.set_value(r.value+1);  // skip refcount
   }
+  drop_from_type(r, "address");
   return hash(h, r);
 }
 
@@ -221,8 +222,8 @@ def main [
   13:number <- copy 99
   2:number <- hash 10:array:number/unsafe
   return-unless 2:number
-  3:address:shared:array:character <- new [abc]
-  4:number <- hash 3:address:shared:array:character
+  3:address:array:character <- new [abc]
+  4:number <- hash 3:address:array:character
   return-unless 4:number
   5:boolean <- equal 2:number, 4:number
 ]
@@ -230,12 +231,12 @@ def main [
 
 :(scenario hash_ignores_address_value)
 def main [
-  1:address:shared:number <- new number:type
-  *1:address:shared:number <- copy 34
-  2:number <- hash 1:address:shared:number
-  3:address:shared:number <- new number:type
-  *3:address:shared:number <- copy 34
-  4:number <- hash 3:address:shared:number
+  1:address:number <- new number:type
+  *1:address:number <- copy 34
+  2:number <- hash 1:address:number
+  3:address:number <- new number:type
+  *3:address:number <- copy 34
+  4:number <- hash 3:address:number
   5:boolean <- equal 2:number, 4:number
 ]
 # different addresses hash to the same result as long as the values the point to do so
@@ -243,13 +244,13 @@ def main [
 
 :(scenario hash_ignores_address_refcount)
 def main [
-  1:address:shared:number <- new number:type
-  *1:address:shared:number <- copy 34
-  2:number <- hash 1:address:shared:number
+  1:address:number <- new number:type
+  *1:address:number <- copy 34
+  2:number <- hash 1:address:number
   return-unless 2:number
   # increment refcount
-  3:address:shared:number <- copy 1:address:shared:number
-  4:number <- hash 3:address:shared:number
+  3:address:number <- copy 1:address:number
+  4:number <- hash 3:address:number
   return-unless 4:number
   5:boolean <- equal 2:number, 4:number
 ]
@@ -281,17 +282,17 @@ def main [
 container foo [
   x:number
   y:character
-  z:address:shared:number
+  z:address:number
 ]
 def main [
-  1:address:shared:number <- new number:type
-  *1:address:shared:number <- copy 34
-  2:foo <- merge 34, 97/a, 1:address:shared:number
+  1:address:number <- new number:type
+  *1:address:number <- copy 34
+  2:foo <- merge 34, 97/a, 1:address:number
   5:number <- hash 2:foo
   return-unless 5:number
-  6:address:shared:number <- new number:type
-  *6:address:shared:number <- copy 34
-  7:foo <- merge 34, 97/a, 6:address:shared:number
+  6:address:number <- new number:type
+  *6:address:number <- copy 34
+  7:foo <- merge 34, 97/a, 6:address:number
   10:number <- hash 7:foo
   return-unless 10:number
   11:boolean <- equal 5:number, 10:number
@@ -348,9 +349,9 @@ def main [
 
 :(scenario hash_matches_old_version)
 def main [
-  1:address:shared:array:character <- new [abc]
-  2:number <- hash 1:address:shared:array:character
-  3:number <- hash_old 1:address:shared:array:character
+  1:address:array:character <- new [abc]
+  2:number <- hash 1:address:array:character
+  3:number <- hash_old 1:address:array:character
   4:boolean <- equal 2:number, 3:number
 ]
 +mem: storing 1 in location 4
@@ -366,7 +367,7 @@ case HASH_OLD: {
     break;
   }
   if (!is_mu_string(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'hash_old' currently only supports strings (address:shared:array:character), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'hash_old' currently only supports strings (address:array:character), but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   break;

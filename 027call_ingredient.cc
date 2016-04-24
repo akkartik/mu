@@ -176,10 +176,8 @@ bool is_mu_string(const reagent& x) {
   return x.type
     && x.type->value == get(Type_ordinal, "address")
     && x.type->right
-    && x.type->right->value == get(Type_ordinal, "shared")
+    && x.type->right->value == get(Type_ordinal, "array")
     && x.type->right->right
-    && x.type->right->right->value == get(Type_ordinal, "array")
-    && x.type->right->right->right
-    && x.type->right->right->right->value == get(Type_ordinal, "character")
-    && x.type->right->right->right->right == NULL;
+    && x.type->right->right->value == get(Type_ordinal, "character")
+    && x.type->right->right->right == NULL;
 }

@@ -2,7 +2,7 @@
 
 # temporary main for this layer: just render the given text at the given
 # screen dimensions, then stop
-def! main text:address:shared:array:character [
+def! main text:address:array:character [
   local-scope
   load-ingredients
   open-console
@@ -16,8 +16,8 @@ def! main text:address:shared:array:character [
 scenario editor-initially-prints-text-to-screen [
   assume-screen 10/width, 5/height
   run [
-    1:address:shared:array:character <- new [abc]
-    new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 10/right
+    1:address:array:character <- new [abc]
+    new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
   ]
   screen-should-contain [
     # top line of screen reserved for menu
@@ -29,11 +29,11 @@ scenario editor-initially-prints-text-to-screen [
 
 container editor-data [
   # editable text: doubly linked list of characters (head contains a special sentinel)
-  data:address:shared:duplex-list:character
-  top-of-screen:address:shared:duplex-list:character
-  bottom-of-screen:address:shared:duplex-list:character
+  data:address:duplex-list:character
+  top-of-screen:address:duplex-list:character
+  bottom-of-screen:address:duplex-list:character
   # location before cursor inside data
-  before-cursor:address:shared:duplex-list:character
+  before-cursor:address:duplex-list:character
 
   # raw bounds of display area on screen
   # always displays from row 1 (leaving row 0 for a menu) and at most until bottom of screen
@@ -48,7 +48,7 @@ container editor-data [
 # creates a new editor widget and renders its initial appearance to screen
 #   top/left/right constrain the screen area available to the new editor
 #   right is exclusive
-def new-editor s:address:shared:array:character, screen:address:shared:screen, left:number, right:number -> result:address:shared:editor-data, screen:address:shared:screen [
+def new-editor s:address:array:character, screen:address:screen, left:number, right:number -> result:address:editor-data, screen:address:screen [
   local-scope
   load-ingredients
   # no clipping of bounds
@@ -61,7 +61,7 @@ def new-editor s:address:shared:array:character, screen:address:shared:screen, l
   *result <- put *result, cursor-row:offset, 1/top
   *result <- put *result, cursor-column:offset, left
   # initialize empty contents
-  init:address:shared:duplex-list:character <- push 167/§, 0/tail
+  init:address:duplex-list:character <- push 167/§, 0/tail
   *result <- put *result, data:offset, init
   *result <- put *result, top-of-screen:offset, init
   *result <- put *result, before-cursor:offset, init
@@ -71,7 +71,7 @@ def new-editor s:address:shared:array:character, screen:address:shared:screen, l
   <editor-initialization>
 ]
 
-def insert-text editor:address:shared:editor-data, text:address:shared:array:character -> editor:address:shared:editor-data [
+def insert-text editor:address:editor-data, text:address:array:character -> editor:address:editor-data [
   local-scope
   load-ingredients
   # early exit if text is empty
@@ -80,7 +80,7 @@ def insert-text editor:address:shared:editor-data, text:address:shared:array:cha
   return-unless len, editor/same-as-ingredient:0
   idx:number <- copy 0
   # now we can start appending the rest, character by character
-  curr:address:shared:duplex-list:character <- get *editor, data:offset
+  curr:address:duplex-list:character <- get *editor, data:offset
   {
     done?:boolean <- greater-or-equal idx, len
     break-if done?
@@ -97,8 +97,8 @@ def insert-text editor:address:shared:editor-data, text:address:shared:array:cha
 scenario editor-initializes-without-data [
   assume-screen 5/width, 3/height
   run [
-    1:address:shared:editor-data <- new-editor 0/data, screen:address:shared:screen, 2/left, 5/right
-    2:editor-data <- copy *1:address:shared:editor-data
+    1:address:editor-data <- new-editor 0/data, screen:address:screen, 2/left, 5/right
+    2:editor-data <- copy *1:address:editor-data
   ]
   memory-should-contain [
     # 2 (data) <- just the § sentinel
@@ -121,7 +121,7 @@ scenario editor-initializes-without-data [
 # Assumes cursor should be at coordinates (cursor-row, cursor-column) and
 # updates before-cursor to match. Might also move coordinates if they're
 # outside text.
-def render screen:address:shared:screen, editor:address:shared:editor-data -> last-row:number, last-column:number, screen:address:shared:screen, editor:address:shared:editor-data [
+def render screen:address:screen, editor:address:editor-data -> last-row:number, last-column:number, screen:address:screen, editor:address:editor-data [
   local-scope
   load-ingredients
   return-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
@@ -129,8 +129,8 @@ def render screen:address:shared:screen, editor:address:shared:editor-data -> la
   screen-height:number <- screen-height screen
   right:number <- get *editor, right:offset
   # traversing editor
-  curr:address:shared:duplex-list:character <- get *editor, top-of-screen:offset
-  prev:address:shared:duplex-list:character <- copy curr  # just in case curr becomes null and we can't compute prev
+  curr:address:duplex-list:character <- get *editor, top-of-screen:offset
+  prev:address:duplex-list:character <- copy curr  # just in case curr becomes null and we can't compute prev
   curr <- next curr
   # traversing screen
   +render-loop-initialization
@@ -139,7 +139,7 @@ def render screen:address:shared:screen, editor:address:shared:editor-data -> la
   column:number <- copy left
   cursor-row:number <- get *editor, cursor-row:offset
   cursor-column:number <- get *editor, cursor-column:offset
-  before-cursor:address:shared:duplex-list:character <- get *editor, before-cursor:offset
+  before-cursor:address:duplex-list:character <- get *editor, before-cursor:offset
   screen <- move-cursor screen, row, column
   {
     +next-character
@@ -222,7 +222,7 @@ def render screen:address:shared:screen, editor:address:shared:editor-data -> la
   return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
-def clear-line-delimited screen:address:shared:screen, column:number, right:number -> screen:address:shared:screen [
+def clear-line-delimited screen:address:screen, column:number, right:number -> screen:address:screen [
   local-scope
   load-ingredients
   space:character <- copy 32/space
@@ -241,7 +241,7 @@ def clear-line-delimited screen:address:shared:screen, column:number, right:numb
   }
 ]
 
-def clear-screen-from screen:address:shared:screen, row:number, column:number, left:number, right:number -> screen:address:shared:screen [
+def clear-screen-from screen:address:screen, row:number, column:number, left:number, right:number -> screen:address:screen [
   local-scope
   load-ingredients
   # if it's the real screen, use the optimized primitive
@@ -257,7 +257,7 @@ def clear-screen-from screen:address:shared:screen, row:number, column:number, l
   return screen/same-as-ingredient:0
 ]
 
-def clear-rest-of-screen screen:address:shared:screen, row:number, left:number, right:number -> screen:address:shared:screen [
+def clear-rest-of-screen screen:address:screen, row:number, left:number, right:number -> screen:address:screen [
   local-scope
   load-ingredients
   row <- add row, 1
@@ -276,9 +276,9 @@ def clear-rest-of-screen screen:address:shared:screen, row:number, left:number, 
 scenario editor-initially-prints-multiple-lines [
   assume-screen 5/width, 5/height
   run [
-    s:address:shared:array:character <- new [abc
+    s:address:array:character <- new [abc
 def]
-    new-editor s:address:shared:array:character, screen:address:shared:screen, 0/left, 5/right
+    new-editor s:address:array:character, screen:address:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -291,8 +291,8 @@ def]
 scenario editor-initially-handles-offsets [
   assume-screen 5/width, 5/height
   run [
-    s:address:shared:array:character <- new [abc]
-    new-editor s:address:shared:array:character, screen:address:shared:screen, 1/left, 5/right
+    s:address:array:character <- new [abc]
+    new-editor s:address:array:character, screen:address:screen, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -304,9 +304,9 @@ scenario editor-initially-handles-offsets [
 scenario editor-initially-prints-multiple-lines-at-offset [
   assume-screen 5/width, 5/height
   run [
-    s:address:shared:array:character <- new [abc
+    s:address:array:character <- new [abc
 def]
-    new-editor s:address:shared:array:character, screen:address:shared:screen, 1/left, 5/right
+    new-editor s:address:array:character, screen:address:screen, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -319,8 +319,8 @@ def]
 scenario editor-initially-wraps-long-lines [
   assume-screen 5/width, 5/height
   run [
-    s:address:shared:array:character <- new [abc def]
-    new-editor s:address:shared:array:character, screen:address:shared:screen, 0/left, 5/right
+    s:address:array:character <- new [abc def]
+    new-editor s:address:array:character, screen:address:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -339,8 +339,8 @@ scenario editor-initially-wraps-long-lines [
 scenario editor-initially-wraps-barely-long-lines [
   assume-screen 5/width, 5/height
   run [
-    s:address:shared:array:character <- new [abcde]
-    new-editor s:address:shared:array:character, screen:address:shared:screen, 0/left, 5/right
+    s:address:array:character <- new [abcde]
+    new-editor s:address:array:character, screen:address:screen, 0/left, 5/right
   ]
   # still wrap, even though the line would fit. We need room to click on the
   # end of the line
@@ -361,10 +361,10 @@ scenario editor-initially-wraps-barely-long-lines [
 scenario editor-initializes-empty-text [
   assume-screen 5/width, 5/height
   run [
-    1:address:shared:array:character <- new []
-    2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 5/right
-    3:number <- get *2:address:shared:editor-data, cursor-row:offset
-    4:number <- get *2:address:shared:editor-data, cursor-column:offset
+    1:address:array:character <- new []
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .     .
@@ -382,10 +382,10 @@ scenario editor-initializes-empty-text [
 scenario render-colors-comments [
   assume-screen 5/width, 5/height
   run [
-    s:address:shared:array:character <- new [abc
+    s:address:array:character <- new [abc
 # de
 f]
-    new-editor s:address:shared:array:character, screen:address:shared:screen, 0/left, 5/right
+    new-editor s:address:array:character, screen:address:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -463,10 +463,10 @@ def get-color color:number, c:character -> color:number [
 scenario render-colors-assignment [
   assume-screen 8/width, 5/height
   run [
-    s:address:shared:array:character <- new [abc
+    s:address:array:character <- new [abc
 d <- e
 f]
-    new-editor s:address:shared:array:character, screen:address:shared:screen, 0/left, 8/right
+    new-editor s:address:array:character, screen:address:screen, 0/left, 8/right
   ]
   screen-should-contain [
     .        .

@@ -54,7 +54,7 @@ case CREATE_ARRAY: {
   trace(9999, "mem") << "storing " << array_length << " in location " << base_address << end();
   put(Memory, base_address, array_length);  // in array elements
   int size = size_of(product);  // in locations
-  trace(9998, "run") << "creating array of size " << size << '\n' << end();
+  trace(9998, "run") << "creating array of size " << size << end();
   // initialize array
   for (int i = 1; i <= size_of(product); ++i) {
     put(Memory, base_address+i, 0);

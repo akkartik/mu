@@ -4,17 +4,17 @@ scenario sandbox-click-on-code-toggles-app-trace [
   trace-until 100/app  # trace too long
   assume-screen 40/width, 10/height
   # basic recipe
-  1:address:shared:array:character <- new [ 
+  1:address:array:character <- new [ 
 recipe foo [
   stash [abc]
 ]]
   # run it
-  2:address:shared:array:character <- new [foo]
+  2:address:array:character <- new [foo]
   assume-console [
     press F4
   ]
-  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
-  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
     .                    ┊                   .
@@ -29,9 +29,9 @@ recipe foo [
     left-click 4, 21
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
     4:character/cursor-icon <- copy 9251/␣
-    print screen:address:shared:screen, 4:character/cursor-icon
+    print screen:address:screen, 4:character/cursor-icon
   ]
   # trace now printed and cursor shouldn't have budged
   screen-should-contain [
@@ -59,8 +59,8 @@ recipe foo [
     left-click 4, 25
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
-    print screen:address:shared:screen, 4:character/cursor-icon
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    print screen:address:screen, 4:character/cursor-icon
   ]
   # trace hidden again
   screen-should-contain [
@@ -78,18 +78,18 @@ scenario sandbox-shows-app-trace-and-result [
   trace-until 100/app  # trace too long
   assume-screen 40/width, 10/height
   # basic recipe
-  1:address:shared:array:character <- new [ 
+  1:address:array:character <- new [ 
 recipe foo [
   stash [abc]
   reply 4
 ]]
   # run it
-  2:address:shared:array:character <- new [foo]
+  2:address:array:character <- new [foo]
   assume-console [
     press F4
   ]
-  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character, 2:address:shared:array:character
-  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
     .                     run (F4)           .
     .                    ┊                   .
@@ -105,7 +105,7 @@ recipe foo [
     left-click 4, 21
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # trace now printed above result
   screen-should-contain [
@@ -122,16 +122,16 @@ recipe foo [
 ]
 
 container sandbox-data [
-  trace:address:shared:array:character
+  trace:address:array:character
   display-trace?:boolean
 ]
 
 # replaced in a later layer
-def! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+def! update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data, idx:number -> sandbox:address:sandbox-data, env:address:programming-environment-data [
   local-scope
   load-ingredients
-  data:address:shared:array:character <- get *sandbox, data:offset
-  response:address:shared:array:character, _, fake-screen:address:shared:screen, trace:address:shared:array:character <- run-interactive data
+  data:address:array:character <- get *sandbox, data:offset
+  response:address:array:character, _, fake-screen:address:screen, trace:address:array:character <- run-interactive data
   *sandbox <- put *sandbox, response:offset, response
   *sandbox <- put *sandbox, screen:offset, fake-screen
   *sandbox <- put *sandbox, trace:offset, trace
@@ -145,14 +145,14 @@ after <global-touch> [
     click-column:number <- get t, column:offset
     on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
     break-unless on-sandbox-side?
-    first-sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
+    first-sandbox:address:sandbox-data <- get *env, sandbox:offset
     break-unless first-sandbox
     first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
     click-row:number <- get t, row:offset
     below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
     break-unless below-sandbox-editor?
     # identify the sandbox whose code is being clicked on
-    sandbox:address:shared:sandbox-data <- find-click-in-sandbox-code env, click-row
+    sandbox:address:sandbox-data <- find-click-in-sandbox-code env, click-row
     break-unless sandbox
     # toggle its display-trace? property
     x:boolean <- get *sandbox, display-trace?:offset
@@ -167,7 +167,7 @@ after <global-touch> [
   }
 ]
 
-def find-click-in-sandbox-code env:address:shared:programming-environment-data, click-row:number -> sandbox:address:shared:sandbox-data [
+def find-click-in-sandbox-code env:address:programming-environment-data, click-row:number -> sandbox:address:sandbox-data [
   local-scope
   load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
@@ -177,7 +177,7 @@ def find-click-in-sandbox-code env:address:shared:programming-environment-data, 
   assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
   # while click-row < sandbox.next-sandbox.starting-row-on-screen
   {
-    next-sandbox:address:shared:sandbox-data <- get *sandbox, next-sandbox:offset
+    next-sandbox:address:sandbox-data <- get *sandbox, next-sandbox:offset
     break-unless next-sandbox
     next-start:number <- get *next-sandbox, starting-row-on-screen:offset
     found?:boolean <- lesser-than click-row, next-start
@@ -203,7 +203,7 @@ after <render-sandbox-results> [
   {
     display-trace?:boolean <- get *sandbox, display-trace?:offset
     break-unless display-trace?
-    sandbox-trace:address:shared:array:character <- get *sandbox, trace:offset
+    sandbox-trace:address:array:character <- get *sandbox, trace:offset
     break-unless sandbox-trace  # nothing to print; move on
     row, screen <- render screen, sandbox-trace, left, right, 245/grey, row
   }

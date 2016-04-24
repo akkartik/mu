@@ -4,16 +4,16 @@
 :(scenario run_interactive_code)
 def main [
   1:number/raw <- copy 0
-  2:address:shared:array:character <- new [1:number/raw <- copy 34]
-  run-interactive 2:address:shared:array:character
+  2:address:array:character <- new [1:number/raw <- copy 34]
+  run-interactive 2:address:array:character
   3:number/raw <- copy 1:number/raw
 ]
 +mem: storing 34 in location 3
 
 :(scenario run_interactive_empty)
 def main [
-  1:address:shared:array:character <- copy 0/unsafe
-  2:address:shared:array:character <- run-interactive 1:address:shared:array:character
+  1:address:array:character <- copy 0/unsafe
+  2:address:array:character <- run-interactive 1:address:array:character
 ]
 # result is null
 +mem: storing 0 in location 2
@@ -86,7 +86,7 @@ bool run_interactive(int address) {
   // call run(string) but without the scheduling
   load(string("recipe! interactive [\n") +
           "local-scope\n" +
-          "screen:address:shared:screen <- next-ingredient\n" +
+          "screen:address:screen <- next-ingredient\n" +
           "$start-tracking-products\n" +
           command + "\n" +
           "$stop-tracking-products\n" +
@@ -168,15 +168,15 @@ load(string(
 "]\n" +
 "recipe sandbox [\n" +
   "local-scope\n" +
-  "screen:address:shared:screen <- new-fake-screen 30, 5\n" +
+  "screen:address:screen <- new-fake-screen 30, 5\n" +
   "r:number/routine_id <- start-running interactive, screen\n" +
   "limit-time r, 100000/instructions\n" +
   "wait-for-routine r\n" +
   "sandbox-state:number <- routine-state r/routine_id\n" +
   "completed?:boolean <- equal sandbox-state, 1/completed\n" +
-  "output:address:shared:array:character <- $most-recent-products\n" +
-  "errors:address:shared:array:character <- save-errors\n" +
-  "stashes:address:shared:array:character <- save-app-trace\n" +
+  "output:address:array:character <- $most-recent-products\n" +
+  "errors:address:array:character <- save-errors\n" +
+  "stashes:address:array:character <- save-app-trace\n" +
   "$cleanup-run-interactive\n" +
   "return output, errors, screen, stashes, completed?\n" +
 "]\n");
@@ -187,10 +187,10 @@ load(string(
 
 :(scenario run_interactive_comments)
 def main [
-  1:address:shared:array:character <- new [# ab
+  1:address:array:character <- new [# ab
 add 2, 2]
-  2:address:shared:array:character <- run-interactive 1:address:shared:array:character
-  3:array:character <- copy *2:address:shared:array:character
+  2:address:array:character <- run-interactive 1:address:array:character
+  3:array:character <- copy *2:address:array:character
 ]
 +mem: storing 52 in location 4
 
@@ -284,9 +284,9 @@ case _CLEANUP_RUN_INTERACTIVE: {
 :(scenario "run_interactive_converts_result_to_text")
 def main [
   # try to interactively add 2 and 2
-  1:address:shared:array:character <- new [add 2, 2]
-  2:address:shared:array:character <- run-interactive 1:address:shared:array:character
-  10:array:character <- copy 2:address:shared:array:character/lookup
+  1:address:array:character <- new [add 2, 2]
+  2:address:array:character <- run-interactive 1:address:array:character
+  10:array:character <- copy 2:address:array:character/lookup
 ]
 # first letter in the output should be '4' in unicode
 +mem: storing 52 in location 11
@@ -294,13 +294,13 @@ def main [
 :(scenario "run_interactive_returns_text")
 def main [
   # try to interactively add 2 and 2
-  1:address:shared:array:character <- new [
-    x:address:shared:array:character <- new [a]
-    y:address:shared:array:character <- new [b]
-    z:address:shared:array:character <- append x:address:shared:array:character, y:address:shared:array:character
+  1:address:array:character <- new [
+    x:address:array:character <- new [a]
+    y:address:array:character <- new [b]
+    z:address:array:character <- append x:address:array:character, y:address:array:character
   ]
-  2:address:shared:array:character <- run-interactive 1:address:shared:array:character
-  10:array:character <- copy 2:address:shared:array:character/lookup
+  2:address:array:character <- run-interactive 1:address:array:character
+  10:array:character <- copy 2:address:array:character/lookup
 ]
 # output contains "ab"
 +mem: storing 97 in location 11
@@ -309,10 +309,10 @@ def main [
 :(scenario "run_interactive_returns_errors")
 def main [
   # run a command that generates an error
-  1:address:shared:array:character <- new [x:number <- copy 34
+  1:address:array:character <- new [x:number <- copy 34
 get x:number, foo:offset]
-  2:address:shared:array:character, 3:address:shared:array:character <- run-interactive 1:address:shared:array:character
-  10:array:character <- copy 3:address:shared:array:character/lookup
+  2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
+  10:array:character <- copy 3:address:array:character/lookup
 ]
 # error should be "unknown element foo in container number"
 +mem: storing 117 in location 11
@@ -324,10 +324,10 @@ get x:number, foo:offset]
 :(scenario run_interactive_with_comment)
 def main [
   # 2 instructions, with a comment after the first
-  1:address:shared:array:number <- new [a:number <- copy 0  # abc
+  1:address:array:number <- new [a:number <- copy 0  # abc
 b:number <- copy 0
 ]
-  2:address:shared:array:character, 3:address:shared:array:character <- run-interactive 1:address:shared:array:character
+  2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
 ]
 # no errors
 +mem: storing 0 in location 3
@@ -476,7 +476,7 @@ case RELOAD: {
 :(scenario reload_continues_past_error)
 def main [
   local-scope
-  x:address:shared:array:character <- new [recipe foo [
+  x:address:array:character <- new [recipe foo [
   get 1234:number, foo:offset
 ]]
   reload x
@@ -488,7 +488,7 @@ def main [
 # define a container and try to create it (merge requires knowing container size)
 def main [
   local-scope
-  x:address:shared:array:character <- new [
+  x:address:array:character <- new [
     container foo [
       x:number
       y:number

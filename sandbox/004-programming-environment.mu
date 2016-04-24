@@ -3,12 +3,12 @@
 def! main [
   local-scope
   open-console
-  initial-sandbox:address:shared:array:character <- new []
+  initial-sandbox:address:array:character <- new []
   hide-screen 0/screen
-  env:address:shared:programming-environment-data <- new-programming-environment 0/screen, initial-sandbox
+  env:address:programming-environment-data <- new-programming-environment 0/screen, initial-sandbox
   env <- restore-sandboxes env
   render-sandbox-side 0/screen, env
-  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   update-cursor 0/screen, current-sandbox, env
   show-screen 0/screen
   event-loop 0/screen, 0/console, env
@@ -16,10 +16,10 @@ def! main [
 ]
 
 container programming-environment-data [
-  current-sandbox:address:shared:editor-data
+  current-sandbox:address:editor-data
 ]
 
-def new-programming-environment screen:address:shared:screen, initial-sandbox-contents:address:shared:array:character -> result:address:shared:programming-environment-data, screen:address:shared:screen [
+def new-programming-environment screen:address:screen, initial-sandbox-contents:address:array:character -> result:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   width:number <- screen-width screen
@@ -33,15 +33,15 @@ def new-programming-environment screen:address:shared:screen, initial-sandbox-co
   screen <- move-cursor screen, 0/row, button-start
   print screen, [ run (F4) ], 255/white, 161/reddish
   # sandbox editor
-  current-sandbox:address:shared:editor-data <- new-editor initial-sandbox-contents, screen, 0, width/right
+  current-sandbox:address:editor-data <- new-editor initial-sandbox-contents, screen, 0, width/right
   *result <- put *result, current-sandbox:offset, current-sandbox
   <programming-environment-initialization>
 ]
 
-def event-loop screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data -> screen:address:shared:screen, console:address:shared:console, env:address:shared:programming-environment-data [
+def event-loop screen:address:screen, console:address:console, env:address:programming-environment-data -> screen:address:screen, console:address:console, env:address:programming-environment-data [
   local-scope
   load-ingredients
-  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   # if we fall behind we'll stop updating the screen, but then we have to
   # render the entire screen when we catch up.
   # todo: test this
@@ -135,13 +135,13 @@ def event-loop screen:address:shared:screen, console:address:shared:console, env
   }
 ]
 
-def resize screen:address:shared:screen, env:address:shared:programming-environment-data -> env:address:shared:programming-environment-data, screen:address:shared:screen [
+def resize screen:address:screen, env:address:programming-environment-data -> env:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   clear-screen screen  # update screen dimensions
   width:number <- screen-width screen
   # update sandbox editor
-  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   right:number <- subtract width, 1
   *current-sandbox <- put *current-sandbox right:offset, right
   # reset cursor
@@ -149,7 +149,7 @@ def resize screen:address:shared:screen, env:address:shared:programming-environm
   *current-sandbox <- put *current-sandbox, cursor-column:offset, 0
 ]
 
-def render-all screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
+def render-all screen:address:screen, env:address:programming-environment-data -> screen:address:screen, env:address:programming-environment-data [
   local-scope
   load-ingredients
   trace 10, [app], [render all]
@@ -167,17 +167,17 @@ def render-all screen:address:shared:screen, env:address:shared:programming-envi
   screen <- render-sandbox-side screen, env
   <render-components-end>
   #
-  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   screen <- update-cursor screen, current-sandbox, env
   #
   show-screen screen
 ]
 
 # replaced in a later layer
-def render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
+def render-sandbox-side screen:address:screen, env:address:programming-environment-data -> screen:address:screen, env:address:programming-environment-data [
   local-scope
   load-ingredients
-  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
   row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
@@ -189,7 +189,7 @@ def render-sandbox-side screen:address:shared:screen, env:address:shared:program
   clear-screen-from screen, row, left, left, right
 ]
 
-def update-cursor screen:address:shared:screen, current-sandbox:address:shared:editor-data, env:address:shared:programming-environment-data -> screen:address:shared:screen [
+def update-cursor screen:address:screen, current-sandbox:address:editor-data, env:address:programming-environment-data -> screen:address:screen [
   local-scope
   load-ingredients
   <update-cursor-special-cases>
@@ -200,7 +200,7 @@ def update-cursor screen:address:shared:screen, current-sandbox:address:shared:e
 
 # print a text 's' to 'editor' in 'color' starting at 'row'
 # clear rest of last line, move cursor to next line
-def render screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:shared:screen [
+def render screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
   local-scope
   load-ingredients
   return-unless s
@@ -261,7 +261,7 @@ def render screen:address:shared:screen, s:address:shared:array:character, left:
 ]
 
 # like 'render' for texts, but with colorization for comments like in the editor
-def render-code screen:address:shared:screen, s:address:shared:array:character, left:number, right:number, row:number -> row:number, screen:address:shared:screen [
+def render-code screen:address:screen, s:address:array:character, left:number, right:number, row:number -> row:number, screen:address:screen [
   local-scope
   load-ingredients
   return-unless s
@@ -329,13 +329,13 @@ after <global-type> [
   {
     redraw-screen?:boolean <- equal c, 12/ctrl-l
     break-unless redraw-screen?
-    screen <- render-all screen, env:address:shared:programming-environment-data
+    screen <- render-all screen, env:address:programming-environment-data
     sync-screen screen
     loop +next-event:label
   }
 ]
 
 # dummy
-def restore-sandboxes env:address:shared:programming-environment-data -> env:address:shared:programming-environment-data [
+def restore-sandboxes env:address:programming-environment-data -> env:address:programming-environment-data [
   # do nothing; redefined later
 ]

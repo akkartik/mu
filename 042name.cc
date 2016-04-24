@@ -112,9 +112,8 @@ int lookup_name(const reagent& r, const recipe_ordinal default_recipe) {
 
 type_ordinal skip_addresses(type_tree* type) {
   type_ordinal address = get(Type_ordinal, "address");
-  type_ordinal shared = get(Type_ordinal, "shared");
   for (; type; type = type->right) {
-    if (type->value != address && type->value != shared)
+    if (type->value != address)
       return type->value;
   }
   return -1;

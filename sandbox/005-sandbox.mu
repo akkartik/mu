@@ -5,7 +5,7 @@
 # few other things.
 
 container programming-environment-data [
-  sandbox:address:shared:sandbox-data  # list of sandboxes, from top to bottom
+  sandbox:address:sandbox-data  # list of sandboxes, from top to bottom
   render-from:number
   number-of-sandboxes:number
 ]
@@ -15,28 +15,28 @@ after <programming-environment-initialization> [
 ]
 
 container sandbox-data [
-  data:address:shared:array:character
-  response:address:shared:array:character
+  data:address:array:character
+  response:address:array:character
   # coordinates to track clicks
   # constraint: will be 0 for sandboxes at positions before env.render-from
   starting-row-on-screen:number
   code-ending-row-on-screen:number  # past end of code
-  screen:address:shared:screen  # prints in the sandbox go here
-  next-sandbox:address:shared:sandbox-data
+  screen:address:screen  # prints in the sandbox go here
+  next-sandbox:address:sandbox-data
 ]
 
 scenario run-and-show-results [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
   # sandbox editor contains an instruction without storing outputs
-  1:address:shared:array:character <- new [divide-with-remainder 11, 3]
-  2:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character
+  1:address:array:character <- new [divide-with-remainder 11, 3]
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   # run the code in the editors
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # check that screen prints the results
   screen-should-contain [
@@ -86,7 +86,7 @@ scenario run-and-show-results [
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # check that screen prints both sandboxes
   screen-should-contain [
@@ -112,7 +112,7 @@ after <global-keypress> [
     do-run?:boolean <- equal k, 65532/F4
     break-unless do-run?
     screen <- update-status screen, [running...       ], 245/grey
-    test-recipes:address:shared:array:character, _/optional <- next-ingredient
+    test-recipes:address:array:character, _/optional <- next-ingredient
     error?:boolean, env, screen <- run-sandboxes env, screen, test-recipes
 #?     test-recipes <- copy 0  # abandon
     # F4 might update warnings and results on both sides
@@ -126,22 +126,22 @@ after <global-keypress> [
   }
 ]
 
-def run-sandboxes env:address:shared:programming-environment-data, screen:address:shared:screen, test-recipes:address:shared:array:character -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+def run-sandboxes env:address:programming-environment-data, screen:address:screen, test-recipes:address:array:character -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   errors-found?:boolean, env, screen <- update-recipes env, screen, test-recipes
   # check contents of editor
   <run-sandboxes-begin>
-  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   {
-    sandbox-contents:address:shared:array:character <- editor-contents current-sandbox
+    sandbox-contents:address:array:character <- editor-contents current-sandbox
     break-unless sandbox-contents
     # if contents exist, first save them
     # run them and turn them into a new sandbox-data
-    new-sandbox:address:shared:sandbox-data <- new sandbox-data:type
+    new-sandbox:address:sandbox-data <- new sandbox-data:type
     *new-sandbox <- put *new-sandbox, data:offset, sandbox-contents
     # push to head of sandbox list
-    dest:address:shared:sandbox-data <- get *env, sandbox:offset
+    dest:address:sandbox-data <- get *env, sandbox:offset
     *new-sandbox <- put *new-sandbox, next-sandbox:offset, dest
     *env <- put *env, sandbox:offset, new-sandbox
     # update sandbox count
@@ -149,14 +149,14 @@ def run-sandboxes env:address:shared:programming-environment-data, screen:addres
     sandbox-count <- add sandbox-count, 1
     *env <- put *env, number-of-sandboxes:offset, sandbox-count
     # clear sandbox editor
-    init:address:shared:duplex-list:character <- push 167/§, 0/tail
+    init:address:duplex-list:character <- push 167/§, 0/tail
     *current-sandbox <- put *current-sandbox, data:offset, init
     *current-sandbox <- put *current-sandbox, top-of-screen:offset, init
   }
   # save all sandboxes before running, just in case we die when running
   save-sandboxes env
   # run all sandboxes
-  curr:address:shared:sandbox-data <- get *env, sandbox:offset
+  curr:address:sandbox-data <- get *env, sandbox:offset
   idx:number <- copy 0
   {
     break-unless curr
@@ -170,12 +170,12 @@ def run-sandboxes env:address:shared:programming-environment-data, screen:addres
 
 # load code from recipes.mu, or from test-recipes in tests
 # replaced in a later layer (whereupon errors-found? will actually be set)
-def update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen, test-recipes:address:shared:array:character -> errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+def update-recipes env:address:programming-environment-data, screen:address:screen, test-recipes:address:array:character -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   {
     break-if test-recipes
-    in:address:shared:array:character <- restore [recipes.mu]  # newlayer: persistence
+    in:address:array:character <- restore [recipes.mu]  # newlayer: persistence
     reload in
   }
   {
@@ -186,34 +186,34 @@ def update-recipes env:address:shared:programming-environment-data, screen:addre
 ]
 
 # replaced in a later layer
-def! update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number -> sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+def! update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data, idx:number -> sandbox:address:sandbox-data, env:address:programming-environment-data [
   local-scope
   load-ingredients
-  data:address:shared:array:character <- get *sandbox, data:offset
-  response:address:shared:array:character, _, fake-screen:address:shared:screen <- run-interactive data
+  data:address:array:character <- get *sandbox, data:offset
+  response:address:array:character, _, fake-screen:address:screen <- run-interactive data
   *sandbox <- put *sandbox, response:offset, response
   *sandbox <- put *sandbox, screen:offset, fake-screen
 ]
 
-def update-status screen:address:shared:screen, msg:address:shared:array:character, color:number -> screen:address:shared:screen [
+def update-status screen:address:screen, msg:address:array:character, color:number -> screen:address:screen [
   local-scope
   load-ingredients
   screen <- move-cursor screen, 0, 2
   screen <- print screen, msg, color, 238/grey/background
 ]
 
-def save-sandboxes env:address:shared:programming-environment-data [
+def save-sandboxes env:address:programming-environment-data [
   local-scope
   load-ingredients
-  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   # first clear previous versions, in case we deleted some sandbox
   $system [rm lesson/[0-9]* >/dev/null 2>/dev/null]  # some shells can't handle '>&'
-  curr:address:shared:sandbox-data <- get *env, sandbox:offset
+  curr:address:sandbox-data <- get *env, sandbox:offset
   idx:number <- copy 0
   {
     break-unless curr
-    data:address:shared:array:character <- get *curr, data:offset
-    filename:address:shared:array:character <- to-text idx
+    data:address:array:character <- get *curr, data:offset
+    filename:address:array:character <- to-text idx
     save filename, data
     <end-save-sandbox>
     idx <- add idx, 1
@@ -222,11 +222,11 @@ def save-sandboxes env:address:shared:programming-environment-data [
   }
 ]
 
-def! render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data -> screen:address:shared:screen, env:address:shared:programming-environment-data [
+def! render-sandbox-side screen:address:screen, env:address:programming-environment-data -> screen:address:screen, env:address:programming-environment-data [
   local-scope
   load-ingredients
   trace 11, [app], [render sandbox side]
-  current-sandbox:address:shared:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   row:number, column:number <- copy 1, 0
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
@@ -241,15 +241,15 @@ def! render-sandbox-side screen:address:shared:screen, env:address:shared:progra
   }
   # render sandboxes
   draw-horizontal screen, row, left, right, 9473/horizontal-double
-  sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
+  sandbox:address:sandbox-data <- get *env, sandbox:offset
   row, screen <- render-sandboxes screen, sandbox, left, right, row, render-from, 0, env
   clear-rest-of-screen screen, row, left, right
 ]
 
-def render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbox-data, left:number, right:number, row:number, render-from:number, idx:number -> row:number, screen:address:shared:screen, sandbox:address:shared:sandbox-data [
+def render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:number, right:number, row:number, render-from:number, idx:number -> row:number, screen:address:screen, sandbox:address:sandbox-data [
   local-scope
   load-ingredients
-  env:address:shared:programming-environment-data, _/optional <- next-ingredient
+  env:address:programming-environment-data, _/optional <- next-ingredient
   return-unless sandbox
   screen-height:number <- screen-height screen
   at-bottom?:boolean <- greater-or-equal row, screen-height
@@ -269,14 +269,14 @@ def render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbo
     # render sandbox contents
     row <- add row, 1
     screen <- move-cursor screen, row, left
-    sandbox-data:address:shared:array:character <- get *sandbox, data:offset
+    sandbox-data:address:array:character <- get *sandbox, data:offset
     row, screen <- render-code screen, sandbox-data, left, right, row
     *sandbox <- put *sandbox, code-ending-row-on-screen:offset, row
     # render sandbox warnings, screen or response, in that order
-    sandbox-response:address:shared:array:character <- get *sandbox, response:offset
+    sandbox-response:address:array:character <- get *sandbox, response:offset
     <render-sandbox-results>
     {
-      sandbox-screen:address:shared:screen <- get *sandbox, screen:offset
+      sandbox-screen:address:screen <- get *sandbox, screen:offset
       empty-screen?:boolean <- fake-screen-is-empty? sandbox-screen
       break-if empty-screen?
       row, screen <- render-screen screen, sandbox-screen, left, right, row
@@ -300,22 +300,22 @@ def render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbo
     <end-render-sandbox-reset-hidden>
   }
   # draw next sandbox
-  next-sandbox:address:shared:sandbox-data <- get *sandbox, next-sandbox:offset
+  next-sandbox:address:sandbox-data <- get *sandbox, next-sandbox:offset
   next-idx:number <- add idx, 1
   row, screen <- render-sandboxes screen, next-sandbox, left, right, row, render-from, next-idx, env
 ]
 
 # assumes programming environment has no sandboxes; restores them from previous session
-def! restore-sandboxes env:address:shared:programming-environment-data -> env:address:shared:programming-environment-data [
+def! restore-sandboxes env:address:programming-environment-data -> env:address:programming-environment-data [
   local-scope
   load-ingredients
   # read all scenarios, pushing them to end of a list of scenarios
   idx:number <- copy 0
-  curr:address:shared:sandbox-data <- copy 0
-  prev:address:shared:sandbox-data <- copy 0
+  curr:address:sandbox-data <- copy 0
+  prev:address:sandbox-data <- copy 0
   {
-    filename:address:shared:array:character <- to-text idx
-    contents:address:shared:array:character <- restore filename
+    filename:address:array:character <- to-text idx
+    contents:address:array:character <- restore filename
     break-unless contents  # stop at first error; assuming file didn't exist
     # create new sandbox for file
     curr <- new sandbox-data:type
@@ -343,7 +343,7 @@ def! restore-sandboxes env:address:shared:programming-environment-data -> env:ad
 
 # print the fake sandbox screen to 'screen' with appropriate delimiters
 # leave cursor at start of next line
-def render-screen screen:address:shared:screen, sandbox-screen:address:shared:screen, left:number, right:number, row:number -> row:number, screen:address:shared:screen [
+def render-screen screen:address:screen, sandbox-screen:address:screen, left:number, right:number, row:number -> row:number, screen:address:screen [
   local-scope
   load-ingredients
   return-unless sandbox-screen
@@ -354,7 +354,7 @@ def render-screen screen:address:shared:screen, sandbox-screen:address:shared:sc
   column:number <- copy left
   s-width:number <- screen-width sandbox-screen
   s-height:number <- screen-height sandbox-screen
-  buf:address:shared:array:screen-cell <- get *sandbox-screen, data:offset
+  buf:address:array:screen-cell <- get *sandbox-screen, data:offset
   stop-printing:number <- add left, s-width, 3
   max-column:number <- min stop-printing, right
   i:number <- copy 0
@@ -412,20 +412,20 @@ scenario run-updates-results [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 12/height
   # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
-  1:address:shared:array:character <- new [ 
+  1:address:array:character <- new [ 
 def foo [
 local-scope
 z:number <- add 2, 2
 return z
 ]]
   # sandbox editor contains an instruction without storing outputs
-  2:address:shared:array:character <- new [foo]
-  3:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 2:address:shared:array:character
+  2:address:array:character <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:address:array:character
   # run the code in the editors
   assume-console [
     press F4
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/recipes
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:address:array:character/recipes
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -437,7 +437,7 @@ return z
     .                                                  .
   ]
   # make a change (incrementing one of the args to 'add'), then rerun
-  1:address:shared:array:character <- new [ 
+  1:address:array:character <- new [ 
 def foo [
 local-scope
 z:number <- add 2, 3
@@ -447,7 +447,7 @@ return z
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 3:address:shared:programming-environment-data, 1:address:shared:array:character/recipes
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:address:array:character/recipes
   ]
   # check that screen updates the result on the right
   screen-should-contain [
@@ -466,14 +466,14 @@ scenario run-instruction-manages-screen-per-sandbox [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # editor contains an instruction
-  1:address:shared:array:character <- new [print-integer screen, 4]
-  2:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character
+  1:address:array:character <- new [print-integer screen, 4]
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   # run the code in the editor
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # check that it prints a little toy screen
   screen-should-contain [
@@ -493,11 +493,11 @@ scenario run-instruction-manages-screen-per-sandbox [
   ]
 ]
 
-def editor-contents editor:address:shared:editor-data -> result:address:shared:array:character [
+def editor-contents editor:address:editor-data -> result:address:array:character [
   local-scope
   load-ingredients
-  buf:address:shared:buffer <- new-buffer 80
-  curr:address:shared:duplex-list:character <- get *editor, data:offset
+  buf:address:buffer <- new-buffer 80
+  curr:address:duplex-list:character <- get *editor, data:offset
   # skip § sentinel
   assert curr, [editor without data is illegal; must have at least a sentinel]
   curr <- next curr
@@ -514,16 +514,16 @@ def editor-contents editor:address:shared:editor-data -> result:address:shared:a
 
 scenario editor-provides-edited-contents [
   assume-screen 10/width, 5/height
-  1:address:shared:array:character <- new [abc]
-  2:address:shared:editor-data <- new-editor 1:address:shared:array:character, screen:address:shared:screen, 0/left, 10/right
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
   assume-console [
     left-click 1, 2
     type [def]
   ]
   run [
-    editor-event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:editor-data
-    3:address:shared:array:character <- editor-contents 2:address:shared:editor-data
-    4:array:character <- copy *3:address:shared:array:character
+    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
+    3:address:array:character <- editor-contents 2:address:editor-data
+    4:array:character <- copy *3:address:array:character
   ]
   memory-should-contain [
     4:array:character <- [abdefc]
@@ -536,9 +536,9 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize
-  1:address:shared:array:character <- new [add 2, 2]
-  2:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character
-  render-all screen, 2:address:shared:programming-environment-data
+  1:address:array:character <- new [add 2, 2]
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  render-all screen, 2:address:programming-environment-data
   assume-console [
     # create a sandbox
     press F4
@@ -546,9 +546,9 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     type [abc
 ]
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   3:character/cursor <- copy 9251/␣
-  print screen:address:shared:screen, 3:character/cursor
+  print screen:address:screen, 3:character/cursor
   screen-should-contain [
     .                               run (F4)           .
     .abc                                               .
@@ -565,9 +565,9 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
     3:character/cursor <- copy 9251/␣
-    print screen:address:shared:screen, 3:character/cursor
+    print screen:address:screen, 3:character/cursor
   ]
   # sandbox editor hidden; first sandbox displayed
   # cursor moves to first sandbox
@@ -585,9 +585,9 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     press up-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
     3:character/cursor <- copy 9251/␣
-    print screen:address:shared:screen, 3:character/cursor
+    print screen:address:screen, 3:character/cursor
   ]
   # sandbox editor displays again
   screen-should-contain [
@@ -612,7 +612,7 @@ after <global-keypress> [
     sandbox-cursor:number <- get *current-sandbox, cursor-row:offset
     sandbox-cursor-on-last-line?:boolean <- equal sandbox-bottom, sandbox-cursor
     break-unless sandbox-cursor-on-last-line?
-    sandbox:address:shared:sandbox-data <- get *env, sandbox:offset
+    sandbox:address:sandbox-data <- get *env, sandbox:offset
     break-unless sandbox
     # slide down if possible
     {
@@ -662,12 +662,12 @@ after <global-keypress> [
 
 # sandbox belonging to 'env' whose next-sandbox is 'in'
 # return 0 if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox
-def previous-sandbox env:address:shared:programming-environment-data, in:address:shared:sandbox-data -> out:address:shared:sandbox-data [
+def previous-sandbox env:address:programming-environment-data, in:address:sandbox-data -> out:address:sandbox-data [
   local-scope
   load-ingredients
-  curr:address:shared:sandbox-data <- get *env, sandbox:offset
+  curr:address:sandbox-data <- get *env, sandbox:offset
   return-unless curr, 0/nil
-  next:address:shared:sandbox-data <- get *curr, next-sandbox:offset
+  next:address:sandbox-data <- get *curr, next-sandbox:offset
   {
     return-unless next, 0/nil
     found?:boolean <- equal next, in
@@ -683,9 +683,9 @@ scenario scrolling-through-multiple-sandboxes [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize environment
-  1:address:shared:array:character <- new []
-  2:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character
-  render-all screen, 2:address:shared:programming-environment-data
+  1:address:array:character <- new []
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  render-all screen, 2:address:programming-environment-data
   # create 2 sandboxes
   assume-console [
     press ctrl-n
@@ -694,9 +694,9 @@ scenario scrolling-through-multiple-sandboxes [
     type [add 1, 1]
     press F4
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   3:character/cursor <- copy 9251/␣
-  print screen:address:shared:screen, 3:character/cursor
+  print screen:address:screen, 3:character/cursor
   screen-should-contain [
     .                               run (F4)           .
     .␣                                                 .
@@ -716,9 +716,9 @@ scenario scrolling-through-multiple-sandboxes [
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
     3:character/cursor <- copy 9251/␣
-    print screen:address:shared:screen, 3:character/cursor
+    print screen:address:screen, 3:character/cursor
   ]
   # sandbox editor hidden; first sandbox displayed
   # cursor moves to first sandbox
@@ -740,7 +740,7 @@ scenario scrolling-through-multiple-sandboxes [
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # just second sandbox displayed
   screen-should-contain [
@@ -757,7 +757,7 @@ scenario scrolling-through-multiple-sandboxes [
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # no change
   screen-should-contain [
@@ -774,7 +774,7 @@ scenario scrolling-through-multiple-sandboxes [
     press up-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # back to displaying both sandboxes without editor
   screen-should-contain [
@@ -795,9 +795,9 @@ scenario scrolling-through-multiple-sandboxes [
     press up-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
     3:character/cursor <- copy 9251/␣
-    print screen:address:shared:screen, 3:character/cursor
+    print screen:address:screen, 3:character/cursor
   ]
   # back to displaying both sandboxes as well as editor
   screen-should-contain [
@@ -819,7 +819,7 @@ scenario scrolling-through-multiple-sandboxes [
     press up-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # no change
   screen-should-contain [
@@ -842,16 +842,16 @@ scenario scrolling-manages-sandbox-index-correctly [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize environment
-  1:address:shared:array:character <- new []
-  2:address:shared:programming-environment-data <- new-programming-environment screen:address:shared:screen, 1:address:shared:array:character
-  render-all screen, 2:address:shared:programming-environment-data
+  1:address:array:character <- new []
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  render-all screen, 2:address:programming-environment-data
   # create a sandbox
   assume-console [
     press ctrl-n
     type [add 1, 1]
     press F4
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -867,7 +867,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # sandbox editor hidden; first sandbox displayed
   # cursor moves to first sandbox
@@ -885,7 +885,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     press up-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # back to displaying both sandboxes as well as editor
   screen-should-contain [
@@ -903,7 +903,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, 2:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # sandbox editor hidden; first sandbox displayed
   # cursor moves to first sandbox

@@ -5,22 +5,22 @@
 
 :(scenario closure)
 def main [
-  default-space:address:shared:array:location <- new location:type, 30
-  1:address:shared:array:location/names:new-counter <- new-counter
-  2:number/raw <- increment-counter 1:address:shared:array:location/names:new-counter
-  3:number/raw <- increment-counter 1:address:shared:array:location/names:new-counter
+  default-space:address:array:location <- new location:type, 30
+  1:address:array:location/names:new-counter <- new-counter
+  2:number/raw <- increment-counter 1:address:array:location/names:new-counter
+  3:number/raw <- increment-counter 1:address:array:location/names:new-counter
 ]
 
 def new-counter [
-  default-space:address:shared:array:location <- new location:type, 30
+  default-space:address:array:location <- new location:type, 30
   x:number <- copy 23
   y:number <- copy 3  # variable that will be incremented
-  return default-space:address:shared:array:location
+  return default-space:address:array:location
 ]
 
 def increment-counter [
-  default-space:address:shared:array:location <- new location:type, 30
-  0:address:shared:array:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
+  default-space:address:array:location <- new location:type, 30
+  0:address:array:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
   y:number/space:1 <- add y:number/space:1, 1  # increment
   y:number <- copy 234  # dummy
   return y:number/space:1
@@ -52,13 +52,11 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
       if (!type
           || type->value != get(Type_ordinal, "address")
           || !type->right
-          || type->right->value != get(Type_ordinal, "shared")
+          || type->right->value != get(Type_ordinal, "array")
           || !type->right->right
-          || type->right->right->value != get(Type_ordinal, "array")
-          || !type->right->right->right
-          || type->right->right->right->value != get(Type_ordinal, "location")
-          || type->right->right->right->right) {
-        raise << "slot 0 should always have type address:shared:array:location, but is " << to_string(inst.products.at(j)) << '\n' << end();
+          || type->right->right->value != get(Type_ordinal, "location")
+          || type->right->right->right) {
+        raise << "slot 0 should always have type address:array:location, but is " << to_string(inst.products.at(j)) << '\n' << end();
         continue;
       }
       string_tree* s = property(inst.products.at(j), "names");
