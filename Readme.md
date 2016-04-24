@@ -346,7 +346,7 @@ Another feature: Clicking on the code in a sandbox expands its trace for you
 to browse. To add to the trace, use `stash`. For example:
 
   ```nim
-  stash [first ingredient is ], x
+  stash [first ingredient is], x
   ```
 
 Invaluable for understanding complex control flow without cluttering up the
