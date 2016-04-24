@@ -51,7 +51,7 @@ def main [
 ]
 +mem: storing 36 in location 17
 
-//: Products of recipes can include containers and exclusive containers, addresses and arrays.
+//: products of recipes can include containers
 :(scenario reply_container)
 def main [
   3:point <- f 2
@@ -151,7 +151,7 @@ case GET: {
     break;
   }
   reagent base = inst.ingredients.at(0);  // new copy for every invocation
-  if (!canonize_type(base)) break;
+  // Update GET base in Check
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
@@ -173,7 +173,7 @@ case GET: {
   }
   if (inst.products.empty()) break;
   reagent product = inst.products.at(0);
-  if (!canonize_type(product)) break;
+  // Update GET product in Check
   const reagent element = element_type(base, offset_value);
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
@@ -184,7 +184,7 @@ case GET: {
 :(before "End Primitive Recipe Implementations")
 case GET: {
   reagent base = current_instruction().ingredients.at(0);
-  canonize(base);
+  // Update GET base in Run
   int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
@@ -206,11 +206,11 @@ case GET: {
 }
 
 :(code)
-const reagent element_type(const reagent& canonized_base, int offset_value) {
+const reagent element_type(const reagent& base, int offset_value) {
   assert(offset_value >= 0);
-  assert(contains_key(Type, canonized_base.type->value));
-  assert(!get(Type, canonized_base.type->value).name.empty());
-  const type_info& info = get(Type, canonized_base.type->value);
+  assert(contains_key(Type, base.type->value));
+  assert(!get(Type, base.type->value).name.empty());
+  const type_info& info = get(Type, base.type->value);
   assert(info.kind == CONTAINER);
   reagent element = info.elements.at(offset_value);
   // End element_type Special-cases
@@ -256,35 +256,6 @@ def main [
 ]
 +error: main: 'get 12:point-number/raw, 1:offset' should write to number but 15 has type (address number)
 
-//: 'get' can read from container address
-:(scenario get_indirect)
-def main [
-  1:number <- copy 2
-  2:number <- copy 34
-  3:number <- copy 35
-  4:number <- get 1:address:point/lookup, 0:offset
-]
-+mem: storing 34 in location 4
-
-:(scenario get_indirect2)
-def main [
-  1:number <- copy 2
-  2:number <- copy 34
-  3:number <- copy 35
-  4:address:number <- copy 5/unsafe
-  *4:address:number <- get 1:address:point/lookup, 0:offset
-]
-+mem: storing 34 in location 5
-
-:(scenario include_nonlookup_properties)
-def main [
-  1:number <- copy 2
-  2:number <- copy 34
-  3:number <- copy 35
-  4:number <- get 1:address:point/lookup/foo, 0:offset
-]
-+mem: storing 34 in location 4
-
 //: we might want to call 'get' without saving the results, say in a sandbox
 
 :(scenario get_without_product)
@@ -318,13 +289,14 @@ case PUT: {
     break;
   }
   reagent base = inst.ingredients.at(0);
-  if (!canonize_type(base)) break;
+  // Update PUT base in Check
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'put' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.type->value;
   reagent offset = inst.ingredients.at(1);
+  // Update PUT offset in Check
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'put' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
@@ -351,7 +323,7 @@ case PUT: {
 :(before "End Primitive Recipe Implementations")
 case PUT: {
   reagent base = current_instruction().ingredients.at(0);
-  canonize(base);
+  // Update PUT base in Run
   int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
@@ -713,7 +685,7 @@ void check_merge_calls(const recipe_ordinal r) {
       continue;
     }
     reagent product = inst.products.at(0);
-    if (!canonize_type(product)) continue;
+    // Update product While Type-checking Merge
     type_ordinal product_type = product.type->value;
     if (product_type == 0 || !contains_key(Type, product_type)) {
       raise << maybe(caller.name) << "'merge' should yield a container in '" << to_original_string(inst) << "'\n" << end();

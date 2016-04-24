@@ -190,9 +190,9 @@ def main [
 
 :(before "End element_type Special-cases")
 if (contains_type_ingredient(element)) {
-  if (!canonized_base.type->right)
-    raise << "illegal type " << names_to_string(canonized_base.type) << " seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredients(element.type, canonized_base.type->right, info);
+  if (!base.type->right)
+    raise << "illegal type " << names_to_string(base.type) << " seems to be missing a type ingredient or three\n" << end();
+  replace_type_ingredients(element.type, base.type->right, info);
 }
 
 :(code)
@@ -541,7 +541,7 @@ def main [
 
 :(before "End variant_type Special-cases")
 if (contains_type_ingredient(element)) {
-  if (!canonized_base.type->right)
-    raise << "illegal type '" << to_string(canonized_base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredients(element.type, canonized_base.type->right, info);
+  if (!base.type->right)
+    raise << "illegal type '" << to_string(base.type) << "' seems to be missing a type ingredient or three\n" << end();
+  replace_type_ingredients(element.type, base.type->right, info);
 }

@@ -24,7 +24,7 @@ case CREATE_ARRAY: {
     break;
   }
   reagent product = inst.products.at(0);
-  canonize_type(product);
+  // Update CREATE_ARRAY product in Check
   if (!is_mu_array(product)) {
     raise << maybe(get(Recipe, r).name) << "'create-array' cannot create non-array " << product.original_string << '\n' << end();
     break;
@@ -47,10 +47,11 @@ case CREATE_ARRAY: {
 :(before "End Primitive Recipe Implementations")
 case CREATE_ARRAY: {
   reagent product = current_instruction().products.at(0);
-  canonize(product);
+  // Update CREATE_ARRAY product in Run
   int base_address = product.value;
   int array_length = to_integer(product.type->right->right->name);
   // initialize array size, so that size_of will work
+  trace(9999, "mem") << "storing " << array_length << " in location " << base_address << end();
   put(Memory, base_address, array_length);  // in array elements
   int size = size_of(product);  // in locations
   trace(9998, "run") << "creating array of size " << size << '\n' << end();
@@ -80,20 +81,6 @@ def main [
 +mem: storing 14 in location 6
 +mem: storing 15 in location 7
 +mem: storing 16 in location 8
-
-:(scenario copy_array_indirect)
-def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:address:array:number <- copy 1/unsafe
-  6:array:number <- copy *5:address:array:number
-]
-+mem: storing 3 in location 6
-+mem: storing 14 in location 7
-+mem: storing 15 in location 8
-+mem: storing 16 in location 9
 
 :(scenario stash_array)
 def main [
@@ -184,14 +171,20 @@ case INDEX: {
     break;
   }
   reagent base = inst.ingredients.at(0);
-  canonize_type(base);
+  // Update INDEX base in Check
   if (!is_mu_array(base)) {
     raise << maybe(get(Recipe, r).name) << "'index' on a non-array " << base.original_string << '\n' << end();
     break;
   }
+  reagent index = inst.ingredients.at(1);
+  // Update INDEX index in Check
+  if (!is_mu_number(index)) {
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'index' should be a number, but got " << index.original_string << '\n' << end();
+    break;
+  }
   if (inst.products.empty()) break;
   reagent product = inst.products.at(0);
-  canonize_type(product);
+  // Update INDEX product in Check
   reagent element;
   element.type = new type_tree(*array_element(base.type));
   if (!types_coercible(product, element)) {
@@ -203,22 +196,22 @@ case INDEX: {
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
   reagent base = current_instruction().ingredients.at(0);
-  canonize(base);
+  // Update INDEX base in Run
   int base_address = base.value;
   trace(9998, "run") << "base address is " << base_address << end();
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  reagent offset = current_instruction().ingredients.at(1);
-  canonize(offset);
-  vector<double> offset_val(read_memory(offset));
+  reagent index = current_instruction().ingredients.at(1);
+  // Update INDEX index in Run
+  vector<double> index_val(read_memory(index));
   type_tree* element_type = array_element(base.type);
-  if (offset_val.at(0) < 0 || offset_val.at(0) >= get_or_insert(Memory, base_address)) {
-    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
+  if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
+    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << '\n' << end();
     break;
   }
-  int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
+  int src = base_address + 1 + index_val.at(0)*size_of(element_type);
   trace(9998, "run") << "address to copy is " << src << end();
   trace(9998, "run") << "its type is " << get(Type, element_type->value).name << end();
   reagent element;
@@ -247,17 +240,6 @@ int array_length(const reagent& x) {
   return get_or_insert(Memory, x.value);
 }
 
-:(scenario index_indirect)
-def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:address:array:number <- copy 1/unsafe
-  6:number <- index *5:address:array:number, 1
-]
-+mem: storing 15 in location 6
-
 :(scenario index_out_of_bounds)
 % Hide_errors = true;
 def main [
@@ -268,8 +250,7 @@ def main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1/unsafe
-  index *8:address:array:point, 4  # less than size of array in locations, but larger than its length in elements
+  index 1:array:number:3, 4  # less than size of array in locations, but larger than its length in elements
 ]
 +error: main: invalid index 4
 
@@ -283,8 +264,7 @@ def main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1/unsafe
-  index *8:address:array:point, -1
+  index 1:array:point, -1
 ]
 +error: main: invalid index -1
 
@@ -298,10 +278,9 @@ def main [
   5:number <- copy 14
   6:number <- copy 15
   7:number <- copy 16
-  8:address:array:point <- copy 1/unsafe
-  9:number <- index *8:address:array:point, 0
+  9:number <- index 1:array:point, 0
 ]
-+error: main: 'index' on *8:address:array:point can't be saved in 9:number; type should be point
++error: main: 'index' on 1:array:point can't be saved in 9:number; type should be point
 
 //: we might want to call 'index' without saving the results, say in a sandbox
 
@@ -338,17 +317,19 @@ case PUT_INDEX: {
     break;
   }
   reagent base = inst.ingredients.at(0);
-  if (!canonize_type(base)) break;
+  // Update PUT_INDEX base in Check
   if (!is_mu_array(base)) {
     raise << maybe(get(Recipe, r).name) << "'put-index' on a non-array " << base.original_string << '\n' << end();
     break;
   }
-  if (!is_mu_number(inst.ingredients.at(1))) {
+  reagent index = inst.ingredients.at(1);
+  // Update PUT_INDEX index in Check
+  if (!is_mu_number(index)) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'put-index' should have type 'number', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   reagent value = inst.ingredients.at(2);
-  canonize_type(value);
+  // Update PUT_INDEX value in Check
   reagent element;
   element.type = new type_tree(*array_element(base.type));
   if (!types_coercible(element, value)) {
@@ -360,21 +341,21 @@ case PUT_INDEX: {
 :(before "End Primitive Recipe Implementations")
 case PUT_INDEX: {
   reagent base = current_instruction().ingredients.at(0);
-  canonize(base);
+  // Update PUT_INDEX base in Run
   int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  reagent offset = current_instruction().ingredients.at(1);
-  canonize(offset);
-  vector<double> offset_val(read_memory(offset));
+  reagent index = current_instruction().ingredients.at(1);
+  // Update PUT_INDEX index in Run
+  vector<double> index_val(read_memory(index));
   type_tree* element_type = array_element(base.type);
-  if (offset_val.at(0) < 0 || offset_val.at(0) >= get_or_insert(Memory, base_address)) {
-    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(offset_val.at(0)) << '\n' << end();
+  if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
+    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << '\n' << end();
     break;
   }
-  int address = base_address + 1 + offset_val.at(0)*size_of(element_type);
+  int address = base_address + 1 + index_val.at(0)*size_of(element_type);
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire array
@@ -438,24 +419,24 @@ case LENGTH: {
     raise << maybe(get(Recipe, r).name) << "'length' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
-  reagent x = inst.ingredients.at(0);
-  canonize_type(x);
-  if (!is_mu_array(x)) {
-    raise << "tried to calculate length of non-array " << x.original_string << '\n' << end();
+  reagent array = inst.ingredients.at(0);
+  // Update LENGTH array in Check
+  if (!is_mu_array(array)) {
+    raise << "tried to calculate length of non-array " << array.original_string << '\n' << end();
     break;
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
 case LENGTH: {
-  reagent x = current_instruction().ingredients.at(0);
-  canonize(x);
-  if (x.value == 0) {
+  reagent array = current_instruction().ingredients.at(0);
+  // Update LENGTH array in Run
+  if (array.value == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   products.resize(1);
-  products.at(0).push_back(get_or_insert(Memory, x.value));
+  products.at(0).push_back(get_or_insert(Memory, array.value));
   break;
 }
 

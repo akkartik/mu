@@ -91,7 +91,7 @@ case MAYBE_CONVERT: {
     break;
   }
   reagent base = inst.ingredients.at(0);
-  canonize_type(base);
+  // Update MAYBE_CONVERT base in Check
   if (!base.type || !base.type->value || get(Type, base.type->value).kind != EXCLUSIVE_CONTAINER) {
     raise << maybe(caller.name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
     break;
@@ -106,7 +106,7 @@ case MAYBE_CONVERT: {
     break;
   }
   reagent product = inst.products.at(0);
-  if (!canonize_type(product)) break;
+  // Update MAYBE_CONVERT product in Check
   reagent& offset = inst.ingredients.at(1);
   populate_value(offset);
   if (offset.value >= SIZE(get(Type, base.type->value).elements)) {
@@ -118,7 +118,9 @@ case MAYBE_CONVERT: {
     raise << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << to_string(variant.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
     break;
   }
-  if (!is_mu_boolean(inst.products.at(1))) {
+  reagent status = inst.products.at(1);
+  // Update MAYBE_CONVERT status in Check
+  if (!is_mu_boolean(status)) {
     raise << maybe(get(Recipe, r).name) << "second product yielded by 'maybe-convert' should be a boolean, but tried to write to " << inst.products.at(1).original_string << '\n' << end();
     break;
   }
@@ -127,7 +129,7 @@ case MAYBE_CONVERT: {
 :(before "End Primitive Recipe Implementations")
 case MAYBE_CONVERT: {
   reagent base = current_instruction().ingredients.at(0);
-  canonize(base);
+  // Update MAYBE_CONVERT base in Run
   int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
@@ -135,9 +137,9 @@ case MAYBE_CONVERT: {
   }
   int tag = current_instruction().ingredients.at(1).value;
   reagent product = current_instruction().products.at(0);
-  canonize(product);
-  reagent did_conversion_happen = current_instruction().products.at(1);
-  canonize(did_conversion_happen);
+  // Update MAYBE_CONVERT product in Run
+  reagent status = current_instruction().products.at(1);
+  // Update MAYBE_CONVERT status in Run
   // optimization: directly write results to only update first product when necessary
   if (tag == static_cast<int>(get_or_insert(Memory, base_address))) {
     const reagent variant = variant_type(base, tag);
@@ -146,22 +148,22 @@ case MAYBE_CONVERT: {
       trace(9999, "mem") << "storing " << no_scientific(val) << " in location " << product.value+i << end();
       put(Memory, product.value+i, val);
     }
-    trace(9999, "mem") << "storing 1 in location " << did_conversion_happen.value << end();
-    put(Memory, did_conversion_happen.value, 1);
+    trace(9999, "mem") << "storing 1 in location " << status.value << end();
+    put(Memory, status.value, 1);
   }
   else {
-    trace(9999, "mem") << "storing 0 in location " << did_conversion_happen.value << end();
-    put(Memory, did_conversion_happen.value, 0);
+    trace(9999, "mem") << "storing 0 in location " << status.value << end();
+    put(Memory, status.value, 0);
   }
   goto finish_instruction;
 }
 
 :(code)
-const reagent variant_type(const reagent& canonized_base, int tag) {
+const reagent variant_type(const reagent& base, int tag) {
   assert(tag >= 0);
-  assert(contains_key(Type, canonized_base.type->value));
-  assert(!get(Type, canonized_base.type->value).name.empty());
-  const type_info& info = get(Type, canonized_base.type->value);
+  assert(contains_key(Type, base.type->value));
+  assert(!get(Type, base.type->value).name.empty());
+  const type_info& info = get(Type, base.type->value);
   assert(info.kind == EXCLUSIVE_CONTAINER);
   reagent element = info.elements.at(tag);
   // End variant_type Special-cases
@@ -384,7 +386,7 @@ if (current_step_index() < SIZE(Current_routine->steps())
     && !current_instruction().products.empty()
     && current_instruction().products.at(0).type) {
   reagent x = current_instruction().products.at(0);
-  canonize(x);
+  // Update size_mismatch Check for MERGE(x)
   if (get(Type, x.type->value).kind == EXCLUSIVE_CONTAINER)
     return size_of(x) < SIZE(data);
 }
