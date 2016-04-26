@@ -45,15 +45,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario global_space)</span>
 def main [
-  <span class="Comment"># pretend shared:array:location; in practice we'll use new</span>
+  <span class="Comment"># pretend address:array:location; in practice we'll use new</span>
   <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
   <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
-  <span class="Comment"># pretend shared:array:location; in practice we'll use new</span>
+  <span class="Comment"># pretend address:array:location; in practice we'll use new</span>
   <span class="Constant">20</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
   <span class="Constant">21</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
   <span class="Comment"># actual start of this recipe</span>
-  global-space:address:shared:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
-  <span class="Normal">default</span>-space:address:shared:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  global-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
+  <span class="Normal">default</span>-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Constant">1</span>:number/space:global<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
@@ -80,13 +80,11 @@ global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
         || !x<span class="Delimiter">.</span>type
         || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span>
         || !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right
-        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">)</span>
+        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span>
         || !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
-        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span>
-        || !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
-        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">)</span>
-        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'global-space' should be of type address:shared:array:location, but tried to write &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">)</span>
+        || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'global-space' should be of type address:array:location, but tried to write &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
       raise &lt;&lt; <span class="Constant">&quot;routine already has a global-space; you can't over-write your globals&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -107,7 +105,7 @@ global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(scenario global_space_with_names)</span>
 def main [
-  global-space:address:shared:array:location<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">10</span>
+  global-space:address:array:location<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">10</span>
   <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Constant">1</span>:number/space:global<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]

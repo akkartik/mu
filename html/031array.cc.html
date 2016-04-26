@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 032array.cc</title>
+<title>Mu - 031array.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
@@ -59,7 +59,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
+  <span class="Comment">// Update CREATE_ARRAY product in Check</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_array<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'create-array' cannot create non-array &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -82,26 +82,29 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> CREATE_ARRAY: <span class="Delimiter">{</span>
   reagent product = current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
+  <span class="Comment">// Update CREATE_ARRAY product in Run</span>
   <span class="Normal">int</span> base_address = product<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  <span class="Normal">int</span> array_size = to_integer<span class="Delimiter">(</span>product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
+  <span class="Normal">int</span> array_length = to_integer<span class="Delimiter">(</span>product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
   <span class="Comment">// initialize array size, so that size_of will work</span>
-  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">,</span> array_size<span class="Delimiter">);</span>  <span class="Comment">// in array elements</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; array_length &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; base_address &lt;&lt; end<span class="Delimiter">();</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">,</span> array_length<span class="Delimiter">);</span>  <span class="Comment">// in array elements</span>
   <span class="Normal">int</span> size = size_of<span class="Delimiter">(</span>product<span class="Delimiter">);</span>  <span class="Comment">// in locations</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;creating array of size &quot;</span> &lt;&lt; size &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;creating array of size &quot;</span> &lt;&lt; size &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Comment">// initialize array</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt;= size_of<span class="Delimiter">(</span>product<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address+i<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-  <span class="Comment">// dummy product; doesn't actually do anything</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>array_size<span class="Delimiter">);</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Comment">// no need to update product</span>
+  <span class="Identifier">goto</span> finish_instruction<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario copy_array)</span>
 <span class="Comment"># Arrays can be copied around with a single instruction just like numbers,</span>
 <span class="Comment"># no matter how large they are.</span>
+<span class="Comment"># You don't need to pass the size around, since each array variable stores its</span>
+<span class="Comment"># size in memory at run-time. We'll call a variable with an explicit size a</span>
+<span class="Comment"># 'static' array, and one without a 'dynamic' array since it can contain</span>
+<span class="Comment"># arrays of many different sizes.</span>
 def main [
   <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
@@ -114,20 +117,6 @@ def main [
 <span class="traceContains">+mem: storing 15 in location 7</span>
 <span class="traceContains">+mem: storing 16 in location 8</span>
 
-<span class="Delimiter">:(scenario copy_array_indirect)</span>
-def main [
-  <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
-  <span class="Constant">6</span>:array:number<span class="Special"> &lt;- </span>copy *<span class="Constant">5</span>:address:array:number
-]
-<span class="traceContains">+mem: storing 3 in location 6</span>
-<span class="traceContains">+mem: storing 14 in location 7</span>
-<span class="traceContains">+mem: storing 15 in location 8</span>
-<span class="traceContains">+mem: storing 16 in location 9</span>
-
 <span class="Delimiter">:(scenario stash_array)</span>
 def main [
   <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
@@ -138,17 +127,19 @@ def main [
 ]
 <span class="traceContains">+app: foo: 3 14 15 16</span>
 
-<span class="Comment">//: disable the size mismatch check since the destination array need not be initialized</span>
-<span class="Delimiter">:(before &quot;End size_mismatch(x) Cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End size_of(reagent) Cases&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type &amp;&amp; r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; r<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' is an array of what?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> <span class="Constant">1</span> + get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>array_element<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Identifier">return</span> <span class="Constant">1</span> + array_length<span class="Delimiter">(</span>r<span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>array_element<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
+
+<span class="Comment">//: disable the size mismatch check for arrays since the destination array</span>
+<span class="Comment">//: need not be initialized</span>
+<span class="Delimiter">:(before &quot;End size_mismatch(x) Cases&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Comment">//: arrays are disallowed inside containers unless their length is fixed in</span>
 <span class="Comment">//: advance</span>
@@ -215,14 +206,20 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize_type<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+  <span class="Comment">// Update INDEX base in Check</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_array<span class="Delimiter">(</span>base<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'index' on a non-array &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  reagent index = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// Update INDEX index in Check</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>index<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'index' should be a number, but got &quot;</span> &lt;&lt; index<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
   reagent product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
+  <span class="Comment">// Update INDEX product in Check</span>
   reagent element<span class="Delimiter">;</span>
   element<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
@@ -234,28 +231,29 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> INDEX: <span class="Delimiter">{</span>
   reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+  <span class="Comment">// Update INDEX base in Run</span>
   <span class="Normal">int</span> base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;base address is &quot;</span> &lt;&lt; base_address &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>base_address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to access location 0 in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  reagent offset = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  canonize<span class="Delimiter">(</span>offset<span class="Delimiter">);</span>
-  vector&lt;<span class="Normal">double</span>&gt; offset_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>offset<span class="Delimiter">));</span>
+  reagent index = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// Update INDEX index in Run</span>
+  vector&lt;<span class="Normal">double</span>&gt; index_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>index<span class="Delimiter">));</span>
   type_tree* element_type = array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span> || offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;invalid index &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span> || index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;invalid index &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">int</span> src = base_address + <span class="Constant">1</span> + offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
+  <span class="Normal">int</span> src = base_address + <span class="Constant">1</span> + index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy is &quot;</span> &lt;&lt; src &lt;&lt; end<span class="Delimiter">();</span>
   trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;its type is &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> element_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
-  reagent tmp<span class="Delimiter">;</span>
-  tmp<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>src<span class="Delimiter">);</span>
-  tmp<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*element_type<span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>tmp<span class="Delimiter">));</span>
+  reagent element<span class="Delimiter">;</span>
+  element<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>src<span class="Delimiter">);</span>
+  element<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*element_type<span class="Delimiter">);</span>
+  <span class="Comment">// Read element</span>
+  products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>element<span class="Delimiter">));</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -268,16 +266,14 @@ type_tree* array_element<span class="Delimiter">(</span><span class="Normal">con
   <span class="Identifier">return</span> type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(scenario index_indirect)</span>
-def main [
-  <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>index *<span class="Constant">5</span>:address:array:number<span class="Delimiter">,</span> <span class="Constant">1</span>
-]
-<span class="traceContains">+mem: storing 15 in location 6</span>
+<span class="Normal">int</span> array_length<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Identifier">return</span> to_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// this should never happen at transform time</span>
+  <span class="Comment">// x should already be canonized.</span>
+  <span class="Identifier">return</span> get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario index_out_of_bounds)</span>
 <span class="Special">% Hide_errors = true;</span>
@@ -289,8 +285,7 @@ def main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
-  index *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> <span class="Constant">4</span>  <span class="Comment"># less than size of array in locations, but larger than its length in elements</span>
+  index <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>  <span class="Comment"># less than size of array in locations, but larger than its length in elements</span>
 ]
 <span class="traceContains">+error: main: invalid index 4</span>
 
@@ -304,8 +299,7 @@ def main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
-  index *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> -<span class="Constant">1</span>
+  index <span class="Constant">1</span>:array:point<span class="Delimiter">,</span> -<span class="Constant">1</span>
 ]
 <span class="traceContains">+error: main: invalid index -1</span>
 
@@ -319,10 +313,9 @@ def main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
-  <span class="Constant">9</span>:number<span class="Special"> &lt;- </span>index *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> <span class="Constant">0</span>
+  <span class="Constant">9</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:point<span class="Delimiter">,</span> <span class="Constant">0</span>
 ]
-<span class="traceContains">+error: main: 'index' on *8:address:array:point can't be saved in 9:number; type should be point</span>
+<span class="traceContains">+error: main: 'index' on 1:array:point can't be saved in 9:number; type should be point</span>
 
 <span class="Comment">//: we might want to call 'index' without saving the results, say in a sandbox</span>
 
@@ -336,70 +329,80 @@ def main [
 ]
 <span class="Comment"># just don't die</span>
 
-<span class="SalientComment">//:: To write to elements of containers, you need their address.</span>
+<span class="SalientComment">//:: To write to elements of arrays, use 'put'.</span>
 
-<span class="Delimiter">:(scenario index_address)</span>
+<span class="Delimiter">:(scenario put_index)</span>
 def main [
   <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>index-address <span class="Constant">1</span>:array:number<span class="Delimiter">,</span> <span class="Constant">0</span>
+  <span class="Constant">1</span>:array:number<span class="Special"> &lt;- </span>put-index <span class="Constant">1</span>:array:number<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
-<span class="traceContains">+mem: storing 2 in location 5</span>
+<span class="traceContains">+mem: storing 34 in location 3</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-INDEX_ADDRESS<span class="Delimiter">,</span>
+PUT_INDEX<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;index-address&quot;</span><span class="Delimiter">,</span> INDEX_ADDRESS<span class="Delimiter">);</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;put-index&quot;</span><span class="Delimiter">,</span> PUT_INDEX<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> INDEX_ADDRESS: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'index-address' expects exactly 2 ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Normal">case</span> PUT_INDEX: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">3</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'put-index' expects exactly 3 ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize_type<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+  <span class="Comment">// Update PUT_INDEX base in Check</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_array<span class="Delimiter">(</span>base<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'index-address' on a non-array &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'put-index' on a non-array &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-  reagent product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
+  reagent index = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// Update PUT_INDEX index in Check</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>index<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'put-index' should have type 'number', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  reagent value = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
+  <span class="Comment">// Update PUT_INDEX value in Check</span>
   reagent element<span class="Delimiter">;</span>
-  element<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address&quot;</span><span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">),</span>
-                               <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">)));</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'index' on &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; can't be saved in &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;; type should be &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  element<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>element<span class="Delimiter">,</span> value<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'put-index &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;' should store &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but &quot;</span> &lt;&lt; value<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has type &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>value<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> INDEX_ADDRESS: <span class="Delimiter">{</span>
+<span class="Normal">case</span> PUT_INDEX: <span class="Delimiter">{</span>
   reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+  <span class="Comment">// Update PUT_INDEX base in Run</span>
   <span class="Normal">int</span> base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>base_address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to access location 0 in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  reagent offset = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  canonize<span class="Delimiter">(</span>offset<span class="Delimiter">);</span>
-  vector&lt;<span class="Normal">double</span>&gt; offset_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>offset<span class="Delimiter">));</span>
+  reagent index = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// Update PUT_INDEX index in Run</span>
+  vector&lt;<span class="Normal">double</span>&gt; index_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>index<span class="Delimiter">));</span>
   type_tree* element_type = array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span> || offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;invalid index &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span> || index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;invalid index &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">int</span> result = base_address + <span class="Constant">1</span> + offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> address = base_address + <span class="Constant">1</span> + index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy to is &quot;</span> &lt;&lt; address &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Comment">// optimization: directly write the element rather than updating 'product'</span>
+  <span class="Comment">// and writing the entire array</span>
+  vector&lt;<span class="Normal">double</span>&gt; value = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">));</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>value<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>value<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; address+i &lt;&lt; end<span class="Delimiter">();</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">,</span> value<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">goto</span> finish_instruction<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(scenario index_address_out_of_bounds)</span>
+<span class="Delimiter">:(scenario put_index_out_of_bounds)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
   <span class="Constant">1</span>:array:point:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
@@ -409,12 +412,12 @@ def main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
-  index-address *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> <span class="Constant">4</span>  <span class="Comment"># less than size of array in locations, but larger than its length in elements</span>
+  <span class="Constant">8</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">1</span>:array:point<span class="Special"> &lt;- </span>put-index <span class="Constant">1</span>:array:point<span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">8</span>:point  <span class="Comment"># '4' is less than size of array in locations, but larger than its length in elements</span>
 ]
 <span class="traceContains">+error: main: invalid index 4</span>
 
-<span class="Delimiter">:(scenario index_address_out_of_bounds_2)</span>
+<span class="Delimiter">:(scenario put_index_out_of_bounds_2)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
   <span class="Constant">1</span>:array:point:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
@@ -424,25 +427,10 @@ def main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
-  index-address *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> -<span class="Constant">1</span>
+  <span class="Constant">8</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">1</span>:array:point<span class="Special"> &lt;- </span>put-index <span class="Constant">1</span>:array:point<span class="Delimiter">,</span> -<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">8</span>:point
 ]
 <span class="traceContains">+error: main: invalid index -1</span>
-
-<span class="Delimiter">:(scenario index_address_product_type_mismatch)</span>
-<span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Constant">1</span>:array:point:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
-  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/unsafe
-  <span class="Constant">9</span>:address:number<span class="Special"> &lt;- </span>index-address *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> <span class="Constant">0</span>
-]
-<span class="traceContains">+error: main: 'index' on *8:address:array:point can't be saved in 9:address:number; type should be (address point)</span>
 
 <span class="SalientComment">//:: compute the length of an array</span>
 
@@ -466,24 +454,24 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'length' expects exactly 2 ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  reagent x = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize_type<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_array<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; <span class="Constant">&quot;tried to calculate length of non-array &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  reagent array = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Comment">// Update LENGTH array in Check</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_array<span class="Delimiter">(</span>array<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;tried to calculate length of non-array &quot;</span> &lt;&lt; array<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> LENGTH: <span class="Delimiter">{</span>
-  reagent x = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  reagent array = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Comment">// Update LENGTH array in Run</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>array<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to access location 0 in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value<span class="Delimiter">));</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> array<span class="Delimiter">.</span>value<span class="Delimiter">));</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -491,22 +479,8 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Comment">//: stop copying potentially huge arrays into it.</span>
 <span class="Delimiter">:(before &quot;End should_copy_ingredients Special-cases&quot;)</span>
 recipe_ordinal r = current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">;</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>r == CREATE_ARRAY || r == INDEX || r == INDEX_ADDRESS || r == LENGTH<span class="Delimiter">)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>r == CREATE_ARRAY || r == INDEX || r == PUT_INDEX || r == LENGTH<span class="Delimiter">)</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-
-<span class="Comment">//: a particularly common array type is the string, or address:array:character</span>
-<span class="Delimiter">:(code)</span>
-<span class="Normal">bool</span> is_mu_string<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> x<span class="Delimiter">.</span>type
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span>
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">)</span>
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span>
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;character&quot;</span><span class="Delimiter">)</span>
-    &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right == <span class="Constant">NULL</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

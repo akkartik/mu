@@ -361,6 +361,24 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   LOG &lt;&lt; out<span class="Delimiter">.</span>str<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+
+<span class="Comment">//: set a variable from within mu code</span>
+<span class="Comment">//: useful for selectively tracing or printing after some point</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Normal">bool</span> Foo = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_FOO<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$foo&quot;</span><span class="Delimiter">,</span> _FOO<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> _FOO: <span class="Delimiter">{</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> _FOO: <span class="Delimiter">{</span>
+  Foo = <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

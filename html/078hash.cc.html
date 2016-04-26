@@ -90,12 +90,13 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Normal">size_t</span> hash_mu_address<span class="Delimiter">(</span><span class="Normal">size_t</span> h<span class="Delimiter">,</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;location &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">))</span> &lt;&lt; end<span class="Delimiter">();</span>
   r<span class="Delimiter">.</span>value = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
-  drop_from_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    ++r<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-    drop_from_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>value != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;skipping refcount at &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>value &lt;&lt; end<span class="Delimiter">();</span>
+    r<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>r<span class="Delimiter">.</span>value+<span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// skip refcount</span>
   <span class="Delimiter">}</span>
+  drop_from_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
   <span class="Identifier">return</span> hash<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -256,8 +257,8 @@ def main [
   <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">99</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">10</span>:array:number/unsafe
   <span class="Identifier">return</span>-unless <span class="Constant">2</span>:number
-  <span class="Constant">3</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:shared:array:character
+  <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:array:character
   <span class="Identifier">return</span>-unless <span class="Constant">4</span>:number
   <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
@@ -265,12 +266,12 @@ def main [
 
 <span class="Delimiter">:(scenario hash_ignores_address_value)</span>
 def main [
-  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *<span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:shared:number
-  <span class="Constant">3</span>:address:shared:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *<span class="Constant">3</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:shared:number
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *<span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:number
+  <span class="Constant">3</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *<span class="Constant">3</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:number
   <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="Comment"># different addresses hash to the same result as long as the values the point to do so</span>
@@ -278,13 +279,13 @@ def main [
 
 <span class="Delimiter">:(scenario hash_ignores_address_refcount)</span>
 def main [
-  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *<span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:shared:number
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *<span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:number
   <span class="Identifier">return</span>-unless <span class="Constant">2</span>:number
   <span class="Comment"># increment refcount</span>
-  <span class="Constant">3</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:shared:number
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:shared:number
+  <span class="Constant">3</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:number
   <span class="Identifier">return</span>-unless <span class="Constant">4</span>:number
   <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
@@ -316,17 +317,17 @@ def main [
 container foo [
   <span class="Normal">x</span>:number
   <span class="Normal">y</span>:character
-  <span class="Normal">z</span>:address:shared:number
+  <span class="Normal">z</span>:address:number
 ]
 def main [
-  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *<span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>:address:shared:number
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *<span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">2</span>:foo
   <span class="Identifier">return</span>-unless <span class="Constant">5</span>:number
-  <span class="Constant">6</span>:address:shared:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *<span class="Constant">6</span>:address:shared:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">7</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">6</span>:address:shared:number
+  <span class="Constant">6</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *<span class="Constant">6</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">7</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">6</span>:address:number
   <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">7</span>:foo
   <span class="Identifier">return</span>-unless <span class="Constant">10</span>:number
   <span class="Constant">11</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">5</span>:number<span class="Delimiter">,</span> <span class="Constant">10</span>:number
@@ -383,9 +384,9 @@ def main [
 
 <span class="Delimiter">:(scenario hash_matches_old_version)</span>
 def main [
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:shared:array:character
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>hash_old <span class="Constant">1</span>:address:shared:array:character
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:array:character
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>hash_old <span class="Constant">1</span>:address:array:character
   <span class="Constant">4</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">3</span>:number
 ]
 <span class="traceContains">+mem: storing 1 in location 4</span>
@@ -401,7 +402,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'hash_old' currently only supports strings (address:shared:array:character), but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'hash_old' currently only supports strings (address:array:character), but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>

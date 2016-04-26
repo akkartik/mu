@@ -33,8 +33,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <pre id='vimCodeElement'>
 <span class="muScenario">scenario</span> array-from-args [
   run [
-    <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new-array <span class="Constant">0</span>, <span class="Constant">1</span>, <span class="Constant">2</span>
-    <span class="Constant">2</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:shared:array:character
+    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new-array <span class="Constant">0</span>, <span class="Constant">1</span>, <span class="Constant">2</span>
+    <span class="Constant">2</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:array:character
   ]
   memory-should-contain [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">3</span>  <span class="Comment"># array length</span>
@@ -45,7 +45,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># create an array out of a list of scalar args</span>
-<span class="muRecipe">def</span> new-array<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> new-array<span class="muRecipe"> -&gt; </span>result:address:array:character [
   <span class="Constant">local-scope</span>
   capacity:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
@@ -56,7 +56,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   result<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, capacity
-  rewind-ingredients
+  <span class="Constant">rewind-ingredients</span>
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># while read curr-value</span>
@@ -64,8 +64,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-if</span> done?
     curr-value:character, exists?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
     assert exists?, <span class="Constant">[error in rewinding ingredients to new-array]</span>
-    tmp:address:character<span class="Special"> &lt;- </span>index-address *result, i
-    *tmp<span class="Special"> &lt;- </span>copy curr-value
+    *result<span class="Special"> &lt;- </span>put-index *result, i, curr-value
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>

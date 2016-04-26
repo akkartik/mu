@@ -1,0 +1,1064 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 033address.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
+.traceAbsent { color: #c00000; }
+.Special { color: #c00000; }
+.traceContains { color: #008000; }
+.cSpecial { color: #008000; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.SalientComment { color: #00ffff; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.CommentedCode { color: #6c6c6c; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Addresses help us spend less time copying data around.</span>
+
+<span class="Comment">//: So far we've been operating on primitives like numbers and characters, and</span>
+<span class="Comment">//: we've started combining these primitives together into larger logical</span>
+<span class="Comment">//: units (containers or arrays) that may contain many different primitives at</span>
+<span class="Comment">//: once. Containers and arrays can grow quite large in complex programs, and</span>
+<span class="Comment">//: we'd like some way to efficiently share them between recipes without</span>
+<span class="Comment">//: constantly having to make copies. Right now 'next-ingredient' and 'reply'</span>
+<span class="Comment">//: copy data across recipe boundaries. To avoid copying large quantities of</span>
+<span class="Comment">//: data around, we'll use *addresses*. An address is a bookmark to some</span>
+<span class="Comment">//: arbitrary quantity of data (the *payload*). It's a primitive, so it's as</span>
+<span class="Comment">//: efficient to copy as a number. To read or modify the payload 'pointed to'</span>
+<span class="Comment">//: by an address, we'll perform a *lookup*.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: The notion of 'lookup' isn't an instruction like 'add' or 'subtract'.</span>
+<span class="Comment">//: Instead it's an operation that can be performed when reading any of the</span>
+<span class="Comment">//: ingredients of an instruction, and when writing to any of the products.</span>
+<span class="Comment">//: Modern computers provide efficient support for addresses and lookups,</span>
+<span class="Comment">//: making this a realistic feature.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: To recap: an address is a bookmark to some potentially large payload, and</span>
+<span class="Comment">//: you can replace any ingredient or product with a lookup to an address of</span>
+<span class="Comment">//: the appropriate type. But how do we get addresses to begin with? That</span>
+<span class="Comment">//: requires a little more explanation. Once we introduce the notion of</span>
+<span class="Comment">//: bookmarks to data, we have to think about the life cycle of a piece of</span>
+<span class="Comment">//: data and its bookmark. Otherwise several bad outcomes can result (and</span>
+<span class="Comment">//: indeed *have* resulted in past languages like C):</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   a) You can run out of memory if you don't have a way to reclaim</span>
+<span class="Comment">//:   data.</span>
+<span class="Comment">//:   b) If you allow data to be reclaimed, you have to be careful not to</span>
+<span class="Comment">//:   leave any stale addresses pointing at it. Otherwise your program might</span>
+<span class="Comment">//:   try to lookup such an address and find something unexpected. Such</span>
+<span class="Comment">//:   problems can be very hard to track down, and they can also be exploited</span>
+<span class="Comment">//:   to break into your computer over the network, etc.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: To avoid these problems, we introduce a *reference count* or refcount. The</span>
+<span class="Comment">//: life cycle of a bit of data accessed through addresses looks like this.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:    We create space in computer memory for it using the 'new' instruction.</span>
+<span class="Comment">//:    The 'new' instruction takes a type as an ingredient, allocates</span>
+<span class="Comment">//:    sufficient space to hold that type, and returns an address (bookmark)</span>
+<span class="Comment">//:    to the allocated space.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:      x:address:number &lt;- new number:type</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:                     +------------+</span>
+<span class="Comment">//:          x -------&gt; |  number    |</span>
+<span class="Comment">//:                     +------------+</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:    That isn't entirely accurate. Under the hood, 'new' allocates an extra</span>
+<span class="Comment">//:    number -- the refcount:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:                     +------------+------------+</span>
+<span class="Comment">//:          x -------&gt; | refcount   |  number    |</span>
+<span class="Comment">//:                     +------------+------------+</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:    This probably seems like a waste of space. In practice it isn't worth</span>
+<span class="Comment">//:    allocating individual numbers and our payload will tend to be larger,</span>
+<span class="Comment">//:    so the picture would look more like this (zooming out a bit):</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:                         +-------------------------+</span>
+<span class="Comment">//:                     +---+                         |</span>
+<span class="Comment">//:          x -------&gt; | r |                         |</span>
+<span class="Comment">//:                     +---+        DATA             |</span>
+<span class="Comment">//:                         |                         |</span>
+<span class="Comment">//:                         |                         |</span>
+<span class="Comment">//:                         +-------------------------+</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:    (Here 'r' denotes the refcount. It occupies a tiny amount of space</span>
+<span class="Comment">//:    compared to the payload.)</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:    Anyways, back to our example where the data is just a single number.</span>
+<span class="Comment">//:    After the call to 'new', Mu's map of memory looks like this:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:                     +---+------------+</span>
+<span class="Comment">//:          x -------&gt; | 1 |  number    |</span>
+<span class="Comment">//:                     +---+------------+</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:    The refcount of 1 here indicates that this number has one bookmark</span>
+<span class="Comment">//:    outstanding. If you then make a copy of x, the refcount increments:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:      y:address:number &lt;- copy x</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:          x ---+     +---+------------+</span>
+<span class="Comment">//:               +---&gt; | 2 |  number    |</span>
+<span class="Comment">//:          y ---+     +---+------------+</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:    Whether you access the payload through x or y, Mu knows how many</span>
+<span class="Comment">//:    bookmarks are outstanding to it. When you change x or y, the refcount</span>
+<span class="Comment">//:    transparently decrements:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:      x &lt;- copy 0  # an address is just a number, you can always write 0 to it</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:                     +---+------------+</span>
+<span class="Comment">//:          y -------&gt; | 1 |  number    |</span>
+<span class="Comment">//:                     +---+------------+</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:    The final flourish is what happens when the refcount goes down to 0: Mu</span>
+<span class="Comment">//:    reclaims the space occupied by both refcount and payload in memory, and</span>
+<span class="Comment">//:    they're ready to be reused by later calls to 'new'.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:      y &lt;- copy 0</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:                     +---+------------+</span>
+<span class="Comment">//:                     | 0 |  XXXXXXX   |</span>
+<span class="Comment">//:                     +---+------------+</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Using refcounts fixes both our problems a) and b) above: you can use</span>
+<span class="Comment">//: memory for many different purposes as many times as you want without</span>
+<span class="Comment">//: running out of memory, and you don't have to worry about ever leaving a</span>
+<span class="Comment">//: dangling bookmark when you reclaim memory.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Ok, let's rewind the clock back to this situation where we have an</span>
+<span class="Comment">//: address:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:                     +---+------------+</span>
+<span class="Comment">//:          x -------&gt; | 1 |  number    |</span>
+<span class="Comment">//:                     +---+------------+</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Once you have an address you can read or modify its payload by performing</span>
+<span class="Comment">//: a lookup:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:     x/lookup &lt;- copy 34</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: or more concisely:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:     *x &lt;- copy 34</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: This modifies not x, but the payload x points to:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:                     +---+------------+</span>
+<span class="Comment">//:          x -------&gt; | 1 |         34 |</span>
+<span class="Comment">//:                     +---+------------+</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: You can also read from the payload in instructions like this:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:     z:number &lt;- add *x, 1</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: After this instruction runs the value of z will be 35.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: The rest of this (long) layer is divided up into 4 sections:</span>
+<span class="Comment">//:   the implementation of the 'new' instruction</span>
+<span class="Comment">//:   how instructions lookup addresses</span>
+<span class="Comment">//:   how instructions update refcounts when modifying address variables</span>
+<span class="Comment">//:   how instructions abandon and reclaim memory when refcounts drop to 0</span>
+
+<span class="SalientComment">//:: the 'new' instruction allocates unique memory including a refcount</span>
+<span class="Comment">//: todo: give 'new' a custodian ingredient. Following malloc/free is a temporary hack.</span>
+
+<span class="Delimiter">:(scenario new)</span>
+<span class="Comment"># call 'new' two times with identical types without modifying the results; you</span>
+<span class="Comment"># should get back different results</span>
+def main [
+  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:number/<span class="Special">raw</span>
+]
+<span class="traceContains">+mem: storing 0 in location 3</span>
+
+<span class="Comment">//: 'new' takes a weird 'type' as its first ingredient; don't error on it</span>
+<span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
+put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;type&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">bool</span> is_mu_type_literal<span class="Delimiter">(</span>reagent r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> is_literal<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &amp;&amp; r<span class="Delimiter">.</span>type &amp;&amp; r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;type&quot;</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+NEW<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">,</span> NEW<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> NEW: <span class="Delimiter">{</span>
+  <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'new' requires one or two ingredients, but got &quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// End NEW Check Special-cases</span>
+  reagent type = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_type_literal<span class="Delimiter">(</span>type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'new' should be a type, but got &quot;</span> &lt;&lt; type<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;result of 'new' should never be ignored</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!product_of_new_is_valid<span class="Delimiter">(</span>inst<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product of 'new' has incorrect type: &quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">bool</span> product_of_new_is_valid<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  reagent product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span>
+    <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// array allocation</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  reagent expected_product<span class="Delimiter">(</span><span class="Constant">&quot;x:&quot;</span>+inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+  <span class="Comment">// End Post-processing(expected_product) When Checking 'new'</span>
+  <span class="Identifier">return</span> types_strictly_match<span class="Delimiter">(</span>product<span class="Delimiter">,</span> expected_product<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: To implement 'new', a Mu transform turns all 'new' instructions into</span>
+<span class="Comment">//: 'allocate' instructions that precompute the amount of memory they want to</span>
+<span class="Comment">//: allocate.</span>
+
+<span class="Comment">//: Ensure that we never call 'allocate' directly, and that there's no 'new'</span>
+<span class="Comment">//: instructions left after the transforms have run.</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> ALLOCATE: <span class="Delimiter">{</span>
+  raise &lt;&lt; <span class="Constant">&quot;never call 'allocate' directly'; always use 'new'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> NEW: <span class="Delimiter">{</span>
+  raise &lt;&lt; <span class="Constant">&quot;no implementation for 'new'; why wasn't it translated to 'allocate'? Please save a copy of your program and send it to Kartik.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(after &quot;Transform.push_back(check_instruction)&quot;)</span>  <span class="Comment">// check_instruction will guard against direct 'allocate' instructions below</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>transform_new_to_allocate<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> transform_new_to_allocate<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- convert 'new' to 'allocate' for recipe &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Comment">// Convert 'new' To 'allocate'</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      inst<span class="Delimiter">.</span>operation = ALLOCATE<span class="Delimiter">;</span>
+      string_tree* type_name = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+      <span class="Comment">// End Post-processing(type_name) When Converting 'new'</span>
+      type_tree* type = new_type_tree<span class="Delimiter">(</span>type_name<span class="Delimiter">);</span>
+      inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>size_of<span class="Delimiter">(</span>type<span class="Delimiter">));</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;size of &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>type_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Normal">delete</span> type<span class="Delimiter">;</span>
+      <span class="Normal">delete</span> type_name<span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: implement 'allocate' based on size</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Normal">const</span> <span class="Normal">int</span> Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
+<span class="Normal">int</span> Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
+<span class="Normal">int</span> Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
+Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+<span class="Normal">int</span> alloc<span class="Delimiter">,</span> alloc_max<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+alloc = Memory_allocated_until<span class="Delimiter">;</span>
+Memory_allocated_until += Initial_memory_per_routine<span class="Delimiter">;</span>
+alloc_max = Memory_allocated_until<span class="Delimiter">;</span>
+trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;routine allocated memory from &quot;</span> &lt;&lt; alloc &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; alloc_max &lt;&lt; end<span class="Delimiter">();</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+ALLOCATE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;allocate&quot;</span><span class="Delimiter">,</span> ALLOCATE<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> ALLOCATE: <span class="Delimiter">{</span>
+  <span class="Comment">// compute the space we need</span>
+  <span class="Normal">int</span> size = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// array allocation</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;array size is &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+    size = <span class="Comment">/*</span><span class="Comment">space for length</span><span class="Comment">*/</span><span class="Constant">1</span> + size*ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// include space for refcount</span>
+  size++<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;allocating size &quot;</span> &lt;&lt; size &lt;&lt; end<span class="Delimiter">();</span>
+<span class="CommentedCode">//?   Total_alloc += size;</span>
+<span class="CommentedCode">//?   Num_alloc++;</span>
+  <span class="Comment">// compute the region of memory to return</span>
+  <span class="Comment">// really crappy at the moment</span>
+  ensure_space<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
+  <span class="Normal">const</span> <span class="Normal">int</span> result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new alloc: &quot;</span> &lt;&lt; result &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Comment">// save result</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+  <span class="Comment">// initialize allocated space</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> address = result<span class="Delimiter">;</span> address &lt; result+size<span class="Delimiter">;</span> ++address<span class="Delimiter">)</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// initialize array length</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; result+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span> &lt;&lt; end<span class="Delimiter">();</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  Current_routine<span class="Delimiter">-&gt;</span>alloc += size<span class="Delimiter">;</span>
+  <span class="Comment">// no support yet for reclaiming memory between routines</span>
+  assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;= Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: statistics for debugging</span>
+<span class="CommentedCode">//? :(before &quot;End Globals&quot;)</span>
+<span class="CommentedCode">//? int Total_alloc = 0;</span>
+<span class="CommentedCode">//? int Num_alloc = 0;</span>
+<span class="CommentedCode">//? int Total_free = 0;</span>
+<span class="CommentedCode">//? int Num_free = 0;</span>
+<span class="CommentedCode">//? :(before &quot;End Setup&quot;)</span>
+<span class="CommentedCode">//? Total_alloc = Num_alloc = Total_free = Num_free = 0;</span>
+<span class="CommentedCode">//? :(before &quot;End Teardown&quot;)</span>
+<span class="CommentedCode">//? cerr &lt;&lt; Total_alloc &lt;&lt; &quot;/&quot; &lt;&lt; Num_alloc</span>
+<span class="CommentedCode">//?      &lt;&lt; &quot; vs &quot; &lt;&lt; Total_free &lt;&lt; &quot;/&quot; &lt;&lt; Num_free &lt;&lt; '\n';</span>
+<span class="CommentedCode">//? cerr &lt;&lt; SIZE(Memory) &lt;&lt; '\n';</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> ensure_space<span class="Delimiter">(</span><span class="Normal">int</span> size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>size &gt; Initial_memory_per_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    tb_shutdown<span class="Delimiter">();</span>
+    cerr &lt;&lt; <span class="Constant">&quot;can't allocate &quot;</span> &lt;&lt; size &lt;&lt; <span class="Constant">&quot; locations, that's too much compared to &quot;</span> &lt;&lt; Initial_memory_per_routine &lt;&lt; <span class="Constant">&quot;.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc + size &gt; Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// waste the remaining space and create a new chunk</span>
+    Current_routine<span class="Delimiter">-&gt;</span>alloc = Memory_allocated_until<span class="Delimiter">;</span>
+    Memory_allocated_until += Initial_memory_per_routine<span class="Delimiter">;</span>
+    Current_routine<span class="Delimiter">-&gt;</span>alloc_max = Memory_allocated_until<span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;routine allocated memory from &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc_max &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario new_initializes)</span>
+<span class="Special">% Memory_allocated_until = 10;</span>
+<span class="Special">% put(Memory, Memory_allocated_until, 1);</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number/lookup
+]
+<span class="traceContains">+mem: storing 0 in location 2</span>
+
+<span class="Delimiter">:(scenario new_error)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+]
+<span class="traceContains">+error: main: product of 'new' has incorrect type: 1:number/raw &lt;- new number:type</span>
+
+<span class="Delimiter">:(scenario new_array)</span>
+def main [
+  <span class="Constant">1</span>:address:array:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">5</span>
+  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:number/<span class="Special">raw</span>
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;), &quot;raw&quot;: ()} &lt;- new {number: &quot;type&quot;}, {5: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: array size is 5</span>
+<span class="Comment"># don't forget the extra location for array size, and the second extra location for the refcount</span>
+<span class="traceContains">+mem: storing 7 in location 3</span>
+
+<span class="Delimiter">:(scenario new_empty_array)</span>
+def main [
+  <span class="Constant">1</span>:address:array:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">0</span>
+  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:number/<span class="Special">raw</span>
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;), &quot;raw&quot;: ()} &lt;- new {number: &quot;type&quot;}, {0: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: array size is 0</span>
+<span class="Comment"># one location for array size, and one for the refcount</span>
+<span class="traceContains">+mem: storing 2 in location 3</span>
+
+<span class="Comment">//: If a routine runs out of its initial allocation, it should allocate more.</span>
+<span class="Delimiter">:(scenario new_overflow)</span>
+<span class="Special">% Initial_memory_per_routine = 3;  // barely enough room for point allocation below</span>
+def main [
+  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:address:point/<span class="Special">raw &lt;- </span><span class="Normal">new</span> point:type  <span class="Comment"># not enough room in initial page</span>
+]
+<span class="traceContains">+new: routine allocated memory from 1000 to 1003</span>
+<span class="traceContains">+new: routine allocated memory from 1003 to 1006</span>
+
+<span class="SalientComment">//:: /lookup can go from an address to the payload it points at, skipping the refcount</span>
+<span class="Comment">//: the tests in this section use unsafe operations so as to stay decoupled from 'new'</span>
+
+<span class="Delimiter">:(scenario copy_indirect)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Comment"># This loads location 1 as an address and looks up *that* location.</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number/lookup
+]
+<span class="Comment"># 1 contains 10. Skip refcount and lookup location 11.</span>
+<span class="traceContains">+mem: storing 34 in location 2</span>
+
+<span class="Delimiter">:(before &quot;End Preprocess read_memory(x)&quot;)</span>
+canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+
+<span class="Comment">//: similarly, write to addresses pointing at other locations using the</span>
+<span class="Comment">//: 'lookup' property</span>
+<span class="Delimiter">:(scenario store_indirect)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">1</span>:address:number/lookup<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+<span class="traceContains">+mem: storing 34 in location 11</span>
+
+<span class="Delimiter">:(before &quot;End Preprocess write_memory(x)&quot;)</span>
+canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  raise &lt;&lt; <span class="Constant">&quot;can't write to location 0 in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: writes to address 0 always loudly fail</span>
+<span class="Delimiter">:(scenario store_to_0_fails)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">1</span>:address:number/lookup<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+<span class="traceAbsent">-mem: storing 34 in location 0</span>
+<span class="traceContains">+error: can't write to location 0 in '1:address:number/lookup &lt;- copy 34'</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> canonize<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Comment">// End canonize(x) Special-cases</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">))</span>
+    lookup_memory<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> lookup_memory<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to /lookup &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; but it isn't an address</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// compute value</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to /lookup 0</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;location &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value<span class="Delimiter">))</span> &lt;&lt; end<span class="Delimiter">();</span>
+  x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value<span class="Delimiter">));</span>
+  drop_from_type<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;skipping refcount at &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>value &lt;&lt; end<span class="Delimiter">();</span>
+    x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>x<span class="Delimiter">.</span>value+<span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// skip refcount</span>
+  <span class="Delimiter">}</span>
+  drop_one_lookup<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_lookup_address_skips_refcount<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  reagent x<span class="Delimiter">(</span><span class="Constant">&quot;*x:address:number&quot;</span><span class="Delimiter">);</span>
+  x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span><span class="Constant">34</span><span class="Delimiter">);</span>  <span class="Comment">// unsafe</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">1000</span><span class="Delimiter">);</span>
+  lookup_memory<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;mem: skipping refcount at 1000&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>x<span class="Delimiter">.</span>value<span class="Delimiter">,</span> <span class="Constant">1001</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_lookup_zero_address_does_not_skip_refcount<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  reagent x<span class="Delimiter">(</span><span class="Constant">&quot;*x:address:number&quot;</span><span class="Delimiter">);</span>
+  x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span><span class="Constant">34</span><span class="Delimiter">);</span>  <span class="Comment">// unsafe</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  lookup_memory<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  CHECK_TRACE_DOESNT_CONTAIN<span class="Delimiter">(</span><span class="Constant">&quot;mem: skipping refcount at 0&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>x<span class="Delimiter">.</span>value<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(after &quot;bool types_strictly_match(reagent to, reagent from)&quot;)</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>from<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(after &quot;bool is_mu_array(reagent r)&quot;)</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(after &quot;bool is_mu_address(reagent r)&quot;)</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(after &quot;bool is_mu_number(reagent r)&quot;)</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;bool is_mu_boolean(reagent r)&quot;)</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(after &quot;Update product While Type-checking Merge&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;End Compute Call Ingredient&quot;)</span>
+canonize_type<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Preprocess NEXT_INGREDIENT product&quot;)</span>
+canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Check REPLY Copy(lhs, rhs)</span>
+canonize_type<span class="Delimiter">(</span>lhs<span class="Delimiter">);</span>
+canonize_type<span class="Delimiter">(</span>rhs<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">bool</span> canonize_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type || r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; <span class="Constant">&quot;can't lookup non-address: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    drop_from_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+    drop_one_lookup<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> drop_from_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">,</span> string expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name != expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;can't drop2 &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  type_tree* tmp = r<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
+  r<span class="Delimiter">.</span>type = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+  tmp<span class="Delimiter">-&gt;</span>right = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Normal">delete</span> tmp<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> drop_one_lookup<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;pair&lt;string<span class="Delimiter">,</span> string_tree*&gt; &gt;::iterator p = r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first == <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>p<span class="Delimiter">);</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  assert<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: Tedious fixup to support addresses in container/array instructions of previous layers.</span>
+<span class="Comment">//: Most instructions don't require fixup if they use the 'ingredients' and</span>
+<span class="Comment">//: 'products' variables in run_current_routine().</span>
+
+<span class="Delimiter">:(scenario get_indirect)</span>
+def main [
+  <span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:address:point/lookup<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
+]
+<span class="traceContains">+mem: storing 34 in location 2</span>
+
+<span class="Delimiter">:(scenario get_indirect2)</span>
+def main [
+  <span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
+  <span class="Constant">2</span>:address:number/lookup<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:address:point/lookup<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
+]
+<span class="traceContains">+mem: storing 34 in location 21</span>
+
+<span class="Delimiter">:(scenario include_nonlookup_properties)</span>
+def main [
+  <span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:address:point/lookup/foo<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
+]
+<span class="traceContains">+mem: storing 34 in location 2</span>
+
+<span class="Delimiter">:(after &quot;Update GET base in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>base<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Update GET product in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Update GET base in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(scenario put_indirect)</span>
+def main [
+  <span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">1</span>:address:point/lookup<span class="Special"> &lt;- </span>put <span class="Constant">1</span>:address:point/lookup<span class="Delimiter">,</span> <span class="Constant">0</span>:offset<span class="Delimiter">,</span> <span class="Constant">36</span>
+]
+<span class="traceContains">+mem: storing 36 in location 11</span>
+
+<span class="Delimiter">:(after &quot;Update PUT base in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>base<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Update PUT offset in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>offset<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Update PUT base in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(scenario copy_array_indirect)</span>
+def main [
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">2</span>:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:array:number/lookup
+]
+<span class="traceContains">+mem: storing 3 in location 2</span>
+<span class="traceContains">+mem: storing 14 in location 3</span>
+<span class="traceContains">+mem: storing 15 in location 4</span>
+<span class="traceContains">+mem: storing 16 in location 5</span>
+
+<span class="Delimiter">:(before &quot;Update CREATE_ARRAY product in Check&quot;)</span>
+<span class="Comment">// 'create-array' does not support indirection. Static arrays are meant to be</span>
+<span class="Comment">// allocated on the 'stack'.</span>
+assert<span class="Delimiter">(</span>!has_property<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">));</span>
+<span class="Delimiter">:(before &quot;Update CREATE_ARRAY product in Run&quot;)</span>
+<span class="Comment">// 'create-array' does not support indirection. Static arrays are meant to be</span>
+<span class="Comment">// allocated on the 'stack'.</span>
+assert<span class="Delimiter">(</span>!has_property<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">));</span>
+
+<span class="Delimiter">:(scenario index_indirect)</span>
+def main [
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:address:array:number/lookup<span class="Delimiter">,</span> <span class="Constant">1</span>
+]
+<span class="traceContains">+mem: storing 15 in location 2</span>
+
+<span class="Delimiter">:(before &quot;Update INDEX base in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>base<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;Update INDEX index in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>index<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;Update INDEX product in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;Update INDEX base in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;Update INDEX index in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(scenario put_index_indirect)</span>
+def main [
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">1</span>:address:array:number/lookup<span class="Special"> &lt;- </span>put-index <span class="Constant">1</span>:address:array:number/lookup<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+<span class="traceContains">+mem: storing 34 in location 13</span>
+
+<span class="Delimiter">:(scenario put_index_indirect_2)</span>
+def main [
+  <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">5</span>:address:array:number/lookup<span class="Special"> &lt;- </span>put-index <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>:address:number/lookup<span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+<span class="traceContains">+mem: storing 34 in location 3</span>
+
+<span class="Delimiter">:(before &quot;Update PUT_INDEX base in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>base<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;Update PUT_INDEX index in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>index<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;Update PUT_INDEX value in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>value<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;Update PUT_INDEX base in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;Update PUT_INDEX index in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(scenario length_indirect)</span>
+def main [
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>length <span class="Constant">1</span>:address:array:number/lookup
+]
+<span class="traceContains">+mem: storing 3 in location 2</span>
+
+<span class="Delimiter">:(before &quot;Update LENGTH array in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>array<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;Update LENGTH array in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>array<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(scenario maybe_convert_indirect)</span>
+def main [
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:number-<span class="Normal">or</span>-point<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/number<span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Constant">1</span>:address:number-<span class="Normal">or</span>-point<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">1</span>:address:number-<span class="Normal">or</span>-point/lookup<span class="Delimiter">,</span> i:variant
+]
+<span class="traceContains">+mem: storing 34 in location 2</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(scenario maybe_convert_indirect_2)</span>
+def main [
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:number-<span class="Normal">or</span>-point<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/number<span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Constant">1</span>:address:number-<span class="Normal">or</span>-point<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
+  <span class="Constant">2</span>:address:number/lookup<span class="Delimiter">,</span> <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">1</span>:address:number-<span class="Normal">or</span>-point/lookup<span class="Delimiter">,</span> i:variant
+]
+<span class="traceContains">+mem: storing 34 in location 21</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(scenario maybe_convert_indirect_3)</span>
+def main [
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:number-<span class="Normal">or</span>-point<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/number<span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Constant">1</span>:address:number-<span class="Normal">or</span>-point<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">2</span>:address:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
+  <span class="Constant">3</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:boolean/lookup<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">1</span>:address:number-<span class="Normal">or</span>-point/lookup<span class="Delimiter">,</span> i:variant
+]
+<span class="traceContains">+mem: storing 34 in location 3</span>
+<span class="traceContains">+mem: storing 1 in location 21</span>
+
+<span class="Delimiter">:(before &quot;Update MAYBE_CONVERT base in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>base<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;Update MAYBE_CONVERT product in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;Update MAYBE_CONVERT status in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>status<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;Update MAYBE_CONVERT base in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;Update MAYBE_CONVERT product in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;Update MAYBE_CONVERT status in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>status<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(scenario merge_exclusive_container_indirect)</span>
+def main [
+  <span class="Constant">1</span>:address:number-<span class="Normal">or</span>-point<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">1</span>:address:number-<span class="Normal">or</span>-point/lookup<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/number<span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+<span class="Comment"># skip 10 for refcount</span>
+<span class="traceContains">+mem: storing 0 in location 11</span>
+<span class="traceContains">+mem: storing 34 in location 12</span>
+
+<span class="Delimiter">:(before &quot;Update size_mismatch Check for MERGE(x)</span>
+canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+
+<span class="Comment">//: abbreviation for '/lookup': a prefix '*'</span>
+
+<span class="Delimiter">:(scenario lookup_abbreviation)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:number
+]
+<span class="traceContains">+parse: ingredient: {1: (&quot;address&quot; &quot;number&quot;), &quot;lookup&quot;: ()}</span>
+<span class="traceContains">+mem: storing 34 in location 3</span>
+
+<span class="Delimiter">:(before &quot;End Parsing reagent&quot;)</span>
+<span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>!name<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; name<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'*'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    name<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+    properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+    raise &lt;&lt; <span class="Constant">&quot;illegal name &quot;</span> &lt;&lt; original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="SalientComment">//:: update refcounts when copying addresses</span>
+
+<span class="Delimiter">:(scenario refcounts)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1000</span>/unsafe
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {1000: &quot;literal&quot;, &quot;unsafe&quot;: ()}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {0: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 2 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {0: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 1 -&gt; 0</span>
+<span class="Comment"># the /unsafe corrupts memory but fortunately we won't be running any more 'new' in this scenario</span>
+<span class="traceContains">+mem: automatically abandoning 1000</span>
+
+<span class="Delimiter">:(before &quot;End write_memory(reagent x) Special-cases&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Comment">// compute old address of x, as well as new address we want to write in</span>
+  <span class="Normal">int</span> old_address = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>data<span class="Delimiter">));</span>
+  <span class="Normal">int</span> new_address = data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Comment">// decrement refcount of old address</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>old_address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">int</span> old_refcount = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">);</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;decrementing refcount of &quot;</span> &lt;&lt; old_address &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; old_refcount &lt;&lt; <span class="Constant">&quot; -&gt; &quot;</span> &lt;&lt; <span class="Delimiter">(</span>old_refcount-<span class="Constant">1</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">,</span> old_refcount-<span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// perform the write</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>value &lt;&lt; end<span class="Delimiter">();</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value<span class="Delimiter">,</span> new_address<span class="Delimiter">);</span>
+  <span class="Comment">// increment refcount of new address</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>new_address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">int</span> new_refcount = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> new_address<span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>new_refcount &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// == 0 only when new_address == old_address</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;incrementing refcount of &quot;</span> &lt;&lt; new_address &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; new_refcount &lt;&lt; <span class="Constant">&quot; -&gt; &quot;</span> &lt;&lt; <span class="Delimiter">(</span>new_refcount+<span class="Constant">1</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> new_address<span class="Delimiter">,</span> new_refcount+<span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// abandon old address if necessary</span>
+  <span class="Comment">// do this after all refcount updates are done just in case old and new are identical</span>
+  assert<span class="Delimiter">(</span>old_address &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>old_address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">)</span> &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    DUMP<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+    cerr &lt;&lt; old_address &lt;&lt; <span class="Constant">' '</span> &lt;&lt; get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  assert<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">)</span> &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">)</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Comment">// lookup_memory without drop_one_lookup {</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;automatically abandoning &quot;</span> &lt;&lt; old_address &lt;&lt; end<span class="Delimiter">();</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;computing size to abandon at &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>value &lt;&lt; end<span class="Delimiter">();</span>
+  x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>old_address+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  drop_from_type<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// }</span>
+  abandon<span class="Delimiter">(</span>old_address<span class="Delimiter">,</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span>+<span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario refcounts_2)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Comment"># over-writing one allocation with another</span>
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: automatically abandoning 1000</span>
+
+<span class="Delimiter">:(scenario refcounts_3)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Comment"># passing in addresses to recipes increments refcount</span>
+  foo <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+def foo [
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># return does NOT yet decrement refcount; memory must be explicitly managed</span>
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;number&quot;)} &lt;- next-ingredient</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {0: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 2 -&gt; 1</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {0: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 1 -&gt; 0</span>
+<span class="traceContains">+mem: automatically abandoning 1000</span>
+
+<span class="Delimiter">:(scenario refcounts_4)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Comment"># idempotent copies leave refcount unchanged</span>
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 1 -&gt; 0</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+
+<span class="Delimiter">:(scenario refcounts_5)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Comment"># passing in addresses to recipes increments refcount</span>
+  foo <span class="Constant">1</span>:address:number
+  <span class="Comment"># return does NOT yet decrement refcount; memory must be explicitly managed</span>
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+]
+def foo [
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>next-ingredient
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;number&quot;)} &lt;- next-ingredient</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 2 -&gt; 1</span>
+
+<span class="Delimiter">:(scenario refcounts_array)</span>
+def main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">30</span>
+  <span class="Comment"># allocate an array</span>
+  <span class="Constant">10</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">20</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:address:array:number
+  <span class="Comment"># allocate another array in its place, implicitly freeing the previous allocation</span>
+  <span class="Constant">10</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">25</span>
+]
+<span class="traceContains">+run: {10: (&quot;address&quot; &quot;array&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}, {20: &quot;literal&quot;}</span>
+<span class="Comment"># abandoned array is of old size (20, not 25)</span>
+<span class="traceContains">+abandon: saving in free-list of size 22</span>
+
+<span class="SalientComment">//:: abandon and reclaim memory when refcount drops to 0</span>
+
+<span class="Delimiter">:(scenario new_reclaim)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number  <span class="Comment"># because 1 will get reset during abandon below</span>
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abandon</span>
+  <span class="Constant">3</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type  <span class="Comment"># must be same size as abandoned memory to reuse</span>
+  <span class="Constant">4</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">3</span>:address:number
+]
+<span class="Comment"># both allocations should have returned the same address</span>
+<span class="traceContains">+mem: storing 1 in location 4</span>
+
+<span class="Comment">//: When abandoning addresses we'll save them to a 'free list', segregated by size.</span>
+
+<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt; free_list<span class="Delimiter">;</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> abandon<span class="Delimiter">(</span><span class="Normal">int</span> address<span class="Delimiter">,</span> <span class="Normal">int</span> size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;abandon&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;saving in free-list of size &quot;</span> &lt;&lt; size &lt;&lt; end<span class="Delimiter">();</span>
+<span class="CommentedCode">//?   Total_free += size;</span>
+<span class="CommentedCode">//?   Num_free++;</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;abandon: &quot; &lt;&lt; size &lt;&lt; '\n';</span>
+  <span class="Comment">// clear memory</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> curr = address<span class="Delimiter">;</span> curr &lt; address+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Comment">// append existing free list to address</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">,</span> get_or_insert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>free_list<span class="Delimiter">,</span> size<span class="Delimiter">));</span>
+  put<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>free_list<span class="Delimiter">,</span> size<span class="Delimiter">,</span> address<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;ensure_space(size)&quot; following &quot;case ALLOCATE&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>free_list<span class="Delimiter">,</span> size<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;abandon&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;picking up space from free-list of size &quot;</span> &lt;&lt; size &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">int</span> result = get_or_insert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>free_list<span class="Delimiter">,</span> size<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new alloc from free list: &quot;</span> &lt;&lt; result &lt;&lt; end<span class="Delimiter">();</span>
+  put<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>free_list<span class="Delimiter">,</span> size<span class="Delimiter">,</span> get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result<span class="Delimiter">));</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> curr = result+<span class="Constant">1</span><span class="Delimiter">;</span> curr &lt; result+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;memory in free list was not zeroed out: &quot;</span> &lt;&lt; curr &lt;&lt; <span class="Constant">'/'</span> &lt;&lt; result &lt;&lt; <span class="Constant">&quot;; somebody wrote to us after free!!!</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// always fatal</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">else</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario new_differing_size_no_reclaim)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abandon</span>
+  <span class="Constant">3</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>  <span class="Comment"># different size</span>
+  <span class="Constant">4</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:number
+]
+<span class="Comment"># no reuse</span>
+<span class="traceContains">+mem: storing 0 in location 4</span>
+
+<span class="Delimiter">:(scenario new_reclaim_array)</span>
+def main [
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:array:number
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abandon</span>
+  <span class="Constant">3</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>  <span class="Comment"># same size</span>
+  <span class="Constant">4</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:number
+]
+<span class="Comment"># reuse</span>
+<span class="traceContains">+mem: storing 1 in location 4</span>
+
+<span class="SalientComment">//:: helpers for debugging</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_DUMP<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$dump&quot;</span><span class="Delimiter">,</span> _DUMP<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> _DUMP: <span class="Delimiter">{</span>
+  reagent after_canonize = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  canonize<span class="Delimiter">(</span>after_canonize<span class="Delimiter">);</span>
+  cerr &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">' '</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; =&gt; &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>after_canonize<span class="Delimiter">.</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; =&gt; &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> after_canonize<span class="Delimiter">.</span>value<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: grab an address, and then dump its value at intervals</span>
+<span class="Comment">//: useful for tracking down memory corruption (writing to an out-of-bounds address)</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Normal">int</span> Bar = -<span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_BAR<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$bar&quot;</span><span class="Delimiter">,</span> _BAR<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> _BAR: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Bar != -<span class="Constant">1</span><span class="Delimiter">)</span> cerr &lt;&lt; Bar &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> Bar<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    <span class="Normal">else</span> cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    reagent tmp = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    canonize<span class="Delimiter">(</span>tmp<span class="Delimiter">);</span>
+    Bar = tmp<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

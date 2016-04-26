@@ -158,8 +158,8 @@ type_ordinal Next_type_ordinal = <span class="Constant">1</span><span class="Del
   Next_type_ordinal = <span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Comment">// Mu Types Initialization</span>
   type_ordinal number = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
-  put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">));</span>  <span class="Comment">// wildcard type: either a pointer or a scalar</span>
   get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> number<span class="Delimiter">).</span>name = <span class="Constant">&quot;number&quot;</span><span class="Delimiter">;</span>
+  put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;location&quot;</span><span class="Delimiter">,</span> number<span class="Delimiter">);</span>  <span class="Comment">// synonym of number to indicate we only care about its size</span>
   type_ordinal address = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
   get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> address<span class="Delimiter">).</span>name = <span class="Constant">&quot;address&quot;</span><span class="Delimiter">;</span>
   type_ordinal boolean = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
@@ -203,10 +203,9 @@ atexit<span class="Delimiter">(</span>teardown_types<span class="Delimiter">);</
 <span class="Normal">struct</span> type_info <span class="Delimiter">{</span>
   string name<span class="Delimiter">;</span>
   kind_of_type kind<span class="Delimiter">;</span>
-  <span class="Normal">int</span> size<span class="Delimiter">;</span>  <span class="Comment">// only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)</span>
   vector&lt;reagent&gt; elements<span class="Delimiter">;</span>
   <span class="Comment">// End type_info Fields</span>
-  type_info<span class="Delimiter">()</span> :kind<span class="Delimiter">(</span>PRIMITIVE<span class="Delimiter">),</span> size<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  type_info<span class="Delimiter">()</span> :kind<span class="Delimiter">(</span>PRIMITIVE<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
 <span class="Delimiter">};</span>
 
 <span class="Normal">enum</span> primitive_recipes <span class="Delimiter">{</span>
@@ -237,7 +236,7 @@ assert<span class="Delimiter">(</span>MAX_PRIMITIVE_RECIPES &lt; <span class="Co
 Next_recipe_ordinal = <span class="Constant">200</span><span class="Delimiter">;</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">,</span> Next_recipe_ordinal++<span class="Delimiter">);</span>
 <span class="Comment">// End Load Recipes</span>
-<span class="Delimiter">:(before &quot;End Test Run Initialization&quot;)</span>
+<span class="Delimiter">:(before &quot;End Commandline Parsing&quot;)</span>
 assert<span class="Delimiter">(</span>Next_recipe_ordinal &lt; <span class="Constant">1000</span><span class="Delimiter">);</span>  <span class="Comment">// recipes being tested didn't overflow into test space</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Next_recipe_ordinal = <span class="Constant">1000</span><span class="Delimiter">;</span>  <span class="Comment">// consistent new numbers for each test</span>

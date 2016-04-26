@@ -39,27 +39,24 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muData">container</span> list:_elem [
   value:_elem
-  next:address:shared:list:_elem
+  next:address:list:_elem
 ]
 
-<span class="muRecipe">def</span> push x:_elem, in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>in:address:shared:list:_elem [
+<span class="muRecipe">def</span> push x:_elem, in:address:list:_elem<span class="muRecipe"> -&gt; </span>in:address:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result:address:shared:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
-  val:address:_elem<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">value:offset</span>
-  *val<span class="Special"> &lt;- </span>copy x
-  next:address:address:shared:list:_elem<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">next:offset</span>
-  *next<span class="Special"> &lt;- </span>copy in
+  result:address:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
+  *result<span class="Special"> &lt;- </span>merge x, in
   <span class="muControl">return</span> result  <span class="Comment"># needed explicitly because we need to replace 'in' with 'result'</span>
 ]
 
-<span class="muRecipe">def</span> first in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
+<span class="muRecipe">def</span> first in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
 ]
 
-<span class="muRecipe">def</span> rest in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:list:_elem/contained-in:in [
+<span class="muRecipe">def</span> rest in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:list:_elem/contained-in:in [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
@@ -67,15 +64,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> list-handling [
   run [
-    <span class="Constant">1</span>:address:shared:list:number<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    <span class="Constant">1</span>:address:shared:list:number<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, <span class="Constant">1</span>:address:shared:list:number
-    <span class="Constant">1</span>:address:shared:list:number<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, <span class="Constant">1</span>:address:shared:list:number
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:shared:list:number
-    <span class="Constant">1</span>:address:shared:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:shared:list:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:shared:list:number
-    <span class="Constant">1</span>:address:shared:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:shared:list:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:shared:list:number
-    <span class="Constant">1</span>:address:shared:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:shared:list:number
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, <span class="Constant">1</span>:address:list:number
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, <span class="Constant">1</span>:address:list:number
+    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list:number
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list:number
+    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list:number
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list:number
+    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list:number
+    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list:number
   ]
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># empty to empty, dust to dust..</span>
@@ -85,24 +82,24 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muRecipe">def</span> to-text in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> to-text in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  buf:address:shared:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
+  buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
   buf<span class="Special"> &lt;- </span>to-buffer in, buf
   result<span class="Special"> &lt;- </span>buffer-to-array buf
 ]
 
 <span class="Comment"># variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)</span>
-<span class="muRecipe">def</span> to-text-line in:address:shared:list:_elem<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> to-text-line in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  buf:address:shared:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
+  buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
   buf<span class="Special"> &lt;- </span>to-buffer in, buf, <span class="Constant">6</span>  <span class="Comment"># max elements to display</span>
   result<span class="Special"> &lt;- </span>buffer-to-array buf
 ]
 
-<span class="muRecipe">def</span> to-buffer in:address:shared:list:_elem, buf:address:shared:buffer<span class="muRecipe"> -&gt; </span>buf:address:shared:buffer [
+<span class="muRecipe">def</span> to-buffer in:address:list:_elem, buf:address:buffer<span class="muRecipe"> -&gt; </span>buf:address:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -114,7 +111,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   val:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
   buf<span class="Special"> &lt;- </span>append buf, val
   <span class="Comment"># now prepare next</span>
-  next:address:shared:list:_elem<span class="Special"> &lt;- </span>rest in
+  next:address:list:_elem<span class="Special"> &lt;- </span>rest in
   nextn:number<span class="Special"> &lt;- </span>copy next
   <span class="muControl">return-unless</span> next
   buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">[ -&gt; ]</span>

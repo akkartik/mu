@@ -38,16 +38,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Delimiter">:(scenario run_interactive_code)</span>
 def main [
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">34</span>]
-  run-interactive <span class="Constant">2</span>:address:shared:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">34</span>]
+  run-interactive <span class="Constant">2</span>:address:array:character
   <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>:number/<span class="Special">raw</span>
 ]
 <span class="traceContains">+mem: storing 34 in location 3</span>
 
 <span class="Delimiter">:(scenario run_interactive_empty)</span>
 def main [
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
 ]
 <span class="Comment"># result is null</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
@@ -120,7 +120,7 @@ Track_most_recent_products = <span class="Constant">false</span><span class="Del
   <span class="Comment">// call run(string) but without the scheduling</span>
   load<span class="Delimiter">(</span>string<span class="Delimiter">(</span><span class="Constant">&quot;recipe! interactive [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">)</span> +
           <span class="Constant">&quot;local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-          <span class="Constant">&quot;screen:address:shared:screen &lt;- next-ingredient</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+          <span class="Constant">&quot;screen:address:screen &lt;- next-ingredient</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
           <span class="Constant">&quot;$start-tracking-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
           command + <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
           <span class="Constant">&quot;$stop-tracking-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
@@ -202,15 +202,15 @@ load<span class="Delimiter">(</span>string<span class="Delimiter">(</span>
 <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
 <span class="Constant">&quot;recipe sandbox [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;screen:address:shared:screen &lt;- new-fake-screen 30, 5</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;screen:address:screen &lt;- new-fake-screen 30, 5</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;r:number/routine_id &lt;- start-running interactive, screen</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;limit-time r, 100000/instructions</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;wait-for-routine r</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;sandbox-state:number &lt;- routine-state r/routine_id</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;completed?:boolean &lt;- equal sandbox-state, 1/completed</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;output:address:shared:array:character &lt;- $most-recent-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;errors:address:shared:array:character &lt;- save-errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;stashes:address:shared:array:character &lt;- save-app-trace</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;output:address:array:character &lt;- $most-recent-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;errors:address:array:character &lt;- save-errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;stashes:address:array:character &lt;- save-app-trace</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;$cleanup-run-interactive</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;return output, errors, screen, stashes, completed?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
 <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
@@ -221,10 +221,10 @@ load<span class="Delimiter">(</span>string<span class="Delimiter">(</span>
 
 <span class="Delimiter">:(scenario run_interactive_comments)</span>
 def main [
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Comment"># ab</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Comment"># ab</span>
 add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
-  <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:shared:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
 ]
 <span class="traceContains">+mem: storing 52 in location 4</span>
 
@@ -318,9 +318,9 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(scenario &quot;run_interactive_converts_result_to_text&quot;)</span>
 def main [
   <span class="Comment"># try to interactively add 2 and 2</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
-  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:shared:array:character/lookup
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:array:character/lookup
 ]
 <span class="Comment"># first letter in the output should be '4' in unicode</span>
 <span class="traceContains">+mem: storing 52 in location 11</span>
@@ -328,13 +328,13 @@ def main [
 <span class="Delimiter">:(scenario &quot;run_interactive_returns_text&quot;)</span>
 def main [
   <span class="Comment"># try to interactively add 2 and 2</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [
-    <span class="Normal">x</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [a]
-    <span class="Normal">y</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [b]
-    <span class="Normal">z</span>:address:shared:array:character<span class="Special"> &lt;- </span>append x:address:shared:array:character<span class="Delimiter">,</span> y:address:shared:array:character
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [
+    <span class="Normal">x</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [a]
+    <span class="Normal">y</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [b]
+    <span class="Normal">z</span>:address:array:character<span class="Special"> &lt;- </span>append x:address:array:character<span class="Delimiter">,</span> y:address:array:character
   ]
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
-  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:shared:array:character/lookup
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:array:character/lookup
 ]
 <span class="Comment"># output contains &quot;ab&quot;</span>
 <span class="traceContains">+mem: storing 97 in location 11</span>
@@ -343,10 +343,10 @@ def main [
 <span class="Delimiter">:(scenario &quot;run_interactive_returns_errors&quot;)</span>
 def main [
   <span class="Comment"># run a command that generates an error</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [x:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [x:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 get x:number<span class="Delimiter">,</span> foo:offset]
-  <span class="Constant">2</span>:address:shared:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
-  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:shared:array:character/lookup
+  <span class="Constant">2</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:array:character/lookup
 ]
 <span class="Comment"># error should be &quot;unknown element foo in container number&quot;</span>
 <span class="traceContains">+mem: storing 117 in location 11</span>
@@ -358,10 +358,10 @@ get x:number<span class="Delimiter">,</span> foo:offset]
 <span class="Delimiter">:(scenario run_interactive_with_comment)</span>
 def main [
   <span class="Comment"># 2 instructions, with a comment after the first</span>
-  <span class="Constant">1</span>:address:shared:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> [a:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abc</span>
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> [a:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abc</span>
 <span class="Normal">b</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-  <span class="Constant">2</span>:address:shared:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:shared:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:shared:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
 ]
 <span class="Comment"># no errors</span>
 <span class="traceContains">+mem: storing 0 in location 3</span>
@@ -510,7 +510,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(scenario reload_continues_past_error)</span>
 def main [
   local-scope
-  <span class="Normal">x</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [recipe foo [
+  <span class="Normal">x</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [recipe foo [
   get <span class="Constant">1234</span>:number<span class="Delimiter">,</span> foo:offset
 ]]
   reload x
@@ -522,7 +522,7 @@ def main [
 <span class="Comment"># define a container and try to create it (merge requires knowing container size)</span>
 def main [
   local-scope
-  <span class="Normal">x</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [
+  <span class="Normal">x</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [
     container foo [
       <span class="Normal">x</span>:number
       <span class="Normal">y</span>:number

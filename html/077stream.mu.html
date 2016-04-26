@@ -32,41 +32,40 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># new type to help incrementally read texts (arrays of characters)</span>
 <span class="muData">container</span> stream [
   index:number
-  data:address:shared:array:character
+  data:address:array:character
 ]
 
-<span class="muRecipe">def</span> new-stream s:address:shared:array:character<span class="muRecipe"> -&gt; </span>result:address:shared:stream [
+<span class="muRecipe">def</span> new-stream s:address:array:character<span class="muRecipe"> -&gt; </span>result:address:stream [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>new <span class="Constant">stream:type</span>
-  i:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">index:offset</span>
-  *i<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  d:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">data:offset</span>
-  *d<span class="Special"> &lt;- </span>copy s
+  *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">index:offset</span>, <span class="Constant">0</span>
+  *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">data:offset</span>, s
 ]
 
-<span class="muRecipe">def</span> rewind-stream in:address:shared:stream<span class="muRecipe"> -&gt; </span>in:address:shared:stream [
+<span class="muRecipe">def</span> rewind-stream in:address:stream<span class="muRecipe"> -&gt; </span>in:address:stream [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  x:address:number<span class="Special"> &lt;- </span>get-address *in, <span class="Constant">index:offset</span>
-  *x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  *in<span class="Special"> &lt;- </span>put *in, <span class="Constant">index:offset</span>, <span class="Constant">0</span>
 ]
 
-<span class="muRecipe">def</span> read-line in:address:shared:stream<span class="muRecipe"> -&gt; </span>result:address:shared:array:character, in:address:shared:stream [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  idx:address:number<span class="Special"> &lt;- </span>get-address *in, <span class="Constant">index:offset</span>
-  s:address:shared:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
-  next-idx:number<span class="Special"> &lt;- </span>find-next s, <span class="Constant">10/newline</span>, *idx
-  result<span class="Special"> &lt;- </span>copy-range s, *idx, next-idx
-  *idx<span class="Special"> &lt;- </span>add next-idx, <span class="Constant">1</span>  <span class="Comment"># skip newline</span>
-]
-
-<span class="muRecipe">def</span> end-of-stream? in:address:shared:stream<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> read-line in:address:stream<span class="muRecipe"> -&gt; </span>result:address:array:character, in:address:stream [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   idx:number<span class="Special"> &lt;- </span>get *in, <span class="Constant">index:offset</span>
-  s:address:shared:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  s:address:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  next-idx:number<span class="Special"> &lt;- </span>find-next s, <span class="Constant">10/newline</span>, idx
+  result<span class="Special"> &lt;- </span>copy-range s, idx, next-idx
+  idx<span class="Special"> &lt;- </span>add next-idx, <span class="Constant">1</span>  <span class="Comment"># skip newline</span>
+  <span class="Comment"># write back</span>
+  *in<span class="Special"> &lt;- </span>put *in, <span class="Constant">index:offset</span>, idx
+]
+
+<span class="muRecipe">def</span> end-of-stream? in:address:stream<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  idx:number<span class="Special"> &lt;- </span>get *in, <span class="Constant">index:offset</span>
+  s:address:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
   len:number<span class="Special"> &lt;- </span>length *s
   result<span class="Special"> &lt;- </span>greater-or-equal idx, len
 ]

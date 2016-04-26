@@ -42,10 +42,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def!</span> main [
   <span class="Constant">local-scope</span>
   open-console
-  initial-recipe:address:shared:array:character<span class="Special"> &lt;- </span>restore <span class="Constant">[recipes.mu]</span>
-  initial-sandbox:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  initial-recipe:address:array:character<span class="Special"> &lt;- </span>restore <span class="Constant">[recipes.mu]</span>
+  initial-sandbox:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   hide-screen <span class="Constant">0/screen</span>
-  env:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment <span class="Constant">0/screen</span>, initial-recipe, initial-sandbox
+  env:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment <span class="Constant">0/screen</span>, initial-recipe, initial-sandbox
   env<span class="Special"> &lt;- </span>restore-sandboxes env
   render-all <span class="Constant">0/screen</span>, env
   event-loop <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>, env
@@ -53,41 +53,40 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muData">container</span> programming-environment-data [
-  sandbox:address:shared:sandbox-data  <span class="Comment"># list of sandboxes, from top to bottom</span>
+  sandbox:address:sandbox-data  <span class="Comment"># list of sandboxes, from top to bottom</span>
   render-from:number
   number-of-sandboxes:number
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;programming-environment-initialization&gt;</span> [
-  render-from:address:number<span class="Special"> &lt;- </span>get-address *result, <span class="Constant">render-from:offset</span>
-  *render-from<span class="Special"> &lt;- </span>copy <span class="Constant">-1</span>
+  *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">render-from:offset</span>, <span class="Constant">-1</span>
 ]
 
 <span class="muData">container</span> sandbox-data [
-  data:address:shared:array:character
-  response:address:shared:array:character
+  data:address:array:character
+  response:address:array:character
   <span class="Comment"># coordinates to track clicks</span>
   <span class="Comment"># constraint: will be 0 for sandboxes at positions before env.render-from</span>
   starting-row-on-screen:number
   code-ending-row-on-screen:number  <span class="Comment"># past end of code</span>
-  screen:address:shared:screen  <span class="Comment"># prints in the sandbox go here</span>
-  next-sandbox:address:shared:sandbox-data
+  screen:address:screen  <span class="Comment"># prints in the sandbox go here</span>
+  next-sandbox:address:sandbox-data
 ]
 
 <span class="muScenario">scenario</span> run-and-show-results [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># recipe editor is empty</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[divide-with-remainder 11, 3]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[divide-with-remainder 11, 3]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
   <span class="Comment"># run the code in the editors</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># check that screen prints the results</span>
   screen-should-contain [
@@ -137,7 +136,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># check that screen prints the results</span>
   screen-should-contain [
@@ -160,7 +159,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-keypress&gt;</span> [
   <span class="Comment"># F4? load all code and run all sandboxes.</span>
   <span class="Delimiter">{</span>
-    do-run?:boolean<span class="Special"> &lt;- </span>equal *k, <span class="Constant">65532/F4</span>
+    do-run?:boolean<span class="Special"> &lt;- </span>equal k, <span class="Constant">65532/F4</span>
     <span class="muControl">break-unless</span> do-run?
     screen<span class="Special"> &lt;- </span>update-status screen, <span class="Constant">[running...       ]</span>, <span class="Constant">245/grey</span>
     error?:boolean, env, screen<span class="Special"> &lt;- </span>run-sandboxes env, screen
@@ -170,45 +169,43 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       <span class="muControl">break-if</span> error?
       screen<span class="Special"> &lt;- </span>update-status screen, <span class="Constant">[                 ]</span>, <span class="Constant">245/grey</span>
     <span class="Delimiter">}</span>
-    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
+    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> run-sandboxes env:address:shared:programming-environment-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+<span class="muRecipe">def</span> run-sandboxes env:address:programming-environment-data, screen:address:screen<span class="muRecipe"> -&gt; </span>errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   errors-found?:boolean, env, screen<span class="Special"> &lt;- </span>update-recipes env, screen
   <span class="muControl">return-if</span> errors-found?
   <span class="Comment"># check contents of right editor (sandbox)</span>
 <span class="Constant">  &lt;run-sandboxes-begin&gt;</span>
-  current-sandbox:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   <span class="Delimiter">{</span>
-    sandbox-contents:address:shared:array:character<span class="Special"> &lt;- </span>editor-contents current-sandbox
+    sandbox-contents:address:array:character<span class="Special"> &lt;- </span>editor-contents current-sandbox
     <span class="muControl">break-unless</span> sandbox-contents
     <span class="Comment"># if contents exist, first save them</span>
     <span class="Comment"># run them and turn them into a new sandbox-data</span>
-    new-sandbox:address:shared:sandbox-data<span class="Special"> &lt;- </span>new <span class="Constant">sandbox-data:type</span>
-    data:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *new-sandbox, <span class="Constant">data:offset</span>
-    *data<span class="Special"> &lt;- </span>copy sandbox-contents
+    new-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>new <span class="Constant">sandbox-data:type</span>
+    *new-sandbox<span class="Special"> &lt;- </span>put *new-sandbox, <span class="Constant">data:offset</span>, sandbox-contents
     <span class="Comment"># push to head of sandbox list</span>
-    dest:address:address:shared:sandbox-data<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">sandbox:offset</span>
-    next:address:address:shared:sandbox-data<span class="Special"> &lt;- </span>get-address *new-sandbox, <span class="Constant">next-sandbox:offset</span>
-    *next<span class="Special"> &lt;- </span>copy *dest
-    *dest<span class="Special"> &lt;- </span>copy new-sandbox
+    dest:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+    *new-sandbox<span class="Special"> &lt;- </span>put *new-sandbox, <span class="Constant">next-sandbox:offset</span>, dest
+    *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox:offset</span>, new-sandbox
     <span class="Comment"># update sandbox count</span>
-    sandbox-count:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">number-of-sandboxes:offset</span>
-    *sandbox-count<span class="Special"> &lt;- </span>add *sandbox-count, <span class="Constant">1</span>
+    sandbox-count:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">number-of-sandboxes:offset</span>
+    sandbox-count<span class="Special"> &lt;- </span>add sandbox-count, <span class="Constant">1</span>
+    *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">number-of-sandboxes:offset</span>, sandbox-count
     <span class="Comment"># clear sandbox editor</span>
-    init:address:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get-address *current-sandbox, <span class="Constant">data:offset</span>
-    *init<span class="Special"> &lt;- </span>push <span class="Constant">167/§</span>, <span class="Constant">0/tail</span>
-    top-of-screen:address:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get-address *current-sandbox, <span class="Constant">top-of-screen:offset</span>
-    *top-of-screen<span class="Special"> &lt;- </span>copy *init
+    init:address:duplex-list:character<span class="Special"> &lt;- </span>push <span class="Constant">167/§</span>, <span class="Constant">0/tail</span>
+    *current-sandbox<span class="Special"> &lt;- </span>put *current-sandbox, <span class="Constant">data:offset</span>, init
+    *current-sandbox<span class="Special"> &lt;- </span>put *current-sandbox, <span class="Constant">top-of-screen:offset</span>, init
   <span class="Delimiter">}</span>
   <span class="Comment"># save all sandboxes before running, just in case we die when running</span>
   save-sandboxes env
   <span class="Comment"># run all sandboxes</span>
-  curr:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  curr:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr
@@ -222,45 +219,45 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Comment"># copy code from recipe editor, persist, load into mu</span>
 <span class="Comment"># replaced in a later layer (whereupon errors-found? will actually be set)</span>
-<span class="muRecipe">def</span> update-recipes env:address:shared:programming-environment-data, screen:address:shared:screen<span class="muRecipe"> -&gt; </span>errors-found?:boolean, env:address:shared:programming-environment-data, screen:address:shared:screen [
+<span class="muRecipe">def</span> update-recipes env:address:programming-environment-data, screen:address:screen<span class="muRecipe"> -&gt; </span>errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  recipes:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
-  in:address:shared:array:character<span class="Special"> &lt;- </span>editor-contents recipes
+  recipes:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
+  in:address:array:character<span class="Special"> &lt;- </span>editor-contents recipes
   save <span class="Constant">[recipes.mu]</span>, in  <span class="Comment"># newlayer: persistence</span>
   reload in
   errors-found?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
 ]
 
 <span class="Comment"># replaced in a later layer</span>
-<span class="muRecipe">def!</span> update-sandbox sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data, env:address:shared:programming-environment-data [
+<span class="muRecipe">def!</span> update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:sandbox-data, env:address:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  data:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
-  response:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response:offset</span>
-  fake-screen:address:address:shared:screen<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">screen:offset</span>
-  *response, _, *fake-screen<span class="Special"> &lt;- </span>run-interactive data
+  data:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
+  response:address:array:character, _, fake-screen:address:screen<span class="Special"> &lt;- </span>run-interactive data
+  *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">response:offset</span>, response
+  *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">screen:offset</span>, fake-screen
 ]
 
-<span class="muRecipe">def</span> update-status screen:address:shared:screen, msg:address:shared:array:character, color:number<span class="muRecipe"> -&gt; </span>screen:address:shared:screen [
+<span class="muRecipe">def</span> update-status screen:address:screen, msg:address:array:character, color:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   screen<span class="Special"> &lt;- </span>move-cursor screen, <span class="Constant">0</span>, <span class="Constant">2</span>
   screen<span class="Special"> &lt;- </span>print screen, msg, color, <span class="Constant">238/grey/background</span>
 ]
 
-<span class="muRecipe">def</span> save-sandboxes env:address:shared:programming-environment-data [
+<span class="muRecipe">def</span> save-sandboxes env:address:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  current-sandbox:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   <span class="Comment"># first clear previous versions, in case we deleted some sandbox</span>
   $system <span class="Constant">[rm lesson/[0-9]</span>* &gt;/dev/null <span class="Constant">2</span>&gt;/dev/null]  <span class="Comment"># some shells can't handle '&gt;&amp;'</span>
-  curr:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  curr:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr
-    data:address:shared:array:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">data:offset</span>
-    filename:address:shared:array:character<span class="Special"> &lt;- </span>to-text idx
+    data:address:array:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">data:offset</span>
+    filename:address:array:character<span class="Special"> &lt;- </span>to-text idx
     save filename, data
 <span class="Constant">    &lt;end-save-sandbox&gt;</span>
     idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
@@ -269,11 +266,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def!</span> render-sandbox-side screen:address:shared:screen, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:shared:screen, env:address:shared:programming-environment-data [
+<span class="muRecipe">def!</span> render-sandbox-side screen:address:screen, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>screen:address:screen, env:address:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   trace <span class="Constant">11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render sandbox side]</span>
-  current-sandbox:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   row:number, column:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>, <span class="Constant">0</span>
   left:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">left:offset</span>
   right:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">right:offset</span>
@@ -288,12 +285,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># render sandboxes</span>
   draw-horizontal screen, row, left, right, <span class="Constant">9473/horizontal-double</span>
-  sandbox:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   row, screen<span class="Special"> &lt;- </span>render-sandboxes screen, sandbox, left, right, row, render-from
   clear-rest-of-screen screen, row, left, right
 ]
 
-<span class="muRecipe">def</span> render-sandboxes screen:address:shared:screen, sandbox:address:shared:sandbox-data, left:number, right:number, row:number, render-from:number, idx:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:shared:screen, sandbox:address:shared:sandbox-data [
+<span class="muRecipe">def</span> render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:number, right:number, row:number, render-from:number, idx:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:screen, sandbox:address:sandbox-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">return-unless</span> sandbox
@@ -311,20 +308,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     delete-icon:character<span class="Special"> &lt;- </span>copy <span class="Constant">120/x</span>
     print screen, delete-icon, <span class="Constant">245/grey</span>
     <span class="Comment"># save menu row so we can detect clicks to it later</span>
-    starting-row:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
-    *starting-row<span class="Special"> &lt;- </span>copy row
+    *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">starting-row-on-screen:offset</span>, row
     <span class="Comment"># render sandbox contents</span>
     row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
     screen<span class="Special"> &lt;- </span>move-cursor screen, row, left
-    sandbox-data:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
+    sandbox-data:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
     row, screen<span class="Special"> &lt;- </span>render-code screen, sandbox-data, left, right, row
-    code-ending-row:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>
-    *code-ending-row<span class="Special"> &lt;- </span>copy row
+    *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>, row
     <span class="Comment"># render sandbox warnings, screen or response, in that order</span>
-    sandbox-response:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response:offset</span>
+    sandbox-response:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response:offset</span>
 <span class="Constant">    &lt;render-sandbox-results&gt;</span>
     <span class="Delimiter">{</span>
-      sandbox-screen:address:shared:screen<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">screen:offset</span>
+      sandbox-screen:address:screen<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">screen:offset</span>
       empty-screen?:boolean<span class="Special"> &lt;- </span>fake-screen-is-empty? sandbox-screen
       <span class="muControl">break-if</span> empty-screen?
       row, screen<span class="Special"> &lt;- </span>render-screen screen, sandbox-screen, left, right, row
@@ -343,33 +338,31 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># if hidden, reset row attributes</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> hidden?
-    tmp:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
-    *tmp<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    tmp:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>
-    *tmp<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+    *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">starting-row-on-screen:offset</span>, <span class="Constant">0</span>
+    *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>, <span class="Constant">0</span>
 <span class="Constant">    &lt;end-render-sandbox-reset-hidden&gt;</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># draw next sandbox</span>
-  next-sandbox:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
+  next-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
   next-idx:number<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
   row, screen<span class="Special"> &lt;- </span>render-sandboxes screen, next-sandbox, left, right, row, render-from, next-idx
 ]
 
 <span class="Comment"># assumes programming environment has no sandboxes; restores them from previous session</span>
-<span class="muRecipe">def</span> restore-sandboxes env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>env:address:shared:programming-environment-data [
+<span class="muRecipe">def</span> restore-sandboxes env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>env:address:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># read all scenarios, pushing them to end of a list of scenarios</span>
   idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  curr:address:address:shared:sandbox-data<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">sandbox:offset</span>
+  curr:address:sandbox-data<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  prev:address:sandbox-data<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
-    filename:address:shared:array:character<span class="Special"> &lt;- </span>to-text idx
-    contents:address:shared:array:character<span class="Special"> &lt;- </span>restore filename
+    filename:address:array:character<span class="Special"> &lt;- </span>to-text idx
+    contents:address:array:character<span class="Special"> &lt;- </span>restore filename
     <span class="muControl">break-unless</span> contents  <span class="Comment"># stop at first error; assuming file didn't exist</span>
     <span class="Comment"># create new sandbox for file</span>
-    *curr<span class="Special"> &lt;- </span>new <span class="Constant">sandbox-data:type</span>
-    data:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address **curr, <span class="Constant">data:offset</span>
-    *data<span class="Special"> &lt;- </span>copy contents
+    curr<span class="Special"> &lt;- </span>new <span class="Constant">sandbox-data:type</span>
+    *curr<span class="Special"> &lt;- </span>put *curr, <span class="Constant">data:offset</span>, contents
     <span class="Comment"># restore expected output for sandbox if it exists</span>
     <span class="Delimiter">{</span>
       filename<span class="Special"> &lt;- </span>append filename, <span class="Constant">[.out]</span>
@@ -379,17 +372,21 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Delimiter">}</span>
 <span class="Constant">    +continue</span>
     idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
-    curr<span class="Special"> &lt;- </span>get-address **curr, <span class="Constant">next-sandbox:offset</span>
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-unless</span> prev
+      *prev<span class="Special"> &lt;- </span>put *prev, <span class="Constant">next-sandbox:offset</span>, curr
+    <span class="Delimiter">}</span>
+    prev<span class="Special"> &lt;- </span>copy curr
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
+  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox:offset</span>, curr
   <span class="Comment"># update sandbox count</span>
-  number-of-sandboxes:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">number-of-sandboxes:offset</span>
-  *number-of-sandboxes<span class="Special"> &lt;- </span>copy idx
+  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">number-of-sandboxes:offset</span>, idx
 ]
 
 <span class="Comment"># print the fake sandbox screen to 'screen' with appropriate delimiters</span>
 <span class="Comment"># leave cursor at start of next line</span>
-<span class="muRecipe">def</span> render-screen screen:address:shared:screen, sandbox-screen:address:shared:screen, left:number, right:number, row:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:shared:screen [
+<span class="muRecipe">def</span> render-screen screen:address:screen, sandbox-screen:address:screen, left:number, right:number, row:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">return-unless</span> sandbox-screen
@@ -400,7 +397,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   column:number<span class="Special"> &lt;- </span>copy left
   s-width:number<span class="Special"> &lt;- </span>screen-width sandbox-screen
   s-height:number<span class="Special"> &lt;- </span>screen-height sandbox-screen
-  buf:address:shared:array:screen-cell<span class="Special"> &lt;- </span>get *sandbox-screen, <span class="Constant">data:offset</span>
+  buf:address:array:screen-cell<span class="Special"> &lt;- </span>get *sandbox-screen, <span class="Constant">data:offset</span>
   stop-printing:number<span class="Special"> &lt;- </span>add left, s-width, <span class="Constant">3</span>
   max-column:number<span class="Special"> &lt;- </span>min stop-printing, right
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -458,20 +455,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">12/height</span>
   <span class="Comment"># define a recipe (no indent for the 'add' line below so column numbers are more obvious)</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">local-scope</span>
 <span class="Constant">z:number &lt;- add 2, 2</span>
 <span class="Constant">reply z</span>
 <span class="Constant">]</span>]
   <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
   <span class="Comment"># run the code in the editors</span>
   assume-console [
     press F4
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -491,7 +488,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># check that screen updates the result on the right</span>
   screen-should-contain [
@@ -511,16 +508,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">20/height</span>
   <span class="Comment"># left editor is empty</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># right editor contains an instruction</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[print-integer screen, 4]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[print-integer screen, 4]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
   <span class="Comment"># run the code in the editor</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># check that it prints a little toy screen</span>
   screen-should-contain [
@@ -540,11 +537,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muRecipe">def</span> editor-contents editor:address:shared:editor-data<span class="muRecipe"> -&gt; </span>result:address:shared:array:character [
+<span class="muRecipe">def</span> editor-contents editor:address:editor-data<span class="muRecipe"> -&gt; </span>result:address:array:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  buf:address:shared:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
-  curr:address:shared:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
+  buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
+  curr:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
   <span class="Comment"># skip § sentinel</span>
   assert curr, <span class="Constant">[editor without data is illegal; must have at least a sentinel]</span>
   curr<span class="Special"> &lt;- </span>next curr
@@ -561,16 +558,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-provides-edited-contents [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:shared:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:shared:array:character, screen:address:shared:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">2</span>
     type <span class="Constant">[def]</span>
   ]
   run [
-    editor-event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">2</span>:address:shared:editor-data
-    <span class="Constant">3</span>:address:shared:array:character<span class="Special"> &lt;- </span>editor-contents <span class="Constant">2</span>:address:shared:editor-data
-    <span class="Constant">4</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:shared:array:character
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
+    <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>editor-contents <span class="Constant">2</span>:address:editor-data
+    <span class="Constant">4</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:array:character
   ]
   memory-should-contain [
     <span class="Constant">4</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abdefc]</span>
@@ -583,10 +580,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize sandbox side</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[add 2, 2]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
-  render-all screen, <span class="Constant">3</span>:address:shared:programming-environment-data
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[add 2, 2]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  render-all screen, <span class="Constant">3</span>:address:programming-environment-data
   assume-console [
     <span class="Comment"># create a sandbox</span>
     press F4
@@ -596,9 +593,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">]</span>
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
     <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
+    print screen:address:screen, <span class="Constant">4</span>:character/cursor
   ]
   screen-should-contain [
    <span class="Constant"> .                              .  # minor: F4 clears menu tooltip in very narrow screens</span>
@@ -613,9 +610,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
     <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
+    print screen:address:screen, <span class="Constant">4</span>:character/cursor
   ]
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
@@ -633,9 +630,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press up-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
     <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
+    print screen:address:screen, <span class="Constant">4</span>:character/cursor
   ]
   <span class="Comment"># sandbox editor displays again</span>
   screen-should-contain [
@@ -651,23 +648,24 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># down on sandbox side updates render-from when sandbox editor has cursor at bottom</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-keypress&gt;</span> [
   <span class="Delimiter">{</span>
-    <span class="muControl">break-unless</span> *sandbox-in-focus?
-    down?:boolean<span class="Special"> &lt;- </span>equal *k, <span class="Constant">65516/down-arrow</span>
+    <span class="muControl">break-unless</span> sandbox-in-focus?
+    down?:boolean<span class="Special"> &lt;- </span>equal k, <span class="Constant">65516/down-arrow</span>
     <span class="muControl">break-unless</span> down?
     sandbox-bottom:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">bottom:offset</span>
     sandbox-cursor:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">cursor-row:offset</span>
     sandbox-cursor-on-last-line?:boolean<span class="Special"> &lt;- </span>equal sandbox-bottom, sandbox-cursor
     <span class="muControl">break-unless</span> sandbox-cursor-on-last-line?
-    sandbox:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+    sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
     <span class="muControl">break-unless</span> sandbox
     <span class="Comment"># slide down if possible</span>
     <span class="Delimiter">{</span>
-      render-from:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">render-from:offset</span>
+      render-from:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">render-from:offset</span>
       number-of-sandboxes:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">number-of-sandboxes:offset</span>
       max:number<span class="Special"> &lt;- </span>subtract number-of-sandboxes, <span class="Constant">1</span>
-      at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal *render-from, max
+      at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal render-from, max
       <span class="muControl">jump-if</span> at-end?, <span class="Constant">+finish-event:label</span>  <span class="Comment"># render nothing</span>
-      *render-from<span class="Special"> &lt;- </span>add *render-from, <span class="Constant">1</span>
+      render-from<span class="Special"> &lt;- </span>add render-from, <span class="Constant">1</span>
+      *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">render-from:offset</span>, render-from
     <span class="Delimiter">}</span>
     hide-screen screen
     screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env
@@ -692,13 +690,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># 'up' on sandbox side is like 'down': updates render-from when necessary</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-keypress&gt;</span> [
   <span class="Delimiter">{</span>
-    <span class="muControl">break-unless</span> *sandbox-in-focus?
-    up?:boolean<span class="Special"> &lt;- </span>equal *k, <span class="Constant">65517/up-arrow</span>
+    <span class="muControl">break-unless</span> sandbox-in-focus?
+    up?:boolean<span class="Special"> &lt;- </span>equal k, <span class="Constant">65517/up-arrow</span>
     <span class="muControl">break-unless</span> up?
-    render-from:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">render-from:offset</span>
-    at-beginning?:boolean<span class="Special"> &lt;- </span>equal *render-from, <span class="Constant">-1</span>
+    render-from:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">render-from:offset</span>
+    at-beginning?:boolean<span class="Special"> &lt;- </span>equal render-from, <span class="Constant">-1</span>
     <span class="muControl">break-if</span> at-beginning?
-    *render-from<span class="Special"> &lt;- </span>subtract *render-from, <span class="Constant">1</span>
+    render-from<span class="Special"> &lt;- </span>subtract render-from, <span class="Constant">1</span>
+    *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">render-from:offset</span>, render-from
     hide-screen screen
     screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env
     show-screen screen
@@ -708,12 +707,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Comment"># sandbox belonging to 'env' whose next-sandbox is 'in'</span>
 <span class="Comment"># return 0 if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox</span>
-<span class="muRecipe">def</span> previous-sandbox env:address:shared:programming-environment-data, in:address:shared:sandbox-data<span class="muRecipe"> -&gt; </span>out:address:shared:sandbox-data [
+<span class="muRecipe">def</span> previous-sandbox env:address:programming-environment-data, in:address:sandbox-data<span class="muRecipe"> -&gt; </span>out:address:sandbox-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  curr:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  curr:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   <span class="muControl">return-unless</span> curr, <span class="Constant">0/nil</span>
-  next:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
+  next:address:sandbox-data<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
   <span class="Delimiter">{</span>
     <span class="muControl">return-unless</span> next, <span class="Constant">0/nil</span>
     found?:boolean<span class="Special"> &lt;- </span>equal next, in
@@ -729,24 +728,24 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize sandbox side and create a sandbox</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">]</span>
   <span class="Comment"># create a sandbox</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[add 2, 2]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
-  render-all screen, <span class="Constant">3</span>:address:shared:programming-environment-data
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[add 2, 2]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  render-all screen, <span class="Constant">3</span>:address:programming-environment-data
   assume-console [
     press F4
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   <span class="Comment"># hit 'down' in recipe editor</span>
   assume-console [
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
     <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
+    print screen:address:screen, <span class="Constant">4</span>:character/cursor
   ]
   <span class="Comment"># cursor moves down on recipe side</span>
   screen-should-contain [
@@ -765,10 +764,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
-  render-all screen, <span class="Constant">3</span>:address:shared:programming-environment-data
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  render-all screen, <span class="Constant">3</span>:address:programming-environment-data
   <span class="Comment"># create 2 sandboxes</span>
   assume-console [
     press ctrl-n
@@ -777,9 +776,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-  print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
+  print screen:address:screen, <span class="Constant">4</span>:character/cursor
   screen-should-contain [
    <span class="Constant"> .                              .</span>
    <span class="Constant"> .               ┊␣             .</span>
@@ -797,9 +796,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
     <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
+    print screen:address:screen, <span class="Constant">4</span>:character/cursor
   ]
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
@@ -820,7 +819,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># just second sandbox displayed</span>
   screen-should-contain [
@@ -838,7 +837,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># no change</span>
   screen-should-contain [
@@ -856,7 +855,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press up-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># back to displaying both sandboxes without editor</span>
   screen-should-contain [
@@ -876,9 +875,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press up-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
     <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
+    print screen:address:screen, <span class="Constant">4</span>:character/cursor
   ]
   <span class="Comment"># back to displaying both sandboxes as well as editor</span>
   screen-should-contain [
@@ -898,7 +897,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press up-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># no change</span>
   screen-should-contain [
@@ -919,17 +918,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
-  render-all screen, <span class="Constant">3</span>:address:shared:programming-environment-data
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  render-all screen, <span class="Constant">3</span>:address:programming-environment-data
   <span class="Comment"># create a sandbox</span>
   assume-console [
     press ctrl-n
     type <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                              .</span>
    <span class="Constant"> .               ┊              .</span>
@@ -945,7 +944,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
@@ -963,7 +962,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press up-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># back to displaying both sandboxes as well as editor</span>
   screen-should-contain [
@@ -981,7 +980,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>

@@ -108,9 +108,8 @@ Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 
 <span class="Normal">bool</span> all_routines_done<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -510,6 +509,28 @@ DISCONTINUED<span class="Delimiter">,</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
+<span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+  raise &lt;&lt; <span class="Constant">&quot;some routines died with errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  ++Num_failures<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Mu Test Teardown&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+  raise &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: some routines died with errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  ++Num_failures<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">bool</span> any_routines_with_error<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == DISCONTINUED<span class="Delimiter">)</span>
+      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
 <span class="Normal">int</span> limit<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
@@ -552,16 +573,16 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(scenario new_concurrent)</span>
 def f1 [
   start-running f2
-  <span class="Constant">1</span>:address:shared:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
   <span class="Comment"># wait for f2 to complete</span>
   <span class="Delimiter">{</span>
     loop-unless <span class="Constant">4</span>:number/<span class="Special">raw</span>
   <span class="Delimiter">}</span>
 ]
 def f2 [
-  <span class="Constant">2</span>:address:shared:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
   <span class="Comment"># hack: assumes scheduler implementation</span>
-  <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:shared:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:shared:number/<span class="Special">raw</span>
+  <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:number/<span class="Special">raw</span>
   <span class="Comment"># signal f2 complete</span>
   <span class="Constant">4</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>
 ]

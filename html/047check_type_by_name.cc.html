@@ -94,7 +94,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
       <span class="Identifier">return</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; can't determine the size of array variable &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;. Either allocate it separately and make the type of &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; address:shared:..., or specify the length of the array in the type of &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; can't determine the size of array variable &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;. Either allocate it separately and make the type of &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; address:..., or specify the length of the array in the type of &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -130,17 +130,17 @@ def main [
 <span class="Delimiter">:(scenario typo_in_address_type_fails)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Normal">y</span>:address:shared:charcter<span class="Special"> &lt;- </span><span class="Normal">new</span> character:type
+  <span class="Normal">y</span>:address:charcter<span class="Special"> &lt;- </span><span class="Normal">new</span> character:type
   *y<span class="Special"> &lt;- </span>copy <span class="Constant">67</span>
 ]
-<span class="traceContains">+error: main: unknown type charcter in 'y:address:shared:charcter &lt;- new character:type'</span>
+<span class="traceContains">+error: main: unknown type charcter in 'y:address:charcter &lt;- new character:type'</span>
 
 <span class="Delimiter">:(scenario array_type_without_size_fails)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
   <span class="Normal">x</span>:array:number<span class="Special"> &lt;- </span>merge <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">12</span><span class="Delimiter">,</span> <span class="Constant">13</span>
 ]
-<span class="traceContains">+error: main can't determine the size of array variable x. Either allocate it separately and make the type of x address:shared:..., or specify the length of the array in the type of x.</span>
+<span class="traceContains">+error: main can't determine the size of array variable x. Either allocate it separately and make the type of x address:..., or specify the length of the array in the type of x.</span>
 
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario transform_checks_types_of_identical_reagents_in_multiple_spaces)</span>
@@ -148,7 +148,7 @@ def foo [  <span class="Comment"># dummy</span>
 ]
 def main [
   local-scope
-  <span class="Constant">0</span>:address:shared:array:location/names:foo<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># specify surrounding space</span>
+  <span class="Constant">0</span>:address:array:location/names:foo<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># specify surrounding space</span>
   <span class="Normal">x</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/<span class="Constant">true</span>
   <span class="Normal">x</span>:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   x/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">35</span>

@@ -191,8 +191,21 @@ $error: <span class="Constant">0</span>
 <span class="Normal">bool</span> types_strictly_match<span class="Delimiter">(</span>type_tree* to<span class="Delimiter">,</span> type_tree* from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!to<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!from<span class="Delimiter">)</span> <span class="Identifier">return</span> to<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>value == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">return</span> from<span class="Delimiter">-&gt;</span>name == to<span class="Delimiter">-&gt;</span>name<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>value != from<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> types_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> from<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> &amp;&amp; types_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> from<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_unknown_type_does_not_match_unknown_type<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  reagent a<span class="Delimiter">(</span><span class="Constant">&quot;a:foo&quot;</span><span class="Delimiter">);</span>
+  reagent b<span class="Delimiter">(</span><span class="Constant">&quot;b:bar&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>a<span class="Delimiter">,</span> b<span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_unknown_type_matches_itself<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  reagent a<span class="Delimiter">(</span><span class="Constant">&quot;a:foo&quot;</span><span class="Delimiter">);</span>
+  reagent b<span class="Delimiter">(</span><span class="Constant">&quot;b:foo&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>types_strictly_match<span class="Delimiter">(</span>a<span class="Delimiter">,</span> b<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> is_unsafe<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>

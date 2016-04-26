@@ -24,6 +24,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
 .CommentedCode { color: #6c6c6c; }
+.PreProc { color: #800080; }
 -->
 </style>
 
@@ -438,6 +439,10 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
 
   <span class="Normal">const</span> type_tree* replacement = get<span class="Delimiter">(</span>mappings<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; type<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot; =&gt; &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>replacement<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> replacement<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Comment">// error in program; should be reported elsewhere</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
 
   <span class="Comment">// type is a single type ingredient</span>
   assert<span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
@@ -594,8 +599,8 @@ container c:_a:_b [
   <span class="Normal">b</span>:_b
 ]
 def main [
-  <span class="Normal">s</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  <span class="Delimiter">{</span>x: <span class="Delimiter">(</span>c <span class="Delimiter">(</span>address shared array character<span class="Delimiter">)</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>merge s<span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Normal">s</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  <span class="Delimiter">{</span>x: <span class="Delimiter">(</span>c <span class="Delimiter">(</span>address array character<span class="Delimiter">)</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>merge s<span class="Delimiter">,</span> <span class="Constant">34</span>
   foo x
 ]
 def foo x:c:_bar:_baz [
@@ -632,14 +637,14 @@ def foo a:_t [
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient)</span>
 def main [
-  <span class="Constant">1</span>:address:shared:foo:point<span class="Special"> &lt;- </span>bar <span class="Constant">3</span>
-  <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:shared:foo:point
+  <span class="Constant">1</span>:address:foo:point<span class="Special"> &lt;- </span>bar <span class="Constant">3</span>
+  <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:foo:point
 ]
 container foo:_t [
   <span class="Normal">x</span>:_t
   <span class="Normal">y</span>:number
 ]
-def bar x:number <span class="Delimiter">-&gt;</span> result:address:shared:foo:_t [
+def bar x:number <span class="Delimiter">-&gt;</span> result:address:foo:_t [
   local-scope
   load-ingredients
   <span class="Comment"># new refers to _t in its ingredient *value*</span>
@@ -651,10 +656,10 @@ def bar x:number <span class="Delimiter">-&gt;</span> result:address:shared:foo:
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient_2)</span>
 def main [
-  <span class="Constant">1</span>:address:shared:foo:point<span class="Special"> &lt;- </span>bar <span class="Constant">3</span>
-  <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:shared:foo:point
+  <span class="Constant">1</span>:address:foo:point<span class="Special"> &lt;- </span>bar <span class="Constant">3</span>
+  <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:foo:point
 ]
-def bar x:number <span class="Delimiter">-&gt;</span> result:address:shared:foo:_t [
+def bar x:number <span class="Delimiter">-&gt;</span> result:address:foo:_t [
   local-scope
   load-ingredients
   <span class="Comment"># new refers to _t in its ingredient *value*</span>
@@ -673,7 +678,7 @@ container foo:_t [
 def main [
   _<span class="Special"> &lt;- </span>bar <span class="Constant">34</span>
 ]
-def bar x:_t <span class="Delimiter">-&gt;</span> result:address:shared:_t [
+def bar x:_t <span class="Delimiter">-&gt;</span> result:address:_t [
   local-scope
   load-ingredients
   result<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -689,7 +694,7 @@ $error: <span class="Constant">0</span>
   transform<span class="Delimiter">(</span><span class="Constant">&quot;def barz x:_elem [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
             <span class="Constant">&quot;  local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
             <span class="Constant">&quot;  load-ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-            <span class="Constant">&quot;  y:address:shared:number &lt;- new _elem:type</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+            <span class="Constant">&quot;  y:address:number &lt;- new _elem:type</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
             <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
             <span class="Constant">&quot;def fooz [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
             <span class="Constant">&quot;  local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
@@ -711,11 +716,10 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_supports_compound_types)</span>
 def main [
-  <span class="Constant">1</span>:address:shared:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
-  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>get-address *<span class="Constant">1</span>:address:shared:point<span class="Delimiter">,</span> y:offset
-  *<span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">3</span>:address:shared:point<span class="Special"> &lt;- </span>bar <span class="Constant">1</span>:address:shared:point  <span class="Comment"># specialize _t to address:shared:point</span>
-  <span class="Constant">4</span>:point<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:shared:point
+  <span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  *<span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>put *<span class="Constant">1</span>:address:point<span class="Delimiter">,</span> y:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Constant">3</span>:address:point<span class="Special"> &lt;- </span>bar <span class="Constant">1</span>:address:point  <span class="Comment"># specialize _t to address:point</span>
+  <span class="Constant">4</span>:point<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:point
 ]
 def bar a:_t <span class="Delimiter">-&gt;</span> result:_t [
   local-scope
@@ -728,13 +732,13 @@ def bar a:_t <span class="Delimiter">-&gt;</span> result:_t [
 <span class="Special">% Hide_errors = true;</span>
 def main [
   <span class="Normal">a</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
-  <span class="Normal">b</span>:address:shared:number<span class="Special"> &lt;- </span>foo a
+  <span class="Normal">b</span>:address:number<span class="Special"> &lt;- </span>foo a
 ]
 def foo a:_t <span class="Delimiter">-&gt;</span> b:_t [
   load-ingredients
   b<span class="Special"> &lt;- </span>copy a
 ]
-<span class="traceContains">+error: main: no call found for 'b:address:shared:number &lt;- foo a'</span>
+<span class="traceContains">+error: main: no call found for 'b:address:number &lt;- foo a'</span>
 
 <span class="Delimiter">:(scenario specialize_inside_recipe_without_header)</span>
 def main [
@@ -782,7 +786,7 @@ def foo x:_elem <span class="Delimiter">-&gt;</span> y:_elem [
 def main [
   local-scope
   <span class="Comment"># permit '0' to map to address to shape-shifting type-ingredient</span>
-  <span class="Constant">1</span>:address:shared:character/<span class="Special">raw &lt;- </span>foo <span class="Constant">0</span>
+  <span class="Constant">1</span>:address:character/<span class="Special">raw &lt;- </span>foo <span class="Constant">0</span>
 ]
 def foo x:address:_elem <span class="Delimiter">-&gt;</span> y:address:_elem [
   local-scope
@@ -852,7 +856,7 @@ container d2:_elem [
 <span class="Comment"># static dispatch between shape-shifting variants, _including pointer lookups_</span>
 def main [
   <span class="Normal">e1</span>:d1:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
-  <span class="Normal">e2</span>:address:shared:d2:number<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>d2 number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
+  <span class="Normal">e2</span>:address:d2:number<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>d2 number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>foo e1
   <span class="Constant">2</span>:number/<span class="Special">raw &lt;- </span>foo *e2  <span class="Comment"># different from previous scenario</span>
 ]
@@ -935,15 +939,15 @@ def foo x:_elem <span class="Delimiter">-&gt;</span> y:number [
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario specialize_most_similar_variant)</span>
 def main [
-  <span class="Constant">1</span>:address:shared:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>foo <span class="Constant">1</span>:address:shared:number
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>foo <span class="Constant">1</span>:address:number
 ]
 def foo x:_elem <span class="Delimiter">-&gt;</span> y:number [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo x:address:shared:_elem <span class="Delimiter">-&gt;</span> y:number [
+def foo x:address:_elem <span class="Delimiter">-&gt;</span> y:number [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -954,17 +958,17 @@ def foo x:address:shared:_elem <span class="Delimiter">-&gt;</span> y:number [
 <span class="Comment"># version with headers padded with lots of unrelated concrete types</span>
 def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
-  <span class="Constant">2</span>:address:shared:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>foo <span class="Constant">2</span>:address:shared:array:number<span class="Delimiter">,</span> <span class="Constant">1</span>:number
+  <span class="Constant">2</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>foo <span class="Constant">2</span>:address:array:number<span class="Delimiter">,</span> <span class="Constant">1</span>:number
 ]
 <span class="Comment"># variant with concrete type</span>
-def foo dummy:address:shared:array:number<span class="Delimiter">,</span> x:number <span class="Delimiter">-&gt;</span> y:number<span class="Delimiter">,</span> dummy:address:shared:array:number [
+def foo dummy:address:array:number<span class="Delimiter">,</span> x:number <span class="Delimiter">-&gt;</span> y:number<span class="Delimiter">,</span> dummy:address:array:number [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
 <span class="Comment"># shape-shifting variant</span>
-def foo dummy:address:shared:array:number<span class="Delimiter">,</span> x:_elem <span class="Delimiter">-&gt;</span> y:number<span class="Delimiter">,</span> dummy:address:shared:array:number [
+def foo dummy:address:array:number<span class="Delimiter">,</span> x:_elem <span class="Delimiter">-&gt;</span> y:number<span class="Delimiter">,</span> dummy:address:array:number [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -974,10 +978,10 @@ def foo dummy:address:shared:array:number<span class="Delimiter">,</span> x:_ele
 
 <span class="Delimiter">:(scenario specialize_most_similar_variant_3)</span>
 def main [
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  foo <span class="Constant">1</span>:address:shared:array:character
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  foo <span class="Constant">1</span>:address:array:character
 ]
-def foo x:address:shared:array:character [
+def foo x:address:array:character [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 def foo x:address:_elem [
@@ -1014,13 +1018,53 @@ def foo x:number <span class="Delimiter">-&gt;</span> y:number [
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
 <span class="Comment"># shape-shifting variant</span>
-def foo x:address:shared:_elem <span class="Delimiter">-&gt;</span> y:number [
+def foo x:address:_elem <span class="Delimiter">-&gt;</span> y:number [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]
 <span class="Comment"># prefer the concrete variant, ignore concrete types in scoring the shape-shifting variant</span>
 <span class="traceContains">+mem: storing 34 in location 1</span>
+
+<span class="Delimiter">:(scenario missing_type_during_specialization)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="Comment"># define a shape-shifting recipe</span>
+def foo a:_elem [
+]
+<span class="Comment"># define a container with field 'z'</span>
+container foo2 [
+  <span class="Normal">z</span>:number
+]
+def main [
+  local-scope
+  <span class="Normal">x</span>:foo2<span class="Special"> &lt;- </span>merge <span class="Constant">34</span>
+  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>get x<span class="Delimiter">,</span> z:offse  <span class="Comment"># typo in 'offset'</span>
+<span class="PreProc">  </span><span class="Comment"># define a variable with the same name 'z'</span>
+  <span class="Normal">z</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Comment"># trigger specialization of the shape-shifting recipe</span>
+  foo z
+]
+<span class="Comment"># shouldn't crash</span>
+
+<span class="Delimiter">:(scenario missing_type_during_specialization2)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="Comment"># define a shape-shifting recipe</span>
+def foo a:_elem [
+]
+<span class="Comment"># define a container with field 'z'</span>
+container foo2 [
+  <span class="Normal">z</span>:number
+]
+def main [
+  local-scope
+  <span class="Normal">x</span>:foo2<span class="Special"> &lt;- </span>merge <span class="Constant">34</span>
+  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>get x<span class="Delimiter">,</span> z:offse  <span class="Comment"># typo in 'offset'</span>
+<span class="PreProc">  </span><span class="Comment"># define a variable with the same name 'z'</span>
+  <span class="Normal">z</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Comment"># trigger specialization of the shape-shifting recipe</span>
+  foo *z
+]
+<span class="Comment"># shouldn't crash</span>
 </pre>
 </body>
 </html>

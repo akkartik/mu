@@ -149,9 +149,8 @@ Name = Name_snapshot<span class="Delimiter">;</span>
 
 type_ordinal skip_addresses<span class="Delimiter">(</span>type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   type_ordinal address = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
-  type_ordinal shared = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">);</span>
   <span class="Normal">for</span> <span class="Delimiter">(;</span> type<span class="Delimiter">;</span> type = type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value != address &amp;&amp; type<span class="Delimiter">-&gt;</span>value != shared<span class="Delimiter">)</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value != address<span class="Delimiter">)</span>
       <span class="Identifier">return</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
@@ -185,6 +184,24 @@ type_ordinal skip_addresses<span class="Delimiter">(</span>type_tree* type<span 
   <span class="Comment">// End is_special_name Cases</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario transform_names_supports_containers)</span>
+def main [
+  <span class="Normal">x</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
+]
+<span class="traceContains">+name: assign x 1</span>
+<span class="Comment"># skip location 2 because x occupies two locations</span>
+<span class="traceContains">+name: assign y 3</span>
+
+<span class="Delimiter">:(scenario transform_names_supports_static_arrays)</span>
+def main [
+  <span class="Normal">x</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
+]
+<span class="traceContains">+name: assign x 1</span>
+<span class="Comment"># skip locations 2, 3, 4 because x occupies four locations</span>
+<span class="traceContains">+name: assign y 5</span>
 
 <span class="Delimiter">:(scenario transform_names_passes_dummy)</span>
 <span class="Comment"># _ is just a dummy result that never gets consumed</span>
@@ -234,7 +251,8 @@ def main [
 <span class="traceAbsent">-error: main: mixing variable names and numeric addresses</span>
 $error: <span class="Constant">0</span>
 
-<span class="SalientComment">//:: Support element names for containers in 'get' and 'get-address'.</span>
+<span class="SalientComment">//:: Support element names for containers in 'get' and 'get-location' and 'put'.</span>
+<span class="Comment">//: (get-location is implemented later)</span>
 
 <span class="Delimiter">:(scenario transform_names_transforms_container_elements)</span>
 def main [
@@ -247,18 +265,19 @@ def main [
 
 <span class="Delimiter">:(before &quot;End transform_names(inst) Special-cases&quot;)</span>
 <span class="Comment">// replace element names of containers with offsets</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;get&quot;</span> || inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;get-address&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;exactly 2 ingredients expected in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;get&quot;</span> || inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;get-location&quot;</span> || inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;put&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">//: avoid raising any errors here; later layers will support overloading new</span>
+  <span class="Comment">//: instructions with the same names (static dispatch), which could lead to</span>
+  <span class="Comment">//: spurious errors</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &lt; <span class="Constant">2</span><span class="Delimiter">)</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;expected ingredient 1 of &quot;</span> &lt;&lt; <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;get&quot;</span> ? <span class="Constant">&quot;'get'&quot;</span> : <span class="Constant">&quot;'get-address'&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; to have type 'offset'; got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">.</span>find_first_not_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// since first non-address in base type must be a container, we don't have to canonize</span>
     type_ordinal base_type = skip_addresses<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>type<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>base_type == -<span class="Constant">1</span><span class="Delimiter">)</span>
-      raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;expected a container in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// otherwise we'll raise an error elsewhere</span>
       inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>find_element_name<span class="Delimiter">(</span>base_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">));</span>
       trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;name&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;element &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; of type &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; is at offset &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>value<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -284,10 +303,12 @@ def main [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">20</span>:address:point<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> p:variant
+  <span class="Constant">20</span>:point<span class="Delimiter">,</span> <span class="Constant">22</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> p:variant
 ]
 <span class="traceContains">+name: variant p of type number-or-point has tag 1</span>
-<span class="traceContains">+mem: storing 13 in location 20</span>
+<span class="traceContains">+mem: storing 35 in location 20</span>
+<span class="traceContains">+mem: storing 36 in location 21</span>
+<span class="traceContains">+mem: storing 1 in location 22</span>
 
 <span class="Delimiter">:(before &quot;End transform_names(inst) Special-cases&quot;)</span>
 <span class="Comment">// convert variant names of exclusive containers</span>

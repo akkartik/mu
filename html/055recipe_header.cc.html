@@ -257,53 +257,15 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
       <span class="Comment">// ingredients coerced from call to callee</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>callee<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
         raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; has the wrong type at '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>is_unique_address<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
-        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;avoid passing non-shared addresses into calls, like ingredient &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; at '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; min<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">),</span> SIZE<span class="Delimiter">(</span>callee<span class="Delimiter">.</span>products<span class="Delimiter">));</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_dummy<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Comment">// products coerced from callee to call</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> callee<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
         raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; has the wrong type at '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>is_unique_address<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
-        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;avoid getting non-shared addresses out of calls, like product &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; at '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
-
-<span class="Normal">bool</span> is_unique_address<span class="Delimiter">(</span>reagent x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Identifier">return</span> x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;shared&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">//: additionally, flag an error on calls receiving non-shared addresses</span>
-
-<span class="Delimiter">:(scenario forbid_calls_with_nonshared_addresses)</span>
-<span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  foo <span class="Constant">1</span>:address:number
-]
-def foo x:address:number [
-  local-scope
-  load-ingredients
-]
-<span class="traceContains">+error: main: avoid passing non-shared addresses into calls, like ingredient 0 at 'foo 1:address:number'</span>
-
-<span class="Delimiter">:(scenario forbid_calls_with_nonshared_addresses_2)</span>
-<span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>foo
-]
-def foo <span class="Delimiter">-&gt;</span> x:address:number [
-  local-scope
-  load-ingredients
-  x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-]
-<span class="traceContains">+error: main: avoid getting non-shared addresses out of calls, like product 0 at '1:address:number &lt;- foo '</span>
 
 <span class="SalientComment">//:: Check types going in and out of all recipes with headers.</span>
 

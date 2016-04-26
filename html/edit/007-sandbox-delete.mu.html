@@ -37,9 +37,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> deleting-sandboxes [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
   <span class="Comment"># run a few commands</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">80</span>
@@ -48,7 +48,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[add 2, 2]</span>
     press F4
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -69,7 +69,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">7</span>, <span class="Constant">99</span>
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -87,7 +87,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">3</span>, <span class="Constant">99</span>
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -101,27 +101,39 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
   <span class="Comment"># on a sandbox delete icon? process delete</span>
   <span class="Delimiter">{</span>
-    was-delete?:boolean<span class="Special"> &lt;- </span>delete-sandbox *t, env
+    was-delete?:boolean<span class="Special"> &lt;- </span>delete-sandbox t, env
     <span class="muControl">break-unless</span> was-delete?
     hide-screen screen
     screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env
-    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
+    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     show-screen screen
     <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> delete-sandbox t:touch-event, env:address:shared:programming-environment-data<span class="muRecipe"> -&gt; </span>was-delete?:boolean, env:address:shared:programming-environment-data [
+<span class="muRecipe">def</span> delete-sandbox t:touch-event, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>was-delete?:boolean, env:address:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   click-column:number<span class="Special"> &lt;- </span>get t, <span class="Constant">column:offset</span>
-  current-sandbox:address:shared:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   right:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">right:offset</span>
   at-right?:boolean<span class="Special"> &lt;- </span>equal click-column, right
   <span class="muControl">return-unless</span> at-right?, <span class="Constant">0/false</span>
   click-row:number<span class="Special"> &lt;- </span>get t, <span class="Constant">row:offset</span>
-  prev:address:address:shared:sandbox-data<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">sandbox:offset</span>
-  curr:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  <span class="Delimiter">{</span>
+    first:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+    <span class="muControl">reply-unless</span> first, <span class="Constant">0/false</span>
+    target-row:number<span class="Special"> &lt;- </span>get *first, <span class="Constant">starting-row-on-screen:offset</span>
+    delete-first?:boolean<span class="Special"> &lt;- </span>equal target-row, click-row
+    <span class="muControl">break-unless</span> delete-first?
+    new-first:address:sandbox-data<span class="Special"> &lt;- </span>get *first, <span class="Constant">next-sandbox:offset</span>
+    *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox:offset</span>, new-first
+    env<span class="Special"> &lt;- </span>fixup-delete env, new-first
+    <span class="muControl">return</span> <span class="Constant">1/true</span>  <span class="Comment"># force rerender</span>
+  <span class="Delimiter">}</span>
+  prev:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  assert prev, <span class="Constant">[failed to find any sandboxes!]</span>
+  curr:address:sandbox-data<span class="Special"> &lt;- </span>get *prev, <span class="Constant">next-sandbox:offset</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr
     <span class="Comment"># more sandboxes to check</span>
@@ -130,35 +142,44 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       delete-curr?:boolean<span class="Special"> &lt;- </span>equal target-row, click-row
       <span class="muControl">break-unless</span> delete-curr?
       <span class="Comment"># delete this sandbox</span>
-      *prev<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
-      <span class="Comment"># update sandbox count</span>
-      sandbox-count:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">number-of-sandboxes:offset</span>
-      *sandbox-count<span class="Special"> &lt;- </span>subtract *sandbox-count, <span class="Constant">1</span>
-      <span class="Comment"># if it's the last sandbox and if it was the only sandbox rendered, reset scroll</span>
-      <span class="Delimiter">{</span>
-        <span class="muControl">break-if</span> *prev
-        render-from:address:number<span class="Special"> &lt;- </span>get-address *env, <span class="Constant">render-from:offset</span>
-        reset-scroll?:boolean<span class="Special"> &lt;- </span>equal *render-from, *sandbox-count
-        <span class="muControl">break-unless</span> reset-scroll?
-        *render-from<span class="Special"> &lt;- </span>copy <span class="Constant">-1</span>
-      <span class="Delimiter">}</span>
+      next:address:sandbox-data<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
+      *prev<span class="Special"> &lt;- </span>put *prev, <span class="Constant">next-sandbox:offset</span>, next
+      env<span class="Special"> &lt;- </span>fixup-delete env, next
       <span class="muControl">return</span> <span class="Constant">1/true</span>  <span class="Comment"># force rerender</span>
     <span class="Delimiter">}</span>
-    prev<span class="Special"> &lt;- </span>get-address *curr, <span class="Constant">next-sandbox:offset</span>
+    prev<span class="Special"> &lt;- </span>copy curr
     curr<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="muControl">return</span> <span class="Constant">0/false</span>
 ]
 
+<span class="muRecipe">def</span> fixup-delete env:address:programming-environment-data, next:address:sandbox-data<span class="muRecipe"> -&gt; </span>env:address:programming-environment-data [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># update sandbox count</span>
+  sandbox-count:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">number-of-sandboxes:offset</span>
+  sandbox-count<span class="Special"> &lt;- </span>subtract sandbox-count, <span class="Constant">1</span>
+  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">number-of-sandboxes:offset</span>, sandbox-count
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> next
+    <span class="Comment"># deleted sandbox was last</span>
+    render-from:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">render-from:offset</span>
+    reset-scroll?:boolean<span class="Special"> &lt;- </span>equal render-from, sandbox-count
+    <span class="muControl">break-unless</span> reset-scroll?
+    <span class="Comment"># deleted sandbox was only sandbox rendered, so reset scroll</span>
+    *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">render-from:offset</span>, <span class="Constant">-1</span>
+  <span class="Delimiter">}</span>
+]
+
 <span class="muScenario">scenario</span> deleting-sandbox-after-scroll [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
-  render-all screen, <span class="Constant">3</span>:address:shared:programming-environment-data
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  render-all screen, <span class="Constant">3</span>:address:programming-environment-data
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
     press ctrl-n
@@ -168,7 +189,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
     press down-arrow
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                              .</span>
    <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
@@ -183,7 +204,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">6</span>, <span class="Constant">29</span>
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
   screen-should-contain [
@@ -201,10 +222,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
-  render-all screen, <span class="Constant">3</span>:address:shared:programming-environment-data
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  render-all screen, <span class="Constant">3</span>:address:programming-environment-data
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
     press ctrl-n
@@ -214,7 +235,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
     press down-arrow
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                              .</span>
    <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
@@ -229,7 +250,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">2</span>, <span class="Constant">29</span>
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
   screen-should-contain [
@@ -247,10 +268,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
-  render-all screen, <span class="Constant">3</span>:address:shared:programming-environment-data
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  render-all screen, <span class="Constant">3</span>:address:programming-environment-data
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
     press ctrl-n
@@ -261,7 +282,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press down-arrow
     press down-arrow
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                              .</span>
    <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
@@ -276,7 +297,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">2</span>, <span class="Constant">29</span>
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># implicitly scroll up to first sandbox</span>
   screen-should-contain [
@@ -295,10 +316,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
-  render-all screen, <span class="Constant">3</span>:address:shared:programming-environment-data
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  render-all screen, <span class="Constant">3</span>:address:programming-environment-data
   <span class="Comment"># create 2 sandboxes</span>
   assume-console [
     press ctrl-n
@@ -307,7 +328,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                              .</span>
    <span class="Constant"> .               ┊              .</span>
@@ -327,7 +348,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press down-arrow
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># shouldn't go past last sandbox</span>
   screen-should-contain [

@@ -31,24 +31,24 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># example program: maintain multiple counters with isolated lexical scopes</span>
 <span class="Comment"># (spaces)</span>
 
-<span class="muRecipe">def</span> new-counter n:number<span class="muRecipe"> -&gt; </span><span class="Constant">default-space</span>:address:shared:array:location [
+<span class="muRecipe">def</span> new-counter n:number<span class="muRecipe"> -&gt; </span><span class="Constant">default-space</span>:address:array:location [
   <span class="Constant">default-space</span><span class="Special"> &lt;- </span>new <span class="Constant">location:type</span>, <span class="Constant">30</span>
   <span class="Constant">load-ingredients</span>
 ]
 
-<span class="muRecipe">def</span> increment-counter outer:address:shared:array:location/names:new-counter, x:number<span class="muRecipe"> -&gt; </span>n:number/space:<span class="Constant">1</span> [
+<span class="muRecipe">def</span> increment-counter outer:address:array:location/names:new-counter, x:number<span class="muRecipe"> -&gt; </span>n:number/space:<span class="Constant">1</span> [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="Constant">0</span>:address:shared:array:location/names:new-counter<span class="Special"> &lt;- </span>copy outer  <span class="Comment"># setup outer space; it *must* come from 'new-counter'</span>
+  <span class="Constant">0</span>:address:array:location/names:new-counter<span class="Special"> &lt;- </span>copy outer  <span class="Comment"># setup outer space; it *must* come from 'new-counter'</span>
   n/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>add n/space:<span class="Constant">1</span>, x
 ]
 
 <span class="muRecipe">def</span> main [
   <span class="Constant">local-scope</span>
   <span class="Comment"># counter A</span>
-  a:address:shared:array:location<span class="Special"> &lt;- </span>new-counter <span class="Constant">34</span>
+  a:address:array:location<span class="Special"> &lt;- </span>new-counter <span class="Constant">34</span>
   <span class="Comment"># counter B</span>
-  b:address:shared:array:location<span class="Special"> &lt;- </span>new-counter <span class="Constant">23</span>
+  b:address:array:location<span class="Special"> &lt;- </span>new-counter <span class="Constant">23</span>
   <span class="Comment"># increment both by 2 but in different ways</span>
   increment-counter a, <span class="Constant">1</span>
   b-value:number<span class="Special"> &lt;- </span>increment-counter b, <span class="Constant">2</span>

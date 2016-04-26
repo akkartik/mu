@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 033exclusive_container.cc</title>
+<title>Mu - 032exclusive_container.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
@@ -43,7 +43,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: We'll use this container as a running example, with two number elements.</span>
 <span class="Delimiter">{</span>
 type_ordinal tmp = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number-or-point&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
-get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> tmp<span class="Delimiter">).</span>size = <span class="Constant">2</span><span class="Delimiter">;</span>
+get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>  <span class="Comment">// initialize</span>
 get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> tmp<span class="Delimiter">).</span>kind = EXCLUSIVE_CONTAINER<span class="Delimiter">;</span>
 get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> tmp<span class="Delimiter">).</span>name = <span class="Constant">&quot;number-or-point&quot;</span><span class="Delimiter">;</span>
 get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> tmp<span class="Delimiter">).</span>elements<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;i:number&quot;</span><span class="Delimiter">));</span>
@@ -70,7 +70,7 @@ def main [
   <span class="Comment">// size of an exclusive container is the size of its largest variant</span>
   <span class="Comment">// (So like containers, it can't contain arrays.)</span>
   <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; t<span class="Delimiter">.</span>size<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>t<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     reagent tmp<span class="Delimiter">;</span>
     tmp<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*type<span class="Delimiter">);</span>
     <span class="Normal">int</span> size = size_of<span class="Delimiter">(</span>variant_type<span class="Delimiter">(</span>tmp<span class="Delimiter">,</span> i<span class="Delimiter">));</span>
@@ -95,18 +95,24 @@ def main [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">20</span>:address:point<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">1</span>:variant
+  <span class="Constant">20</span>:point<span class="Delimiter">,</span> <span class="Constant">22</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">1</span>:variant
 ]
-<span class="traceContains">+mem: storing 13 in location 20</span>
+<span class="Comment"># point</span>
+<span class="traceContains">+mem: storing 35 in location 20</span>
+<span class="traceContains">+mem: storing 36 in location 21</span>
+<span class="Comment"># boolean</span>
+<span class="traceContains">+mem: storing 1 in location 22</span>
 
 <span class="Delimiter">:(scenario maybe_convert_fail)</span>
 def main [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">20</span>:address:number<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">0</span>:variant
+  <span class="Constant">20</span>:number<span class="Delimiter">,</span> <span class="Constant">21</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">0</span>:variant
 ]
-<span class="traceContains">+mem: storing 0 in location 20</span>
+<span class="Comment"># number: no write</span>
+<span class="Comment"># boolean</span>
+<span class="traceContains">+mem: storing 0 in location 21</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 MAYBE_CONVERT<span class="Delimiter">,</span>
@@ -120,7 +126,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize_type<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+  <span class="Comment">// Update MAYBE_CONVERT base in Check</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!base<span class="Delimiter">.</span>type || !base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value || get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind != EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'maybe-convert' should be an exclusive-container, but got &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -130,8 +136,12 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'maybe-convert' expects exactly 2 products in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   reagent product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Comment">// Update MAYBE_CONVERT product in Check</span>
   reagent&amp; offset = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   populate_value<span class="Delimiter">(</span>offset<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>offset<span class="Delimiter">.</span>value &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
@@ -139,9 +149,14 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent variant = variant_type<span class="Delimiter">(</span>base<span class="Delimiter">,</span> offset<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
-  variant<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address&quot;</span><span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">),</span> variant<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span> variant<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'maybe-convert &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;' should write to &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has type &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>product<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  reagent status = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// Update MAYBE_CONVERT status in Check</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_boolean<span class="Delimiter">(</span>status<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second product yielded by 'maybe-convert' should be a boolean, but tried to write to &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -149,31 +164,41 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> MAYBE_CONVERT: <span class="Delimiter">{</span>
   reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
+  <span class="Comment">// Update MAYBE_CONVERT base in Run</span>
   <span class="Normal">int</span> base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>base_address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to access location 0 in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">int</span> tag = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>value<span class="Delimiter">;</span>
-  <span class="Normal">int</span> result<span class="Delimiter">;</span>
+  reagent product = current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Comment">// Update MAYBE_CONVERT product in Run</span>
+  reagent status = current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// Update MAYBE_CONVERT status in Run</span>
+  <span class="Comment">// optimization: directly write results to only update first product when necessary</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>tag == <span class="Normal">static_cast</span>&lt;<span class="Normal">int</span>&gt;<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    result = base_address+<span class="Constant">1</span><span class="Delimiter">;</span>
+    <span class="Normal">const</span> reagent variant = variant_type<span class="Delimiter">(</span>base<span class="Delimiter">,</span> tag<span class="Delimiter">);</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; size_of<span class="Delimiter">(</span>variant<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">double</span> val = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address+<span class="Constant">1</span>+i<span class="Delimiter">);</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>val<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>value+i &lt;&lt; end<span class="Delimiter">();</span>
+      put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> product<span class="Delimiter">.</span>value+i<span class="Delimiter">,</span> val<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 1 in location &quot;</span> &lt;&lt; status<span class="Delimiter">.</span>value &lt;&lt; end<span class="Delimiter">();</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> status<span class="Delimiter">.</span>value<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Normal">else</span> <span class="Delimiter">{</span>
-    result = <span class="Constant">0</span><span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0 in location &quot;</span> &lt;&lt; status<span class="Delimiter">.</span>value &lt;&lt; end<span class="Delimiter">();</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> status<span class="Delimiter">.</span>value<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Identifier">goto</span> finish_instruction<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">const</span> reagent variant_type<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; canonized_base<span class="Delimiter">,</span> <span class="Normal">int</span> tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">const</span> reagent variant_type<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; base<span class="Delimiter">,</span> <span class="Normal">int</span> tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>tag &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">));</span>
-  assert<span class="Delimiter">(</span>!get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> canonized_base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">));</span>
+  assert<span class="Delimiter">(</span>!get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">);</span>
   reagent element = info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>tag<span class="Delimiter">);</span>
   <span class="Comment">// End variant_type Special-cases</span>
@@ -186,9 +211,9 @@ def main [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">20</span>:address:number<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">1</span>:variant
+  <span class="Constant">20</span>:number<span class="Delimiter">,</span> <span class="Constant">21</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">1</span>:variant
 ]
-<span class="traceContains">+error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to (address point) but 20 has type (address number)</span>
+<span class="traceContains">+error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to point but 20 has type number</span>
 
 <span class="SalientComment">//:: Allow exclusive containers to be defined in mu code.</span>
 
@@ -373,6 +398,21 @@ def main [
 ]
 <span class="traceContains">+error: main: too few ingredients in '1:foo &lt;- merge 1/y, 23'</span>
 
+<span class="Delimiter">:(scenario merge_check_exclusive_container_containing_container_4)</span>
+exclusive-container foo [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:bar
+]
+container bar [
+  <span class="Normal">a</span>:number
+  <span class="Normal">b</span>:number
+]
+def main [
+  <span class="Constant">1</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">24</span>
+  <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">1</span>:bar
+]
+$error: <span class="Constant">0</span>
+
 <span class="Comment">//: Since the different variants of an exclusive-container might have</span>
 <span class="Comment">//: different sizes, relax the size mismatch check for 'merge' instructions.</span>
 <span class="Delimiter">:(before &quot;End size_mismatch(x) Cases&quot;)</span>
@@ -381,7 +421,7 @@ def main [
     &amp;&amp; !current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
     &amp;&amp; current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   reagent x = current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  <span class="Comment">// Update size_mismatch Check for MERGE(x)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span>
     <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> &lt; SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>

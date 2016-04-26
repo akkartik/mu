@@ -39,17 +39,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">40/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  <span class="Constant">1</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
   <span class="Comment"># run it</span>
-  <span class="Constant">2</span>:address:shared:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:address:shared:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:shared:screen, <span class="Constant">1</span>:address:shared:array:character, <span class="Constant">2</span>:address:shared:array:character
-  event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                     run (F4)           .</span>
    <span class="Constant"> .                    ┊                   .</span>
@@ -65,7 +65,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">5</span>, <span class="Constant">21</span>
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># color toggles to green</span>
   screen-should-contain-in-color <span class="Constant">2/green</span>, [
@@ -81,7 +81,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># cursor should remain unmoved</span>
   run [
     <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:address:shared:screen, <span class="Constant">4</span>:character/cursor
+    print screen:address:screen, <span class="Constant">4</span>:character/cursor
   ]
   screen-should-contain [
    <span class="Constant"> .                     run (F4)           .</span>
@@ -102,7 +102,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:address:shared:screen, console:address:shared:console, <span class="Constant">3</span>:address:shared:programming-environment-data
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># result turns red</span>
   screen-should-contain-in-color <span class="Constant">1/red</span>, [
@@ -120,13 +120,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># this requires tracking a couple more things</span>
 <span class="muData">container</span> sandbox-data [
   response-starting-row-on-screen:number
-  expected-response:address:shared:array:character
+  expected-response:address:array:character
 ]
 
 <span class="Comment"># include expected response when saving or restoring a sandbox</span>
 <span class="muRecipe">before</span> <span class="Constant">&lt;end-save-sandbox&gt;</span> [
   <span class="Delimiter">{</span>
-    expected-response:address:shared:array:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">expected-response:offset</span>
+    expected-response:address:array:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">expected-response:offset</span>
     <span class="muControl">break-unless</span> expected-response
     filename<span class="Special"> &lt;- </span>append filename, <span class="Constant">[.out]</span>
     save filename, expected-response
@@ -134,8 +134,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;end-restore-sandbox&gt;</span> [
-  expected-response:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address **curr, <span class="Constant">expected-response:offset</span>
-  *expected-response<span class="Special"> &lt;- </span>copy contents
+  *curr<span class="Special"> &lt;- </span>put *curr, <span class="Constant">expected-response:offset</span>, contents
 ]
 
 <span class="Comment"># clicks on sandbox responses save it as 'expected'</span>
@@ -143,41 +142,41 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># check if it's inside the output of any sandbox</span>
   <span class="Delimiter">{</span>
     sandbox-left-margin:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">left:offset</span>
-    click-column:number<span class="Special"> &lt;- </span>get *t, <span class="Constant">column:offset</span>
+    click-column:number<span class="Special"> &lt;- </span>get t, <span class="Constant">column:offset</span>
     on-sandbox-side?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-column, sandbox-left-margin
     <span class="muControl">break-unless</span> on-sandbox-side?
-    first-sandbox:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+    first-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
     <span class="muControl">break-unless</span> first-sandbox
     first-sandbox-begins:number<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
-    click-row:number<span class="Special"> &lt;- </span>get *t, <span class="Constant">row:offset</span>
+    click-row:number<span class="Special"> &lt;- </span>get t, <span class="Constant">row:offset</span>
     below-sandbox-editor?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-row, first-sandbox-begins
     <span class="muControl">break-unless</span> below-sandbox-editor?
     <span class="Comment"># identify the sandbox whose output is being clicked on</span>
-    sandbox:address:shared:sandbox-data<span class="Special"> &lt;- </span>find-click-in-sandbox-output env, click-row
+    sandbox:address:sandbox-data<span class="Special"> &lt;- </span>find-click-in-sandbox-output env, click-row
     <span class="muControl">break-unless</span> sandbox
     <span class="Comment"># toggle its expected-response, and save session</span>
     sandbox<span class="Special"> &lt;- </span>toggle-expected-response sandbox
     save-sandboxes env
     hide-screen screen
     screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, <span class="Constant">1/clear</span>
-    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?, env
+    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     <span class="Comment"># no change in cursor</span>
     show-screen screen
     <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> find-click-in-sandbox-output env:address:shared:programming-environment-data, click-row:number<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data [
+<span class="muRecipe">def</span> find-click-in-sandbox-output env:address:programming-environment-data, click-row:number<span class="muRecipe"> -&gt; </span>sandbox:address:sandbox-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># assert click-row &gt;= sandbox.starting-row-on-screen</span>
-  sandbox:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   start:number<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
   clicked-on-sandboxes?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-row, start
   assert clicked-on-sandboxes?, <span class="Constant">[extract-sandbox called on click to sandbox editor]</span>
   <span class="Comment"># while click-row &lt; sandbox.next-sandbox.starting-row-on-screen</span>
   <span class="Delimiter">{</span>
-    next-sandbox:address:shared:sandbox-data<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
+    next-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
     <span class="muControl">break-unless</span> next-sandbox
     next-start:number<span class="Special"> &lt;- </span>get *next-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
     found?:boolean<span class="Special"> &lt;- </span>lesser-than click-row, next-start
@@ -193,28 +192,29 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="muControl">return</span> sandbox
 ]
 
-<span class="muRecipe">def</span> toggle-expected-response sandbox:address:shared:sandbox-data<span class="muRecipe"> -&gt; </span>sandbox:address:shared:sandbox-data [
+<span class="muRecipe">def</span> toggle-expected-response sandbox:address:sandbox-data<span class="muRecipe"> -&gt; </span>sandbox:address:sandbox-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  expected-response:address:address:shared:array:character<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">expected-response:offset</span>
+  expected-response:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if expected-response is set, reset</span>
-    <span class="muControl">break-unless</span> *expected-response
-    *expected-response<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    <span class="muControl">return</span> sandbox/same-as-ingredient:<span class="Constant">0</span>
+    <span class="muControl">break-unless</span> expected-response
+    *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">expected-response:offset</span>, <span class="Constant">0</span>
   <span class="Delimiter">}</span>
-  <span class="Comment"># if not, current response is the expected response</span>
-  response:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response:offset</span>
-  *expected-response<span class="Special"> &lt;- </span>copy response
+  <span class="Delimiter">{</span>
+    <span class="Comment"># if not, set expected response to the current response</span>
+    <span class="muControl">break-if</span> expected-response
+    response:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response:offset</span>
+    *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">expected-response:offset</span>, response
+  <span class="Delimiter">}</span>
 ]
 
 <span class="Comment"># when rendering a sandbox, color it in red/green if expected response exists</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;render-sandbox-response&gt;</span> [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sandbox-response
-    response-starting-row:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>
-    *response-starting-row<span class="Special"> &lt;- </span>copy row
-    expected-response:address:shared:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>
+    *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>, row
+    expected-response:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>
     <span class="muControl">break-unless</span> expected-response  <span class="Comment"># fall-through to print in grey</span>
     response-is-expected?:boolean<span class="Special"> &lt;- </span>equal expected-response, sandbox-response
     <span class="Delimiter">{</span>
@@ -230,8 +230,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;end-render-sandbox-reset-hidden&gt;</span> [
-  tmp:address:number<span class="Special"> &lt;- </span>get-address *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>
-  *tmp<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>, <span class="Constant">0</span>
 ]
 </pre>
 </body>
