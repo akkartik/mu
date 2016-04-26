@@ -14,16 +14,18 @@
 //:
 //: The notion of 'lookup' isn't an instruction like 'add' or 'subtract'.
 //: Instead it's an operation that can be performed when reading any of the
-//: ingredients of an instruction, and when writing to any of the products.
-//: Modern computers provide efficient support for addresses and lookups,
-//: making this a realistic feature.
+//: ingredients of an instruction, and when writing to any of the products. To
+//: write to the payload of an ingredient rather than its value, simply add
+//: the /lookup property to it. Modern computers provide efficient support for
+//: addresses and lookups, making this a realistic feature.
 //:
 //: To recap: an address is a bookmark to some potentially large payload, and
 //: you can replace any ingredient or product with a lookup to an address of
 //: the appropriate type. But how do we get addresses to begin with? That
 //: requires a little more explanation. Once we introduce the notion of
 //: bookmarks to data, we have to think about the life cycle of a piece of
-//: data and its bookmark. Otherwise several bad outcomes can result (and
+//: data and its bookmarks (because remember, bookmarks can be copied around
+//: just like anything else). Otherwise several bad outcomes can result (and
 //: indeed *have* resulted in past languages like C):
 //:
 //:   a) You can run out of memory if you don't have a way to reclaim
@@ -34,8 +36,9 @@
 //:   problems can be very hard to track down, and they can also be exploited
 //:   to break into your computer over the network, etc.
 //:
-//: To avoid these problems, we introduce a *reference count* or refcount. The
-//: life cycle of a bit of data accessed through addresses looks like this.
+//: To avoid these problems, we introduce the notion of a *reference count* or
+//: refcount. The life cycle of a bit of data accessed through addresses looks
+//: like this.
 //:
 //:    We create space in computer memory for it using the 'new' instruction.
 //:    The 'new' instruction takes a type as an ingredient, allocates
