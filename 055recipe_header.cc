@@ -452,6 +452,18 @@ def add2 x:number, y:number -> z:number [
 -transform: instruction: reply z:number
 +mem: storing 8 in location 1
 
+:(scenario reply_after_conditional_reply_based_on_header)
+def main [
+  1:number/raw <- add2 3, 5
+]
+def add2 x:number, y:number -> z:number [
+  local-scope
+  load-ingredients
+  z <- add x, y  # no type for z
+  return-if 0/false, 34
+]
++mem: storing 8 in location 1
+
 :(scenario recipe_headers_perform_same_ingredient_check)
 % Hide_errors = true;
 def main [

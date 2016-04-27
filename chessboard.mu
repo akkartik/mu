@@ -259,7 +259,6 @@ def read-move stdin:address:source:character, screen:address:screen -> result:ad
   *result <- put *result, to-rank:offset, to-rank
   error? <- expect-from-channel stdin, 10/newline, screen
   return-if error?, 0/dummy, 0/quit
-  return result  # BUG: why is this statement required?
 ]
 
 # valid values for file: 0-7

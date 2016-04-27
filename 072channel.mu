@@ -284,12 +284,12 @@ def close x:address:sink:_elem -> x:address:sink:_elem [
 #   then the channel is also closed for reading
 after <channel-write-initial> [
   closed?:boolean <- get *chan, closed?:offset
-  reply-if closed?
+  return-if closed?
 ]
 
 after <channel-read-empty> [
   closed?:boolean <- get *chan, closed?:offset
-  reply-if closed?, 0/hack  # only scalar _elems supported in channels; need to support construction of arbitrary empty containers
+  return-if closed?, 0/hack  # only scalar _elems supported in channels; need to support construction of arbitrary empty containers
 ]
 
 ## helpers
@@ -382,7 +382,7 @@ def buffer-lines in:address:source:character, buffered-out:address:sink:characte
     {
       break-unless eof?
       buffered-out <- close buffered-out
-      reply
+      return
     }
     loop
   }

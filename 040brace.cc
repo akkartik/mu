@@ -361,6 +361,91 @@ def main [
 ]
 +error: break-if expects 1 or 2 ingredients, but got none
 
+//: Using break we can now implement conditional reply.
+
+:(scenario reply_if)
+def main [
+  1:number <- test1
+]
+def test1 [
+  return-if 0, 34
+  return 35
+]
++mem: storing 35 in location 1
+
+:(scenario reply_if_2)
+def main [
+  1:number <- test1
+]
+def test1 [
+  return-if 1, 34
+  return 35
+]
++mem: storing 34 in location 1
+
+:(before "End Rewrite Instruction(curr, recipe result)")
+// rewrite `reply-if a, b, c, ...` to
+//   ```
+//   {
+//     break-unless a
+//     reply b, c, ...
+//   }
+//   ```
+if (curr.name == "reply-if" || curr.name == "return-if") {
+  if (curr.products.empty()) {
+    emit_reply_block(result, "break-unless", curr.ingredients);
+    curr.clear();
+  }
+  else {
+    raise << "'" << curr.name << "' never yields any products\n" << end();
+  }
+}
+// rewrite `reply-unless a, b, c, ...` to
+//   ```
+//   {
+//     break-if a
+//     reply b, c, ...
+//   }
+//   ```
+if (curr.name == "reply-unless" || curr.name == "return-unless") {
+  if (curr.products.empty()) {
+    emit_reply_block(result, "break-if", curr.ingredients);
+    curr.clear();
+  }
+  else {
+    raise << "'" << curr.name << "' never yields any products\n" << end();
+  }
+}
+
+:(code)
+void emit_reply_block(recipe& out, const string& break_command, const vector<reagent>& ingredients) {
+  reagent condition = ingredients.at(0);
+  vector<reagent> reply_ingredients;
+  copy(++ingredients.begin(), ingredients.end(), inserter(reply_ingredients, reply_ingredients.end()));
+
+  // {
+  instruction open_label;  open_label.is_label=true;  open_label.label = "{";
+  out.steps.push_back(open_label);
+
+  // <break command> <condition>
+  instruction break_inst;
+  break_inst.operation = get(Recipe_ordinal, break_command);
+  break_inst.name = break_inst.old_name = break_command;
+  break_inst.ingredients.push_back(condition);
+  out.steps.push_back(break_inst);
+
+  // reply <reply ingredients>
+  instruction reply_inst;
+  reply_inst.operation = get(Recipe_ordinal, "reply");
+  reply_inst.name = "reply";
+  reply_inst.ingredients.swap(reply_ingredients);
+  out.steps.push_back(reply_inst);
+
+  // }
+  instruction close_label;  close_label.is_label=true;  close_label.label = "}";
+  out.steps.push_back(close_label);
+}
+
 //: Make sure these pseudo recipes get consistent numbers in all tests, even
 //: though they aren't implemented. Allows greater flexibility in ordering
 //: transforms.
