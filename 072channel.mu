@@ -194,45 +194,6 @@ scenario channel-wrap [
   ]
 ]
 
-## helpers
-
-# An empty channel has first-empty and first-full both at the same value.
-def channel-empty? chan:address:channel:_elem -> result:boolean [
-  local-scope
-  load-ingredients
-  # return chan.first-full == chan.first-free
-  full:number <- get *chan, first-full:offset
-  free:number <- get *chan, first-free:offset
-  result <- equal full, free
-]
-
-# A full channel has first-empty just before first-full, wasting one slot.
-# (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
-def channel-full? chan:address:channel:_elem -> result:boolean [
-  local-scope
-  load-ingredients
-  # tmp = chan.first-free + 1
-  tmp:number <- get *chan, first-free:offset
-  tmp <- add tmp, 1
-  {
-    # if tmp == chan.capacity, tmp = 0
-    len:number <- capacity chan
-    at-end?:boolean <- greater-or-equal tmp, len
-    break-unless at-end?
-    tmp <- copy 0
-  }
-  # return chan.first-full == tmp
-  full:number <- get *chan, first-full:offset
-  result <- equal full, tmp
-]
-
-def capacity chan:address:channel:_elem -> result:number [
-  local-scope
-  load-ingredients
-  q:address:array:_elem <- get *chan, data:offset
-  result <- length *q
-]
-
 scenario channel-new-empty-not-full [
   run [
     1:address:source:number, 2:address:sink:number <- new-channel 3/capacity
@@ -287,6 +248,45 @@ scenario channel-read-not-full [
     4 <- 1  # empty?
     5 <- 0  # full?
   ]
+]
+
+## helpers
+
+# An empty channel has first-empty and first-full both at the same value.
+def channel-empty? chan:address:channel:_elem -> result:boolean [
+  local-scope
+  load-ingredients
+  # return chan.first-full == chan.first-free
+  full:number <- get *chan, first-full:offset
+  free:number <- get *chan, first-free:offset
+  result <- equal full, free
+]
+
+# A full channel has first-empty just before first-full, wasting one slot.
+# (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
+def channel-full? chan:address:channel:_elem -> result:boolean [
+  local-scope
+  load-ingredients
+  # tmp = chan.first-free + 1
+  tmp:number <- get *chan, first-free:offset
+  tmp <- add tmp, 1
+  {
+    # if tmp == chan.capacity, tmp = 0
+    len:number <- capacity chan
+    at-end?:boolean <- greater-or-equal tmp, len
+    break-unless at-end?
+    tmp <- copy 0
+  }
+  # return chan.first-full == tmp
+  full:number <- get *chan, first-full:offset
+  result <- equal full, tmp
+]
+
+def capacity chan:address:channel:_elem -> result:number [
+  local-scope
+  load-ingredients
+  q:address:array:_elem <- get *chan, data:offset
+  result <- length *q
 ]
 
 # helper for channels of characters in particular
