@@ -96,6 +96,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   chan:address:channel:_elem<span class="Special"> &lt;- </span>get *out, <span class="Constant">chan:offset</span>
+<span class="Constant">  &lt;channel-write-initial&gt;</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># block if chan is full</span>
     full:boolean<span class="Special"> &lt;- </span>channel-full? chan
@@ -129,6 +130,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># block if chan is empty</span>
     empty?:boolean<span class="Special"> &lt;- </span>channel-empty? chan
     <span class="muControl">break-unless</span> empty?
+<span class="Constant">    &lt;channel-read-empty&gt;</span>
     free-address:location<span class="Special"> &lt;- </span>get-location *chan, <span class="Constant">first-free:offset</span>
     wait-for-location free-address
   <span class="Delimiter">}</span>
@@ -229,45 +231,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="SalientComment">## helpers</span>
-
-<span class="Comment"># An empty channel has first-empty and first-full both at the same value.</span>
-<span class="muRecipe">def</span> channel-empty? chan:address:channel:_elem<span class="muRecipe"> -&gt; </span>result:boolean [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  <span class="Comment"># return chan.first-full == chan.first-free</span>
-  full:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
-  free:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
-  result<span class="Special"> &lt;- </span>equal full, free
-]
-
-<span class="Comment"># A full channel has first-empty just before first-full, wasting one slot.</span>
-<span class="Comment"># (Other alternatives: <a href="https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)">https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)</a></span>
-<span class="muRecipe">def</span> channel-full? chan:address:channel:_elem<span class="muRecipe"> -&gt; </span>result:boolean [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  <span class="Comment"># tmp = chan.first-free + 1</span>
-  tmp:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
-  tmp<span class="Special"> &lt;- </span>add tmp, <span class="Constant">1</span>
-  <span class="Delimiter">{</span>
-    <span class="Comment"># if tmp == chan.capacity, tmp = 0</span>
-    len:number<span class="Special"> &lt;- </span>capacity chan
-    at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal tmp, len
-    <span class="muControl">break-unless</span> at-end?
-    tmp<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Delimiter">}</span>
-  <span class="Comment"># return chan.first-full == tmp</span>
-  full:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
-  result<span class="Special"> &lt;- </span>equal full, tmp
-]
-
-<span class="muRecipe">def</span> capacity chan:address:channel:_elem<span class="muRecipe"> -&gt; </span>result:number [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  q:address:array:_elem<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
-  result<span class="Special"> &lt;- </span>length *q
-]
-
 <span class="muScenario">scenario</span> channel-new-empty-not-full [
   run [
     <span class="Constant">1</span>:address:source:number, <span class="Constant">2</span>:address:sink:number<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
@@ -324,6 +287,85 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
+<span class="SalientComment">## cancelling channels</span>
+
+<span class="Comment"># every channel comes with a boolean signifying if it's been closed</span>
+<span class="Comment"># initially this boolean is false</span>
+<span class="Comment"># todo: can't yet include type ingredients when extending containers</span>
+<span class="muData">container</span> channel [
+  closed?:boolean
+]
+
+<span class="Comment"># a channel can be closed from either the source or the sink</span>
+<span class="Comment"># both threads can modify it, but they can only set it, so this is a benign race</span>
+<span class="muRecipe">def</span> close x:address:source:_elem<span class="muRecipe"> -&gt; </span>x:address:source:_elem [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  chan:address:channel:_elem<span class="Special"> &lt;- </span>get *x, <span class="Constant">chan:offset</span>
+  *chan<span class="Special"> &lt;- </span>put *chan, <span class="Constant">closed?:offset</span>, <span class="Constant">1/true</span>
+]
+<span class="muRecipe">def</span> close x:address:sink:_elem<span class="muRecipe"> -&gt; </span>x:address:sink:_elem [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  chan:address:channel:_elem<span class="Special"> &lt;- </span>get *x, <span class="Constant">chan:offset</span>
+  *chan<span class="Special"> &lt;- </span>put *chan, <span class="Constant">closed?:offset</span>, <span class="Constant">1/true</span>
+]
+
+<span class="Comment"># once a channel is closed from one side, no further operations are expected from that side</span>
+<span class="Comment"># if a channel is closed for reading,</span>
+<span class="Comment">#   no further writes will be let through</span>
+<span class="Comment"># if a channel is closed for writing,</span>
+<span class="Comment">#   future reads continue until the channel empties,</span>
+<span class="Comment">#   then the channel is also closed for reading</span>
+<span class="muRecipe">after</span> <span class="Constant">&lt;channel-write-initial&gt;</span> [
+  closed?:boolean<span class="Special"> &lt;- </span>get *chan, <span class="Constant">closed?:offset</span>
+  <span class="muControl">return-if</span> closed?
+]
+
+<span class="muRecipe">after</span> <span class="Constant">&lt;channel-read-empty&gt;</span> [
+  closed?:boolean<span class="Special"> &lt;- </span>get *chan, <span class="Constant">closed?:offset</span>
+  <span class="muControl">return-if</span> closed?, <span class="Constant">0/hack</span>  <span class="Comment"># only scalar _elems supported in channels; need to support construction of arbitrary empty containers</span>
+]
+
+<span class="SalientComment">## helpers</span>
+
+<span class="Comment"># An empty channel has first-empty and first-full both at the same value.</span>
+<span class="muRecipe">def</span> channel-empty? chan:address:channel:_elem<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># return chan.first-full == chan.first-free</span>
+  full:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
+  free:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
+  result<span class="Special"> &lt;- </span>equal full, free
+]
+
+<span class="Comment"># A full channel has first-empty just before first-full, wasting one slot.</span>
+<span class="Comment"># (Other alternatives: <a href="https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)">https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)</a></span>
+<span class="muRecipe">def</span> channel-full? chan:address:channel:_elem<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># tmp = chan.first-free + 1</span>
+  tmp:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
+  tmp<span class="Special"> &lt;- </span>add tmp, <span class="Constant">1</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># if tmp == chan.capacity, tmp = 0</span>
+    len:number<span class="Special"> &lt;- </span>capacity chan
+    at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal tmp, len
+    <span class="muControl">break-unless</span> at-end?
+    tmp<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># return chan.first-full == tmp</span>
+  full:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
+  result<span class="Special"> &lt;- </span>equal full, tmp
+]
+
+<span class="muRecipe">def</span> capacity chan:address:channel:_elem<span class="muRecipe"> -&gt; </span>result:number [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  q:address:array:_elem<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
+  result<span class="Special"> &lt;- </span>length *q
+]
+
 <span class="Comment"># helper for channels of characters in particular</span>
 <span class="muRecipe">def</span> buffer-lines in:address:source:character, buffered-out:address:sink:character<span class="muRecipe"> -&gt; </span>buffered-out:address:sink:character, in:address:source:character [
   <span class="Constant">local-scope</span>
@@ -371,6 +413,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       buffered-out<span class="Special"> &lt;- </span>write buffered-out, c
       i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
       <span class="muControl">loop</span>
+    <span class="Delimiter">}</span>
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-unless</span> eof?
+      buffered-out<span class="Special"> &lt;- </span>close buffered-out
+      <span class="muControl">return</span>
     <span class="Delimiter">}</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>

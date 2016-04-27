@@ -168,14 +168,15 @@ tangle_done = <span class="Constant">false</span><span class="Delimiter">;</span
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: complain about unapplied fragments</span>
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">bool</span> Transform_check_insert_fragments_Ran = <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(after &quot;Transform.push_back(insert_fragments)&quot;)</span>
-Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_insert_fragments<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span class="Comment">//: This can't run during transform because later (shape-shifting recipes)</span>
+<span class="Comment">//: we'll encounter situations where fragments might get used long after</span>
+<span class="Comment">//: they're loaded, and we might run transform_all in between. To avoid</span>
+<span class="Comment">//: spurious errors, run this check right at the end, after all code is</span>
+<span class="Comment">//: loaded, right before we run main.</span>
+<span class="Delimiter">:(before &quot;End Commandline Parsing&quot;)</span>
+check_insert_fragments<span class="Delimiter">();</span>
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> check_insert_fragments<span class="Delimiter">(</span>unused recipe_ordinal<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Transform_check_insert_fragments_Ran<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  Transform_check_insert_fragments_Ran = <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Normal">void</span> check_insert_fragments<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> recipe&gt;::iterator p = Before_fragments<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Before_fragments<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Fragments_used<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
       raise &lt;&lt; <span class="Constant">&quot;could not locate insert before &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>

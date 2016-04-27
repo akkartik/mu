@@ -396,6 +396,91 @@ def main [
 ]
 <span class="traceContains">+error: break-if expects 1 or 2 ingredients, but got none</span>
 
+<span class="Comment">//: Using break we can now implement conditional returns.</span>
+
+<span class="Delimiter">:(scenario return_if)</span>
+def main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>test1
+]
+def test1 [
+  <span class="Identifier">return</span>-<span class="Normal">if</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Identifier">return</span> <span class="Constant">35</span>
+]
+<span class="traceContains">+mem: storing 35 in location 1</span>
+
+<span class="Delimiter">:(scenario return_if_2)</span>
+def main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>test1
+]
+def test1 [
+  <span class="Identifier">return</span>-<span class="Normal">if</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Identifier">return</span> <span class="Constant">35</span>
+]
+<span class="traceContains">+mem: storing 34 in location 1</span>
+
+<span class="Delimiter">:(before &quot;End Rewrite Instruction(curr, recipe result)&quot;)</span>
+<span class="Comment">// rewrite `return-if a, b, c, ...` to</span>
+<span class="Comment">//   ```</span>
+<span class="Comment">//   {</span>
+<span class="Comment">//     break-unless a</span>
+<span class="Comment">//     return b, c, ...</span>
+<span class="Comment">//   }</span>
+<span class="Comment">//   ```</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;return-if&quot;</span> || curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply-if&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    emit_return_block<span class="Delimiter">(</span>result<span class="Delimiter">,</span> <span class="Constant">&quot;break-unless&quot;</span><span class="Delimiter">,</span> curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>
+    curr<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; curr<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;' never yields any products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+<span class="Comment">// rewrite `return-unless a, b, c, ...` to</span>
+<span class="Comment">//   ```</span>
+<span class="Comment">//   {</span>
+<span class="Comment">//     break-if a</span>
+<span class="Comment">//     return b, c, ...</span>
+<span class="Comment">//   }</span>
+<span class="Comment">//   ```</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;return-unless&quot;</span> || curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply-unless&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    emit_return_block<span class="Delimiter">(</span>result<span class="Delimiter">,</span> <span class="Constant">&quot;break-if&quot;</span><span class="Delimiter">,</span> curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>
+    curr<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; curr<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;' never yields any products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> emit_return_block<span class="Delimiter">(</span>recipe&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; break_command<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;reagent&gt;&amp; ingredients<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  reagent condition = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  vector&lt;reagent&gt; return_ingredients<span class="Delimiter">;</span>
+  copy<span class="Delimiter">(</span>++ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>return_ingredients<span class="Delimiter">,</span> return_ingredients<span class="Delimiter">.</span>end<span class="Delimiter">()));</span>
+
+  <span class="Comment">// {</span>
+  instruction open_label<span class="Delimiter">;</span>  open_label<span class="Delimiter">.</span>is_label=<span class="Constant">true</span><span class="Delimiter">;</span>  open_label<span class="Delimiter">.</span>label = <span class="Constant">&quot;{&quot;</span><span class="Delimiter">;</span>
+  out<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>open_label<span class="Delimiter">);</span>
+
+  <span class="Comment">// &lt;break command&gt; &lt;condition&gt;</span>
+  instruction break_inst<span class="Delimiter">;</span>
+  break_inst<span class="Delimiter">.</span>operation = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> break_command<span class="Delimiter">);</span>
+  break_inst<span class="Delimiter">.</span>name = break_inst<span class="Delimiter">.</span>old_name = break_command<span class="Delimiter">;</span>
+  break_inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>condition<span class="Delimiter">);</span>
+  out<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>break_inst<span class="Delimiter">);</span>
+
+  <span class="Comment">// return &lt;return ingredients&gt;</span>
+  instruction return_inst<span class="Delimiter">;</span>
+  return_inst<span class="Delimiter">.</span>operation = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;return&quot;</span><span class="Delimiter">);</span>
+  return_inst<span class="Delimiter">.</span>name = <span class="Constant">&quot;return&quot;</span><span class="Delimiter">;</span>
+  return_inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>return_ingredients<span class="Delimiter">);</span>
+  out<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>return_inst<span class="Delimiter">);</span>
+
+  <span class="Comment">// }</span>
+  instruction close_label<span class="Delimiter">;</span>  close_label<span class="Delimiter">.</span>is_label=<span class="Constant">true</span><span class="Delimiter">;</span>  close_label<span class="Delimiter">.</span>label = <span class="Constant">&quot;}&quot;</span><span class="Delimiter">;</span>
+  out<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>close_label<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
 <span class="Comment">//: Make sure these pseudo recipes get consistent numbers in all tests, even</span>
 <span class="Comment">//: though they aren't implemented. Allows greater flexibility in ordering</span>
 <span class="Comment">//: transforms.</span>

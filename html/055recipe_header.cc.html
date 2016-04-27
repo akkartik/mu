@@ -398,7 +398,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Comment">//: One final convenience: no need to say what to return if the information is</span>
 <span class="Comment">//: in the header.</span>
 
-<span class="Delimiter">:(scenario reply_based_on_header)</span>
+<span class="Delimiter">:(scenario return_based_on_header)</span>
 def main [
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
@@ -463,7 +463,7 @@ def add2 a:number<span class="Delimiter">,</span> b:number <span class="Delimite
 <span class="traceContains">+mem: storing 3 in location 1</span>
 <span class="traceContains">+mem: storing -2 in location 2</span>
 
-<span class="Delimiter">:(scenario reply_on_fallthrough_based_on_header)</span>
+<span class="Delimiter">:(scenario return_on_fallthrough_based_on_header)</span>
 def main [
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
@@ -475,7 +475,7 @@ def add2 x:number<span class="Delimiter">,</span> y:number <span class="Delimite
 <span class="traceContains">+transform: instruction: reply {z: &quot;number&quot;}</span>
 <span class="traceContains">+mem: storing 8 in location 1</span>
 
-<span class="Delimiter">:(scenario reply_on_fallthrough_already_exists)</span>
+<span class="Delimiter">:(scenario return_on_fallthrough_already_exists)</span>
 def main [
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
@@ -487,6 +487,18 @@ def add2 x:number<span class="Delimiter">,</span> y:number <span class="Delimite
 ]
 <span class="traceContains">+transform: instruction: return {z: ()}</span>
 <span class="traceAbsent">-transform: instruction: reply z:number</span>
+<span class="traceContains">+mem: storing 8 in location 1</span>
+
+<span class="Delimiter">:(scenario return_after_conditional_reply_based_on_header)</span>
+def main [
+  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+]
+def add2 x:number<span class="Delimiter">,</span> y:number <span class="Delimiter">-&gt;</span> z:number [
+  local-scope
+  load-ingredients
+  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y  <span class="Comment"># no type for z</span>
+  <span class="Identifier">return</span>-<span class="Normal">if</span> <span class="Constant">0</span>/<span class="Constant">false</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+]
 <span class="traceContains">+mem: storing 8 in location 1</span>
 
 <span class="Delimiter">:(scenario recipe_headers_perform_same_ingredient_check)</span>
