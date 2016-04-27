@@ -262,7 +262,7 @@ scenario channel-read-not-full [
 
 # every channel comes with a boolean signifying if it's been closed
 # initially this boolean is false
-# BUG: can't yet include type ingredients when extending containers
+# todo: can't yet include type ingredients when extending containers
 container channel [
   closed?:boolean
 ]
@@ -288,7 +288,10 @@ def close x:address:sink:_elem -> x:address:sink:_elem [
 # if a channel is closed for writing,
 #   future reads continue until the channel empties,
 #   then the channel is also closed for reading
-# BUG: tangle directives don't work for some reason
+# BUG: tangle directives on shape-shifting recipes work, but raise spurious warnings 
+#   why this happens: tangling is a transform, and transforms only run during
+#   specialization. however the check that added fragments are used runs
+#   immediately and potentially before any specializations are encountered.
 #? after <channel-write-initial> [
 #?   closed?:boolean <- get *chan, closed?:offset
 #?   reply-if closed?
