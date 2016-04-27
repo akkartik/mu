@@ -496,7 +496,7 @@ if (!canonize_type(product)) continue;
 canonize_type(ingredient);
 :(before "End Preprocess NEXT_INGREDIENT product")
 canonize_type(product);
-:(before "End Check REPLY Copy(lhs, rhs)
+:(before "End Check RETURN Copy(lhs, rhs)
 canonize_type(lhs);
 canonize_type(rhs);
 

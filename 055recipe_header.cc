@@ -361,7 +361,7 @@ void deduce_types_from_header(const recipe_ordinal r) {
 //: One final convenience: no need to say what to return if the information is
 //: in the header.
 
-:(scenario reply_based_on_header)
+:(scenario return_based_on_header)
 def main [
   1:number/raw <- add2 3, 5
 ]
@@ -426,7 +426,7 @@ def add2 a:number, b:number -> y:number, z:number [
 +mem: storing 3 in location 1
 +mem: storing -2 in location 2
 
-:(scenario reply_on_fallthrough_based_on_header)
+:(scenario return_on_fallthrough_based_on_header)
 def main [
   1:number/raw <- add2 3, 5
 ]
@@ -438,7 +438,7 @@ def add2 x:number, y:number -> z:number [
 +transform: instruction: reply {z: "number"}
 +mem: storing 8 in location 1
 
-:(scenario reply_on_fallthrough_already_exists)
+:(scenario return_on_fallthrough_already_exists)
 def main [
   1:number/raw <- add2 3, 5
 ]
@@ -452,7 +452,7 @@ def add2 x:number, y:number -> z:number [
 -transform: instruction: reply z:number
 +mem: storing 8 in location 1
 
-:(scenario reply_after_conditional_reply_based_on_header)
+:(scenario return_after_conditional_reply_based_on_header)
 def main [
   1:number/raw <- add2 3, 5
 ]

@@ -52,7 +52,7 @@ def main [
 +mem: storing 36 in location 17
 
 //: products of recipes can include containers
-:(scenario reply_container)
+:(scenario return_container)
 def main [
   3:point <- f 2
 ]

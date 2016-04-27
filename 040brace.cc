@@ -361,9 +361,9 @@ def main [
 ]
 +error: break-if expects 1 or 2 ingredients, but got none
 
-//: Using break we can now implement conditional reply.
+//: Using break we can now implement conditional returns.
 
-:(scenario reply_if)
+:(scenario return_if)
 def main [
   1:number <- test1
 ]
@@ -373,7 +373,7 @@ def test1 [
 ]
 +mem: storing 35 in location 1
 
-:(scenario reply_if_2)
+:(scenario return_if_2)
 def main [
   1:number <- test1
 ]
@@ -384,32 +384,32 @@ def test1 [
 +mem: storing 34 in location 1
 
 :(before "End Rewrite Instruction(curr, recipe result)")
-// rewrite `reply-if a, b, c, ...` to
+// rewrite `return-if a, b, c, ...` to
 //   ```
 //   {
 //     break-unless a
-//     reply b, c, ...
+//     return b, c, ...
 //   }
 //   ```
-if (curr.name == "reply-if" || curr.name == "return-if") {
+if (curr.name == "return-if" || curr.name == "reply-if") {
   if (curr.products.empty()) {
-    emit_reply_block(result, "break-unless", curr.ingredients);
+    emit_return_block(result, "break-unless", curr.ingredients);
     curr.clear();
   }
   else {
     raise << "'" << curr.name << "' never yields any products\n" << end();
   }
 }
-// rewrite `reply-unless a, b, c, ...` to
+// rewrite `return-unless a, b, c, ...` to
 //   ```
 //   {
 //     break-if a
-//     reply b, c, ...
+//     return b, c, ...
 //   }
 //   ```
-if (curr.name == "reply-unless" || curr.name == "return-unless") {
+if (curr.name == "return-unless" || curr.name == "reply-unless") {
   if (curr.products.empty()) {
-    emit_reply_block(result, "break-if", curr.ingredients);
+    emit_return_block(result, "break-if", curr.ingredients);
     curr.clear();
   }
   else {
@@ -418,10 +418,10 @@ if (curr.name == "reply-unless" || curr.name == "return-unless") {
 }
 
 :(code)
-void emit_reply_block(recipe& out, const string& break_command, const vector<reagent>& ingredients) {
+void emit_return_block(recipe& out, const string& break_command, const vector<reagent>& ingredients) {
   reagent condition = ingredients.at(0);
-  vector<reagent> reply_ingredients;
-  copy(++ingredients.begin(), ingredients.end(), inserter(reply_ingredients, reply_ingredients.end()));
+  vector<reagent> return_ingredients;
+  copy(++ingredients.begin(), ingredients.end(), inserter(return_ingredients, return_ingredients.end()));
 
   // {
   instruction open_label;  open_label.is_label=true;  open_label.label = "{";
@@ -434,12 +434,12 @@ void emit_reply_block(recipe& out, const string& break_command, const vector<rea
   break_inst.ingredients.push_back(condition);
   out.steps.push_back(break_inst);
 
-  // reply <reply ingredients>
-  instruction reply_inst;
-  reply_inst.operation = get(Recipe_ordinal, "reply");
-  reply_inst.name = "reply";
-  reply_inst.ingredients.swap(reply_ingredients);
-  out.steps.push_back(reply_inst);
+  // return <return ingredients>
+  instruction return_inst;
+  return_inst.operation = get(Recipe_ordinal, "return");
+  return_inst.name = "return";
+  return_inst.ingredients.swap(return_ingredients);
+  out.steps.push_back(return_inst);
 
   // }
   instruction close_label;  close_label.is_label=true;  close_label.label = "}";

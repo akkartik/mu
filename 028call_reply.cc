@@ -1,6 +1,6 @@
 //: Calls can also generate products, using 'reply' or 'return'.
 
-:(scenario reply)
+:(scenario return)
 def main [
   1:number, 2:number <- f 34
 ]
@@ -13,16 +13,16 @@ def f [
 +mem: storing 35 in location 2
 
 :(before "End Primitive Recipe Declarations")
-REPLY,
+RETURN,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "reply", REPLY);
-put(Recipe_ordinal, "return", REPLY);
+put(Recipe_ordinal, "return", RETURN);
+put(Recipe_ordinal, "reply", RETURN);  // synonym while teaching
 :(before "End Primitive Recipe Checks")
-case REPLY: {
+case RETURN: {
   break;  // checks will be performed by a transform below
 }
 :(before "End Primitive Recipe Implementations")
-case REPLY: {
+case RETURN: {
   // Starting Reply
   if (Trace_stream) {
     trace(9999, "trace") << "reply: decrementing callstack depth from " << Trace_stream->callstack_depth << end();
@@ -61,7 +61,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
     const recipe& callee = get(Recipe, caller_instruction.operation);
     for (int i = 0; i < SIZE(callee.steps); ++i) {
       const instruction& reply_inst = callee.steps.at(i);
-      if (reply_inst.operation != REPLY) continue;
+      if (reply_inst.operation != RETURN) continue;
       // check types with the caller
       if (SIZE(caller_instruction.products) > SIZE(reply_inst.ingredients)) {
         raise << maybe(caller.name) << "too few values replied from " << callee.name << '\n' << end();
@@ -70,7 +70,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
       for (int i = 0; i < SIZE(caller_instruction.products); ++i) {
         reagent lhs = reply_inst.ingredients.at(i);
         reagent rhs = caller_instruction.products.at(i);
-        // End Check REPLY Copy(lhs, rhs)
+        // End Check RETURN Copy(lhs, rhs)
         if (!types_coercible(rhs, lhs)) {
           raise << maybe(callee.name) << reply_inst.name << " ingredient " << lhs.original_string << " can't be saved in " << rhs.original_string << '\n' << end();
           raise << to_string(lhs.type) << " vs " << to_string(rhs.type) << '\n' << end();
@@ -101,7 +101,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
   }
 }
 
-:(scenario reply_type_mismatch)
+:(scenario return_type_mismatch)
 % Hide_errors = true;
 def main [
   3:number <- f 2
@@ -119,7 +119,7 @@ def f [
 //: the recipe's 'reply' will help catch accidental misuse of such
 //: 'ingredient-products' (sometimes called in-out parameters in other languages).
 
-:(scenario reply_same_as_ingredient)
+:(scenario return_same_as_ingredient)
 % Hide_errors = true;
 def main [
   1:number <- copy 0
@@ -131,7 +131,7 @@ def test1 [
 ]
 +error: main: '2:number <- test1 1:number' should write to 1:number rather than 2:number
 
-:(scenario reply_same_as_ingredient_dummy)
+:(scenario return_same_as_ingredient_dummy)
 def main [
   1:number <- copy 0
   _ <- test1 1:number  # call with different ingredient and product
