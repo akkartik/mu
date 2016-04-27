@@ -82,6 +82,7 @@ def send-keys-to-channel console:address:console, chan:address:sink:character, s
     chan <- write chan, c
     loop
   }
+  chan <- close chan
 ]
 
 def wait-for-event console:address:console -> console:address:console [

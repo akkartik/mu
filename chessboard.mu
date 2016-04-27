@@ -35,7 +35,8 @@ scenario print-board-and-read-move [
   run [
     screen:address:screen, console:address:console <- chessboard screen:address:screen, console:address:console
     # icon for the cursor
-    screen <- print screen, 9251/␣
+    1:character/cursor-icon <- copy 9251/␣
+    screen <- print screen, 1:character/cursor-icon
   ]
   screen-should-contain [
   #            1         2         3         4         5         6         7         8         9         10        11
@@ -255,9 +256,10 @@ def read-move stdin:address:source:character, screen:address:screen -> result:ad
   to-rank:number, quit?, error? <- read-rank stdin, screen
   return-if quit?, 0/dummy
   return-if error?, 0/dummy
-  *result <- put *result, to-rank:offset, to-file
+  *result <- put *result, to-rank:offset, to-rank
   error? <- expect-from-channel stdin, 10/newline, screen
   return-if error?, 0/dummy, 0/quit
+  return result  # BUG: why is this statement required?
 ]
 
 # valid values for file: 0-7

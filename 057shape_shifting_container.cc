@@ -85,7 +85,7 @@ void read_type_ingredients(string& name) {
   while (has_data(in)) {
     string curr = slurp_until(in, ':');
     if (info.type_ingredient_names.find(curr) != info.type_ingredient_names.end()) {
-      raise << "can't repeat type ingredient names in a single container definition\n" << end();
+      raise << "can't repeat type ingredient names in a single container definition: " << curr << '\n' << end();
       return;
     }
     put(info.type_ingredient_names, curr, next_type_ordinal++);

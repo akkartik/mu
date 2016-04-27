@@ -61,6 +61,10 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
   local-scope
   load-ingredients
   chan:address:channel:_elem <- get *out, chan:offset
+  <channel-write-initial>
+  # BUG: delete next 2 lines after enabling the tangle directives below
+  closed?:boolean <- get *chan, closed?:offset
+  reply-if closed?
   {
     # block if chan is full
     full:boolean <- channel-full? chan
@@ -94,6 +98,10 @@ def read in:address:source:_elem -> result:_elem, in:address:source:_elem [
     # block if chan is empty
     empty?:boolean <- channel-empty? chan
     break-unless empty?
+    <channel-read-empty>
+    # BUG: delete next 2 lines after enabling the tangle directives below
+    closed?:boolean <- get *chan, closed?:offset
+    reply-if closed?, 0  # hack, will only work for scalar _elem; we need a method to clear arbitrary types
     free-address:location <- get-location *chan, first-free:offset
     wait-for-location free-address
   }
@@ -250,6 +258,47 @@ scenario channel-read-not-full [
   ]
 ]
 
+## cancelling channels
+
+# every channel comes with a boolean signifying if it's been closed
+# initially this boolean is false
+# BUG: can't yet include type ingredients when extending containers
+container channel [
+  closed?:boolean
+]
+
+# a channel can be closed from either the source or the sink
+# both threads can modify it, but they can only set it, so this is a benign race
+def close x:address:source:_elem -> x:address:source:_elem [
+  local-scope
+  load-ingredients
+  chan:address:channel:_elem <- get *x, chan:offset
+  *chan <- put *chan, closed?:offset, 1/true
+]
+def close x:address:sink:_elem -> x:address:sink:_elem [
+  local-scope
+  load-ingredients
+  chan:address:channel:_elem <- get *x, chan:offset
+  *chan <- put *chan, closed?:offset, 1/true
+]
+
+# once a channel is closed from one side, no further operations are expected from that side
+# if a channel is closed for reading,
+#   no further writes will be let through
+# if a channel is closed for writing,
+#   future reads continue until the channel empties,
+#   then the channel is also closed for reading
+# BUG: tangle directives don't work for some reason
+#? after <channel-write-initial> [
+#?   closed?:boolean <- get *chan, closed?:offset
+#?   reply-if closed?
+#? ]
+#? 
+#? after <channel-read-empty> [
+#?   closed?:boolean <- get *chan, closed?:offset
+#?   reply-if closed?
+#? ]
+
 ## helpers
 
 # An empty channel has first-empty and first-full both at the same value.
@@ -336,6 +385,11 @@ def buffer-lines in:address:source:character, buffered-out:address:sink:characte
       buffered-out <- write buffered-out, c
       i <- add i, 1
       loop
+    }
+    {
+      break-unless eof?
+      buffered-out <- close buffered-out
+      reply
     }
     loop
   }
