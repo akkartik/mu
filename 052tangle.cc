@@ -133,14 +133,15 @@ bool is_waypoint(string label) {
 }
 
 //: complain about unapplied fragments
-:(before "End Globals")
-bool Transform_check_insert_fragments_Ran = false;
-:(after "Transform.push_back(insert_fragments)")
-Transform.push_back(check_insert_fragments);  // idempotent
+//: This can't run during transform because later (shape-shifting recipes)
+//: we'll encounter situations where fragments might get used long after
+//: they're loaded, and we might run transform_all in between. To avoid
+//: spurious errors, run this check right at the end, after all code is
+//: loaded, right before we run main.
+:(before "End Commandline Parsing")
+check_insert_fragments();
 :(code)
-void check_insert_fragments(unused recipe_ordinal) {
-  if (Transform_check_insert_fragments_Ran) return;
-  Transform_check_insert_fragments_Ran = true;
+void check_insert_fragments() {
   for (map<string, recipe>::iterator p = Before_fragments.begin(); p != Before_fragments.end(); ++p) {
     if (!contains_key(Fragments_used, p->first))
       raise << "could not locate insert before " << p->first << '\n' << end();

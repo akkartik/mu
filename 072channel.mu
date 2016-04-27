@@ -62,9 +62,6 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
   load-ingredients
   chan:address:channel:_elem <- get *out, chan:offset
   <channel-write-initial>
-  # BUG: delete next 2 lines after enabling the tangle directives below
-  closed?:boolean <- get *chan, closed?:offset
-  reply-if closed?
   {
     # block if chan is full
     full:boolean <- channel-full? chan
@@ -99,9 +96,6 @@ def read in:address:source:_elem -> result:_elem, in:address:source:_elem [
     empty?:boolean <- channel-empty? chan
     break-unless empty?
     <channel-read-empty>
-    # BUG: delete next 2 lines after enabling the tangle directives below
-    closed?:boolean <- get *chan, closed?:offset
-    reply-if closed?, 0  # hack, will only work for scalar _elem; we need a method to clear arbitrary types
     free-address:location <- get-location *chan, first-free:offset
     wait-for-location free-address
   }
@@ -288,19 +282,15 @@ def close x:address:sink:_elem -> x:address:sink:_elem [
 # if a channel is closed for writing,
 #   future reads continue until the channel empties,
 #   then the channel is also closed for reading
-# BUG: tangle directives on shape-shifting recipes work, but raise spurious warnings 
-#   why this happens: tangling is a transform, and transforms only run during
-#   specialization. however the check that added fragments are used runs
-#   immediately and potentially before any specializations are encountered.
-#? after <channel-write-initial> [
-#?   closed?:boolean <- get *chan, closed?:offset
-#?   reply-if closed?
-#? ]
-#? 
-#? after <channel-read-empty> [
-#?   closed?:boolean <- get *chan, closed?:offset
-#?   reply-if closed?
-#? ]
+after <channel-write-initial> [
+  closed?:boolean <- get *chan, closed?:offset
+  reply-if closed?
+]
+
+after <channel-read-empty> [
+  closed?:boolean <- get *chan, closed?:offset
+  reply-if closed?, 0/hack  # only scalar _elems supported in channels; need to support construction of arbitrary empty containers
+]
 
 ## helpers
 
