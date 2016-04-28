@@ -436,11 +436,12 @@ void skip_bracket(istream& in, string message) {
 }
 
 :(scenarios run)
-:(scenario container_define_twice)
+:(scenario container_extend)
 container foo [
   x:number
 ]
 
+# add to previous definition
 container foo [
   y:number
 ]

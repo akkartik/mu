@@ -256,8 +256,7 @@ scenario channel-read-not-full [
 
 # every channel comes with a boolean signifying if it's been closed
 # initially this boolean is false
-# todo: can't yet include type ingredients when extending containers
-container channel [
+container channel:_elem [
   closed?:boolean
 ]
 

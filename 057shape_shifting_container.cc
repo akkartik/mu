@@ -53,6 +53,25 @@ def main [
 ]
 $error: 0
 
+:(scenario shape_shifting_container_extend)
+container foo:_a [
+  x:_a
+]
+container foo:_a [
+  y:_a
+]
+$error: 0
+
+:(scenario shape_shifting_container_extend_error)
+% Hide_errors = true;
+container foo:_a [
+  x:_a
+]
+container foo:_b [
+  y:_b
+]
++error: headers of container 'foo' must use identical type ingredients
+
 :(before "End Globals")
 // We'll use large type ordinals to mean "the following type of the variable".
 const int START_TYPE_INGREDIENTS = 2000;
@@ -70,26 +89,60 @@ if (!info.type_ingredient_names.empty()) continue;
 :(before "End container Name Refinements")
 if (name.find(':') != string::npos) {
   trace(9999, "parse") << "container has type ingredients; parsing" << end();
-  read_type_ingredients(name);
+  if (!read_type_ingredients(name, command)) {
+    // error; skip rest of the container definition and continue
+    slurp_balanced_bracket(in);
+    return;
+  }
 }
 
 :(code)
-void read_type_ingredients(string& name) {
+bool read_type_ingredients(string& name, const string& command) {
   string save_name = name;
   istringstream in(save_name);
   name = slurp_until(in, ':');
+  map<string, type_ordinal> type_ingredient_names;
+  if (!slurp_type_ingredients(in, type_ingredient_names)) {
+    return false;
+  }
+  if (contains_key(Type_ordinal, name)
+      && contains_key(Type, get(Type_ordinal, name))) {
+    const type_info& info = get(Type, get(Type_ordinal, name));
+    // we've already seen this container; make sure type ingredients match
+    if (!type_ingredients_match(type_ingredient_names, info.type_ingredient_names)) {
+      raise << "headers of " << command << " '" << name << "' must use identical type ingredients\n" << end();
+      return false;
+    }
+    return true;
+  }
+  // we haven't seen this container before
   if (!contains_key(Type_ordinal, name) || get(Type_ordinal, name) == 0)
     put(Type_ordinal, name, Next_type_ordinal++);
   type_info& info = get_or_insert(Type, get(Type_ordinal, name));
+  info.type_ingredient_names.swap(type_ingredient_names);
+  return true;
+}
+
+bool slurp_type_ingredients(istream& in, map<string, type_ordinal>& out) {
   int next_type_ordinal = START_TYPE_INGREDIENTS;
   while (has_data(in)) {
     string curr = slurp_until(in, ':');
-    if (info.type_ingredient_names.find(curr) != info.type_ingredient_names.end()) {
+    if (out.find(curr) != out.end()) {
       raise << "can't repeat type ingredient names in a single container definition: " << curr << '\n' << end();
-      return;
+      return false;
     }
-    put(info.type_ingredient_names, curr, next_type_ordinal++);
+    put(out, curr, next_type_ordinal++);
   }
+  return true;
+}
+
+bool type_ingredients_match(const map<string, type_ordinal>& a, const map<string, type_ordinal>& b) {
+  if (SIZE(a) != SIZE(b)) return false;
+  for (map<string, type_ordinal>::const_iterator p = a.begin(); p != a.end(); ++p) {
+    if (!contains_key(b, p->first)) return false;
+    if (p->second != get(b, p->first)) return false;
+  }
+  return true;
 }
 
 :(before "End insert_container Special-cases")
