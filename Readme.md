@@ -168,7 +168,7 @@ A third example, this time illustrating conditionals:
 
 In spite of how it looks, this is still just a list of instructions and
 labels. Internally, the instructions `break` and `loop` get converted to
-`jump` instructions to after the enclosing `}` or `{`, respectively.
+`jump` instructions to after the enclosing `}` or `{` labels, respectively.
 
 Try out the factorial program now:
 
