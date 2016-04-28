@@ -195,3 +195,30 @@ if (is_mu_recipe(to)) {
   }
   return true;
 }
+
+//: make sure we don't accidentally break on a function literal
+:(scenario jump_forbidden_on_recipe_literals)
+% Hide_errors = true;
+def foo [
+  local-scope
+]
+def main [
+  local-scope
+  {
+    break-if foo
+  }
+]
+# error should be as if foo is not a recipe
++error: main: missing type for foo in 'break-if {foo: ()}'
+
+:(before "End JUMP_IF Checks")
+check_for_recipe_literals(inst, get(Recipe, r));
+:(before "End JUMP_UNLESS Checks")
+check_for_recipe_literals(inst, get(Recipe, r));
+:(code)
+void check_for_recipe_literals(const instruction& inst, const recipe& caller) {
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+    if (is_mu_recipe(inst.ingredients.at(i)))
+      raise << maybe(caller.name) << "missing type for " << inst.ingredients.at(i).original_string << " in '" << inst.original_string << "'\n" << end();
+  }
+}
