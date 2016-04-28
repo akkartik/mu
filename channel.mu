@@ -24,7 +24,8 @@ def consumer source:address:source:character -> source:address:source:character 
   load-ingredients
   {
     # read an integer from the channel
-    n:character, source <- read source
+    n:character, eof?:boolean, source <- read source
+    break-if eof?
     # other threads might get between these prints
     $print [consume: ], n:character, [ 
 ]

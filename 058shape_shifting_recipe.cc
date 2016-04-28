@@ -61,6 +61,8 @@ if (!candidates.empty()) {
   if (!variant.steps.empty()) {
     trace(9992, "transform") << "transforming new specialization: " << variant.name << end();
     for (int t = 0; t < SIZE(Transform); ++t) {
+      // one exception: skip tangle, which would have already occurred inside new_variant above
+      if (Transform.at(t) == insert_fragments) continue;
       (*Transform.at(t))(new_recipe_ordinal);
     }
   }
@@ -230,8 +232,14 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
   recipe& new_recipe = get(Recipe, new_recipe_ordinal);
   new_recipe.name = new_name;
   trace(9993, "transform") << "switching " << inst.name << " to specialized " << header_label(new_recipe_ordinal) << end();
-  // Since the exemplar never ran any transforms, we have to redo some of the
-  // work of the check_types_by_name transform while supporting type-ingredients.
+
+  // Replace type ingredients with concrete types in new_recipe.
+  //
+  // preprocessing: micro-manage a couple of transforms
+  // a) perform tangle *before* replacing type ingredients, just in case
+  // inserted code involves type ingredients
+  insert_fragments(new_recipe_ordinal);
+  // b) do the work of check_types_by_name while supporting type-ingredients
   compute_type_names(new_recipe);
   // that gives enough information to replace type-ingredients with concrete types
   {
@@ -1027,3 +1035,21 @@ def main [
   foo *z
 ]
 # shouldn't crash
+
+:(scenario tangle_shape_shifting_recipe)
+# shape-shifting recipe
+def foo a:_elem [
+  local-scope
+  load-ingredients
+  <label1>
+]
+# tangle some code that refers to the type ingredient
+after <label1> [
+  b:_elem <- copy a
+]
+# trigger specialization
+def main [
+  local-scope
+  foo 34
+]
+$exit: 0

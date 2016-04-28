@@ -174,7 +174,8 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
   candidates = strictly_matching_variants(inst, variants);
   if (!candidates.empty()) return best_variant(inst, candidates).name;
 
-  // Static Dispatch Phase 2 (shape-shifting recipes in a later layer)
+  // Static Dispatch Phase 2
+  //: (shape-shifting recipes in a later layer)
   // End Static Dispatch Phase 2
 
   // Static Dispatch Phase 3

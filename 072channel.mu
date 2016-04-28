@@ -12,10 +12,11 @@ scenario channel [
   run [
     1:address:source:number, 2:address:sink:number <- new-channel 3/capacity
     2:address:sink:number <- write 2:address:sink:number, 34
-    3:number, 1:address:source:number <- read 1:address:source:number
+    3:number, 4:boolean, 1:address:source:number <- read 1:address:source:number
   ]
   memory-should-contain [
     3 <- 34
+    4 <- 0  # read was successful
   ]
 ]
 
@@ -74,7 +75,6 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
   free:number <- get *chan, first-free:offset
   *circular-buffer <- put-index *circular-buffer, free, val
   # mark its slot as filled
-  # todo: clear the slot itself
   free <- add free, 1
   {
     # wrap free around to 0 if necessary
@@ -87,9 +87,10 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
   *chan <- put *chan, first-free:offset, free
 ]
 
-def read in:address:source:_elem -> result:_elem, in:address:source:_elem [
+def read in:address:source:_elem -> result:_elem, fail?:boolean, in:address:source:_elem [
   local-scope
   load-ingredients
+  fail? <- copy 0/false  # default status
   chan:address:channel:_elem <- get *in, chan:offset
   {
     # block if chan is empty
@@ -103,8 +104,10 @@ def read in:address:source:_elem -> result:_elem, in:address:source:_elem [
   full:number <- get *chan, first-full:offset
   circular-buffer:address:array:_elem <- get *chan, data:offset
   result <- index *circular-buffer, full
+  # clear the slot
+  empty:address:_elem <- new _elem:type
+  *circular-buffer <- put-index *circular-buffer, full, *empty
   # mark its slot as empty
-  # todo: clear the slot itself
   full <- add full, 1
   {
     # wrap full around to 0 if necessary
@@ -124,7 +127,7 @@ def clear in:address:source:_elem -> in:address:source:_elem [
   {
     empty?:boolean <- channel-empty? chan
     break-if empty?
-    _, in <- read in
+    _, _, in <- read in
   }
 ]
 
@@ -159,7 +162,7 @@ scenario channel-read-increments-full [
   run [
     1:address:source:number, 2:address:sink:number <- new-channel 3/capacity
     2:address:sink:number <- write 2:address:sink:number, 34
-    _, 1:address:source:number <- read 1:address:source:number
+    _, _, 1:address:source:number <- read 1:address:source:number
     3:address:channel:number <- get *1:address:source:number, chan:offset
     4:number <- get *3:address:channel:number, first-full:offset
     5:number <- get *3:address:channel:number, first-free:offset
@@ -177,7 +180,7 @@ scenario channel-wrap [
     3:address:channel:number <- get *1:address:source:number, chan:offset
     # write and read a value
     2:address:sink:number <- write 2:address:sink:number, 34
-    _, 1:address:source:number <- read 1:address:source:number
+    _, _, 1:address:source:number <- read 1:address:source:number
     # first-free will now be 1
     4:number <- get *3:address:channel:number, first-free:offset
     5:number <- get *3:address:channel:number, first-free:offset
@@ -185,7 +188,7 @@ scenario channel-wrap [
     2:address:sink:number <- write 2:address:sink:number, 34
     6:number <- get *3:address:channel:number, first-free:offset
     # read second value, verify that first-full wraps
-    _, 1:address:source:number <- read 1:address:source:number
+    _, _, 1:address:source:number <- read 1:address:source:number
     7:number <- get *3:address:channel:number, first-full:offset
   ]
   memory-should-contain [
@@ -242,7 +245,7 @@ scenario channel-read-not-full [
     1:address:source:number, 2:address:sink:number <- new-channel 1/capacity
     3:address:channel:number <- get *1:address:source:number, chan:offset
     2:address:sink:number <- write 2:address:sink:number, 34
-    _, 1:address:source:number <- read 1:address:source:number
+    _, _, 1:address:source:number <- read 1:address:source:number
     4:boolean <- channel-empty? 3:address:channel:number
     5:boolean <- channel-full? 3:address:channel:number
   ]
@@ -288,7 +291,11 @@ after <channel-write-initial> [
 
 after <channel-read-empty> [
   closed?:boolean <- get *chan, closed?:offset
-  return-if closed?, 0/hack  # only scalar _elems supported in channels; need to support construction of arbitrary empty containers
+  {
+    break-unless closed?
+    empty-result:address:_elem <- new _elem:type
+    return *empty-result, 1/true
+  }
 ]
 
 ## helpers
@@ -335,12 +342,14 @@ def buffer-lines in:address:source:character, buffered-out:address:sink:characte
   local-scope
   load-ingredients
   # repeat forever
+  eof?:boolean <- copy 0/false
   {
     line:address:buffer <- new-buffer 30
     # read characters from 'in' until newline, copy into line
     {
       +next-character
-      c:character, in <- read in
+      c:character, eof?:boolean, in <- read in
+      break-if eof?
       # drop a character on backspace
       {
         # special-case: if it's a backspace
@@ -361,9 +370,6 @@ def buffer-lines in:address:source:character, buffered-out:address:sink:characte
       line <- append line, c
       line-done?:boolean <- equal c, 10/newline
       break-if line-done?
-      # stop buffering on eof (currently only generated by fake console)
-      eof?:boolean <- equal c, 0/eof
-      break-if eof?
       loop
     }
     # copy line into 'buffered-out'

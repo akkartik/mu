@@ -260,7 +260,8 @@ def read-move stdin:address:source:character, screen:address:screen -> result:ad
 def read-file stdin:address:source:character, screen:address:screen -> file:number, quit:boolean, error:boolean, stdin:address:source:character, screen:address:screen [
   local-scope
   load-ingredients
-  c:character, stdin <- read stdin
+  c:character, eof?:boolean, stdin <- read stdin
+  return-if eof?, 0/dummy, 1/quit, 0/error
   {
     q-pressed?:boolean <- equal c, 81/Q
     break-unless q-pressed?
@@ -302,11 +303,12 @@ def read-file stdin:address:source:character, screen:address:screen -> file:numb
   return file, 0/quit, 0/error
 ]
 
-# valid values: 0-7, -1 (quit), -2 (error)
+# valid values for rank: 0-7
 def read-rank stdin:address:source:character, screen:address:screen -> rank:number, quit?:boolean, error?:boolean, stdin:address:source:character, screen:address:screen [
   local-scope
   load-ingredients
-  c:character, stdin <- read stdin
+  c:character, eof?:boolean, stdin <- read stdin
+  return-if eof?, 0/dummy, 1/quit, 0/error
   {
     q-pressed?:boolean <- equal c, 8/Q
     break-unless q-pressed?
@@ -347,7 +349,8 @@ def read-rank stdin:address:source:character, screen:address:screen -> rank:numb
 def expect-from-channel stdin:address:source:character, expected:character, screen:address:screen -> result:boolean, stdin:address:source:character, screen:address:screen [
   local-scope
   load-ingredients
-  c:character, stdin <- read stdin
+  c:character, eof?:boolean, stdin <- read stdin
+  return-if eof? 1/true
   {
     match?:boolean <- equal c, expected
     break-if match?
