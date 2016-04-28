@@ -9,16 +9,11 @@ def main [
   # In mu it is good form (though not required) to explicitly show the
   # hardware you rely on.
   #
-  # The chessboard also returns the same keyboard and screen objects. In mu it
-  # is good form to not modify ingredients of a function unless they are also
-  # results. Here we clearly modify both keyboard and screen, so we return
-  # both.
-  #
   # Here the console and screen are both 0, which usually indicates real
   # hardware rather than a fake for testing as you'll see below.
   chessboard 0/screen, 0/console
 
-  close-console  # cleanup screen, keyboard and mouse
+  close-console  # clean up screen, keyboard and mouse
 ]
 
 ## But enough about mu. Here's what it looks like to run the chessboard program.
