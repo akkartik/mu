@@ -283,7 +283,6 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
 
   // B. replace the current location
   const type_tree* replacement = NULL;
-  bool splice_right = true ;
   bool zig_left = false;
   {
     const type_tree* curr = callsite_type;
@@ -298,7 +297,6 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
       // rather than {foo: (number)}
       // We'd also like to use it with multiple types: foo:address:number.
       replacement = curr;
-      splice_right = final_type_ingredient(type_ingredient_index, container_info);
     }
   }
   if (element_type->right && replacement->right && zig_left) {  // ZERO confidence that this condition is accurate
@@ -312,7 +310,7 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
     element_type->value = replacement->value;
     assert(!element_type->left);  // since value is set
     element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
-    if (splice_right) {
+    if (zig_left || final_type_ingredient(type_ingredient_index, container_info)) {
       type_tree* old_right = element_type->right;
       element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
       append(element_type->right, old_right);
