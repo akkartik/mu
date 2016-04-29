@@ -41,6 +41,7 @@ else if (command == "before") {
     Before_fragments[label].steps.insert(Before_fragments[label].steps.end(), tmp.steps.begin(), tmp.steps.end());
   else
     raise << "can't tangle before label " << label << '\n' << end();
+  // End before Command Handler
 }
 else if (command == "after") {
   string label = next_word(in);
@@ -50,6 +51,7 @@ else if (command == "after") {
     After_fragments[label].steps.insert(After_fragments[label].steps.begin(), tmp.steps.begin(), tmp.steps.end());
   else
     raise << "can't tangle after label " << label << '\n' << end();
+  // End after Command Handler
 }
 
 //: after all recipes are loaded, insert fragments at appropriate labels.
@@ -415,3 +417,32 @@ before <label1> [
 -mem: storing 12 in location 3
 # nothing else
 $mem: 2
+
+//: ensure that there are no new fragments created for a label after it's already been inserted to
+
+:(code)
+void test_new_fragment_after_tangle() {
+  // define a recipe
+  load("def foo [\n"
+       "  local-scope\n"
+       "  <label>\n"
+       "]\n"
+       "after <label> [\n"
+       "  1:number/raw <- copy 34\n"
+       "]\n");
+  transform_all();
+  CHECK_TRACE_DOESNT_CONTAIN_ERROR();
+  Hide_errors = true;
+  // try to tangle into recipe foo after transform
+  load("before <label> [\n"
+       "  2:number/raw <- copy 35\n"
+       "]\n");
+  CHECK_TRACE_CONTAINS_ERROR();
+}
+
+:(before "End before Command Handler")
+if (contains_key(Fragments_used, label))
+  raise << "we've already tangled some code at " << label << " in a previous call to transform_all(). Those locations won't be updated.\n" << end();
+:(before "End after Command Handler")
+if (contains_key(Fragments_used, label))
+  raise << "we've already tangled some code at " << label << " in a previous call to transform_all(). Those locations won't be updated.\n" << end();
