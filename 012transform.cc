@@ -56,6 +56,18 @@ void transform_all() {
   // End transform_all
 }
 
+//: Even though a run will involve many calls to transform_all() for tests,
+//: our logical model is to load all code, then transform all code, then run.
+//: If you load new code that should cause already-transformed recipes to
+//: change, that's not supported. To help detect such situations and raise
+//: helpful errors we track a count of the number of calls made to
+//: transform_all().
+:(before "End Globals")
+int Num_calls_to_transform_all = 0;
+:(after "void transform_all()")
+  ++Num_calls_to_transform_all;
+
+:(code)
 void parse_int_reagents() {
   trace(9991, "transform") << "--- parsing any uninitialized reagents as integers" << end();
   for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {

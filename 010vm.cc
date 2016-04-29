@@ -171,7 +171,9 @@ struct type_info {
   kind_of_type kind;
   vector<reagent> elements;
   // End type_info Fields
-  type_info() :kind(PRIMITIVE) {}
+  type_info() :kind(PRIMITIVE) {
+    // End type_info Constructor
+  }
 };
 
 enum primitive_recipes {

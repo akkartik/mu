@@ -379,10 +379,37 @@ container bar [
 +parse:   element: {x: "number"}
 +parse:   element: {y: "number"}
 
+//: if a container is defined again, the new fields add to the original definition
+:(scenarios run)
+:(scenario container_extend)
+container foo [
+  x:number
+]
+# add to previous definition
+container foo [
+  y:number
+]
+def main [
+  1:number <- copy 34
+  2:number <- copy 35
+  3:number <- get 1:foo, 0:offset
+  4:number <- get 1:foo, 1:offset
+]
++mem: storing 34 in location 3
++mem: storing 35 in location 4
+
 :(before "End Command Handlers")
 else if (command == "container") {
   insert_container(command, CONTAINER, in);
 }
+
+//: Even though we allow containers to be extended, we don't allow this after
+//: a call to transform_all. But we do want to detect this situation and raise
+//: an error. This field will help us raise such errors.
+:(before "End type_info Fields")
+int Num_calls_to_transform_all_at_first_definition;
+:(before "End type_info Constructor")
+Num_calls_to_transform_all_at_first_definition = -1;
 
 :(code)
 void insert_container(const string& command, kind_of_type kind, istream& in) {
@@ -397,6 +424,15 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   trace(9999, "parse") << "type number: " << get(Type_ordinal, name) << end();
   skip_bracket(in, "'container' must begin with '['");
   type_info& info = get_or_insert(Type, get(Type_ordinal, name));
+  if (info.Num_calls_to_transform_all_at_first_definition == -1) {
+    // initial definition of this container
+    info.Num_calls_to_transform_all_at_first_definition = Num_calls_to_transform_all;
+  }
+  else if (info.Num_calls_to_transform_all_at_first_definition != Num_calls_to_transform_all) {
+    // extension after transform_all
+    raise << "there was a call to transform_all() between the definition of container " << name << " and a subsequent extension. This is not supported, since any recipes that used " << name << " values have already been transformed and 'frozen'.\n" << end();
+    return;
+  }
   info.name = name;
   info.kind = kind;
   while (has_data(in)) {
@@ -435,32 +471,28 @@ void skip_bracket(istream& in, string message) {
     raise << message << '\n' << end();
 }
 
-:(scenarios run)
-:(scenario container_extend)
-container foo [
-  x:number
-]
-
-# add to previous definition
-container foo [
-  y:number
-]
-
-def main [
-  1:number <- copy 34
-  2:number <- copy 35
-  3:number <- get 1:foo, 0:offset
-  4:number <- get 1:foo, 1:offset
-]
-+mem: storing 34 in location 3
-+mem: storing 35 in location 4
-
 //: ensure scenarios are consistent by always starting them at the same type
 //: number.
 :(before "End Setup")  //: for tests
 Next_type_ordinal = 1000;
 :(before "End Test Run Initialization")
 assert(Next_type_ordinal < 1000);
+
+:(code)
+void test_error_on_transform_all_between_container_definition_and_extension() {
+  // define a container
+  run("container foo [\n"
+      "  a:number\n"
+      "]\n");
+  // try to extend the container after transform
+  transform_all();
+  CHECK_TRACE_DOESNT_CONTAIN_ERROR();
+  Hide_errors = true;
+  run("container foo [\n"
+      "  b:number\n"
+      "]\n");
+  CHECK_TRACE_CONTAINS_ERROR();
+}
 
 //:: Allow container definitions anywhere in the codebase, but complain if you
 //:: can't find a definition at the end.

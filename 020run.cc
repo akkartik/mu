@@ -170,6 +170,7 @@ if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, g
 //?   Trace_file = "interactive";
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
   trace(9990, "run") << "=== Starting to run" << end();
+  assert(Num_calls_to_transform_all == 1);
   run_main(argc, argv);
   teardown();
 }
