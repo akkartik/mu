@@ -298,8 +298,7 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
       // rather than {foo: (number)}
       // We'd also like to use it with multiple types: foo:address:number.
       replacement = curr;
-      if (!final_type_ingredient(type_ingredient_index, container_info))
-        splice_right = false;
+      splice_right = final_type_ingredient(type_ingredient_index, container_info);
     }
   }
   if (element_type->right && replacement->right && zig_left) {  // ZERO confidence that this condition is accurate
