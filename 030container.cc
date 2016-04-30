@@ -104,8 +104,6 @@ if (!contains_key(Type, type->value)) {
 }
 type_info t = get(Type, type->value);
 if (t.kind == CONTAINER) {
-  reagent reagent_containing_type;
-  reagent_containing_type.type = new type_tree(*type);
   // size of a container is the sum of the sizes of its elements
   int result = 0;
   for (int i = 0; i < SIZE(t.elements); ++i) {
@@ -114,7 +112,7 @@ if (t.kind == CONTAINER) {
       raise << "container " << t.name << " can't include itself as a member\n" << end();
       return 0;
     }
-    result += size_of(element_type(reagent_containing_type, i));
+    result += size_of(element_type(type, i));
   }
   return result;
 }
@@ -171,7 +169,7 @@ case GET: {
   if (inst.products.empty()) break;
   reagent product = inst.products.at(0);
   // Update GET product in Check
-  const reagent element = element_type(base, offset_value);
+  const reagent element = element_type(base.type, offset_value);
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;
@@ -192,9 +190,9 @@ case GET: {
   if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
   int src = base_address;
   for (int i = 0; i < offset; ++i)
-    src += size_of(element_type(base, i));
+    src += size_of(element_type(base.type, i));
   trace(9998, "run") << "address to copy is " << src << end();
-  reagent element = element_type(base, offset);
+  reagent element = element_type(base.type, offset);
   element.set_value(src);
   trace(9998, "run") << "its type is " << names_to_string(element.type) << end();
   // Read element
@@ -203,11 +201,11 @@ case GET: {
 }
 
 :(code)
-const reagent element_type(const reagent& base, int offset_value) {
+const reagent element_type(const type_tree* type, int offset_value) {
   assert(offset_value >= 0);
-  assert(contains_key(Type, base.type->value));
-  assert(!get(Type, base.type->value).name.empty());
-  const type_info& info = get(Type, base.type->value);
+  assert(contains_key(Type, type->value));
+  assert(!get(Type, type->value).name.empty());
+  const type_info& info = get(Type, type->value);
   assert(info.kind == CONTAINER);
   reagent element = info.elements.at(offset_value);
   // End element_type Special-cases
@@ -310,7 +308,7 @@ case PUT: {
     offset_value = offset.value;
   }
   reagent& value = inst.ingredients.at(2);
-  reagent element = element_type(base, offset_value);
+  reagent element = element_type(base.type, offset_value);
   if (!types_coercible(element, value)) {
     raise << maybe(get(Recipe, r).name) << "'put " << base.original_string << ", " << offset.original_string << "' should store " << names_to_string_without_quotes(element.type) << " but " << value.name << " has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
@@ -331,7 +329,7 @@ case PUT: {
   if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
   int address = base_address;
   for (int i = 0; i < offset; ++i)
-    address += size_of(element_type(base, i));
+    address += size_of(element_type(base.type, i));
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire container
@@ -748,7 +746,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
         // degenerate case: merge with the same type always succeeds
         if (state.data.top().container_element_index == 0 && types_coercible(container, inst.ingredients.at(ingredient_index)))
           return;
-        reagent expected_ingredient = element_type(container, state.data.top().container_element_index);
+        reagent expected_ingredient = element_type(container.type, state.data.top().container_element_index);
         trace(9999, "transform") << "checking container " << to_string(container) << " || " << to_string(expected_ingredient) << " vs ingredient " << ingredient_index << end();
         // if the current element is the ingredient we expect, move on to the next element/ingredient
         if (types_coercible(expected_ingredient, ingredients.at(ingredient_index))) {

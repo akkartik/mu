@@ -100,7 +100,7 @@ size_t hash_mu_container(size_t h, const reagent& r) {
   int address = r.value;
   int offset = 0;
   for (int i = 0; i < SIZE(info.elements); ++i) {
-    reagent element = element_type(r, i);
+    reagent element = element_type(r.type, i);
     if (has_property(element, "ignore-for-hash")) continue;
     element.set_value(address+offset);
     h = hash(h, element);

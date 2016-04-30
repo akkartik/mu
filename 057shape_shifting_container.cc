@@ -247,9 +247,9 @@ def main [
 
 :(before "End element_type Special-cases")
 if (contains_type_ingredient(element)) {
-  if (!base.type->right)
-    raise << "illegal type " << names_to_string(base.type) << " seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredients(element.type, base.type->right, info);
+  if (!type->right)
+    raise << "illegal type " << names_to_string(type) << " seems to be missing a type ingredient or three\n" << end();
+  replace_type_ingredients(element.type, type->right, info);
 }
 
 :(code)
@@ -353,7 +353,7 @@ void test_replace_type_ingredients_entire() {
       "  y:number\n"
       "]\n");
   reagent callsite("x:foo:point");
-  reagent element = element_type(callsite, 0);
+  reagent element = element_type(callsite.type, 0);
   CHECK_EQ(element.name, "x");
   CHECK_EQ(element.type->name, "point");
   CHECK(!element.type->right);
@@ -367,7 +367,7 @@ void test_replace_type_ingredients_tail() {
       "  x:foo:_elem\n"
       "]\n");
   reagent callsite("x:bar:point");
-  reagent element = element_type(callsite, 0);
+  reagent element = element_type(callsite.type, 0);
   CHECK_EQ(element.name, "x");
   CHECK_EQ(element.type->name, "foo");
   CHECK_EQ(element.type->right->name, "point");
@@ -382,7 +382,7 @@ void test_replace_type_ingredients_head_tail_multiple() {
       "  x:foo:_elem\n"
       "]\n");
   reagent callsite("x:bar:address:array:character");
-  reagent element = element_type(callsite, 0);
+  reagent element = element_type(callsite.type, 0);
   CHECK_EQ(element.name, "x");
   CHECK_EQ(element.type->name, "foo");
   CHECK_EQ(element.type->right->name, "address");
@@ -399,7 +399,7 @@ void test_replace_type_ingredients_head_middle() {
       "  x:foo:_elem:number\n"
       "]\n");
   reagent callsite("x:bar:address");
-  reagent element = element_type(callsite, 0);
+  reagent element = element_type(callsite.type, 0);
   CHECK_EQ(element.name, "x");
   CHECK(element.type)
   CHECK_EQ(element.type->name, "foo");
@@ -416,11 +416,11 @@ void test_replace_last_type_ingredient_with_multiple() {
       "  y:_b\n"
       "]\n");
   reagent callsite("{f: (foo number (address array character))}");
-  reagent element1 = element_type(callsite, 0);
+  reagent element1 = element_type(callsite.type, 0);
   CHECK_EQ(element1.name, "x");
   CHECK_EQ(element1.type->name, "number");
   CHECK(!element1.type->right);
-  reagent element2 = element_type(callsite, 1);
+  reagent element2 = element_type(callsite.type, 1);
   CHECK_EQ(element2.name, "y");
   CHECK_EQ(element2.type->name, "address");
   CHECK_EQ(element2.type->right->name, "array");
@@ -435,17 +435,17 @@ void test_replace_middle_type_ingredient_with_multiple() {
       "  z:_c\n"
       "]\n");
   reagent callsite("{f: (foo number (address array character) boolean)}");
-  reagent element1 = element_type(callsite, 0);
+  reagent element1 = element_type(callsite.type, 0);
   CHECK_EQ(element1.name, "x");
   CHECK_EQ(element1.type->name, "number");
   CHECK(!element1.type->right);
-  reagent element2 = element_type(callsite, 1);
+  reagent element2 = element_type(callsite.type, 1);
   CHECK_EQ(element2.name, "y");
   CHECK_EQ(element2.type->name, "address");
   CHECK_EQ(element2.type->right->name, "array");
   CHECK_EQ(element2.type->right->right->name, "character");
   CHECK(!element2.type->right->right->right);
-  reagent element3 = element_type(callsite, 2);
+  reagent element3 = element_type(callsite.type, 2);
   CHECK_EQ(element3.name, "z");
   CHECK_EQ(element3.type->name, "boolean");
   CHECK(!element3.type->right);
@@ -457,7 +457,7 @@ void test_replace_middle_type_ingredient_with_multiple2() {
       "  value:_value\n"
       "]\n");
   reagent callsite("{f: (foo (address array character) number)}");
-  reagent element = element_type(callsite, 0);
+  reagent element = element_type(callsite.type, 0);
   CHECK_EQ(element.name, "key");
   CHECK_EQ(element.type->name, "address");
   CHECK_EQ(element.type->right->name, "array");
@@ -475,7 +475,7 @@ void test_replace_middle_type_ingredient_with_multiple3() {
       "  value:_value\n"
       "]\n");
   reagent callsite("{f: (foo_table (address array character) number)}");
-  reagent element = element_type(callsite, 0);
+  reagent element = element_type(callsite.type, 0);
   CHECK_EQ(element.name, "data");
   CHECK_EQ(element.type->name, "address");
   CHECK_EQ(element.type->right->name, "array");

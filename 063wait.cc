@@ -156,7 +156,7 @@ case GET_LOCATION: {
   if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
   int result = base_address;
   for (int i = 0; i < offset; ++i)
-    result += size_of(element_type(base, i));
+    result += size_of(element_type(base.type, i));
   trace(9998, "run") << "address to copy is " << result << end();
   products.resize(1);
   products.at(0).push_back(result);

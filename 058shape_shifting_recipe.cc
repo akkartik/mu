@@ -678,7 +678,7 @@ void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
       "]\n");
   // then it should work as usual
   reagent callsite("x:foo:point");
-  reagent element = element_type(callsite, 0);
+  reagent element = element_type(callsite.type, 0);
   CHECK_EQ(element.name, "x");
   CHECK_EQ(element.type->name, "point");
   CHECK(!element.type->right);
