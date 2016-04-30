@@ -104,6 +104,8 @@ if (!contains_key(Type, type->value)) {
 }
 type_info t = get(Type, type->value);
 if (t.kind == CONTAINER) {
+  reagent reagent_containing_type;
+  reagent_containing_type.type = new type_tree(*type);
   // size of a container is the sum of the sizes of its elements
   int result = 0;
   for (int i = 0; i < SIZE(t.elements); ++i) {
@@ -112,9 +114,7 @@ if (t.kind == CONTAINER) {
       raise << "container " << t.name << " can't include itself as a member\n" << end();
       return 0;
     }
-    reagent tmp;
-    tmp.type = new type_tree(*type);
-    result += size_of(element_type(tmp, i));
+    result += size_of(element_type(reagent_containing_type, i));
   }
   return result;
 }
