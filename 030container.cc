@@ -93,10 +93,7 @@ def main [
 +mem: storing 0 in location 7
 
 :(before "End size_of(type) Cases")
-if (type->value == -1) {
-  // error value, but we'll raise it elsewhere
-  return 1;
-}
+if (type->value == -1) return 1;  // error value, but we'll raise it elsewhere
 if (type->value == 0) {
   assert(!type->left && !type->right);
   return 1;
