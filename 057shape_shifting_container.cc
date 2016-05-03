@@ -246,11 +246,22 @@ def main [
 +mem: storing 1 in location 4
 
 :(before "End element_type Special-cases")
-if (contains_type_ingredient(element)) {
-  if (!type->right)
-    raise << "illegal type " << names_to_string(type) << " seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredients(element.type, type->right, info);
+replace_type_ingredients(element, type, info);
+:(before "Compute Container Metadata(element)")
+replace_type_ingredients(element, type, info);
+:(before "Compute Exclusive Container Metadata(element)")
+replace_type_ingredients(element, type, info);
+:(code)
+void replace_type_ingredients(reagent& element, const type_tree* caller_type, const type_info& info) {
+  if (contains_type_ingredient(element)) {
+    if (!caller_type->right)
+      raise << "illegal type " << names_to_string(caller_type) << " seems to be missing a type ingredient or three\n" << end();
+    replace_type_ingredients(element.type, caller_type->right, info);
+  }
 }
+
+:(after "Compute size_of Container")
+assert(!contains_type_ingredient(type));
 
 :(code)
 bool contains_type_ingredient(const reagent& x) {

@@ -98,7 +98,10 @@ if (r.type && r.type->value == get(Type_ordinal, "array")) {
     raise << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
     return 1;
   }
-  return 1 + array_length(r)*size_of(array_element(r.type));
+  type_tree* element_type = copy_array_element(r.type);
+  int result = 1 + array_length(r)*size_of(element_type);
+  delete element_type;
+  return result;
 }
 
 //: disable the size mismatch check for arrays since the destination array
@@ -186,7 +189,7 @@ case INDEX: {
   reagent product = inst.products.at(0);
   // Update INDEX product in Check
   reagent element;
-  element.type = new type_tree(*array_element(base.type));
+  element.type = copy_array_element(base.type);
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << names_to_string_without_quotes(element.type) << '\n' << end();
     break;
@@ -206,29 +209,33 @@ case INDEX: {
   reagent index = current_instruction().ingredients.at(1);
   // Update INDEX index in Run
   vector<double> index_val(read_memory(index));
-  type_tree* element_type = array_element(base.type);
   if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
     raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << '\n' << end();
     break;
   }
+  type_tree* element_type = copy_array_element(base.type);
   int src = base_address + 1 + index_val.at(0)*size_of(element_type);
   trace(9998, "run") << "address to copy is " << src << end();
   trace(9998, "run") << "its type is " << get(Type, element_type->value).name << end();
   reagent element;
   element.set_value(src);
-  element.type = new type_tree(*element_type);
+  element.type = element_type;
   // Read element
   products.push_back(read_memory(element));
   break;
 }
 
 :(code)
-type_tree* array_element(const type_tree* type) {
+type_tree* copy_array_element(const type_tree* type) {
   if (type->right->left) {
     assert(!type->right->left->left);
-    return type->right->left;
+    return new type_tree(*type->right->left);
   }
-  return type->right;
+  assert(type->right);
+  // array:<type>:<size>? return just <type>
+  if (type->right->right && is_integer(type->right->right->name))
+    return new type_tree(type->right->name, type->right->value);  // snip type->right->right
+  return new type_tree(*type->right);
 }
 
 int array_length(const reagent& x) {
@@ -331,7 +338,7 @@ case PUT_INDEX: {
   reagent value = inst.ingredients.at(2);
   // Update PUT_INDEX value in Check
   reagent element;
-  element.type = new type_tree(*array_element(base.type));
+  element.type = copy_array_element(base.type);
   if (!types_coercible(element, value)) {
     raise << maybe(get(Recipe, r).name) << "'put-index " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should store " << names_to_string_without_quotes(element.type) << " but " << value.name << " has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
@@ -350,12 +357,13 @@ case PUT_INDEX: {
   reagent index = current_instruction().ingredients.at(1);
   // Update PUT_INDEX index in Run
   vector<double> index_val(read_memory(index));
-  type_tree* element_type = array_element(base.type);
   if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
     raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << '\n' << end();
     break;
   }
+  type_tree* element_type = copy_array_element(base.type);
   int address = base_address + 1 + index_val.at(0)*size_of(element_type);
+  delete element_type;
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire array

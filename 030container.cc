@@ -92,6 +92,39 @@ def main [
 ]
 +mem: storing 0 in location 7
 
+//: Global data structure for container metadata.
+//: Can't put this in type_info because later layers will add support for more
+//: complex type trees where metadata depends not just on the root of the type tree.
+
+:(after "Types")
+struct container_metadata {
+  int size;
+  vector<int> offset;
+  // End container_metadata Fields
+  container_metadata() :size(0) {
+    // End container_metadata Constructor
+  }
+};
+:(before "End reagent Fields")
+container_metadata metadata;  // can't be a pointer into Container_metadata because we keep changing the base storage when we save/restore snapshots
+:(before "End reagent Copy Operator")
+metadata = old.metadata;
+:(before "End reagent Copy Constructor")
+metadata = old.metadata;
+
+:(before "End Globals")
+// todo: switch to map after figuring out how to consistently compare type trees
+vector<pair<type_tree*, container_metadata> > Container_metadata, Container_metadata_snapshot;
+:(before "End save_snapshots")
+Container_metadata_snapshot = Container_metadata;
+:(before "End restore_snapshots")
+Container_metadata = Container_metadata_snapshot;
+
+//: do no work in size_of, simply lookup Container_metadata
+
+:(before "End size_of(reagent) Cases")
+if (r.metadata.size) return r.metadata.size;
+
 :(before "End size_of(type) Cases")
 if (type->value == -1) return 1;  // error value, but we'll raise it elsewhere
 if (type->value == 0) {
@@ -104,17 +137,83 @@ if (!contains_key(Type, type->value)) {
 }
 type_info t = get(Type, type->value);
 if (t.kind == CONTAINER) {
-  // size of a container is the sum of the sizes of its elements
-  int result = 0;
-  for (int i = 0; i < SIZE(t.elements); ++i) {
-    // todo: strengthen assertion to disallow mutual type recursion
-    if (t.elements.at(i).type->value == type->value) {
-      raise << "container " << t.name << " can't include itself as a member\n" << end();
-      return 0;
-    }
-    result += size_of(element_type(type, i));
+  // Compute size_of Container
+  return get(Container_metadata, type).size;
+}
+
+//: precompute Container_metadata before we need size_of
+//: also store a copy in each reagent in each instruction in each recipe
+
+:(after "Begin Instruction Modifying Transforms")  // needs to happen before transform_names, therefore after "End Type Modifying Transforms" below
+Transform.push_back(compute_container_metadata);
+:(code)
+void compute_container_metadata(recipe_ordinal r) {
+  recipe& caller = get(Recipe, r);
+  for (int i = 0; i < SIZE(caller.steps); ++i) {
+    instruction& inst = caller.steps.at(i);
+    for (int i = 0; i < SIZE(inst.ingredients); ++i)
+      compute_container_metadata(inst.ingredients.at(i));
+    for (int i = 0; i < SIZE(inst.products); ++i)
+      compute_container_metadata(inst.products.at(i));
   }
-  return result;
+}
+
+void compute_container_metadata(reagent& r) {
+  if (is_literal(r) || is_dummy(r)) return;
+  reagent rcopy = r;
+  // Compute Container Metadata(reagent rcopy)
+  set<type_ordinal> pending_metadata;
+  compute_container_metadata(rcopy.type, pending_metadata);
+  if (contains_key(Container_metadata, rcopy.type))
+    r.metadata = get(Container_metadata, rcopy.type);
+}
+
+void compute_container_metadata(const type_tree* type, set<type_ordinal>& pending_metadata) {
+  if (!type) return;
+  if (contains_key(pending_metadata, type->value)) return;
+  pending_metadata.insert(type->value);
+  if (contains_key(Container_metadata, type)) return;
+  if (type->left) compute_container_metadata(type->left, pending_metadata);
+  if (type->right) compute_container_metadata(type->right, pending_metadata);
+  if (!contains_key(Type, type->value)) return;  // error raised elsewhere
+  type_info& info = get(Type, type->value);
+  if (info.kind == CONTAINER) {
+    container_metadata metadata;
+    for (int i = 0; i < SIZE(info.elements); ++i) {
+      reagent element = info.elements.at(i);
+      // Compute Container Metadata(element)
+      compute_container_metadata(element.type, pending_metadata);
+      metadata.offset.push_back(metadata.size);  // save previous size as offset
+      metadata.size += size_of(element.type);
+    }
+    Container_metadata.push_back(pair<type_tree*, container_metadata>(new type_tree(*type), metadata));
+  }
+  // End compute_container_metadata Cases
+}
+
+const container_metadata& get(const vector<pair<type_tree*, container_metadata> >& all, const type_tree* key) {
+  for (int i = 0; i < SIZE(all); ++i) {
+    if (matches(all.at(i).first, key))
+      return all.at(i).second;
+  }
+  tb_shutdown();
+  raise << "unknown size for type " << to_string(key) << '\n' << end();
+  assert(false);
+}
+
+bool contains_key(const vector<pair<type_tree*, container_metadata> >& all, const type_tree* key) {
+  for (int i = 0; i < SIZE(all); ++i) {
+    if (matches(all.at(i).first, key))
+      return true;
+  }
+  return false;
+}
+
+bool matches(const type_tree* a, const type_tree* b) {
+  if (a == b) return true;
+  if (!a || !b) return false;
+  if (a->value != b->value) return false;
+  return matches(a->left, b->left) && matches(a->right, b->right);
 }
 
 :(scenario stash_container)
@@ -188,9 +287,8 @@ case GET: {
   type_ordinal base_type = base.type->value;
   int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
-  int src = base_address;
-  for (int i = 0; i < offset; ++i)
-    src += size_of(element_type(base.type, i));
+  assert(base.metadata.size);
+  int src = base_address + base.metadata.offset.at(offset);
   trace(9998, "run") << "address to copy is " << src << end();
   reagent element = element_type(base.type, offset);
   element.set_value(src);

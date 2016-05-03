@@ -500,6 +500,12 @@ canonize_type(product);
 canonize_type(lhs);
 canonize_type(rhs);
 
+:(before "Compute Container Metadata(reagent rcopy)")
+if (!canonize_type(rcopy)) return;
+
+:(before "Compute Container Metadata(element)")
+assert(!has_property(element, "lookup"));
+
 :(code)
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {

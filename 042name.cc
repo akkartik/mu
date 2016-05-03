@@ -18,7 +18,7 @@ def main [
 +error: main: use before set: y
 # todo: detect conditional defines
 
-:(after "End Type Modifying Transforms")
+:(after "Transform.push_back(compute_container_metadata)")  // we need sizes for all types
 Transform.push_back(transform_names);  // idempotent
 
 :(before "End Globals")

@@ -56,6 +56,7 @@ struct reagent {
   vector<pair<string, string_tree*> > properties;  // can't be a map because the string_tree sometimes needs to be NULL, which can be confusing
   double value;
   bool initialized;
+  // End reagent Fields
   reagent(string s);
   reagent() :type(NULL), value(0), initialized(false) {}
   ~reagent();
@@ -319,6 +320,7 @@ reagent::reagent(const reagent& old) {
                                                     old.properties.at(i).second ? new string_tree(*old.properties.at(i).second) : NULL));
   }
   type = old.type ? new type_tree(*old.type) : NULL;
+  // End reagent Copy Constructor
 }
 
 type_tree::type_tree(const type_tree& old) {
@@ -346,6 +348,7 @@ reagent& reagent::operator=(const reagent& old) {
   initialized = old.initialized;
   if (type) delete type;
   type = old.type ? new type_tree(*old.type) : NULL;
+  // End reagent Copy Operator
   return *this;
 }
 

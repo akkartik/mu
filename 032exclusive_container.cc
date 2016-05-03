@@ -31,18 +31,23 @@ def main [
 +mem: storing 35 in location 6
 
 :(before "End size_of(type) Cases")
-if (t.kind == EXCLUSIVE_CONTAINER) {
+if (t.kind == EXCLUSIVE_CONTAINER) return get(Container_metadata, type).size;
+:(before "End compute_container_metadata Cases")
+if (info.kind == EXCLUSIVE_CONTAINER) {
+  container_metadata metadata;
   // size of an exclusive container is the size of its largest variant
   // (So like containers, it can't contain arrays.)
-  int result = 0;
-  for (int i = 0; i < SIZE(t.elements); ++i) {
-    reagent tmp;
-    tmp.type = new type_tree(*type);
-    int size = size_of(variant_type(tmp, i));
-    if (size > result) result = size;
+  int size = 0;
+  for (int i = 0; i < SIZE(info.elements); ++i) {
+    reagent element = info.elements.at(i);
+    // Compute Exclusive Container Metadata(element)
+    compute_container_metadata(element);
+    int variant_size = size_of(element);
+    if (variant_size > size) size = variant_size;
   }
   // ...+1 for its tag.
-  return result+1;
+  metadata.size = size+1;
+  Container_metadata.push_back(pair<type_tree*, container_metadata>(new type_tree(*type), metadata));
 }
 
 //:: To access variants of an exclusive container, use 'maybe-convert'.
