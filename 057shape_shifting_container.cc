@@ -262,6 +262,8 @@ void replace_type_ingredients(reagent& element, const type_tree* caller_type, co
 
 :(after "Compute size_of Container")
 assert(!contains_type_ingredient(type));
+:(after "Compute size_of Exclusive Container")
+assert(!contains_type_ingredient(type));
 
 :(code)
 bool contains_type_ingredient(const reagent& x) {

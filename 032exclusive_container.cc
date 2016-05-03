@@ -31,7 +31,10 @@ def main [
 +mem: storing 35 in location 6
 
 :(before "End size_of(type) Cases")
-if (t.kind == EXCLUSIVE_CONTAINER) return get(Container_metadata, type).size;
+if (t.kind == EXCLUSIVE_CONTAINER) {
+  // Compute size_of Exclusive Container
+  return get(Container_metadata, type).size;
+}
 :(before "End compute_container_metadata Cases")
 if (info.kind == EXCLUSIVE_CONTAINER) {
   container_metadata metadata;
