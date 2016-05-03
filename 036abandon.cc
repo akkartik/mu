@@ -95,7 +95,7 @@ def main [
 # reuse
 +mem: storing 1 in location 4
 
-:(scenario refcounts_2)
+:(scenario refcounts_overwrite)
 def main [
   1:address:number <- new number:type
   # over-writing one allocation with another
@@ -107,7 +107,7 @@ def main [
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: automatically abandoning 1000
 
-:(scenario refcounts_3)
+:(scenario refcounts_call_2)
 def main [
   1:address:number <- new number:type
   # passing in addresses to recipes increments refcount

@@ -43,7 +43,7 @@ if (x.type->value == get(Type_ordinal, "address")) {
   return;
 }
 
-:(scenario refcounts_4)
+:(scenario refcounts_reflexive)
 def main [
   1:address:number <- new number:type
   # idempotent copies leave refcount unchanged
@@ -55,7 +55,7 @@ def main [
 +mem: decrementing refcount of 1000: 1 -> 0
 +mem: incrementing refcount of 1000: 0 -> 1
 
-:(scenario refcounts_5)
+:(scenario refcounts_call)
 def main [
   1:address:number <- new number:type
   # passing in addresses to recipes increments refcount
