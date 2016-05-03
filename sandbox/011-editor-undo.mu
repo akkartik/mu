@@ -1620,7 +1620,7 @@ before <backspace-character-end> [
     undo:address:list:address:operation <- get *editor, undo:offset
     {
       # if previous operation was an insert, coalesce this operation with it
-      break-unless *undo
+      break-unless undo
       op:address:operation <- first undo
       deletion:delete-operation, is-delete?:boolean <- maybe-convert *op, delete:variant
       break-unless is-delete?
