@@ -425,12 +425,11 @@ case PUT: {
   type_ordinal base_type = base.type->value;
   int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
-  int address = base_address;
-  for (int i = 0; i < offset; ++i)
-    address += size_of(element_type(base.type, i));
+  int address = base_address + base.metadata.offset.at(offset);
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire container
+  // Write Memory in PUT in Run
   for (int i = 0; i < SIZE(ingredients.at(2)); ++i) {
     trace(9999, "mem") << "storing " << no_scientific(ingredients.at(2).at(i)) << " in location " << address+i << end();
     put(Memory, address+i, ingredients.at(2).at(i));

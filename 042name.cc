@@ -269,9 +269,9 @@ def main [
   20:point, 22:boolean <- maybe-convert 12:number-or-point/unsafe, p:variant
 ]
 +name: variant p of type number-or-point has tag 1
++mem: storing 1 in location 22
 +mem: storing 35 in location 20
 +mem: storing 36 in location 21
-+mem: storing 1 in location 22
 
 :(before "End transform_names(inst) Special-cases")
 // convert variant names of exclusive containers

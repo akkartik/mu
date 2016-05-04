@@ -350,8 +350,8 @@ def main [
   1:address:number-or-point <- copy 10/unsafe
   2:number, 3:boolean <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
-+mem: storing 34 in location 2
 +mem: storing 1 in location 3
++mem: storing 34 in location 2
 
 :(scenario maybe_convert_indirect_2)
 def main [
@@ -361,8 +361,8 @@ def main [
   2:address:number <- copy 20/unsafe
   2:address:number/lookup, 3:boolean <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
-+mem: storing 34 in location 21
 +mem: storing 1 in location 3
++mem: storing 34 in location 21
 
 :(scenario maybe_convert_indirect_3)
 def main [
@@ -372,8 +372,8 @@ def main [
   2:address:boolean <- copy 20/unsafe
   3:number, 2:address:boolean/lookup <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
-+mem: storing 34 in location 3
 +mem: storing 1 in location 21
++mem: storing 34 in location 3
 
 :(before "Update MAYBE_CONVERT base in Check")
 if (!canonize_type(base)) break;

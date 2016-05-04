@@ -27,6 +27,7 @@ if (get_or_insert(Memory, old_address) > 0) return;
 // old_address has a 0 refcount
 // lookup_memory without drop_one_lookup {
 trace(9999, "mem") << "automatically abandoning " << old_address << end();
+reagent x = canonized_loc;
 trace(9999, "mem") << "computing size to abandon at " << x.value << end();
 x.set_value(old_address+/*skip refcount*/1);
 drop_from_type(x, "address");

@@ -361,13 +361,15 @@ case PUT_INDEX: {
     raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << '\n' << end();
     break;
   }
-  type_tree* element_type = copy_array_element(base.type);
-  int address = base_address + 1 + index_val.at(0)*size_of(element_type);
-  delete element_type;
+  reagent element;
+  element.type = copy_array_element(base.type);
+  int address = base_address + 1 + index_val.at(0)*size_of(element.type);
+  element.value = address;
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire array
   vector<double> value = read_memory(current_instruction().ingredients.at(2));
+  // Write Memory in PUT_INDEX in Run
   for (int i = 0; i < SIZE(value); ++i) {
     trace(9999, "mem") << "storing " << no_scientific(value.at(i)) << " in location " << address+i << end();
     put(Memory, address+i, value.at(i));

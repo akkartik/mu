@@ -70,11 +70,11 @@ def main [
   14:number <- copy 36
   20:point, 22:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
+# boolean
++mem: storing 1 in location 22
 # point
 +mem: storing 35 in location 20
 +mem: storing 36 in location 21
-# boolean
-+mem: storing 1 in location 22
 
 :(scenario maybe_convert_fail)
 def main [
@@ -83,9 +83,9 @@ def main [
   14:number <- copy 36
   20:number, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 0:variant
 ]
-# number: no write
 # boolean
 +mem: storing 0 in location 21
+# number: no write
 
 :(before "End Primitive Recipe Declarations")
 MAYBE_CONVERT,
@@ -151,13 +151,14 @@ case MAYBE_CONVERT: {
   // optimization: directly write results to only update first product when necessary
   if (tag == static_cast<int>(get_or_insert(Memory, base_address))) {
     const reagent variant = variant_type(base, tag);
+    trace(9999, "mem") << "storing 1 in location " << status.value << end();
+    put(Memory, status.value, 1);
+    // Write Memory in Successful MAYBE_CONVERT in Run
     for (int i = 0; i < size_of(variant); ++i) {
-      double val = get_or_insert(Memory, base_address+1+i);
+      double val = get_or_insert(Memory, base_address+/*skip tag*/1+i);
       trace(9999, "mem") << "storing " << no_scientific(val) << " in location " << product.value+i << end();
       put(Memory, product.value+i, val);
     }
-    trace(9999, "mem") << "storing 1 in location " << status.value << end();
-    put(Memory, status.value, 1);
   }
   else {
     trace(9999, "mem") << "storing 0 in location " << status.value << end();
