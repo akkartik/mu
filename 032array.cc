@@ -239,12 +239,24 @@ type_tree* copy_array_element(const type_tree* type) {
 }
 
 int array_length(const reagent& x) {
-  if (x.type->right->right) {
+  if (x.type->right->right && !x.type->right->right->right  // exactly 3 types
+      && is_integer(x.type->right->right->name)) {  // third 'type' is a number
+    // get size from type
     return to_integer(x.type->right->right->name);
   }
   // this should never happen at transform time
   // x should already be canonized.
   return get_or_insert(Memory, x.value);
+}
+
+void test_array_length_compound() {
+  put(Memory, 1, 3);
+  put(Memory, 2, 14);
+  put(Memory, 3, 15);
+  put(Memory, 4, 16);
+  reagent x("1:array:address:number");  // 3 types, but not a static array
+  populate_value(x);
+  CHECK_EQ(array_length(x), 3);
 }
 
 :(scenario index_out_of_bounds)
