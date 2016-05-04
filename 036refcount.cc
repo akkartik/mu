@@ -23,9 +23,6 @@ if (is_mu_address(x)) {
   assert(scalar(data));
   assert(x.value);
   update_refcounts(get_or_insert(Memory, x.value), data.at(0), payload_size(x));
-  trace(9999, "mem") << "storing " << no_scientific(data.at(0)) << " in location " << x.value << end();
-  put(Memory, x.value, data.at(0));
-  return;
 }
 :(code)
 // variant of write_memory for addresses
