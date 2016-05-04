@@ -12,27 +12,11 @@ def main [
 # both allocations should have returned the same address
 +mem: storing 1 in location 4
 
-:(before "End Update Reference Count")
-// abandon old address if necessary
-// do this after all refcount updates are done, just in case old and new are identical
-assert(old_address >= 0);
-if (old_address == 0) return;
-if (get_or_insert(Memory, old_address) < 0) {
-  tb_shutdown();
-  DUMP("");
-  cerr << "Negative refcount: " << old_address << ' ' << get_or_insert(Memory, old_address) << '\n';
-  exit(0);
+:(before "End Decrement Reference Count(old_address, size)")
+if (old_refcount == 0) {
+  trace(9999, "mem") << "automatically abandoning " << old_address << end();
+  abandon(old_address, size);
 }
-if (get_or_insert(Memory, old_address) > 0) return;
-// old_address has a 0 refcount
-// lookup_memory without drop_one_lookup {
-trace(9999, "mem") << "automatically abandoning " << old_address << end();
-reagent x = canonized_loc;
-trace(9999, "mem") << "computing size to abandon at " << x.value << end();
-x.set_value(old_address+/*skip refcount*/1);
-drop_from_type(x, "address");
-// }
-abandon(old_address, size_of(x)+/*refcount*/1);
 
 //: When abandoning addresses we'll save them to a 'free list', segregated by size.
 

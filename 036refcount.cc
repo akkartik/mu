@@ -21,28 +21,34 @@ def main [
 if (is_mu_address(x)) {
   // compute old address of x, as well as new address we want to write in
   assert(scalar(data));
-  write_memory_updating_refcounts(x, data.at(0));
+  assert(x.value);
+  update_refcounts(get_or_insert(Memory, x.value), data.at(0), payload_size(x));
+  trace(9999, "mem") << "storing " << no_scientific(data.at(0)) << " in location " << x.value << end();
+  put(Memory, x.value, data.at(0));
   return;
 }
 :(code)
 // variant of write_memory for addresses
-void write_memory_updating_refcounts(const reagent& canonized_loc, int new_address) {
-  assert(is_mu_address(canonized_loc));
-  int old_address = get_or_insert(Memory, canonized_loc.value);
+void update_refcounts(int old_address, int new_address, int size) {
+  if (old_address == new_address) {
+    trace(9999, "mem") << "copying address to itself; refcount unchanged" << end();
+    return;
+  }
   // decrement refcount of old address
+  assert(old_address >= 0);
   if (old_address) {
     int old_refcount = get_or_insert(Memory, old_address);
     trace(9999, "mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << (old_refcount-1) << end();
-    put(Memory, old_address, old_refcount-1);
+    --old_refcount;
+    put(Memory, old_address, old_refcount);
+    if (old_refcount < 0) {
+      tb_shutdown();
+      DUMP("");
+      cerr << "Negative refcount: " << old_address << ' ' << old_refcount << '\n';
+      exit(0);
+    }
+    // End Decrement Reference Count(old_address, size)
   }
-  // perform the write
-  trace(9999, "mem") << "storing " << no_scientific(new_address) << " in location " << canonized_loc.value << end();
-  if (!canonized_loc.value) {
-    tb_shutdown();
-    DUMP("");
-    exit(0);
-  }
-  put(Memory, canonized_loc.value, new_address);
   // increment refcount of new address
   if (new_address) {
     int new_refcount = get_or_insert(Memory, new_address);
@@ -50,7 +56,14 @@ void write_memory_updating_refcounts(const reagent& canonized_loc, int new_addre
     trace(9999, "mem") << "incrementing refcount of " << new_address << ": " << new_refcount << " -> " << (new_refcount+1) << end();
     put(Memory, new_address, new_refcount+1);
   }
-  // End Update Reference Count
+}
+
+int payload_size(/*copy*/ reagent x) {
+  // lookup_memory without drop_one_lookup
+  if (x.value)
+    x.set_value(get_or_insert(Memory, x.value)+/*skip refcount*/1);
+  drop_from_type(x, "address");
+  return size_of(x)+/*refcount*/1;
 }
 
 :(scenario refcounts_reflexive)
@@ -62,8 +75,7 @@ def main [
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
 +run: {1: ("address" "number")} <- copy {1: ("address" "number")}
-+mem: decrementing refcount of 1000: 1 -> 0
-+mem: incrementing refcount of 1000: 0 -> 1
++mem: copying address to itself; refcount unchanged
 
 :(scenario refcounts_call)
 def main [
@@ -107,10 +119,8 @@ def main [
 reagent element = element_type(base.type, offset);
 assert(!has_property(element, "lookup"));
 element.value = address;
-if (is_mu_address(element)) {
-  write_memory_updating_refcounts(element, ingredients.at(2).at(0));
-  goto finish_instruction;
-}
+if (is_mu_address(element))
+  update_refcounts(get_or_insert(Memory, element.value), ingredients.at(2).at(0), payload_size(element));
 
 :(scenario refcounts_put_index)
 def main [
@@ -130,10 +140,8 @@ def main [
 +mem: incrementing refcount of 1000: 1 -> 2
 
 :(after "Write Memory in PUT_INDEX in Run")
-if (is_mu_address(element)) {
-  write_memory_updating_refcounts(element, value.at(0));
-  goto finish_instruction;
-}
+if (is_mu_address(element))
+  update_refcounts(get_or_insert(Memory, element.value), value.at(0), payload_size(element));
 
 :(scenario refcounts_maybe_convert)
 exclusive-container foo [
@@ -153,7 +161,5 @@ def main [
 +mem: incrementing refcount of 1000: 1 -> 2
 
 :(after "Write Memory in Successful MAYBE_CONVERT")
-if (is_mu_address(product)) {
-  write_memory_updating_refcounts(product, get_or_insert(Memory, base_address+/*skip tag*/1));
-  goto finish_instruction;
-}
+if (is_mu_address(product))
+  update_refcounts(get_or_insert(Memory, product.value), get_or_insert(Memory, base_address+/*skip tag*/1), payload_size(product));
