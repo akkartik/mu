@@ -10,6 +10,13 @@ case EQUAL: {
     raise << maybe(get(Recipe, r).name) << "'equal' needs at least two ingredients to compare in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
+  const reagent& exemplar = inst.ingredients.at(0);
+  for (int i = /*skip exemplar*/1; i < SIZE(inst.ingredients); ++i) {
+    if (!types_match(inst.ingredients.at(i), exemplar) && !types_match(exemplar, inst.ingredients.at(i))) {
+      raise << maybe(get(Recipe, r).name) << "'equal' expects ingredients to be all of the same type, but got '" << to_original_string(inst) << "'\n" << end();
+      goto finish_checking_instruction;
+    }
+  }
   if (SIZE(inst.products) > 1) {
     raise << maybe(get(Recipe, r).name) << "'equal' yields exactly one product in '" << to_original_string(inst) << "'\n" << end();
     break;
@@ -24,7 +31,7 @@ case EQUAL: {
 case EQUAL: {
   vector<double>& exemplar = ingredients.at(0);
   bool result = true;
-  for (int i = 1; i < SIZE(ingredients); ++i) {
+  for (int i = /*skip exemplar*/1; i < SIZE(ingredients); ++i) {
     if (!equal(ingredients.at(i).begin(), ingredients.at(i).end(), exemplar.begin())) {
       result = false;
       break;
