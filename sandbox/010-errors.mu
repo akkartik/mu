@@ -11,11 +11,13 @@ def! update-recipes env:address:programming-environment-data, screen:address:scr
   load-ingredients
   {
     break-if test-recipes
-    recipe-errors:address:array:character <- restore [recipes.mu]
+    in:address:array:character <- restore [recipes.mu]
+    recipe-errors:address:array:character <- reload in
+    *env <- put *env, recipe-errors:offset, recipe-errors
   }
   {
     break-unless test-recipes
-    recipe-errors <- reload test-recipes
+    recipe-errors:address:array:character <- reload test-recipes
   }
   *env <- put *env, recipe-errors:offset, recipe-errors
   # if recipe editor has errors, stop
