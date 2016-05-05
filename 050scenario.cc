@@ -78,7 +78,10 @@ scenario parse_scenario(istream& in) {
     raise << "duplicate scenario name: " << result.name << '\n' << end();
   Scenario_names.insert(result.name);
   skip_whitespace_and_comments(in);
-  assert(in.peek() == '[');
+  if (in.peek() != '[') {
+    raise << "Expected '[' after scenario " << result.name << '\n' << end();
+    exit(0);
+  }
   // scenarios are take special 'code' strings so we need to ignore brackets
   // inside comments
   result.to_run = slurp_quoted(in);
