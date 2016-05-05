@@ -7,10 +7,11 @@ def main [
   2:number <- copy 1:address:number  # because 1 will get reset during abandon below
   1:address:number <- copy 0  # abandon
   3:address:number <- new number:type  # must be same size as abandoned memory to reuse
-  4:boolean <- equal 2:number, 3:address:number
+  4:number <- copy 3:address:number
+  5:boolean <- equal 2:number, 4:number
 ]
 # both allocations should have returned the same address
-+mem: storing 1 in location 4
++mem: storing 1 in location 5
 
 :(before "End Decrement Reference Count(old_address, size)")
 if (old_refcount == 0) {
@@ -64,10 +65,11 @@ def main [
   2:number <- copy 1:address:number
   1:address:number <- copy 0  # abandon
   3:address:array:number <- new number:type, 2  # different size
-  4:boolean <- equal 2:number, 3:address:array:number
+  4:number <- copy 3:address:array:number
+  5:boolean <- equal 2:number, 4:number
 ]
 # no reuse
-+mem: storing 0 in location 4
++mem: storing 0 in location 5
 
 :(scenario new_reclaim_array)
 def main [
@@ -75,10 +77,11 @@ def main [
   2:number <- copy 1:address:array:number
   1:address:array:number <- copy 0  # abandon
   3:address:array:number <- new number:type, 2  # same size
-  4:boolean <- equal 2:number, 3:address:array:number
+  4:number <- copy 3:address:array:number
+  5:boolean <- equal 2:number, 4:number
 ]
 # reuse
-+mem: storing 1 in location 4
++mem: storing 1 in location 5
 
 :(scenario refcounts_overwrite)
 def main [
