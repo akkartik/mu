@@ -81,7 +81,7 @@ def main [
 string print_mu(const reagent& r, const vector<double>& data) {
   if (is_literal(r))
     return r.name+' ';
-  // End print Special-cases(reagent r, data)
+  // End print Special-cases(r, data)
   ostringstream out;
   for (long long i = 0; i < SIZE(data); ++i)
     out << no_scientific(data.at(i)) << ' ';

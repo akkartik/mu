@@ -92,7 +92,7 @@ def main [
 ]
 +app: foo: 3 14 15 16
 
-:(before "End size_of(reagent) Cases")
+:(before "End size_of(reagent r) Cases")
 if (r.type && r.type->value == get(Type_ordinal, "array")) {
   if (!r.type->right) {
     raise << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();

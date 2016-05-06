@@ -251,13 +251,13 @@ void load_all(string dir) {
 
 :(code)
 vector<double> read_memory(reagent/*copy*/ x) {
-  // Begin Preprocess read_memory(reagent x)
+  // Begin Preprocess read_memory(x)
   vector<double> result;
   if (is_literal(x)) {
     result.push_back(x.value);
     return result;
   }
-  // End Preprocess read_memory(reagent x)
+  // End Preprocess read_memory(x)
   int size = size_of(x);
   for (int offset = 0; offset < size; ++offset) {
     double val = get_or_insert(Memory, x.value+offset);
@@ -268,20 +268,20 @@ vector<double> read_memory(reagent/*copy*/ x) {
 }
 
 void write_memory(reagent/*copy*/ x, const vector<double>& data) {
-  // Begin Preprocess write_memory(reagent x, vector<double> data)
+  // Begin Preprocess write_memory(x, data)
   if (!x.type) {
     raise << "can't write to " << to_string(x) << "; no type\n" << end();
     return;
   }
   if (is_dummy(x)) return;
   if (is_literal(x)) return;
-  // End Preprocess write_memory(reagent x, vector<double> data)
+  // End Preprocess write_memory(x, data)
   if (x.value == 0) return;
   if (size_mismatch(x, data)) {
     raise << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << to_original_string(current_instruction()) << "'\n" << end();
     return;
   }
-  // End write_memory(reagent x) Special-cases
+  // End write_memory(x) Special-cases
   for (int offset = 0; offset < SIZE(data); ++offset) {
     assert(x.value+offset > 0);
     trace(9999, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << end();
@@ -292,7 +292,7 @@ void write_memory(reagent/*copy*/ x, const vector<double>& data) {
 :(code)
 int size_of(const reagent& r) {
   if (r.type == NULL) return 0;
-  // End size_of(reagent) Cases
+  // End size_of(reagent r) Cases
   return size_of(r.type);
 }
 int size_of(const type_tree* type) {

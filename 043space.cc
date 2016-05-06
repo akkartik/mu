@@ -82,7 +82,7 @@ int address(int offset, int base) {
 
 //:: reads and writes to the 'default-space' variable have special behavior
 
-:(after "Begin Preprocess write_memory(reagent x, vector<double> data)")
+:(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "default-space") {
   if (!scalar(data)
       || !x.type
@@ -105,7 +105,7 @@ def main [
 ]
 +mem: storing 10 in location 1
 
-:(after "Begin Preprocess read_memory(reagent x)")
+:(after "Begin Preprocess read_memory(x)")
 if (x.name == "default-space") {
   vector<double> result;
   result.push_back(current_call().default_space);
@@ -178,7 +178,7 @@ if (s == "number-of-locals") return true;
 if (curr.name == "new-default-space") {
   rewrite_default_space_instruction(curr);
 }
-:(after "Begin Preprocess read_memory(reagent x)")
+:(after "Begin Preprocess read_memory(x)")
 if (x.name == "number-of-locals") {
   vector<double> result;
   result.push_back(Name[get(Recipe_ordinal, current_recipe_name())][""]);
@@ -186,7 +186,7 @@ if (x.name == "number-of-locals") {
     raise << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names?\n" << end();
   return result;
 }
-:(after "Begin Preprocess write_memory(reagent x, vector<double> data)")
+:(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "number-of-locals") {
   raise << maybe(current_recipe_name()) << "can't write to special name 'number-of-locals'\n" << end();
   return;

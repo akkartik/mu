@@ -66,7 +66,7 @@ def main [
 ]
 +app: foo: abc
 
-:(before "End print Special-cases(reagent r, data)")
+:(before "End print Special-cases(r, data)")
 if (is_mu_string(r)) {
   assert(scalar(data));
   return read_mu_string(data.at(0))+' ';

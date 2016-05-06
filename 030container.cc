@@ -122,7 +122,7 @@ Container_metadata = Container_metadata_snapshot;
 
 //: do no work in size_of, simply lookup Container_metadata
 
-:(before "End size_of(reagent) Cases")
+:(before "End size_of(reagent r) Cases")
 if (r.metadata.size) return r.metadata.size;
 
 :(before "End size_of(type) Cases")
