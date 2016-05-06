@@ -123,15 +123,6 @@ bool types_match(const reagent& to, const reagent& from) {
   return types_strictly_match(to, from);
 }
 
-bool types_strictly_match_except_literal_against_boolean(const reagent& to, const reagent& from) {
-  // to sidestep type-checking, use /unsafe in the source.
-  // this will be highlighted in red inside vim. just for setting up some tests.
-  if (is_literal(from)
-      && to.type && to.type->value == get(Type_ordinal, "boolean"))
-    return boolean_matches_literal(to, from);
-  return types_strictly_match(to, from);
-}
-
 bool boolean_matches_literal(const reagent& to, const reagent& from) {
   if (!is_literal(from)) return false;
   if (!to.type) return false;

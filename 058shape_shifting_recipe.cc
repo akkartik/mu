@@ -48,7 +48,7 @@ string original_name;
 :(before "End Load Recipe Name")
 result.original_name = result.name;
 
-:(after "Static Dispatch Phase 2")
+:(after "Static Dispatch Phase 3")
 candidates = strictly_matching_shape_shifting_variants(inst, variants);
 if (!candidates.empty()) {
   recipe_ordinal exemplar = best_shape_shifting_variant(inst, candidates);
@@ -778,8 +778,7 @@ def foo x:address:_elem -> y:address:_elem [
   load-ingredients
   y <- copy x
 ]
-+error: foo: failed to map a type to x
-+error: foo: failed to map a type to y
++error: main: instruction foo has no valid specialization
 
 :(scenario specialize_with_literal_5)
 def main [
@@ -983,6 +982,25 @@ def main [
 ]
 # variant with concrete type
 def foo x:number -> y:number [
+  local-scope
+  load-ingredients
+  return 34
+]
+# shape-shifting variant
+def foo x:address:_elem -> y:number [
+  local-scope
+  load-ingredients
+  return 35
+]
+# prefer the concrete variant, ignore concrete types in scoring the shape-shifting variant
++mem: storing 34 in location 1
+
+:(scenario specialize_literal_as_address)
+def main [
+  1:number <- foo 0
+]
+# variant with concrete address type
+def foo x:address:number -> y:number [
   local-scope
   load-ingredients
   return 34
