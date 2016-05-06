@@ -42,7 +42,7 @@ def main [
 # 1 contains 10. Skip refcount and lookup location 11.
 +mem: storing 34 in location 2
 
-:(before "End Preprocess read_memory(reagent x)")
+:(before "End Preprocess read_memory(x)")
 canonize(x);
 
 //: similarly, write to addresses pointing at other locations using the
@@ -54,7 +54,7 @@ def main [
 ]
 +mem: storing 34 in location 11
 
-:(before "End Preprocess write_memory(reagent x, vector<double> data)")
+:(before "End Preprocess write_memory(x, data)")
 canonize(x);
 if (x.value == 0) {
   raise << "can't write to location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();

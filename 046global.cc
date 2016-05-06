@@ -40,7 +40,7 @@ if (s == "global-space") return true;
 int global_space;
 :(before "End routine Constructor")
 global_space = 0;
-:(after "Begin Preprocess write_memory(reagent x, vector<double> data)")
+:(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "global-space") {
   if (!scalar(data)
       || !x.type

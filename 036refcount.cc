@@ -17,7 +17,7 @@ def main [
 +run: {2: ("address" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 1 -> 0
 
-:(before "End write_memory(reagent x) Special-cases")
+:(before "End write_memory(x) Special-cases")
 if (is_mu_address(x)) {
   // compute old address of x, as well as new address we want to write in
   assert(scalar(data));
