@@ -132,7 +132,8 @@ bool boolean_matches_literal(const reagent& to, const reagent& from) {
 
 // copy arguments because later layers will want to make changes to them
 // without perturbing the caller
-bool types_strictly_match(reagent to, reagent from) {
+bool types_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from) {
+  // End Preprocess types_strictly_match(reagent to, reagent from)
   if (is_literal(from) && to.type->value == get(Type_ordinal, "number")) return true;
   // to sidestep type-checking, use /unsafe in the source.
   // this will be highlighted in red inside vim. just for setting up some tests.
@@ -145,7 +146,7 @@ bool types_strictly_match(reagent to, reagent from) {
 
 // two types match if the second begins like the first
 // (trees perform the same check recursively on each subtree)
-bool types_strictly_match(type_tree* to, type_tree* from) {
+bool types_strictly_match(const type_tree* to, const type_tree* from) {
   if (!to) return true;
   if (!from) return to->value == 0;
   if (from->value == -1) return from->name == to->name;
@@ -169,25 +170,29 @@ bool is_unsafe(const reagent& r) {
   return has_property(r, "unsafe");
 }
 
-bool is_mu_array(reagent r) {
+bool is_mu_array(reagent/*copy*/ r) {
+  // End Preprocess is_mu_array(reagent r)
   if (!r.type) return false;
   if (is_literal(r)) return false;
   return r.type->value == get(Type_ordinal, "array");
 }
 
-bool is_mu_address(reagent r) {
+bool is_mu_address(reagent/*copy*/ r) {
+  // End Preprocess is_mu_address(reagent r)
   if (!r.type) return false;
   if (is_literal(r)) return false;
   return r.type->value == get(Type_ordinal, "address");
 }
 
-bool is_mu_boolean(reagent r) {
+bool is_mu_boolean(reagent/*copy*/ r) {
+  // End Preprocess is_mu_boolean(reagent r)
   if (!r.type) return false;
   if (is_literal(r)) return false;
   return r.type->value == get(Type_ordinal, "boolean");
 }
 
-bool is_mu_number(reagent r) {
+bool is_mu_number(reagent/*copy*/ r) {
+  // End Preprocess is_mu_number(reagent r)
   if (!r.type) return false;
   if (is_literal(r)) {
     if (!r.type) return false;
@@ -198,7 +203,7 @@ bool is_mu_number(reagent r) {
   return r.type->value == get(Type_ordinal, "number");
 }
 
-bool is_mu_scalar(reagent r) {
+bool is_mu_scalar(reagent/*copy*/ r) {
   if (!r.type) return false;
   if (is_literal(r))
     return !r.type || r.type->name != "literal-string";

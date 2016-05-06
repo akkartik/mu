@@ -112,14 +112,14 @@ case GET_LOCATION: {
     raise << maybe(get(Recipe, r).name) << "'get-location' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
-  reagent base = inst.ingredients.at(0);
+  reagent/*copy*/ base = inst.ingredients.at(0);
   if (!canonize_type(base)) break;
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'get-location' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.type->value;
-  reagent offset = inst.ingredients.at(1);
+  const reagent& offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'get-location' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
@@ -144,7 +144,7 @@ case GET_LOCATION: {
 }
 :(before "End Primitive Recipe Implementations")
 case GET_LOCATION: {
-  reagent base = current_instruction().ingredients.at(0);
+  reagent/*copy*/ base = current_instruction().ingredients.at(0);
   canonize(base);
   int base_address = base.value;
   if (base_address == 0) {
@@ -164,7 +164,7 @@ case GET_LOCATION: {
 }
 
 :(code)
-bool is_mu_location(reagent x) {
+bool is_mu_location(reagent/*copy*/ x) {
   if (!canonize_type(x)) return false;
   if (!x.type) return false;
   if (x.type->right) return false;

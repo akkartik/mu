@@ -180,7 +180,7 @@ void compute_container_metadata(const type_tree* type, set<type_ordinal>& pendin
   if (info.kind == CONTAINER) {
     container_metadata metadata;
     for (int i = 0; i < SIZE(info.elements); ++i) {
-      reagent element = info.elements.at(i);
+      reagent/*copy*/ element = info.elements.at(i);
       // Compute Container Metadata(element)
       compute_container_metadata(element.type, pending_metadata);
       metadata.offset.push_back(metadata.size);  // save previous size as offset
@@ -244,14 +244,14 @@ case GET: {
     raise << maybe(get(Recipe, r).name) << "'get' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
-  reagent base = inst.ingredients.at(0);  // new copy for every invocation
+  reagent/*copy*/ base = inst.ingredients.at(0);  // new copy for every invocation
   // Update GET base in Check
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.type->value;
-  reagent offset = inst.ingredients.at(1);
+  const reagent& offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
@@ -266,9 +266,9 @@ case GET: {
     break;
   }
   if (inst.products.empty()) break;
-  reagent product = inst.products.at(0);
+  reagent/*copy*/ product = inst.products.at(0);
   // Update GET product in Check
-  const reagent element = element_type(base.type, offset_value);
+  const reagent& element = element_type(base.type, offset_value);
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;
@@ -277,7 +277,7 @@ case GET: {
 }
 :(before "End Primitive Recipe Implementations")
 case GET: {
-  reagent base = current_instruction().ingredients.at(0);
+  reagent/*copy*/ base = current_instruction().ingredients.at(0);
   // Update GET base in Run
   int base_address = base.value;
   if (base_address == 0) {
@@ -290,7 +290,7 @@ case GET: {
   assert(base.metadata.size);
   int src = base_address + base.metadata.offset.at(offset);
   trace(9998, "run") << "address to copy is " << src << end();
-  reagent element = element_type(base.type, offset);
+  reagent/*copy*/ element = element_type(base.type, offset);
   element.set_value(src);
   trace(9998, "run") << "its type is " << names_to_string(element.type) << end();
   // Read element
@@ -305,7 +305,7 @@ const reagent element_type(const type_tree* type, int offset_value) {
   assert(!get(Type, type->value).name.empty());
   const type_info& info = get(Type, type->value);
   assert(info.kind == CONTAINER);
-  reagent element = info.elements.at(offset_value);
+  reagent/*copy*/ element = info.elements.at(offset_value);
   // End element_type Special-cases
   return element;
 }
@@ -381,14 +381,14 @@ case PUT: {
     raise << maybe(get(Recipe, r).name) << "'put' expects exactly 3 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
-  reagent base = inst.ingredients.at(0);
+  reagent/*copy*/ base = inst.ingredients.at(0);
   // Update PUT base in Check
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'put' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   type_ordinal base_type = base.type->value;
-  reagent offset = inst.ingredients.at(1);
+  reagent/*copy*/ offset = inst.ingredients.at(1);
   // Update PUT offset in Check
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'put' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
@@ -405,8 +405,8 @@ case PUT: {
   else {
     offset_value = offset.value;
   }
-  reagent& value = inst.ingredients.at(2);
-  reagent element = element_type(base.type, offset_value);
+  const reagent& value = inst.ingredients.at(2);
+  const reagent& element = element_type(base.type, offset_value);
   if (!types_coercible(element, value)) {
     raise << maybe(get(Recipe, r).name) << "'put " << base.original_string << ", " << offset.original_string << "' should store " << names_to_string_without_quotes(element.type) << " but " << value.name << " has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
@@ -415,7 +415,7 @@ case PUT: {
 }
 :(before "End Primitive Recipe Implementations")
 case PUT: {
-  reagent base = current_instruction().ingredients.at(0);
+  reagent/*copy*/ base = current_instruction().ingredients.at(0);
   // Update PUT base in Run
   int base_address = base.value;
   if (base_address == 0) {

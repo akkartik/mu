@@ -162,7 +162,7 @@ bool any_type_ingredient_in_header(recipe_ordinal variant) {
   return false;
 }
 
-bool concrete_type_names_strictly_match(reagent to, reagent from) {
+bool concrete_type_names_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from) {
   canonize_type(to);
   canonize_type(from);
   return concrete_type_names_strictly_match(to.type, from.type, from);
@@ -293,7 +293,7 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
   int limit = min(SIZE(inst.ingredients), SIZE(exemplar.ingredients));
   for (int i = 0; i < limit; ++i) {
     const reagent& exemplar_reagent = exemplar.ingredients.at(i);
-    reagent ingredient = inst.ingredients.at(i);
+    reagent/*copy*/ ingredient = inst.ingredients.at(i);
     canonize_type(ingredient);
     if (is_mu_address(exemplar_reagent) && ingredient.name == "0") continue;  // assume it matches
     accumulate_type_ingredients(exemplar_reagent, ingredient, mappings, exemplar, inst, caller_recipe, error);
@@ -301,7 +301,7 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
   limit = min(SIZE(inst.products), SIZE(exemplar.products));
   for (int i = 0; i < limit; ++i) {
     const reagent& exemplar_reagent = exemplar.products.at(i);
-    reagent product = inst.products.at(i);
+    reagent/*copy*/ product = inst.products.at(i);
     if (is_dummy(product)) continue;
     canonize_type(product);
     accumulate_type_ingredients(exemplar_reagent, product, mappings, exemplar, inst, caller_recipe, error);

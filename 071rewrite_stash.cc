@@ -61,7 +61,7 @@ void rewrite_stashes_to_text(recipe& caller) {
         instruction def;
         if (is_lookup_of_address_of_array(inst.ingredients.at(j))) {
           def.name = "array-to-text-line";
-          reagent tmp = inst.ingredients.at(j);
+          reagent/*copy*/ tmp = inst.ingredients.at(j);
           drop_one_lookup(tmp);
           def.ingredients.push_back(tmp);
         }
@@ -84,13 +84,13 @@ void rewrite_stashes_to_text(recipe& caller) {
   caller.steps.swap(new_instructions);
 }
 
-bool is_lookup_of_address_of_array(reagent x) {
+bool is_lookup_of_address_of_array(reagent/*copy*/ x) {
   if (x.type->name != "address") return false;
   if (!canonize_type(x)) return false;
   return x.type->name == "array";
 }
 
-bool is_static_array(reagent x) {
+bool is_static_array(const reagent& x) {
   // no canonize_type()
   return x.type->name == "array";
 }

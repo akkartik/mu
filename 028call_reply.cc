@@ -68,8 +68,8 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
         break;
       }
       for (int i = 0; i < SIZE(caller_instruction.products); ++i) {
-        reagent lhs = reply_inst.ingredients.at(i);
-        reagent rhs = caller_instruction.products.at(i);
+        reagent/*copy*/ lhs = reply_inst.ingredients.at(i);
+        reagent/*copy*/ rhs = caller_instruction.products.at(i);
         // End Check RETURN Copy(lhs, rhs)
         if (!types_coercible(rhs, lhs)) {
           raise << maybe(callee.name) << reply_inst.name << " ingredient " << lhs.original_string << " can't be saved in " << rhs.original_string << '\n' << end();

@@ -30,7 +30,7 @@ next_ingredient_to_process = 0;
 :(before "End Call Housekeeping")
 for (int i = 0; i < SIZE(ingredients); ++i) {
   current_call().ingredient_atoms.push_back(ingredients.at(i));
-  reagent ingredient = call_instruction.ingredients.at(i);
+  reagent/*copy*/ ingredient = call_instruction.ingredients.at(i);
   // End Compute Call Ingredient
   current_call().ingredients.push_back(ingredient);
 }
@@ -51,7 +51,7 @@ case NEXT_INGREDIENT: {
 case NEXT_INGREDIENT: {
   assert(!Current_routine->calls.empty());
   if (current_call().next_ingredient_to_process < SIZE(current_call().ingredient_atoms)) {
-    reagent product = current_instruction().products.at(0);
+    reagent/*copy*/ product = current_instruction().products.at(0);
     // End Preprocess NEXT_INGREDIENT product
     if (current_recipe_name() == "main") {
       // no ingredient types since the call might be implicit; assume ingredients are always strings

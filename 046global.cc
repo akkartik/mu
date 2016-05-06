@@ -40,23 +40,23 @@ if (s == "global-space") return true;
 int global_space;
 :(before "End routine Constructor")
 global_space = 0;
-:(after "void write_memory(reagent x, const vector<double>& data)")
-  if (x.name == "global-space") {
-    if (!scalar(data)
-        || !x.type
-        || x.type->value != get(Type_ordinal, "address")
-        || !x.type->right
-        || x.type->right->value != get(Type_ordinal, "array")
-        || !x.type->right->right
-        || x.type->right->right->value != get(Type_ordinal, "location")
-        || x.type->right->right->right) {
-      raise << maybe(current_recipe_name()) << "'global-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
-    }
-    if (Current_routine->global_space)
-      raise << "routine already has a global-space; you can't over-write your globals" << end();
-    Current_routine->global_space = data.at(0);
-    return;
+:(after "Begin Preprocess write_memory(reagent x, vector<double> data)")
+if (x.name == "global-space") {
+  if (!scalar(data)
+      || !x.type
+      || x.type->value != get(Type_ordinal, "address")
+      || !x.type->right
+      || x.type->right->value != get(Type_ordinal, "array")
+      || !x.type->right->right
+      || x.type->right->right->value != get(Type_ordinal, "location")
+      || x.type->right->right->right) {
+    raise << maybe(current_recipe_name()) << "'global-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
   }
+  if (Current_routine->global_space)
+    raise << "routine already has a global-space; you can't over-write your globals" << end();
+  Current_routine->global_space = data.at(0);
+  return;
+}
 
 //: now marking variables as /space:global looks them up inside this field
 :(after "int space_base(const reagent& x)")

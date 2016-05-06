@@ -143,7 +143,7 @@ recipe from_reagent(const reagent& r) {
   return result_header;
 }
 
-bool is_mu_recipe(reagent r) {
+bool is_mu_recipe(const reagent& r) {
   if (!r.type) return false;
   if (r.type->name == "recipe") return true;
   if (r.type->name == "recipe-literal") return true;

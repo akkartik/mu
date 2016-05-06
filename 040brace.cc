@@ -419,7 +419,7 @@ if (curr.name == "return-unless" || curr.name == "reply-unless") {
 
 :(code)
 void emit_return_block(recipe& out, const string& break_command, const vector<reagent>& ingredients) {
-  reagent condition = ingredients.at(0);
+  reagent/*copy*/ condition = ingredients.at(0);
   vector<reagent> return_ingredients;
   copy(++ingredients.begin(), ingredients.end(), inserter(return_ingredients, return_ingredients.end()));
 

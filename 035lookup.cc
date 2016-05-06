@@ -42,7 +42,7 @@ def main [
 # 1 contains 10. Skip refcount and lookup location 11.
 +mem: storing 34 in location 2
 
-:(before "End Preprocess read_memory(x)")
+:(before "End Preprocess read_memory(reagent x)")
 canonize(x);
 
 //: similarly, write to addresses pointing at other locations using the
@@ -54,7 +54,7 @@ def main [
 ]
 +mem: storing 34 in location 11
 
-:(before "End Preprocess write_memory(x)")
+:(before "End Preprocess write_memory(reagent x, vector<double> data)")
 canonize(x);
 if (x.value == 0) {
   raise << "can't write to location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
@@ -117,20 +117,20 @@ void test_lookup_zero_address_does_not_skip_refcount() {
   CHECK_EQ(x.value, 0);
 }
 
-:(after "bool types_strictly_match(reagent to, reagent from)")
-  if (!canonize_type(to)) return false;
-  if (!canonize_type(from)) return false;
+:(before "End Preprocess types_strictly_match(reagent to, reagent from)")
+if (!canonize_type(to)) return false;
+if (!canonize_type(from)) return false;
 
-:(after "bool is_mu_array(reagent r)")
-  if (!canonize_type(r)) return false;
+:(before "End Preprocess is_mu_array(reagent r)")
+if (!canonize_type(r)) return false;
 
-:(after "bool is_mu_address(reagent r)")
-  if (!canonize_type(r)) return false;
+:(before "End Preprocess is_mu_address(reagent r)")
+if (!canonize_type(r)) return false;
 
-:(after "bool is_mu_number(reagent r)")
-  if (!canonize_type(r)) return false;
-:(after "bool is_mu_boolean(reagent r)")
-  if (!canonize_type(r)) return false;
+:(before "End Preprocess is_mu_number(reagent r)")
+if (!canonize_type(r)) return false;
+:(before "End Preprocess is_mu_boolean(reagent r)")
+if (!canonize_type(r)) return false;
 
 :(after "Update product While Type-checking Merge")
 if (!canonize_type(product)) continue;
@@ -431,7 +431,7 @@ _DUMP,
 put(Recipe_ordinal, "$dump", _DUMP);
 :(before "End Primitive Recipe Implementations")
 case _DUMP: {
-  reagent after_canonize = current_instruction().ingredients.at(0);
+  reagent/*copy*/ after_canonize = current_instruction().ingredients.at(0);
   canonize(after_canonize);
   cerr << maybe(current_recipe_name()) << current_instruction().ingredients.at(0).name << ' ' << no_scientific(current_instruction().ingredients.at(0).value) << " => " << no_scientific(after_canonize.value) << " => " << no_scientific(get_or_insert(Memory, after_canonize.value)) << '\n';
   break;
@@ -452,7 +452,7 @@ case _BAR: {
     else cerr << '\n';
   }
   else {
-    reagent tmp = current_instruction().ingredients.at(0);
+    reagent/*copy*/ tmp = current_instruction().ingredients.at(0);
     canonize(tmp);
     Bar = tmp.value;
   }

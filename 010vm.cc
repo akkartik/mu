@@ -388,7 +388,7 @@ string slurp_until(istream& in, char delim) {
   return out.str();
 }
 
-bool has_property(reagent x, string name) {
+bool has_property(const reagent& x, const string& name) {
   for (int i = 0; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == name) return true;
   }

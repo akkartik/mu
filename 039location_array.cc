@@ -12,7 +12,7 @@ case TO_LOCATION_ARRAY: {
   break;
 }
 :(code)
-bool is_address_of_array_of_numbers(reagent product) {
+bool is_address_of_array_of_numbers(reagent/*copy*/ product) {
   canonize_type(product);
   if (!product.type || product.type->value != get(Type_ordinal, "address")) return false;
   drop_from_type(product, "address");

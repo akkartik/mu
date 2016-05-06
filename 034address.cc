@@ -136,7 +136,7 @@ def main [
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "type", 0);
 :(code)
-bool is_mu_type_literal(reagent r) {
+bool is_mu_type_literal(const reagent& r) {
   return is_literal(r) && r.type && r.type->name == "type";
 }
 
@@ -152,7 +152,7 @@ case NEW: {
     break;
   }
   // End NEW Check Special-cases
-  reagent type = inst.ingredients.at(0);
+  const reagent& type = inst.ingredients.at(0);
   if (!is_mu_type_literal(type)) {
     raise << maybe(caller.name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
     break;
@@ -169,7 +169,7 @@ case NEW: {
 }
 :(code)
 bool product_of_new_is_valid(const instruction& inst) {
-  reagent product = inst.products.at(0);
+  reagent/*copy*/ product = inst.products.at(0);
   // Update NEW product in Check
   if (!product.type || product.type->value != get(Type_ordinal, "address"))
     return false;
@@ -179,7 +179,7 @@ bool product_of_new_is_valid(const instruction& inst) {
     if (!product.type || product.type->value != get(Type_ordinal, "array")) return false;
     drop_from_type(product, "array");
   }
-  reagent expected_product("x:"+inst.ingredients.at(0).name);
+  reagent/*copy*/ expected_product("x:"+inst.ingredients.at(0).name);
   // End Post-processing(expected_product) When Checking 'new'
   return types_strictly_match(product, expected_product);
 }

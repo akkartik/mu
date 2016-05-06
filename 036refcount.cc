@@ -55,7 +55,7 @@ void update_refcounts(int old_address, int new_address, int size) {
   }
 }
 
-int payload_size(/*copy*/ reagent x) {
+int payload_size(reagent/*copy*/ x) {
   // lookup_memory without drop_one_lookup
   if (x.value)
     x.set_value(get_or_insert(Memory, x.value)+/*skip refcount*/1);
@@ -113,7 +113,7 @@ def main [
 +mem: incrementing refcount of 1000: 1 -> 2
 
 :(after "Write Memory in PUT in Run")
-reagent element = element_type(base.type, offset);
+reagent/*copy*/ element = element_type(base.type, offset);
 assert(!has_property(element, "lookup"));
 element.value = address;
 if (is_mu_address(element))

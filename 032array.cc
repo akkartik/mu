@@ -23,7 +23,7 @@ case CREATE_ARRAY: {
     raise << maybe(get(Recipe, r).name) << "'create-array' needs one product and no ingredients but got '" << to_original_string(inst) << '\n' << end();
     break;
   }
-  reagent product = inst.products.at(0);
+  reagent/*copy*/ product = inst.products.at(0);
   // Update CREATE_ARRAY product in Check
   if (!is_mu_array(product)) {
     raise << maybe(get(Recipe, r).name) << "'create-array' cannot create non-array " << product.original_string << '\n' << end();
@@ -46,7 +46,7 @@ case CREATE_ARRAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case CREATE_ARRAY: {
-  reagent product = current_instruction().products.at(0);
+  reagent/*copy*/ product = current_instruction().products.at(0);
   // Update CREATE_ARRAY product in Run
   int base_address = product.value;
   int array_length = to_integer(product.type->right->right->name);
@@ -173,20 +173,20 @@ case INDEX: {
     raise << maybe(get(Recipe, r).name) << "'index' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
-  reagent base = inst.ingredients.at(0);
+  reagent/*copy*/ base = inst.ingredients.at(0);
   // Update INDEX base in Check
   if (!is_mu_array(base)) {
     raise << maybe(get(Recipe, r).name) << "'index' on a non-array " << base.original_string << '\n' << end();
     break;
   }
-  reagent index = inst.ingredients.at(1);
+  reagent/*copy*/ index = inst.ingredients.at(1);
   // Update INDEX index in Check
   if (!is_mu_number(index)) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'index' should be a number, but got " << index.original_string << '\n' << end();
     break;
   }
   if (inst.products.empty()) break;
-  reagent product = inst.products.at(0);
+  reagent/*copy*/ product = inst.products.at(0);
   // Update INDEX product in Check
   reagent element;
   element.type = copy_array_element(base.type);
@@ -198,7 +198,7 @@ case INDEX: {
 }
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
-  reagent base = current_instruction().ingredients.at(0);
+  reagent/*copy*/ base = current_instruction().ingredients.at(0);
   // Update INDEX base in Run
   int base_address = base.value;
   trace(9998, "run") << "base address is " << base_address << end();
@@ -206,7 +206,7 @@ case INDEX: {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  reagent index = current_instruction().ingredients.at(1);
+  reagent/*copy*/ index = current_instruction().ingredients.at(1);
   // Update INDEX index in Run
   vector<double> index_val(read_memory(index));
   if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
@@ -335,19 +335,19 @@ case PUT_INDEX: {
     raise << maybe(get(Recipe, r).name) << "'put-index' expects exactly 3 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
-  reagent base = inst.ingredients.at(0);
+  reagent/*copy*/ base = inst.ingredients.at(0);
   // Update PUT_INDEX base in Check
   if (!is_mu_array(base)) {
     raise << maybe(get(Recipe, r).name) << "'put-index' on a non-array " << base.original_string << '\n' << end();
     break;
   }
-  reagent index = inst.ingredients.at(1);
+  reagent/*copy*/ index = inst.ingredients.at(1);
   // Update PUT_INDEX index in Check
   if (!is_mu_number(index)) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'put-index' should have type 'number', but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
-  reagent value = inst.ingredients.at(2);
+  reagent/*copy*/ value = inst.ingredients.at(2);
   // Update PUT_INDEX value in Check
   reagent element;
   element.type = copy_array_element(base.type);
@@ -359,14 +359,14 @@ case PUT_INDEX: {
 }
 :(before "End Primitive Recipe Implementations")
 case PUT_INDEX: {
-  reagent base = current_instruction().ingredients.at(0);
+  reagent/*copy*/ base = current_instruction().ingredients.at(0);
   // Update PUT_INDEX base in Run
   int base_address = base.value;
   if (base_address == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  reagent index = current_instruction().ingredients.at(1);
+  reagent/*copy*/ index = current_instruction().ingredients.at(1);
   // Update PUT_INDEX index in Run
   vector<double> index_val(read_memory(index));
   if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
@@ -441,7 +441,7 @@ case LENGTH: {
     raise << maybe(get(Recipe, r).name) << "'length' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
-  reagent array = inst.ingredients.at(0);
+  reagent/*copy*/ array = inst.ingredients.at(0);
   // Update LENGTH array in Check
   if (!is_mu_array(array)) {
     raise << "tried to calculate length of non-array " << array.original_string << '\n' << end();
@@ -451,7 +451,7 @@ case LENGTH: {
 }
 :(before "End Primitive Recipe Implementations")
 case LENGTH: {
-  reagent array = current_instruction().ingredients.at(0);
+  reagent/*copy*/ array = current_instruction().ingredients.at(0);
   // Update LENGTH array in Run
   if (array.value == 0) {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();

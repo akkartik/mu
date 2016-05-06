@@ -82,21 +82,21 @@ int address(int offset, int base) {
 
 //:: reads and writes to the 'default-space' variable have special behavior
 
-:(after "void write_memory(reagent x, const vector<double>& data)")
-  if (x.name == "default-space") {
-    if (!scalar(data)
-        || !x.type
-        || x.type->value != get(Type_ordinal, "address")
-        || !x.type->right
-        || x.type->right->value != get(Type_ordinal, "array")
-        || !x.type->right->right
-        || x.type->right->right->value != get(Type_ordinal, "location")
-        || x.type->right->right->right) {
-      raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
-    }
-    current_call().default_space = data.at(0);
-    return;
+:(after "Begin Preprocess write_memory(reagent x, vector<double> data)")
+if (x.name == "default-space") {
+  if (!scalar(data)
+      || !x.type
+      || x.type->value != get(Type_ordinal, "address")
+      || !x.type->right
+      || x.type->right->value != get(Type_ordinal, "array")
+      || !x.type->right->right
+      || x.type->right->right->value != get(Type_ordinal, "location")
+      || x.type->right->right->right) {
+    raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
   }
+  current_call().default_space = data.at(0);
+  return;
+}
 
 :(scenario get_default_space)
 def main [
@@ -105,12 +105,12 @@ def main [
 ]
 +mem: storing 10 in location 1
 
-:(after "vector<double> read_memory(reagent x)")
-  if (x.name == "default-space") {
-    vector<double> result;
-    result.push_back(current_call().default_space);
-    return result;
-  }
+:(after "Begin Preprocess read_memory(reagent x)")
+if (x.name == "default-space") {
+  vector<double> result;
+  result.push_back(current_call().default_space);
+  return result;
+}
 
 //:: fix 'get'
 
@@ -178,19 +178,19 @@ if (s == "number-of-locals") return true;
 if (curr.name == "new-default-space") {
   rewrite_default_space_instruction(curr);
 }
-:(after "vector<double> read_memory(reagent x)")
-  if (x.name == "number-of-locals") {
-    vector<double> result;
-    result.push_back(Name[get(Recipe_ordinal, current_recipe_name())][""]);
-    if (result.back() == 0)
-      raise << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names?\n" << end();
-    return result;
-  }
-:(after "void write_memory(reagent x, const vector<double>& data)")
-  if (x.name == "number-of-locals") {
-    raise << maybe(current_recipe_name()) << "can't write to special name 'number-of-locals'\n" << end();
-    return;
-  }
+:(after "Begin Preprocess read_memory(reagent x)")
+if (x.name == "number-of-locals") {
+  vector<double> result;
+  result.push_back(Name[get(Recipe_ordinal, current_recipe_name())][""]);
+  if (result.back() == 0)
+    raise << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names?\n" << end();
+  return result;
+}
+:(after "Begin Preprocess write_memory(reagent x, vector<double> data)")
+if (x.name == "number-of-locals") {
+  raise << maybe(current_recipe_name()) << "can't write to special name 'number-of-locals'\n" << end();
+  return;
+}
 
 //:: a little hook to automatically reclaim the default-space when returning
 //:: from a recipe

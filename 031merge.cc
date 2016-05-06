@@ -123,7 +123,7 @@ void check_merge_calls(const recipe_ordinal r) {
       raise << maybe(caller.name) << "'merge' should yield a single product in '" << to_original_string(inst) << "'\n" << end();
       continue;
     }
-    reagent product = inst.products.at(0);
+    reagent/*copy*/ product = inst.products.at(0);
     // Update product While Type-checking Merge
     type_ordinal product_type = product.type->value;
     if (product_type == 0 || !contains_key(Type, product_type)) {
@@ -157,7 +157,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
         // degenerate case: merge with the same type always succeeds
         if (state.data.top().container_element_index == 0 && types_coercible(container, inst.ingredients.at(ingredient_index)))
           return;
-        reagent expected_ingredient = element_type(container.type, state.data.top().container_element_index);
+        const reagent& expected_ingredient = element_type(container.type, state.data.top().container_element_index);
         trace(9999, "transform") << "checking container " << to_string(container) << " || " << to_string(expected_ingredient) << " vs ingredient " << ingredient_index << end();
         // if the current element is the ingredient we expect, move on to the next element/ingredient
         if (types_coercible(expected_ingredient, ingredients.at(ingredient_index))) {

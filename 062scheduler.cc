@@ -168,7 +168,7 @@ case START_RUNNING: {
   // populate ingredients
   for (int i = 1; i < SIZE(current_instruction().ingredients); ++i) {
     new_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
-    reagent ingredient = current_instruction().ingredients.at(i);
+    reagent/*copy*/ ingredient = current_instruction().ingredients.at(i);
     canonize_type(ingredient);
     new_routine->calls.front().ingredients.push_back(ingredient);
   }

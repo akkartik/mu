@@ -22,7 +22,7 @@ case HASH: {
 }
 :(before "End Primitive Recipe Implementations")
 case HASH: {
-  reagent input = current_instruction().ingredients.at(0);  // copy
+  reagent/*copy*/ input = current_instruction().ingredients.at(0);
   products.resize(1);
   products.at(0).push_back(hash(0, input));
   break;
@@ -76,11 +76,11 @@ size_t hash_mu_string(size_t h, const reagent& r) {
 
 size_t hash_mu_array(size_t h, const reagent& r) {
   int size = get_or_insert(Memory, r.value);
-  reagent elem = r;
+  reagent/*copy*/ elem = r;
   delete elem.type;
   elem.type = copy_array_element(r.type);
   for (int i=0, address = r.value+1; i < size; ++i, address += size_of(elem)) {
-    reagent tmp = elem;
+    reagent/*copy*/ tmp = elem;
     tmp.value = address;
     h = hash(h, tmp);
 //?     cerr << i << " (" << address << "): " << h << '\n';
@@ -100,7 +100,7 @@ size_t hash_mu_container(size_t h, const reagent& r) {
   int address = r.value;
   int offset = 0;
   for (int i = 0; i < SIZE(info.elements); ++i) {
-    reagent element = element_type(r.type, i);
+    reagent/*copy*/ element = element_type(r.type, i);
     if (has_property(element, "ignore-for-hash")) continue;
     element.set_value(address+offset);
     h = hash(h, element);
@@ -119,7 +119,7 @@ bool is_mu_exclusive_container(const reagent& r) {
 size_t hash_mu_exclusive_container(size_t h, const reagent& r) {
   assert(r.type->value);
   int tag = get(Memory, r.value);
-  reagent variant = variant_type(r, tag);
+  reagent/*copy*/ variant = variant_type(r, tag);
   // todo: move this error to container definition time
   if (has_property(variant, "ignore-for-hash"))
     raise << get(Type, r.type->value).name << ": /ignore-for-hash won't work in exclusive containers\n" << end();
