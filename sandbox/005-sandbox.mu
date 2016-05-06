@@ -317,6 +317,7 @@ def! restore-sandboxes env:address:programming-environment-data -> env:address:p
     filename:address:array:character <- to-text idx
     contents:address:array:character <- restore filename
     break-unless contents  # stop at first error; assuming file didn't exist
+                           # todo: handle empty sandbox
     # create new sandbox for file
     curr <- new sandbox-data:type
     *curr <- put *curr, data:offset, contents
@@ -328,15 +329,18 @@ def! restore-sandboxes env:address:programming-environment-data -> env:address:p
       <end-restore-sandbox>
     }
     +continue
-    idx <- add idx, 1
     {
-      break-unless prev
+      break-if idx
+      *env <- put *env, sandbox:offset, curr
+    }
+    {
+      break-unless idx
       *prev <- put *prev, next-sandbox:offset, curr
     }
+    idx <- add idx, 1
     prev <- copy curr
     loop
   }
-  *env <- put *env, sandbox:offset, curr
   # update sandbox count
   *env <- put *env, number-of-sandboxes:offset, idx
 ]
