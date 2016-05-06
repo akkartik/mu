@@ -33,6 +33,8 @@ void load_recipe_header(istream& in, recipe& result) {
   result.has_header = true;
   while (has_data(in) && in.peek() != '[' && in.peek() != '\n') {
     string s = next_word(in);
+    if (s == "<-")
+      raise << "recipe " << result.name << " should say '->' and not '<-'\n" << end();
     if (s == "->") break;
     result.ingredients.push_back(reagent(s));
     trace(9999, "parse") << "header ingredient: " << result.ingredients.back().original_string << end();
@@ -70,6 +72,12 @@ def bar [
   1:number/raw <- add 2, 3
 ]
 +mem: storing 4 in location 1
+
+:(scenario recipe_handles_wrong_arrow)
+% Hide_errors = true;
+def foo a:number <- b:number [
+]
++error: recipe foo should say '->' and not '<-'
 
 :(scenario recipe_handles_missing_bracket)
 % Hide_errors = true;
