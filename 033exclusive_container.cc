@@ -15,9 +15,9 @@ get(Type, tmp).elements.push_back(reagent("i:number"));
 get(Type, tmp).elements.push_back(reagent("p:point"));
 }
 
-//: Tests in this layer often explicitly setup memory before reading it as an
-//: array. Don't do this in general. I'm tagging exceptions with /raw to
-//: avoid errors.
+//: Tests in this layer often explicitly set up memory before reading it as an
+//: array. Don't do this in general. I'm tagging exceptions with /raw to avoid
+//: errors.
 :(scenario copy_exclusive_container)
 # Copying exclusive containers copies all their contents and an extra location for the tag.
 def main [

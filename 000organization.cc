@@ -1,7 +1,7 @@
 //: You guessed right: the '000' prefix means you should start reading here.
 //:
-//: This project is setup to load all files with a numeric prefix. Just create
-//: a new file and start hacking.
+//: This project is set up to load all files with a numeric prefix. Just
+//: create a new file and start hacking.
 //:
 //: The first few files (00*) are independent of what this program does, an
 //: experimental skeleton that will hopefully make it both easier for others to

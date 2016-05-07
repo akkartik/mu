@@ -12,7 +12,7 @@ get(Type, point).elements.push_back(reagent("y:number"));
 //: Containers can be copied around with a single instruction just like
 //: numbers, no matter how large they are.
 
-//: Tests in this layer often explicitly setup memory before reading it as a
+//: Tests in this layer often explicitly set up memory before reading it as a
 //: container. Don't do this in general. I'm tagging exceptions with /raw to
 //: avoid errors.
 :(scenario copy_multiple_locations)
