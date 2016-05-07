@@ -405,12 +405,10 @@ container foo [
   x:number
   y:number
 ]
-
 exclusive-container bar [
   x:number
   y:foo
 ]
-
 def main [
   1:number <- copy 34
   2:number <- copy 35

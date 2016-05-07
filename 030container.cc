@@ -118,7 +118,31 @@ vector<pair<type_tree*, container_metadata> > Container_metadata, Container_meta
 :(before "End save_snapshots")
 Container_metadata_snapshot = Container_metadata;
 :(before "End restore_snapshots")
-Container_metadata = Container_metadata_snapshot;
+restore_container_metadata();
+:(before "End One-time Setup")
+atexit(clear_container_metadata);
+:(code)
+// invariant: Container_metadata always contains a superset of Container_metadata_snapshot
+void restore_container_metadata() {
+  for (int i = 0; i < SIZE(Container_metadata); ++i) {
+    assert(Container_metadata.at(i).first);
+    if (i < SIZE(Container_metadata_snapshot)) {
+      assert(Container_metadata.at(i).first == Container_metadata_snapshot.at(i).first);
+      continue;
+    }
+    delete Container_metadata.at(i).first;
+    Container_metadata.at(i).first = NULL;
+  }
+  Container_metadata.resize(SIZE(Container_metadata_snapshot));
+}
+void clear_container_metadata() {
+  Container_metadata_snapshot.clear();
+  for (int i = 0; i < SIZE(Container_metadata); ++i) {
+    delete Container_metadata.at(i).first;
+    Container_metadata.at(i).first = NULL;
+  }
+  Container_metadata.clear();
+}
 
 //: do no work in size_of, simply lookup Container_metadata
 

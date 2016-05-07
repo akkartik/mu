@@ -148,12 +148,12 @@ exclusive-container foo [
 def main [
   1:address:number <- new number:type
   2:foo <- merge 1/p, 1:address:number
-  4:address:number, 5:boolean <- maybe-convert 2:foo, p:variant
+  4:address:number, 5:boolean <- maybe-convert 2:foo, 1:variant/p
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
 +run: {2: "foo"} <- merge {1: "literal", "p": ()}, {1: ("address" "number")}
-+run: {4: ("address" "number")}, {5: "boolean"} <- maybe-convert {2: "foo"}, {p: "variant"}
++run: {4: ("address" "number")}, {5: "boolean"} <- maybe-convert {2: "foo"}, {1: "variant", "p": ()}
 # maybe-convert increments refcount on success
 +mem: incrementing refcount of 1000: 1 -> 2
 
