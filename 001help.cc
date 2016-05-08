@@ -85,11 +85,14 @@ bool is_equal(char* s, const char* lit) {
 //: unsigned and that'll cause warnings about mixing signed and unsigned,
 //: yadda-yadda. Instead use this macro below to perform an unsafe cast to
 //: signed. We'll just give up immediately if a container's ever too large.
+//: Basically, Mu is not concerned about this being a little slower than it
+//: could be. (https://gist.github.com/rygorous/e0f055bfb74e3d5f0af20690759de5a7)
 //:
-//: Addendum to corollary: We're going to uniformly avoid long long int
-//: everywhere, since Clang on 32-bit platforms doesn't yet support
-//: multiplication over 64-bit integers, and since that seems like a more
-//: common situation to end up in than integer overflow.
+//: Addendum to corollary: We're going to uniformly use int everywhere, to
+//: indicate that we're oblivious to number size, and since Clang on 32-bit
+//: platforms doesn't yet support multiplication over 64-bit integers, and
+//: since multiplying two integers seems like a more common situation to end
+//: up in than integer overflow.
 :(before "End Includes")
 #define SIZE(X) (assert((X).size() < (1LL<<(sizeof(int)*8-2))), static_cast<int>((X).size()))
 //:
