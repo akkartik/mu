@@ -1,16 +1,20 @@
 #!/bin/bash
-# Repeatedly stop building until successive layers, and run all tests built.
+# Repeatedly stop building until successive layers, and run all tests built,
+# while checking for undefined behavior using both UBSan and Valgrind.
 #
-# Test all layers:
-#   test_layers
-# Test non-app layers after x:
-#   test_layers x
-# Test layers after x and until y (inclusive):
-#   test_layers x y
-# Test all layers for a specific app:
-#   test_layers app
+# Requires Linux.
+#
+# Usage:
+#   Test all layers:
+#     test_layers
+#   Test non-app layers after x:
+#     test_layers x
+#   Test layers after x and until y (inclusive):
+#     test_layers x y
+#   Test all layers for a specific app:
+#     test_layers app
 
-TEST_UNTIL="./build_and_test_until"
+BUILD_UNTIL="./build_until"
 MAKE="make"
 VALGRIND="valgrind --leak-check=yes --num-callers=40 -q --error-exitcode=1"
 
@@ -19,7 +23,7 @@ do
   if [[ $f < $1 ]]; then continue; fi
   if [[ $2 && $f > $2 ]]; then exit 0; fi
   echo "=== $f"
-  $TEST_UNTIL $f || exit 1
+  $BUILD_UNTIL $f || exit 1
 done
 
 CXX=clang++ CFLAGS="-O3 -fsanitize=undefined -Wno-tautological-constant-out-of-range-compare" $MAKE
