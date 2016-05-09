@@ -1,0 +1,32 @@
+#!/bin/sh
+# Test all layers:
+#   test_layers
+# Test layers after x:
+#   test_layers x
+# Test layers after x and until y (inclusive):
+#   test_layers x y
+# Test all layers for a specific app:
+#   test_layers app
+
+for f in [0-9]*
+do
+  if [ "$f" \< "$1" ]; then continue; fi
+  if expr "$2" \& "$f" \> "$2" >/dev/null; then exit; fi
+  echo "=== $f"
+  ./build_and_test_until $f || exit 1
+done
+
+if expr "$1" \& "$1" '==' "chessboard" >/dev/null
+then
+  echo "=== chessboard"
+  ./mu test chessboard.mu || exit 1
+fi
+
+if expr "$1" \& "$1" '==' "edit" >/dev/null
+then
+  for f in edit/[0-9]*
+  do
+    echo "=== edit: until $f"
+    ./mu test `echo edit/[0-9]* |perl -pwe "s,$f.*,$f,"` || exit 1
+  done
+fi
