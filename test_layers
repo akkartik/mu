@@ -1,4 +1,6 @@
 #!/bin/bash
+# Repeatedly stop building until successive layers, and run all tests built.
+#
 # Test all layers:
 #   test_layers
 # Test layers after x:
@@ -11,15 +13,18 @@
 for f in [0-9]*
 do
   if [[ $f < $1 ]]; then continue; fi
-  if [[ $2 && $f > $2 ]]; then continue; fi
+  if [[ $2 && $f > $2 ]]; then exit 0; fi
   echo "=== $f"
   ./build_and_test_until $f || exit 1
 done
 
+CXX=clang++ CFLAGS="-g -O3 -fsanitize=undefined -Wno-tautological-constant-out-of-range-compare" make
+VALGRIND="valgrind --leak-check=yes --num-callers=40 -q --error-exitcode=1"
+
 if [[ ! $1 || $1 == chessboard ]]
 then
   echo "=== chessboard"
-  ./mu test chessboard.mu || exit 1
+  $VALGRIND ./mu_bin test chessboard.mu || exit 1
 fi
 
 if [[ ! $1 || $1 == edit ]]
@@ -27,6 +32,6 @@ then
   for f in edit/[0-9]*
   do
     echo "=== edit: until $f"
-    ./mu test `echo edit/[0-9]* |perl -pwe "s,$f.*,$f,"` || exit 1
+    $VALGRIND ./mu_bin test `echo edit/[0-9]* |perl -pwe "s,$f.*,$f,"` || exit 1
   done
 fi
