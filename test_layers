@@ -24,6 +24,7 @@ do
   if [[ $2 && $f > $2 ]]; then exit 0; fi
   echo "=== $f"
   $BUILD_UNTIL $f || exit 1
+  $VALGRIND ./mu_bin test || exit 1
 done
 
 CXX=clang++ CFLAGS="-O3 -fsanitize=undefined -Wno-tautological-constant-out-of-range-compare" $MAKE
