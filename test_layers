@@ -14,68 +14,57 @@
 #   Test all layers for a specific app:
 #     test_layers app
 
-BUILD_UNTIL="./build_until"
-MAKE="make"
-VALGRIND="valgrind --leak-check=yes --num-callers=40 -q --error-exitcode=1"
-
+# Core layers atop Valgrind
 for f in [0-9]*
 do
   if [[ $f < $1 ]]; then continue; fi
   if [[ $2 && $f > $2 ]]; then exit 0; fi
   echo "=== $f"
-  $BUILD_UNTIL $f || exit 1
-  $VALGRIND ./mu_bin test || exit 1
+  ./build_until $f || exit 1
+  valgrind --leak-check=yes --num-callers=40 -q --error-exitcode=1 ./mu_bin test || exit 1
 done
 
-CXX=clang++ CFLAGS="-O3 -fsanitize=undefined -Wno-tautological-constant-out-of-range-compare" $MAKE
+# Layers for Mu apps without Valgrind
+CXX=clang++ CFLAGS="-O3 -fsanitize=undefined -Wno-tautological-constant-out-of-range-compare" make
 
 if [[ ! $1 || $1 == chessboard ]]
 then
   echo "=== chessboard"
-  $VALGRIND ./mu_bin test chessboard.mu || exit 1
+  ./mu_bin test chessboard.mu || exit 1
 fi
 
-if [[ ! $1 ]]
+# slices of edit/ for Travis CI
+if [[ ! $1 || $1 == edit ]]
 then
-  for f in edit/[0-9]*
-  do
-    echo "=== edit: until $f"
-    $VALGRIND ./mu_bin test `echo edit/[0-9]* |perl -pwe "s,$f.*,$f,"` || exit 1
-  done
+  echo "=== edit: until 001"
+  ./mu_bin test edit/001* || exit 1
+  echo "=== edit: until 002"
+  ./mu_bin test edit/00[1-2]* || exit 1
+  echo "=== edit: until 003"
+  ./mu_bin test edit/00[1-3]* || exit 1
 fi
-
-if [[ $1 && $1 == edit ]]
+if [[ ! $1 || $1 == edit2 ]]
 then
-  for f in edit/00[1-3]*
-  do
-    echo "=== edit: until $f"
-    $VALGRIND ./mu_bin test `echo edit/[0-9]* |perl -pwe "s,$f.*,$f,"` || exit 1
-  done
+  echo "=== edit: until 004"
+  ./mu_bin test edit/00[1-4]* || exit 1
+  echo "=== edit: until 005"
+  ./mu_bin test edit/00[1-5]* || exit 1
+  echo "=== edit: until 006"
+  ./mu_bin test edit/00[1-6]* || exit 1
 fi
-
-if [[ $1 && $1 == edit2 ]]
+if [[ ! $1 || $1 == edit3 ]]
 then
-  for f in edit/00[4-6]*
-  do
-    echo "=== edit: until $f"
-    $VALGRIND ./mu_bin test `echo edit/[0-9]* |perl -pwe "s,$f.*,$f,"` || exit 1
-  done
+  echo "=== edit: until 007"
+  ./mu_bin test edit/00[1-7]* || exit 1
+  echo "=== edit: until 008"
+  ./mu_bin test edit/00[1-8]* || exit 1
+  echo "=== edit: until 009"
+  ./mu_bin test edit/00* || exit 1
 fi
-
-if [[ $1 && $1 == edit3 ]]
+if [[ ! $1 || $1 == edit4 ]]
 then
-  for f in edit/00[7-9]*
-  do
-    echo "=== edit: until $f"
-    $VALGRIND ./mu_bin test `echo edit/[0-9]* |perl -pwe "s,$f.*,$f,"` || exit 1
-  done
-fi
-
-if [[ $1 && $1 == edit4 ]]
-then
-  for f in edit/01*
-  do
-    echo "=== edit: until $f"
-    $VALGRIND ./mu_bin test `echo edit/[0-9]* |perl -pwe "s,$f.*,$f,"` || exit 1
-  done
+  echo "=== edit: until 010"
+  ./mu_bin test edit/00* edit/010* || exit 1
+  echo "=== edit: until 011"
+  ./mu_bin test edit/00* edit/01[01]* || exit 1
 fi
