@@ -83,6 +83,8 @@ versions of gcc and clang. Since it uses no recent language features and has
 no exotic dependencies, it should work with most reasonable versions,
 compilers or processors.
 
+[![Build Status](https://api.travis-ci.org/akkartik/mu.svg)](https://travis-ci.org/akkartik/mu)
+
 Running Mu will always recompile it if necessary:
 
   ```shell
