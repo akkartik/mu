@@ -357,3 +357,81 @@ def main [
   1:boolean <- lesser-or-equal 34, 35, 34
 ]
 +mem: storing 0 in location 1
+
+:(before "End Primitive Recipe Declarations")
+MAX,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "max", MAX);
+:(before "End Primitive Recipe Checks")
+case MAX: {
+  if (SIZE(inst.ingredients) <= 1) {
+    raise << maybe(get(Recipe, r).name) << "'max' needs at least two ingredients to compare in '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+    if (!is_mu_number(inst.ingredients.at(i))) {
+      raise << maybe(get(Recipe, r).name) << "'max' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
+      goto finish_checking_instruction;
+    }
+  }
+  if (SIZE(inst.products) > 1) {
+    raise << maybe(get(Recipe, r).name) << "'max' yields exactly one product in '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'max' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case MAX: {
+  int result = ingredients.at(0).at(0);
+  for (int i = /**/1; i < SIZE(ingredients); ++i) {
+    if (ingredients.at(i).at(0) > result) {
+      result = ingredients.at(i).at(0);
+    }
+  }
+  products.resize(1);
+  products.at(0).push_back(result);
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+MIN,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "min", MIN);
+:(before "End Primitive Recipe Checks")
+case MIN: {
+  if (SIZE(inst.ingredients) <= 1) {
+    raise << maybe(get(Recipe, r).name) << "'min' needs at least two ingredients to compare in '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+    if (!is_mu_number(inst.ingredients.at(i))) {
+      raise << maybe(get(Recipe, r).name) << "'min' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
+      goto finish_checking_instruction;
+    }
+  }
+  if (SIZE(inst.products) > 1) {
+    raise << maybe(get(Recipe, r).name) << "'min' yields exactly one product in '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'min' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case MIN: {
+  int result = ingredients.at(0).at(0);
+  for (int i = /**/1; i < SIZE(ingredients); ++i) {
+    if (ingredients.at(i).at(0) < result) {
+      result = ingredients.at(i).at(0);
+    }
+  }
+  products.resize(1);
+  products.at(0).push_back(result);
+  break;
+}

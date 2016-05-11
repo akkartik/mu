@@ -1300,25 +1300,3 @@ scenario text-copy-out-of-bounds-2 [
     3:array:character <- []
   ]
 ]
-
-def min x:number, y:number -> z:number [
-  local-scope
-  load-ingredients
-  {
-    return-x?:boolean <- lesser-than x, y
-    break-if return-x?
-    return y
-  }
-  return x
-]
-
-def max x:number, y:number -> z:number [
-  local-scope
-  load-ingredients
-  {
-    return-x?:boolean <- greater-than x, y
-    break-if return-x?
-    return y
-  }
-  return x
-]
