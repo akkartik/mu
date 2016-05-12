@@ -151,7 +151,7 @@ scenario deleting-sandbox-after-scroll [
     press F4
     type [add 1, 1]
     press F4
-    press down-arrow
+    press page-down
   ]
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
@@ -199,7 +199,7 @@ scenario deleting-top-sandbox-after-scroll [
     press F4
     type [add 1, 1]
     press F4
-    press down-arrow
+    press page-down
   ]
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
@@ -247,8 +247,8 @@ scenario deleting-final-sandbox-after-scroll [
     press F4
     type [add 1, 1]
     press F4
-    press down-arrow
-    press down-arrow
+    press page-down
+    press page-down
   ]
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
@@ -311,8 +311,8 @@ scenario deleting-updates-sandbox-count [
   # delete the second sandbox, then try to scroll down twice
   assume-console [
     left-click 3, 29
-    press down-arrow
-    press down-arrow
+    press page-down
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data

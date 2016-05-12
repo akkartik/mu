@@ -546,17 +546,11 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   assume-console [
     # create a sandbox
     press F4
-    # type in 2 lines
-    type [abc
-]
   ]
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
-  3:character/cursor <- copy 9251/␣
-  print screen:address:screen, 3:character/cursor
   screen-should-contain [
     .                               run (F4)           .
-    .abc                                               .
-    .␣                                                 .
+    .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0                                                x.
     .add 2, 2                                          .
@@ -564,9 +558,9 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'down' at bottom of sandbox editor
+  # hit 'page-down'
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -584,9 +578,9 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'up'
+  # hit 'page-up'
   assume-console [
-    press up-arrow
+    press page-up
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -596,7 +590,6 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   # sandbox editor displays again
   screen-should-contain [
     .                               run (F4)           .
-    .abc                                               .
     .␣                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0                                                x.
@@ -607,15 +600,11 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   ]
 ]
 
-# down on sandbox side updates render-from when sandbox editor has cursor at bottom
+# page-down updates render-from to scroll sandboxes
 after <global-keypress> [
   {
-    down?:boolean <- equal k, 65516/down-arrow
-    break-unless down?
-    sandbox-bottom:number <- get *current-sandbox, bottom:offset
-    sandbox-cursor:number <- get *current-sandbox, cursor-row:offset
-    sandbox-cursor-on-last-line?:boolean <- equal sandbox-bottom, sandbox-cursor
-    break-unless sandbox-cursor-on-last-line?
+    page-down?:boolean <- equal k, 65518/page-down
+    break-unless page-down?
     sandbox:address:sandbox-data <- get *env, sandbox:offset
     break-unless sandbox
     # slide down if possible
@@ -647,11 +636,11 @@ after <update-cursor-special-cases> [
   }
 ]
 
-# 'up' on sandbox side is like 'down': updates first-sandbox-to-render when necessary
+# 'page-up' is like 'page-down': updates first-sandbox-to-render when necessary
 after <global-keypress> [
   {
-    up?:boolean <- equal k, 65517/up-arrow
-    break-unless up?
+    page-up?:boolean <- equal k, 65519/page-up
+    break-unless page-up?
     render-from:number <- get *env, render-from:offset
     at-beginning?:boolean <- equal render-from, -1
     break-if at-beginning?
@@ -715,9 +704,9 @@ scenario scrolling-through-multiple-sandboxes [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'down'
+  # hit 'page-down'
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -739,9 +728,9 @@ scenario scrolling-through-multiple-sandboxes [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'down' again
+  # hit 'page-down' again
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -756,9 +745,9 @@ scenario scrolling-through-multiple-sandboxes [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'down' again
+  # hit 'page-down' again
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -773,9 +762,9 @@ scenario scrolling-through-multiple-sandboxes [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'up'
+  # hit 'page-up'
   assume-console [
-    press up-arrow
+    press page-up
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -794,9 +783,9 @@ scenario scrolling-through-multiple-sandboxes [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'up' again
+  # hit 'page-up' again
   assume-console [
-    press up-arrow
+    press page-up
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -818,12 +807,14 @@ scenario scrolling-through-multiple-sandboxes [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'up' again
+  # hit 'page-up' again
   assume-console [
-    press up-arrow
+    press page-up
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
+    3:character/cursor <- copy 9251/␣
+    print screen:address:screen, 3:character/cursor
   ]
   # no change
   screen-should-contain [
@@ -866,9 +857,9 @@ scenario scrolling-manages-sandbox-index-correctly [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'down' and 'up' a couple of times. sandbox index should be stable
+  # hit 'page-down' and 'page-up' a couple of times. sandbox index should be stable
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -884,9 +875,9 @@ scenario scrolling-manages-sandbox-index-correctly [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'up' again
+  # hit 'page-up' again
   assume-console [
-    press up-arrow
+    press page-up
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -902,9 +893,9 @@ scenario scrolling-manages-sandbox-index-correctly [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
-  # hit 'down'
+  # hit 'page-down'
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data

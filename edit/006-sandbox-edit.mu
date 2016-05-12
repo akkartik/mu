@@ -200,8 +200,8 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     press F4
     type [add 1, 1]
     press F4
-    press down-arrow
-    press down-arrow
+    press page-down
+    press page-down
   ]
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
@@ -281,9 +281,9 @@ scenario editing-sandbox-updates-sandbox-count [
   ]
   # now try to scroll past end
   assume-console [
-    press down-arrow
-    press down-arrow
-    press down-arrow
+    press page-down
+    press page-down
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data

@@ -670,7 +670,7 @@ scenario editor-can-redo-typing-and-enter-and-tab [
   ]
 ]
 
-# undo cursor movement and scroll
+# undo cursor movement
 
 scenario editor-can-undo-touch [
   # create an editor with some text
@@ -760,69 +760,6 @@ after <handle-undo> [
     top:address:duplex-list:character <- get move, before-top-of-screen:offset
     *editor <- put *editor, top-of-screen:offset, top
   }
-]
-
-scenario editor-can-undo-scroll [
-  # screen has 1 line for menu + 3 lines
-  assume-screen 5/width, 4/height
-  # editor contains a wrapped line
-  1:address:array:character <- new [a
-b
-cdefgh]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
-  # position cursor at end of screen and try to move right
-  assume-console [
-    left-click 3, 3
-    press right-arrow
-  ]
-  editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-  3:number <- get *2:address:editor-data, cursor-row:offset
-  4:number <- get *2:address:editor-data, cursor-column:offset
-  # screen scrolls
-  screen-should-contain [
-    .     .
-    .b    .
-    .cdef↩.
-    .gh   .
-  ]
-  memory-should-contain [
-    3 <- 3
-    4 <- 0
-  ]
-  # undo
-  assume-console [
-    press ctrl-z
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
-  ]
-  # cursor moved back
-  memory-should-contain [
-    3 <- 3
-    4 <- 3
-  ]
-  # scroll undone
-  screen-should-contain [
-    .     .
-    .a    .
-    .b    .
-    .cdef↩.
-  ]
-  # cursor should be in the right place
-  assume-console [
-    type [1]
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .     .
-    .b    .
-    .cde1↩.
-    .fgh  .
-  ]
 ]
 
 scenario editor-can-undo-left-arrow [
@@ -959,148 +896,6 @@ ghi]
     .abc       .
     .d1ef      .
     .ghi       .
-    .┈┈┈┈┈┈┈┈┈┈.
-  ]
-]
-
-scenario editor-can-undo-ctrl-f [
-  # create an editor with multiple pages of text
-  assume-screen 10/width, 5/height
-  1:address:array:character <- new [a
-b
-c
-d
-e
-f]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
-  editor-render screen, 2:address:editor-data
-  # scroll the page
-  assume-console [
-    press ctrl-f
-  ]
-  editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-  # undo
-  assume-console [
-    press ctrl-z
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
-  ]
-  # screen should again show page 1
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .c         .
-    .d         .
-  ]
-]
-
-scenario editor-can-undo-page-down [
-  # create an editor with multiple pages of text
-  assume-screen 10/width, 5/height
-  1:address:array:character <- new [a
-b
-c
-d
-e
-f]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
-  editor-render screen, 2:address:editor-data
-  # scroll the page
-  assume-console [
-    press page-down
-  ]
-  editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-  # undo
-  assume-console [
-    press ctrl-z
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
-  ]
-  # screen should again show page 1
-  screen-should-contain [
-    .          .
-    .a         .
-    .b         .
-    .c         .
-    .d         .
-  ]
-]
-
-scenario editor-can-undo-ctrl-b [
-  # create an editor with multiple pages of text
-  assume-screen 10/width, 5/height
-  1:address:array:character <- new [a
-b
-c
-d
-e
-f]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
-  editor-render screen, 2:address:editor-data
-  # scroll the page down and up
-  assume-console [
-    press page-down
-    press ctrl-b
-  ]
-  editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-  # undo
-  assume-console [
-    press ctrl-z
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
-  ]
-  # screen should again show page 2
-  screen-should-contain [
-    .          .
-    .d         .
-    .e         .
-    .f         .
-    .┈┈┈┈┈┈┈┈┈┈.
-  ]
-]
-
-scenario editor-can-undo-page-up [
-  # create an editor with multiple pages of text
-  assume-screen 10/width, 5/height
-  1:address:array:character <- new [a
-b
-c
-d
-e
-f]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
-  editor-render screen, 2:address:editor-data
-  # scroll the page down and up
-  assume-console [
-    press page-down
-    press page-up
-  ]
-  editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-  # undo
-  assume-console [
-    press ctrl-z
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
-  ]
-  # screen should again show page 2
-  screen-should-contain [
-    .          .
-    .d         .
-    .e         .
-    .f         .
     .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
@@ -1333,7 +1128,7 @@ ghi]
   ]
 ]
 
-# redo cursor movement and scroll
+# redo cursor movement
 
 scenario editor-redo-touch [
   # create an editor with some text, click on a character, undo

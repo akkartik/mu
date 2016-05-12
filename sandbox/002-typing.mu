@@ -704,7 +704,6 @@ after <insert-character-special-case> [
     {
       below-screen?:boolean <- greater-or-equal cursor-row, screen-height
       break-unless below-screen?
-      <scroll-down>
     }
     go-render? <- copy 1/true
     return
@@ -852,7 +851,6 @@ def insert-new-line-and-indent editor:address:editor-data, screen:address:screen
   {
     below-screen?:boolean <- greater-or-equal cursor-row, screen-height  # must be equal, never greater
     break-unless below-screen?
-    <scroll-down>
     go-render? <- copy 1/true
     cursor-row <- subtract cursor-row, 1  # bring back into screen range
     *editor <- put *editor, cursor-row:offset, cursor-row
