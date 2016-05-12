@@ -169,53 +169,53 @@ if (t.kind == CONTAINER) {
 //: also store a copy in each reagent in each instruction in each recipe
 
 :(after "Begin Instruction Modifying Transforms")  // needs to happen before transform_names, therefore after "End Type Modifying Transforms" below
-Transform.push_back(compute_container_metadata);
+Transform.push_back(compute_container_sizes);
 :(code)
-void compute_container_metadata(recipe_ordinal r) {
+void compute_container_sizes(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
     for (int i = 0; i < SIZE(inst.ingredients); ++i)
-      compute_container_metadata(inst.ingredients.at(i));
+      compute_container_sizes(inst.ingredients.at(i));
     for (int i = 0; i < SIZE(inst.products); ++i)
-      compute_container_metadata(inst.products.at(i));
+      compute_container_sizes(inst.products.at(i));
   }
 }
 
-void compute_container_metadata(reagent& r) {
+void compute_container_sizes(reagent& r) {
   if (is_literal(r) || is_dummy(r)) return;
   reagent rcopy = r;
-  // Compute Container Metadata(reagent rcopy)
+  // Compute Container Size(reagent rcopy)
   set<type_ordinal> pending_metadata;
-  compute_container_metadata(rcopy.type, pending_metadata);
+  compute_container_sizes(rcopy.type, pending_metadata);
   if (contains_key(Container_metadata, rcopy.type))
     r.metadata = get(Container_metadata, rcopy.type);
 }
 
-void compute_container_metadata(const type_tree* type, set<type_ordinal>& pending_metadata) {
+void compute_container_sizes(const type_tree* type, set<type_ordinal>& pending_metadata) {
   if (!type) return;
   if (contains_key(pending_metadata, type->value)) return;
-  pending_metadata.insert(type->value);
+  if (type->value) pending_metadata.insert(type->value);
   if (contains_key(Container_metadata, type)) return;
-  if (type->left) compute_container_metadata(type->left, pending_metadata);
-  if (type->right) compute_container_metadata(type->right, pending_metadata);
+  if (type->left) compute_container_sizes(type->left, pending_metadata);
+  if (type->right) compute_container_sizes(type->right, pending_metadata);
   if (!contains_key(Type, type->value)) return;  // error raised elsewhere
   type_info& info = get(Type, type->value);
   if (info.kind == CONTAINER) {
     container_metadata metadata;
     for (int i = 0; i < SIZE(info.elements); ++i) {
       reagent/*copy*/ element = info.elements.at(i);
-      // Compute Container Metadata(element)
-      compute_container_metadata(element.type, pending_metadata);
+      // Compute Container Size(element)
+      compute_container_sizes(element.type, pending_metadata);
       metadata.offset.push_back(metadata.size);  // save previous size as offset
       metadata.size += size_of(element.type);
     }
     Container_metadata.push_back(pair<type_tree*, container_metadata>(new type_tree(*type), metadata));
   }
-  // End compute_container_metadata Cases
+  // End compute_container_sizes Cases
 }
 
-const container_metadata& get(const vector<pair<type_tree*, container_metadata> >& all, const type_tree* key) {
+container_metadata& get(vector<pair<type_tree*, container_metadata> >& all, const type_tree* key) {
   for (int i = 0; i < SIZE(all); ++i) {
     if (matches(all.at(i).first, key))
       return all.at(i).second;

@@ -143,10 +143,10 @@ canonize_type(product);
 canonize_type(lhs);
 canonize_type(rhs);
 
-:(before "Compute Container Metadata(reagent rcopy)")
+:(before "Compute Container Size(reagent rcopy)")
 if (!canonize_type(rcopy)) return;
 
-:(before "Compute Container Metadata(element)")
+:(before "Compute Container Size(element)")
 assert(!has_property(element, "lookup"));
 
 :(code)

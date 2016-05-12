@@ -247,9 +247,11 @@ def main [
 
 :(before "End element_type Special-cases")
 replace_type_ingredients(element, type, info);
-:(before "Compute Container Metadata(element)")
+:(before "Compute Container Size(element)")
 replace_type_ingredients(element, type, info);
-:(before "Compute Exclusive Container Metadata(element)")
+:(before "Compute Exclusive Container Size(element)")
+replace_type_ingredients(element, type, info);
+:(before "Compute Container Address Offset(element)")
 replace_type_ingredients(element, type, info);
 :(code)
 void replace_type_ingredients(reagent& element, const type_tree* caller_type, const type_info& info) {

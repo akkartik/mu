@@ -160,3 +160,111 @@ def main [
 :(after "Write Memory in Successful MAYBE_CONVERT")
 if (is_mu_address(product))
   update_refcounts(get_or_insert(Memory, product.value), get_or_insert(Memory, base_address+/*skip tag*/1), payload_size(product));
+
+//: manage refcounts in instructions that copy multiple locations at a time
+
+:(code)
+:(scenario refcounts_copy_nested)
+container foo [
+  x:address:number
+]
+def main [
+  1:address:number <- new number:type
+  2:address:foo <- new foo:type
+  *2:address:foo <- put *2:address:foo, x:offset, 1:address:number
+  3:foo <- copy *2:address:foo
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
++run: {2: ("address" "foo"), "lookup": ()} <- put {2: ("address" "foo"), "lookup": ()}, {x: "offset"}, {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
+# copying a container increments refcounts of any contained addresses
++run: {3: "foo"} <- copy {2: ("address" "foo"), "lookup": ()}
++mem: incrementing refcount of 1000: 2 -> 3
+
+:(after "Types")
+struct address_element_info {
+  int offset;  // where inside a container type (after flattening nested containers!) the address lies
+  int payload_size;  // size of type it points to
+  address_element_info(int o, int p) {
+    offset = o;
+    payload_size = p;
+  }
+};
+:(before "End container_metadata Fields")
+vector<address_element_info> address;  // list of offsets containing addresses, and the sizes of their corresponding payloads
+
+//: populate metadata.address in a separate transform, because it requires
+//: already knowing the sizes of all types
+
+:(after "Transform.push_back(compute_container_sizes)")
+Transform.push_back(compute_container_address_offsets);
+:(code)
+void compute_container_address_offsets(const recipe_ordinal r) {
+  recipe& caller = get(Recipe, r);
+//?   cerr << "compute offsets " << caller.name <<'\n';
+  for (int i = 0; i < SIZE(caller.steps); ++i) {
+    instruction& inst = caller.steps.at(i);
+    for (int i = 0; i < SIZE(inst.ingredients); ++i)
+      compute_container_address_offsets(inst.ingredients.at(i));
+    for (int i = 0; i < SIZE(inst.products); ++i)
+      compute_container_address_offsets(inst.products.at(i));
+  }
+}
+void compute_container_address_offsets(reagent& r) {
+  if (is_literal(r) || is_dummy(r)) return;
+  compute_container_address_offsets(r.type);
+  if (contains_key(Container_metadata, r.type))
+    r.metadata = get(Container_metadata, r.type);
+}
+void compute_container_address_offsets(type_tree* type) {
+  if (!type) return;
+  if (type->left) compute_container_address_offsets(type->left);
+  if (type->right) compute_container_address_offsets(type->right);
+  if (!contains_key(Type, type->value)) return;  // error raised elsewhere
+  type_info& info = get(Type, type->value);
+  if (info.kind == CONTAINER) {
+//?     cerr << "  " << to_string(type) << '\n';
+    container_metadata& metadata = get(Container_metadata, type);
+    if (!metadata.address.empty()) return;
+    for (int i = 0; i < SIZE(info.elements); ++i) {
+      reagent/*copy*/ element = info.elements.at(i);
+      // Compute Container Address Offset(element)
+      if (is_mu_address(element)) {
+        metadata.address.push_back(address_element_info(metadata.offset.at(i), payload_size(element)));
+//?         cerr << info.name << " has address at offset " << metadata.address.back().offset << '\n';
+      }
+    }
+  }
+}
+
+:(before "End write_memory(x) Special-cases")
+if (is_mu_container(x)) {
+  // Can't recurse here because we have to worry about shape-shifting
+  // containers. Always go off of x.metadata rather than the global
+  // Container_metadata.
+  assert(x.metadata.size);
+  for (int i = 0; i < SIZE(x.metadata.address); ++i) {
+    const address_element_info& info = x.metadata.address.at(i);
+    update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_size);
+  }
+}
+
+:(code)
+bool is_mu_container(const reagent& r) {
+  if (r.type->value == 0) return false;
+  type_info& info = get(Type, r.type->value);
+  return info.kind == CONTAINER;
+}
+
+bool is_mu_exclusive_container(const reagent& r) {
+  if (r.type->value == 0) return false;
+  type_info& info = get(Type, r.type->value);
+  return info.kind == EXCLUSIVE_CONTAINER;
+}
+
+// todo:
+//  container containing container containing address
+//  exclusive container sometimes containing address
+//  container containing exclusive container sometimes containing address
+//  ensure the original unguarded write_memory loop is never run

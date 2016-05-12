@@ -88,12 +88,6 @@ size_t hash_mu_array(size_t h, const reagent& r) {
   return h;
 }
 
-bool is_mu_container(const reagent& r) {
-  if (r.type->value == 0) return false;
-  type_info& info = get(Type, r.type->value);
-  return info.kind == CONTAINER;
-}
-
 size_t hash_mu_container(size_t h, const reagent& r) {
   assert(r.type->value);
   type_info& info = get(Type, r.type->value);
@@ -108,12 +102,6 @@ size_t hash_mu_container(size_t h, const reagent& r) {
     offset += size_of(info.elements.at(i).type);
   }
   return h;
-}
-
-bool is_mu_exclusive_container(const reagent& r) {
-  if (r.type->value == 0) return false;
-  type_info& info = get(Type, r.type->value);
-  return info.kind == EXCLUSIVE_CONTAINER;
 }
 
 size_t hash_mu_exclusive_container(size_t h, const reagent& r) {

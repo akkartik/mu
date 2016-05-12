@@ -35,7 +35,7 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
   // Compute size_of Exclusive Container
   return get(Container_metadata, type).size;
 }
-:(before "End compute_container_metadata Cases")
+:(before "End compute_container_sizes Cases")
 if (info.kind == EXCLUSIVE_CONTAINER) {
   container_metadata metadata;
   // size of an exclusive container is the size of its largest variant
@@ -43,8 +43,8 @@ if (info.kind == EXCLUSIVE_CONTAINER) {
   int size = 0;
   for (int i = 0; i < SIZE(info.elements); ++i) {
     reagent/*copy*/ element = info.elements.at(i);
-    // Compute Exclusive Container Metadata(element)
-    compute_container_metadata(element);
+    // Compute Exclusive Container Size(element)
+    compute_container_sizes(element.type, pending_metadata);
     int variant_size = size_of(element);
     if (variant_size > size) size = variant_size;
   }
