@@ -321,14 +321,7 @@ def! restore-sandboxes env:address:programming-environment-data -> env:address:p
     # create new sandbox for file
     curr <- new sandbox-data:type
     *curr <- put *curr, data:offset, contents
-    # restore expected output for sandbox if it exists
-    {
-      filename <- append filename, [.out]
-      contents <- restore filename
-      break-unless contents
-      <end-restore-sandbox>
-    }
-    +continue
+    <end-restore-sandbox>
     {
       break-if idx
       *env <- put *env, sandbox:offset, curr

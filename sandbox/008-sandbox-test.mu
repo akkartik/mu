@@ -98,7 +98,12 @@ before <end-save-sandbox> [
 ]
 
 before <end-restore-sandbox> [
-  *curr <- put *curr, expected-response:offset, contents
+  {
+    filename <- append filename, [.out]
+    contents <- restore filename
+    break-unless contents
+    *curr <- put *curr, expected-response:offset, contents
+  }
 ]
 
 # clicks on sandbox responses save it as 'expected'

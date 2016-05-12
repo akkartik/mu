@@ -273,8 +273,11 @@ put(Recipe_ordinal, "$system", _SYSTEM);
 :(before "End Primitive Recipe Checks")
 case _SYSTEM: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$system' requires exactly one ingredient, but got none\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$system' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
     break;
+  }
+  if (!is_literal_string(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "ingredient to '$system' must be a literal text, but got " << to_string(inst) << '\n' << end();
   }
   break;
 }
