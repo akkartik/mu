@@ -207,7 +207,6 @@ Transform.push_back(compute_container_address_offsets);
 :(code)
 void compute_container_address_offsets(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
-//?   cerr << "compute offsets " << caller.name <<'\n';
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
     for (int i = 0; i < SIZE(inst.ingredients); ++i)
@@ -232,13 +231,43 @@ void compute_container_address_offsets(type_tree* type) {
     container_metadata& metadata = get(Container_metadata, type);
     if (!metadata.address.empty()) return;
     trace(9992, "transform") << "--- compute address offsets for " << info.name << end();
-    for (int i = 0; i < SIZE(info.elements); ++i) {
-      reagent/*copy*/ element = info.elements.at(i);
-      trace(9993, "transform") << "checking container " << type->name << ", element " << i << end();
+    stack<pair<const type_tree*, /*next field to process*/int> > containers;
+    containers.push(pair<const type_tree*, int>(new type_tree(*type), 0));
+    int curr_offset = 0;
+    while (!containers.empty()) {
+      const type_tree* curr_type = new type_tree(*containers.top().first);
+      int curr_index = containers.top().second;
+      type_ordinal t = curr_type->value;
+      assert(t);
+      type_info& curr_info = get(Type, t);
+      assert(curr_info.kind == CONTAINER);
+      assert(get(Type, curr_type->value).kind == CONTAINER);
+      if (curr_index >= SIZE(get(Type, curr_type->value).elements)) {
+        delete curr_type;
+        containers.pop();
+        continue;
+      }
+      trace(9993, "transform") << "checking container " << curr_type->name << ", element " << curr_index << end();
+      reagent/*copy*/ element = element_type(curr_type, curr_index);
       // Compute Container Address Offset(element)
+      // base case
       if (is_mu_address(element)) {
-        metadata.address.push_back(address_element_info(metadata.offset.at(i), payload_size(element)));
-        trace(9993, "transform") << "container " << info.name << " contains an address at offset " << metadata.offset.at(i) << end();
+        trace(9993, "transform") << "container " << info.name << " contains an address at offset " << curr_offset << end();
+        /*top level*/metadata.address.push_back(address_element_info(curr_offset, payload_size(element)));
+      }
+      // recursive case and update loop variables
+      if (is_mu_container(element)) {
+        ++containers.top().second;
+        containers.push(pair<const type_tree*, int>(new type_tree(*element.type), 0));
+      }
+      else if (is_mu_exclusive_container(element)) {
+        // TODO: stub
+        ++containers.top().second;
+        ++curr_offset;
+      }
+      else {
+        ++containers.top().second;
+        ++curr_offset;
       }
     }
   }
@@ -333,6 +362,42 @@ def main [
 +run: {5: "bar"}, {6: "boolean"} <- maybe-convert {3: "foo"}, {b: "variant"}
 +mem: incrementing refcount of 1000: 2 -> 3
 
+:(scenario refcounts_copy_doubly_nested)
+container foo [
+  a:bar  # no addresses
+  b:curr  # contains addresses
+]
+container bar [
+  x:number
+  y:number
+]
+container curr [
+  x:number
+  y:address:number  # address inside container inside container
+]
+def main [
+  1:address:number <- new number:type
+  2:address:curr <- new curr:type
+  *2:address:curr <- put *2:address:curr, y:offset, 1:address:number
+  3:address:foo <- new foo:type
+  *3:address:foo <- put *3:address:foo, b:offset, *2:address:curr
+  4:foo <- copy *3:address:foo
+]
++transform: --- compute address offsets for foo
++transform: checking container foo, element 1
++transform: container foo contains an address at offset 3
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
+# storing an address in a container updates its refcount
++run: {2: ("address" "curr"), "lookup": ()} <- put {2: ("address" "curr"), "lookup": ()}, {y: "offset"}, {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
+# storing a container in a container updates refcounts of any contained addresses
++run: {3: ("address" "foo"), "lookup": ()} <- put {3: ("address" "foo"), "lookup": ()}, {b: "offset"}, {2: ("address" "curr"), "lookup": ()}
++mem: incrementing refcount of 1000: 2 -> 3
+# copying a container containing a container containing an address updates refcount
++run: {4: "foo"} <- copy {3: ("address" "foo"), "lookup": ()}
++mem: incrementing refcount of 1000: 3 -> 4
+
 :(code)
 bool is_mu_container(const reagent& r) {
   if (r.type->value == 0) return false;
@@ -347,6 +412,5 @@ bool is_mu_exclusive_container(const reagent& r) {
 }
 
 // todo:
-//  container containing container containing address
 //  exclusive container sometimes containing address
 //  container containing exclusive container sometimes containing address

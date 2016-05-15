@@ -252,7 +252,16 @@ replace_type_ingredients(element, type, info);
 :(before "Compute Exclusive Container Size(element)")
 replace_type_ingredients(element, type, info);
 :(before "Compute Container Address Offset(element)")
-replace_type_ingredients(element, type, info);
+replace_type_ingredients(element, curr_type, curr_info);
+if (contains_type_ingredient(element)) {
+  // error raised elsewhere; just clean up and leave
+  while (!containers.empty()) {
+    delete containers.top().first;
+    containers.pop();
+  }
+  return;
+}
+
 :(code)
 void replace_type_ingredients(reagent& element, const type_tree* caller_type, const type_info& info) {
   if (contains_type_ingredient(element)) {
