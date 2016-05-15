@@ -231,44 +231,48 @@ void compute_container_address_offsets(type_tree* type) {
     container_metadata& metadata = get(Container_metadata, type);
     if (!metadata.address.empty()) return;
     trace(9992, "transform") << "--- compute address offsets for " << info.name << end();
-    stack<pair<const type_tree*, /*next field to process*/int> > containers;
-    containers.push(pair<const type_tree*, int>(new type_tree(*type), 0));
-    int curr_offset = 0;
-    while (!containers.empty()) {
-      const type_tree* curr_type = containers.top().first;
-      int curr_index = containers.top().second;
-      type_ordinal t = curr_type->value;
-      assert(t);
-      type_info& curr_info = get(Type, t);
-      assert(curr_info.kind == CONTAINER);
-      assert(get(Type, curr_type->value).kind == CONTAINER);
-      if (curr_index >= SIZE(get(Type, curr_type->value).elements)) {
-        delete curr_type;
-        containers.pop();
-        continue;
-      }
-      trace(9993, "transform") << "checking container " << curr_type->name << ", element " << curr_index << end();
-      reagent/*copy*/ element = element_type(curr_type, curr_index);
-      // Compute Container Address Offset(element)
-      // base case
-      if (is_mu_address(element)) {
-        trace(9993, "transform") << "container " << info.name << " contains an address at offset " << curr_offset << end();
-        /*top level*/metadata.address.push_back(address_element_info(curr_offset, payload_size(element)));
-      }
-      // recursive case and update loop variables
-      if (is_mu_container(element)) {
-        ++containers.top().second;
-        containers.push(pair<const type_tree*, int>(new type_tree(*element.type), 0));
-      }
-      else if (is_mu_exclusive_container(element)) {
-        // TODO: stub
-        ++containers.top().second;
-        ++curr_offset;
-      }
-      else {
-        ++containers.top().second;
-        ++curr_offset;
-      }
+    append_addresses(0, type, metadata.address);
+  }
+}
+
+void append_addresses(int base_offset, const type_tree* type, vector<address_element_info>& out) {
+  stack<pair<const type_tree*, /*next field to process*/int> > containers;
+  containers.push(pair<const type_tree*, int>(new type_tree(*type), 0));
+  int curr_offset = base_offset;
+  while (!containers.empty()) {
+    const type_tree* curr_type = containers.top().first;
+    int curr_index = containers.top().second;
+    type_ordinal t = curr_type->value;
+    assert(t);
+    type_info& curr_info = get(Type, t);
+    assert(curr_info.kind == CONTAINER);
+    assert(get(Type, curr_type->value).kind == CONTAINER);
+    if (curr_index >= SIZE(get(Type, curr_type->value).elements)) {
+      delete curr_type;
+      containers.pop();
+      continue;
+    }
+    trace(9993, "transform") << "checking container " << curr_type->name << ", element " << curr_index << end();
+    reagent/*copy*/ element = element_type(curr_type, curr_index);
+    // Compute Container Address Offset(element)
+    // base case
+    if (is_mu_address(element)) {
+      trace(9993, "transform") << "container " << type->name << " contains an address at offset " << curr_offset << end();
+      out.push_back(address_element_info(curr_offset, payload_size(element)));
+    }
+    // recursive case and update loop variables
+    if (is_mu_container(element)) {
+      ++containers.top().second;
+      containers.push(pair<const type_tree*, int>(new type_tree(*element.type), 0));
+    }
+    else if (is_mu_exclusive_container(element)) {
+      // TODO: stub
+      ++containers.top().second;
+      ++curr_offset;
+    }
+    else {
+      ++containers.top().second;
+      ++curr_offset;
     }
   }
 }
