@@ -235,7 +235,7 @@ void compute_container_address_offsets(type_tree* type) {
     containers.push(pair<const type_tree*, int>(new type_tree(*type), 0));
     int curr_offset = 0;
     while (!containers.empty()) {
-      const type_tree* curr_type = new type_tree(*containers.top().first);
+      const type_tree* curr_type = containers.top().first;
       int curr_index = containers.top().second;
       type_ordinal t = curr_type->value;
       assert(t);
@@ -351,7 +351,7 @@ def main [
   1:address:number <- new number:type
   2:bar <- merge 1:address:number
   3:foo <- merge 1/b, 2:bar
-  5:bar, 6:boolean <- maybe-convert 3:foo, b:variant
+  5:bar, 6:boolean <- maybe-convert 3:foo, 1:variant/b
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -359,7 +359,7 @@ def main [
 +mem: incrementing refcount of 1000: 1 -> 2
 +run: {3: "foo"} <- merge {1: "literal", "b": ()}, {2: "bar"}
 # todo: refcount should increment here as well, but we can't handle exclusive-containers (sometimes) containing addresses yet
-+run: {5: "bar"}, {6: "boolean"} <- maybe-convert {3: "foo"}, {b: "variant"}
++run: {5: "bar"}, {6: "boolean"} <- maybe-convert {3: "foo"}, {1: "variant", "b": ()}
 +mem: incrementing refcount of 1000: 2 -> 3
 
 :(scenario refcounts_copy_doubly_nested)
@@ -378,9 +378,9 @@ container curr [
 def main [
   1:address:number <- new number:type
   2:address:curr <- new curr:type
-  *2:address:curr <- put *2:address:curr, y:offset, 1:address:number
+  *2:address:curr <- put *2:address:curr, 1:offset/y, 1:address:number
   3:address:foo <- new foo:type
-  *3:address:foo <- put *3:address:foo, b:offset, *2:address:curr
+  *3:address:foo <- put *3:address:foo, 1:offset/b, *2:address:curr
   4:foo <- copy *3:address:foo
 ]
 +transform: --- compute address offsets for foo
@@ -389,10 +389,10 @@ def main [
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
 # storing an address in a container updates its refcount
-+run: {2: ("address" "curr"), "lookup": ()} <- put {2: ("address" "curr"), "lookup": ()}, {y: "offset"}, {1: ("address" "number")}
++run: {2: ("address" "curr"), "lookup": ()} <- put {2: ("address" "curr"), "lookup": ()}, {1: "offset", "y": ()}, {1: ("address" "number")}
 +mem: incrementing refcount of 1000: 1 -> 2
 # storing a container in a container updates refcounts of any contained addresses
-+run: {3: ("address" "foo"), "lookup": ()} <- put {3: ("address" "foo"), "lookup": ()}, {b: "offset"}, {2: ("address" "curr"), "lookup": ()}
++run: {3: ("address" "foo"), "lookup": ()} <- put {3: ("address" "foo"), "lookup": ()}, {1: "offset", "b": ()}, {2: ("address" "curr"), "lookup": ()}
 +mem: incrementing refcount of 1000: 2 -> 3
 # copying a container containing a container containing an address updates refcount
 +run: {4: "foo"} <- copy {3: ("address" "foo"), "lookup": ()}
