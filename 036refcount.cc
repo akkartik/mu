@@ -118,6 +118,7 @@ assert(!has_property(element, "lookup"));
 element.value = address;
 if (is_mu_address(element))
   update_refcounts(get_or_insert(Memory, element.value), ingredients.at(2).at(0), payload_size(element));
+// End Update Refcounts in PUT
 
 :(scenario refcounts_put_index)
 def main [
@@ -139,6 +140,7 @@ def main [
 :(after "Write Memory in PUT_INDEX in Run")
 if (is_mu_address(element))
   update_refcounts(get_or_insert(Memory, element.value), value.at(0), payload_size(element));
+// End Update Refcounts in PUT_INDEX
 
 :(scenario refcounts_maybe_convert)
 exclusive-container foo [
@@ -160,6 +162,7 @@ def main [
 :(after "Write Memory in Successful MAYBE_CONVERT")
 if (is_mu_address(product))
   update_refcounts(get_or_insert(Memory, product.value), get_or_insert(Memory, base_address+/*skip tag*/1), payload_size(product));
+// End Update Refcounts in Successful MAYBE_CONVERT
 
 //: manage refcounts in instructions that copy multiple locations at a time
 
@@ -226,7 +229,6 @@ void compute_container_address_offsets(type_tree* type) {
   if (!contains_key(Type, type->value)) return;  // error raised elsewhere
   type_info& info = get(Type, type->value);
   if (info.kind == CONTAINER) {
-//?     cerr << "  " << to_string(type) << '\n';
     container_metadata& metadata = get(Container_metadata, type);
     if (!metadata.address.empty()) return;
     trace(9992, "transform") << "--- compute address offsets for " << info.name << end();
@@ -243,16 +245,63 @@ void compute_container_address_offsets(type_tree* type) {
 }
 
 :(before "End write_memory(x) Special-cases")
-if (is_mu_container(x)) {
-  // Can't recurse here because we have to worry about shape-shifting
-  // containers. Always go off of x.metadata rather than the global
-  // Container_metadata.
-  assert(x.metadata.size);
-  for (int i = 0; i < SIZE(x.metadata.address); ++i) {
-    const address_element_info& info = x.metadata.address.at(i);
+if (is_mu_container(x))
+  update_container_refcounts(x, data);
+:(before "End Update Refcounts in PUT")
+if (is_mu_container(element))
+  update_container_refcounts(element, ingredients.at(2));
+:(before "End Update Refcounts in PUT_INDEX")
+if (is_mu_container(element))
+  update_container_refcounts(element, value);
+
+:(code)
+void update_container_refcounts(const reagent& x, const vector<double>& data) {
+  assert(is_mu_container(x));
+  const container_metadata& metadata = get(Container_metadata, x.type);
+  for (int i = 0; i < SIZE(metadata.address); ++i) {
+    const address_element_info& info = metadata.address.at(i);
     update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_size);
   }
 }
+
+:(scenario refcounts_put_container)
+container foo [
+  a:bar  # contains an address
+]
+container bar [
+  x:address:number
+]
+def main [
+  1:address:number <- new number:type
+  2:bar <- merge 1:address:number
+  3:address:foo <- new foo:type
+  *3:address:foo <- put *3:address:foo, a:offset, 2:bar
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
++run: {2: "bar"} <- merge {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {3: ("address" "foo"), "lookup": ()} <- put {3: ("address" "foo"), "lookup": ()}, {a: "offset"}, {2: "bar"}
+# put increments refcount inside container
++mem: incrementing refcount of 1000: 2 -> 3
+
+:(scenario refcounts_put_index_container)
+container bar [
+  x:address:number
+]
+def main [
+  1:address:number <- new number:type
+  2:bar <- merge 1:address:number
+  3:address:array:bar <- new bar:type, 3
+  *3:address:array:bar <- put-index *3:address:array:bar, 0, 2:bar
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
++run: {2: "bar"} <- merge {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {3: ("address" "array" "bar"), "lookup": ()} <- put-index {3: ("address" "array" "bar"), "lookup": ()}, {0: "literal"}, {2: "bar"}
+# put-index increments refcount inside container
++mem: incrementing refcount of 1000: 2 -> 3
 
 :(code)
 bool is_mu_container(const reagent& r) {
