@@ -292,7 +292,7 @@ case GET: {
   if (inst.products.empty()) break;
   reagent/*copy*/ product = inst.products.at(0);
   // Update GET product in Check
-  const reagent& element = element_type(base.type, offset_value);
+  const reagent/*copy*/ element = element_type(base.type, offset_value);
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;

@@ -163,10 +163,9 @@ if (is_mu_address(product))
 
 //: manage refcounts in instructions that copy multiple locations at a time
 
-:(code)
 :(scenario refcounts_copy_nested)
 container foo [
-  x:address:number
+  x:address:number  # address inside container
 ]
 def main [
   1:address:number <- new number:type
@@ -174,6 +173,9 @@ def main [
   *2:address:foo <- put *2:address:foo, x:offset, 1:address:number
   3:foo <- copy *2:address:foo
 ]
++transform: --- compute address offsets for foo
++transform: checking container foo, element 0
++transform: container foo contains an address at offset 0
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
 +run: {2: ("address" "foo"), "lookup": ()} <- put {2: ("address" "foo"), "lookup": ()}, {x: "offset"}, {1: ("address" "number")}
@@ -227,12 +229,14 @@ void compute_container_address_offsets(type_tree* type) {
 //?     cerr << "  " << to_string(type) << '\n';
     container_metadata& metadata = get(Container_metadata, type);
     if (!metadata.address.empty()) return;
+    trace(9992, "transform") << "--- compute address offsets for " << info.name << end();
     for (int i = 0; i < SIZE(info.elements); ++i) {
       reagent/*copy*/ element = info.elements.at(i);
+      trace(9993, "transform") << "checking container " << type->name << ", element " << i << end();
       // Compute Container Address Offset(element)
       if (is_mu_address(element)) {
         metadata.address.push_back(address_element_info(metadata.offset.at(i), payload_size(element)));
-//?         cerr << info.name << " has address at offset " << metadata.address.back().offset << '\n';
+        trace(9993, "transform") << "container " << info.name << " contains an address at offset " << metadata.offset.at(i) << end();
       }
     }
   }
