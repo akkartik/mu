@@ -273,6 +273,9 @@ void compute_container_address_offsets(type_tree* type) {
   }
 }
 
+//: use metadata.address to update refcounts within containers, arrays and
+//: exclusive containers
+
 :(before "End write_memory(x) Special-cases")
 if (is_mu_container(x))
   update_container_refcounts(x, data);
