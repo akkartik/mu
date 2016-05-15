@@ -1,5 +1,5 @@
 //: Reclaiming memory when it's no longer used.
-//: The top of layer 34 has the complete life cycle of memory.
+//: The top of the address layer has the complete life cycle of memory.
 
 :(scenario new_reclaim)
 def main [

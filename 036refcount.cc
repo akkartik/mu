@@ -1,5 +1,5 @@
 //: Update refcounts when copying addresses.
-//: The top of layer 34 has more on refcounts.
+//: The top of the address layer has more on refcounts.
 
 :(scenario refcounts)
 def main [
@@ -164,7 +164,7 @@ if (is_mu_address(product))
   update_refcounts(get_or_insert(Memory, product.value), get_or_insert(Memory, base_address+/*skip tag*/1), payload_size(product));
 // End Update Refcounts in Successful MAYBE_CONVERT
 
-//: manage refcounts in instructions that copy multiple locations at a time
+//:: manage refcounts in instructions that copy multiple locations at a time
 
 :(scenario refcounts_copy_nested)
 container foo [

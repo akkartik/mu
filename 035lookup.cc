@@ -1,8 +1,8 @@
 //: Go from an address to the payload it points at (skipping the refcount)
 //: using /lookup.
 //:
-//: Let's say we have this address (read the top of layer 34 for addresses and
-//: such diagrams):
+//: Let's say we have this address (read the top of the address layer for
+//: details on these diagrams):
 //:
 //:                     +---+------------+
 //:          x -------> | 1 |  number    |
