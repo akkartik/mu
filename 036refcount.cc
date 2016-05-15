@@ -253,6 +253,13 @@ if (is_mu_container(element))
 :(before "End Update Refcounts in PUT_INDEX")
 if (is_mu_container(element))
   update_container_refcounts(element, value);
+:(before "End Update Refcounts in Successful MAYBE_CONVERT")
+if (is_mu_container(product)) {
+  vector<double> data;
+  for (int i = 0; i < size_of(product); ++i)
+    data.push_back(get_or_insert(Memory, base_address+/*skip tag*/1+i));
+  update_container_refcounts(product, data);
+}
 
 :(code)
 void update_container_refcounts(const reagent& x, const vector<double>& data) {
@@ -303,6 +310,29 @@ def main [
 # put-index increments refcount inside container
 +mem: incrementing refcount of 1000: 2 -> 3
 
+:(scenario refcounts_maybe_convert_container)
+exclusive-container foo [
+  a:number
+  b:bar  # contains an address
+]
+container bar [
+  x:address:number
+]
+def main [
+  1:address:number <- new number:type
+  2:bar <- merge 1:address:number
+  3:foo <- merge 1/b, 2:bar
+  5:bar, 6:boolean <- maybe-convert 3:foo, b:variant
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
++run: {2: "bar"} <- merge {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {3: "foo"} <- merge {1: "literal", "b": ()}, {2: "bar"}
+# todo: refcount should increment here as well, but we can't handle exclusive-containers (sometimes) containing addresses yet
++run: {5: "bar"}, {6: "boolean"} <- maybe-convert {3: "foo"}, {b: "variant"}
++mem: incrementing refcount of 1000: 2 -> 3
+
 :(code)
 bool is_mu_container(const reagent& r) {
   if (r.type->value == 0) return false;
@@ -320,4 +350,3 @@ bool is_mu_exclusive_container(const reagent& r) {
 //  container containing container containing address
 //  exclusive container sometimes containing address
 //  container containing exclusive container sometimes containing address
-//  ensure the original unguarded write_memory loop is never run
